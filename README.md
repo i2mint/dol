@@ -18,6 +18,10 @@ how the content is stored should be specified, but StoreInterface offers a dict-
     __delitem__ calls: _id_of_key
     __iter__    calls:	            _key_of_id
 
+```pydocstring
+>>> from dol import Store
+```
+
 A Store can be instantiated with no arguments. By default it will make a dict and wrap that.
 
 ```pydocstring
