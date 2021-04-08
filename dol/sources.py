@@ -156,7 +156,8 @@ class SequenceKvReader(KvReader):
 
     >>> s = SequenceKvReader(docs, key='s', val=all_but_s, val_postproc=unique_element)
     >>> assert s['a'] == {'_id': 0, 'n': 1}
-    >>> s['b']  # should raise an exception since there's more than one match
+    >>> # The following should raise an exception since there's more than one match
+    >>> s['b']  # doctest: +SKIP
     Traceback (most recent call last):
       ...
     sources.NotUnique: iterator had more than one element

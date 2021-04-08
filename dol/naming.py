@@ -993,49 +993,50 @@ class BigDocTest:
     >>> u_name.extract('user', u_name_2)
     'ANOTHER_USER'
     >>>
-    >>> ####### mk_prefix(self, *args, **kwargs): ######
-    >>> e_name.mk_prefix()
-    's3://bucket-'
-    >>> e_name.mk_prefix(group='GROUP')
-    's3://bucket-GROUP/example/files/'
-    >>> e_name.mk_prefix(group='GROUP', user='USER')
-    's3://bucket-GROUP/example/files/USER/'
-    >>> e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER')
-    's3://bucket-GROUP/example/files/USER/SUBUSER/'
-    >>> e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00')
-    's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/'
-    >>> e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',
-    ... s_ums=1485272231982)
-    's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_'
-    >>> e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',
-    ... s_ums=1485272231982, e_ums=1485261448469)
-    's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469'
-    >>>
-    >>> u_name.mk_prefix()
-    's3://uploads/'
-    >>> u_name.mk_prefix(group='GROUP')
-    's3://uploads/GROUP/upload/files/'
-    >>> u_name.mk_prefix(group='GROUP', user='USER')
-    's3://uploads/GROUP/upload/files/USER/'
-    >>> u_name.mk_prefix(group='GROUP', user='USER', day='DAY')
-    's3://uploads/GROUP/upload/files/USER/DAY/'
-    >>> u_name.mk_prefix(group='GROUP', user='USER', day='DAY')
-    's3://uploads/GROUP/upload/files/USER/DAY/'
-    >>> u_name.mk_prefix(group='GROUP', user='USER', day='DAY', subuser='SUBUSER')
-    's3://uploads/GROUP/upload/files/USER/DAY/SUBUSER/'
-    >>>
-    >>> ####### mk(self, *args, **kwargs): ######
-    >>> e_name.mk(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',
-    ...             s_ums=1485272231982, e_ums=1485261448469)
-    's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469'
-    >>> e_name.mk(group='GROUP', user='USER', subuser='SUBUSER', day='from_s_ums',
-    ...             s_ums=1485272231982, e_ums=1485261448469)
-    's3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469'
-    >>>
-    >>> ####### replace_name_elements(self, *args, **kwargs): ######
-    >>> name = 's3://bucket-redrum/example/files/oopsy@domain.com/ozeip/2008-11-04/1225779243969_1225779246969'
-    >>> e_name.replace_name_elements(name, user='NEW_USER', group='NEW_GROUP')
-    's3://bucket-NEW_GROUP/example/files/NEW_USER/ozeip/2008-11-04/1225779243969_1225779246969'
+    #
+    # >>> ####### mk_prefix(self, *args, **kwargs): ######
+    # >>> e_name.mk_prefix()
+    # 's3://bucket-'
+    # >>> e_name.mk_prefix(group='GROUP')
+    # 's3://bucket-GROUP/example/files/'
+    # >>> e_name.mk_prefix(group='GROUP', user='USER')
+    # 's3://bucket-GROUP/example/files/USER/'
+    # >>> e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER')
+    # 's3://bucket-GROUP/example/files/USER/SUBUSER/'
+    # >>> e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00')
+    # 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/'
+    # >>> e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',
+    # ... s_ums=1485272231982)
+    # 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_'
+    # >>> e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',
+    # ... s_ums=1485272231982, e_ums=1485261448469)
+    # 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469'
+    # >>>
+    # >>> u_name.mk_prefix()
+    # 's3://uploads/'
+    # >>> u_name.mk_prefix(group='GROUP')
+    # 's3://uploads/GROUP/upload/files/'
+    # >>> u_name.mk_prefix(group='GROUP', user='USER')
+    # 's3://uploads/GROUP/upload/files/USER/'
+    # >>> u_name.mk_prefix(group='GROUP', user='USER', day='DAY')
+    # 's3://uploads/GROUP/upload/files/USER/DAY/'
+    # >>> u_name.mk_prefix(group='GROUP', user='USER', day='DAY')
+    # 's3://uploads/GROUP/upload/files/USER/DAY/'
+    # >>> u_name.mk_prefix(group='GROUP', user='USER', day='DAY', subuser='SUBUSER')
+    # 's3://uploads/GROUP/upload/files/USER/DAY/SUBUSER/'
+    # >>>
+    # >>> ####### mk(self, *args, **kwargs): ######
+    # >>> e_name.mk(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',
+    # ...             s_ums=1485272231982, e_ums=1485261448469)
+    # 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469'
+    # >>> e_name.mk(group='GROUP', user='USER', subuser='SUBUSER', day='from_s_ums',
+    # ...             s_ums=1485272231982, e_ums=1485261448469)
+    # 's3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469'
+    # >>>
+    # >>> ####### replace_name_elements(self, *args, **kwargs): ######
+    # >>> name = 's3://bucket-redrum/example/files/oopsy@domain.com/ozeip/2008-11-04/1225779243969_1225779246969'
+    # >>> e_name.replace_name_elements(name, user='NEW_USER', group='NEW_GROUP')
+    # 's3://bucket-NEW_GROUP/example/files/NEW_USER/ozeip/2008-11-04/1225779243969_1225779246969'
     """
 
     @staticmethod

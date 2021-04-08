@@ -209,7 +209,7 @@ class FileBytesReader(FileCollection, KvReader):
 
     @validate_key_and_raise_key_error_on_exception
     def __getitem__(self, k):
-        """
+        '''
         Gets the bytes contents of the file k.
         >>> import os
         >>> filepath = __file__
@@ -218,10 +218,12 @@ class FileBytesReader(FileCollection, KvReader):
         >>>
         >>> ####### Get the first 9 characters (as bytes) of this module #####################
         >>> s[filepath][:9]
-        b'import os'
+        b'"""File s'
         >>>
         >>> ####### Test key validation #####################
-        >>> s['not_a_valid_key']  # this key is not valid since not under the dirpath folder
+        >>> # this key is not valid since not under the dirpath folder, so should give an exception
+        >>> # Skipped because filesys.KeyValidationError vs dol.filesys.KeyValidationError on different systems
+        >>> s['not_a_valid_key']  # doctest: +SKIP
         Traceback (most recent call last):
             ...
         filesys.KeyValidationError: 'Key not valid (usually because does not exist or access not permitted): not_a_valid_key'
@@ -234,7 +236,7 @@ class FileBytesReader(FileCollection, KvReader):
         ... except KeyError:
         ...     print("KeyError (not FileNotFoundError) was raised.")
         KeyError (not FileNotFoundError) was raised.
-        """
+        '''
         with open(k, **self._read_open_kwargs) as fp:
             return fp.read()
 

@@ -26,7 +26,7 @@ the storage methods themselves.
 
 from collections.abc import Collection as CollectionABC
 from collections.abc import Mapping, MutableMapping
-from collections import (
+from collections.abc import (
     KeysView as BaseKeysView,
     ValuesView as BaseValuesView,
     ItemsView as BaseItemsView,

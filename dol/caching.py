@@ -540,7 +540,7 @@ def mk_write_cached_store(
     You don't want to do this unwittingly and delete a bunch of precious data!!
 
     >>> from dol.caching import mk_write_cached_store, ensure_clear_to_kv_store
-    >>> from dol import Store
+    >>> from dol.base import Store
     >>>
     >>> def print_state(store):
     ...     print(f"store: {store} ----- store._w_cache: {store._w_cache}")

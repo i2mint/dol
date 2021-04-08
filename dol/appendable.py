@@ -444,8 +444,6 @@ class FirstAppendOnly(Sequence):
     >>>
     >>> # Not that we'd ever these methods of FirstAppendOnly, but know that FirstAppendOnly is a collection.abc.Sequence, so...
     >>> t[:1] == t[:10] == t[::-1] == t[::-10] == t[0:2:10] == list(reversed(t)) == ['something']
-    <stdin>:1: RuntimeWarning: coroutine 'AioFileBytesPersister.asetitem' was never awaited
-    RuntimeWarning: Enable tracemalloc to get the object allocation traceback
     True
     >>>
     >>> t.count('something') == 1

@@ -143,8 +143,8 @@ def store_decorator(func):
 
     We make a ``decorated_A`` with ``deco`` (class decorator example)
 
-    >>> deco(A, x=42)
-    <class 'trans.A'>
+    >>> t = deco(A, x=42)
+    >>> assert isinstance(t, type)
 
     and we see that we now have an ``x`` and it's 42
 
@@ -201,7 +201,7 @@ def store_decorator(func):
     instance of a store (here, ``a``).
 
     >>> type(b)
-    <class 'dol.base.Store'>
+    <class 'abc.StoreWrap'>
     >>> b.store == a
     True
 
@@ -2144,7 +2144,7 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
     >>> # You can choose a different path_type, but sometimes (say both keys and key paths are strings)
     >>> # you need to involve more tools. Like dol.paths.KeyPath...
     >>> from dol.paths import KeyPath
-    >>> from dol import kv_wrap
+    >>> from dol.trans import kv_wrap
     >>> SS = kv_wrap(KeyPath(path_sep='.'))(S)
     >>> s = SS({'a': {'b': {'c': 42}}})
     >>> assert s['a'] == {'b': {'c': 42}}; assert s['a.b'] == s['a']['b']; assert s['a.b.c'] == s['a']['b']['c']
