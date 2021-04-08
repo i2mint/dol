@@ -1,12 +1,15 @@
-
 # dol
-Data Object Layers
+Base builtin tools make and transform data object layers (dols).
+
+The package is light-weight: Pure python; not third-party dependencies.
 
 Why the name?
 - because it's short
 - because it's cute
 - because it reminds one of "russian dolls" (one way to think of wrappers)
 - because we can come up with an acronym the contains "Data Object" in it. 
+
+To install:	```pip install dol```
 
 # Examples
 
