@@ -308,7 +308,8 @@ def mk_extract_pattern(
     )
 
 
-def mk_pattern_from_template_and_format_dict(template, format_dict=None):
+# TODO: Is dependent on path sep -- separate concern
+def mk_pattern_from_template_and_format_dict(template, format_dict=None, sep=path_sep):
     r"""Make a compiled regex to match template
     Args:
         template: A format string
@@ -333,7 +334,7 @@ def mk_pattern_from_template_and_format_dict(template, format_dict=None):
     format_dict = format_dict or {}
 
     fields = get_fields_from_template(template)
-    format_dict = mk_format_mapping_dict(format_dict, fields)
+    format_dict = mk_format_mapping_dict(format_dict, fields, sep=sep)
     named_capture_patterns = mk_named_capture_patterns(format_dict)
     return re.compile(template_to_pattern(named_capture_patterns, template))
 
@@ -486,7 +487,7 @@ class StrTupleDict(object):
 
         fields = get_fields_from_template(self.template)
 
-        format_dict = mk_format_mapping_dict(format_dict, fields)
+        format_dict = mk_format_mapping_dict(format_dict, fields, self.sep)
 
         named_capture_patterns = mk_named_capture_patterns(format_dict)
 
