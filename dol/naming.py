@@ -309,19 +309,22 @@ def mk_extract_pattern(
 
 
 def mk_pattern_from_template_and_format_dict(template, format_dict=None):
-    """Make a compiled regex to match template
-
+    r"""Make a compiled regex to match template
     Args:
         template: A format string
         format_dict: A dict whose keys are template fields and values are regex strings to capture them
-
     Returns: a compiled regex
-
-    >>> mk_pattern_from_template_and_format_dict('{here}/and/{there}')
-    re.compile('(?P<here>[^/]+)/and/(?P<there>[^/]+)')
+    >>> import os
+    >>> p = mk_pattern_from_template_and_format_dict('{here}/and/{there}')
+    >>> if os.name == 'nt':  # for windows
+    ...     assert p == re.compile('(?P<here>[^\\\\]+)/and/(?P<there>[^\\\\]+)')
+    ... else:
+    ...     assert p == re.compile('(?P<here>[^/]+)/and/(?P<there>[^/]+)')
     >>> p = mk_pattern_from_template_and_format_dict('{here}/and/{there}', {'there': '\d+'})
-    >>> p
-    re.compile('(?P<here>[^/]+)/and/(?P<there>\\\d+)')
+    >>> if os.name == 'nt':  # for windows
+    ...     assert p == re.compile('(?P<here>[^\\\\]+)/and/(?P<there>\d+)')
+    ... else:
+    ...     assert p == re.compile('(?P<here>[^/]+)/and/(?P<there>\d+)')
     >>> type(p)
     <class 're.Pattern'>
     >>> p.match('HERE/and/1234').groupdict()
