@@ -1,3 +1,5 @@
+"""Layers introspection"""
+
 from functools import partial
 
 # TODO: Make a generator and a index getter for keys and vals (and both).

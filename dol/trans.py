@@ -1,3 +1,4 @@
+"""Transformation/wrapping tools"""
 from functools import wraps, partial, reduce
 import types
 from inspect import signature, Parameter

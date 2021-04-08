@@ -1,3 +1,4 @@
+"""Mixins"""
 import json
 from dol.errors import (
     WritesNotAllowed,

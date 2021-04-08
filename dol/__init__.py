@@ -1,3 +1,4 @@
+"""Core tools to build simple interfaces to complex data sources and bend the interface to your will (and need)"""
 import os
 
 # from contextlib import suppress
@@ -23,7 +24,7 @@ def ihead(store, n=1):
         return [item for i, item in enumerate(store) if i < n]
 
 
-from py2store.util import (
+from dol.util import (
     lazyprop,
     partialclass,
     groupby,
@@ -31,7 +32,7 @@ from py2store.util import (
     igroupby
 )
 
-from py2store.base import (
+from dol.base import (
     Collection,
     KvReader,
     KvPersister,
@@ -41,7 +42,7 @@ from py2store.base import (
     Store,
 )
 
-from py2store.trans import (
+from dol.trans import (
     wrap_kvs,
     disable_delitem,
     disable_setitem,
@@ -56,7 +57,7 @@ from py2store.trans import (
     cache_iter,  # being deprecated
 )
 
-from py2store.caching import (
+from dol.caching import (
     WriteBackChainMap,
     mk_cached_store,
     store_cached,
@@ -66,9 +67,9 @@ from py2store.caching import (
     mk_write_cached_store,
 )
 
-from py2store.appendable import (
+from dol.appendable import (
     appendable
 )
 
-from py2store.naming import StrTupleDict
-from py2store.paths import mk_relative_path_store
+from dol.naming import StrTupleDict
+from dol.paths import mk_relative_path_store

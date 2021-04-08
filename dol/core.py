@@ -1,3 +1,4 @@
+"""Core tools"""
 import os
 
 from dol.paths import PrefixRelativizationMixin

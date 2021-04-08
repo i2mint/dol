@@ -1,3 +1,5 @@
+"""Error objects and utils"""
+
 from collections.abc import Mapping
 from inspect import signature
 
