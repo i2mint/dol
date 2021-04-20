@@ -290,3 +290,9 @@ RelPathFileStringReader = mk_relative_path_store(
     prefix_attr="rootdir",
     __name__="RelPathFileStringReader",
 )
+
+RelPathFileStringPersister = mk_relative_path_store(
+    FileStringPersister,
+    prefix_attr="rootdir",
+    __name__="RelPathFileStringPersister",
+)
