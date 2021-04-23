@@ -973,7 +973,6 @@ class Sig(Signature, Mapping):
     @property
     def without_defaults(self):
         """
-        >>> from i2.signatures import Sig
         >>> list(Sig(lambda *args, a, b, x=1, y=1, **kwargs: ...).without_defaults)
         ['a', 'b']
         """
@@ -982,7 +981,6 @@ class Sig(Signature, Mapping):
     @property
     def with_defaults(self):
         """
-        >>> from i2.signatures import Sig
         >>> list(Sig(lambda *args, a, b, x=1, y=1, **kwargs: ...).with_defaults)
         ['args', 'x', 'y', 'kwargs']
         """
@@ -1476,7 +1474,6 @@ def param_for_kind(name=None, kind='positional_or_keyword', with_default=False, 
     It's annoying to have to compose parameters from scratch to testing things.
     This tool should help making it less annoying.
 
-    >>> from i2.signatures import param_kinds
     >>> list(map(param_for_kind, param_kinds))
     [<Parameter "POSITIONAL_ONLY">, <Parameter "POSITIONAL_OR_KEYWORD">, <Parameter "VAR_POSITIONAL">, <Parameter "KEYWORD_ONLY">, <Parameter "VAR_KEYWORD">]
     >>> param_for_kind.positional_or_keyword()
