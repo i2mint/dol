@@ -1,5 +1,5 @@
 name: Continuous Integration
-on: [push, pull_request]
+on: [ push, pull_request ]
 env:
   PROJECT_NAME: dol
 jobs:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [ 3.8 ]
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -28,8 +28,13 @@ jobs:
       - name: Format source code
         run: black --line-length=79 .
 
+      # Documentation on "enable" codes:
+      #   http://pylint.pycqa.org/en/latest/technical_reference/features.html#basic-checker-messages
+      # C0114: missing-module-docstring
+      # C0115: missing-class-docstring
+      # C0116: missing-function-docstring
       - name: Validate docstrings
-        run: pylint ./$PROJECT_NAME --ignore=tests,examples --disable=all --enable=C0114,C0115,C0116
+        run: pylint ./$PROJECT_NAME --ignore=tests,examples --disable=all --enable=C0114
 
       - name: Test
         run: pytest --doctest-modules -v $PROJECT_NAME
@@ -40,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [ 3.8 ]
     steps:
       - uses: actions/checkout@v2
         with:
