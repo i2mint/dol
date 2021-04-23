@@ -5,8 +5,8 @@ from functools import partial
 # TODO: Make a generator and a index getter for keys and vals (and both).
 #  Point is to be able to get views from any level.
 
-not_found = type("NotFound", (), {})()
-no_default = type("NoDefault", (), {})()
+not_found = type('NotFound', (), {})()
+no_default = type('NoDefault', (), {})()
 
 
 def get_first_attr_found(store, attrs, default=no_default):
@@ -15,7 +15,7 @@ def get_first_attr_found(store, attrs, default=no_default):
         if a != not_found:
             return a
     if default == no_default:
-        raise AttributeError(f"None of the attributes were found: {attrs}")
+        raise AttributeError(f'None of the attributes were found: {attrs}')
     else:
         return default
 
@@ -24,7 +24,7 @@ def recursive_get_attr(store, attr, default=None):
     a = getattr(store, attr, None)
     if a is not None:
         return a
-    elif hasattr(store, "store"):
+    elif hasattr(store, 'store'):
         return recursive_get_attr(store.store, attr, default)
     else:
         return default
@@ -39,17 +39,17 @@ def store_trans_path(store, arg, method):
     if f is not None:
         trans_arg = f(arg)
         yield trans_arg
-        if hasattr(store, "store"):
+        if hasattr(store, 'store'):
             yield from unravel_key(store.store, trans_arg)
 
 
 def print_trans_path(store, arg, method, with_type=False):
     gen = (arg, *store_trans_path(store, arg, method))
     if with_type:
-        gen = map(lambda x: f"{type(x)}: {x}", gen)
+        gen = map(lambda x: f'{type(x)}: {x}', gen)
     else:
         gen = map(str, gen)
-    print("\n".join(gen))
+    print('\n'.join(gen))
 
 
 def last_element(gen):
@@ -64,14 +64,14 @@ def inner_most(store, arg, method):
 
 
 # TODO: Better change the signature to reflect context (k (key) or v (val) instead of arg)
-unravel_key = partial(store_trans_path, method="_id_of_key")
-print_key_trans_path = partial(print_trans_path, method="_id_of_key")
-inner_most_key = partial(inner_most, method="_id_of_key")
+unravel_key = partial(store_trans_path, method='_id_of_key')
+print_key_trans_path = partial(print_trans_path, method='_id_of_key')
+inner_most_key = partial(inner_most, method='_id_of_key')
 
 # TODO: inner_most_val doesn't really do what one expects. It just does what inner_most_key does
-unravel_val = partial(store_trans_path, method="_data_of_obj")
-print_val_trans_path = partial(print_trans_path, method="_data_of_obj")
-inner_most_val = partial(inner_most, method="_data_of_obj")
+unravel_val = partial(store_trans_path, method='_data_of_obj')
+print_val_trans_path = partial(print_trans_path, method='_data_of_obj')
+inner_most_val = partial(inner_most, method='_data_of_obj')
 
 from functools import partial
 
@@ -195,7 +195,7 @@ def trace_info(trace, item_func=print):
 
 def _trace_item_info(item):
     layer, method, value = item
-    return f"{layer.__class__.__name__}.{method}: {type(value).__name__}"
+    return f'{layer.__class__.__name__}.{method}: {type(value).__name__}'
 
 
 def print_trace_info(trace, item_info=_trace_item_info):

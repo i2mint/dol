@@ -46,28 +46,28 @@ ItemIter = Iterable[Item]
 
 
 class AttrNames:
-    CollectionABC = {"__len__", "__iter__", "__contains__"}
+    CollectionABC = {'__len__', '__iter__', '__contains__'}
     Mapping = CollectionABC | {
-        "keys",
-        "get",
-        "items",
-        "__reversed__",
-        "values",
-        "__getitem__",
+        'keys',
+        'get',
+        'items',
+        '__reversed__',
+        'values',
+        '__getitem__',
     }
     MutableMapping = Mapping | {
-        "setdefault",
-        "pop",
-        "popitem",
-        "clear",
-        "update",
-        "__delitem__",
-        "__setitem__",
+        'setdefault',
+        'pop',
+        'popitem',
+        'clear',
+        'update',
+        '__delitem__',
+        '__setitem__',
     }
 
-    Collection = CollectionABC | {"head"}
-    KvReader = (Mapping | {"head"}) - {"__reversed__"}
-    KvPersister = (MutableMapping | {"head"}) - {"__reversed__"} - {"clear"}
+    Collection = CollectionABC | {'head'}
+    KvReader = (Mapping | {'head'}) - {'__reversed__'}
+    KvPersister = (MutableMapping | {'head'}) - {'__reversed__'} - {'clear'}
 
 
 class Collection(CollectionABC):
@@ -101,7 +101,7 @@ class Collection(CollectionABC):
         return count
 
     def head(self):
-        if hasattr(self, "items"):
+        if hasattr(self, 'items'):
             return next(iter(self.items()))
         else:
             return next(iter(self))
@@ -217,10 +217,7 @@ class NoSuchItem:
 no_such_item = NoSuchItem()
 
 
-def delegator_wrap(
-        delegator: Callable,
-        obj: Union[type, Any]
-):
+def delegator_wrap(delegator: Callable, obj: Union[type, Any]):
     """Wrap a ``obj`` (type or instance) with ``delegator``.
 
     If obj is not a type, trivially returns ``delegator(obj)``.
@@ -285,6 +282,7 @@ def delegator_wrap(
     """
     if isinstance(obj, type):
         if isinstance(delegator, type):
+
             @wraps(obj, updated=())
             class Wrap(delegator):
                 @wraps(obj.__init__)
@@ -434,7 +432,9 @@ class Store(KvPersister):
 
     _max_repr_size = None
 
-    _errors_that_trigger_missing = (KeyError,)  # another option: (KeyError, FileNotFoundError)
+    _errors_that_trigger_missing = (
+        KeyError,
+    )  # another option: (KeyError, FileNotFoundError)
 
     wrap = classmethod(delegator_wrap)
 
@@ -443,7 +443,9 @@ class Store(KvPersister):
         return getattr(self.store, attr)
 
     def __dir__(self):
-        return list(set(dir(self.__class__)).union(self.store.__dir__()))  # to forward dir to delegated stream as well
+        return list(
+            set(dir(self.__class__)).union(self.store.__dir__())
+        )  # to forward dir to delegated stream as well
 
     def __hash__(self):
         return self.store.__hash__()
@@ -506,13 +508,13 @@ class Store(KvPersister):
                 msg += (
                     "... because there's a layer transforming outcoming keys that are not the ones the store actually "
                     "uses? If you didn't wrap the store with the inverse ingoing keys transformation, "
-                    "that would happen.\n"
+                    'that would happen.\n'
                 )
                 msg += (
                     "I'll ask the inner-layer what it's head is, but IT MAY NOT REFLECT the reality of your store "
-                    "if you have some filtering, caching etc."
+                    'if you have some filtering, caching etc.'
                 )
-                msg += f"The error messages was: \n{e}"
+                msg += f'The error messages was: \n{e}'
                 warn(msg)
 
             for _id in self.store:
@@ -548,7 +550,7 @@ class Store(KvPersister):
         if isinstance(self._max_repr_size, int):
             half = int(self._max_repr_size)
             if len(x) > self._max_repr_size:
-                x = x[:half] + "  ...  " + x[-half:]
+                x = x[:half] + '  ...  ' + x[-half:]
         return x
         # return self.store.__repr__()
 
@@ -560,7 +562,7 @@ KvStore = Store  # alias with explict name
 # walking in trees
 
 
-inf = float("infinity")
+inf = float('infinity')
 
 
 def val_is_mapping(p, k, v):
@@ -581,11 +583,11 @@ def tuple_keypath_and_val(p, k, v):
 
 # TODO: More docs and doctests. This one even merits an extensive usage and example tutorial!
 def kv_walk(
-        v: Mapping,
-        yield_func=asis,  # (p, k, v) -> what you want the gen to yield
-        walk_filt=val_is_mapping,  # (p, k, v) -> whether to explore the nested structure v further
-        pkv_to_pv=tuple_keypath_and_val,
-        p=(),
+    v: Mapping,
+    yield_func=asis,  # (p, k, v) -> what you want the gen to yield
+    walk_filt=val_is_mapping,  # (p, k, v) -> whether to explore the nested structure v further
+    pkv_to_pv=tuple_keypath_and_val,
+    p=(),
 ):
     """
 
@@ -610,7 +612,7 @@ def kv_walk(
             p, k, vv
         )  # update the path with k (and preprocess v if necessary)
         if walk_filt(
-                p, k, vv
+            p, k, vv
         ):  # should we recurse? (based on some function of p, k, v)
             # print(f"3: recurse with: pp={pp}, vv={vv}\n")
             yield from kv_walk(
@@ -633,10 +635,10 @@ def has_kv_store_interface(o):
 
     """
     return (
-            hasattr(o, "_id_of_key")
-            and hasattr(o, "_key_of_id")
-            and hasattr(o, "_data_of_obj")
-            and hasattr(o, "_obj_of_data")
+        hasattr(o, '_id_of_key')
+        and hasattr(o, '_key_of_id')
+        and hasattr(o, '_data_of_obj')
+        and hasattr(o, '_obj_of_data')
     )
 
 
@@ -677,17 +679,18 @@ class KeyValidationABC(metaclass=ABCMeta):
 
     def check_key_is_valid(self, k):
         if not self.is_valid_key(k):
-            raise KeyValidationError("key is not valid: {}".format(k))
+            raise KeyValidationError('key is not valid: {}'.format(k))
 
     @classmethod
     def __subclasshook__(cls, C):
         if cls is KeyValidationABC:
-            return _check_methods(C, "is_valid_key", "check_key_is_valid")
+            return _check_methods(C, 'is_valid_key', 'check_key_is_valid')
         return NotImplemented
 
 
 ########################################################################################################################
 # Streams
+
 
 class stream_util:
     def always_true(*args, **kwargs):
@@ -815,5 +818,9 @@ class Stream:
         # return self._pre_proc(self.stream) # moved to iter to
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        return self.stream.__exit__(exc_type, exc_val, exc_tb)  # TODO: Should we have a _post_proc? Uses?
+        return self.stream.__exit__(
+            exc_type, exc_val, exc_tb
+        )  # TODO: Should we have a _post_proc? Uses?
+
+
 ########################################################################################################################

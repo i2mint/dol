@@ -8,10 +8,10 @@ from inspect import signature
 # TODO: What about traceback?
 # TODO: Make it a more general and useful store decorator. Trans store into an getitem exception catching store.
 def items_with_caught_exceptions(
-        d: Mapping,
-        callback=None,
-        catch_exceptions=(Exception,),
-        yield_callback_output=False,
+    d: Mapping,
+    callback=None,
+    catch_exceptions=(Exception,),
+    yield_callback_output=False,
 ):
     """
     Do what Mapping.items() does, but catching exceptions when getting the values for a key.
@@ -104,12 +104,12 @@ def items_with_caught_exceptions(
         except catch_exceptions as e:  # catch the specific exceptions you requested to catch
             t = wrapped_callback(k=k, e=e, d=d, i=i)  # call it
             if (
-                    yield_callback_output
+                yield_callback_output
             ):  # if the user wants the output of the callback
                 yield t  # yield it
 
 
-def _assert_condition(condition, err_msg="", err_cls=AssertionError):
+def _assert_condition(condition, err_msg='', err_cls=AssertionError):
     if not condition:
         raise err_cls(err_msg)
 

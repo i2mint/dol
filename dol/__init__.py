@@ -24,13 +24,7 @@ def ihead(store, n=1):
         return [item for i, item in enumerate(store) if i < n]
 
 
-from dol.util import (
-    lazyprop,
-    partialclass,
-    groupby,
-    regroupby,
-    igroupby
-)
+from dol.util import lazyprop, partialclass, groupby, regroupby, igroupby
 
 from dol.base import (
     Collection,
@@ -67,9 +61,7 @@ from dol.caching import (
     mk_write_cached_store,
 )
 
-from dol.appendable import (
-    appendable
-)
+from dol.appendable import appendable
 
 from dol.naming import StrTupleDict
 from dol.paths import mk_relative_path_store

@@ -5,13 +5,11 @@ from os import stat as os_stat
 from functools import wraps
 
 from dol.base import Collection, KvReader, KvPersister
-from dol.naming import (
-    mk_pattern_from_template_and_format_dict,
-)
+from dol.naming import mk_pattern_from_template_and_format_dict
 from dol.paths import mk_relative_path_store
 
 file_sep = os.path.sep
-inf = float("infinity")
+inf = float('infinity')
 
 
 def ensure_slash_suffix(path: str):
@@ -24,7 +22,9 @@ def ensure_slash_suffix(path: str):
 
 def paths_in_dir(rootdir, include_hidden=False):
     for name in os.listdir(rootdir):
-        if include_hidden or not name.startswith('.'):  # TODO: is dot a platform independent marker for hidden file?
+        if include_hidden or not name.startswith(
+            '.'
+        ):  # TODO: is dot a platform independent marker for hidden file?
             filepath = os.path.join(rootdir, name)
             if os.path.isdir(filepath):
                 yield ensure_slash_suffix(filepath)
@@ -33,7 +33,7 @@ def paths_in_dir(rootdir, include_hidden=False):
 
 
 def iter_filepaths_in_folder_recursively(
-        root_folder, max_levels=None, _current_level=0, include_hidden=False
+    root_folder, max_levels=None, _current_level=0, include_hidden=False
 ):
     """Recursively generates filepaths of folder (and subfolders, etc.) up to a given level"""
     if max_levels is None:
@@ -42,7 +42,7 @@ def iter_filepaths_in_folder_recursively(
         if os.path.isdir(full_path):
             if _current_level < max_levels:
                 for entry in iter_filepaths_in_folder_recursively(
-                        full_path, max_levels, _current_level + 1, include_hidden
+                    full_path, max_levels, _current_level + 1, include_hidden
                 ):
                     yield entry
         else:
@@ -51,7 +51,7 @@ def iter_filepaths_in_folder_recursively(
 
 
 def iter_dirpaths_in_folder_recursively(
-        root_folder, max_levels=None, _current_level=0, include_hidden=False
+    root_folder, max_levels=None, _current_level=0, include_hidden=False
 ):
     """Recursively generates dirpaths of folder (and subfolders, etc.) up to a given level"""
     if max_levels is None:
@@ -61,12 +61,12 @@ def iter_dirpaths_in_folder_recursively(
             yield full_path
             if _current_level < max_levels:
                 for entry in iter_dirpaths_in_folder_recursively(
-                        full_path, max_levels, _current_level + 1, include_hidden
+                    full_path, max_levels, _current_level + 1, include_hidden
                 ):
                     yield entry
 
 
-def mk_tmp_dol_dir(dirname=""):
+def mk_tmp_dol_dir(dirname=''):
     from tempfile import gettempdir
 
     tmpdir = os.path.join(gettempdir(), dirname)
@@ -77,17 +77,17 @@ def mk_tmp_dol_dir(dirname=""):
 
 
 def mk_absolute_path(path_format):
-    if path_format.startswith("~"):
+    if path_format.startswith('~'):
         path_format = os.path.expanduser(path_format)
-    elif path_format.startswith("."):
+    elif path_format.startswith('.'):
         path_format = os.path.abspath(path_format)
     return path_format
 
 
 # TODO: subpath: Need to be able to allow named and unnamed file format markers (i.e {} and {named})
 
-_dflt_not_valid_error_msg = "Key not valid (usually because does not exist or access not permitted): {}"
-_dflt_not_found_error_msg = "Key not found: {}"
+_dflt_not_valid_error_msg = 'Key not valid (usually because does not exist or access not permitted): {}'
+_dflt_not_found_error_msg = 'Key not found: {}'
 
 
 class KeyValidationError(KeyError):
@@ -111,14 +111,19 @@ class FileSysCollection(Collection):
     # rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.
 
     def __init__(
-            self, rootdir, subpath="", pattern_for_field=None, max_levels=None, include_hidden=False
+        self,
+        rootdir,
+        subpath='',
+        pattern_for_field=None,
+        max_levels=None,
+        include_hidden=False,
     ):
         if max_levels is None:
             max_levels = inf
         subpath_implied_min_levels = len(subpath.split(os.path.sep)) - 1
         assert (
-                max_levels >= subpath_implied_min_levels
-        ), f"max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}"
+            max_levels >= subpath_implied_min_levels
+        ), f'max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}'
         pattern_for_field = pattern_for_field or {}
         self.rootdir = ensure_slash_suffix(rootdir)
         self.subpath = subpath
@@ -132,10 +137,10 @@ class FileSysCollection(Collection):
         return bool(self._key_pattern.match(k))
 
     def validate_key(
-            self,
-            k,
-            err_msg_format=_dflt_not_valid_error_msg,
-            err_type=KeyValidationError,
+        self,
+        k,
+        err_msg_format=_dflt_not_valid_error_msg,
+        err_type=KeyValidationError,
     ):
         if not self.is_valid_key(k):
             raise err_type(err_msg_format.format(k))
@@ -146,7 +151,9 @@ class DirCollection(FileSysCollection):
         yield from filter(
             self.is_valid_key,
             iter_dirpaths_in_folder_recursively(
-                self.rootdir, max_levels=self._max_levels, include_hidden=self.include_hidden
+                self.rootdir,
+                max_levels=self._max_levels,
+                include_hidden=self.include_hidden,
             ),
         )
 
@@ -170,7 +177,9 @@ class FileCollection(FileSysCollection):
         yield from filter(
             self.is_valid_key,
             iter_filepaths_in_folder_recursively(
-                self.rootdir, max_levels=self._max_levels, include_hidden=self.include_hidden
+                self.rootdir,
+                max_levels=self._max_levels,
+                include_hidden=self.include_hidden,
             ),
         )
 
@@ -198,7 +207,7 @@ class FileInfoReader(FileCollection, KvReader):
 
 class FileBytesReader(FileCollection, KvReader):
     _read_open_kwargs = dict(
-        mode="rb",
+        mode='rb',
         buffering=-1,
         encoding=None,
         errors=None,
@@ -249,7 +258,7 @@ class LocalFileDeleteMixin:
 
 class FileBytesPersister(FileBytesReader, KvPersister):
     _write_open_kwargs = dict(
-        mode="wb",
+        mode='wb',
         buffering=-1,
         encoding=None,
         errors=None,
@@ -270,29 +279,29 @@ class FileBytesPersister(FileBytesReader, KvPersister):
 
 RelPathFileBytesReader = mk_relative_path_store(
     FileBytesReader,
-    prefix_attr="rootdir",
-    __name__="RelPathFileBytesReader",
-    __module__=__name__
+    prefix_attr='rootdir',
+    __name__='RelPathFileBytesReader',
+    __module__=__name__,
 )
 
 
 class FileStringReader(FileBytesReader):
-    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
+    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode='rt')
 
 
 class FileStringPersister(FileBytesPersister):
-    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
-    _write_open_kwargs = dict(FileBytesPersister._write_open_kwargs, mode="wt")
+    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode='rt')
+    _write_open_kwargs = dict(FileBytesPersister._write_open_kwargs, mode='wt')
 
 
 RelPathFileStringReader = mk_relative_path_store(
     FileStringReader,
-    prefix_attr="rootdir",
-    __name__="RelPathFileStringReader",
+    prefix_attr='rootdir',
+    __name__='RelPathFileStringReader',
 )
 
 RelPathFileStringPersister = mk_relative_path_store(
     FileStringPersister,
-    prefix_attr="rootdir",
-    __name__="RelPathFileStringPersister",
+    prefix_attr='rootdir',
+    __name__='RelPathFileStringPersister',
 )

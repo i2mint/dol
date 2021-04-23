@@ -143,6 +143,7 @@ class PrefixRelativizationMixin:
     >>> s.store.items()
     dict_items([('/root/of/data/foo', 'bar'), ('/root/of/data/too', 'much')])
     """
+
     _prefix_attr_name = '_prefix'
 
     @lazyprop
@@ -153,16 +154,16 @@ class PrefixRelativizationMixin:
         return getattr(self, self._prefix_attr_name) + k
 
     def _key_of_id(self, _id):
-        return _id[self._prefix_length:]
+        return _id[self._prefix_length :]
 
 
 @store_decorator
 def mk_relative_path_store(
-        store_cls=None,
-        *,
-        name=None,
-        with_key_validation=False,
-        prefix_attr="_prefix",
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr='_prefix',
 ):
     """
 
@@ -212,14 +213,18 @@ def mk_relative_path_store(
 
     if name is not None:
         from warnings import warn
-        warn(f"The use of name argumment is deprecated. Use __name__ instead", DeprecationWarning)
+
+        warn(
+            f'The use of name argumment is deprecated. Use __name__ instead',
+            DeprecationWarning,
+        )
 
     cls = type(store_cls.__name__, (PrefixRelativizationMixin, Store), {})
 
     @wraps(store_cls.__init__)
     def __init__(self, *args, **kwargs):
         Store.__init__(self, store=store_cls(*args, **kwargs))
-        prefix = recursive_get_attr(self.store, prefix_attr, "")
+        prefix = recursive_get_attr(self.store, prefix_attr, '')
         setattr(
             self, prefix_attr, prefix
         )  # TODO: Might need descriptor to enable assignment
@@ -227,9 +232,11 @@ def mk_relative_path_store(
     cls.__init__ = __init__
 
     if prefix_attr != '_prefix':
-        assert not hasattr(store_cls, '_prefix'), f"You already have a _prefix attribute, " \
-                                                  f"but want the prefix name to be {prefix_attr}. " \
-                                                  f"That's not going to be easy for me."
+        assert not hasattr(store_cls, '_prefix'), (
+            f'You already have a _prefix attribute, '
+            f'but want the prefix name to be {prefix_attr}. '
+            f"That's not going to be easy for me."
+        )
 
         # if not hasattr(cls, prefix_attr):
         #     warn(f"You said you wanted prefix_attr='{prefix_attr}', "
@@ -243,8 +250,10 @@ def mk_relative_path_store(
         cls._prefix = _prefix
 
     if with_key_validation:
-        assert hasattr(store_cls, 'is_valid_key'), "If you want with_key_validation=True, " \
-                                                   "you'll need a method called is_valid_key to do the validation job"
+        assert hasattr(store_cls, 'is_valid_key'), (
+            'If you want with_key_validation=True, '
+            "you'll need a method called is_valid_key to do the validation job"
+        )
 
         def _id_of_key(self, k):
             _id = super(cls, self)._id_of_key(k)
@@ -252,7 +261,7 @@ def mk_relative_path_store(
                 return _id
             else:
                 raise KeyError(
-                    f"Key not valid (usually because does not exist or access not permitted): {k}"
+                    f'Key not valid (usually because does not exist or access not permitted): {k}'
                 )
 
         cls._id_of_key = _id_of_key
@@ -276,7 +285,7 @@ class RelativePathKeyMapper:
         return self._prefix + k
 
     def _key_of_id(self, _id):
-        return _id[self._prefix_length:]
+        return _id[self._prefix_length :]
 
 
 from dol.naming import StrTupleDict
@@ -291,14 +300,22 @@ class PathKeyTypes(Enum):
 
 
 _method_names_for_path_type = {
-    PathKeyTypes.str: {'_id_of_key': StrTupleDict.simple_str_to_str,
-                       '_key_of_id': StrTupleDict.str_to_simple_str},
-    PathKeyTypes.dict: {'_id_of_key': StrTupleDict.dict_to_str,
-                        '_key_of_id': StrTupleDict.str_to_dict},
-    PathKeyTypes.tuple: {'_id_of_key': StrTupleDict.tuple_to_str,
-                         '_key_of_id': StrTupleDict.str_to_tuple},
-    PathKeyTypes.namedtuple: {'_id_of_key': StrTupleDict.namedtuple_to_str,
-                              '_key_of_id': StrTupleDict.str_to_namedtuple},
+    PathKeyTypes.str: {
+        '_id_of_key': StrTupleDict.simple_str_to_str,
+        '_key_of_id': StrTupleDict.str_to_simple_str,
+    },
+    PathKeyTypes.dict: {
+        '_id_of_key': StrTupleDict.dict_to_str,
+        '_key_of_id': StrTupleDict.str_to_dict,
+    },
+    PathKeyTypes.tuple: {
+        '_id_of_key': StrTupleDict.tuple_to_str,
+        '_key_of_id': StrTupleDict.str_to_tuple,
+    },
+    PathKeyTypes.namedtuple: {
+        '_id_of_key': StrTupleDict.namedtuple_to_str,
+        '_key_of_id': StrTupleDict.str_to_namedtuple,
+    },
 }
 
 
@@ -312,26 +329,42 @@ _method_names_for_path_type = {
 
 # TODO: Add key and id type validation
 def str_template_key_trans(
-        template: str,
-        key_type: PathKeyTypes,
-        format_dict=None,
-        process_kwargs=None,
-        process_info_dict=None,
-        named_tuple_type_name="NamedTuple",
-        sep: str = path_sep,
+    template: str,
+    key_type: PathKeyTypes,
+    format_dict=None,
+    process_kwargs=None,
+    process_info_dict=None,
+    named_tuple_type_name='NamedTuple',
+    sep: str = path_sep,
 ):
     """Make a key trans object that translates from a string _id to a dict, tuple, or namedtuple key (and back)"""
 
-    assert key_type in PathKeyTypes, f"key_type was {key_type}. Needs to be one of these: {', '.join(PathKeyTypes)}"
+    assert (
+        key_type in PathKeyTypes
+    ), f"key_type was {key_type}. Needs to be one of these: {', '.join(PathKeyTypes)}"
 
     class PathKeyMapper(StrTupleDict):
         ...
 
-    setattr(PathKeyMapper, '_id_of_key', _method_names_for_path_type[key_type]['_id_of_key'])
-    setattr(PathKeyMapper, '_key_of_id', _method_names_for_path_type[key_type]['_key_of_id'])
+    setattr(
+        PathKeyMapper,
+        '_id_of_key',
+        _method_names_for_path_type[key_type]['_id_of_key'],
+    )
+    setattr(
+        PathKeyMapper,
+        '_key_of_id',
+        _method_names_for_path_type[key_type]['_key_of_id'],
+    )
 
-    key_trans = PathKeyMapper(template, format_dict, process_kwargs,
-                              process_info_dict, named_tuple_type_name, sep)
+    key_trans = PathKeyMapper(
+        template,
+        format_dict,
+        process_kwargs,
+        process_info_dict,
+        named_tuple_type_name,
+        sep,
+    )
 
     return key_trans
 
@@ -369,6 +402,7 @@ def rel_path_wrap(o, _prefix):
 
     trans_obj = RelativePathKeyMapper(_prefix)
     return kv_wrap(trans_obj)(o)
+
 
 # mk_relative_path_store_cls = mk_relative_path_store  # alias
 
