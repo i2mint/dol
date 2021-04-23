@@ -1349,6 +1349,7 @@ class _DefineKeysValuesAndItemsAccordingToIter:
         yield from ((k, self[k]) for k in self)
 
 
+# TODO: Consider deprecation. Besides the name arg (whose usefulness is doubtful), this is just Store.wrap
 def kv_wrap_persister_cls(persister_cls, name=None):
     """Make a class that wraps a persister into a dol.base.Store,
 
@@ -1364,8 +1365,6 @@ def kv_wrap_persister_cls(persister_cls, name=None):
     >>> a['three'] = 3
     >>> list(a.items())
     [('one', 1), ('two', 2), ('three', 3)]
-    >>> A  # looks like a dict, but is not:
-    <class 'abc.dictPWrapped'>
     >>> assert hasattr(a, '_obj_of_data')  # for example, it has this magic method
     >>> # If you overwrite the _obj_of_data method, you'll transform outcomming values with it.
     >>> # For example, say the data you stored were minutes, but you want to get then in secs...
@@ -1423,23 +1422,14 @@ def kv_wrap_persister_cls(persister_cls, name=None):
     >>> # before the key/val transformers are in place to do their jobs.
     """
 
-    name = name or (persister_cls.__qualname__ + "PWrapped")
+    cls = Store.wrap(persister_cls)
 
-    cls = type(name, (Store,), {})
+    # TODO: The whole name and qualname thing -- is it really necessary, correct, what we want?
+    name = name or (persister_cls.__name__ + "PWrapped")
+    qname = name or (persister_cls.__qualname__ + "PWrapped")
 
-    # TODO: Investigate sanity and alternatives (cls = type(name, (Store, persister_cls), {}) leads to MRO problems)
-    for attr in set(dir(persister_cls)) - set(dir(Store)):
-        persister_cls_attribute = getattr(persister_cls, attr)
-        setattr(cls, attr, persister_cls_attribute)  # copy the attribute over to cls
-
-    if hasattr(persister_cls, '__doc__'):
-        cls.__doc__ = persister_cls.__doc__
-
-    @wraps(persister_cls.__init__)
-    def __init__(self, *args, **kwargs):
-        super(cls, self).__init__(persister_cls(*args, **kwargs))
-
-    cls.__init__ = __init__
+    cls.__qualname__ = qname
+    cls.__name__ = name
 
     return cls
 

@@ -31,7 +31,7 @@ from collections.abc import (
     ValuesView as BaseValuesView,
     ItemsView as BaseItemsView,
 )
-from typing import Any, Iterable, Tuple
+from typing import Any, Iterable, Tuple, Callable, Union
 
 from dol.util import wraps, _disabled_clear_method
 
@@ -217,19 +217,93 @@ class NoSuchItem:
 no_such_item = NoSuchItem()
 
 
-def cls_wrap(cls, obj):
+def delegator_wrap(
+        delegator: Callable,
+        obj: Union[type, Any]
+):
+    """Wrap a ``obj`` (type or instance) with ``delegator``.
+
+    If obj is not a type, trivially returns ``delegator(obj)``.
+
+    The interesting case of ``delegator_wrap`` is when ``obj`` is a type (a class).
+    In this case, ``delegator_wrap`` returns a callable (class or function) that has the
+    same signature as obj, but that produces instances that are wrapped by ``delegator``
+
+    :param delegator: An instance wrapper. A Callable (type or function -- with only one required input)
+        that will return a wrapped version of it's input instance.
+    :param obj: The object (class or instance) to be wrapped.
+    :return: A wrapped object
+
+    Let's demo this on a simple Delegator class.
+
+    >>> class Delegator:
+    ...     i_think = 'therefore I am delegated'  # this is just to verify that we're in a Delegator
+    ...     def __init__(self, wrapped_obj):
+    ...         self.wrapped_obj = wrapped_obj
+    ...     def __getattr__(self, attr):  # delegation: just forward attributes to wrapped_obj
+    ...         return getattr(self.wrapped_obj, attr)
+    ...     wrap = classmethod(delegator_wrap)  # this is a useful recipe to have the Delegator carry it's own wrapping method
+
+    The only difference between a wrapped object ``Delegator(obj)`` and the original ``obj`` is
+    that the wrapped one has a ``i_think`` attribute.
+    The wrapped object should otherwise behave the same (on all but special (dunder) methods).
+    So let's test this on dictionaries, using the following test function:
+
+    >>> def test_wrapped_d(wrapped_d, original_d):
+    ...     '''A function to test a wrapped dict'''
+    ...     assert not hasattr(original_d, 'i_think')  # verify that the unwrapped_d doesn't have an i_think attribute
+    ...     assert list(wrapped_d.items()) == list(original_d.items())  # verify that wrapped_d has an items that gives us the same thing as origina_d
+    ...     assert hasattr(wrapped_d, 'i_think')  # ... but wrapped_d has a i_think attribute
+    ...     assert wrapped_d.i_think == 'therefore I am delegated'  # ... and its what we set it to be
+
+    Let's try delegating a dict INSTANCE first:
+
+    >>> d = {'a': 1, 'b': 2}
+    >>> wrapped_d = delegator_wrap(Delegator, d)
+    >>> test_wrapped_d(wrapped_d, d)
+
+    If we ask ``delegator_wrap`` to wrap a ``dict`` type, we get a subclass of Delegator
+    (NOT dict!) whose instances will have the behavior exhibited above:
+
+    >>> WrappedDict = delegator_wrap(Delegator, dict)
+    >>> assert issubclass(WrappedDict, Delegator)
+    >>> wrapped_d = WrappedDict(a=1, b=2)
+    >>> test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)
+
+    Now we'll demo/test the ``wrap = classmethod(delegator_wrap)`` trick
+    ... with instances
+
+    >>> wrapped_d = Delegator.wrap(d)
+    >>> test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)
+
+    ... with classes
+
+    >>> WrappedDict = Delegator.wrap(dict)
+    >>> wrapped_d = WrappedDict(a=1, b=2)
+    >>> test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)
+
+    """
     if isinstance(obj, type):
+        if isinstance(delegator, type):
+            @wraps(obj, updated=())
+            class Wrap(delegator):
+                @wraps(obj.__init__)
+                def __init__(self, *args, **kwargs):
+                    wrapped = obj(*args, **kwargs)
+                    super().__init__(wrapped)
 
-        @wraps(obj, updated=())
-        class Wrap(cls):
+            return Wrap
+        else:
+            assert isinstance(delegator, Callable)
+
             @wraps(obj.__init__)
-            def __init__(self, *args, **kwargs):
+            def wrap(*args, **kwargs):
                 wrapped = obj(*args, **kwargs)
-                super().__init__(wrapped)
+                return delegator(wrapped)
 
-        return Wrap
+            return wrap
     else:
-        return cls(obj)
+        return delegator(obj)
 
 
 class Store(KvPersister):
@@ -362,7 +436,7 @@ class Store(KvPersister):
 
     _errors_that_trigger_missing = (KeyError,)  # another option: (KeyError, FileNotFoundError)
 
-    wrap = classmethod(cls_wrap)
+    wrap = classmethod(delegator_wrap)
 
     def __getattr__(self, attr):
         """Delegate method to wrapped store if not part of wrapper store methods"""
@@ -704,7 +778,7 @@ class Stream:
     def __init__(self, stream):
         self.stream = stream
 
-    wrap = classmethod(cls_wrap)
+    wrap = classmethod(delegator_wrap)
 
     # _data_of_obj = static_identity_method  # for write methods
     _pre_iter = static_identity_method
