@@ -284,6 +284,7 @@ def delegator_wrap(delegator: Callable, obj: Union[type, Any]):
     """
     if isinstance(obj, type):
         if isinstance(delegator, type):
+
             @wraps(obj, updated=())
             class Wrap(delegator):
                 @wraps(obj.__init__)
@@ -295,7 +296,9 @@ def delegator_wrap(delegator: Callable, obj: Union[type, Any]):
             # TODO: Investigate sanity and alternatives (cls = type(name, (Store, persister_cls), {}) leads to MRO problems)
             for attr in set(dir(obj)) - set(dir(Wrap)):
                 persister_cls_attribute = getattr(obj, attr)
-                setattr(Wrap, attr, persister_cls_attribute)  # copy the attribute over to cls
+                setattr(
+                    Wrap, attr, persister_cls_attribute
+                )  # copy the attribute over to cls
 
             return Wrap
         else:
@@ -590,11 +593,11 @@ def tuple_keypath_and_val(p, k, v):
 
 # TODO: More docs and doctests. This one even merits an extensive usage and example tutorial!
 def kv_walk(
-        v: Mapping,
-        yield_func=asis,  # (p, k, v) -> what you want the gen to yield
-        walk_filt=val_is_mapping,  # (p, k, v) -> whether to explore the nested structure v further
-        pkv_to_pv=tuple_keypath_and_val,
-        p=(),
+    v: Mapping,
+    yield_func=asis,  # (p, k, v) -> what you want the gen to yield
+    walk_filt=val_is_mapping,  # (p, k, v) -> whether to explore the nested structure v further
+    pkv_to_pv=tuple_keypath_and_val,
+    p=(),
 ):
     """
 
@@ -619,7 +622,7 @@ def kv_walk(
             p, k, vv
         )  # update the path with k (and preprocess v if necessary)
         if walk_filt(
-                p, k, vv
+            p, k, vv
         ):  # should we recurse? (based on some function of p, k, v)
             # print(f"3: recurse with: pp={pp}, vv={vv}\n")
             yield from kv_walk(
@@ -642,10 +645,10 @@ def has_kv_store_interface(o):
 
     """
     return (
-            hasattr(o, '_id_of_key')
-            and hasattr(o, '_key_of_id')
-            and hasattr(o, '_data_of_obj')
-            and hasattr(o, '_obj_of_data')
+        hasattr(o, '_id_of_key')
+        and hasattr(o, '_key_of_id')
+        and hasattr(o, '_data_of_obj')
+        and hasattr(o, '_obj_of_data')
     )
 
 
@@ -828,5 +831,6 @@ class Stream:
         return self.stream.__exit__(
             exc_type, exc_val, exc_tb
         )  # TODO: Should we have a _post_proc? Uses?
+
 
 ########################################################################################################################

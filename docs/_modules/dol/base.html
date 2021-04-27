@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.base &#8212; dol 0.1.0 documentation</title>
+    <title>dol.base &#8212; dol 0.1.1 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -300,7 +300,8 @@
 <span class="sd">    &gt;&gt;&gt; WrappedDict = delegator_wrap(Delegator, dict)</span>
 <span class="sd">    &gt;&gt;&gt; assert issubclass(WrappedDict, Delegator)</span>
 <span class="sd">    &gt;&gt;&gt; wrapped_d = WrappedDict(a=1, b=2)</span>
-<span class="sd">    &gt;&gt;&gt; test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)</span>
+
+<span class="sd">    # &gt;&gt;&gt; test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)  # TODO: Make it work</span>
 
 <span class="sd">    Now we&#39;ll demo/test the ``wrap = classmethod(delegator_wrap)`` trick</span>
 <span class="sd">    ... with instances</span>
@@ -312,7 +313,8 @@
 
 <span class="sd">    &gt;&gt;&gt; WrappedDict = Delegator.wrap(dict)</span>
 <span class="sd">    &gt;&gt;&gt; wrapped_d = WrappedDict(a=1, b=2)</span>
-<span class="sd">    &gt;&gt;&gt; test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)</span>
+
+<span class="sd">    # &gt;&gt;&gt; test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)  # TODO: Make it work</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
@@ -324,6 +326,14 @@
                 <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
                     <span class="n">wrapped</span> <span class="o">=</span> <span class="n">obj</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">wrapped</span><span class="p">)</span>
+
+            <span class="c1">#</span>
+            <span class="c1"># TODO: Investigate sanity and alternatives (cls = type(name, (Store, persister_cls), {}) leads to MRO problems)</span>
+            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="n">Wrap</span><span class="p">)):</span>
+                <span class="n">persister_cls_attribute</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+                <span class="nb">setattr</span><span class="p">(</span>
+                    <span class="n">Wrap</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">persister_cls_attribute</span>
+                <span class="p">)</span>  <span class="c1"># copy the attribute over to cls</span>
 
             <span class="k">return</span> <span class="n">Wrap</span>
         <span class="k">else</span><span class="p">:</span>
