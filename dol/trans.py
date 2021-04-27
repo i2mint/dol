@@ -75,7 +75,7 @@ def double_up_as_factory(decorator_func):
             decorator_func
         ).parameters.values()
         assert (
-            first_param.default is None
+                first_param.default is None
         ), f'First argument of the decorator function needs to default to None. Was {first_param.default}'
         assert all(
             p.kind == p.KEYWORD_ONLY for p in other_params
@@ -478,7 +478,7 @@ def transparent_key_method(self, k):
 
 
 def mk_kv_reader_from_kv_collection(
-    kv_collection, name=None, getitem=transparent_key_method
+        kv_collection, name=None, getitem=transparent_key_method
 ):
     """Make a KvReader class from a Collection class.
 
@@ -617,13 +617,13 @@ class OverWritesNotAllowedMixin:
 #   but probably buffered (read by chunks) version of the later is better.
 @store_decorator
 def cached_keys(
-    store=None,
-    *,
-    keys_cache: Union[callable, Collection] = list,
-    iter_to_container=None,  # deprecated: use keys_cache instead
-    cache_update_method='update',
-    name: str = None,  # TODO: might be able to be deprecated since included in store_decorator
-    __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
+        store=None,
+        *,
+        keys_cache: Union[callable, Collection] = list,
+        iter_to_container=None,  # deprecated: use keys_cache instead
+        cache_update_method='update',
+        name: str = None,  # TODO: might be able to be deprecated since included in store_decorator
+        __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
 ) -> Union[callable, KvReader]:
     """Make a class that wraps input class's __iter__ becomes cached.
 
@@ -864,7 +864,7 @@ def cached_keys(
         if hasattr(keys_cache, cache_update_method):
             _updatable_cache = True
         if is_iterable(
-            keys_cache
+                keys_cache
         ):  # if keys_cache is iterable, it is the cache instance itself.
             _keys_cache = keys_cache
             _explicit_keys = True
@@ -944,7 +944,7 @@ def cached_keys(
             super(cached_cls, self).__setitem__(k, v)
             # self.store[k] = v
             if (
-                k not in self
+                    k not in self
             ):  # just to avoid deleting the cache if we already had the key
                 self.update_keys_cache((k,))
                 # Note: different construction performances: (k,)->10ns, [k]->38ns, {k}->50ns
@@ -978,9 +978,9 @@ def cached_keys(
         '_updatable_cache',
     }
     for attr in special_attrs | (
-        AttrNames.KvPersister
-        & attrs_of(cached_cls)
-        & attrs_of(CachedIterMethods)
+            AttrNames.KvPersister
+            & attrs_of(cached_cls)
+            & attrs_of(CachedIterMethods)
     ):
         setattr(cached_cls, attr, getattr(CachedIterMethods, attr))
 
@@ -998,11 +998,11 @@ cache_iter = cached_keys  # TODO: Alias, partial it and make it more like the or
 
 @store_decorator
 def catch_and_cache_error_keys(
-    store=None,
-    *,
-    errors_caught=Exception,
-    error_callback=None,
-    use_cached_keys_after_completed_iter=True,
+        store=None,
+        *,
+        errors_caught=Exception,
+        error_callback=None,
+        use_cached_keys_after_completed_iter=True,
 ):
     """Store that will cache keys as they're accessed, separating those that raised errors and those that didn't.
     Getting a key will still through an error, but the access attempts will be collected in an ._error_keys attribute.
@@ -1168,7 +1168,7 @@ def catch_and_cache_error_keys(
 
 
 def iterate_values_and_accumulate_non_error_keys(
-    store, cache_keys_here: list, errors_caught=Exception, error_callback=None
+        store, cache_keys_here: list, errors_caught=Exception, error_callback=None
 ):
     for k in store:
         try:
@@ -1191,11 +1191,11 @@ def take_everything(key):
 # TODO: Factor out the method injection pattern (e.g. __getitem__, __setitem__ and __delitem__ are nearly identical)
 @store_decorator
 def filt_iter(
-    store=None,
-    *,
-    filt: Union[callable, Iterable] = take_everything,
-    name=None,
-    __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
+        store=None,
+        *,
+        filt: Union[callable, Iterable] = take_everything,
+        name=None,
+        __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
 ):
     """Make a wrapper that will transform a store (class or instance thereof) into a sub-store (i.e. subset of keys).
 
@@ -1333,7 +1333,6 @@ self_names = frozenset(['self', 'store'])
 
 def _define_keys_values_and_items_according_to_iter(cls):
     if hasattr(cls, 'keys'):
-
         def keys(self):
             # yield from self.__iter__()  # TODO: Should it be iter(self)?
             return KeysView(self)
@@ -1341,7 +1340,6 @@ def _define_keys_values_and_items_according_to_iter(cls):
         cls.keys = keys
 
     if hasattr(cls, 'values'):
-
         def values(self):
             # yield from (self[k] for k in self)
             return ValuesView(self)
@@ -1349,7 +1347,6 @@ def _define_keys_values_and_items_according_to_iter(cls):
         cls.values = values
 
     if hasattr(cls, 'items'):
-
         def items(self):
             # yield from ((k, self[k]) for k in self)
             return ItemsView(self)
@@ -1455,9 +1452,29 @@ def kv_wrap_persister_cls(persister_cls, name=None):
 
     return cls
 
+    # name = name or (persister_cls.__qualname__ + "PWrapped")
+    #
+    # cls = type(name, (Store,), {})
+    #
+    # # TODO: Investigate sanity and alternatives (cls = type(name, (Store, persister_cls), {}) leads to MRO problems)
+    # for attr in set(dir(persister_cls)) - set(dir(Store)):
+    #     persister_cls_attribute = getattr(persister_cls, attr)
+    #     setattr(cls, attr, persister_cls_attribute)  # copy the attribute over to cls
+    #
+    # if hasattr(persister_cls, '__doc__'):
+    #     cls.__doc__ = persister_cls.__doc__
+    #
+    # @wraps(persister_cls.__init__)
+    # def __init__(self, *args, **kwargs):
+    #     super(cls, self).__init__(persister_cls(*args, **kwargs))
+    #
+    # cls.__init__ = __init__
+    #
+    # return cls
+
 
 def _wrap_outcoming(
-    store_cls: type, wrapped_method: str, trans_func: Optional[callable] = None
+        store_cls: type, wrapped_method: str, trans_func: Optional[callable] = None
 ):
     """Output-transforming wrapping of the wrapped_method of store_cls.
     The transformation is given by trans_func, which could be a one (trans_func(x)
@@ -1526,7 +1543,7 @@ def _wrap_outcoming(
 
 
 def _wrap_ingoing(
-    store_cls, wrapped_method: str, trans_func: Optional[callable] = None
+        store_cls, wrapped_method: str, trans_func: Optional[callable] = None
 ):
     if trans_func is not None:
         wrapped_func = getattr(store_cls, wrapped_method)
@@ -1552,20 +1569,20 @@ def _wrap_ingoing(
 
 @store_decorator
 def wrap_kvs(
-    store=None,
-    *,
-    name=None,
-    key_of_id=None,
-    id_of_key=None,
-    obj_of_data=None,
-    data_of_obj=None,
-    preset=None,
-    postget=None,
-    __module__=None,
-    outcoming_key_methods=(),
-    outcoming_value_methods=(),
-    ingoing_key_methods=(),
-    ingoing_value_methods=(),
+        store=None,
+        *,
+        name=None,
+        key_of_id=None,
+        id_of_key=None,
+        obj_of_data=None,
+        data_of_obj=None,
+        preset=None,
+        postget=None,
+        __module__=None,
+        outcoming_key_methods=(),
+        outcoming_value_methods=(),
+        ingoing_key_methods=(),
+        ingoing_value_methods=(),
 ):
     r"""Make a Store that is wrapped with the given key/val transformers.
 
@@ -1717,7 +1734,7 @@ def wrap_kvs(
             _wrap_outcoming(store_cls, method_name, key_of_id)
 
         for method_name in {'_obj_of_data'} | ensure_set(
-            outcoming_value_methods
+                outcoming_value_methods
         ):
             _wrap_outcoming(store_cls, method_name, obj_of_data)
 
@@ -1725,7 +1742,7 @@ def wrap_kvs(
             _wrap_ingoing(store_cls, method_name, id_of_key)
 
         for method_name in {'_data_of_obj'} | ensure_set(
-            ingoing_value_methods
+                ingoing_value_methods
         ):
             _wrap_ingoing(store_cls, method_name, data_of_obj)
 
@@ -1810,9 +1827,9 @@ def _kv_wrap_outcoming_keys(trans_func):
 
     def wrapper(o, name=None):
         name = (
-            name
-            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
-            + '_kr'
+                name
+                or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
+                + '_kr'
         )
         return wrap_kvs(o, name=name, key_of_id=trans_func)
 
@@ -1847,9 +1864,9 @@ def _kv_wrap_ingoing_keys(trans_func):
 
     def wrapper(o, name=None):
         name = (
-            name
-            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
-            + '_kw'
+                name
+                or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
+                + '_kw'
         )
         return wrap_kvs(o, name=name, id_of_key=trans_func)
 
@@ -1878,9 +1895,9 @@ def _kv_wrap_outcoming_vals(trans_func):
 
     def wrapper(o, name=None):
         name = (
-            name
-            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
-            + '_vr'
+                name
+                or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
+                + '_vr'
         )
         return wrap_kvs(o, name=name, obj_of_data=trans_func)
 
@@ -1909,9 +1926,9 @@ def _kv_wrap_ingoing_vals(trans_func):
 
     def wrapper(o, name=None):
         name = (
-            name
-            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
-            + '_vw'
+                name
+                or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
+                + '_vw'
         )
         return wrap_kvs(o, name=name, data_of_obj=trans_func)
 
@@ -1921,9 +1938,9 @@ def _kv_wrap_ingoing_vals(trans_func):
 def _ingoing_vals_wrt_to_keys(trans_func):
     def wrapper(o, name=None):
         name = (
-            name
-            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
-            + '_vwk'
+                name
+                or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
+                + '_vwk'
         )
         return wrap_kvs(o, name=name, preset=trans_func)
 
@@ -1933,9 +1950,9 @@ def _ingoing_vals_wrt_to_keys(trans_func):
 def _outcoming_vals_wrt_to_keys(trans_func):
     def wrapper(o, name=None):
         name = (
-            name
-            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
-            + '_vrk'
+                name
+                or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
+                + '_vrk'
         )
         return wrap_kvs(o, name=name, postget=trans_func)
 
@@ -1969,9 +1986,9 @@ def kv_wrap(trans_obj):
 
     def wrapper(o, name=None):
         name = (
-            name
-            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
-            + '_kr'
+                name
+                or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__'))
+                + '_kr'
         )
         return wrap_kvs(
             o,
@@ -2191,7 +2208,7 @@ def _insert_alias(store, method_name, alias=None):
 
 @store_decorator
 def insert_aliases(
-    store=None, *, write=None, read=None, delete=None, list=None, count=None
+        store=None, *, write=None, read=None, delete=None, list=None, count=None
 ):
     """Insert method aliases of CRUD operations of a store (class or instance).
     If store is a class, you'll get a copy of the class with those methods added.
@@ -2255,7 +2272,7 @@ def insert_aliases(
 
 @store_decorator
 def insert_load_dump_aliases(
-    store=None, *, delete=None, list=None, count=None
+        store=None, *, delete=None, list=None, count=None
 ):
     """Insert load and dump methods, with familiar dump(obj, location) signature.
 
@@ -2309,12 +2326,12 @@ def constant_output(return_val=None, *args, **kwargs):
 
 @double_up_as_factory
 def condition_function_call(
-    func: Callable[[FuncInput], FuncOutput] = None,
-    *,
-    condition: Callable[[FuncInput], bool] = partial(constant_output, True),
-    callback_if_condition_not_met: Callable[[FuncInput], Any] = partial(
-        constant_output, None
-    ),
+        func: Callable[[FuncInput], FuncOutput] = None,
+        *,
+        condition: Callable[[FuncInput], bool] = partial(constant_output, True),
+        callback_if_condition_not_met: Callable[[FuncInput], Any] = partial(
+            constant_output, None
+        ),
 ):
     @wraps(func)
     def wrapped_func(*args, **kwargs):
@@ -2359,11 +2376,11 @@ def ensure_clear_method(store=None, *, clear_method=_delete_keys_one_by_one):
 
 @store_decorator
 def add_store_method(
-    store: type,
-    *,
-    method_func,
-    method_name=None,
-    validator: Optional[InjectionValidator] = None,
+        store: type,
+        *,
+        method_func,
+        method_name=None,
+        validator: Optional[InjectionValidator] = None,
 ):
     """Add methods to store classes or instances
 
@@ -2391,11 +2408,11 @@ def add_store_method(
 
 
 def filtered_iter(
-    filt: Union[callable, Iterable],
-    store=None,
-    *,
-    name=None,
-    __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
+        filt: Union[callable, Iterable],
+        store=None,
+        *,
+        name=None,
+        __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
 ):
     """Make a wrapper that will transform a store (class or instance thereof) into a sub-store (i.e. subset of keys).
 
@@ -2462,7 +2479,7 @@ def filtered_iter(
 
         def wrap(store, name=name, __module__=__module__):
             if not isinstance(
-                store, type
+                    store, type
             ):  # then consider it to be an instance
                 store_instance = store
                 WrapperStore = filtered_iter(
