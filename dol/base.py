@@ -30,6 +30,7 @@ from collections.abc import (
     KeysView as BaseKeysView,
     ValuesView as BaseValuesView,
     ItemsView as BaseItemsView,
+    Set
 )
 from typing import Any, Iterable, Tuple, Callable, Union
 
@@ -216,8 +217,62 @@ class NoSuchItem:
 
 no_such_item = NoSuchItem()
 
+from collections.abc import Set
 
-def delegator_wrap(delegator: Callable, obj: Union[type, Any]):
+
+class SimpleProperty:
+    pass
+
+
+class DelegatedAttribute:
+    def __init__(self, delegate_name, attr_name):
+        self.attr_name = attr_name
+        self.delegate_name = delegate_name
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        else:
+            # return instance.delegate.attr
+            return getattr(getattr(instance, self.delegate_name), self.attr_name)
+
+    def __set__(self, instance, value):
+        # instance.delegate.attr = value
+        setattr(getattr(instance, self.delegate_name), self.attr_name, value)
+
+    def __delete__(self, instance):
+        delattr(getattr(instance, self.delegate_name), self.attr_name)
+
+
+def delegate_as(
+        delegate_cls,
+        delegation_attr: str = 'store',
+        include=frozenset(),
+        ignore=frozenset()
+):
+    # turn include and ignore into sets, if they aren't already
+    if not isinstance(include, Set):
+        include = set(include)
+    if not isinstance(ignore, Set):
+        ignore = set(ignore)
+    # delegate_attrs = set(delegate_cls.__dict__)
+    delegate_attrs = set(dir(delegate_cls))
+    attributes = include | delegate_attrs - ignore
+
+    def delegate_class(cls):
+        cls = type(cls.__name__, (cls,), {})  # transparent subclass so as not to transform cls itself
+
+        # attrs = attributes - set(cls.__dict__)
+        attrs = attributes - set(dir(cls))  # don't bother adding attributes that the class already has
+        # set all the attributes
+        for attr in attrs:
+            setattr(cls, attr, DelegatedAttribute(delegation_attr, attr))
+        return cls
+
+    return delegate_class
+
+
+def delegator_wrap(delegator: Callable, obj: Union[type, Any], delegation_attr: str = 'store'):
     """Wrap a ``obj`` (type or instance) with ``delegator``.
 
     If obj is not a type, trivially returns ``delegator(obj)``.
@@ -280,10 +335,40 @@ def delegator_wrap(delegator: Callable, obj: Union[type, Any]):
     >>> wrapped_d = WrappedDict(a=1, b=2)
 
     # >>> test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)  # TODO: Make it work
+    >>> class A(dict):
+    ...     def foo(self, x):
+    ...         pass
+    >>> hasattr(A, 'foo')
+    True
+    >>> WrappedA = Delegator.wrap(A)
+    >>> hasattr(WrappedA, 'foo')
+    True
 
     """
     if isinstance(obj, type):
         if isinstance(delegator, type):
+            # decorator = delegate_as(delegator,
+            #                         delegation_attr=delegation_attr,
+            #                         ignore=frozenset(['__getattr__', delegation_attr]))
+            # cls = decorator(obj)
+            # return cls
+            # @wraps(obj, updated=())
+            # class Wrap(delegator):
+            #     @wraps(obj.__init__)
+            #     def __init__(self, *args, **kwargs):
+            #         wrapped = obj(*args, **kwargs)
+            #         super().__init__(wrapped)
+            #
+            # return Wrap
+
+            # @delegate_as(delegator, delegation_attr=delegation_attr)
+            # @wraps(obj, updated=())
+            # class Wrap(delegator):
+            #     @wraps(obj.__init__)
+            #     def __init__(self, *args, **kwargs):
+            #         wrapped = obj(*args, **kwargs)
+            #         super().__init__(wrapped)
+
             @wraps(obj, updated=())
             class Wrap(delegator):
                 @wraps(obj.__init__)
@@ -291,11 +376,10 @@ def delegator_wrap(delegator: Callable, obj: Union[type, Any]):
                     wrapped = obj(*args, **kwargs)
                     super().__init__(wrapped)
 
-            #
             # TODO: Investigate sanity and alternatives (cls = type(name, (Store, persister_cls), {}) leads to MRO problems)
             for attr in set(dir(obj)) - set(dir(Wrap)):
-                persister_cls_attribute = getattr(obj, attr)
-                setattr(Wrap, attr, persister_cls_attribute)  # copy the attribute over to cls
+                obj_attribute = getattr(obj, attr)
+                setattr(Wrap, attr, obj_attribute)  # copy the attribute over to cls
 
             return Wrap
         else:
