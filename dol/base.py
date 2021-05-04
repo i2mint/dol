@@ -24,6 +24,7 @@ This means that you don't have to implement these as all, and can choose to impl
 the storage methods themselves.
 """
 
+from functools import partial, update_wrapper
 from collections.abc import Collection as CollectionABC
 from collections.abc import Mapping, MutableMapping
 from collections.abc import (
@@ -220,10 +221,6 @@ no_such_item = NoSuchItem()
 from collections.abc import Set
 
 
-class SimpleProperty:
-    pass
-
-
 class DelegatedAttribute:
     def __init__(self, delegate_name, attr_name):
         self.attr_name = attr_name
@@ -231,9 +228,9 @@ class DelegatedAttribute:
 
     def __get__(self, instance, owner):
         if instance is None:
-            return self
+            return self  # .__wrapped__  # TODO: The __wrapped__ would make it hard to debug
         else:
-            # return instance.delegate.attr
+            # i.e. return instance.delegate.attr
             return getattr(getattr(instance, self.delegate_name), self.attr_name)
 
     def __set__(self, instance, value):
@@ -244,32 +241,49 @@ class DelegatedAttribute:
         delattr(getattr(instance, self.delegate_name), self.attr_name)
 
 
-def delegate_as(
-        delegate_cls,
+Decorator = Callable[[Callable], Any]  # TODO: Look up typing protocols
+
+
+def delegate_to(
+        wrapped: type,
         delegation_attr: str = 'store',
         include=frozenset(),
         ignore=frozenset()
-):
+) -> Decorator:
     # turn include and ignore into sets, if they aren't already
     if not isinstance(include, Set):
         include = set(include)
     if not isinstance(ignore, Set):
         ignore = set(ignore)
     # delegate_attrs = set(delegate_cls.__dict__)
-    delegate_attrs = set(dir(delegate_cls))
-    attributes = include | delegate_attrs - ignore
+    delegate_attrs = set(dir(wrapped))
+    attributes_of_wrapped = include | delegate_attrs - ignore  # TODO: Look at precedence
 
-    def delegate_class(cls):
-        cls = type(cls.__name__, (cls,), {})  # transparent subclass so as not to transform cls itself
+    def delegation_decorator(wrapper_cls: type):
 
-        # attrs = attributes - set(cls.__dict__)
-        attrs = attributes - set(dir(cls))  # don't bother adding attributes that the class already has
+        @wraps(wrapper_cls, updated=())
+        class Wrap(wrapper_cls):
+            @wraps(wrapper_cls.__init__)
+            def __init__(self, *args, **kwargs):
+                delegate = wrapped(*args, **kwargs)
+                # setattr(self, delegation_attr)
+                # wrapped = obj(*args, **kwargs)
+                super().__init__(delegate)
+                assert isinstance(getattr(self, delegation_attr, None), wrapped), \
+                    f"The wrapper instance has no (expected) {delegation_attr!r} attribute"
+
+        attrs = attributes_of_wrapped - set(
+            dir(wrapper_cls))  # don't bother adding attributes that the class already has
         # set all the attributes
         for attr in attrs:
-            setattr(cls, attr, DelegatedAttribute(delegation_attr, attr))
-        return cls
+            wrapped_attr = getattr(wrapped, attr)
+            delegated_attribute = update_wrapper(
+                wrapper=DelegatedAttribute(delegation_attr, attr),
+                wrapped=wrapped_attr)
+            setattr(Wrap, attr, delegated_attribute)
+        return Wrap
 
-    return delegate_class
+    return delegation_decorator
 
 
 def delegator_wrap(delegator: Callable, obj: Union[type, Any], delegation_attr: str = 'store'):
@@ -317,11 +331,11 @@ def delegator_wrap(delegator: Callable, obj: Union[type, Any], delegation_attr: 
     If we ask ``delegator_wrap`` to wrap a ``dict`` type, we get a subclass of Delegator
     (NOT dict!) whose instances will have the behavior exhibited above:
 
-    >>> WrappedDict = delegator_wrap(Delegator, dict)
+    >>> WrappedDict = delegator_wrap(Delegator, dict, delegation_attr='wrapped_obj')
     >>> assert issubclass(WrappedDict, Delegator)
     >>> wrapped_d = WrappedDict(a=1, b=2)
 
-    # >>> test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)  # TODO: Make it work
+    >>> test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)
 
     Now we'll demo/test the ``wrap = classmethod(delegator_wrap)`` trick
     ... with instances
@@ -331,10 +345,10 @@ def delegator_wrap(delegator: Callable, obj: Union[type, Any], delegation_attr: 
 
     ... with classes
 
-    >>> WrappedDict = Delegator.wrap(dict)
+    >>> WrappedDict = Delegator.wrap(dict, delegation_attr='wrapped_obj')
     >>> wrapped_d = WrappedDict(a=1, b=2)
 
-    # >>> test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)  # TODO: Make it work
+    >>> test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)
     >>> class A(dict):
     ...     def foo(self, x):
     ...         pass
@@ -347,41 +361,10 @@ def delegator_wrap(delegator: Callable, obj: Union[type, Any], delegation_attr: 
     """
     if isinstance(obj, type):
         if isinstance(delegator, type):
-            # decorator = delegate_as(delegator,
-            #                         delegation_attr=delegation_attr,
-            #                         ignore=frozenset(['__getattr__', delegation_attr]))
-            # cls = decorator(obj)
-            # return cls
-            # @wraps(obj, updated=())
-            # class Wrap(delegator):
-            #     @wraps(obj.__init__)
-            #     def __init__(self, *args, **kwargs):
-            #         wrapped = obj(*args, **kwargs)
-            #         super().__init__(wrapped)
-            #
-            # return Wrap
 
-            # @delegate_as(delegator, delegation_attr=delegation_attr)
-            # @wraps(obj, updated=())
-            # class Wrap(delegator):
-            #     @wraps(obj.__init__)
-            #     def __init__(self, *args, **kwargs):
-            #         wrapped = obj(*args, **kwargs)
-            #         super().__init__(wrapped)
+            type_decorator = delegate_to(obj, delegation_attr=delegation_attr)
+            return type_decorator(delegator)
 
-            @wraps(obj, updated=())
-            class Wrap(delegator):
-                @wraps(obj.__init__)
-                def __init__(self, *args, **kwargs):
-                    wrapped = obj(*args, **kwargs)
-                    super().__init__(wrapped)
-
-            # TODO: Investigate sanity and alternatives (cls = type(name, (Store, persister_cls), {}) leads to MRO problems)
-            for attr in set(dir(obj)) - set(dir(Wrap)):
-                obj_attribute = getattr(obj, attr)
-                setattr(Wrap, attr, obj_attribute)  # copy the attribute over to cls
-
-            return Wrap
         else:
             assert isinstance(delegator, Callable)
 
@@ -527,7 +510,7 @@ class Store(KvPersister):
         KeyError,
     )  # another option: (KeyError, FileNotFoundError)
 
-    wrap = classmethod(delegator_wrap)
+    wrap = classmethod(partial(delegator_wrap, delegation_attr='store'))
 
     def __getattr__(self, attr):
         """Delegate method to wrapped store if not part of wrapper store methods"""
