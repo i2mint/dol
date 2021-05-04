@@ -1,6 +1,6 @@
 """Signature calculus"""
 
-from inspect import Signature, Parameter, signature
+from inspect import Signature, Parameter, signature, unwrap
 from typing import Any, Union, Callable, Iterable
 from typing import Mapping as MappingType
 
@@ -122,6 +122,8 @@ def ensure_params(obj: ParamsAble = None):
     []
 
     """
+    # obj = inspect.unwrap(obj, stop=(lambda f: hasattr(f, "__signature__")))
+
     if obj is None:
         return []
     elif isinstance(obj, Iterable):
@@ -143,10 +145,14 @@ def ensure_params(obj: ParamsAble = None):
             obj = {}
         if isinstance(obj, Signature):
             return list(obj.parameters.values())
-    # if function didn't return at this point, it didn't find a match, so raise
-    raise TypeError(
-        f"Don't know how to make that object into an iterable of inspect.Parameter objects: {obj}"
-    )
+    # if nothing above worked, perhaps you have a wrapped object? Try unwrapping until you find a signature...
+    if hasattr(obj, '__wrapped__'):
+        obj = unwrap(obj, stop=(lambda f: hasattr(f, "__signature__")))
+        return ensure_params(obj)
+    else:  # if function didn't return at this point, it didn't find a match, so raise a TypeError
+        raise TypeError(
+            f"Don't know how to make that object into an iterable of inspect.Parameter objects: {obj}"
+        )
 
 
 assure_params = ensure_params  # alias for backcompatibility
@@ -168,12 +174,12 @@ class MissingArgValFor(object):
 
 # TODO: Look into the handling of the Parameter.VAR_KEYWORD kind in params
 def extract_arguments(
-    params: ParamsAble,
-    *,
-    what_to_do_with_remainding='return',
-    include_all_when_var_keywords_in_params=False,
-    assert_no_missing_position_only_args=False,
-    **kwargs,
+        params: ParamsAble,
+        *,
+        what_to_do_with_remainding='return',
+        include_all_when_var_keywords_in_params=False,
+        assert_no_missing_position_only_args=False,
+        **kwargs,
 ):
     """Extract arguments needed to satisfy the params of a callable, dealing with the dirty details.
 
@@ -316,11 +322,11 @@ def extract_arguments(
 
     if include_all_when_var_keywords_in_params:
         if (
-            next(
-                (p.name for p in params if p.kind == Parameter.VAR_KEYWORD),
-                None,
-            )
-            is not None
+                next(
+                    (p.name for p in params if p.kind == Parameter.VAR_KEYWORD),
+                    None,
+                )
+                is not None
         ):
             param_kwargs.update(remaining_kwargs)
             remaining_kwargs = {}
@@ -339,7 +345,7 @@ def extract_arguments(
         return param_args, param_kwargs
     elif what_to_do_with_remainding == 'assert_empty':
         assert (
-            len(remaining_kwargs) == 0
+                len(remaining_kwargs) == 0
         ), f'remaining_kwargs not empty: remaining_kwargs={remaining_kwargs}'
         return param_args, param_kwargs
 
@@ -381,11 +387,11 @@ class Command:
 
 
 def extract_commands(
-    funcs,
-    *,
-    mk_command: Callable[[Callable, tuple, dict], Any] = Command,
-    what_to_do_with_remainding='ignore',
-    **kwargs,
+        funcs,
+        *,
+        mk_command: Callable[[Callable, tuple, dict], Any] = Command,
+        what_to_do_with_remainding='ignore',
+        **kwargs,
 ):
     """
 
@@ -428,11 +434,11 @@ def extract_commands(
 
 
 def commands_dict(
-    funcs,
-    *,
-    mk_command: Callable[[Callable, tuple, dict], Any] = Command,
-    what_to_do_with_remainding='ignore',
-    **kwargs,
+        funcs,
+        *,
+        mk_command: Callable[[Callable, tuple, dict], Any] = Command,
+        what_to_do_with_remainding='ignore',
+        **kwargs,
 ):
     """
 
@@ -562,11 +568,11 @@ class Sig(Signature, Mapping):
     """
 
     def __init__(
-        self,
-        obj: ParamsAble = None,
-        *,
-        return_annotation=empty,
-        __validate_parameters__=True,
+            self,
+            obj: ParamsAble = None,
+            *,
+            return_annotation=empty,
+            __validate_parameters__=True,
     ):
         """Initialize a Sig instance.
         See Also: `ensure_params` to see what kind of objects you can make `Sig`s with.
@@ -869,7 +875,7 @@ class Sig(Signature, Mapping):
         :param ch_to_all_pk: Whether to change all kinds of both signatures to PK (POSITIONAL_OR_KEYWORD)
         :return:
 
-        >>> from dol.signatures import Sig, KO
+        >>> from py2store.signatures import Sig, KO
         >>>
         >>> def func(a=None, *, b=1, c=2): ...
         ...
@@ -908,10 +914,10 @@ class Sig(Signature, Mapping):
         _msg = f'\nHappened during an attempt to merge {self} and {sig}'
 
         assert (
-            not _self.has_var_keyword or not _sig.has_var_keyword
+                not _self.has_var_keyword or not _sig.has_var_keyword
         ), f"Can't merge two signatures if they both have a VAR_POSITIONAL parameter:{_msg}"
         assert (
-            not _self.has_var_keyword or not _sig.has_var_keyword
+                not _self.has_var_keyword or not _sig.has_var_keyword
         ), "Can't merge two signatures if they both have a VAR_KEYWORD parameter:{_msg}"
         assert all(
             (_self[name].kind, _self[name].default)
@@ -1087,14 +1093,14 @@ class Sig(Signature, Mapping):
         )
 
     def kwargs_from_args_and_kwargs(
-        self,
-        args,
-        kwargs,
-        *,
-        apply_defaults=False,
-        allow_partial=False,
-        allow_excess=False,
-        ignore_kind=False,
+            self,
+            args,
+            kwargs,
+            *,
+            apply_defaults=False,
+            allow_partial=False,
+            allow_excess=False,
+            ignore_kind=False,
     ):
         """Extracts a dict of input argument values for target signature, from args and kwargs.
 
@@ -1211,12 +1217,12 @@ class Sig(Signature, Mapping):
         return dict(b.arguments)
 
     def args_and_kwargs_from_kwargs(
-        self,
-        kwargs,
-        apply_defaults=False,
-        allow_partial=False,
-        allow_excess=False,
-        ignore_kind=False,
+            self,
+            kwargs,
+            apply_defaults=False,
+            allow_partial=False,
+            allow_excess=False,
+            ignore_kind=False,
     ):
         """Get an (args, kwargs) tuple from the kwargs, where args contain the position only arguments.
 
@@ -1254,12 +1260,12 @@ class Sig(Signature, Mapping):
         return args, kwargs
 
     def extract_kwargs(
-        self,
-        *args,
-        _ignore_kind=True,
-        _allow_partial=False,
-        _apply_defaults=False,
-        **kwargs,
+            self,
+            *args,
+            _ignore_kind=True,
+            _allow_partial=False,
+            _apply_defaults=False,
+            **kwargs,
     ):
         """Convenience method that calls kwargs_from_args_and_kwargs with defaults, and ignore_kind=True.
 
@@ -1318,12 +1324,12 @@ class Sig(Signature, Mapping):
         )
 
     def extract_args_and_kwargs(
-        self,
-        *args,
-        _ignore_kind=True,
-        _allow_partial=False,
-        _apply_defaults=False,
-        **kwargs,
+            self,
+            *args,
+            _ignore_kind=True,
+            _allow_partial=False,
+            _apply_defaults=False,
+            **kwargs,
     ):
         """Source the (args, kwargs) for the signature instance, ignoring excess arguments.
 
@@ -1388,12 +1394,12 @@ class Sig(Signature, Mapping):
         )
 
     def source_kwargs(
-        self,
-        *args,
-        _ignore_kind=True,
-        _allow_partial=False,
-        _apply_defaults=False,
-        **kwargs,
+            self,
+            *args,
+            _ignore_kind=True,
+            _allow_partial=False,
+            _apply_defaults=False,
+            **kwargs,
     ):
         """Source the kwargs for the signature instance, ignoring excess arguments.
 
@@ -1441,12 +1447,12 @@ class Sig(Signature, Mapping):
         )
 
     def source_args_and_kwargs(
-        self,
-        *args,
-        _ignore_kind=True,
-        _allow_partial=False,
-        _apply_defaults=False,
-        **kwargs,
+            self,
+            *args,
+            _ignore_kind=True,
+            _allow_partial=False,
+            _apply_defaults=False,
+            **kwargs,
     ):
         """Source the (args, kwargs) for the signature instance, ignoring excess arguments.
 
@@ -1531,7 +1537,7 @@ def mk_sig_from_args(*args_without_default, **args_with_defaults):
 
 
 def call_forgivingly(func, *args, **kwargs):
-    """Call function on giben args and kwargs, but only taking what the function needs
+    """Call function on given args and kwargs, but only taking what the function needs
     (not choking if they're extras variables)"""
     args, kwargs = Sig(func).source_args_and_kwargs(*args, **kwargs)
     return func(*args, **kwargs)
@@ -1549,7 +1555,7 @@ def number_of_required_arguments(obj):
 ########################################################################################################################
 # TODO: Encorporate in Sig
 def insert_annotations(
-    s: Signature, *, return_annotation=empty, **annotations
+        s: Signature, *, return_annotation=empty, **annotations
 ):
     """Insert annotations in a signature.
     (Note: not really insert but returns a copy of input signature)
@@ -1611,7 +1617,7 @@ arg_order_for_param_tuple = ('name', 'default', 'annotation', 'kind')
 
 
 def set_signature_of_func(
-    func, parameters, *, return_annotation=empty, __validate_parameters__=True
+        func, parameters, *, return_annotation=empty, __validate_parameters__=True
 ):
     """Set the signature of a function, with sugar.
 
@@ -1662,10 +1668,10 @@ from functools import partial
 
 
 def param_for_kind(
-    name=None,
-    kind='positional_or_keyword',
-    with_default=False,
-    annotation=Parameter.empty,
+        name=None,
+        kind='positional_or_keyword',
+        with_default=False,
+        annotation=Parameter.empty,
 ):
     """Function to easily and flexibly make inspect.Parameter objects for testing.
 
