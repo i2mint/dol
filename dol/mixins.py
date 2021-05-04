@@ -12,7 +12,7 @@ class SimpleJsonMixin:
     Useful to store and retrieve
     """
 
-    _docsuffix = 'Data is assumed to be a JSON string, and is loaded with json.loads and dumped with json.dumps'
+    _docsuffix = "Data is assumed to be a JSON string, and is loaded with json.loads and dumped with json.dumps"
 
     def _obj_of_data(self, data):
         return json.loads(data)
@@ -46,9 +46,9 @@ class IdentityKeysWrapMixin:
 
 
 class IdentityValsWrapMixin:
-    """ Transparent ValsWrapABC. Often placed in the mro to satisfy the KeysWrapABC need in a neutral way.
-        This is useful in cases where the values can be persisted by __setitem__ as is (or the serialization is
-        handled somewhere in the __setitem__ method.
+    """Transparent ValsWrapABC. Often placed in the mro to satisfy the KeysWrapABC need in a neutral way.
+    This is useful in cases where the values can be persisted by __setitem__ as is (or the serialization is
+    handled somewhere in the __setitem__ method.
     """
 
     def _data_of_obj(self, v):
@@ -76,7 +76,7 @@ class IdentityKvWrapMixin(IdentityKeysWrapMixin, IdentityValsWrapMixin):
 
 from functools import partial
 
-encode_as_utf8 = partial(str, encoding='utf-8')
+encode_as_utf8 = partial(str, encoding="utf-8")
 
 
 class StringKvWrap(IdentityKvWrapMixin):
@@ -157,16 +157,14 @@ class OverWritesNotAllowedMixin:
         class NoOverWritesClass(OverWritesNotAllowedMixin, cls):
             ...
 
-        copy_attrs(
-            NoOverWritesClass, cls, ('__name__', '__qualname__', '__module__')
-        )
+        copy_attrs(NoOverWritesClass, cls, ("__name__", "__qualname__", "__module__"))
         return NoOverWritesClass
 
     def __setitem__(self, k, v):
         if self.__contains__(k):
             raise OverWritesNotAllowedError(
-                'key {} already exists and cannot be overwritten. '
-                'If you really want to write to that key, delete it before writing'.format(
+                "key {} already exists and cannot be overwritten. "
+                "If you really want to write to that key, delete it before writing".format(
                     k
                 )
             )
@@ -222,9 +220,7 @@ class IterBasedSizedMixin:
         return count
 
 
-class IterBasedSizedContainerMixin(
-    IterBasedSizedMixin, IterBasedContainerMixin
-):
+class IterBasedSizedContainerMixin(IterBasedSizedMixin, IterBasedContainerMixin):
     """
     An ABC that defines
         (a) how to iterate over a collection of elements (keys) (__iter__)

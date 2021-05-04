@@ -9,7 +9,7 @@ from dol.naming import mk_pattern_from_template_and_format_dict
 from dol.paths import mk_relative_path_store
 
 file_sep = os.path.sep
-inf = float('infinity')
+inf = float("infinity")
 
 
 def ensure_slash_suffix(path: str):
@@ -23,7 +23,7 @@ def ensure_slash_suffix(path: str):
 def paths_in_dir(rootdir, include_hidden=False):
     for name in os.listdir(rootdir):
         if include_hidden or not name.startswith(
-            '.'
+            "."
         ):  # TODO: is dot a platform independent marker for hidden file?
             filepath = os.path.join(rootdir, name)
             if os.path.isdir(filepath):
@@ -66,28 +66,28 @@ def iter_dirpaths_in_folder_recursively(
                     yield entry
 
 
-def mk_tmp_dol_dir(dirname=''):
+def mk_tmp_dol_dir(dirname=""):
     from tempfile import gettempdir
 
     tmpdir = os.path.join(gettempdir(), dirname)
-    os.path.isdir(tmpdir) or os.mkdir(
-        tmpdir
-    )  # make the directory if it doesn't exist
+    os.path.isdir(tmpdir) or os.mkdir(tmpdir)  # make the directory if it doesn't exist
     return tmpdir
 
 
 def mk_absolute_path(path_format):
-    if path_format.startswith('~'):
+    if path_format.startswith("~"):
         path_format = os.path.expanduser(path_format)
-    elif path_format.startswith('.'):
+    elif path_format.startswith("."):
         path_format = os.path.abspath(path_format)
     return path_format
 
 
 # TODO: subpath: Need to be able to allow named and unnamed file format markers (i.e {} and {named})
 
-_dflt_not_valid_error_msg = 'Key not valid (usually because does not exist or access not permitted): {}'
-_dflt_not_found_error_msg = 'Key not found: {}'
+_dflt_not_valid_error_msg = (
+    "Key not valid (usually because does not exist or access not permitted): {}"
+)
+_dflt_not_found_error_msg = "Key not found: {}"
 
 
 class KeyValidationError(KeyError):
@@ -113,7 +113,7 @@ class FileSysCollection(Collection):
     def __init__(
         self,
         rootdir,
-        subpath='',
+        subpath="",
         pattern_for_field=None,
         max_levels=None,
         include_hidden=False,
@@ -123,7 +123,7 @@ class FileSysCollection(Collection):
         subpath_implied_min_levels = len(subpath.split(os.path.sep)) - 1
         assert (
             max_levels >= subpath_implied_min_levels
-        ), f'max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}'
+        ), f"max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}"
         pattern_for_field = pattern_for_field or {}
         self.rootdir = ensure_slash_suffix(rootdir)
         self.subpath = subpath
@@ -207,7 +207,7 @@ class FileInfoReader(FileCollection, KvReader):
 
 class FileBytesReader(FileCollection, KvReader):
     _read_open_kwargs = dict(
-        mode='rb',
+        mode="rb",
         buffering=-1,
         encoding=None,
         errors=None,
@@ -258,7 +258,7 @@ class LocalFileDeleteMixin:
 
 class FileBytesPersister(FileBytesReader, KvPersister):
     _write_open_kwargs = dict(
-        mode='wb',
+        mode="wb",
         buffering=-1,
         encoding=None,
         errors=None,
@@ -279,29 +279,29 @@ class FileBytesPersister(FileBytesReader, KvPersister):
 
 RelPathFileBytesReader = mk_relative_path_store(
     FileBytesReader,
-    prefix_attr='rootdir',
-    __name__='RelPathFileBytesReader',
+    prefix_attr="rootdir",
+    __name__="RelPathFileBytesReader",
     __module__=__name__,
 )
 
 
 class FileStringReader(FileBytesReader):
-    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode='rt')
+    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
 
 
 class FileStringPersister(FileBytesPersister):
-    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode='rt')
-    _write_open_kwargs = dict(FileBytesPersister._write_open_kwargs, mode='wt')
+    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
+    _write_open_kwargs = dict(FileBytesPersister._write_open_kwargs, mode="wt")
 
 
 RelPathFileStringReader = mk_relative_path_store(
     FileStringReader,
-    prefix_attr='rootdir',
-    __name__='RelPathFileStringReader',
+    prefix_attr="rootdir",
+    __name__="RelPathFileStringReader",
 )
 
 RelPathFileStringPersister = mk_relative_path_store(
     FileStringPersister,
-    prefix_attr='rootdir',
-    __name__='RelPathFileStringPersister',
+    prefix_attr="rootdir",
+    __name__="RelPathFileStringPersister",
 )
