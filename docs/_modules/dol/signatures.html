@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.signatures &#8212; dol 0.1.1 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.2 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -35,7 +35,7 @@
   <h1>Source code for dol.signatures</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Signature calculus&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">Signature</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">signature</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">Signature</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">signature</span><span class="p">,</span> <span class="n">unwrap</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Mapping</span> <span class="k">as</span> <span class="n">MappingType</span>
 
@@ -157,6 +157,8 @@
 <span class="sd">    []</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># obj = inspect.unwrap(obj, stop=(lambda f: hasattr(f, &quot;__signature__&quot;)))</span>
+
     <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
@@ -178,10 +180,14 @@
             <span class="n">obj</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Signature</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="c1"># if function didn&#39;t return at this point, it didn&#39;t find a match, so raise</span>
-    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;Don&#39;t know how to make that object into an iterable of inspect.Parameter objects: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="p">)</span></div>
+    <span class="c1"># if nothing above worked, perhaps you have a wrapped object? Try unwrapping until you find a signature...</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;__wrapped__&#39;</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">unwrap</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s1">&#39;__signature__&#39;</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">ensure_params</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># if function didn&#39;t return at this point, it didn&#39;t find a match, so raise a TypeError</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Don&#39;t know how to make that object into an iterable of inspect.Parameter objects: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span></div>
 
 
 <span class="n">assure_params</span> <span class="o">=</span> <span class="n">ensure_params</span>  <span class="c1"># alias for backcompatibility</span>
@@ -904,8 +910,6 @@
 <span class="sd">        :param ch_to_all_pk: Whether to change all kinds of both signatures to PK (POSITIONAL_OR_KEYWORD)</span>
 <span class="sd">        :return:</span>
 
-<span class="sd">        &gt;&gt;&gt; from dol.signatures import Sig, KO</span>
-<span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; def func(a=None, *, b=1, c=2): ...</span>
 <span class="sd">        ...</span>
 <span class="sd">        &gt;&gt;&gt;</span>
@@ -1566,7 +1570,7 @@
 
 
 <div class="viewcode-block" id="call_forgivingly"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.call_forgivingly">[docs]</a><span class="k">def</span> <span class="nf">call_forgivingly</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Call function on giben args and kwargs, but only taking what the function needs</span>
+    <span class="sd">&quot;&quot;&quot;Call function on given args and kwargs, but only taking what the function needs</span>
 <span class="sd">    (not choking if they&#39;re extras variables)&quot;&quot;&quot;</span>
     <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">source_args_and_kwargs</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
