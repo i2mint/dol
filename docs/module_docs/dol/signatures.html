@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.signatures &#8212; dol 0.1.3 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.4 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -693,6 +693,18 @@ so we have no name, doc, etc…)</p>
 <code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">call_forgivingly</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#call_forgivingly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.call_forgivingly" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call function on given args and kwargs, but only taking what the function needs
 (not choking if they’re extras variables)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">call_forgivingly</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">foo</span><span class="p">,</span> <span class="c1"># the function you want to call</span>
+<span class="gp">... </span>    <span class="s1">&#39;input for a&#39;</span><span class="p">,</span> <span class="c1"># meant for a -- the first (and only) argument foo requires</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>  <span class="c1"># skiping b and giving c a non-default value</span>
+<span class="gp">... </span>    <span class="n">intruder</span><span class="o">=</span><span class="s1">&#39;argument&#39;</span>  <span class="c1"># but wait, this argument name doesn&#39;t exist! Oh no, what&#39;s going to happen?</span>
+<span class="gp">... </span><span class="p">)</span>  <span class="c1"># well, as it happens, nothing bad -- the intruder argument is just ignored</span>
+<span class="go">(&#39;foo&#39;, (&#39;input for a&#39;, 0, 42))</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">

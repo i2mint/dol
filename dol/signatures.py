@@ -174,12 +174,12 @@ class MissingArgValFor(object):
 
 # TODO: Look into the handling of the Parameter.VAR_KEYWORD kind in params
 def extract_arguments(
-        params: ParamsAble,
-        *,
-        what_to_do_with_remainding='return',
-        include_all_when_var_keywords_in_params=False,
-        assert_no_missing_position_only_args=False,
-        **kwargs,
+    params: ParamsAble,
+    *,
+    what_to_do_with_remainding='return',
+    include_all_when_var_keywords_in_params=False,
+    assert_no_missing_position_only_args=False,
+    **kwargs,
 ):
     """Extract arguments needed to satisfy the params of a callable, dealing with the dirty details.
 
@@ -322,11 +322,11 @@ def extract_arguments(
 
     if include_all_when_var_keywords_in_params:
         if (
-                next(
-                    (p.name for p in params if p.kind == Parameter.VAR_KEYWORD),
-                    None,
-                )
-                is not None
+            next(
+                (p.name for p in params if p.kind == Parameter.VAR_KEYWORD),
+                None,
+            )
+            is not None
         ):
             param_kwargs.update(remaining_kwargs)
             remaining_kwargs = {}
@@ -345,7 +345,7 @@ def extract_arguments(
         return param_args, param_kwargs
     elif what_to_do_with_remainding == 'assert_empty':
         assert (
-                len(remaining_kwargs) == 0
+            len(remaining_kwargs) == 0
         ), f'remaining_kwargs not empty: remaining_kwargs={remaining_kwargs}'
         return param_args, param_kwargs
 
@@ -387,11 +387,11 @@ class Command:
 
 
 def extract_commands(
-        funcs,
-        *,
-        mk_command: Callable[[Callable, tuple, dict], Any] = Command,
-        what_to_do_with_remainding='ignore',
-        **kwargs,
+    funcs,
+    *,
+    mk_command: Callable[[Callable, tuple, dict], Any] = Command,
+    what_to_do_with_remainding='ignore',
+    **kwargs,
 ):
     """
 
@@ -434,11 +434,11 @@ def extract_commands(
 
 
 def commands_dict(
-        funcs,
-        *,
-        mk_command: Callable[[Callable, tuple, dict], Any] = Command,
-        what_to_do_with_remainding='ignore',
-        **kwargs,
+    funcs,
+    *,
+    mk_command: Callable[[Callable, tuple, dict], Any] = Command,
+    what_to_do_with_remainding='ignore',
+    **kwargs,
 ):
     """
 
@@ -590,11 +590,11 @@ class Sig(Signature, Mapping):
     """
 
     def __init__(
-            self,
-            obj: ParamsAble = None,
-            *,
-            return_annotation=empty,
-            __validate_parameters__=True,
+        self,
+        obj: ParamsAble = None,
+        *,
+        return_annotation=empty,
+        __validate_parameters__=True,
     ):
         """Initialize a Sig instance.
         See Also: `ensure_params` to see what kind of objects you can make `Sig`s with.
@@ -940,20 +940,20 @@ class Sig(Signature, Mapping):
         _msg = f'\nHappened during an attempt to merge {self} and {sig}'
 
         assert (
-                not _self.has_var_keyword or not _sig.has_var_keyword
+            not _self.has_var_keyword or not _sig.has_var_keyword
         ), f"Can't merge two signatures if they both have a VAR_POSITIONAL parameter:{_msg}"
         assert (
-                not _self.has_var_keyword or not _sig.has_var_keyword
+            not _self.has_var_keyword or not _sig.has_var_keyword
         ), "Can't merge two signatures if they both have a VAR_KEYWORD parameter:{_msg}"
         assert all(
             (_self[name].kind, _self[name].default)
             == (_sig[name].kind, _sig[name].default)
             for name in _self.keys() & _sig.keys()
         ), (
-            "During a signature merge, if two names are the same, they must have the **same kind and default**:\n"
-            f"\t{_msg}\n"
+            'During a signature merge, if two names are the same, they must have the **same kind and default**:\n'
+            f'\t{_msg}\n'
             "Tip: If you're trying to merge functions in some way, consider decorating them a signature mapping that "
-            "avoids the argument name clashing"
+            'avoids the argument name clashing'
         )
 
         params = list(
@@ -1124,14 +1124,14 @@ class Sig(Signature, Mapping):
         )
 
     def kwargs_from_args_and_kwargs(
-            self,
-            args,
-            kwargs,
-            *,
-            apply_defaults=False,
-            allow_partial=False,
-            allow_excess=False,
-            ignore_kind=False,
+        self,
+        args,
+        kwargs,
+        *,
+        apply_defaults=False,
+        allow_partial=False,
+        allow_excess=False,
+        ignore_kind=False,
     ):
         """Extracts a dict of input argument values for target signature, from args and kwargs.
 
@@ -1248,12 +1248,12 @@ class Sig(Signature, Mapping):
         return dict(b.arguments)
 
     def args_and_kwargs_from_kwargs(
-            self,
-            kwargs,
-            apply_defaults=False,
-            allow_partial=False,
-            allow_excess=False,
-            ignore_kind=False,
+        self,
+        kwargs,
+        apply_defaults=False,
+        allow_partial=False,
+        allow_excess=False,
+        ignore_kind=False,
     ):
         """Get an (args, kwargs) tuple from the kwargs, where args contain the position only arguments.
 
@@ -1291,12 +1291,12 @@ class Sig(Signature, Mapping):
         return args, kwargs
 
     def extract_kwargs(
-            self,
-            *args,
-            _ignore_kind=True,
-            _allow_partial=False,
-            _apply_defaults=False,
-            **kwargs,
+        self,
+        *args,
+        _ignore_kind=True,
+        _allow_partial=False,
+        _apply_defaults=False,
+        **kwargs,
     ):
         """Convenience method that calls kwargs_from_args_and_kwargs with defaults, and ignore_kind=True.
 
@@ -1355,12 +1355,12 @@ class Sig(Signature, Mapping):
         )
 
     def extract_args_and_kwargs(
-            self,
-            *args,
-            _ignore_kind=True,
-            _allow_partial=False,
-            _apply_defaults=False,
-            **kwargs,
+        self,
+        *args,
+        _ignore_kind=True,
+        _allow_partial=False,
+        _apply_defaults=False,
+        **kwargs,
     ):
         """Source the (args, kwargs) for the signature instance, ignoring excess arguments.
 
@@ -1425,12 +1425,12 @@ class Sig(Signature, Mapping):
         )
 
     def source_kwargs(
-            self,
-            *args,
-            _ignore_kind=True,
-            _allow_partial=False,
-            _apply_defaults=False,
-            **kwargs,
+        self,
+        *args,
+        _ignore_kind=True,
+        _allow_partial=False,
+        _apply_defaults=False,
+        **kwargs,
     ):
         """Source the kwargs for the signature instance, ignoring excess arguments.
 
@@ -1478,12 +1478,12 @@ class Sig(Signature, Mapping):
         )
 
     def source_args_and_kwargs(
-            self,
-            *args,
-            _ignore_kind=True,
-            _allow_partial=False,
-            _apply_defaults=False,
-            **kwargs,
+        self,
+        *args,
+        _ignore_kind=True,
+        _allow_partial=False,
+        _apply_defaults=False,
+        **kwargs,
     ):
         """Source the (args, kwargs) for the signature instance, ignoring excess arguments.
 
@@ -1617,7 +1617,7 @@ def number_of_required_arguments(obj):
 ########################################################################################################################
 # TODO: Encorporate in Sig
 def insert_annotations(
-        s: Signature, *, return_annotation=empty, **annotations
+    s: Signature, *, return_annotation=empty, **annotations
 ):
     """Insert annotations in a signature.
     (Note: not really insert but returns a copy of input signature)
@@ -1679,7 +1679,7 @@ arg_order_for_param_tuple = ('name', 'default', 'annotation', 'kind')
 
 
 def set_signature_of_func(
-        func, parameters, *, return_annotation=empty, __validate_parameters__=True
+    func, parameters, *, return_annotation=empty, __validate_parameters__=True
 ):
     """Set the signature of a function, with sugar.
 
@@ -1846,10 +1846,10 @@ from functools import partial
 
 
 def param_for_kind(
-        name=None,
-        kind='positional_or_keyword',
-        with_default=False,
-        annotation=Parameter.empty,
+    name=None,
+    kind='positional_or_keyword',
+    with_default=False,
+    annotation=Parameter.empty,
 ):
     """Function to easily and flexibly make inspect.Parameter objects for testing.
 
