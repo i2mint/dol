@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.base &#8212; dol 0.1.1 documentation</title>
+    <title>dol.base &#8212; dol 0.1.2 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -59,12 +59,14 @@
 <span class="sd">the storage methods themselves.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">update_wrapper</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Collection</span> <span class="k">as</span> <span class="n">CollectionABC</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">KeysView</span> <span class="k">as</span> <span class="n">BaseKeysView</span><span class="p">,</span>
     <span class="n">ValuesView</span> <span class="k">as</span> <span class="n">BaseValuesView</span><span class="p">,</span>
     <span class="n">ItemsView</span> <span class="k">as</span> <span class="n">BaseItemsView</span><span class="p">,</span>
+    <span class="n">Set</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span>
 
@@ -251,8 +253,83 @@
 
 <span class="n">no_such_item</span> <span class="o">=</span> <span class="n">NoSuchItem</span><span class="p">()</span>
 
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Set</span>
 
-<div class="viewcode-block" id="delegator_wrap"><a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.delegator_wrap">[docs]</a><span class="k">def</span> <span class="nf">delegator_wrap</span><span class="p">(</span><span class="n">delegator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+
+<span class="k">class</span> <span class="nc">DelegatedAttribute</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delegate_name</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr_name</span> <span class="o">=</span> <span class="n">attr_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delegate_name</span> <span class="o">=</span> <span class="n">delegate_name</span>
+
+    <span class="k">def</span> <span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>  <span class="c1"># .__wrapped__  # TODO: The __wrapped__ would make it hard to debug</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># i.e. return instance.delegate.attr</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delegate_name</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_name</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c1"># instance.delegate.attr = value</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delegate_name</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__delete__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="nb">delattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delegate_name</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_name</span><span class="p">)</span>
+
+
+<span class="n">Decorator</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span>  <span class="c1"># TODO: Look up typing protocols</span>
+
+
+<span class="k">def</span> <span class="nf">delegate_to</span><span class="p">(</span>
+    <span class="n">wrapped</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+    <span class="n">delegation_attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;store&#39;</span><span class="p">,</span>
+    <span class="n">include</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">(),</span>
+    <span class="n">ignore</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">(),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Decorator</span><span class="p">:</span>
+    <span class="c1"># turn include and ignore into sets, if they aren&#39;t already</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">include</span><span class="p">,</span> <span class="n">Set</span><span class="p">):</span>
+        <span class="n">include</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">include</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ignore</span><span class="p">,</span> <span class="n">Set</span><span class="p">):</span>
+        <span class="n">ignore</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ignore</span><span class="p">)</span>
+    <span class="c1"># delegate_attrs = set(delegate_cls.__dict__)</span>
+    <span class="n">delegate_attrs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="n">wrapped</span><span class="p">))</span>
+    <span class="n">attributes_of_wrapped</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">include</span> <span class="o">|</span> <span class="n">delegate_attrs</span> <span class="o">-</span> <span class="n">ignore</span>
+    <span class="p">)</span>  <span class="c1"># TODO: Look at precedence</span>
+
+    <span class="k">def</span> <span class="nf">delegation_decorator</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">):</span>
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">,</span> <span class="n">updated</span><span class="o">=</span><span class="p">())</span>
+        <span class="k">class</span> <span class="nc">Wrap</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">):</span>
+            <span class="nd">@wraps</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
+            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">delegate</span> <span class="o">=</span> <span class="n">wrapped</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="c1"># setattr(self, delegation_attr)</span>
+                <span class="c1"># wrapped = obj(*args, **kwargs)</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">delegate</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">wrapped</span>
+                <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;The wrapper instance has no (expected) </span><span class="si">{</span><span class="n">delegation_attr</span><span class="si">!r}</span><span class="s1"> attribute&#39;</span>
+
+        <span class="n">attrs</span> <span class="o">=</span> <span class="n">attributes_of_wrapped</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="nb">dir</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">)</span>
+        <span class="p">)</span>  <span class="c1"># don&#39;t bother adding attributes that the class already has</span>
+        <span class="c1"># set all the attributes</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="n">wrapped_attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+            <span class="n">delegated_attribute</span> <span class="o">=</span> <span class="n">update_wrapper</span><span class="p">(</span>
+                <span class="n">wrapper</span><span class="o">=</span><span class="n">DelegatedAttribute</span><span class="p">(</span><span class="n">delegation_attr</span><span class="p">,</span> <span class="n">attr</span><span class="p">),</span>
+                <span class="n">wrapped</span><span class="o">=</span><span class="n">wrapped_attr</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">Wrap</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">delegated_attribute</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Wrap</span>
+
+    <span class="k">return</span> <span class="n">delegation_decorator</span>
+
+
+<div class="viewcode-block" id="delegator_wrap"><a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.delegator_wrap">[docs]</a><span class="k">def</span> <span class="nf">delegator_wrap</span><span class="p">(</span>
+    <span class="n">delegator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">delegation_attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;store&#39;</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Wrap a ``obj`` (type or instance) with ``delegator``.</span>
 
 <span class="sd">    If obj is not a type, trivially returns ``delegator(obj)``.</span>
@@ -297,11 +374,11 @@
 <span class="sd">    If we ask ``delegator_wrap`` to wrap a ``dict`` type, we get a subclass of Delegator</span>
 <span class="sd">    (NOT dict!) whose instances will have the behavior exhibited above:</span>
 
-<span class="sd">    &gt;&gt;&gt; WrappedDict = delegator_wrap(Delegator, dict)</span>
+<span class="sd">    &gt;&gt;&gt; WrappedDict = delegator_wrap(Delegator, dict, delegation_attr=&#39;wrapped_obj&#39;)</span>
 <span class="sd">    &gt;&gt;&gt; assert issubclass(WrappedDict, Delegator)</span>
 <span class="sd">    &gt;&gt;&gt; wrapped_d = WrappedDict(a=1, b=2)</span>
 
-<span class="sd">    # &gt;&gt;&gt; test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)  # TODO: Make it work</span>
+<span class="sd">    &gt;&gt;&gt; test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)</span>
 
 <span class="sd">    Now we&#39;ll demo/test the ``wrap = classmethod(delegator_wrap)`` trick</span>
 <span class="sd">    ... with instances</span>
@@ -311,31 +388,26 @@
 
 <span class="sd">    ... with classes</span>
 
-<span class="sd">    &gt;&gt;&gt; WrappedDict = Delegator.wrap(dict)</span>
+<span class="sd">    &gt;&gt;&gt; WrappedDict = Delegator.wrap(dict, delegation_attr=&#39;wrapped_obj&#39;)</span>
 <span class="sd">    &gt;&gt;&gt; wrapped_d = WrappedDict(a=1, b=2)</span>
 
-<span class="sd">    # &gt;&gt;&gt; test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)  # TODO: Make it work</span>
+<span class="sd">    &gt;&gt;&gt; test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)</span>
+<span class="sd">    &gt;&gt;&gt; class A(dict):</span>
+<span class="sd">    ...     def foo(self, x):</span>
+<span class="sd">    ...         pass</span>
+<span class="sd">    &gt;&gt;&gt; hasattr(A, &#39;foo&#39;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; WrappedA = Delegator.wrap(A)</span>
+<span class="sd">    &gt;&gt;&gt; hasattr(WrappedA, &#39;foo&#39;)</span>
+<span class="sd">    True</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">delegator</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
 
-            <span class="nd">@wraps</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">updated</span><span class="o">=</span><span class="p">())</span>
-            <span class="k">class</span> <span class="nc">Wrap</span><span class="p">(</span><span class="n">delegator</span><span class="p">):</span>
-                <span class="nd">@wraps</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
-                <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-                    <span class="n">wrapped</span> <span class="o">=</span> <span class="n">obj</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">wrapped</span><span class="p">)</span>
+            <span class="n">type_decorator</span> <span class="o">=</span> <span class="n">delegate_to</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="n">delegation_attr</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">type_decorator</span><span class="p">(</span><span class="n">delegator</span><span class="p">)</span>
 
-            <span class="c1">#</span>
-            <span class="c1"># TODO: Investigate sanity and alternatives (cls = type(name, (Store, persister_cls), {}) leads to MRO problems)</span>
-            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="n">Wrap</span><span class="p">)):</span>
-                <span class="n">persister_cls_attribute</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-                <span class="nb">setattr</span><span class="p">(</span>
-                    <span class="n">Wrap</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">persister_cls_attribute</span>
-                <span class="p">)</span>  <span class="c1"># copy the attribute over to cls</span>
-
-            <span class="k">return</span> <span class="n">Wrap</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">delegator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">)</span>
 
@@ -481,7 +553,7 @@
         <span class="ne">KeyError</span><span class="p">,</span>
     <span class="p">)</span>  <span class="c1"># another option: (KeyError, FileNotFoundError)</span>
 
-    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">)</span>
+    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delegate method to wrapped store if not part of wrapper store methods&quot;&quot;&quot;</span>

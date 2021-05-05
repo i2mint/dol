@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.dig &#8212; dol 0.1.1 documentation</title>
+    <title>dol.dig &#8212; dol 0.1.2 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -135,21 +135,21 @@
 
 <div class="viewcode-block" id="trace_getitem"><a class="viewcode-back" href="../../module_docs/dol/dig.html#dol.dig.trace_getitem">[docs]</a><span class="k">def</span> <span class="nf">trace_getitem</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;store&#39;</span><span class="p">,)):</span>
     <span class="sd">&quot;&quot;&quot;A generator of layered steps to inspect a store.</span>
-<span class="sd">    </span>
+
 <span class="sd">    :param store: An instance that has the base.Store interface</span>
 <span class="sd">    :param k: A key</span>
 <span class="sd">    :param layer_attrs: The attribute names that should be checked to get the next layer.</span>
 <span class="sd">    :return: A generator of (layer, method, value)</span>
 
 <span class="sd">    We start with a small dict:</span>
-<span class="sd">        </span>
+
 <span class="sd">    &gt;&gt;&gt; d = {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;}</span>
 
 <span class="sd">    Now let&#39;s add layers to it. For example, with wrap_kvs:</span>
 <span class="sd">    &gt;&gt;&gt; from dol.trans import wrap_kvs</span>
-<span class="sd">    </span>
+
 <span class="sd">    Say that we want the interface to not see the ``&#39;.num&#39;`` strings, and deal with numerical values, not strings.</span>
-<span class="sd">    </span>
+
 <span class="sd">    &gt;&gt;&gt; s = wrap_kvs(d,</span>
 <span class="sd">    ...              key_of_id=lambda x: x[:-len(&#39;.num&#39;)],</span>
 <span class="sd">    ...              id_of_key=lambda x: x + &#39;.num&#39;,</span>
@@ -157,16 +157,16 @@
 <span class="sd">    ...              data_of_obj=lambda x: str(x)</span>
 <span class="sd">    ...             )</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    </span>
+
 <span class="sd">    Oh, and we want the interface to display upper case keys.</span>
-<span class="sd">    </span>
+
 <span class="sd">    &gt;&gt;&gt; ss = wrap_kvs(s,</span>
 <span class="sd">    ...              key_of_id=lambda x: x.upper(),</span>
 <span class="sd">    ...              id_of_key=lambda x: x.lower(),</span>
 <span class="sd">    ...             )</span>
-<span class="sd">    </span>
+
 <span class="sd">    And we want the numerical unit to be the kilo (that&#39;s 1000):</span>
-<span class="sd">    </span>
+
 <span class="sd">    &gt;&gt;&gt; sss = wrap_kvs(ss,</span>
 <span class="sd">    ...                obj_of_data=lambda x: x / 1000,</span>
 <span class="sd">    ...                data_of_obj=lambda x: x * 1000</span>
@@ -174,11 +174,11 @@
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; dict(sss.items())</span>
 <span class="sd">    {&#39;A&#39;: 1.0, &#39;B&#39;: 2.0}</span>
-<span class="sd">    </span>
+
 <span class="sd">    Well, if we had bugs, we&#39;d like to inspect the various layers, and how they transform the data.</span>
-<span class="sd">    </span>
+
 <span class="sd">    # Here&#39;s how to do that:</span>
-<span class="sd">    </span>
+
 <span class="sd">    # &gt;&gt;&gt; for layer, method, value in trace_getitem(sss, &#39;A&#39;):</span>
 <span class="sd">    # ...     print(layer, method, value)</span>
 <span class="sd">    # ...</span>

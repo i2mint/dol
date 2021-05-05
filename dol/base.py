@@ -31,7 +31,7 @@ from collections.abc import (
     KeysView as BaseKeysView,
     ValuesView as BaseValuesView,
     ItemsView as BaseItemsView,
-    Set
+    Set,
 )
 from typing import Any, Iterable, Tuple, Callable, Union
 
@@ -231,7 +231,9 @@ class DelegatedAttribute:
             return self  # .__wrapped__  # TODO: The __wrapped__ would make it hard to debug
         else:
             # i.e. return instance.delegate.attr
-            return getattr(getattr(instance, self.delegate_name), self.attr_name)
+            return getattr(
+                getattr(instance, self.delegate_name), self.attr_name
+            )
 
     def __set__(self, instance, value):
         # instance.delegate.attr = value
@@ -245,10 +247,10 @@ Decorator = Callable[[Callable], Any]  # TODO: Look up typing protocols
 
 
 def delegate_to(
-        wrapped: type,
-        delegation_attr: str = 'store',
-        include=frozenset(),
-        ignore=frozenset()
+    wrapped: type,
+    delegation_attr: str = 'store',
+    include=frozenset(),
+    ignore=frozenset(),
 ) -> Decorator:
     # turn include and ignore into sets, if they aren't already
     if not isinstance(include, Set):
@@ -257,10 +259,11 @@ def delegate_to(
         ignore = set(ignore)
     # delegate_attrs = set(delegate_cls.__dict__)
     delegate_attrs = set(dir(wrapped))
-    attributes_of_wrapped = include | delegate_attrs - ignore  # TODO: Look at precedence
+    attributes_of_wrapped = (
+        include | delegate_attrs - ignore
+    )  # TODO: Look at precedence
 
     def delegation_decorator(wrapper_cls: type):
-
         @wraps(wrapper_cls, updated=())
         class Wrap(wrapper_cls):
             @wraps(wrapper_cls.__init__)
@@ -269,24 +272,29 @@ def delegate_to(
                 # setattr(self, delegation_attr)
                 # wrapped = obj(*args, **kwargs)
                 super().__init__(delegate)
-                assert isinstance(getattr(self, delegation_attr, None), wrapped), \
-                    f"The wrapper instance has no (expected) {delegation_attr!r} attribute"
+                assert isinstance(
+                    getattr(self, delegation_attr, None), wrapped
+                ), f'The wrapper instance has no (expected) {delegation_attr!r} attribute'
 
         attrs = attributes_of_wrapped - set(
-            dir(wrapper_cls))  # don't bother adding attributes that the class already has
+            dir(wrapper_cls)
+        )  # don't bother adding attributes that the class already has
         # set all the attributes
         for attr in attrs:
             wrapped_attr = getattr(wrapped, attr)
             delegated_attribute = update_wrapper(
                 wrapper=DelegatedAttribute(delegation_attr, attr),
-                wrapped=wrapped_attr)
+                wrapped=wrapped_attr,
+            )
             setattr(Wrap, attr, delegated_attribute)
         return Wrap
 
     return delegation_decorator
 
 
-def delegator_wrap(delegator: Callable, obj: Union[type, Any], delegation_attr: str = 'store'):
+def delegator_wrap(
+    delegator: Callable, obj: Union[type, Any], delegation_attr: str = 'store'
+):
     """Wrap a ``obj`` (type or instance) with ``delegator``.
 
     If obj is not a type, trivially returns ``delegator(obj)``.
@@ -657,11 +665,11 @@ def tuple_keypath_and_val(p, k, v):
 
 # TODO: More docs and doctests. This one even merits an extensive usage and example tutorial!
 def kv_walk(
-        v: Mapping,
-        yield_func=asis,  # (p, k, v) -> what you want the gen to yield
-        walk_filt=val_is_mapping,  # (p, k, v) -> whether to explore the nested structure v further
-        pkv_to_pv=tuple_keypath_and_val,
-        p=(),
+    v: Mapping,
+    yield_func=asis,  # (p, k, v) -> what you want the gen to yield
+    walk_filt=val_is_mapping,  # (p, k, v) -> whether to explore the nested structure v further
+    pkv_to_pv=tuple_keypath_and_val,
+    p=(),
 ):
     """
 
@@ -686,7 +694,7 @@ def kv_walk(
             p, k, vv
         )  # update the path with k (and preprocess v if necessary)
         if walk_filt(
-                p, k, vv
+            p, k, vv
         ):  # should we recurse? (based on some function of p, k, v)
             # print(f"3: recurse with: pp={pp}, vv={vv}\n")
             yield from kv_walk(
@@ -709,10 +717,10 @@ def has_kv_store_interface(o):
 
     """
     return (
-            hasattr(o, '_id_of_key')
-            and hasattr(o, '_key_of_id')
-            and hasattr(o, '_data_of_obj')
-            and hasattr(o, '_obj_of_data')
+        hasattr(o, '_id_of_key')
+        and hasattr(o, '_key_of_id')
+        and hasattr(o, '_data_of_obj')
+        and hasattr(o, '_obj_of_data')
     )
 
 
@@ -895,5 +903,6 @@ class Stream:
         return self.stream.__exit__(
             exc_type, exc_val, exc_tb
         )  # TODO: Should we have a _post_proc? Uses?
+
 
 ########################################################################################################################

@@ -40,13 +40,13 @@ class NotUnique(ValueError):
     """Raised when an iterator was expected to have only one element, but had more"""
 
 
-NoMoreElements = type("NoMoreElements", (object,), {})()
+NoMoreElements = type('NoMoreElements', (object,), {})()
 
 
 def unique_element(iterator):
     element = next(iterator)
     if next(iterator, NoMoreElements) is not NoMoreElements:
-        raise NotUnique("iterator had more than one element")
+        raise NotUnique('iterator had more than one element')
     return element
 
 
@@ -200,7 +200,7 @@ class SequenceKvReader(KvReader):
         for kk, vv in self.kv_items():
             if kk == k:
                 return vv
-        raise KeyError(f"Key not found: {k}")
+        raise KeyError(f'Key not found: {k}')
 
     def __iter__(self):
         yield from map(itemgetter(0), self.kv_items())
@@ -270,24 +270,24 @@ import os
 
 psep = os.path.sep
 
-ddir = lambda o: [x for x in dir(o) if not x.startswith("_")]
+ddir = lambda o: [x for x in dir(o) if not x.startswith('_')]
 
 
 def not_underscore_prefixed(x):
-    return not x.startswith("_")
+    return not x.startswith('_')
 
 
 def _path_to_module_str(path, root_path):
-    assert path.endswith(".py")
+    assert path.endswith('.py')
     path = path[:-3]
     if root_path.endswith(psep):
         root_path = root_path[:-1]
     root_path = os.path.dirname(root_path)
     len_root = len(root_path) + 1
     path_parts = path[len_root:].split(psep)
-    if path_parts[-1] == "__init__.py":
+    if path_parts[-1] == '__init__.py':
         path_parts = path_parts[:-1]
-    return ".".join(path_parts)
+    return '.'.join(path_parts)
 
 
 class ObjReader(KvReader):
@@ -296,18 +296,18 @@ class ObjReader(KvReader):
         copy_attrs(
             target=self,
             source=self.src,
-            attrs=("__name__", "__qualname__", "__module__"),
+            attrs=('__name__', '__qualname__', '__module__'),
             raise_error_if_an_attr_is_missing=False,
         )
 
     def __repr__(self):
-        return f"{self.__class__.__qualname__}({self.src})"
+        return f'{self.__class__.__qualname__}({self.src})'
 
     @property
     def _source(self):
         from warnings import warn
 
-        warn("Deprecated: Use .src instead of ._source", DeprecationWarning, 2)
+        warn('Deprecated: Use .src instead of ._source', DeprecationWarning, 2)
         return self.src
 
 
@@ -320,7 +320,7 @@ class ObjReader(KvReader):
 
 # Pattern: Recursive navigation
 # Note: Moved dev to independent package called "guide"
-@cached_keys(keys_cache=set, name="Attrs")
+@cached_keys(keys_cache=set, name='Attrs')
 class Attrs(ObjReader):
     def __init__(self, obj, key_filt=not_underscore_prefixed):
         print(f"Moved Attrs to guide (pip it!). py2store version might be deprecated in the future, so source there.")
@@ -338,7 +338,7 @@ class Attrs(ObjReader):
                 try:
                     name = _path_to_module_str(path, root_path)
                 except Exception:
-                    name = "fake.module.name"
+                    name = 'fake.module.name'
         spec = importlib.util.spec_from_file_location(name, path)
         foo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(foo)
@@ -351,7 +351,7 @@ class Attrs(ObjReader):
         return self.__class__(getattr(self.src, k))
 
     def __repr__(self):
-        return f"{self.__class__.__qualname__}({self.src}, {self._key_filt})"
+        return f'{self.__class__.__qualname__}({self.src}, {self._key_filt})'
 
 
 Ddir = Attrs  # for back-compatibility, temporarily
@@ -395,7 +395,7 @@ class DictAttr(KvPersister):
             assert isinstance(_source, Mapping)
             self._source = _source
         else:
-            super().__setattr__("_source", {})
+            super().__setattr__('_source', {})
             for k, v in keys_and_values.items():
                 setattr(self, k, v)
 
