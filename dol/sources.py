@@ -323,6 +323,7 @@ class ObjReader(KvReader):
 @cached_keys(keys_cache=set, name="Attrs")
 class Attrs(ObjReader):
     def __init__(self, obj, key_filt=not_underscore_prefixed):
+        print(f"Moved Attrs to guide (pip it!). py2store version might be deprecated in the future, so source there.")
         super().__init__(obj)
         self._key_filt = key_filt
 
