@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.signatures &#8212; dol 0.1.3 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.4 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -956,7 +956,12 @@
             <span class="p">(</span><span class="n">_self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">_self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">)</span>
             <span class="o">==</span> <span class="p">(</span><span class="n">_sig</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">_sig</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">_sig</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-        <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;During a signature merge, if two names are the same, they must have the same kind and default:</span><span class="si">{</span><span class="n">_msg</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">),</span> <span class="p">(</span>
+            <span class="s1">&#39;During a signature merge, if two names are the same, they must have the **same kind and default**:</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="si">{</span><span class="n">_msg</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="s2">&quot;Tip: If you&#39;re trying to merge functions in some way, consider decorating them a signature mapping that &quot;</span>
+            <span class="s1">&#39;avoids the argument name clashing&#39;</span>
+        <span class="p">)</span>
 
         <span class="n">params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_chain_params_of_signatures</span><span class="p">(</span>
@@ -1570,8 +1575,22 @@
 
 
 <div class="viewcode-block" id="call_forgivingly"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.call_forgivingly">[docs]</a><span class="k">def</span> <span class="nf">call_forgivingly</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Call function on given args and kwargs, but only taking what the function needs</span>
-<span class="sd">    (not choking if they&#39;re extras variables)&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Call function on given args and kwargs, but only taking what the function needs</span>
+<span class="sd">    (not choking if they&#39;re extras variables)</span>
+
+<span class="sd">    &gt;&gt;&gt; def foo(a, b: int=0, c=None) -&gt; int:</span>
+<span class="sd">    ...     return &#39;foo&#39;, (a, b, c)</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; call_forgivingly(</span>
+<span class="sd">    ...     foo, # the function you want to call</span>
+<span class="sd">    ...     &#39;input for a&#39;, # meant for a -- the first (and only) argument foo requires</span>
+<span class="sd">    ...     c=42,  # skiping b and giving c a non-default value</span>
+<span class="sd">    ...     intruder=&#39;argument&#39;  # but wait, this argument name doesn&#39;t exist! Oh no, what&#39;s going to happen?</span>
+<span class="sd">    ... )  # well, as it happens, nothing bad -- the intruder argument is just ignored</span>
+<span class="sd">    (&#39;foo&#39;, (&#39;input for a&#39;, 0, 42))</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">source_args_and_kwargs</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
