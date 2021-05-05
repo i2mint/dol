@@ -60,7 +60,7 @@ def ensure_signature(obj: SignatureAble):
     if isinstance(obj, Signature):
         return obj
     elif isinstance(obj, Callable):
-        return Signature.from_callable(obj)
+        return _robust_signature_of_callable(obj)
     elif isinstance(obj, Iterable):
         params = ensure_params(obj)
         try:
@@ -140,7 +140,7 @@ def ensure_params(obj: ParamsAble = None):
         if isinstance(obj, Parameter):
             obj = Signature([obj])
         elif isinstance(obj, Callable):
-            obj = Signature.from_callable(obj)
+            obj = _robust_signature_of_callable(obj)
         elif obj is None:
             obj = {}
         if isinstance(obj, Signature):
@@ -492,6 +492,28 @@ def param_has_default_or_is_var_kind(p: Parameter):
 WRAPPER_UPDATES = ('__dict__',)
 
 from functools import wraps
+from typing import Callable
+
+
+def _robust_signature_of_callable(callable_obj: Callable) -> Signature:
+    r"""Get the signature of a Callable, returning a custom made one for those builtins that don't have one
+
+    >>> _robust_signature_of_callable(_robust_signature_of_callable)  # has a normal signature
+    <Signature (callable_obj: Callable) -> inspect.Signature>
+    >>> _robust_signature_of_callable(print)  # has one that this module provides
+    <Signature (*value, sep=' ', end='\n', file=<_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>, flush=False)>
+    >>> _robust_signature_of_callable(zip)  # doesn't have one, so will return a blanket one
+    <Signature (*no_sig_args, **no_sig_kwargs)>
+
+    """
+    try:
+        return signature(callable_obj)
+    except ValueError:
+        obj_name = callable_obj.__name__
+        if obj_name in sigs_for_sigless_builtin_name:
+            return sigs_for_sigless_builtin_name[obj_name] or signature(lambda *no_sig_args, **no_sig_kwargs: ...)
+        else:
+            raise
 
 
 # TODO: See other signature operating functions below in this module:
@@ -607,7 +629,7 @@ class Sig(Signature, Mapping):
         <Sig ()>
         """
         if callable(obj) and return_annotation is empty:
-            return_annotation = Signature.from_callable(obj).return_annotation
+            return_annotation = _robust_signature_of_callable(obj).return_annotation
         super().__init__(
             ensure_params(obj),
             return_annotation=return_annotation,
@@ -700,16 +722,22 @@ class Sig(Signature, Mapping):
         """Returns a Sig instance, or None if there was a ValueError trying to construct it.
         One use case is to be able to tell if an object has a signature or not.
 
-        >>> has_signature = lambda obj: bool(Sig.sig_or_none(obj))
-        >>> has_signature(print)
-        False
-        >>> has_signature(Sig)
+        >>> robust_has_signature = lambda obj: bool(Sig.sig_or_none(obj))
+        >>> robust_has_signature(robust_has_signature)  # an easy case
+        True
+        >>> robust_has_signature(Sig)  # another easy one: This time, a type/class (which is callable, yes)
         True
 
-        This means we can more easily get signatures in bulk without having to write try/catches:
+        But here's where it get's interesting. `print`, a builtin, doesn't have a signature through inspect.signature.
 
-        >>> len(list(filter(None, map(Sig.sig_or_none, (Sig, print, map, filter, Sig.wrap)))))
-        2
+        >>> has_signature(print)
+        False
+
+        But we do get one with robust_has_signature
+
+        >>> robust_has_signature(print)
+        True
+
         """
         try:
             return (callable(obj) or None) and cls(obj)
@@ -1560,8 +1588,25 @@ def call_forgivingly(func, *args, **kwargs):
     return func(*args, **kwargs)
 
 
-def has_signature(obj):
-    return bool(Sig.sig_or_none(obj))
+def has_signature(obj, robust=False):
+    """Check if an object has a signature -- i.e. is callable and inspect.signature(obj) returns something.
+
+    This can be used to more easily get signatures in bulk without having to write try/catches:
+
+    >>> from functools import partial
+    >>> len(list(filter(None, map(partial(has_signature, robust=False), (Sig, print, map, filter, Sig.wrap)))))
+    2
+
+    If robust is set to True, `has_signature` will use `Sig` to get the signature, so will return True in most cases.
+
+    """
+    if robust:
+        return bool(Sig.sig_or_none(obj))
+    else:
+        try:
+            return bool((callable(obj) or None) and signature(obj))
+        except ValueError:
+            return False
 
 
 def number_of_required_arguments(obj):
@@ -1679,6 +1724,122 @@ def set_signature_of_func(
     func.__signature__ = sig.to_simple_signature()
     # Not returning func so it's clear(er) that the function is transformed in place
 
+
+########################################################################################################################
+# Manual construction of missing signatures ############################################################################
+
+import sys
+
+sigs_for_sigless_builtin_name = {
+    '__build_class__': None,
+    # __build_class__(func, name, /, *bases, [metaclass], **kwds) -> class
+
+    '__import__': None,
+    # __import__(name, globals=None, locals=None, fromlist=(), level=0) -> module
+
+    'bool': None,
+    # bool(x) -> bool
+
+    'breakpoint': None,
+    # breakpoint(*args, **kws)
+
+    'bytearray': None,
+    # bytearray(iterable_of_ints) -> bytearray
+    # bytearray(string, encoding[, errors]) -> bytearray
+    # bytearray(bytes_or_buffer) -> mutable copy of bytes_or_buffer
+    # bytearray(int) -> bytes array of size given by the parameter initialized with null bytes
+    # bytearray() -> empty bytes array
+
+    'bytes': None,
+    # bytes(iterable_of_ints) -> bytes
+    # bytes(string, encoding[, errors]) -> bytes
+    # bytes(bytes_or_buffer) -> immutable copy of bytes_or_buffer
+    # bytes(int) -> bytes object of size given by the parameter initialized with null bytes
+    # bytes() -> empty bytes object
+
+    'classmethod': None,
+    # classmethod(function) -> method
+
+    'dict': None,
+    # dict() -> new empty dictionary
+    # dict(mapping) -> new dictionary initialized from a mapping object's
+    # dict(iterable) -> new dictionary initialized as if via:
+    # dict(**kwargs) -> new dictionary initialized with the name=value pairs
+
+    'dir': None,
+    # dir([object]) -> list of strings
+
+    'filter': None,
+    # filter(function or None, iterable) --> filter object
+
+    'frozenset': None,
+    # frozenset() -> empty frozenset object
+    # frozenset(iterable) -> frozenset object
+
+    'getattr': None,
+    # getattr(object, name[, default]) -> value
+
+    'int': None,
+    # int([x]) -> integer
+    # int(x, base=10) -> integer
+
+    'iter': None,
+    # iter(iterable) -> iterator
+    # iter(callable, sentinel) -> iterator
+
+    'map': None,
+    # map(func, *iterables) --> map object
+
+    'max': None,
+    # max(iterable, *[, default=obj, key=func]) -> value
+    # max(arg1, arg2, *args, *[, key=func]) -> value
+
+    'min': None,
+    # min(iterable, *[, default=obj, key=func]) -> value
+    # min(arg1, arg2, *args, *[, key=func]) -> value
+
+    'next': None,
+    # next(iterator[, default])
+
+    'print': signature(lambda *value, sep=' ', end='\n', file=sys.stdout, flush=False: ...),
+    # print(value, ..., sep=' ', end='\n', file=sys.stdout, flush=False)
+
+    'range': None,
+    # range(stop) -> range object
+    # range(start, stop[, step]) -> range object
+
+    'set': None,
+    # set() -> new empty set object
+    # set(iterable) -> new set object
+
+    'slice': None,
+    # slice(stop)
+    # slice(start, stop[, step])
+
+    'staticmethod': None,
+    # staticmethod(function) -> method
+
+    'str': None,
+    # str(object='') -> str
+    # str(bytes_or_buffer[, encoding[, errors]]) -> str
+
+    'super': None,
+    # super() -> same as super(__class__, <first argument>)
+    # super(type) -> unbound super object
+    # super(type, obj) -> bound super object; requires isinstance(obj, type)
+    # super(type, type2) -> bound super object; requires issubclass(type2, type)
+
+    'type': None,
+    # type(object_or_name, bases, dict)
+    # type(object) -> the object's type
+    # type(name, bases, dict) -> a new type
+
+    'vars': None,
+    # vars([object]) -> dictionary
+
+    'zip': None,
+    # zip(*iterables) --> A zip object yielding tuples until an input is exhausted.
+}
 
 ############# Tools for testing ########################################################################################
 from functools import partial
