@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.signatures &#8212; dol 0.1.4 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.5 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -410,16 +410,21 @@ is expected to be a list of Parameter instances.</p>
 <em class="property">classmethod </em><code class="sig-name descname">sig_or_none</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.sig_or_none"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.sig_or_none" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a Sig instance, or None if there was a ValueError trying to construct it.
 One use case is to be able to tell if an object has a signature or not.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">has_signature</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">Sig</span><span class="o">.</span><span class="n">sig_or_none</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">has_signature</span><span class="p">(</span><span class="nb">print</span><span class="p">)</span>
-<span class="go">False</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">has_signature</span><span class="p">(</span><span class="n">Sig</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">robust_has_signature</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">Sig</span><span class="o">.</span><span class="n">sig_or_none</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robust_has_signature</span><span class="p">(</span><span class="n">robust_has_signature</span><span class="p">)</span>  <span class="c1"># an easy case</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robust_has_signature</span><span class="p">(</span><span class="n">Sig</span><span class="p">)</span>  <span class="c1"># another easy one: This time, a type/class (which is callable, yes)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
-<p>This means we can more easily get signatures in bulk without having to write try/catches:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="n">Sig</span><span class="o">.</span><span class="n">sig_or_none</span><span class="p">,</span> <span class="p">(</span><span class="n">Sig</span><span class="p">,</span> <span class="nb">print</span><span class="p">,</span> <span class="nb">map</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">Sig</span><span class="o">.</span><span class="n">wrap</span><span class="p">)))))</span>
-<span class="go">2</span>
+<p>But here’s where it get’s interesting. <cite>print</cite>, a builtin, doesn’t have a signature through inspect.signature.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">has_signature</span><span class="p">(</span><span class="nb">print</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>But we do get one with robust_has_signature</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">robust_has_signature</span><span class="p">(</span><span class="nb">print</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1180,6 +1185,19 @@ Could be a callable, Signature, iterable of Parameters…</p></li>
 <span class="go">13</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.signatures.has_signature">
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">has_signature</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">robust</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#has_signature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.has_signature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if an object has a signature – i.e. is callable and inspect.signature(obj) returns something.</p>
+<p>This can be used to more easily get signatures in bulk without having to write try/catches:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">has_signature</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="p">(</span><span class="n">Sig</span><span class="p">,</span> <span class="nb">print</span><span class="p">,</span> <span class="nb">map</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">Sig</span><span class="o">.</span><span class="n">wrap</span><span class="p">)))))</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<p>If robust is set to True, <cite>has_signature</cite> will use <cite>Sig</cite> to get the signature, so will return True in most cases.</p>
 </dd></dl>
 
 <dl class="py function">

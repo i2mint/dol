@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.signatures &#8212; dol 0.1.4 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.5 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -95,7 +95,7 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Signature</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">obj</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">Signature</span><span class="o">.</span><span class="n">from_callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_robust_signature_of_callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
         <span class="n">params</span> <span class="o">=</span> <span class="n">ensure_params</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -175,7 +175,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">):</span>
             <span class="n">obj</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">([</span><span class="n">obj</span><span class="p">])</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">Signature</span><span class="o">.</span><span class="n">from_callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">_robust_signature_of_callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">obj</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Signature</span><span class="p">):</span>
@@ -527,6 +527,31 @@
 <span class="n">WRAPPER_UPDATES</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;__dict__&#39;</span><span class="p">,)</span>
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
+
+
+<span class="k">def</span> <span class="nf">_robust_signature_of_callable</span><span class="p">(</span><span class="n">callable_obj</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Signature</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get the signature of a Callable, returning a custom made one for those builtins that don&#39;t have one</span>
+
+<span class="sd">    &gt;&gt;&gt; _robust_signature_of_callable(_robust_signature_of_callable)  # has a normal signature</span>
+<span class="sd">    &lt;Signature (callable_obj: Callable) -&gt; inspect.Signature&gt;</span>
+<span class="sd">    &gt;&gt;&gt; s = _robust_signature_of_callable(print)  # has one that this module provides</span>
+<span class="sd">    &gt;&gt;&gt; assert isinstance(s, Signature)</span>
+<span class="sd">    &gt;&gt;&gt; # Will be: &lt;Signature (*value, sep=&#39; &#39;, end=&#39;\n&#39;, file=&lt;_io.TextIOWrapper name=&#39;&lt;stdout&gt;&#39; mode=&#39;w&#39; encoding=&#39;utf-8&#39;&gt;, flush=False)&gt;</span>
+<span class="sd">    &gt;&gt;&gt; _robust_signature_of_callable(zip)  # doesn&#39;t have one, so will return a blanket one</span>
+<span class="sd">    &lt;Signature (*no_sig_args, **no_sig_kwargs)&gt;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">signature</span><span class="p">(</span><span class="n">callable_obj</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">obj_name</span> <span class="o">=</span> <span class="n">callable_obj</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">if</span> <span class="n">obj_name</span> <span class="ow">in</span> <span class="n">sigs_for_sigless_builtin_name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sigs_for_sigless_builtin_name</span><span class="p">[</span><span class="n">obj_name</span><span class="p">]</span> <span class="ow">or</span> <span class="n">signature</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="o">*</span><span class="n">no_sig_args</span><span class="p">,</span> <span class="o">**</span><span class="n">no_sig_kwargs</span><span class="p">:</span> <span class="o">...</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span>
 
 
 <span class="c1"># TODO: See other signature operating functions below in this module:</span>
@@ -642,7 +667,9 @@
 <span class="sd">        &lt;Sig ()&gt;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">and</span> <span class="n">return_annotation</span> <span class="ow">is</span> <span class="n">empty</span><span class="p">:</span>
-            <span class="n">return_annotation</span> <span class="o">=</span> <span class="n">Signature</span><span class="o">.</span><span class="n">from_callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
+            <span class="n">return_annotation</span> <span class="o">=</span> <span class="n">_robust_signature_of_callable</span><span class="p">(</span>
+                <span class="n">obj</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">ensure_params</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span>
             <span class="n">return_annotation</span><span class="o">=</span><span class="n">return_annotation</span><span class="p">,</span>
@@ -735,16 +762,22 @@
         <span class="sd">&quot;&quot;&quot;Returns a Sig instance, or None if there was a ValueError trying to construct it.</span>
 <span class="sd">        One use case is to be able to tell if an object has a signature or not.</span>
 
-<span class="sd">        &gt;&gt;&gt; has_signature = lambda obj: bool(Sig.sig_or_none(obj))</span>
-<span class="sd">        &gt;&gt;&gt; has_signature(print)</span>
-<span class="sd">        False</span>
-<span class="sd">        &gt;&gt;&gt; has_signature(Sig)</span>
+<span class="sd">        &gt;&gt;&gt; robust_has_signature = lambda obj: bool(Sig.sig_or_none(obj))</span>
+<span class="sd">        &gt;&gt;&gt; robust_has_signature(robust_has_signature)  # an easy case</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; robust_has_signature(Sig)  # another easy one: This time, a type/class (which is callable, yes)</span>
 <span class="sd">        True</span>
 
-<span class="sd">        This means we can more easily get signatures in bulk without having to write try/catches:</span>
+<span class="sd">        But here&#39;s where it get&#39;s interesting. `print`, a builtin, doesn&#39;t have a signature through inspect.signature.</span>
 
-<span class="sd">        &gt;&gt;&gt; len(list(filter(None, map(Sig.sig_or_none, (Sig, print, map, filter, Sig.wrap)))))</span>
-<span class="sd">        2</span>
+<span class="sd">        &gt;&gt;&gt; has_signature(print)</span>
+<span class="sd">        False</span>
+
+<span class="sd">        But we do get one with robust_has_signature</span>
+
+<span class="sd">        &gt;&gt;&gt; robust_has_signature(print)</span>
+<span class="sd">        True</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">cls</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
@@ -1595,8 +1628,25 @@
     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">has_signature</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">Sig</span><span class="o">.</span><span class="n">sig_or_none</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+<div class="viewcode-block" id="has_signature"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.has_signature">[docs]</a><span class="k">def</span> <span class="nf">has_signature</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if an object has a signature -- i.e. is callable and inspect.signature(obj) returns something.</span>
+
+<span class="sd">    This can be used to more easily get signatures in bulk without having to write try/catches:</span>
+
+<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">    &gt;&gt;&gt; len(list(filter(None, map(partial(has_signature, robust=False), (Sig, print, map, filter, Sig.wrap)))))</span>
+<span class="sd">    2</span>
+
+<span class="sd">    If robust is set to True, `has_signature` will use `Sig` to get the signature, so will return True in most cases.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">robust</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">Sig</span><span class="o">.</span><span class="n">sig_or_none</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">bool</span><span class="p">((</span><span class="n">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">signature</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <span class="k">def</span> <span class="nf">number_of_required_arguments</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
@@ -1714,6 +1764,97 @@
     <span class="n">func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">to_simple_signature</span><span class="p">()</span></div>
     <span class="c1"># Not returning func so it&#39;s clear(er) that the function is transformed in place</span>
 
+
+<span class="c1">########################################################################################################################</span>
+<span class="c1"># Manual construction of missing signatures ############################################################################</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">sigs_for_sigless_builtin_name</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;__build_class__&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># __build_class__(func, name, /, *bases, [metaclass], **kwds) -&gt; class</span>
+    <span class="s1">&#39;__import__&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># __import__(name, globals=None, locals=None, fromlist=(), level=0) -&gt; module</span>
+    <span class="s1">&#39;bool&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># bool(x) -&gt; bool</span>
+    <span class="s1">&#39;breakpoint&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># breakpoint(*args, **kws)</span>
+    <span class="s1">&#39;bytearray&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># bytearray(iterable_of_ints) -&gt; bytearray</span>
+    <span class="c1"># bytearray(string, encoding[, errors]) -&gt; bytearray</span>
+    <span class="c1"># bytearray(bytes_or_buffer) -&gt; mutable copy of bytes_or_buffer</span>
+    <span class="c1"># bytearray(int) -&gt; bytes array of size given by the parameter initialized with null bytes</span>
+    <span class="c1"># bytearray() -&gt; empty bytes array</span>
+    <span class="s1">&#39;bytes&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># bytes(iterable_of_ints) -&gt; bytes</span>
+    <span class="c1"># bytes(string, encoding[, errors]) -&gt; bytes</span>
+    <span class="c1"># bytes(bytes_or_buffer) -&gt; immutable copy of bytes_or_buffer</span>
+    <span class="c1"># bytes(int) -&gt; bytes object of size given by the parameter initialized with null bytes</span>
+    <span class="c1"># bytes() -&gt; empty bytes object</span>
+    <span class="s1">&#39;classmethod&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># classmethod(function) -&gt; method</span>
+    <span class="s1">&#39;dict&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># dict() -&gt; new empty dictionary</span>
+    <span class="c1"># dict(mapping) -&gt; new dictionary initialized from a mapping object&#39;s</span>
+    <span class="c1"># dict(iterable) -&gt; new dictionary initialized as if via:</span>
+    <span class="c1"># dict(**kwargs) -&gt; new dictionary initialized with the name=value pairs</span>
+    <span class="s1">&#39;dir&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># dir([object]) -&gt; list of strings</span>
+    <span class="s1">&#39;filter&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># filter(function or None, iterable) --&gt; filter object</span>
+    <span class="s1">&#39;frozenset&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># frozenset() -&gt; empty frozenset object</span>
+    <span class="c1"># frozenset(iterable) -&gt; frozenset object</span>
+    <span class="s1">&#39;getattr&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># getattr(object, name[, default]) -&gt; value</span>
+    <span class="s1">&#39;int&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># int([x]) -&gt; integer</span>
+    <span class="c1"># int(x, base=10) -&gt; integer</span>
+    <span class="s1">&#39;iter&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># iter(iterable) -&gt; iterator</span>
+    <span class="c1"># iter(callable, sentinel) -&gt; iterator</span>
+    <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># map(func, *iterables) --&gt; map object</span>
+    <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># max(iterable, *[, default=obj, key=func]) -&gt; value</span>
+    <span class="c1"># max(arg1, arg2, *args, *[, key=func]) -&gt; value</span>
+    <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># min(iterable, *[, default=obj, key=func]) -&gt; value</span>
+    <span class="c1"># min(arg1, arg2, *args, *[, key=func]) -&gt; value</span>
+    <span class="s1">&#39;next&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># next(iterator[, default])</span>
+    <span class="s1">&#39;print&#39;</span><span class="p">:</span> <span class="n">signature</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="o">*</span><span class="n">value</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">False</span><span class="p">:</span> <span class="o">...</span>
+    <span class="p">),</span>
+    <span class="c1"># print(value, ..., sep=&#39; &#39;, end=&#39;\n&#39;, file=sys.stdout, flush=False)</span>
+    <span class="s1">&#39;range&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># range(stop) -&gt; range object</span>
+    <span class="c1"># range(start, stop[, step]) -&gt; range object</span>
+    <span class="s1">&#39;set&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># set() -&gt; new empty set object</span>
+    <span class="c1"># set(iterable) -&gt; new set object</span>
+    <span class="s1">&#39;slice&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># slice(stop)</span>
+    <span class="c1"># slice(start, stop[, step])</span>
+    <span class="s1">&#39;staticmethod&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># staticmethod(function) -&gt; method</span>
+    <span class="s1">&#39;str&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># str(object=&#39;&#39;) -&gt; str</span>
+    <span class="c1"># str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</span>
+    <span class="s1">&#39;super&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># super() -&gt; same as super(__class__, &lt;first argument&gt;)</span>
+    <span class="c1"># super(type) -&gt; unbound super object</span>
+    <span class="c1"># super(type, obj) -&gt; bound super object; requires isinstance(obj, type)</span>
+    <span class="c1"># super(type, type2) -&gt; bound super object; requires issubclass(type2, type)</span>
+    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># type(object_or_name, bases, dict)</span>
+    <span class="c1"># type(object) -&gt; the object&#39;s type</span>
+    <span class="c1"># type(name, bases, dict) -&gt; a new type</span>
+    <span class="s1">&#39;vars&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># vars([object]) -&gt; dictionary</span>
+    <span class="s1">&#39;zip&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># zip(*iterables) --&gt; A zip object yielding tuples until an input is exhausted.</span>
+<span class="p">}</span>
 
 <span class="c1">############# Tools for testing ########################################################################################</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
