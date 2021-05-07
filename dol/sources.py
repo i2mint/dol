@@ -328,6 +328,7 @@ class Attrs(ObjReader):
     Note: A more significant version of Attrs, along with many tools based on it, was moved to pypi package: guide.
         pip install guide
     """
+
     def __init__(self, obj, key_filt=not_underscore_prefixed):
         super().__init__(obj)
         self._key_filt = key_filt
