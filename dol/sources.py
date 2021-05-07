@@ -322,10 +322,13 @@ class ObjReader(KvReader):
 # Note: Moved dev to independent package called "guide"
 @cached_keys(keys_cache=set, name='Attrs')
 class Attrs(ObjReader):
+    """A simple recursive KvReader for the attributes of a python object.
+    Keys are attr names, values are Attrs(attr_val) instances.
+
+    Note: A more significant version of Attrs, along with many tools based on it, was moved to pypi package: guide.
+        pip install guide
+    """
     def __init__(self, obj, key_filt=not_underscore_prefixed):
-        print(
-            f'Moved Attrs to guide (pip it!). py2store version might be deprecated in the future, so source there.'
-        )
         super().__init__(obj)
         self._key_filt = key_filt
 
