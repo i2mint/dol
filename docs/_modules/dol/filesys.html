@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.filesys &#8212; dol 0.1.7 documentation</title>
+    <title>dol.filesys &#8212; dol 0.1.8 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -37,9 +37,10 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">stat</span> <span class="k">as</span> <span class="n">os_stat</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
 
 <span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">,</span> <span class="n">KvPersister</span>
+<span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">wrap_kvs</span>
 <span class="kn">from</span> <span class="nn">dol.naming</span> <span class="kn">import</span> <span class="n">mk_pattern_from_template_and_format_dict</span>
 <span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="n">mk_relative_path_store</span>
 
@@ -312,6 +313,19 @@
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
 
 
+<span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
+<span class="c1"># TODO: Once test coverage sufficient, apply this pattern to all other convenience stores</span>
+
+<span class="n">with_relative_paths</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">mk_relative_path_store</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RelPathFileBytesPersister"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.RelPathFileBytesPersister">[docs]</a><span class="nd">@with_relative_paths</span>
+<span class="k">class</span> <span class="nc">RelPathFileBytesPersister</span><span class="p">(</span><span class="n">FileBytesPersister</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;FileBytesPersister with relative paths&quot;&quot;&quot;</span></div>
+
+
+<span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
+
 <span class="n">RelPathFileBytesReader</span> <span class="o">=</span> <span class="n">mk_relative_path_store</span><span class="p">(</span>
     <span class="n">FileBytesReader</span><span class="p">,</span>
     <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">,</span>
@@ -340,6 +354,28 @@
     <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">,</span>
     <span class="vm">__name__</span><span class="o">=</span><span class="s1">&#39;RelPathFileStringPersister&#39;</span><span class="p">,</span>
 <span class="p">)</span>
+
+<span class="c1"># --------------------------------------------------- misc -------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="n">pickle_bytes_wrap</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span>
+    <span class="n">obj_of_data</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="PickleStore"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.PickleStore">[docs]</a><span class="nd">@pickle_bytes_wrap</span>
+<span class="k">class</span> <span class="nc">PickleStore</span><span class="p">(</span><span class="n">RelPathFileBytesPersister</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A store of pickles&quot;&quot;&quot;</span></div>
+
+
+<span class="c1"># @wrap_kvs(key_of_id=lambda x: x[:-1], id_of_key=lambda x: x + path_sep)</span>
+<div class="viewcode-block" id="PickleStores"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.PickleStores">[docs]</a><span class="nd">@mk_relative_path_store</span><span class="p">(</span><span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">PickleStores</span><span class="p">(</span><span class="n">DirCollection</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">PickleStore</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span><span class="si">}</span><span class="s2">&#39;, ...)&quot;</span></div>
 </pre></div>
 
           </div>
