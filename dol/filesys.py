@@ -24,7 +24,7 @@ def ensure_slash_suffix(path: str):
 def paths_in_dir(rootdir, include_hidden=False):
     for name in os.listdir(rootdir):
         if include_hidden or not name.startswith(
-                '.'
+            '.'
         ):  # TODO: is dot a platform independent marker for hidden file?
             filepath = os.path.join(rootdir, name)
             if os.path.isdir(filepath):
@@ -34,7 +34,7 @@ def paths_in_dir(rootdir, include_hidden=False):
 
 
 def iter_filepaths_in_folder_recursively(
-        root_folder, max_levels=None, _current_level=0, include_hidden=False
+    root_folder, max_levels=None, _current_level=0, include_hidden=False
 ):
     """Recursively generates filepaths of folder (and subfolders, etc.) up to a given level"""
     if max_levels is None:
@@ -43,7 +43,7 @@ def iter_filepaths_in_folder_recursively(
         if os.path.isdir(full_path):
             if _current_level < max_levels:
                 for entry in iter_filepaths_in_folder_recursively(
-                        full_path, max_levels, _current_level + 1, include_hidden
+                    full_path, max_levels, _current_level + 1, include_hidden
                 ):
                     yield entry
         else:
@@ -52,7 +52,7 @@ def iter_filepaths_in_folder_recursively(
 
 
 def iter_dirpaths_in_folder_recursively(
-        root_folder, max_levels=None, _current_level=0, include_hidden=False
+    root_folder, max_levels=None, _current_level=0, include_hidden=False
 ):
     """Recursively generates dirpaths of folder (and subfolders, etc.) up to a given level"""
     if max_levels is None:
@@ -62,7 +62,7 @@ def iter_dirpaths_in_folder_recursively(
             yield full_path
             if _current_level < max_levels:
                 for entry in iter_dirpaths_in_folder_recursively(
-                        full_path, max_levels, _current_level + 1, include_hidden
+                    full_path, max_levels, _current_level + 1, include_hidden
                 ):
                     yield entry
 
@@ -112,18 +112,18 @@ class FileSysCollection(Collection):
     # rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.
 
     def __init__(
-            self,
-            rootdir,
-            subpath='',
-            pattern_for_field=None,
-            max_levels=None,
-            include_hidden=False,
+        self,
+        rootdir,
+        subpath='',
+        pattern_for_field=None,
+        max_levels=None,
+        include_hidden=False,
     ):
         if max_levels is None:
             max_levels = inf
         subpath_implied_min_levels = len(subpath.split(os.path.sep)) - 1
         assert (
-                max_levels >= subpath_implied_min_levels
+            max_levels >= subpath_implied_min_levels
         ), f'max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}'
         pattern_for_field = pattern_for_field or {}
         self.rootdir = ensure_slash_suffix(rootdir)
@@ -138,10 +138,10 @@ class FileSysCollection(Collection):
         return bool(self._key_pattern.match(k))
 
     def validate_key(
-            self,
-            k,
-            err_msg_format=_dflt_not_valid_error_msg,
-            err_type=KeyValidationError,
+        self,
+        k,
+        err_msg_format=_dflt_not_valid_error_msg,
+        err_type=KeyValidationError,
     ):
         if not self.is_valid_key(k):
             raise err_type(err_msg_format.format(k))
@@ -323,7 +323,9 @@ RelPathFileStringPersister = mk_relative_path_store(
 # --------------------------------------------------- misc -------------------------------------------------------------
 import pickle
 
-pickle_bytes_wrap = wrap_kvs(obj_of_data=pickle.loads, data_of_obj=pickle.dumps)
+pickle_bytes_wrap = wrap_kvs(
+    obj_of_data=pickle.loads, data_of_obj=pickle.dumps
+)
 
 
 @pickle_bytes_wrap
