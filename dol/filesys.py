@@ -14,7 +14,7 @@ inf = float('infinity')
 
 
 def ensure_slash_suffix(path: str):
-    """Add a file separation (/ or \) at the end of path str, if not already present."""
+    r"""Add a file separation (/ or \) at the end of path str, if not already present."""
     if not path.endswith(file_sep):
         return path + file_sep
     else:
