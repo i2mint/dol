@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.trans &#8212; dol 0.1.8 documentation</title>
+    <title>dol.trans &#8212; dol 0.1.9 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -2460,36 +2460,38 @@
 
 <span class="sd">    Returns: A wrapper (that then needs to be applied to a store instance or class.</span>
 
-<span class="sd">    &gt;&gt;&gt; filtered_dict = filtered_iter(filt=lambda k: (len(k) % 2) == 1)(dict)  # keep only odd length keys</span>
-<span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; s = filtered_dict({&#39;a&#39;: 1, &#39;bb&#39;: object, &#39;ccc&#39;: &#39;a string&#39;, &#39;dddd&#39;: [1, 2]})</span>
-<span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; list(s)</span>
-<span class="sd">    [&#39;a&#39;, &#39;ccc&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; &#39;a&#39; in s  # True because odd (length) key</span>
-<span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; &#39;bb&#39; in s  # False because odd (length) key</span>
-<span class="sd">    False</span>
-<span class="sd">    &gt;&gt;&gt; assert s.get(&#39;bb&#39;, None) == None</span>
-<span class="sd">    &gt;&gt;&gt; len(s)</span>
-<span class="sd">    2</span>
-<span class="sd">    &gt;&gt;&gt; list(s.keys())</span>
-<span class="sd">    [&#39;a&#39;, &#39;ccc&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; list(s.values())</span>
-<span class="sd">    [1, &#39;a string&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; list(s.items())</span>
-<span class="sd">    [(&#39;a&#39;, 1), (&#39;ccc&#39;, &#39;a string&#39;)]</span>
-<span class="sd">    &gt;&gt;&gt; s.get(&#39;a&#39;)</span>
-<span class="sd">    1</span>
-<span class="sd">    &gt;&gt;&gt; assert s.get(&#39;bb&#39;) is None</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;x&#39;] = 10</span>
-<span class="sd">    &gt;&gt;&gt; list(s.items())</span>
-<span class="sd">    [(&#39;a&#39;, 1), (&#39;ccc&#39;, &#39;a string&#39;), (&#39;x&#39;, 10)]</span>
-<span class="sd">    &gt;&gt;&gt; try:</span>
-<span class="sd">    ...     s[&#39;xx&#39;] = &#39;not an odd key&#39;</span>
-<span class="sd">    ...     raise ValueError(&quot;This should have failed&quot;)</span>
-<span class="sd">    ... except KeyError:</span>
-<span class="sd">    ...     pass</span>
+<span class="sd">    # Commented out doctests since filtered_iter is deprecated</span>
+<span class="sd">    #</span>
+<span class="sd">    # &gt;&gt;&gt; filtered_dict = filtered_iter(filt=lambda k: (len(k) % 2) == 1)(dict)  # keep only odd length keys</span>
+<span class="sd">    # &gt;&gt;&gt;</span>
+<span class="sd">    # &gt;&gt;&gt; s = filtered_dict({&#39;a&#39;: 1, &#39;bb&#39;: object, &#39;ccc&#39;: &#39;a string&#39;, &#39;dddd&#39;: [1, 2]})</span>
+<span class="sd">    # &gt;&gt;&gt;</span>
+<span class="sd">    # &gt;&gt;&gt; list(s)</span>
+<span class="sd">    # [&#39;a&#39;, &#39;ccc&#39;]</span>
+<span class="sd">    # &gt;&gt;&gt; &#39;a&#39; in s  # True because odd (length) key</span>
+<span class="sd">    # True</span>
+<span class="sd">    # &gt;&gt;&gt; &#39;bb&#39; in s  # False because odd (length) key</span>
+<span class="sd">    # False</span>
+<span class="sd">    # &gt;&gt;&gt; assert s.get(&#39;bb&#39;, None) == None</span>
+<span class="sd">    # &gt;&gt;&gt; len(s)</span>
+<span class="sd">    # 2</span>
+<span class="sd">    # &gt;&gt;&gt; list(s.keys())</span>
+<span class="sd">    # [&#39;a&#39;, &#39;ccc&#39;]</span>
+<span class="sd">    # &gt;&gt;&gt; list(s.values())</span>
+<span class="sd">    # [1, &#39;a string&#39;]</span>
+<span class="sd">    # &gt;&gt;&gt; list(s.items())</span>
+<span class="sd">    # [(&#39;a&#39;, 1), (&#39;ccc&#39;, &#39;a string&#39;)]</span>
+<span class="sd">    # &gt;&gt;&gt; s.get(&#39;a&#39;)</span>
+<span class="sd">    # 1</span>
+<span class="sd">    # &gt;&gt;&gt; assert s.get(&#39;bb&#39;) is None</span>
+<span class="sd">    # &gt;&gt;&gt; s[&#39;x&#39;] = 10</span>
+<span class="sd">    # &gt;&gt;&gt; list(s.items())</span>
+<span class="sd">    # [(&#39;a&#39;, 1), (&#39;ccc&#39;, &#39;a string&#39;), (&#39;x&#39;, 10)]</span>
+<span class="sd">    # &gt;&gt;&gt; try:</span>
+<span class="sd">    # ...     s[&#39;xx&#39;] = &#39;not an odd key&#39;</span>
+<span class="sd">    # ...     raise ValueError(&quot;This should have failed&quot;)</span>
+<span class="sd">    # ... except KeyError:</span>
+<span class="sd">    # ...     pass</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
