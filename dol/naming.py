@@ -30,7 +30,7 @@ dflt_ignore_misunderstood_validation_instructions = False
 dflt_arg_pattern = r'.+'
 
 day_format = '%Y-%m-%d'
-day_format_pattern = re.compile('\d{4}-\d{2}-\d{2}')
+day_format_pattern = re.compile(r'\d{4}-\d{2}-\d{2}')
 
 capture_template = '({format})'
 named_capture_template = '(?P<{name}>{format})'
@@ -323,11 +323,11 @@ def mk_pattern_from_template_and_format_dict(
     ...     assert p == re.compile('(?P<here>[^\\\\]+)/and/(?P<there>[^\\\\]+)')
     ... else:
     ...     assert p == re.compile('(?P<here>[^/]+)/and/(?P<there>[^/]+)')
-    >>> p = mk_pattern_from_template_and_format_dict('{here}/and/{there}', {'there': '\d+'})
+    >>> p = mk_pattern_from_template_and_format_dict('{here}/and/{there}', {'there': r'\d+'})
     >>> if os.name == 'nt':  # for windows
-    ...     assert p == re.compile('(?P<here>[^\\\\]+)/and/(?P<there>\d+)')
+    ...     assert p == re.compile(r'(?P<here>[^\\\\]+)/and/(?P<there>\d+)')
     ... else:
-    ...     assert p == re.compile('(?P<here>[^/]+)/and/(?P<there>\d+)')
+    ...     assert p == re.compile(r'(?P<here>[^/]+)/and/(?P<there>\d+)')
     >>> type(p)
     <class 're.Pattern'>
     >>> p.match('HERE/and/1234').groupdict()
@@ -428,7 +428,7 @@ class StrTupleDict(object):
         named_tuple_type_name='NamedTuple',
         sep: str = path_sep,
     ):
-        """Converting from and to strings, tuples, and dicts.
+        r"""Converting from and to strings, tuples, and dicts.
 
         Args:
             template: The string format template
@@ -445,7 +445,7 @@ class StrTupleDict(object):
             name_separator: Used
 
         >>> ln = StrTupleDict('/home/{user}/fav/{num}.txt',
-        ...	                  format_dict={'user': '[^/]+', 'num': '\d+'},
+        ...	                  format_dict={'user': '[^/]+', 'num': r'\d+'},
         ...	                  process_info_dict={'num': int},
         ...                   sep='/'
         ...	                 )
@@ -463,7 +463,7 @@ class StrTupleDict(object):
         >>>
         >>> # Trying with template given as a tuple, and with different separator
         >>> ln = StrTupleDict(template=('first', 'last', 'age'),
-        ...                   format_dict={'age': '-*\d+'},
+        ...                   format_dict={'age': r'-*\d+'},
         ...                   process_info_dict={'age': int},
         ...                   sep=',')
         >>> ln.tuple_to_str(('Thor', "Odinson", 1500))
@@ -672,7 +672,7 @@ class StrTupleDict(object):
 
 # TODO: mk_prefix has wrong signature. Repair.
 class StrTupleDictWithPrefix(StrTupleDict):
-    """Converting from and to strings, tuples, and dicts, but with partial "prefix" specs allowed.
+    r"""Converting from and to strings, tuples, and dicts, but with partial "prefix" specs allowed.
 
     Args:
         template: The string format template
@@ -689,7 +689,7 @@ class StrTupleDictWithPrefix(StrTupleDict):
         name_separator: Used
 
     >>> ln = StrTupleDictWithPrefix('/home/{user}/fav/{num}.txt',
-    ...	                  format_dict={'user': '[^/]+', 'num': '\d+'},
+    ...	                  format_dict={'user': '[^/]+', 'num': r'\d+'},
     ...	                  process_info_dict={'num': int},
     ...                   sep='/'
     ...	                 )
@@ -1101,7 +1101,7 @@ class BigDocTest:
     def mk_e_naming():
         return LinearNaming(
             template='s3://bucket-{group}/example/files/{user}/{subuser}/{day}/{s_ums}_{e_ums}',
-            format_dict={'s_ums': '\d+', 'e_ums': '\d+', 'day': '[^/]+'},
+            format_dict={'s_ums': r'\d+', 'e_ums': r'\d+', 'day': '[^/]+'},
             process_kwargs=BigDocTest.example_process_kwargs,
             process_info_dict=BigDocTest.process_info_dict_for_example,
         )

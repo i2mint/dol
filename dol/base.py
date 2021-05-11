@@ -636,6 +636,12 @@ class Store(KvPersister):
         return x
         # return self.store.__repr__()
 
+    def __getstate__(self):
+        return self.store.__getstate__()
+
+    def __setstate__(self, state):
+        return self.store.__setstate__(state)
+
 
 # Store.register(dict)  # TODO: Would this be a good idea? To make isinstance({}, Store) be True (though missing head())
 KvStore = Store  # alias with explict name

@@ -2425,36 +2425,38 @@ def filtered_iter(
 
     Returns: A wrapper (that then needs to be applied to a store instance or class.
 
-    >>> filtered_dict = filtered_iter(filt=lambda k: (len(k) % 2) == 1)(dict)  # keep only odd length keys
-    >>>
-    >>> s = filtered_dict({'a': 1, 'bb': object, 'ccc': 'a string', 'dddd': [1, 2]})
-    >>>
-    >>> list(s)
-    ['a', 'ccc']
-    >>> 'a' in s  # True because odd (length) key
-    True
-    >>> 'bb' in s  # False because odd (length) key
-    False
-    >>> assert s.get('bb', None) == None
-    >>> len(s)
-    2
-    >>> list(s.keys())
-    ['a', 'ccc']
-    >>> list(s.values())
-    [1, 'a string']
-    >>> list(s.items())
-    [('a', 1), ('ccc', 'a string')]
-    >>> s.get('a')
-    1
-    >>> assert s.get('bb') is None
-    >>> s['x'] = 10
-    >>> list(s.items())
-    [('a', 1), ('ccc', 'a string'), ('x', 10)]
-    >>> try:
-    ...     s['xx'] = 'not an odd key'
-    ...     raise ValueError("This should have failed")
-    ... except KeyError:
-    ...     pass
+    # Commented out doctests since filtered_iter is deprecated
+    #
+    # >>> filtered_dict = filtered_iter(filt=lambda k: (len(k) % 2) == 1)(dict)  # keep only odd length keys
+    # >>>
+    # >>> s = filtered_dict({'a': 1, 'bb': object, 'ccc': 'a string', 'dddd': [1, 2]})
+    # >>>
+    # >>> list(s)
+    # ['a', 'ccc']
+    # >>> 'a' in s  # True because odd (length) key
+    # True
+    # >>> 'bb' in s  # False because odd (length) key
+    # False
+    # >>> assert s.get('bb', None) == None
+    # >>> len(s)
+    # 2
+    # >>> list(s.keys())
+    # ['a', 'ccc']
+    # >>> list(s.values())
+    # [1, 'a string']
+    # >>> list(s.items())
+    # [('a', 1), ('ccc', 'a string')]
+    # >>> s.get('a')
+    # 1
+    # >>> assert s.get('bb') is None
+    # >>> s['x'] = 10
+    # >>> list(s.items())
+    # [('a', 1), ('ccc', 'a string'), ('x', 10)]
+    # >>> try:
+    # ...     s['xx'] = 'not an odd key'
+    # ...     raise ValueError("This should have failed")
+    # ... except KeyError:
+    # ...     pass
     """
 
     from warnings import warn

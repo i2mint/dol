@@ -44,7 +44,6 @@ from dol.trans import (
     kv_wrap,
     cached_keys,
     filt_iter,
-    filtered_iter,
     add_path_get,
     insert_aliases,
     add_ipython_key_completions,
