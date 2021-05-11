@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.naming &#8212; dol 0.1.8 documentation</title>
+    <title>dol.naming &#8212; dol 0.1.9 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -231,7 +231,7 @@ before returning them.</p></li>
 </dd>
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span> <span class="o">=</span> <span class="n">StrTupleDictWithPrefix</span><span class="p">(</span><span class="s1">&#39;/home/</span><span class="si">{user}</span><span class="s1">/fav/</span><span class="si">{num}</span><span class="s1">.txt&#39;</span><span class="p">,</span>
-<span class="gp">... </span>                  <span class="n">format_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;[^/]+&#39;</span><span class="p">,</span> <span class="s1">&#39;num&#39;</span><span class="p">:</span> <span class="s1">&#39;\d+&#39;</span><span class="p">},</span>
+<span class="gp">... </span>                  <span class="n">format_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;[^/]+&#39;</span><span class="p">,</span> <span class="s1">&#39;num&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">},</span>
 <span class="gp">... </span>                  <span class="n">process_info_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;num&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">},</span>
 <span class="gp">... </span>                  <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;/&#39;</span>
 <span class="gp">... </span>                 <span class="p">)</span>
@@ -315,11 +315,11 @@ Used to easily make process_kwargs and process_info_dict arguments for LinearNam
 …     assert p == re.compile(‘(?P&lt;here&gt;[^\\]+)/and/(?P&lt;there&gt;[^\\]+)’)
 … else:
 …     assert p == re.compile(‘(?P&lt;here&gt;[^/]+)/and/(?P&lt;there&gt;[^/]+)’)
-&gt;&gt;&gt; p = mk_pattern_from_template_and_format_dict(‘{here}/and/{there}’, {‘there’: ‘d+’})
+&gt;&gt;&gt; p = mk_pattern_from_template_and_format_dict(‘{here}/and/{there}’, {‘there’: r’d+’})
 &gt;&gt;&gt; if os.name == ‘nt’:  # for windows
-…     assert p == re.compile(‘(?P&lt;here&gt;[^\\]+)/and/(?P&lt;there&gt;d+)’)
+…     assert p == re.compile(r’(?P&lt;here&gt;[^\\]+)/and/(?P&lt;there&gt;d+)’)
 … else:
-…     assert p == re.compile(‘(?P&lt;here&gt;[^/]+)/and/(?P&lt;there&gt;d+)’)
+…     assert p == re.compile(r’(?P&lt;here&gt;[^/]+)/and/(?P&lt;there&gt;d+)’)
 &gt;&gt;&gt; type(p)
 &lt;class ‘re.Pattern’&gt;
 &gt;&gt;&gt; p.match(‘HERE/and/1234’).groupdict()

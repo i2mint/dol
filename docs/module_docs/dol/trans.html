@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.trans &#8212; dol 0.1.8 documentation</title>
+    <title>dol.trans &#8212; dol 0.1.9 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -838,38 +838,38 @@ iterable: The collection of keys you want to filter “in”</p></li>
 </dd>
 </dl>
 <p>Returns: A wrapper (that then needs to be applied to a store instance or class.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">filtered_dict</span> <span class="o">=</span> <span class="n">filtered_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)(</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># keep only odd length keys</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">filtered_dict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;bb&#39;</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="s1">&#39;ccc&#39;</span><span class="p">:</span> <span class="s1">&#39;a string&#39;</span><span class="p">,</span> <span class="s1">&#39;dddd&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]})</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="go">[&#39;a&#39;, &#39;ccc&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;a&#39;</span> <span class="ow">in</span> <span class="n">s</span>  <span class="c1"># True because odd (length) key</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;bb&#39;</span> <span class="ow">in</span> <span class="n">s</span>  <span class="c1"># False because odd (length) key</span>
-<span class="go">False</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bb&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="kc">None</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="go">2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-<span class="go">[&#39;a&#39;, &#39;ccc&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-<span class="go">[1, &#39;a string&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-<span class="go">[(&#39;a&#39;, 1), (&#39;ccc&#39;, &#39;a string&#39;)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
-<span class="go">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bb&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-<span class="go">[(&#39;a&#39;, 1), (&#39;ccc&#39;, &#39;a string&#39;), (&#39;x&#39;, 10)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">s</span><span class="p">[</span><span class="s1">&#39;xx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;not an odd key&#39;</span>
-<span class="gp">... </span>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;This should have failed&quot;</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">pass</span>
-</pre></div>
-</div>
+<p># Commented out doctests since filtered_iter is deprecated
+#
+# &gt;&gt;&gt; filtered_dict = filtered_iter(filt=lambda k: (len(k) % 2) == 1)(dict)  # keep only odd length keys
+# &gt;&gt;&gt;
+# &gt;&gt;&gt; s = filtered_dict({‘a’: 1, ‘bb’: object, ‘ccc’: ‘a string’, ‘dddd’: [1, 2]})
+# &gt;&gt;&gt;
+# &gt;&gt;&gt; list(s)
+# [‘a’, ‘ccc’]
+# &gt;&gt;&gt; ‘a’ in s  # True because odd (length) key
+# True
+# &gt;&gt;&gt; ‘bb’ in s  # False because odd (length) key
+# False
+# &gt;&gt;&gt; assert s.get(‘bb’, None) == None
+# &gt;&gt;&gt; len(s)
+# 2
+# &gt;&gt;&gt; list(s.keys())
+# [‘a’, ‘ccc’]
+# &gt;&gt;&gt; list(s.values())
+# [1, ‘a string’]
+# &gt;&gt;&gt; list(s.items())
+# [(‘a’, 1), (‘ccc’, ‘a string’)]
+# &gt;&gt;&gt; s.get(‘a’)
+# 1
+# &gt;&gt;&gt; assert s.get(‘bb’) is None
+# &gt;&gt;&gt; s[‘x’] = 10
+# &gt;&gt;&gt; list(s.items())
+# [(‘a’, 1), (‘ccc’, ‘a string’), (‘x’, 10)]
+# &gt;&gt;&gt; try:
+# …     s[‘xx’] = ‘not an odd key’
+# …     raise ValueError(“This should have failed”)
+# … except KeyError:
+# …     pass</p>
 </dd></dl>
 
 <dl class="py function">
