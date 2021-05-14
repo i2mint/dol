@@ -24,7 +24,7 @@ class PrefixRelativization(PrefixRelativizationMixin):
     In fact, not only strings, but any key object that has a __len__, __add__, and subscripting.
     """
 
-    def __init__(self, _prefix=''):
+    def __init__(self, _prefix=""):
         self._prefix = _prefix
 
 

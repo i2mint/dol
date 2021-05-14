@@ -627,6 +627,7 @@ class Store(KvPersister):
     #             pass''')
 
     # Misc ####################################################################
+    # TODO: Review this -- must be a better overall solution!
     def __repr__(self):
         x = repr(self.store)
         if isinstance(self._max_repr_size, int):
@@ -636,11 +637,14 @@ class Store(KvPersister):
         return x
         # return self.store.__repr__()
 
-    def __getstate__(self):
-        return self.store.__getstate__()
-
-    def __setstate__(self, state):
-        return self.store.__setstate__(state)
+    # def __getstate__(self):
+    #     try:
+    #         return self.store.__getstate__()
+    #     except AttributeError:
+    #         return self.store.__reduce__()
+    #
+    # def __setstate__(self, state):
+    #     return self.store.__setstate__(state)
 
 
 # Store.register(dict)  # TODO: Would this be a good idea? To make isinstance({}, Store) be True (though missing head())

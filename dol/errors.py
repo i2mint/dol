@@ -109,7 +109,7 @@ def items_with_caught_exceptions(
                 yield t  # yield it
 
 
-def _assert_condition(condition, err_msg='', err_cls=AssertionError):
+def _assert_condition(condition, err_msg="", err_cls=AssertionError):
     if not condition:
         raise err_cls(err_msg)
 

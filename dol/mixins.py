@@ -12,7 +12,7 @@ class SimpleJsonMixin:
     Useful to store and retrieve
     """
 
-    _docsuffix = 'Data is assumed to be a JSON string, and is loaded with json.loads and dumped with json.dumps'
+    _docsuffix = "Data is assumed to be a JSON string, and is loaded with json.loads and dumped with json.dumps"
 
     def _obj_of_data(self, data):
         return json.loads(data)
@@ -76,7 +76,7 @@ class IdentityKvWrapMixin(IdentityKeysWrapMixin, IdentityValsWrapMixin):
 
 from functools import partial
 
-encode_as_utf8 = partial(str, encoding='utf-8')
+encode_as_utf8 = partial(str, encoding="utf-8")
 
 
 class StringKvWrap(IdentityKvWrapMixin):
@@ -158,15 +158,15 @@ class OverWritesNotAllowedMixin:
             ...
 
         copy_attrs(
-            NoOverWritesClass, cls, ('__name__', '__qualname__', '__module__')
+            NoOverWritesClass, cls, ("__name__", "__qualname__", "__module__")
         )
         return NoOverWritesClass
 
     def __setitem__(self, k, v):
         if self.__contains__(k):
             raise OverWritesNotAllowedError(
-                'key {} already exists and cannot be overwritten. '
-                'If you really want to write to that key, delete it before writing'.format(
+                "key {} already exists and cannot be overwritten. "
+                "If you really want to write to that key, delete it before writing".format(
                     k
                 )
             )
