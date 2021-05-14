@@ -46,8 +46,8 @@ def define_extend_as_seq_of_appends(obj):
 
     """
     assert hasattr(
-        obj, "append"
-    ), f"Your object needs to have an append method! Object was: {obj}"
+        obj, 'append'
+    ), f'Your object needs to have an append method! Object was: {obj}'
 
     def extend(self, items):
         for item in items:
@@ -306,9 +306,7 @@ class mk_item2kv_for:
 
 @store_decorator
 def appendable(
-    store_cls=None,
-    *,
-    item2kv,
+    store_cls=None, *, item2kv,
 ):
     """Makes a new class with append (and consequential extend) methods
 
@@ -362,9 +360,9 @@ def appendable(
             self.append(item)
 
     return type(
-        "Appendable" + store_cls.__name__,
+        'Appendable' + store_cls.__name__,
         (store_cls,),
-        {"append": append, "extend": extend},
+        {'append': append, 'extend': extend},
     )
 
 
@@ -378,7 +376,7 @@ from collections.abc import Sequence
 from typing import Iterable, Optional
 
 NotAVal = type(
-    "NotAVal", (), {}
+    'NotAVal', (), {}
 )()  # singleton instance to distinguish from None
 
 
@@ -478,7 +476,7 @@ class FirstAppendOnly(Sequence):
     def __getitem__(self, k):
         if len(self) == 0:
             raise IndexError(
-                f"There are no items in this {self.__class__} instance"
+                f'There are no items in this {self.__class__} instance'
             )
         elif k == 0:
             return self.val
@@ -486,7 +484,7 @@ class FirstAppendOnly(Sequence):
             return [self.val][k]
         else:
             raise IndexError(
-                f"A {self.__class__} instance can only have one value, or none at all."
+                f'A {self.__class__} instance can only have one value, or none at all.'
             )
 
     # @staticmethod
