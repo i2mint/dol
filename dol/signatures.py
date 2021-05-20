@@ -69,6 +69,8 @@ def ensure_signature(obj: SignatureAble):
             raise TypeError(
                 f"Don't know how to make that object into a Signature: {obj}"
             )
+    elif isinstance(obj, Parameter):
+        return Signature(parameters=(obj,))
     elif obj is None:
         return Signature(parameters=())
     # if you get this far...
@@ -84,15 +86,36 @@ def ensure_param(p):
     if isinstance(p, Parameter):
         return p
     elif isinstance(p, dict):
-        return Parameter(**p)
+        return Param(**p)
     elif isinstance(p, str):
-        return Parameter(name=p, kind=PK)
+        return Param(name=p)
     elif isinstance(p, Iterable):
         name, *r = p
         dflt_and_annotation = dict(zip(['default', 'annotation'], r))
-        return Parameter(name, PK, **dflt_and_annotation)
+        return Param(name, PK, **dflt_and_annotation)
     else:
         raise TypeError(f"Don't know how to make {p} into a Parameter object")
+
+
+def _params_from_mapping(mapping: MappingType):
+    def gen():
+        for k, v in mapping.items():
+            if isinstance(v, MappingType):
+                if 'name' in v:
+                    assert v['name'] == k, (
+                        f'In a mapping specification of a params, '
+                        f"either the 'name' of the val shouldn't be specified, "
+                        f'or it should be the same as the key ({k}): '
+                        f'{dict(mapping)}'
+                    )
+                    yield v
+                else:
+                    yield dict(name=k, **v)
+            else:
+                assert isinstance(v, Parameter) and v.name == k
+                yield v
+
+    return list(gen())
 
 
 def ensure_params(obj: ParamsAble = None):
@@ -113,7 +136,7 @@ def ensure_params(obj: ParamsAble = None):
     ...     ('b', Parameter.empty, int), # if you want an annotation without a default use Parameter.empty
     ...     ('c', 2),  # if you just want a default, make it the second element of your tuple
     ...     dict(name='d', kind=Parameter.VAR_KEYWORD)])  # all kinds are by default PK: Use dict to specify otherwise.
-    [<Parameter "xyz">, <Parameter "b: int">, <Parameter "c=2">, <Parameter "**d">]
+    [<Param "xyz">, <Param "b: int">, <Param "c=2">, <Param "**d">]
 
 
     If no input is given, an empty list is returned.
@@ -128,13 +151,30 @@ def ensure_params(obj: ParamsAble = None):
         return []
     elif isinstance(obj, Iterable):
         if isinstance(obj, str):
-            obj = {'name': obj}
-        if isinstance(obj, Mapping):
-            obj = obj.values()
-        obj = list(obj)
+            obj = [obj]
+        # TODO: Can do better here! See attempt in _params_from_mapping:
+        elif isinstance(obj, Mapping):
+            obj = _params_from_mapping(obj)
+            # obj = list(obj.values())
+        elif isinstance(obj, tuple) and len(obj) in {1, 2, 3}:
+            n = len(obj)
+            if n == 1:
+                obj = [{'name': obj}]
+            elif n == 2:
+                obj = [{'name': obj[0], 'default': obj[1]}]
+            elif n == 2:
+                obj = [
+                    {'name': obj[0], 'default': obj[1], 'annotation': obj[2]}
+                ]
+        else:
+            obj = list(obj)
+
         if len(obj) == 0:
             return obj
         else:
+            # TODO: put this in function that has more kind resolution power
+            #  e.g. if a KEYWORD_ONLY arg was encountered, all subsequent
+            #  have to be unless otherwise specified.
             return [ensure_param(p) for p in obj]
     else:
         if isinstance(obj, Parameter):
@@ -476,13 +516,29 @@ def commands_dict(
 class Param(Parameter):
     # aliases
     PK = Parameter.POSITIONAL_OR_KEYWORD
-    OP = Parameter.POSITIONAL_ONLY
-    OK = Parameter.KEYWORD_ONLY
+    PO = Parameter.POSITIONAL_ONLY
+    KO = Parameter.KEYWORD_ONLY
     VP = Parameter.VAR_POSITIONAL
     VK = Parameter.VAR_KEYWORD
+    # OP = Parameter.POSITIONAL_ONLY
+    # OK = Parameter.KEYWORD_ONLY
 
     def __init__(self, name, kind=PK, *, default=empty, annotation=empty):
         super().__init__(name, kind, default=default, annotation=annotation)
+
+    # Note: Was useful to make Param a mapping, to get (dict(param))
+    #  Is not useful anymore, so comment-deprecating
+    # def __iter__(self):
+    #     yield from ['name', 'kind', 'default', 'annotation']
+    #
+    # def __getitem__(self, k):
+    #     return getattr(self, k)
+    #
+    # def __len__(self):
+    #     return 4
+
+
+P = Param  # useful shorthand alias
 
 
 def param_has_default_or_is_var_kind(p: Parameter):
