@@ -1,51 +1,101 @@
+"""
+Test the pickability of stores when they're wrapped.
+"""
 import pytest
 import pickle
+from functools import partial
 
 from dol.base import Store
 from dol.trans import wrap_kvs, filt_iter, cache_iter
 
-pup = lambda obj: pickle.loads(pickle.dumps(obj))
+# TODO: Make it work
 
 
-def add_tag(k):
-    return k + '__tag'
-
-
-def remove_tag(k):
-    assert k.endswith('__tag')
-    return k[: -len('__tag')]
+def test_pickling_w_dict():
+    """To show that a dict pickles and unpickles just fine!"""
+    s = {"a": 1, "b": 2}
+    assert_dict_of_unpickled_is_the_same(s)
 
 
 @pytest.mark.xfail
 def test_pickling_w_simple_store():
-    store = Store({'a': 1, 'b': 2})
-    pickled = pickle.dumps(store)
-    unpickled = pickle.loads(pickled)
-    assert dict(store) == dict(unpickled)
+    s = Store({"a": 1, "b": 2})
+    assert_dict_of_unpickled_is_the_same(s)
 
 
 @pytest.mark.xfail
 def test_pickling_with_wrap_kvs_class():
-    D = wrap_kvs(key_of_id=add_tag, id_of_key=remove_tag)(dict)
-    store = D({'a': 1, 'b': 2})
-    pickled = pickle.dumps(store)
-    unpickled = pickle.loads(pickled)
-    assert dict(store) == dict(unpickled)
+    WrappedDict = wrap_kvs(key_of_id=add_tag, id_of_key=remove_tag)(dict)
+    s = WrappedDict({"a": 1, "b": 2})
+    assert_dict_of_unpickled_is_the_same(s)
 
 
 @pytest.mark.xfail
 def test_pickling_with_wrap_kvs_instance():
-    d = {'a': 1, 'b': 2}
-    wrapped_d = wrap_kvs(d, key_of_id=add_tag, id_of_key=remove_tag)
-    pickled = pickle.dumps(wrapped_d)
+    d = {"a": 1, "b": 2}
+    s = wrap_kvs(d, key_of_id=add_tag, id_of_key=remove_tag)
+    assert_dict_of_unpickled_is_the_same(s)
+
+
+@pytest.mark.xfail
+def test_pickling_with_filt_iter_class():
+    filt_func = partial(is_below_max_len, max_len=3)
+    WrappedDict = filt_iter(dict, filt=filt_func)
+    s = WrappedDict({"a": 1, "bb": 2, "ccc": 3})
+    assert dict(s) == {"a": 1, "bb": 2}
+    assert_dict_of_unpickled_is_the_same(s)
+
+
+@pytest.mark.xfail
+def test_pickling_with_filt_iter_instance():
+    d = {"a": 1, "bb": 2, "ccc": 3}
+    filt_func = partial(is_below_max_len, max_len=3)
+    s = filt_iter(d, filt=filt_func)
+    assert dict(s) == {"a": 1, "bb": 2}
+    assert_dict_of_unpickled_is_the_same(s)
+
+
+@pytest.mark.xfail
+def test_pickling_with_cache_iter_class():
+    WrappedDict = cache_iter(dict, keys_cache=sorted)
+    s = WrappedDict({"b": 2, "a": 1})  # Note: b comes before a here
+    assert list(s) == ["a", "b"]  # but here, things are sorted
+    assert list(dict(s)) == ["a", "b"]  # TODO: This fails! Why?
+    assert list(dict(s.items())) == ["a", "b"]  # ... yet this one sees the cache
+    assert dict(s.items()) == {"a": 1, "b": 2}
+    assert_dict_of_unpickled_is_the_same(s)
+
+
+@pytest.mark.xfail
+def test_pickling_with_cache_iter_instance():
+    d = {"b": 2, "a": 1}  # Note: b comes before a here
+    s = cache_iter(d, keys_cache=sorted)
+    assert list(s) == ["a", "b"]  # but here, things are sorted
+    assert list(dict(s)) == ["a", "b"]  # TODO: This fails! Why?
+    assert list(dict(s.items())) == ["a", "b"]  # ... yet this one sees the cache
+    assert dict(s.items()) == {"a": 1, "b": 2}
+    assert_dict_of_unpickled_is_the_same(s)
+
+
+# ------------------------ utils -------------------------------------------------------------------
+
+pup = lambda obj: pickle.loads(pickle.dumps(obj))
+
+
+def assert_dict_of_unpickled_is_the_same(original_obj):
+    pickled = pickle.dumps(original_obj)
     unpickled = pickle.loads(pickled)
-    assert dict(unpickled) == dict(wrapped_d)
+    assert dict(unpickled) == dict(original_obj)
 
 
-# @pytest.mark.xfail
-# def test_pickling_with_filt_iter_instance():
-#     d = {"a": 1, "b": 2, "cc": 3}
-#     wrapped_d = filt_iter(d, key_of_id=add_tag, id_of_key=remove_tag)
-#     pickled = pickle.dumps(wrapped_d)
-#     unpickled = pickle.loads(pickled)
-#     assert dict(unpickled) == dict(wrapped_d)
+def add_tag(k):
+    return k + "__tag"
+
+
+def remove_tag(k):
+    assert k.endswith("__tag")
+    return k[: -len("__tag")]
+
+
+def is_below_max_len(x, max_len=3):
+    return len(x) < max_len
