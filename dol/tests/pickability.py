@@ -17,7 +17,6 @@ def test_pickling_w_dict():
     assert_dict_of_unpickled_is_the_same(s)
 
 
-@pytest.mark.xfail
 def test_pickling_w_simple_store():
     s = Store({'a': 1, 'b': 2})
     assert_dict_of_unpickled_is_the_same(s)
@@ -89,7 +88,7 @@ pup = lambda obj: pickle.loads(pickle.dumps(obj))
 
 
 def assert_dict_of_unpickled_is_the_same(original_obj):
-    pickled = pickle.dumps(original_obj)
+    pickled = pickle._dumps(original_obj)
     unpickled = pickle.loads(pickled)
     assert dict(unpickled) == dict(original_obj)
 

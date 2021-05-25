@@ -1725,6 +1725,7 @@ def wrap_kvs(
     # TODO: ########################################################################################
 
     store_cls = kv_wrap_persister_cls(store, name=name)  # experiment
+    # store_cls = Store.wrap(store)
     store_cls._cls_trans = None
 
     # store_cls = type(name, (store,), {})

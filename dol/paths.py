@@ -288,8 +288,12 @@ class RelativePathKeyMapper:
         return _id[self._prefix_length :]
 
 
+# TODO: Enums introduce a ridiculous level of complexity here.
+#  Learn them of remove them!!
+
 from dol.naming import StrTupleDict
 from enum import Enum
+from collections import namedtuple
 
 
 class PathKeyTypes(Enum):
@@ -298,6 +302,12 @@ class PathKeyTypes(Enum):
     tuple = 'tuple'
     namedtuple = 'namedtuple'
 
+
+path_key_type_for_type = {
+    str: PathKeyTypes.str,
+    dict: PathKeyTypes.dict,
+    tuple: PathKeyTypes.tuple,
+}
 
 _method_names_for_path_type = {
     PathKeyTypes.str: {
@@ -330,7 +340,7 @@ _method_names_for_path_type = {
 # TODO: Add key and id type validation
 def str_template_key_trans(
     template: str,
-    key_type: PathKeyTypes,
+    key_type: Union[PathKeyTypes, type],
     format_dict=None,
     process_kwargs=None,
     process_info_dict=None,

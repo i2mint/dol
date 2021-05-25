@@ -25,6 +25,7 @@ the storage methods themselves.
 """
 
 from functools import partial, update_wrapper
+import copyreg
 from collections.abc import Collection as CollectionABC
 from collections.abc import Mapping, MutableMapping
 from collections.abc import (
@@ -266,6 +267,9 @@ def delegate_to(
     def delegation_decorator(wrapper_cls: type):
         @wraps(wrapper_cls, updated=())
         class Wrap(wrapper_cls):
+            # _type_of_wrapped = wrapped
+            # _delegation_attr = delegation_attr
+
             @wraps(wrapper_cls.__init__)
             def __init__(self, *args, **kwargs):
                 delegate = wrapped(*args, **kwargs)
@@ -275,6 +279,16 @@ def delegate_to(
                 assert isinstance(
                     getattr(self, delegation_attr, None), wrapped
                 ), f'The wrapper instance has no (expected) {delegation_attr!r} attribute'
+
+            def __reduce__(self):
+                return (
+                    # reconstructor
+                    wrapped_delegator_reconstruct,
+                    # args of reconstructor
+                    (wrapper_cls, wrapped, delegation_attr),
+                    # instance state
+                    self.__getstate__(),
+                )
 
         attrs = attributes_of_wrapped - set(
             dir(wrapper_cls)
@@ -290,6 +304,14 @@ def delegate_to(
         return Wrap
 
     return delegation_decorator
+
+
+def wrapped_delegator_reconstruct(wrapped_cls, wrapped, delegation_attr):
+    """"""
+    type_ = delegator_wrap(wrapped_cls, wrapped, delegation_attr)
+    # produce an empty object for pickle to pour the
+    # __getstate__ values into, via __setstate__
+    return copyreg._reconstructor(type_, object, None)
 
 
 def delegator_wrap(
@@ -522,7 +544,9 @@ class Store(KvPersister):
 
     def __getattr__(self, attr):
         """Delegate method to wrapped store if not part of wrapper store methods"""
-        return getattr(self.store, attr)
+        # Instead of return getattr(self.store, attr), doing the following
+        # because self.store had problems with pickling
+        return getattr(object.__getattribute__(self, 'store'), attr)
 
     def __dir__(self):
         return list(
@@ -637,14 +661,11 @@ class Store(KvPersister):
         return x
         # return self.store.__repr__()
 
-    # def __getstate__(self):
-    #     try:
-    #         return self.store.__getstate__()
-    #     except AttributeError:
-    #         return self.store.__reduce__()
-    #
-    # def __setstate__(self, state):
-    #     return self.store.__setstate__(state)
+    def __getstate__(self) -> dict:
+        return {'store': self.store}
+
+    def __setstate__(self, state: dict):
+        self.store = state['store']
 
 
 # Store.register(dict)  # TODO: Would this be a good idea? To make isinstance({}, Store) be True (though missing head())
@@ -873,7 +894,7 @@ class Stream:
     def __init__(self, stream):
         self.stream = stream
 
-    wrap = classmethod(delegator_wrap)
+    wrap = classmethod(partial(delegator_wrap, delegation_attr='stream'))
 
     # _data_of_obj = static_identity_method  # for write methods
     _pre_iter = static_identity_method

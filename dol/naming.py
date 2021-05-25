@@ -417,7 +417,9 @@ def _mk(self, *args, **kwargs):
         kwargs = self.process_kwargs(**kwargs)
     return self.template.format(**kwargs)
 
+from dol.trans import add_wrapper_method
 
+# @add_wrapper_method
 class StrTupleDict(object):
     def __init__(
         self,
@@ -1116,7 +1118,7 @@ class BigDocTest:
 
 import os
 from functools import wraps
-from dol.trans import wrap_kvs
+from dol.trans import wrap_kvs, store_decorator
 
 pjoin = os.path.join
 
@@ -1150,8 +1152,10 @@ def _get_method_for_str_to_key_type(keymap, key_type):
 
 
 # TODO: Make this into a proper store decorator
+@store_decorator
 def mk_store_from_path_format_store_cls(
-    store,
+    store=None,
+    *,
     subpath='',
     store_cls_kwargs=None,
     key_type=namedtuple,
