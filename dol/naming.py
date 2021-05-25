@@ -417,6 +417,7 @@ def _mk(self, *args, **kwargs):
         kwargs = self.process_kwargs(**kwargs)
     return self.template.format(**kwargs)
 
+
 from dol.trans import add_wrapper_method
 
 # @add_wrapper_method

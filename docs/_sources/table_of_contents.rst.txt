@@ -16,5 +16,6 @@
    module_docs/dol/signatures
    module_docs/dol/sources
    module_docs/dol/tests/pickability
+   module_docs/dol/tests/scrap
    module_docs/dol/trans
    module_docs/dol/util

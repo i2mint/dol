@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.paths &#8212; dol 0.1.15 documentation</title>
+    <title>dol.paths &#8212; dol 0.1.16 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -323,8 +323,12 @@
         <span class="k">return</span> <span class="n">_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix_length</span> <span class="p">:]</span>
 
 
+<span class="c1"># TODO: Enums introduce a ridiculous level of complexity here.</span>
+<span class="c1">#  Learn them of remove them!!</span>
+
 <span class="kn">from</span> <span class="nn">dol.naming</span> <span class="kn">import</span> <span class="n">StrTupleDict</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
 
 
 <div class="viewcode-block" id="PathKeyTypes"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.PathKeyTypes">[docs]</a><span class="k">class</span> <span class="nc">PathKeyTypes</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
@@ -333,6 +337,12 @@
     <span class="nb">tuple</span> <span class="o">=</span> <span class="s1">&#39;tuple&#39;</span>
     <span class="n">namedtuple</span> <span class="o">=</span> <span class="s1">&#39;namedtuple&#39;</span></div>
 
+
+<span class="n">path_key_type_for_type</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nb">str</span><span class="p">:</span> <span class="n">PathKeyTypes</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+    <span class="nb">dict</span><span class="p">:</span> <span class="n">PathKeyTypes</span><span class="o">.</span><span class="n">dict</span><span class="p">,</span>
+    <span class="nb">tuple</span><span class="p">:</span> <span class="n">PathKeyTypes</span><span class="o">.</span><span class="n">tuple</span><span class="p">,</span>
+<span class="p">}</span>
 
 <span class="n">_method_names_for_path_type</span> <span class="o">=</span> <span class="p">{</span>
     <span class="n">PathKeyTypes</span><span class="o">.</span><span class="n">str</span><span class="p">:</span> <span class="p">{</span>
@@ -365,7 +375,7 @@
 <span class="c1"># TODO: Add key and id type validation</span>
 <div class="viewcode-block" id="str_template_key_trans"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.str_template_key_trans">[docs]</a><span class="k">def</span> <span class="nf">str_template_key_trans</span><span class="p">(</span>
     <span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">key_type</span><span class="p">:</span> <span class="n">PathKeyTypes</span><span class="p">,</span>
+    <span class="n">key_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PathKeyTypes</span><span class="p">,</span> <span class="nb">type</span><span class="p">],</span>
     <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">process_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">process_info_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -488,6 +498,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/signatures.html">dol.signatures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/sources.html">dol.sources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/pickability.html">dol.tests.pickability</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/util.html">dol.util</a></li>
 </ul>

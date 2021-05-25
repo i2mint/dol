@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.base &#8212; dol 0.1.15 documentation</title>
+    <title>dol.base &#8212; dol 0.1.16 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -60,6 +60,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">update_wrapper</span>
+<span class="kn">import</span> <span class="nn">copyreg</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Collection</span> <span class="k">as</span> <span class="n">CollectionABC</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
@@ -301,6 +302,9 @@
     <span class="k">def</span> <span class="nf">delegation_decorator</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">):</span>
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">,</span> <span class="n">updated</span><span class="o">=</span><span class="p">())</span>
         <span class="k">class</span> <span class="nc">Wrap</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">):</span>
+            <span class="c1"># _type_of_wrapped = wrapped</span>
+            <span class="c1"># _delegation_attr = delegation_attr</span>
+
             <span class="nd">@wraps</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
             <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
                 <span class="n">delegate</span> <span class="o">=</span> <span class="n">wrapped</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -310,6 +314,16 @@
                 <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
                     <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">wrapped</span>
                 <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;The wrapper instance has no (expected) </span><span class="si">{</span><span class="n">delegation_attr</span><span class="si">!r}</span><span class="s1"> attribute&#39;</span>
+
+            <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="c1"># reconstructor</span>
+                    <span class="n">wrapped_delegator_reconstruct</span><span class="p">,</span>
+                    <span class="c1"># args of reconstructor</span>
+                    <span class="p">(</span><span class="n">wrapper_cls</span><span class="p">,</span> <span class="n">wrapped</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="p">),</span>
+                    <span class="c1"># instance state</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">(),</span>
+                <span class="p">)</span>
 
         <span class="n">attrs</span> <span class="o">=</span> <span class="n">attributes_of_wrapped</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span>
             <span class="nb">dir</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">)</span>
@@ -325,6 +339,14 @@
         <span class="k">return</span> <span class="n">Wrap</span>
 
     <span class="k">return</span> <span class="n">delegation_decorator</span>
+
+
+<span class="k">def</span> <span class="nf">wrapped_delegator_reconstruct</span><span class="p">(</span><span class="n">wrapped_cls</span><span class="p">,</span> <span class="n">wrapped</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+    <span class="n">type_</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">wrapped_cls</span><span class="p">,</span> <span class="n">wrapped</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="p">)</span>
+    <span class="c1"># produce an empty object for pickle to pour the</span>
+    <span class="c1"># __getstate__ values into, via __setstate__</span>
+    <span class="k">return</span> <span class="n">copyreg</span><span class="o">.</span><span class="n">_reconstructor</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="nb">object</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="delegator_wrap"><a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.delegator_wrap">[docs]</a><span class="k">def</span> <span class="nf">delegator_wrap</span><span class="p">(</span>
@@ -557,7 +579,9 @@
 
     <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delegate method to wrapped store if not part of wrapper store methods&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="c1"># Instead of return getattr(self.store, attr), doing the following</span>
+        <span class="c1"># because self.store had problems with pickling</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;store&#39;</span><span class="p">),</span> <span class="n">attr</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__dir__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span>
@@ -669,17 +693,14 @@
             <span class="n">half</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_repr_size</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_repr_size</span><span class="p">:</span>
                 <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="n">half</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;  ...  &#39;</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="n">half</span><span class="p">:]</span>
-        <span class="k">return</span> <span class="n">x</span></div>
+        <span class="k">return</span> <span class="n">x</span>
         <span class="c1"># return self.store.__repr__()</span>
 
-    <span class="c1"># def __getstate__(self):</span>
-    <span class="c1">#     try:</span>
-    <span class="c1">#         return self.store.__getstate__()</span>
-    <span class="c1">#     except AttributeError:</span>
-    <span class="c1">#         return self.store.__reduce__()</span>
-    <span class="c1">#</span>
-    <span class="c1"># def __setstate__(self, state):</span>
-    <span class="c1">#     return self.store.__setstate__(state)</span>
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;store&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;store&#39;</span><span class="p">]</span></div>
 
 
 <span class="c1"># Store.register(dict)  # TODO: Would this be a good idea? To make isinstance({}, Store) be True (though missing head())</span>
@@ -908,7 +929,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span>
 
-    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">)</span>
+    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">&#39;stream&#39;</span><span class="p">))</span>
 
     <span class="c1"># _data_of_obj = static_identity_method  # for write methods</span>
     <span class="n">_pre_iter</span> <span class="o">=</span> <span class="n">static_identity_method</span>
@@ -985,6 +1006,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/signatures.html">dol.signatures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/sources.html">dol.sources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/pickability.html">dol.tests.pickability</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/util.html">dol.util</a></li>
 </ul>

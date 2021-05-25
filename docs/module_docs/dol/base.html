@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.base &#8212; dol 0.1.15 documentation</title>
+    <title>dol.base &#8212; dol 0.1.16 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -364,84 +364,9 @@ and the other that is applied after (to the obj).</p>
 - _pre_iter: include filter before obj</p>
 <dl class="py method">
 <dt id="dol.base.Stream.wrap">
-<em class="property">classmethod </em><code class="sig-name descname">wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>type<span class="p">, </span>Any<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">delegation_attr</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'store'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.base.Stream.wrap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrap a <code class="docutils literal notranslate"><span class="pre">obj</span></code> (type or instance) with <code class="docutils literal notranslate"><span class="pre">delegator</span></code>.</p>
-<p>If obj is not a type, trivially returns <code class="docutils literal notranslate"><span class="pre">delegator(obj)</span></code>.</p>
-<p>The interesting case of <code class="docutils literal notranslate"><span class="pre">delegator_wrap</span></code> is when <code class="docutils literal notranslate"><span class="pre">obj</span></code> is a type (a class).
-In this case, <code class="docutils literal notranslate"><span class="pre">delegator_wrap</span></code> returns a callable (class or function) that has the
-same signature as obj, but that produces instances that are wrapped by <code class="docutils literal notranslate"><span class="pre">delegator</span></code></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>delegator</strong> – An instance wrapper. A Callable (type or function – with only one required input)
-that will return a wrapped version of it’s input instance.</p></li>
-<li><p><strong>obj</strong> – The object (class or instance) to be wrapped.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A wrapped object</p>
-</dd>
-</dl>
-<p>Let’s demo this on a simple Delegator class.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Delegator</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">i_think</span> <span class="o">=</span> <span class="s1">&#39;therefore I am delegated&#39;</span>  <span class="c1"># this is just to verify that we&#39;re in a Delegator</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrapped_obj</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_obj</span> <span class="o">=</span> <span class="n">wrapped_obj</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>  <span class="c1"># delegation: just forward attributes to wrapped_obj</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped_obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">)</span>  <span class="c1"># this is a useful recipe to have the Delegator carry it&#39;s own wrapping method</span>
-</pre></div>
-</div>
-<p>The only difference between a wrapped object <code class="docutils literal notranslate"><span class="pre">Delegator(obj)</span></code> and the original <code class="docutils literal notranslate"><span class="pre">obj</span></code> is
-that the wrapped one has a <code class="docutils literal notranslate"><span class="pre">i_think</span></code> attribute.
-The wrapped object should otherwise behave the same (on all but special (dunder) methods).
-So let’s test this on dictionaries, using the following test function:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">test_wrapped_d</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="n">original_d</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;A function to test a wrapped dict&#39;&#39;&#39;</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">original_d</span><span class="p">,</span> <span class="s1">&#39;i_think&#39;</span><span class="p">)</span>  <span class="c1"># verify that the unwrapped_d doesn&#39;t have an i_think attribute</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">wrapped_d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">original_d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># verify that wrapped_d has an items that gives us the same thing as origina_d</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="s1">&#39;i_think&#39;</span><span class="p">)</span>  <span class="c1"># ... but wrapped_d has a i_think attribute</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="n">wrapped_d</span><span class="o">.</span><span class="n">i_think</span> <span class="o">==</span> <span class="s1">&#39;therefore I am delegated&#39;</span>  <span class="c1"># ... and its what we set it to be</span>
-</pre></div>
-</div>
-<p>Let’s try delegating a dict INSTANCE first:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">Delegator</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">test_wrapped_d</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>If we ask <code class="docutils literal notranslate"><span class="pre">delegator_wrap</span></code> to wrap a <code class="docutils literal notranslate"><span class="pre">dict</span></code> type, we get a subclass of Delegator
-(NOT dict!) whose instances will have the behavior exhibited above:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">Delegator</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">&#39;wrapped_obj&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">WrappedDict</span><span class="p">,</span> <span class="n">Delegator</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">WrappedDict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">test_wrapped_d</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="n">wrapped_d</span><span class="o">.</span><span class="n">wrapped_obj</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Now we’ll demo/test the <code class="docutils literal notranslate"><span class="pre">wrap</span> <span class="pre">=</span> <span class="pre">classmethod(delegator_wrap)</span></code> trick
-… with instances</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">test_wrapped_d</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="n">wrapped_d</span><span class="o">.</span><span class="n">wrapped_obj</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>… with classes</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">&#39;wrapped_obj&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">WrappedDict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">test_wrapped_d</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="n">wrapped_d</span><span class="o">.</span><span class="n">wrapped_obj</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">)</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedA</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">WrappedA</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">)</span>
-<span class="go">True</span>
-</pre></div>
-</div>
+<em class="property">classmethod </em><code class="sig-name descname">wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>type<span class="p">, </span>Any<span class="p">]</span></span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">delegation_attr</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'stream'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.base.Stream.wrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>partial(func, <a href="#id23"><span class="problematic" id="id24">*</span></a>args, <a href="#id25"><span class="problematic" id="id26">**</span></a>keywords) - new function with partial application
+of the given arguments and keywords.</p>
 </dd></dl>
 
 </dd></dl>
@@ -600,6 +525,7 @@ and vv is the value that will be used by both walk_filt and yield_func</p></li>
 <li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/pickability.html">dol.tests.pickability</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
 </ul>
