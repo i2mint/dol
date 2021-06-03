@@ -157,9 +157,7 @@ class OverWritesNotAllowedMixin:
         class NoOverWritesClass(OverWritesNotAllowedMixin, cls):
             ...
 
-        copy_attrs(
-            NoOverWritesClass, cls, ('__name__', '__qualname__', '__module__')
-        )
+        copy_attrs(NoOverWritesClass, cls, ('__name__', '__qualname__', '__module__'))
         return NoOverWritesClass
 
     def __setitem__(self, k, v):
@@ -222,9 +220,7 @@ class IterBasedSizedMixin:
         return count
 
 
-class IterBasedSizedContainerMixin(
-    IterBasedSizedMixin, IterBasedContainerMixin
-):
+class IterBasedSizedContainerMixin(IterBasedSizedMixin, IterBasedContainerMixin):
     """
     An ABC that defines
         (a) how to iterate over a collection of elements (keys) (__iter__)

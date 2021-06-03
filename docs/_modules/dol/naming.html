@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.naming &#8212; dol 0.1.16 documentation</title>
+    <title>dol.naming &#8212; dol 0.1.17 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -126,9 +126,7 @@
 <span class="sd">    &gt;&gt;&gt; validate_kwargs({&#39;fv_version&#39;: 6}, validation_dict)</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">validation_funs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-        <span class="n">base_validation_funs</span> <span class="ow">or</span> <span class="p">{},</span> <span class="o">**</span><span class="p">(</span><span class="n">validation_funs</span> <span class="ow">or</span> <span class="p">{})</span>
-    <span class="p">)</span>
+    <span class="n">validation_funs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">base_validation_funs</span> <span class="ow">or</span> <span class="p">{},</span> <span class="o">**</span><span class="p">(</span><span class="n">validation_funs</span> <span class="ow">or</span> <span class="p">{}))</span>
     <span class="k">for</span> <span class="p">(</span>
         <span class="n">var</span><span class="p">,</span>
         <span class="n">val</span><span class="p">,</span>
@@ -140,9 +138,7 @@
                 <span class="k">if</span> <span class="p">(</span>
                     <span class="n">check</span> <span class="ow">in</span> <span class="n">base_validation_funs</span>
                 <span class="p">):</span>  <span class="c1"># if you have a validation check for it</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">validation_funs</span><span class="p">[</span><span class="n">check</span><span class="p">](</span>
-                        <span class="n">val</span><span class="p">,</span> <span class="n">check_val</span>
-                    <span class="p">):</span>  <span class="c1"># check it&#39;s valid</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">validation_funs</span><span class="p">[</span><span class="n">check</span><span class="p">](</span><span class="n">val</span><span class="p">,</span> <span class="n">check_val</span><span class="p">):</span>  <span class="c1"># check it&#39;s valid</span>
                         <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
                             <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> must </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">check</span><span class="p">,</span> <span class="n">check_val</span><span class="p">)</span>
                         <span class="p">)</span>  <span class="c1"># and raise an error if not</span>
@@ -195,9 +191,7 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">namedtuple_obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">namedtuple_name</span> <span class="o">=</span> <span class="n">namedtuple_obj</span>
         <span class="n">namedtuple_cls</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="n">namedtuple_name</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">namedtuple_obj</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span>
-        <span class="n">namedtuple_obj</span><span class="p">,</span> <span class="s1">&#39;_fields&#39;</span>
-    <span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">namedtuple_obj</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">namedtuple_obj</span><span class="p">,</span> <span class="s1">&#39;_fields&#39;</span><span class="p">):</span>
         <span class="n">namedtuple_cls</span> <span class="o">=</span> <span class="n">namedtuple_obj</span><span class="o">.</span><span class="vm">__class__</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">namedtuple_obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
         <span class="n">namedtuple_cls</span> <span class="o">=</span> <span class="n">namedtuple_obj</span>
@@ -238,15 +232,10 @@
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">remove_fields</span><span class="p">:</span>
         <span class="n">d</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="p">(</span>
-        <span class="n">output_type_can_be_the_same_as_input_type</span>
-        <span class="ow">and</span> <span class="n">name_of_output_type</span> <span class="ow">is</span> <span class="kc">None</span>
-    <span class="p">):</span>
+    <span class="k">if</span> <span class="n">output_type_can_be_the_same_as_input_type</span> <span class="ow">and</span> <span class="n">name_of_output_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">dict_to_namedtuple</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">nt</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">name_of_output_type</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">name_of_output_type</span> <span class="ow">or</span> <span class="sa">f</span><span class="s1">&#39;Updated</span><span class="si">{</span><span class="n">nt</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&#39;</span>
-        <span class="p">)</span>
+        <span class="n">name_of_output_type</span> <span class="o">=</span> <span class="n">name_of_output_type</span> <span class="ow">or</span> <span class="sa">f</span><span class="s1">&#39;Updated</span><span class="si">{</span><span class="n">nt</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="k">return</span> <span class="n">dict_to_namedtuple</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">name_of_output_type</span><span class="p">)</span></div>
 
 
@@ -302,17 +291,11 @@
     <span class="k">if</span> <span class="n">mapping_dict</span><span class="p">:</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
             <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                    <span class="p">[</span>
-                        <span class="s1">&#39;{&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;}&#39;</span>
-                        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">mapping_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-                    <span class="p">]</span>
-                <span class="p">)</span>
+                <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;{&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;}&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">mapping_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
             <span class="p">)</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
-            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">mapping_dict</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">string</span><span class="p">[(</span><span class="n">x</span><span class="o">.</span><span class="n">start</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]],</span>
-            <span class="n">template</span><span class="p">,</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">mapping_dict</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">string</span><span class="p">[(</span><span class="n">x</span><span class="o">.</span><span class="n">start</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]],</span> <span class="n">template</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">template</span>
@@ -322,31 +305,26 @@
     <span class="n">template</span><span class="p">,</span> <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">named_capture_patterns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
     <span class="n">format_dict</span> <span class="o">=</span> <span class="n">format_dict</span> <span class="ow">or</span> <span class="p">{}</span>
-    <span class="n">named_capture_patterns</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">named_capture_patterns</span> <span class="ow">or</span> <span class="n">mk_named_capture_patterns</span><span class="p">(</span><span class="n">format_dict</span><span class="p">)</span>
+    <span class="n">named_capture_patterns</span> <span class="o">=</span> <span class="n">named_capture_patterns</span> <span class="ow">or</span> <span class="n">mk_named_capture_patterns</span><span class="p">(</span>
+        <span class="n">format_dict</span>
     <span class="p">)</span>
     <span class="k">assert</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     <span class="n">mapping_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">format_dict</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">named_capture_patterns</span><span class="p">[</span><span class="n">name</span><span class="p">]})</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
         <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="p">[</span><span class="s1">&#39;{&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;}&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">mapping_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span>
-            <span class="p">)</span>
+            <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;{&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;}&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">mapping_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
         <span class="p">)</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
         <span class="n">p</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
-            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">mapping_dict</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">string</span><span class="p">[(</span><span class="n">x</span><span class="o">.</span><span class="n">start</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]],</span>
-            <span class="n">template</span><span class="p">,</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">mapping_dict</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">string</span><span class="p">[(</span><span class="n">x</span><span class="o">.</span><span class="n">start</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]],</span> <span class="n">template</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="p">)</span>
 
 
 <span class="c1"># TODO: Is dependent on path sep -- separate concern</span>
-<div class="viewcode-block" id="mk_pattern_from_template_and_format_dict"><a class="viewcode-back" href="../../module_docs/dol/naming.html#dol.naming.mk_pattern_from_template_and_format_dict">[docs]</a><span class="k">def</span> <span class="nf">mk_pattern_from_template_and_format_dict</span><span class="p">(</span>
-    <span class="n">template</span><span class="p">,</span> <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">path_sep</span>
-<span class="p">):</span>
+<div class="viewcode-block" id="mk_pattern_from_template_and_format_dict"><a class="viewcode-back" href="../../module_docs/dol/naming.html#dol.naming.mk_pattern_from_template_and_format_dict">[docs]</a><span class="k">def</span> <span class="nf">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">path_sep</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Make a compiled regex to match template</span>
 <span class="sd">    Args:</span>
 <span class="sd">        template: A format string</span>
@@ -388,10 +366,7 @@
                 <span class="n">next_name</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">next_name</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span>
-                    <span class="mi">1</span>
-                    <span class="o">+</span> <span class="nb">next</span><span class="p">(</span>
-                        <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="k">if</span> <span class="n">_name</span> <span class="o">==</span> <span class="n">name</span>
-                    <span class="p">)</span>
+                    <span class="mi">1</span> <span class="o">+</span> <span class="nb">next</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="k">if</span> <span class="n">_name</span> <span class="o">==</span> <span class="n">name</span><span class="p">)</span>
                 <span class="p">]</span>
             <span class="n">p</span> <span class="o">=</span> <span class="s1">&#39;{&#39;</span> <span class="o">+</span> <span class="n">next_name</span> <span class="o">+</span> <span class="s1">&#39;}&#39;</span>
             <span class="n">template_idx_of_next_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
@@ -401,9 +376,9 @@
 
     <span class="n">prefix_template_dict_excluding_name</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fields</span><span class="p">):</span>
-        <span class="n">prefix_template_dict_excluding_name</span><span class="p">[</span>
-            <span class="n">name</span>
-        <span class="p">]</span> <span class="o">=</span> <span class="n">prefix_template_dict_including_name</span><span class="p">[</span><span class="n">none_and_fields</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="n">prefix_template_dict_excluding_name</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefix_template_dict_including_name</span><span class="p">[</span>
+            <span class="n">none_and_fields</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="p">]</span>
     <span class="n">prefix_template_dict_excluding_name</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">template</span>
 
     <span class="k">return</span> <span class="p">(</span>
@@ -805,9 +780,7 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">break</span>
 
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix_template_including_name</span><span class="p">[</span><span class="n">last_name</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="o">**</span><span class="n">keep_kwargs</span>
-            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix_template_including_name</span><span class="p">[</span><span class="n">last_name</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">keep_kwargs</span><span class="p">)</span>
 
         <span class="n">set_signature_of_func</span><span class="p">(</span><span class="n">_mk_prefix</span><span class="p">,</span> <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mk_prefix</span> <span class="o">=</span> <span class="n">MethodType</span><span class="p">(</span><span class="n">_mk_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
@@ -901,26 +874,19 @@
         <span class="n">validation_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">var</span><span class="p">:</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;validation&#39;</span><span class="p">,</span> <span class="p">{})</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
-        <span class="n">default_dict</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">var</span><span class="p">:</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="p">}</span>
+        <span class="n">default_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="n">arg_pattern</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">var</span><span class="p">:</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;arg_pattern&#39;</span><span class="p">,</span> <span class="n">dflt_arg_pattern</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
         <span class="n">named_arg_pattern</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">var</span><span class="p">:</span> <span class="s1">&#39;(?P&lt;&#39;</span> <span class="o">+</span> <span class="n">var</span> <span class="o">+</span> <span class="s1">&#39;&gt;&#39;</span> <span class="o">+</span> <span class="n">pat</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
-            <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">pat</span> <span class="ow">in</span> <span class="n">arg_pattern</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="n">var</span><span class="p">:</span> <span class="s1">&#39;(?P&lt;&#39;</span> <span class="o">+</span> <span class="n">var</span> <span class="o">+</span> <span class="s1">&#39;&gt;&#39;</span> <span class="o">+</span> <span class="n">pat</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">pat</span> <span class="ow">in</span> <span class="n">arg_pattern</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
         <span class="n">to_str</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">var</span><span class="p">:</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;to_str&#39;</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="k">if</span> <span class="s1">&#39;to_str&#39;</span> <span class="ow">in</span> <span class="n">info</span>
+            <span class="n">var</span><span class="p">:</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;to_str&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;to_str&#39;</span> <span class="ow">in</span> <span class="n">info</span>
         <span class="p">}</span>
         <span class="n">to_val</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">var</span><span class="p">:</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;to_val&#39;</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="k">if</span> <span class="s1">&#39;to_val&#39;</span> <span class="ow">in</span> <span class="n">info</span>
+            <span class="n">var</span><span class="p">:</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;to_val&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;to_val&#39;</span> <span class="ow">in</span> <span class="n">info</span>
         <span class="p">}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">validation_dict</span> <span class="o">=</span> <span class="n">validation_dict</span>
@@ -960,29 +926,19 @@
             <span class="k">return</span> <span class="n">default</span><span class="p">[</span><span class="s1">&#39;func&#39;</span><span class="p">](</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">str_kwargs_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_str</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_str</span>
-        <span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_str</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_str</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">val_kwargs_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_val</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_val</span>
-        <span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_val</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_val</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">name_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s1">&#39;Interface method: Method needs to be implemented&#39;</span>
-        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Interface method: Method needs to be implemented&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">info_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s1">&#39;Interface method: Method needs to be implemented&#39;</span>
-        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Interface method: Method needs to be implemented&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">is_valid_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s1">&#39;Interface method: Method needs to be implemented&#39;</span>
-        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Interface method: Method needs to be implemented&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="BigDocTest"><a class="viewcode-back" href="../../module_docs/dol/naming.html#dol.naming.BigDocTest">[docs]</a><span class="k">class</span> <span class="nc">BigDocTest</span><span class="p">:</span>
@@ -1124,9 +1080,7 @@
                     <span class="k">assert</span> <span class="n">day_format_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">day</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">day</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
                 <span class="n">day</span> <span class="o">=</span> <span class="n">day</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">day_format</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span>
-                <span class="s1">&#39;s_ums&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span>
-            <span class="p">):</span>  <span class="c1"># if day is neither a string nor a datetime</span>
+            <span class="k">elif</span> <span class="s1">&#39;s_ums&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>  <span class="c1"># if day is neither a string nor a datetime</span>
                 <span class="n">day</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span>
                     <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;s_ums&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">second_ms</span><span class="p">)</span>
                 <span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">day_format</span><span class="p">)</span>
@@ -1174,9 +1128,7 @@
     <span class="k">if</span> <span class="n">key_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;tuple&#39;</span><span class="p">,</span> <span class="s1">&#39;namedtuple&#39;</span><span class="p">,</span> <span class="s1">&#39;dict&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">}:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Not a recognized key_type: </span><span class="si">{</span><span class="n">key_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">KeyMapNames</span><span class="p">(</span>
-        <span class="n">key_of_id</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;str_to_</span><span class="si">{</span><span class="n">key_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key_type</span><span class="si">}</span><span class="s1">_to_str&#39;</span>
-    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">KeyMapNames</span><span class="p">(</span><span class="n">key_of_id</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;str_to_</span><span class="si">{</span><span class="n">key_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key_type</span><span class="si">}</span><span class="s1">_to_str&#39;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_get_method_for_str_to_key_type</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="n">key_type</span><span class="p">):</span>
@@ -1224,9 +1176,7 @@
 <span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
-        <span class="n">keymap</span> <span class="o">=</span> <span class="n">keymap</span><span class="p">(</span>
-            <span class="n">subpath</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">keymap_kwargs</span> <span class="ow">or</span> <span class="p">{})</span>
-        <span class="p">)</span>  <span class="c1"># make the keymap instance</span>
+        <span class="n">keymap</span> <span class="o">=</span> <span class="n">keymap</span><span class="p">(</span><span class="n">subpath</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">keymap_kwargs</span> <span class="ow">or</span> <span class="p">{}))</span>  <span class="c1"># make the keymap instance</span>
 
     <span class="n">km</span> <span class="o">=</span> <span class="n">_get_method_for_str_to_key_type</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="n">key_type</span><span class="p">)</span>
 
@@ -1249,9 +1199,7 @@
         <span class="p">)</span></div>
 
 
-<span class="n">mk_tupled_store_from_path_format_store_cls</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">mk_store_from_path_format_store_cls</span>
-<span class="p">)</span>
+<span class="n">mk_tupled_store_from_path_format_store_cls</span> <span class="o">=</span> <span class="n">mk_store_from_path_format_store_cls</span>
 
 <span class="kn">from</span> <span class="nn">string</span> <span class="kn">import</span> <span class="n">Formatter</span>
 

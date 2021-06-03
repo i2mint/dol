@@ -71,9 +71,7 @@ def mk_tmp_dol_dir(dirname=''):
     from tempfile import gettempdir
 
     tmpdir = os.path.join(gettempdir(), dirname)
-    os.path.isdir(tmpdir) or os.mkdir(
-        tmpdir
-    )  # make the directory if it doesn't exist
+    os.path.isdir(tmpdir) or os.mkdir(tmpdir)  # make the directory if it doesn't exist
     return tmpdir
 
 
@@ -87,7 +85,9 @@ def mk_absolute_path(path_format):
 
 # TODO: subpath: Need to be able to allow named and unnamed file format markers (i.e {} and {named})
 
-_dflt_not_valid_error_msg = 'Key not valid (usually because does not exist or access not permitted): {}'
+_dflt_not_valid_error_msg = (
+    'Key not valid (usually because does not exist or access not permitted): {}'
+)
 _dflt_not_found_error_msg = 'Key not found: {}'
 
 
@@ -138,10 +138,7 @@ class FileSysCollection(Collection):
         return bool(self._key_pattern.match(k))
 
     def validate_key(
-        self,
-        k,
-        err_msg_format=_dflt_not_valid_error_msg,
-        err_type=KeyValidationError,
+        self, k, err_msg_format=_dflt_not_valid_error_msg, err_type=KeyValidationError,
     ):
         if not self.is_valid_key(k):
             raise err_type(err_msg_format.format(k))
@@ -309,23 +306,17 @@ class FileStringPersister(FileBytesPersister):
 
 
 RelPathFileStringReader = mk_relative_path_store(
-    FileStringReader,
-    prefix_attr='rootdir',
-    __name__='RelPathFileStringReader',
+    FileStringReader, prefix_attr='rootdir', __name__='RelPathFileStringReader',
 )
 
 RelPathFileStringPersister = mk_relative_path_store(
-    FileStringPersister,
-    prefix_attr='rootdir',
-    __name__='RelPathFileStringPersister',
+    FileStringPersister, prefix_attr='rootdir', __name__='RelPathFileStringPersister',
 )
 
 # --------------------------------------------------- misc -------------------------------------------------------------
 import pickle
 
-pickle_bytes_wrap = wrap_kvs(
-    obj_of_data=pickle.loads, data_of_obj=pickle.dumps
-)
+pickle_bytes_wrap = wrap_kvs(obj_of_data=pickle.loads, data_of_obj=pickle.dumps)
 
 
 @pickle_bytes_wrap

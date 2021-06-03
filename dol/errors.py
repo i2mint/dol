@@ -103,9 +103,7 @@ def items_with_caught_exceptions(
             yield k, v  # and if you do, yield the (k, v) pair
         except catch_exceptions as e:  # catch the specific exceptions you requested to catch
             t = wrapped_callback(k=k, e=e, d=d, i=i)  # call it
-            if (
-                yield_callback_output
-            ):  # if the user wants the output of the callback
+            if yield_callback_output:  # if the user wants the output of the callback
                 yield t  # yield it
 
 

@@ -232,9 +232,7 @@ class DelegatedAttribute:
             return self  # .__wrapped__  # TODO: The __wrapped__ would make it hard to debug
         else:
             # i.e. return instance.delegate.attr
-            return getattr(
-                getattr(instance, self.delegate_name), self.attr_name
-            )
+            return getattr(getattr(instance, self.delegate_name), self.attr_name)
 
     def __set__(self, instance, value):
         # instance.delegate.attr = value
@@ -297,8 +295,7 @@ def delegate_to(
         for attr in attrs:
             wrapped_attr = getattr(wrapped, attr)
             delegated_attribute = update_wrapper(
-                wrapper=DelegatedAttribute(delegation_attr, attr),
-                wrapped=wrapped_attr,
+                wrapper=DelegatedAttribute(delegation_attr, attr), wrapped=wrapped_attr,
             )
             setattr(Wrap, attr, delegated_attribute)
 
@@ -618,9 +615,7 @@ class Store(KvPersister):
             if k is None:
                 raise
             else:
-                msg = (
-                    f"Couldn't get data for the key {k}. This could be be...\n"
-                )
+                msg = f"Couldn't get data for the key {k}. This could be be...\n"
                 msg += "... because it's not a store (just a collection, that doesn't have a __getitem__)\n"
                 msg += (
                     "... because there's a layer transforming outcoming keys that are not the ones the store actually "
@@ -745,14 +740,10 @@ def kv_walk(
             p, k, vv
         ):  # should we recurse? (based on some function of p, k, v)
             # print(f"3: recurse with: pp={pp}, vv={vv}\n")
-            yield from kv_walk(
-                vv, yield_func, walk_filt, pkv_to_pv, pp
-            )  # recurse
+            yield from kv_walk(vv, yield_func, walk_filt, pkv_to_pv, pp)  # recurse
         else:
             # print(f"4: yield_func(pp={pp}, k={k}, vv={vv})\n --> {yield_func(pp, k, vv)}")
-            yield yield_func(
-                pp, k, vv
-            )  # yield something computed from p, k, vv
+            yield yield_func(pp, k, vv)  # yield something computed from p, k, vv
 
 
 def has_kv_store_interface(o):

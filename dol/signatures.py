@@ -12,21 +12,15 @@ _ParameterKind = type(
 )
 ParamsType = Iterable[Parameter]
 ParamsAble = Union[ParamsType, MappingType[str, Parameter], Callable]
-SignatureAble = Union[
-    Signature, Callable, ParamsType, MappingType[str, Parameter]
-]
-HasParams = Union[
-    Iterable[Parameter], MappingType[str, Parameter], Signature, Callable
-]
+SignatureAble = Union[Signature, Callable, ParamsType, MappingType[str, Parameter]]
+HasParams = Union[Iterable[Parameter], MappingType[str, Parameter], Signature, Callable]
 
 # short hands for Parameter kinds
 PK = Parameter.POSITIONAL_OR_KEYWORD
 VP, VK = Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD
 PO, KO = Parameter.POSITIONAL_ONLY, Parameter.KEYWORD_ONLY
 var_param_kinds = {VP, VK}
-var_param_types = (
-    var_param_kinds  # Deprecate: for back-compatibility. Delete in 2021
-)
+var_param_types = var_param_kinds  # Deprecate: for back-compatibility. Delete in 2021
 
 
 # TODO: Couldn't make this work. See https://www.python.org/dev/peps/pep-0562/
@@ -74,9 +68,7 @@ def ensure_signature(obj: SignatureAble):
     elif obj is None:
         return Signature(parameters=())
     # if you get this far...
-    raise TypeError(
-        f"Don't know how to make that object into a Signature: {obj}"
-    )
+    raise TypeError(f"Don't know how to make that object into a Signature: {obj}")
 
 
 assure_signature = ensure_signature  # alias for backcompatibility
@@ -163,9 +155,7 @@ def ensure_params(obj: ParamsAble = None):
             elif n == 2:
                 obj = [{'name': obj[0], 'default': obj[1]}]
             elif n == 2:
-                obj = [
-                    {'name': obj[0], 'default': obj[1], 'annotation': obj[2]}
-                ]
+                obj = [{'name': obj[0], 'default': obj[1], 'annotation': obj[2]}]
         else:
             obj = list(obj)
 
@@ -346,26 +336,17 @@ def extract_arguments(
         return (), {}, {k: v for k, v in kwargs.items()}
 
     params_names = tuple(p.name for p in params)
-    names_for_args = [
-        p.name for p in params if p.kind == Parameter.POSITIONAL_ONLY
-    ]
-    param_kwargs_names = [
-        x for x in params_names if x not in set(names_for_args)
-    ]
+    names_for_args = [p.name for p in params if p.kind == Parameter.POSITIONAL_ONLY]
+    param_kwargs_names = [x for x in params_names if x not in set(names_for_args)]
     remaining_names = [x for x in kwargs if x not in params_names]
 
-    param_args = tuple(
-        kwargs.get(k, MissingArgValFor(k)) for k in names_for_args
-    )
+    param_args = tuple(kwargs.get(k, MissingArgValFor(k)) for k in names_for_args)
     param_kwargs = {k: kwargs[k] for k in param_kwargs_names if k in kwargs}
     remaining_kwargs = {k: kwargs[k] for k in remaining_names}
 
     if include_all_when_var_keywords_in_params:
         if (
-            next(
-                (p.name for p in params if p.kind == Parameter.VAR_KEYWORD),
-                None,
-            )
+            next((p.name for p in params if p.kind == Parameter.VAR_KEYWORD), None,)
             is not None
         ):
             param_kwargs.update(remaining_kwargs)
@@ -688,9 +669,7 @@ class Sig(Signature, Mapping):
         <Sig ()>
         """
         if callable(obj) and return_annotation is empty:
-            return_annotation = _robust_signature_of_callable(
-                obj
-            ).return_annotation
+            return_annotation = _robust_signature_of_callable(obj).return_annotation
         super().__init__(
             ensure_params(obj),
             return_annotation=return_annotation,
@@ -910,9 +889,7 @@ class Sig(Signature, Mapping):
     @property
     def defaults(self):
         return {
-            p.name: p.default
-            for p in self.values()
-            if p.default != Parameter.empty
+            p.name: p.default for p in self.values() if p.default != Parameter.empty
         }
 
     @property
@@ -1149,9 +1126,7 @@ class Sig(Signature, Mapping):
         new_params = {
             name: p for name, p in self.parameters.items() if name not in names
         }
-        return self.__class__(
-            new_params, return_annotation=self.return_annotation
-        )
+        return self.__class__(new_params, return_annotation=self.return_annotation)
 
     def __sub__(self, sig):
         return self.remove_names(sig)
@@ -1320,9 +1295,7 @@ class Sig(Signature, Mapping):
             excess = kwargs.keys() - b.arguments
             if excess:
                 excess_str = ', '.join(excess)
-                raise TypeError(
-                    f'Got unexpected keyword arguments: {excess_str}'
-                )
+                raise TypeError(f'Got unexpected keyword arguments: {excess_str}')
 
         return dict(b.arguments)
 
@@ -1344,16 +1317,10 @@ class Sig(Signature, Mapping):
 
         See kwargs_from_args_and_kwargs (namely for the description of the arguments.
         """
-        position_only_names = {
-            p.name for p in self.parameters.values() if p.kind == PO
-        }
-        args = tuple(
-            kwargs[name] for name in position_only_names if name in kwargs
-        )
+        position_only_names = {p.name for p in self.parameters.values() if p.kind == PO}
+        args = tuple(kwargs[name] for name in position_only_names if name in kwargs)
         # kwargs = self.kwargs_from_args_and_kwargs(args, kwargs, apply_defaults, allow_partial, allow_excess)
-        kwargs = {
-            name: kwargs[name] for name in kwargs.keys() - position_only_names
-        }
+        kwargs = {name: kwargs[name] for name in kwargs.keys() - position_only_names}
 
         kwargs = self.kwargs_from_args_and_kwargs(
             args,
@@ -1363,9 +1330,7 @@ class Sig(Signature, Mapping):
             allow_excess=allow_excess,
             ignore_kind=ignore_kind,
         )
-        kwargs = {
-            name: kwargs[name] for name in kwargs.keys() - position_only_names
-        }
+        kwargs = {name: kwargs[name] for name in kwargs.keys() - position_only_names}
 
         return args, kwargs
 
@@ -1498,9 +1463,7 @@ class Sig(Signature, Mapping):
             **kwargs,
         )
         return self.args_and_kwargs_from_kwargs(
-            kwargs,
-            allow_partial=_allow_partial,
-            apply_defaults=_apply_defaults,
+            kwargs, allow_partial=_allow_partial, apply_defaults=_apply_defaults,
         )
 
     def source_kwargs(
@@ -1695,9 +1658,7 @@ def number_of_required_arguments(obj):
 
 ########################################################################################################################
 # TODO: Encorporate in Sig
-def insert_annotations(
-    s: Signature, *, return_annotation=empty, **annotations
-):
+def insert_annotations(s: Signature, *, return_annotation=empty, **annotations):
     """Insert annotations in a signature.
     (Note: not really insert but returns a copy of input signature)
     >>> from inspect import signature
@@ -1929,9 +1890,7 @@ def param_for_kind(
         if with_default and kind not in {'var_positional', 'var_keyword'}
         else Parameter.empty
     )
-    return Parameter(
-        name=name, kind=kind_obj, default=default, annotation=annotation
-    )
+    return Parameter(name=name, kind=kind_obj, default=default, annotation=annotation)
 
 
 param_kinds = list(filter(lambda x: x.upper() == x, Parameter.__dict__))
@@ -1940,9 +1899,7 @@ for kind in param_kinds:
     lower_kind = kind.lower()
     setattr(param_for_kind, lower_kind, partial(param_for_kind, kind=kind))
     setattr(
-        param_for_kind,
-        'with_default',
-        partial(param_for_kind, with_default=True),
+        param_for_kind, 'with_default', partial(param_for_kind, with_default=True),
     )
     setattr(
         getattr(param_for_kind, lower_kind),
@@ -1964,6 +1921,4 @@ def ch_signature_to_all_pk(sig):
             else:
                 yield p
 
-    return Signature(
-        list(changed_params()), return_annotation=sig.return_annotation
-    )
+    return Signature(list(changed_params()), return_annotation=sig.return_annotation)

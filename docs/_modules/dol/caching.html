@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.caching &#8212; dol 0.1.16 documentation</title>
+    <title>dol.caching &#8212; dol 0.1.17 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -45,10 +45,7 @@
 
 <span class="k">def</span> <span class="nf">is_a_cache</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">all</span><span class="p">(</span>
-        <span class="nb">map</span><span class="p">(</span>
-            <span class="n">partial</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">,</span> <span class="n">obj</span><span class="p">),</span>
-            <span class="p">(</span><span class="s1">&#39;__contains__&#39;</span><span class="p">,</span> <span class="s1">&#39;__getitem__&#39;</span><span class="p">,</span> <span class="s1">&#39;__setitem__&#39;</span><span class="p">),</span>
-        <span class="p">)</span>
+        <span class="nb">map</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">,</span> <span class="n">obj</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;__contains__&#39;</span><span class="p">,</span> <span class="s1">&#39;__getitem__&#39;</span><span class="p">,</span> <span class="s1">&#39;__setitem__&#39;</span><span class="p">),)</span>
     <span class="p">)</span>
 
 
@@ -57,9 +54,7 @@
     <span class="k">if</span> <span class="n">is_a_cache</span><span class="p">(</span><span class="n">cache</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">cache</span>
     <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">cache</span><span class="p">()</span>
-        <span class="p">)</span>  <span class="c1"># consider it to be a cache factory, and call to make factory</span></div>
+        <span class="k">return</span> <span class="n">cache</span><span class="p">()</span>  <span class="c1"># consider it to be a cache factory, and call to make factory</span></div>
 
 
 <span class="c1">########################################################################################################################</span>
@@ -105,9 +100,7 @@
     <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">cache</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># use a dict (memory caching) by default</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>  <span class="c1"># if caching_store is a type...</span>
-        <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span>
-            <span class="n">cache</span><span class="p">,</span> <span class="s1">&#39;__getitem__&#39;</span>
-        <span class="p">)</span>  <span class="c1"># ... or is a callable without a __getitem__</span>
+        <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="s1">&#39;__getitem__&#39;</span><span class="p">)</span>  <span class="c1"># ... or is a callable without a __getitem__</span>
         <span class="ow">and</span> <span class="n">callable</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
     <span class="p">):</span>
         <span class="n">cache</span> <span class="o">=</span> <span class="p">(</span>
@@ -204,8 +197,7 @@
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="n">_mk_cache_instance</span><span class="p">(</span>
-                <span class="n">cache</span><span class="p">,</span>
-                <span class="n">assert_attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__getitem__&#39;</span><span class="p">,</span> <span class="s1">&#39;__contains__&#39;</span><span class="p">,</span> <span class="s1">&#39;__setitem__&#39;</span><span class="p">),</span>
+                <span class="n">cache</span><span class="p">,</span> <span class="n">assert_attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__getitem__&#39;</span><span class="p">,</span> <span class="s1">&#39;__contains__&#39;</span><span class="p">,</span> <span class="s1">&#39;__setitem__&#39;</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="c1"># self.__getitem__ = mk_memoizer(self._cache)(self.__getitem__)</span>
 
@@ -369,8 +361,7 @@
         <span class="n">single_val</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">single_val</span><span class="p">,</span> <span class="s1">&#39;items&#39;</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">_slow_but_somewhat_general_hash</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
-                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">single_val</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">_slow_but_somewhat_general_hash</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">single_val</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">single_val</span><span class="p">,</span> <span class="p">(</span><span class="nb">set</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
             <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">single_val</span><span class="p">)</span>
@@ -379,10 +370,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="nb">tuple</span><span class="p">(</span><span class="n">_slow_but_somewhat_general_hash</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="p">),</span>
-            <span class="nb">tuple</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">_slow_but_somewhat_general_hash</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
-                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="p">),</span>
+            <span class="nb">tuple</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">_slow_but_somewhat_general_hash</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span>
         <span class="p">)</span>
 
 
@@ -436,9 +424,7 @@
         <span class="k">def</span> <span class="nf">wrapped_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="n">key</span> <span class="o">=</span> <span class="n">key_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">store</span><span class="p">:</span>  <span class="c1"># if the store has that key...</span>
-                <span class="k">return</span> <span class="n">store</span><span class="p">[</span>
-                    <span class="n">key</span>
-                <span class="p">]</span>  <span class="c1"># ... just return the data cached under this key</span>
+                <span class="k">return</span> <span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>  <span class="c1"># ... just return the data cached under this key</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># if the store doesn&#39;t have it...</span>
                 <span class="n">output</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span>
                     <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
@@ -509,18 +495,14 @@
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">wrapped_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">store</span><span class="p">:</span>  <span class="c1"># if the store has that key...</span>
-                <span class="k">return</span> <span class="n">store</span><span class="p">[</span>
-                    <span class="n">key</span>
-                <span class="p">]</span>  <span class="c1"># ... just return the data cached under this key</span>
+                <span class="k">return</span> <span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>  <span class="c1"># ... just return the data cached under this key</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">output</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span>
                 <span class="k">return</span> <span class="n">output</span>
 
         <span class="n">wrapped_func</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="n">store</span>
-        <span class="n">wrapped_func</span><span class="o">.</span><span class="n">empty_cache_entry</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">wrapped_func</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="fm">__delitem__</span><span class="p">(</span>
-            <span class="n">key</span>
-        <span class="p">)</span>
+        <span class="n">wrapped_func</span><span class="o">.</span><span class="n">empty_cache_entry</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">wrapped_func</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="fm">__delitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">wrapped_func</span>
 
     <span class="k">return</span> <span class="n">func_wrapper</span></div>
@@ -568,9 +550,7 @@
 
 
 <div class="viewcode-block" id="mk_write_cached_store"><a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.mk_write_cached_store">[docs]</a><span class="nd">@store_decorator</span>
-<span class="k">def</span> <span class="nf">mk_write_cached_store</span><span class="p">(</span>
-    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">w_cache</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="n">flush_cache_condition</span><span class="o">=</span><span class="kc">None</span>
-<span class="p">):</span>
+<span class="k">def</span> <span class="nf">mk_write_cached_store</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">w_cache</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="n">flush_cache_condition</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Wrap a write cache around a store.</span>
 
 <span class="sd">    Args:</span>
@@ -731,9 +711,7 @@
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">mapping</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_key_search_depth</span><span class="p">]):</span>
-            <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
-            <span class="p">)</span>  <span class="c1"># reuses stored hash values if possible</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">mapping</span><span class="p">))</span>  <span class="c1"># reuses stored hash values if possible</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
