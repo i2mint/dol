@@ -209,7 +209,7 @@ def store_decorator(func):
     instance of a store (here, ``a``).
 
     >>> type(b)
-    <class 'abc.StoreWrap'>
+    <class 'dol.base.Store'>
     >>> b.store == a
     True
 
@@ -315,10 +315,11 @@ def store_decorator(func):
 
         if not isinstance(store, type):
             store_instance = store
-            StoreWrap = type(
-                'StoreWrap', (Store,), {}
-            )  # a copy of Store, so Store isn't transformed directly
-            WrapperStore = func(StoreWrap, **kwargs)
+            # StoreWrap = type(
+            #     'StoreWrap', (Store,), {}
+            # )  # a copy of Store, so Store isn't transformed directly
+
+            WrapperStore = func(Store, **kwargs)
             r = WrapperStore(store_instance)
         else:
             assert _all_but_first_arg_are_keyword_only(func), (
@@ -395,25 +396,6 @@ def store_wrap(obj):
         return StoreWrap
     else:
         return Store(obj)
-
-
-# # Older version, kept around for awhile, for review:
-# def store_wrap(obj, name=None):
-#     if isinstance(obj, type):
-#         name = name or f"{get_class_name(obj, 'StoreWrap')}Store"
-#
-#         class StoreWrap(Store):
-#             @wraps(obj.__init__)
-#             def __init__(self, *args, **kwargs):
-#                 persister = obj(*args, **kwargs)
-#                 super().__init__(persister)
-#
-#         StoreWrap.__qualname__ = name
-#         # if hasattr(obj, '_cls_trans'):
-#         #     StoreWrap._cls_trans = obj._cls_trans
-#         return StoreWrap
-#     else:
-#         return Store(obj)
 
 
 def _is_bound(method):
@@ -1238,24 +1220,38 @@ def filt_iter(
     """
 
     # if store is None:
+    wrapped_cls = _filt_iter(store, filt, name, __module__)
+
+    # if __module__ is not None:
+    #     wrapped_cls.__module__ = __module__
+    #
+    # if hasattr(collection_cls, '__doc__'):
+    #     wrapped_cls.__doc__ = store.__doc__
+
+    return wrapped_cls
+
+
+def _filt_iter(store, filt, name, __module__):
     if not callable(filt):  # if filt is not a callable...
-        # ... assume it's the collection of keys you want and make a filter function to filter those "in".
-        assert next(iter(filt)), 'filt should be a callable, or an iterable'
+        # ... assume it's the collection of keys you want and make a filter function
+        # to filter those "in".
+        assert isinstance(
+            filt, Iterable
+        ), 'filt should be a callable, or an iterable'
         keys_that_should_be_filtered_in = set(filt)
 
         def filt(k):
             return k in keys_that_should_be_filtered_in
 
     __module__ = __module__ or getattr(store, '__module__', None)
-
     name = name or 'Filtered' + get_class_name(store)
+    # wrapped_cls = Store.wrap()
     wrapped_cls = type(name, (store,), {})
 
     def __iter__(self):
         yield from filter(filt, super(wrapped_cls, self).__iter__())
 
     wrapped_cls.__iter__ = __iter__
-
     _define_keys_values_and_items_according_to_iter(wrapped_cls)
 
     def __len__(self):
@@ -1273,7 +1269,6 @@ def filt_iter(
             return False
 
     wrapped_cls.__contains__ = __contains__
-
     if hasattr(wrapped_cls, '__getitem__'):
 
         def __getitem__(self, k):
@@ -1283,7 +1278,6 @@ def filt_iter(
                 raise KeyError(f'Key not in store: {k}')
 
         wrapped_cls.__getitem__ = __getitem__
-
     if hasattr(wrapped_cls, 'get'):
 
         def get(self, k, default=None):
@@ -1293,7 +1287,6 @@ def filt_iter(
                 return default
 
         wrapped_cls.get = get
-
     if hasattr(wrapped_cls, '__setitem__'):
 
         def __setitem__(self, k, v):
@@ -1303,7 +1296,6 @@ def filt_iter(
                 raise KeyError(f'Key not in store: {k}')
 
         wrapped_cls.__setitem__ = __setitem__
-
     if hasattr(wrapped_cls, '__delitem__'):
 
         def __delitem__(self, k):
@@ -1313,13 +1305,6 @@ def filt_iter(
                 raise KeyError(f'Key not in store: {k}')
 
         wrapped_cls.__delitem__ = __delitem__
-
-    # if __module__ is not None:
-    #     wrapped_cls.__module__ = __module__
-    #
-    # if hasattr(collection_cls, '__doc__'):
-    #     wrapped_cls.__doc__ = store.__doc__
-
     return wrapped_cls
 
 
@@ -1716,92 +1701,93 @@ def wrap_kvs(
 
     # TODO: Add tests for outcoming_key_methods etc.
     """
-    name = name or store.__qualname__ + 'Wrapped'
+    arguments = {k: v for k, v in locals().items() if k != 'arguments'}
+    store = arguments.pop('store')
+    arguments['name'] = arguments['name'] or store.__qualname__ + 'Wrapped'
 
-    # TODO: This is not the best way to handle this. Investigate another way. ######################
-    global_names = set(globals()).union(locals())
-    if name in global_names:
-        raise NameError('That name is already in use')
-    # TODO: ########################################################################################
+    # return Store.wrap(store, _wrap_kvs)  <-- make this work
 
-    store_cls = kv_wrap_persister_cls(store, name=name)  # experiment
+    class_trans = partial(_wrap_kvs, **arguments)
+    return Store.wrap(store, class_trans=class_trans)
     # store_cls = Store.wrap(store)
-    store_cls._cls_trans = None
+    #
+    # return class_trans(store_cls)
+    # return _wrap_kvs(store_cls, **arguments)
 
-    # store_cls = type(name, (store,), {})
-    # store_cls._cls_trans = None
 
-    def cls_trans(store_cls: type):
-        for method_name in {'_key_of_id'} | ensure_set(outcoming_key_methods):
-            _wrap_outcoming(store_cls, method_name, key_of_id)
+def _wrap_kvs(
+    store_cls: type,
+    *,
+    name=None,  # TODO: Remove when safe
+    key_of_id=None,
+    id_of_key=None,
+    obj_of_data=None,
+    data_of_obj=None,
+    preset=None,
+    postget=None,
+    __module__=None,
+    outcoming_key_methods=(),
+    outcoming_value_methods=(),
+    ingoing_key_methods=(),
+    ingoing_value_methods=(),
+):
+    for method_name in {'_key_of_id'} | ensure_set(outcoming_key_methods):
+        _wrap_outcoming(store_cls, method_name, key_of_id)
 
-        for method_name in {'_obj_of_data'} | ensure_set(
-            outcoming_value_methods
-        ):
-            _wrap_outcoming(store_cls, method_name, obj_of_data)
+    for method_name in {'_obj_of_data'} | ensure_set(outcoming_value_methods):
+        _wrap_outcoming(store_cls, method_name, obj_of_data)
 
-        for method_name in {'_id_of_key'} | ensure_set(ingoing_key_methods):
-            _wrap_ingoing(store_cls, method_name, id_of_key)
+    for method_name in {'_id_of_key'} | ensure_set(ingoing_key_methods):
+        _wrap_ingoing(store_cls, method_name, id_of_key)
 
-        for method_name in {'_data_of_obj'} | ensure_set(
-            ingoing_value_methods
-        ):
-            _wrap_ingoing(store_cls, method_name, data_of_obj)
+    for method_name in {'_data_of_obj'} | ensure_set(ingoing_value_methods):
+        _wrap_ingoing(store_cls, method_name, data_of_obj)
 
-        # TODO: postget and preset uses num_of_args. Not robust:
-        #  Should only count args with no defaults or partial won't be able to be used to make postget/preset funcs
-        # TODO: Extract postget and preset patterns?
-        if postget is not None:
-            if num_of_args(postget) < 2:
-                raise ValueError(
-                    'A postget function needs to have (key, value) or (self, key, value) arguments'
+    # TODO: postget and preset uses num_of_args. Not robust:
+    #  Should only count args with no defaults or partial won't be able to be used to make postget/preset funcs
+    # TODO: Extract postget and preset patterns?
+    if postget is not None:
+        if num_of_args(postget) < 2:
+            raise ValueError(
+                'A postget function needs to have (key, value) or (self, key, value) arguments'
+            )
+
+        if not _has_unbound_self(postget):
+
+            def __getitem__(self, k):
+                return postget(k, super(store_cls, self).__getitem__(k))
+
+        else:
+
+            def __getitem__(self, k):
+                return postget(self, k, super(store_cls, self).__getitem__(k))
+
+        store_cls.__getitem__ = __getitem__
+
+    if preset is not None:
+        if num_of_args(preset) < 2:
+            raise ValueError(
+                'A preset function needs to have (key, value) or (self, key, value) arguments'
+            )
+
+        if not _has_unbound_self(preset):
+
+            def __setitem__(self, k, v):
+                return super(store_cls, self).__setitem__(k, preset(k, v))
+
+        else:
+
+            def __setitem__(self, k, v):
+                return super(store_cls, self).__setitem__(
+                    k, preset(self, k, v)
                 )
 
-            if not _has_unbound_self(postget):
+        store_cls.__setitem__ = __setitem__
 
-                def __getitem__(self, k):
-                    return postget(k, super(store_cls, self).__getitem__(k))
+    if __module__ is not None:
+        store_cls.__module__ = __module__
 
-            else:
-
-                def __getitem__(self, k):
-                    return postget(
-                        self, k, super(store_cls, self).__getitem__(k)
-                    )
-
-            store_cls.__getitem__ = __getitem__
-
-        if preset is not None:
-            if num_of_args(preset) < 2:
-                raise ValueError(
-                    'A preset function needs to have (key, value) or (self, key, value) arguments'
-                )
-
-            if not _has_unbound_self(preset):
-
-                def __setitem__(self, k, v):
-                    return super(store_cls, self).__setitem__(k, preset(k, v))
-
-            else:
-
-                def __setitem__(self, k, v):
-                    return super(store_cls, self).__setitem__(
-                        k, preset(self, k, v)
-                    )
-
-            store_cls.__setitem__ = __setitem__
-
-        if __module__ is not None:
-            store_cls.__module__ = __module__
-
-        # add an attribute containing the cls_trans.
-        # This is is both for debugging and introspection use,
-        # as well as if we need to pass on the transformation in a recursive situation
-        store_cls._cls_trans = cls_trans
-
-        return store_cls
-
-    return cls_trans(store_cls)
+    return store_cls
 
 
 def _kv_wrap_outcoming_keys(trans_func):

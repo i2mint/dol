@@ -22,36 +22,44 @@ def test_pickling_w_simple_store():
     assert_dict_of_unpickled_is_the_same(s)
 
 
-@pytest.mark.xfail
+def test_pickling_with_store_wrap():
+    D = Store.wrap(dict)
+    d = {'a': 1, 'b': 2}
+    s = D(d)
+    b = pickle.dumps(s)
+    ss = pickle.loads(b)
+    assert dict(s) == dict(ss)
+
+
 def test_pickling_with_wrap_kvs_class():
     WrappedDict = wrap_kvs(key_of_id=add_tag, id_of_key=remove_tag)(dict)
     s = WrappedDict({'a': 1, 'b': 2})
     assert_dict_of_unpickled_is_the_same(s)
 
 
-@pytest.mark.xfail
+# @pytest.mark.xfail
 def test_pickling_with_wrap_kvs_instance():
     d = {'a': 1, 'b': 2}
     s = wrap_kvs(d, key_of_id=add_tag, id_of_key=remove_tag)
     assert_dict_of_unpickled_is_the_same(s)
 
 
-@pytest.mark.xfail
-def test_pickling_with_filt_iter_class():
-    filt_func = partial(is_below_max_len, max_len=3)
-    WrappedDict = filt_iter(dict, filt=filt_func)
-    s = WrappedDict({'a': 1, 'bb': 2, 'ccc': 3})
-    assert dict(s) == {'a': 1, 'bb': 2}
-    assert_dict_of_unpickled_is_the_same(s)
-
-
-@pytest.mark.xfail
-def test_pickling_with_filt_iter_instance():
-    d = {'a': 1, 'bb': 2, 'ccc': 3}
-    filt_func = partial(is_below_max_len, max_len=3)
-    s = filt_iter(d, filt=filt_func)
-    assert dict(s) == {'a': 1, 'bb': 2}
-    assert_dict_of_unpickled_is_the_same(s)
+# # @pytest.mark.xfail
+# def test_pickling_with_filt_iter_class():
+#     filt_func = partial(is_below_max_len, max_len=3)
+#     WrappedDict = filt_iter(dict, filt=filt_func)
+#     s = WrappedDict({'a': 1, 'bb': 2, 'ccc': 3})
+#     assert dict(s) == {'a': 1, 'bb': 2}
+#     assert_dict_of_unpickled_is_the_same(s)
+#
+#
+# # @pytest.mark.xfail
+# def test_pickling_with_filt_iter_instance():
+#     d = {'a': 1, 'bb': 2, 'ccc': 3}
+#     filt_func = partial(is_below_max_len, max_len=3)
+#     s = filt_iter(d, filt=filt_func)
+#     assert dict(s) == {'a': 1, 'bb': 2}
+#     assert_dict_of_unpickled_is_the_same(s)
 
 
 @pytest.mark.xfail

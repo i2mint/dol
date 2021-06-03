@@ -34,7 +34,7 @@ from collections.abc import (
     ItemsView as BaseItemsView,
     Set,
 )
-from typing import Any, Iterable, Tuple, Callable, Union
+from typing import Any, Iterable, Tuple, Callable, Union, Optional
 
 from dol.util import wraps, _disabled_clear_method
 
@@ -249,6 +249,7 @@ Decorator = Callable[[Callable], Any]  # TODO: Look up typing protocols
 
 def delegate_to(
     wrapped: type,
+    class_trans: Optional[Callable] = None,
     delegation_attr: str = 'store',
     include=frozenset(),
     ignore=frozenset(),
@@ -269,12 +270,11 @@ def delegate_to(
         class Wrap(wrapper_cls):
             # _type_of_wrapped = wrapped
             # _delegation_attr = delegation_attr
+            _class_trans = class_trans
 
             @wraps(wrapper_cls.__init__)
             def __init__(self, *args, **kwargs):
                 delegate = wrapped(*args, **kwargs)
-                # setattr(self, delegation_attr)
-                # wrapped = obj(*args, **kwargs)
                 super().__init__(delegate)
                 assert isinstance(
                     getattr(self, delegation_attr, None), wrapped
@@ -285,7 +285,7 @@ def delegate_to(
                     # reconstructor
                     wrapped_delegator_reconstruct,
                     # args of reconstructor
-                    (wrapper_cls, wrapped, delegation_attr),
+                    (wrapper_cls, wrapped, class_trans, delegation_attr),
                     # instance state
                     self.__getstate__(),
                 )
@@ -301,21 +301,29 @@ def delegate_to(
                 wrapped=wrapped_attr,
             )
             setattr(Wrap, attr, delegated_attribute)
+
+        if class_trans:
+            Wrap = class_trans(Wrap)
         return Wrap
 
     return delegation_decorator
 
 
-def wrapped_delegator_reconstruct(wrapped_cls, wrapped, delegation_attr):
+def wrapped_delegator_reconstruct(
+    wrapped_cls, wrapped, class_trans, delegation_attr
+):
     """"""
-    type_ = delegator_wrap(wrapped_cls, wrapped, delegation_attr)
+    type_ = delegator_wrap(wrapped_cls, wrapped, class_trans, delegation_attr)
     # produce an empty object for pickle to pour the
     # __getstate__ values into, via __setstate__
     return copyreg._reconstructor(type_, object, None)
 
 
 def delegator_wrap(
-    delegator: Callable, obj: Union[type, Any], delegation_attr: str = 'store'
+    delegator: Callable,
+    obj: Union[type, Any],
+    class_trans=None,
+    delegation_attr: str = 'store',
 ):
     """Wrap a ``obj`` (type or instance) with ``delegator``.
 
@@ -392,7 +400,9 @@ def delegator_wrap(
     if isinstance(obj, type):
         if isinstance(delegator, type):
 
-            type_decorator = delegate_to(obj, delegation_attr=delegation_attr)
+            type_decorator = delegate_to(
+                obj, class_trans=class_trans, delegation_attr=delegation_attr
+            )
             return type_decorator(delegator)
 
         else:
@@ -505,6 +515,7 @@ class Store(KvPersister):
     >>> test_store(s)
     """
 
+    _state_attrs = ['store', '_class_wrapper']
     # __slots__ = ('_id_of_key', '_key_of_id', '_data_of_obj', '_obj_of_data')
 
     def __init__(self, store=dict):
@@ -662,10 +673,16 @@ class Store(KvPersister):
         # return self.store.__repr__()
 
     def __getstate__(self) -> dict:
-        return {'store': self.store}
+        state = {}
+        for attr in Store._state_attrs:
+            if hasattr(self, attr):
+                state[attr] = getattr(self, attr)
+        return state
 
     def __setstate__(self, state: dict):
-        self.store = state['store']
+        for attr in Store._state_attrs:
+            if attr in state:
+                setattr(self, attr, state[attr])
 
 
 # Store.register(dict)  # TODO: Would this be a good idea? To make isinstance({}, Store) be True (though missing head())
