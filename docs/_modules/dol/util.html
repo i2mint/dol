@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.util &#8212; dol 0.1.16 documentation</title>
+    <title>dol.util &#8212; dol 0.1.17 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -92,9 +92,7 @@
 <span class="sd">                pass</span>
 <span class="sd">        ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s1">&#39;Instance of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="o">.</span><span class="vm">__doc__</span><span class="si">}</span><span class="s1">&#39;</span>
-    <span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Instance of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="o">.</span><span class="vm">__doc__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
 
 <span class="c1"># to be able to check if clear is disabled (see ensure_clear_method function for example):</span>
@@ -104,9 +102,7 @@
 <div class="viewcode-block" id="has_enabled_clear_method"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.has_enabled_clear_method">[docs]</a><span class="k">def</span> <span class="nf">has_enabled_clear_method</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns True iff obj has a clear method that is enabled (i.e. not disabled)&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s1">&#39;clear&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>  <span class="c1"># has a clear method...</span>
-        <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span>
-            <span class="n">store</span><span class="o">.</span><span class="n">clear</span><span class="p">,</span> <span class="s1">&#39;disabled&#39;</span>
-        <span class="p">)</span>  <span class="c1"># that doesn&#39;t have a disabled attribute</span>
+        <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">clear</span><span class="p">,</span> <span class="s1">&#39;disabled&#39;</span><span class="p">)</span>  <span class="c1"># that doesn&#39;t have a disabled attribute</span>
         <span class="ow">or</span> <span class="ow">not</span> <span class="n">store</span><span class="o">.</span><span class="n">clear</span><span class="o">.</span><span class="n">disabled</span>
     <span class="p">)</span>  <span class="c1"># ... or if it does, than it must not be == True</span></div>
 
@@ -193,17 +189,13 @@
 
 <span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
-        <span class="bp">cls</span><span class="p">,</span> <span class="nb">type</span>
-    <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;cls should be a type, was a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="nb">type</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;cls should be a type, was a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s1">&#39;</span>
 
     <span class="k">class</span> <span class="nc">PartialClass</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="fm">__init__</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">copy_attrs</span><span class="p">(</span>
-        <span class="n">PartialClass</span><span class="p">,</span>
-        <span class="bp">cls</span><span class="p">,</span>
-        <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
+        <span class="n">PartialClass</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PartialClass</span></div>
@@ -606,10 +598,7 @@
     <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="n">append_to_group_items</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span>
-            <span class="n">group_items</span><span class="p">,</span>
-            <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),</span>
-        <span class="p">)</span>
+        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span><span class="n">group_items</span><span class="p">,</span> <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),)</span>
 
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
         <span class="n">group_key</span> <span class="o">=</span> <span class="n">key</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
@@ -727,9 +716,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__isabstractmethod__</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
-            <span class="n">func</span><span class="p">,</span> <span class="s1">&#39;__isabstractmethod__&#39;</span><span class="p">,</span> <span class="kc">False</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__isabstractmethod__</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s1">&#39;__isabstractmethod__&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
 
     <span class="k">def</span> <span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
@@ -896,9 +883,7 @@
     <span class="c1">#     return self.delegate(instance)(*args, **kwargs)</span>
 
 
-<span class="k">def</span> <span class="nf">delegate_as</span><span class="p">(</span>
-    <span class="n">delegate_cls</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s1">&#39;delegate&#39;</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">()</span>
-<span class="p">):</span>
+<span class="k">def</span> <span class="nf">delegate_as</span><span class="p">(</span><span class="n">delegate_cls</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s1">&#39;delegate&#39;</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">()):</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Didn&#39;t manage to make this work fully&quot;</span><span class="p">)</span>
     <span class="c1"># turn include and ignore into sets, if they aren&#39;t already</span>
     <span class="n">include</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">include</span><span class="p">)</span>

@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.base &#8212; dol 0.1.16 documentation</title>
+    <title>dol.base &#8212; dol 0.1.17 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -267,9 +267,7 @@
             <span class="k">return</span> <span class="bp">self</span>  <span class="c1"># .__wrapped__  # TODO: The __wrapped__ would make it hard to debug</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># i.e. return instance.delegate.attr</span>
-            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span>
-                <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delegate_name</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_name</span>
-            <span class="p">)</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delegate_name</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_name</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="c1"># instance.delegate.attr = value</span>
@@ -332,8 +330,7 @@
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
             <span class="n">wrapped_attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">delegated_attribute</span> <span class="o">=</span> <span class="n">update_wrapper</span><span class="p">(</span>
-                <span class="n">wrapper</span><span class="o">=</span><span class="n">DelegatedAttribute</span><span class="p">(</span><span class="n">delegation_attr</span><span class="p">,</span> <span class="n">attr</span><span class="p">),</span>
-                <span class="n">wrapped</span><span class="o">=</span><span class="n">wrapped_attr</span><span class="p">,</span>
+                <span class="n">wrapper</span><span class="o">=</span><span class="n">DelegatedAttribute</span><span class="p">(</span><span class="n">delegation_attr</span><span class="p">,</span> <span class="n">attr</span><span class="p">),</span> <span class="n">wrapped</span><span class="o">=</span><span class="n">wrapped_attr</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">Wrap</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">delegated_attribute</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Wrap</span>
@@ -642,9 +639,7 @@
             <span class="k">if</span> <span class="n">k</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Couldn&#39;t get data for the key </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">. This could be be...</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Couldn&#39;t get data for the key </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">. This could be be...</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;... because it&#39;s not a store (just a collection, that doesn&#39;t have a __getitem__)</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="n">msg</span> <span class="o">+=</span> <span class="p">(</span>
                     <span class="s2">&quot;... because there&#39;s a layer transforming outcoming keys that are not the ones the store actually &quot;</span>
@@ -763,14 +758,10 @@
             <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">vv</span>
         <span class="p">):</span>  <span class="c1"># should we recurse? (based on some function of p, k, v)</span>
             <span class="c1"># print(f&quot;3: recurse with: pp={pp}, vv={vv}\n&quot;)</span>
-            <span class="k">yield from</span> <span class="n">kv_walk</span><span class="p">(</span>
-                <span class="n">vv</span><span class="p">,</span> <span class="n">yield_func</span><span class="p">,</span> <span class="n">walk_filt</span><span class="p">,</span> <span class="n">pkv_to_pv</span><span class="p">,</span> <span class="n">pp</span>
-            <span class="p">)</span>  <span class="c1"># recurse</span>
+            <span class="k">yield from</span> <span class="n">kv_walk</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span> <span class="n">yield_func</span><span class="p">,</span> <span class="n">walk_filt</span><span class="p">,</span> <span class="n">pkv_to_pv</span><span class="p">,</span> <span class="n">pp</span><span class="p">)</span>  <span class="c1"># recurse</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># print(f&quot;4: yield_func(pp={pp}, k={k}, vv={vv})\n --&gt; {yield_func(pp, k, vv)}&quot;)</span>
-            <span class="k">yield</span> <span class="n">yield_func</span><span class="p">(</span>
-                <span class="n">pp</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">vv</span>
-            <span class="p">)</span>  <span class="c1"># yield something computed from p, k, vv</span></div>
+            <span class="k">yield</span> <span class="n">yield_func</span><span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>  <span class="c1"># yield something computed from p, k, vv</span></div>
 
 
 <div class="viewcode-block" id="has_kv_store_interface"><a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.has_kv_store_interface">[docs]</a><span class="k">def</span> <span class="nf">has_kv_store_interface</span><span class="p">(</span><span class="n">o</span><span class="p">):</span>

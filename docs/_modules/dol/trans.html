@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.trans &#8212; dol 0.1.16 documentation</title>
+    <title>dol.trans &#8212; dol 0.1.17 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -106,9 +106,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">validate_decorator_func</span><span class="p">(</span><span class="n">decorator_func</span><span class="p">):</span>
-        <span class="n">first_param</span><span class="p">,</span> <span class="o">*</span><span class="n">other_params</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span>
-            <span class="n">decorator_func</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="n">first_param</span><span class="p">,</span> <span class="o">*</span><span class="n">other_params</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">decorator_func</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">first_param</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="kc">None</span>
         <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;First argument of the decorator function needs to default to None. Was </span><span class="si">{</span><span class="n">first_param</span><span class="o">.</span><span class="n">default</span><span class="si">}</span><span class="s1">&#39;</span>
@@ -139,9 +137,7 @@
 <span class="sd">    False</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kinds</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
-        <span class="n">kinds</span>
-    <span class="p">)</span>  <span class="c1"># consume first item, and all remaining should be KEYWORD_ONLY</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">kinds</span><span class="p">)</span>  <span class="c1"># consume first item, and all remaining should be KEYWORD_ONLY</span>
     <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">kind</span> <span class="o">==</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span> <span class="k">for</span> <span class="n">kind</span> <span class="ow">in</span> <span class="n">kinds</span><span class="p">)</span>
 
 
@@ -384,9 +380,7 @@
         <span class="k">if</span> <span class="n">store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># then we want a factory</span>
             <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_func_wrapping_store_in_cls_if_not_type</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">wrapped_store_cls</span> <span class="o">=</span> <span class="n">_func_wrapping_store_in_cls_if_not_type</span><span class="p">(</span>
-                <span class="n">store</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-            <span class="p">)</span>
+            <span class="n">wrapped_store_cls</span> <span class="o">=</span> <span class="n">_func_wrapping_store_in_cls_if_not_type</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">wrapped_store_cls</span>
 
@@ -528,9 +522,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">kv_collection</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">+</span> <span class="s1">&#39;Reader&#39;</span>
-    <span class="n">reader_cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span>
-        <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">kv_collection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">),</span> <span class="p">{</span><span class="s1">&#39;__getitem__&#39;</span><span class="p">:</span> <span class="n">getitem</span><span class="p">}</span>
-    <span class="p">)</span>
+    <span class="n">reader_cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">kv_collection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">),</span> <span class="p">{</span><span class="s1">&#39;__getitem__&#39;</span><span class="p">:</span> <span class="n">getitem</span><span class="p">})</span>
     <span class="k">return</span> <span class="n">reader_cls</span></div>
 
 
@@ -628,9 +620,7 @@
         <span class="k">class</span> <span class="nc">NoOverWritesClass</span><span class="p">(</span><span class="n">OverWritesNotAllowedMixin</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
             <span class="o">...</span>
 
-        <span class="n">copy_attrs</span><span class="p">(</span>
-            <span class="n">NoOverWritesClass</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="n">copy_attrs</span><span class="p">(</span><span class="n">NoOverWritesClass</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">NoOverWritesClass</span>
 
     <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
@@ -1011,9 +1001,7 @@
         <span class="s1">&#39;_updatable_cache&#39;</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">special_attrs</span> <span class="o">|</span> <span class="p">(</span>
-        <span class="n">AttrNames</span><span class="o">.</span><span class="n">KvPersister</span>
-        <span class="o">&amp;</span> <span class="n">attrs_of</span><span class="p">(</span><span class="n">cached_cls</span><span class="p">)</span>
-        <span class="o">&amp;</span> <span class="n">attrs_of</span><span class="p">(</span><span class="n">CachedIterMethods</span><span class="p">)</span>
+        <span class="n">AttrNames</span><span class="o">.</span><span class="n">KvPersister</span> <span class="o">&amp;</span> <span class="n">attrs_of</span><span class="p">(</span><span class="n">cached_cls</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">attrs_of</span><span class="p">(</span><span class="n">CachedIterMethods</span><span class="p">)</span>
     <span class="p">):</span>
         <span class="nb">setattr</span><span class="p">(</span><span class="n">cached_cls</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">CachedIterMethods</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
 
@@ -1558,9 +1546,7 @@
                 <span class="c1"># output_of_super_method = super_method(x)</span>
                 <span class="c1"># transformed_output_of_super_method = trans_func(output_of_super_method)</span>
                 <span class="c1"># return transformed_output_of_super_method</span>
-                <span class="k">return</span> <span class="n">trans_func</span><span class="p">(</span>
-                    <span class="nb">getattr</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">),</span> <span class="n">wrapped_method</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
-                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">trans_func</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">),</span> <span class="n">wrapped_method</span><span class="p">)(</span><span class="n">x</span><span class="p">))</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># print(f&quot;11111: {store_cls}: {wrapped_method}, {trans_func}, {wrapped_func}, {wrap_arg_idx}&quot;)</span>
@@ -1588,9 +1574,7 @@
 
             <span class="nd">@wraps</span><span class="p">(</span><span class="n">wrapped_func</span><span class="p">)</span>
             <span class="k">def</span> <span class="nf">new_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-                <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">),</span> <span class="n">wrapped_method</span><span class="p">)(</span>
-                    <span class="n">trans_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                <span class="p">)</span>
+                <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">),</span> <span class="n">wrapped_method</span><span class="p">)(</span><span class="n">trans_func</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
         <span class="k">else</span><span class="p">:</span>
 
@@ -1770,17 +1754,13 @@
         <span class="k">for</span> <span class="n">method_name</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;_key_of_id&#39;</span><span class="p">}</span> <span class="o">|</span> <span class="n">ensure_set</span><span class="p">(</span><span class="n">outcoming_key_methods</span><span class="p">):</span>
             <span class="n">_wrap_outcoming</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">key_of_id</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">method_name</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;_obj_of_data&#39;</span><span class="p">}</span> <span class="o">|</span> <span class="n">ensure_set</span><span class="p">(</span>
-            <span class="n">outcoming_value_methods</span>
-        <span class="p">):</span>
+        <span class="k">for</span> <span class="n">method_name</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;_obj_of_data&#39;</span><span class="p">}</span> <span class="o">|</span> <span class="n">ensure_set</span><span class="p">(</span><span class="n">outcoming_value_methods</span><span class="p">):</span>
             <span class="n">_wrap_outcoming</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">method_name</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;_id_of_key&#39;</span><span class="p">}</span> <span class="o">|</span> <span class="n">ensure_set</span><span class="p">(</span><span class="n">ingoing_key_methods</span><span class="p">):</span>
             <span class="n">_wrap_ingoing</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">id_of_key</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">method_name</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;_data_of_obj&#39;</span><span class="p">}</span> <span class="o">|</span> <span class="n">ensure_set</span><span class="p">(</span>
-            <span class="n">ingoing_value_methods</span>
-        <span class="p">):</span>
+        <span class="k">for</span> <span class="n">method_name</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;_data_of_obj&#39;</span><span class="p">}</span> <span class="o">|</span> <span class="n">ensure_set</span><span class="p">(</span><span class="n">ingoing_value_methods</span><span class="p">):</span>
             <span class="n">_wrap_ingoing</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="p">)</span>
 
         <span class="c1"># TODO: postget and preset uses num_of_args. Not robust:</span>
@@ -1800,9 +1780,7 @@
             <span class="k">else</span><span class="p">:</span>
 
                 <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="n">postget</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-                    <span class="p">)</span>
+                    <span class="k">return</span> <span class="n">postget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
 
             <span class="n">store_cls</span><span class="o">.</span><span class="fm">__getitem__</span> <span class="o">=</span> <span class="fm">__getitem__</span>
 
@@ -1820,9 +1798,7 @@
             <span class="k">else</span><span class="p">:</span>
 
                 <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span>
-                        <span class="n">k</span><span class="p">,</span> <span class="n">preset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-                    <span class="p">)</span>
+                    <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">preset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
 
             <span class="n">store_cls</span><span class="o">.</span><span class="fm">__setitem__</span> <span class="o">=</span> <span class="fm">__setitem__</span>
 
@@ -1865,8 +1841,7 @@
     <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">name</span>
-            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span>
-            <span class="o">+</span> <span class="s1">&#39;_kr&#39;</span>
+            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;_kr&#39;</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">key_of_id</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
 
@@ -1902,8 +1877,7 @@
     <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">name</span>
-            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span>
-            <span class="o">+</span> <span class="s1">&#39;_kw&#39;</span>
+            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;_kw&#39;</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
 
@@ -1933,8 +1907,7 @@
     <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">name</span>
-            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span>
-            <span class="o">+</span> <span class="s1">&#39;_vr&#39;</span>
+            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;_vr&#39;</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
 
@@ -1964,8 +1937,7 @@
     <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">name</span>
-            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span>
-            <span class="o">+</span> <span class="s1">&#39;_vw&#39;</span>
+            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;_vw&#39;</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
 
@@ -1976,8 +1948,7 @@
     <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">name</span>
-            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span>
-            <span class="o">+</span> <span class="s1">&#39;_vwk&#39;</span>
+            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;_vwk&#39;</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
 
@@ -1988,8 +1959,7 @@
     <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">name</span>
-            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span>
-            <span class="o">+</span> <span class="s1">&#39;_vrk&#39;</span>
+            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;_vrk&#39;</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">postget</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
 
@@ -1999,9 +1969,7 @@
 <div class="viewcode-block" id="mk_trans_obj"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.mk_trans_obj">[docs]</a><span class="k">def</span> <span class="nf">mk_trans_obj</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convenience method to quickly make a trans_obj (just an object holding some trans functions&quot;&quot;&quot;</span>
     <span class="c1"># TODO: Could make this more flexible (assuming here only staticmethods) and validate inputs...</span>
-    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span>
-        <span class="s1">&#39;TransObj&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-    <span class="p">)()</span></div>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;TransObj&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()})()</span></div>
 
 
 <div class="viewcode-block" id="kv_wrap"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.kv_wrap">[docs]</a><span class="k">def</span> <span class="nf">kv_wrap</span><span class="p">(</span><span class="n">trans_obj</span><span class="p">):</span>
@@ -2024,8 +1992,7 @@
     <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">name</span>
-            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span>
-            <span class="o">+</span> <span class="s1">&#39;_kr&#39;</span>
+            <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;_kr&#39;</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span>
             <span class="n">o</span><span class="p">,</span>
@@ -2308,9 +2275,7 @@
 
 
 <div class="viewcode-block" id="insert_load_dump_aliases"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.insert_load_dump_aliases">[docs]</a><span class="nd">@store_decorator</span>
-<span class="k">def</span> <span class="nf">insert_load_dump_aliases</span><span class="p">(</span>
-    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="kc">None</span>
-<span class="p">):</span>
+<span class="k">def</span> <span class="nf">insert_load_dump_aliases</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Insert load and dump methods, with familiar dump(obj, location) signature.</span>
 
 <span class="sd">    Args:</span>
@@ -2327,9 +2292,7 @@
 <span class="sd">    &gt;&gt;&gt; s</span>
 <span class="sd">    {&#39;true&#39;: &#39;love&#39;}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">store</span> <span class="o">=</span> <span class="n">insert_aliases</span><span class="p">(</span>
-        <span class="n">store</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="s1">&#39;load&#39;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="n">delete</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span>
-    <span class="p">)</span>
+    <span class="n">store</span> <span class="o">=</span> <span class="n">insert_aliases</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="s1">&#39;load&#39;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="n">delete</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
@@ -2508,36 +2471,28 @@
     <span class="k">if</span> <span class="n">store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="n">filt</span><span class="p">):</span>  <span class="c1"># if filt is not a callable...</span>
             <span class="c1"># ... assume it&#39;s the collection of keys you want and make a filter function to filter those &quot;in&quot;.</span>
-            <span class="k">assert</span> <span class="nb">next</span><span class="p">(</span>
-                <span class="nb">iter</span><span class="p">(</span><span class="n">filt</span><span class="p">)</span>
-            <span class="p">),</span> <span class="s1">&#39;filt should be a callable, or an iterable&#39;</span>
+            <span class="k">assert</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">filt</span><span class="p">)),</span> <span class="s1">&#39;filt should be a callable, or an iterable&#39;</span>
             <span class="n">keys_that_should_be_filtered_in</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">filt</span><span class="p">)</span>
 
             <span class="k">def</span> <span class="nf">filt</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys_that_should_be_filtered_in</span>
 
         <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="vm">__module__</span><span class="o">=</span><span class="vm">__module__</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
-                <span class="n">store</span><span class="p">,</span> <span class="nb">type</span>
-            <span class="p">):</span>  <span class="c1"># then consider it to be an instance</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>  <span class="c1"># then consider it to be an instance</span>
                 <span class="n">store_instance</span> <span class="o">=</span> <span class="n">store</span>
-                <span class="n">WrapperStore</span> <span class="o">=</span> <span class="n">filtered_iter</span><span class="p">(</span>
-                    <span class="n">filt</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="vm">__module__</span><span class="o">=</span><span class="vm">__module__</span>
-                <span class="p">)(</span><span class="n">Store</span><span class="p">)</span>
+                <span class="n">WrapperStore</span> <span class="o">=</span> <span class="n">filtered_iter</span><span class="p">(</span><span class="n">filt</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="vm">__module__</span><span class="o">=</span><span class="vm">__module__</span><span class="p">)(</span>
+                    <span class="n">Store</span>
+                <span class="p">)</span>
                 <span class="k">return</span> <span class="n">WrapperStore</span><span class="p">(</span><span class="n">store_instance</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># it&#39;s a class we&#39;re wrapping</span>
                 <span class="n">collection_cls</span> <span class="o">=</span> <span class="n">store</span>
-                <span class="vm">__module__</span> <span class="o">=</span> <span class="vm">__module__</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span>
-                    <span class="n">collection_cls</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="kc">None</span>
-                <span class="p">)</span>
+                <span class="vm">__module__</span> <span class="o">=</span> <span class="vm">__module__</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">collection_cls</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
                 <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="s1">&#39;Filtered&#39;</span> <span class="o">+</span> <span class="n">get_class_name</span><span class="p">(</span><span class="n">collection_cls</span><span class="p">)</span>
                 <span class="n">wrapped_cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">collection_cls</span><span class="p">,),</span> <span class="p">{})</span>
 
                 <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-                    <span class="k">yield from</span> <span class="nb">filter</span><span class="p">(</span>
-                        <span class="n">filt</span><span class="p">,</span> <span class="nb">super</span><span class="p">(</span><span class="n">wrapped_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span>
-                    <span class="p">)</span>
+                    <span class="k">yield from</span> <span class="nb">filter</span><span class="p">(</span><span class="n">filt</span><span class="p">,</span> <span class="nb">super</span><span class="p">(</span><span class="n">wrapped_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">())</span>
 
                 <span class="n">wrapped_cls</span><span class="o">.</span><span class="fm">__iter__</span> <span class="o">=</span> <span class="fm">__iter__</span>
 
@@ -2609,9 +2564,7 @@
 
         <span class="k">return</span> <span class="n">wrap</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">filtered_iter</span><span class="p">(</span>
-            <span class="n">filt</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="vm">__module__</span><span class="o">=</span><span class="vm">__module__</span>
-        <span class="p">)(</span><span class="n">store</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">filtered_iter</span><span class="p">(</span><span class="n">filt</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="vm">__module__</span><span class="o">=</span><span class="vm">__module__</span><span class="p">)(</span><span class="n">store</span><span class="p">)</span></div>
 </pre></div>
 
           </div>

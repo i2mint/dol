@@ -91,9 +91,7 @@ def validate_kwargs(
     >>> validate_kwargs({'fv_version': 6}, validation_dict)
     True
     """
-    validation_funs = dict(
-        base_validation_funs or {}, **(validation_funs or {})
-    )
+    validation_funs = dict(base_validation_funs or {}, **(validation_funs or {}))
     for (
         var,
         val,
@@ -105,9 +103,7 @@ def validate_kwargs(
                 if (
                     check in base_validation_funs
                 ):  # if you have a validation check for it
-                    if not validation_funs[check](
-                        val, check_val
-                    ):  # check it's valid
+                    if not validation_funs[check](val, check_val):  # check it's valid
                         raise AssertionError(
                             '{} must {} {}'.format(var, check, check_val)
                         )  # and raise an error if not
@@ -160,9 +156,7 @@ def dict_to_namedtuple(d, namedtuple_obj=None):
     if isinstance(namedtuple_obj, str):
         namedtuple_name = namedtuple_obj
         namedtuple_cls = namedtuple(namedtuple_name, tuple(d.keys()))
-    elif isinstance(namedtuple_obj, tuple) and hasattr(
-        namedtuple_obj, '_fields'
-    ):
+    elif isinstance(namedtuple_obj, tuple) and hasattr(namedtuple_obj, '_fields'):
         namedtuple_cls = namedtuple_obj.__class__
     elif isinstance(namedtuple_obj, type):
         namedtuple_cls = namedtuple_obj
@@ -203,15 +197,10 @@ def update_fields_of_namedtuple(
     for f in remove_fields:
         d.pop(f)
 
-    if (
-        output_type_can_be_the_same_as_input_type
-        and name_of_output_type is None
-    ):
+    if output_type_can_be_the_same_as_input_type and name_of_output_type is None:
         return dict_to_namedtuple(d, nt.__class__)
     else:
-        name_of_output_type = (
-            name_of_output_type or f'Updated{nt.__class__.__name__}'
-        )
+        name_of_output_type = name_of_output_type or f'Updated{nt.__class__.__name__}'
         return dict_to_namedtuple(d, name_of_output_type)
 
 
@@ -267,17 +256,11 @@ def template_to_pattern(mapping_dict, template):
     if mapping_dict:
         p = re.compile(
             '{}'.format(
-                '|'.join(
-                    [
-                        '{' + re.escape(x) + '}'
-                        for x in list(mapping_dict.keys())
-                    ]
-                )
+                '|'.join(['{' + re.escape(x) + '}' for x in list(mapping_dict.keys())])
             )
         )
         return p.sub(
-            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]],
-            template,
+            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]], template,
         )
     else:
         return template
@@ -287,31 +270,26 @@ def mk_extract_pattern(
     template, format_dict=None, named_capture_patterns=None, name=None
 ):
     format_dict = format_dict or {}
-    named_capture_patterns = (
-        named_capture_patterns or mk_named_capture_patterns(format_dict)
+    named_capture_patterns = named_capture_patterns or mk_named_capture_patterns(
+        format_dict
     )
     assert name is not None
     mapping_dict = dict(format_dict, **{name: named_capture_patterns[name]})
     p = re.compile(
         '{}'.format(
-            '|'.join(
-                ['{' + re.escape(x) + '}' for x in list(mapping_dict.keys())]
-            )
+            '|'.join(['{' + re.escape(x) + '}' for x in list(mapping_dict.keys())])
         )
     )
 
     return re.compile(
         p.sub(
-            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]],
-            template,
+            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]], template,
         )
     )
 
 
 # TODO: Is dependent on path sep -- separate concern
-def mk_pattern_from_template_and_format_dict(
-    template, format_dict=None, sep=path_sep
-):
+def mk_pattern_from_template_and_format_dict(template, format_dict=None, sep=path_sep):
     r"""Make a compiled regex to match template
     Args:
         template: A format string
@@ -353,10 +331,7 @@ def mk_prefix_templates_dicts(template):
                 next_name = fields[0]
             else:
                 next_name = fields[
-                    1
-                    + next(
-                        i for i, _name in enumerate(fields) if _name == name
-                    )
+                    1 + next(i for i, _name in enumerate(fields) if _name == name)
                 ]
             p = '{' + next_name + '}'
             template_idx_of_next_name = re.search(p, template).start()
@@ -366,9 +341,9 @@ def mk_prefix_templates_dicts(template):
 
     prefix_template_dict_excluding_name = dict()
     for i, name in enumerate(fields):
-        prefix_template_dict_excluding_name[
-            name
-        ] = prefix_template_dict_including_name[none_and_fields[i]]
+        prefix_template_dict_excluding_name[name] = prefix_template_dict_including_name[
+            none_and_fields[i]
+        ]
     prefix_template_dict_excluding_name[None] = template
 
     return (
@@ -770,9 +745,7 @@ class StrTupleDictWithPrefix(StrTupleDict):
                 else:
                     break
 
-            return self.prefix_template_including_name[last_name].format(
-                **keep_kwargs
-            )
+            return self.prefix_template_including_name[last_name].format(**keep_kwargs)
 
         set_signature_of_func(_mk_prefix, [(s, None) for s in self.fields])
         self.mk_prefix = MethodType(_mk_prefix, self)
@@ -866,26 +839,19 @@ class NamingInterface:
         validation_dict = {
             var: info.get('validation', {}) for var, info in params.items()
         }
-        default_dict = {
-            var: info.get('default', None) for var, info in params.items()
-        }
+        default_dict = {var: info.get('default', None) for var, info in params.items()}
         arg_pattern = {
             var: info.get('arg_pattern', dflt_arg_pattern)
             for var, info in params.items()
         }
         named_arg_pattern = {
-            var: '(?P<' + var + '>' + pat + ')'
-            for var, pat in arg_pattern.items()
+            var: '(?P<' + var + '>' + pat + ')' for var, pat in arg_pattern.items()
         }
         to_str = {
-            var: info['to_str']
-            for var, info in params.items()
-            if 'to_str' in info
+            var: info['to_str'] for var, info in params.items() if 'to_str' in info
         }
         to_val = {
-            var: info['to_val']
-            for var, info in params.items()
-            if 'to_val' in info
+            var: info['to_val'] for var, info in params.items() if 'to_val' in info
         }
 
         self.validation_dict = validation_dict
@@ -925,29 +891,19 @@ class NamingInterface:
             return default['func'](*args)
 
     def str_kwargs_from(self, **kwargs):
-        return {
-            k: self.to_str[k](v) for k, v in kwargs.items() if k in self.to_str
-        }
+        return {k: self.to_str[k](v) for k, v in kwargs.items() if k in self.to_str}
 
     def val_kwargs_from(self, **kwargs):
-        return {
-            k: self.to_val[k](v) for k, v in kwargs.items() if k in self.to_val
-        }
+        return {k: self.to_val[k](v) for k, v in kwargs.items() if k in self.to_val}
 
     def name_for(self, **kwargs):
-        raise NotImplementedError(
-            'Interface method: Method needs to be implemented'
-        )
+        raise NotImplementedError('Interface method: Method needs to be implemented')
 
     def info_for(self, **kwargs):
-        raise NotImplementedError(
-            'Interface method: Method needs to be implemented'
-        )
+        raise NotImplementedError('Interface method: Method needs to be implemented')
 
     def is_valid_name(self, name):
-        raise NotImplementedError(
-            'Interface method: Method needs to be implemented'
-        )
+        raise NotImplementedError('Interface method: Method needs to be implemented')
 
 
 class BigDocTest:
@@ -1089,9 +1045,7 @@ class BigDocTest:
                     assert day_format_pattern.match(day)
             elif isinstance(day, datetime):
                 day = day.strftime(day_format)
-            elif (
-                's_ums' in kwargs
-            ):  # if day is neither a string nor a datetime
+            elif 's_ums' in kwargs:  # if day is neither a string nor a datetime
                 day = datetime.utcfromtimestamp(
                     int(kwargs['s_ums'] / second_ms)
                 ).strftime(day_format)
@@ -1139,9 +1093,7 @@ def _get_keymap_names_for_str_to_key_type(key_type):
     if key_type not in {'tuple', 'namedtuple', 'dict', 'str'}:
         raise ValueError(f'Not a recognized key_type: {key_type}')
 
-    return KeyMapNames(
-        key_of_id=f'str_to_{key_type}', id_of_key=f'{key_type}_to_str'
-    )
+    return KeyMapNames(key_of_id=f'str_to_{key_type}', id_of_key=f'{key_type}_to_str')
 
 
 def _get_method_for_str_to_key_type(keymap, key_type):
@@ -1189,9 +1141,7 @@ def mk_store_from_path_format_store_cls(
     ```
     """
     if isinstance(keymap, type):
-        keymap = keymap(
-            subpath, **(keymap_kwargs or {})
-        )  # make the keymap instance
+        keymap = keymap(subpath, **(keymap_kwargs or {}))  # make the keymap instance
 
     km = _get_method_for_str_to_key_type(keymap, key_type)
 
@@ -1214,9 +1164,7 @@ def mk_store_from_path_format_store_cls(
         )
 
 
-mk_tupled_store_from_path_format_store_cls = (
-    mk_store_from_path_format_store_cls
-)
+mk_tupled_store_from_path_format_store_cls = mk_store_from_path_format_store_cls
 
 from string import Formatter
 

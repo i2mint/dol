@@ -10,10 +10,7 @@ from dol.trans import store_decorator
 
 def is_a_cache(obj):
     return all(
-        map(
-            partial(hasattr, obj),
-            ('__contains__', '__getitem__', '__setitem__'),
-        )
+        map(partial(hasattr, obj), ('__contains__', '__getitem__', '__setitem__'),)
     )
 
 
@@ -22,9 +19,7 @@ def get_cache(cache):
     if is_a_cache(cache):
         return cache
     elif callable(cache) and len(signature(cache).parameters) == 0:
-        return (
-            cache()
-        )  # consider it to be a cache factory, and call to make factory
+        return cache()  # consider it to be a cache factory, and call to make factory
 
 
 ########################################################################################################################
@@ -70,9 +65,7 @@ def _mk_cache_instance(cache=None, assert_attrs=()):
     if cache is None:
         cache = {}  # use a dict (memory caching) by default
     elif isinstance(cache, type) or (  # if caching_store is a type...
-        not hasattr(
-            cache, '__getitem__'
-        )  # ... or is a callable without a __getitem__
+        not hasattr(cache, '__getitem__')  # ... or is a callable without a __getitem__
         and callable(cache)
     ):
         cache = (
@@ -169,8 +162,7 @@ def mk_cached_store(store=None, *, cache=dict):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self._cache = _mk_cache_instance(
-                cache,
-                assert_attrs=('__getitem__', '__contains__', '__setitem__'),
+                cache, assert_attrs=('__getitem__', '__contains__', '__setitem__'),
             )
             # self.__getitem__ = mk_memoizer(self._cache)(self.__getitem__)
 
@@ -334,8 +326,7 @@ def _slow_but_somewhat_general_hash(*args, **kwargs):
         single_val = args[0]
         if hasattr(single_val, 'items'):
             return tuple(
-                (k, _slow_but_somewhat_general_hash(v))
-                for k, v in single_val.items()
+                (k, _slow_but_somewhat_general_hash(v)) for k, v in single_val.items()
             )
         elif isinstance(single_val, (set, list)):
             return tuple(single_val)
@@ -344,10 +335,7 @@ def _slow_but_somewhat_general_hash(*args, **kwargs):
     else:
         return (
             tuple(_slow_but_somewhat_general_hash(x) for x in args),
-            tuple(
-                (k, _slow_but_somewhat_general_hash(v))
-                for k, v in kwargs.items()
-            ),
+            tuple((k, _slow_but_somewhat_general_hash(v)) for k, v in kwargs.items()),
         )
 
 
@@ -401,9 +389,7 @@ def store_cached(store, key_func: Callable):
         def wrapped_func(*args, **kwargs):
             key = key_func(*args, **kwargs)
             if key in store:  # if the store has that key...
-                return store[
-                    key
-                ]  # ... just return the data cached under this key
+                return store[key]  # ... just return the data cached under this key
             else:  # if the store doesn't have it...
                 output = func(
                     *args, **kwargs
@@ -474,18 +460,14 @@ def store_cached_with_single_key(store, key):
         @wraps(func)
         def wrapped_func(*args, **kwargs):
             if key in store:  # if the store has that key...
-                return store[
-                    key
-                ]  # ... just return the data cached under this key
+                return store[key]  # ... just return the data cached under this key
             else:
                 output = func(*args, **kwargs)
                 store[key] = output
                 return output
 
         wrapped_func._cache = store
-        wrapped_func.empty_cache_entry = lambda: wrapped_func._cache.__delitem__(
-            key
-        )
+        wrapped_func.empty_cache_entry = lambda: wrapped_func._cache.__delitem__(key)
         return wrapped_func
 
     return func_wrapper
@@ -533,9 +515,7 @@ from dol.util import has_enabled_clear_method
 
 
 @store_decorator
-def mk_write_cached_store(
-    store=None, *, w_cache=dict, flush_cache_condition=None
-):
+def mk_write_cached_store(store=None, *, w_cache=dict, flush_cache_condition=None):
     """Wrap a write cache around a store.
 
     Args:
@@ -696,9 +676,7 @@ class WriteBackChainMap(ChainMap):
     def __iter__(self):
         d = {}
         for mapping in reversed(self.maps[: self.max_key_search_depth]):
-            d.update(
-                dict.fromkeys(mapping)
-            )  # reuses stored hash values if possible
+            d.update(dict.fromkeys(mapping))  # reuses stored hash values if possible
         return iter(d)
 
     def __contains__(self, key):

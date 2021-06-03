@@ -57,9 +57,7 @@ def _disabled_clear_method(self):
                 pass
         ```
     """
-    raise NotImplementedError(
-        f'Instance of {type(self)}: {self.clear.__doc__}'
-    )
+    raise NotImplementedError(f'Instance of {type(self)}: {self.clear.__doc__}')
 
 
 # to be able to check if clear is disabled (see ensure_clear_method function for example):
@@ -69,9 +67,7 @@ _disabled_clear_method.disabled = True
 def has_enabled_clear_method(store):
     """Returns True iff obj has a clear method that is enabled (i.e. not disabled)"""
     return hasattr(store, 'clear') and (  # has a clear method...
-        not hasattr(
-            store.clear, 'disabled'
-        )  # that doesn't have a disabled attribute
+        not hasattr(store.clear, 'disabled')  # that doesn't have a disabled attribute
         or not store.clear.disabled
     )  # ... or if it does, than it must not be == True
 
@@ -158,17 +154,13 @@ def partialclass(cls, *args, **kwargs):
 
     ```
     """
-    assert isinstance(
-        cls, type
-    ), f'cls should be a type, was a {type(cls)}: {cls}'
+    assert isinstance(cls, type), f'cls should be a type, was a {type(cls)}: {cls}'
 
     class PartialClass(cls):
         __init__ = partialmethod(cls.__init__, *args, **kwargs)
 
     copy_attrs(
-        PartialClass,
-        cls,
-        attrs=('__name__', '__qualname__', '__module__', '__doc__'),
+        PartialClass, cls, attrs=('__name__', '__qualname__', '__module__', '__doc__'),
     )
 
     return PartialClass
@@ -571,10 +563,7 @@ def igroupby(
     if val is None:
         _append_to_group_items = append_to_group_items
     else:
-        _append_to_group_items = lambda group_items, item: (
-            group_items,
-            val(item),
-        )
+        _append_to_group_items = lambda group_items, item: (group_items, val(item),)
 
     for item in items:
         group_key = key(item)
@@ -692,9 +681,7 @@ class lazyprop:
 
     def __init__(self, func):
         self.__doc__ = getattr(func, '__doc__')
-        self.__isabstractmethod__ = getattr(
-            func, '__isabstractmethod__', False
-        )
+        self.__isabstractmethod__ = getattr(func, '__isabstractmethod__', False)
         self.func = func
 
     def __get__(self, instance, cls):
@@ -861,9 +848,7 @@ class DelegatedAttribute:
     #     return self.delegate(instance)(*args, **kwargs)
 
 
-def delegate_as(
-    delegate_cls, to='delegate', include=frozenset(), exclude=frozenset()
-):
+def delegate_as(delegate_cls, to='delegate', include=frozenset(), exclude=frozenset()):
     raise NotImplementedError("Didn't manage to make this work fully")
     # turn include and ignore into sets, if they aren't already
     include = set(include)

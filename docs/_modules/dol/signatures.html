@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.signatures &#8212; dol 0.1.16 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.17 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -47,21 +47,15 @@
 <span class="p">)</span>
 <span class="n">ParamsType</span> <span class="o">=</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Parameter</span><span class="p">]</span>
 <span class="n">ParamsAble</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ParamsType</span><span class="p">,</span> <span class="n">MappingType</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">],</span> <span class="n">Callable</span><span class="p">]</span>
-<span class="n">SignatureAble</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
-    <span class="n">Signature</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">ParamsType</span><span class="p">,</span> <span class="n">MappingType</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]</span>
-<span class="p">]</span>
-<span class="n">HasParams</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
-    <span class="n">Iterable</span><span class="p">[</span><span class="n">Parameter</span><span class="p">],</span> <span class="n">MappingType</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">],</span> <span class="n">Signature</span><span class="p">,</span> <span class="n">Callable</span>
-<span class="p">]</span>
+<span class="n">SignatureAble</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Signature</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">ParamsType</span><span class="p">,</span> <span class="n">MappingType</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span>
+<span class="n">HasParams</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Parameter</span><span class="p">],</span> <span class="n">MappingType</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">],</span> <span class="n">Signature</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span>
 
 <span class="c1"># short hands for Parameter kinds</span>
 <span class="n">PK</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_OR_KEYWORD</span>
 <span class="n">VP</span><span class="p">,</span> <span class="n">VK</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span><span class="p">,</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
 <span class="n">PO</span><span class="p">,</span> <span class="n">KO</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_ONLY</span><span class="p">,</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span>
 <span class="n">var_param_kinds</span> <span class="o">=</span> <span class="p">{</span><span class="n">VP</span><span class="p">,</span> <span class="n">VK</span><span class="p">}</span>
-<span class="n">var_param_types</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">var_param_kinds</span>  <span class="c1"># Deprecate: for back-compatibility. Delete in 2021</span>
-<span class="p">)</span>
+<span class="n">var_param_types</span> <span class="o">=</span> <span class="n">var_param_kinds</span>  <span class="c1"># Deprecate: for back-compatibility. Delete in 2021</span>
 
 
 <span class="c1"># TODO: Couldn&#39;t make this work. See https://www.python.org/dev/peps/pep-0562/</span>
@@ -109,9 +103,7 @@
     <span class="k">elif</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Signature</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="p">())</span>
     <span class="c1"># if you get this far...</span>
-    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;Don&#39;t know how to make that object into a Signature: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Don&#39;t know how to make that object into a Signature: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
 <span class="n">assure_signature</span> <span class="o">=</span> <span class="n">ensure_signature</span>  <span class="c1"># alias for backcompatibility</span>
@@ -198,9 +190,7 @@
             <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">obj</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">obj</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">obj</span><span class="p">[</span><span class="mi">1</span><span class="p">]}]</span>
             <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">obj</span> <span class="o">=</span> <span class="p">[</span>
-                    <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">obj</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">obj</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;annotation&#39;</span><span class="p">:</span> <span class="n">obj</span><span class="p">[</span><span class="mi">2</span><span class="p">]}</span>
-                <span class="p">]</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">obj</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">obj</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;annotation&#39;</span><span class="p">:</span> <span class="n">obj</span><span class="p">[</span><span class="mi">2</span><span class="p">]}]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
 
@@ -381,26 +371,17 @@
         <span class="k">return</span> <span class="p">(),</span> <span class="p">{},</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
     <span class="n">params_names</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">)</span>
-    <span class="n">names_for_args</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_ONLY</span>
-    <span class="p">]</span>
-    <span class="n">param_kwargs_names</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params_names</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">names_for_args</span><span class="p">)</span>
-    <span class="p">]</span>
+    <span class="n">names_for_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_ONLY</span><span class="p">]</span>
+    <span class="n">param_kwargs_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params_names</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">names_for_args</span><span class="p">)]</span>
     <span class="n">remaining_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">params_names</span><span class="p">]</span>
 
-    <span class="n">param_args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">MissingArgValFor</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">names_for_args</span>
-    <span class="p">)</span>
+    <span class="n">param_args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">MissingArgValFor</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">names_for_args</span><span class="p">)</span>
     <span class="n">param_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">param_kwargs_names</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">}</span>
     <span class="n">remaining_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">remaining_names</span><span class="p">}</span>
 
     <span class="k">if</span> <span class="n">include_all_when_var_keywords_in_params</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span>
-            <span class="nb">next</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">),</span>
-                <span class="kc">None</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="nb">next</span><span class="p">((</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">),</span> <span class="kc">None</span><span class="p">,)</span>
             <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="p">):</span>
             <span class="n">param_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">remaining_kwargs</span><span class="p">)</span>
@@ -723,9 +704,7 @@
 <span class="sd">        &lt;Sig ()&gt;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">and</span> <span class="n">return_annotation</span> <span class="ow">is</span> <span class="n">empty</span><span class="p">:</span>
-            <span class="n">return_annotation</span> <span class="o">=</span> <span class="n">_robust_signature_of_callable</span><span class="p">(</span>
-                <span class="n">obj</span>
-            <span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
+            <span class="n">return_annotation</span> <span class="o">=</span> <span class="n">_robust_signature_of_callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">ensure_params</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span>
             <span class="n">return_annotation</span><span class="o">=</span><span class="n">return_annotation</span><span class="p">,</span>
@@ -945,9 +924,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">default</span>
-            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">default</span> <span class="o">!=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">default</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">default</span> <span class="o">!=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span>
         <span class="p">}</span>
 
     <span class="nd">@property</span>
@@ -1184,9 +1161,7 @@
         <span class="n">new_params</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">name</span><span class="p">:</span> <span class="n">p</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">names</span>
         <span class="p">}</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
-            <span class="n">new_params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">return_annotation</span>
-        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">new_params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_names</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
@@ -1355,9 +1330,7 @@
             <span class="n">excess</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">arguments</span>
             <span class="k">if</span> <span class="n">excess</span><span class="p">:</span>
                 <span class="n">excess_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">excess</span><span class="p">)</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s1">&#39;Got unexpected keyword arguments: </span><span class="si">{</span><span class="n">excess_str</span><span class="si">}</span><span class="s1">&#39;</span>
-                <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Got unexpected keyword arguments: </span><span class="si">{</span><span class="n">excess_str</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span></div>
 
@@ -1379,16 +1352,10 @@
 
 <span class="sd">        See kwargs_from_args_and_kwargs (namely for the description of the arguments.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">position_only_names</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">PO</span>
-        <span class="p">}</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">position_only_names</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span>
-        <span class="p">)</span>
+        <span class="n">position_only_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">PO</span><span class="p">}</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">position_only_names</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># kwargs = self.kwargs_from_args_and_kwargs(args, kwargs, apply_defaults, allow_partial, allow_excess)</span>
-        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">name</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">-</span> <span class="n">position_only_names</span>
-        <span class="p">}</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">-</span> <span class="n">position_only_names</span><span class="p">}</span>
 
         <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span>
             <span class="n">args</span><span class="p">,</span>
@@ -1398,9 +1365,7 @@
             <span class="n">allow_excess</span><span class="o">=</span><span class="n">allow_excess</span><span class="p">,</span>
             <span class="n">ignore_kind</span><span class="o">=</span><span class="n">ignore_kind</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">name</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">-</span> <span class="n">position_only_names</span>
-        <span class="p">}</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">-</span> <span class="n">position_only_names</span><span class="p">}</span>
 
         <span class="k">return</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span></div>
 
@@ -1533,9 +1498,7 @@
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span>
-            <span class="n">kwargs</span><span class="p">,</span>
-            <span class="n">allow_partial</span><span class="o">=</span><span class="n">_allow_partial</span><span class="p">,</span>
-            <span class="n">apply_defaults</span><span class="o">=</span><span class="n">_apply_defaults</span><span class="p">,</span>
+            <span class="n">kwargs</span><span class="p">,</span> <span class="n">allow_partial</span><span class="o">=</span><span class="n">_allow_partial</span><span class="p">,</span> <span class="n">apply_defaults</span><span class="o">=</span><span class="n">_apply_defaults</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="Sig.source_kwargs"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.source_kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">source_kwargs</span><span class="p">(</span>
@@ -1730,9 +1693,7 @@
 
 <span class="c1">########################################################################################################################</span>
 <span class="c1"># TODO: Encorporate in Sig</span>
-<div class="viewcode-block" id="insert_annotations"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.insert_annotations">[docs]</a><span class="k">def</span> <span class="nf">insert_annotations</span><span class="p">(</span>
-    <span class="n">s</span><span class="p">:</span> <span class="n">Signature</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">empty</span><span class="p">,</span> <span class="o">**</span><span class="n">annotations</span>
-<span class="p">):</span>
+<div class="viewcode-block" id="insert_annotations"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.insert_annotations">[docs]</a><span class="k">def</span> <span class="nf">insert_annotations</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Signature</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">empty</span><span class="p">,</span> <span class="o">**</span><span class="n">annotations</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Insert annotations in a signature.</span>
 <span class="sd">    (Note: not really insert but returns a copy of input signature)</span>
 <span class="sd">    &gt;&gt;&gt; from inspect import signature</span>
@@ -1964,9 +1925,7 @@
         <span class="k">if</span> <span class="n">with_default</span> <span class="ow">and</span> <span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;var_positional&#39;</span><span class="p">,</span> <span class="s1">&#39;var_keyword&#39;</span><span class="p">}</span>
         <span class="k">else</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">Parameter</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind_obj</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">annotation</span>
-    <span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind_obj</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">annotation</span><span class="p">)</span></div>
 
 
 <span class="n">param_kinds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="n">x</span><span class="p">,</span> <span class="n">Parameter</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">))</span>
@@ -1975,9 +1934,7 @@
     <span class="n">lower_kind</span> <span class="o">=</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="nb">setattr</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">lower_kind</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">))</span>
     <span class="nb">setattr</span><span class="p">(</span>
-        <span class="n">param_for_kind</span><span class="p">,</span>
-        <span class="s1">&#39;with_default&#39;</span><span class="p">,</span>
-        <span class="n">partial</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">with_default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">param_for_kind</span><span class="p">,</span> <span class="s1">&#39;with_default&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">with_default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="nb">setattr</span><span class="p">(</span>
         <span class="nb">getattr</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">lower_kind</span><span class="p">),</span>
@@ -1999,9 +1956,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">p</span>
 
-    <span class="k">return</span> <span class="n">Signature</span><span class="p">(</span>
-        <span class="nb">list</span><span class="p">(</span><span class="n">changed_params</span><span class="p">()),</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">sig</span><span class="o">.</span><span class="n">return_annotation</span>
-    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">Signature</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">changed_params</span><span class="p">()),</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">sig</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">)</span>
 </pre></div>
 
           </div>

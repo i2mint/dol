@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.appendable &#8212; dol 0.1.16 documentation</title>
+    <title>dol.appendable &#8212; dol 0.1.17 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -233,9 +233,7 @@
 <span class="sd">        &gt;&gt;&gt; assert v == &#39;some data&#39;  # just the item itself</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="n">offset_s</span> <span class="o">==</span> <span class="mf">0.0</span>
-        <span class="p">):</span>  <span class="c1"># splitting for extra speed (important in real time apps)</span>
+        <span class="k">if</span> <span class="n">offset_s</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># splitting for extra speed (important in real time apps)</span>
 
             <span class="k">def</span> <span class="nf">item2kv</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="n">item</span>
@@ -403,16 +401,12 @@
 
 <span class="n">add_append_functionality_to_store_cls</span> <span class="o">=</span> <span class="n">appendable</span>  <span class="c1"># for back compatibility</span>
 
-<span class="n">appendable</span><span class="o">.</span><span class="n">mk_item2kv_for</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">mk_item2kv_for</span>  <span class="c1"># adding as attribute for convenient access</span>
-<span class="p">)</span>
+<span class="n">appendable</span><span class="o">.</span><span class="n">mk_item2kv_for</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span>  <span class="c1"># adding as attribute for convenient access</span>
 
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Sequence</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span>
 
-<span class="n">NotAVal</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span>
-    <span class="s1">&#39;NotAVal&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{}</span>
-<span class="p">)()</span>  <span class="c1"># singleton instance to distinguish from None</span>
+<span class="n">NotAVal</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;NotAVal&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>  <span class="c1"># singleton instance to distinguish from None</span>
 
 
 <span class="c1">#</span>
@@ -510,9 +504,7 @@
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;There are no items in this </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> instance&#39;</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;There are no items in this </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> instance&#39;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">val</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>

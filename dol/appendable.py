@@ -198,9 +198,7 @@ class mk_item2kv_for:
         >>> assert v == 'some data'  # just the item itself
 
         """
-        if (
-            offset_s == 0.0
-        ):  # splitting for extra speed (important in real time apps)
+        if offset_s == 0.0:  # splitting for extra speed (important in real time apps)
 
             def item2kv(item):
                 return time.time(), item
@@ -368,16 +366,12 @@ def appendable(
 
 add_append_functionality_to_store_cls = appendable  # for back compatibility
 
-appendable.mk_item2kv_for = (
-    mk_item2kv_for  # adding as attribute for convenient access
-)
+appendable.mk_item2kv_for = mk_item2kv_for  # adding as attribute for convenient access
 
 from collections.abc import Sequence
 from typing import Iterable, Optional
 
-NotAVal = type(
-    'NotAVal', (), {}
-)()  # singleton instance to distinguish from None
+NotAVal = type('NotAVal', (), {})()  # singleton instance to distinguish from None
 
 
 #
@@ -475,9 +469,7 @@ class FirstAppendOnly(Sequence):
 
     def __getitem__(self, k):
         if len(self) == 0:
-            raise IndexError(
-                f'There are no items in this {self.__class__} instance'
-            )
+            raise IndexError(f'There are no items in this {self.__class__} instance')
         elif k == 0:
             return self.val
         elif isinstance(k, slice):
