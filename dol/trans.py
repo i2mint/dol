@@ -804,10 +804,27 @@ def cached_keys(
     >>> list(s)  # keys will be sorted according to their length
     ['c', 'aa', 'bbb']
     """
+    arguments = {k: v for k, v in locals().items() if k != 'arguments'}
+    store = arguments.pop('store')
+    class_trans = partial(_cached_keys, **arguments)
+    arguments['name'] = arguments['name'] or store.__qualname__ + 'Wrapped'
+
+    return Store.wrap(store, class_trans=class_trans)
+
+
+def _cached_keys(
+    store,
+    keys_cache: Union[callable, Collection] = list,
+    iter_to_container=None,  # deprecated: use keys_cache instead
+    cache_update_method='update',
+    name: str = None,  # TODO: might be able to be deprecated since included in store_decorator
+    __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
+):
     if iter_to_container is not None:
         assert callable(iter_to_container)
         warn(
-            "The argument name 'iter_to_container' is being deprecated in favor of the more general 'keys_cache'"
+            "The argument name 'iter_to_container' is being deprecated in favor "
+            "of the more general 'keys_cache'"
         )
         # assert keys_cache == iter_to_container
 
@@ -851,20 +868,6 @@ def cached_keys(
                     super(cached_cls, self).__iter__()
                 )  # TODO: Should it be iter(super(...)?
 
-        # if not callable(_explicit_keys):
-
-        # If keys_cache_update is None (the default), the method 'update' will be searched for as above,
-        #   and if not found, will fall back to None.
-        # if isinstance(keys_cache_update, str):
-        #     if (_explicit_keys and hasattr(_explicit_keys, '__class__')
-        #             and hasattr(_explicit_keys.__class__, keys_cache_update)):
-        #         keys_cache_update = getattr(_explicit_keys.__class__, keys_cache_update)
-
-        # if (_explicit_keys and hasattr(_explicit_keys, '__class__')
-        #         and hasattr(_explicit_keys.__class__, 'update')):
-        #     keys_cache_update = _explicit_keys.__class__.update
-        #
-
         @property
         def _iter_cache(self):  # for back-compatibility
             warn(
@@ -897,9 +900,7 @@ def cached_keys(
                 update_func = getattr(self._keys_cache, cache_update_method)
                 update_func(self._keys_cache, keys)
 
-            update_keys_cache.__doc__ = (
-                'Updates the _keys_cache by calling its {} method'
-            )
+            update_keys_cache.__doc__ = 'Updates the _keys_cache by calling its {} method'
         else:
 
             def update_keys_cache(self, keys):
@@ -1156,7 +1157,6 @@ def take_everything(key):
     return True
 
 
-# TODO: Factor out the method injection pattern (e.g. __getitem__, __setitem__ and __delitem__ are nearly identical)
 @store_decorator
 def filt_iter(
     store=None,
@@ -1207,40 +1207,33 @@ def filt_iter(
     ...     pass
     """
 
-    # if store is None:
-    wrapped_cls = _filt_iter(store, filt, name, __module__)
+    arguments = {k: v for k, v in locals().items() if k != 'arguments'}
+    store = arguments.pop('store')
+    class_trans = partial(_filt_iter, **arguments)
+    arguments['name'] = arguments['name'] or store.__qualname__ + 'Wrapped'
 
-    # if __module__ is not None:
-    #     wrapped_cls.__module__ = __module__
-    #
-    # if hasattr(collection_cls, '__doc__'):
-    #     wrapped_cls.__doc__ = store.__doc__
-
-    return wrapped_cls
+    return Store.wrap(store, class_trans=class_trans)
 
 
-def _filt_iter(store, filt, name, __module__):
+# TODO: Factor out the method injection pattern (e.g. __getitem__, __setitem__
+#  and __delitem__ are nearly identical)
+def _filt_iter(store_cls: type, filt, name, __module__):
+    assert isinstance(store_cls, type), f'store_cls must be a type: {store_cls}'
+
     if not callable(filt):  # if filt is not a callable...
         # ... assume it's the collection of keys you want and make a filter function
         # to filter those "in".
-        assert isinstance(
-            filt, Iterable
-        ), 'filt should be a callable, or an iterable'
+        assert isinstance(filt, Iterable), 'filt should be a callable, or an iterable'
         keys_that_should_be_filtered_in = set(filt)
 
         def filt(k):
             return k in keys_that_should_be_filtered_in
 
-    __module__ = __module__ or getattr(store, '__module__', None)
-    name = name or 'Filtered' + get_class_name(store)
-    # wrapped_cls = Store.wrap()
-    wrapped_cls = type(name, (store,), {})
-
     def __iter__(self):
-        yield from filter(filt, super(wrapped_cls, self).__iter__())
+        yield from filter(filt, super(store_cls, self).__iter__())
 
-    wrapped_cls.__iter__ = __iter__
-    _define_keys_values_and_items_according_to_iter(wrapped_cls)
+    store_cls.__iter__ = __iter__
+    _define_keys_values_and_items_according_to_iter(store_cls)
 
     def __len__(self):
         c = 0
@@ -1248,52 +1241,53 @@ def _filt_iter(store, filt, name, __module__):
             c += 1
         return c
 
-    wrapped_cls.__len__ = __len__
+    store_cls.__len__ = __len__
 
     def __contains__(self, k):
         if filt(k):
-            return super(wrapped_cls, self).__contains__(k)
+            return super(store_cls, self).__contains__(k)
         else:
             return False
 
-    wrapped_cls.__contains__ = __contains__
-    if hasattr(wrapped_cls, '__getitem__'):
+    store_cls.__contains__ = __contains__
+    if hasattr(store_cls, '__getitem__'):
 
         def __getitem__(self, k):
             if filt(k):
-                return super(wrapped_cls, self).__getitem__(k)
+                return super(store_cls, self).__getitem__(k)
             else:
                 raise KeyError(f'Key not in store: {k}')
 
-        wrapped_cls.__getitem__ = __getitem__
-    if hasattr(wrapped_cls, 'get'):
+        store_cls.__getitem__ = __getitem__
+
+    if hasattr(store_cls, 'get'):
 
         def get(self, k, default=None):
             if filt(k):
-                return super(wrapped_cls, self).get(k, default)
+                return super(store_cls, self).get(k, default)
             else:
                 return default
 
-        wrapped_cls.get = get
-    if hasattr(wrapped_cls, '__setitem__'):
+        store_cls.get = get
+    if hasattr(store_cls, '__setitem__'):
 
         def __setitem__(self, k, v):
             if filt(k):
-                return super(wrapped_cls, self).__setitem__(k, v)
+                return super(store_cls, self).__setitem__(k, v)
             else:
                 raise KeyError(f'Key not in store: {k}')
 
-        wrapped_cls.__setitem__ = __setitem__
-    if hasattr(wrapped_cls, '__delitem__'):
+        store_cls.__setitem__ = __setitem__
+    if hasattr(store_cls, '__delitem__'):
 
         def __delitem__(self, k):
             if filt(k):
-                return super(wrapped_cls, self).__delitem__(k)
+                return super(store_cls, self).__delitem__(k)
             else:
                 raise KeyError(f'Key not in store: {k}')
 
-        wrapped_cls.__delitem__ = __delitem__
-    return wrapped_cls
+        store_cls.__delitem__ = __delitem__
+    return store_cls
 
 
 ########################################################################################################################
@@ -1514,9 +1508,7 @@ def _wrap_outcoming(
         setattr(store_cls, wrapped_method, new_method)
 
 
-def _wrap_ingoing(
-    store_cls, wrapped_method: str, trans_func: Optional[callable] = None
-):
+def _wrap_ingoing(store_cls, wrapped_method: str, trans_func: Optional[callable] = None):
     if trans_func is not None:
         wrapped_func = getattr(store_cls, wrapped_method)
 
@@ -1694,38 +1686,9 @@ def wrap_kvs(
     class_trans = partial(_wrap_kvs, **arguments)
     return Store.wrap(store, class_trans=class_trans)
     # store_cls = Store.wrap(store)
-<<<<<<< HEAD
     #
     # return class_trans(store_cls)
     # return _wrap_kvs(store_cls, **arguments)
-=======
-    store_cls._cls_trans = None
-
-    # store_cls = type(name, (store,), {})
-    # store_cls._cls_trans = None
-
-    def cls_trans(store_cls: type):
-        for method_name in {'_key_of_id'} | ensure_set(outcoming_key_methods):
-            _wrap_outcoming(store_cls, method_name, key_of_id)
-
-        for method_name in {'_obj_of_data'} | ensure_set(outcoming_value_methods):
-            _wrap_outcoming(store_cls, method_name, obj_of_data)
-
-        for method_name in {'_id_of_key'} | ensure_set(ingoing_key_methods):
-            _wrap_ingoing(store_cls, method_name, id_of_key)
-
-        for method_name in {'_data_of_obj'} | ensure_set(ingoing_value_methods):
-            _wrap_ingoing(store_cls, method_name, data_of_obj)
-
-        # TODO: postget and preset uses num_of_args. Not robust:
-        #  Should only count args with no defaults or partial won't be able to be used to make postget/preset funcs
-        # TODO: Extract postget and preset patterns?
-        if postget is not None:
-            if num_of_args(postget) < 2:
-                raise ValueError(
-                    'A postget function needs to have (key, value) or (self, key, value) arguments'
-                )
->>>>>>> origin/master
 
 
 def _wrap_kvs(
@@ -1750,13 +1713,8 @@ def _wrap_kvs(
     for method_name in {'_obj_of_data'} | ensure_set(outcoming_value_methods):
         _wrap_outcoming(store_cls, method_name, obj_of_data)
 
-<<<<<<< HEAD
     for method_name in {'_id_of_key'} | ensure_set(ingoing_key_methods):
         _wrap_ingoing(store_cls, method_name, id_of_key)
-=======
-                def __getitem__(self, k):
-                    return postget(self, k, super(store_cls, self).__getitem__(k))
->>>>>>> origin/master
 
     for method_name in {'_data_of_obj'} | ensure_set(ingoing_value_methods):
         _wrap_ingoing(store_cls, method_name, data_of_obj)
@@ -1777,13 +1735,8 @@ def _wrap_kvs(
 
         else:
 
-<<<<<<< HEAD
             def __getitem__(self, k):
                 return postget(self, k, super(store_cls, self).__getitem__(k))
-=======
-                def __setitem__(self, k, v):
-                    return super(store_cls, self).__setitem__(k, preset(self, k, v))
->>>>>>> origin/master
 
         store_cls.__getitem__ = __getitem__
 
@@ -1801,9 +1754,7 @@ def _wrap_kvs(
         else:
 
             def __setitem__(self, k, v):
-                return super(store_cls, self).__setitem__(
-                    k, preset(self, k, v)
-                )
+                return super(store_cls, self).__setitem__(k, preset(self, k, v))
 
         store_cls.__setitem__ = __setitem__
 
