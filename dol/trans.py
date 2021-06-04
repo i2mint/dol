@@ -900,7 +900,9 @@ def _cached_keys(
                 update_func = getattr(self._keys_cache, cache_update_method)
                 update_func(self._keys_cache, keys)
 
-            update_keys_cache.__doc__ = 'Updates the _keys_cache by calling its {} method'
+            update_keys_cache.__doc__ = (
+                'Updates the _keys_cache by calling its {} method'
+            )
         else:
 
             def update_keys_cache(self, keys):
@@ -1508,7 +1510,9 @@ def _wrap_outcoming(
         setattr(store_cls, wrapped_method, new_method)
 
 
-def _wrap_ingoing(store_cls, wrapped_method: str, trans_func: Optional[callable] = None):
+def _wrap_ingoing(
+    store_cls, wrapped_method: str, trans_func: Optional[callable] = None
+):
     if trans_func is not None:
         wrapped_func = getattr(store_cls, wrapped_method)
 
