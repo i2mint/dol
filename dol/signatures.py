@@ -7,9 +7,7 @@ from typing import Mapping as MappingType
 _empty = Parameter.empty
 empty = _empty
 
-_ParameterKind = type(
-    Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD)
-)
+_ParameterKind = type(Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD))
 ParamsType = Iterable[Parameter]
 ParamsAble = Union[ParamsType, MappingType[str, Parameter], Callable]
 SignatureAble = Union[Signature, Callable, ParamsType, MappingType[str, Parameter]]
@@ -22,6 +20,7 @@ PO, KO = Parameter.POSITIONAL_ONLY, Parameter.KEYWORD_ONLY
 var_param_kinds = {VP, VK}
 var_param_types = var_param_kinds  # Deprecate: for back-compatibility. Delete in 2021
 
+DFLT_DEFAULT_CONFLICT_METHOD = 'strict'
 
 # TODO: Couldn't make this work. See https://www.python.org/dev/peps/pep-0562/
 # deprecated_names = {'assure_callable', 'assure_signature', 'assure_params'}
@@ -33,6 +32,34 @@ var_param_types = var_param_kinds  # Deprecate: for back-compatibility. Delete i
 #         from warnings import warn
 #         warn(f"{name} is deprecated (see code for new name -- look for aliases)", DeprecationWarning)
 #     raise AttributeError(f"module {__name__} has no attribute {name}")
+
+
+def name_of_obj(o: object) -> Union[str, None]:
+    """
+    Tries to find the (or "a") name for an object, even if `__name__` doesn't exist.
+
+    >>> name_of_obj(map)
+    'map'
+    >>> name_of_obj([1, 2, 3])
+    'list'
+    >>> name_of_obj(print)
+    'print'
+    >>> name_of_obj(lambda x: x)
+    '<lambda>'
+    >>> from functools import partial
+    >>> name_of_obj(partial(print, sep=','))
+    'print'
+    """
+    if hasattr(o, '__name__'):
+        return o.__name__
+    elif hasattr(o, '__class__'):
+        name = name_of_obj(o.__class__)
+        if name == 'partial':
+            if hasattr(o, 'func'):
+                return name_of_obj(o.func)
+        return name
+    else:
+        return None
 
 
 def ensure_callable(obj: SignatureAble):
@@ -60,9 +87,7 @@ def ensure_signature(obj: SignatureAble):
         try:
             return Signature(parameters=params)
         except TypeError:
-            raise TypeError(
-                f"Don't know how to make that object into a Signature: {obj}"
-            )
+            raise TypeError(f"Don't know how to make that object into a Signature: {obj}")
     elif isinstance(obj, Parameter):
         return Signature(parameters=(obj,))
     elif obj is None:
@@ -385,18 +410,40 @@ from typing import Optional, Iterable
 from dataclasses import dataclass
 
 
+def function_caller(func, args, kwargs):
+    return func(*args, **kwargs)
+
+
 @dataclass
 class Command:
     """A dataclass that holds a `(caller, args, kwargs)` triple and allows one to execute `caller(*args, **kwargs)`
 
-    :param caller: A callable that will be called with (*args, **kwargs) argument
+    :param func: A callable that will be called with (*args, **kwargs) argument
     :param args: A tuple
-    :param kwargs:
+    :param kwargs: A dict
+    :param caller: How to actually implement the execution of the (func, args, kwargs)
+
+    >>> c = Command(print, ("hello", "world"), dict(sep=', '))
+    >>> c()
+    hello, world
+
+    The usual way to call a function is to... erm... call it.
+    But sometimes you want to do things differently.
+    Like validate it, put it on a queue, etc.
+    That's where specifying a different caller will be useful.
+
+    >>> def caller(f, a, k):
+    ...     print(f"Calling {f}(*{a}, **{k}) with result: {f(*a, **k)}")
+    >>> c = Command(print, ("hello", "world"), dict(sep=', '), caller=caller)
+    >>> c()
+    hello, world
+    Calling <built-in function print>(*('hello', 'world'), **{'sep': ', '}) with result: None
     """
 
-    caller: callable
+    func: Callable
     args: Iterable = ()
     kwargs: Optional[dict] = None
+    caller: Callable[[Callable, tuple, dict], Any] = function_caller
 
     def __post_init__(self):
         assert isinstance(self.args, Iterable)
@@ -404,7 +451,7 @@ class Command:
         assert isinstance(self.kwargs, Mapping)
 
     def __call__(self):
-        return self.caller(*self.args, **self.kwargs)
+        return self.caller(self.func, self.args, self.kwargs)
 
 
 def extract_commands(
@@ -429,7 +476,8 @@ def extract_commands(
     ...     return ((w + x) * y) ** z
     >>> commands = extract_commands((add, mult, formula1), a=1, b=2, c=3, d=4, e=5, w=6, x=7)
     >>> for command in commands:
-    ...     print(f"Calling {command.caller.__name__} with args={command.args} and kwargs={command.kwargs}")
+    ...     print(f"Calling {command.func.__name__} with "
+    ...             f"args={command.args} and kwargs={command.kwargs}")
     ...     print(command())
     ...
     Calling add with args=() and kwargs={'a': 1, 'b': 2}
@@ -612,13 +660,13 @@ class Sig(Signature, Mapping):
 
     >>> import inspect
     >>> def f(w, /, x: float = 1, y=1, *, z: int = 1): ...
-    >>> def g(i, w, j=2): ...
+    >>> def g(i, w, /, j=2): ...
     >>>
     >>> @Sig.from_objs(f, g, ['a', ('b', 3.14), ('c', 42, int)])
     ... def some_func(*args, **kwargs):
     ...     ...
     >>> inspect.signature(some_func)
-    <Signature (w, i, a, x: float = 1, y=1, z: int = 1, j=2, b=3.14, c: int = 42)>
+    <Signature (w, i, /, a, x: float = 1, y=1, j=2, b=3.14, c: int = 42, *, z: int = 1)>
     >>>
     >>> sig = Sig(f) + g + ['a', ('b', 3.14), ('c', 42, int)] - 'b' - ['a', 'z']
     >>> @sig
@@ -675,6 +723,7 @@ class Sig(Signature, Mapping):
             return_annotation=return_annotation,
             __validate_parameters__=__validate_parameters__,
         )
+        self.name = name_of_obj(obj)
 
     def wrap(self, func: Callable):
         """Gives the input function the signature.
@@ -742,10 +791,7 @@ class Sig(Signature, Mapping):
         )
         func.__annotations__ = self.annotations
         # endow the function with __defaults__ and __kwdefaults__ (not the default of functools.wraps!)
-        (
-            func.__defaults__,
-            func.__kwdefaults__,
-        ) = self._dunder_defaults_and_kwdefaults()
+        (func.__defaults__, func.__kwdefaults__,) = self._dunder_defaults_and_kwdefaults()
         # "copy" over all other non-dunder attributes (not the default of functools.wraps!)
         for attr in filter(lambda x: not x.startswith('__'), dir(func)):
             setattr(func, attr, getattr(func, attr))
@@ -846,7 +892,12 @@ class Sig(Signature, Mapping):
         return Signature(**self.to_signature_kwargs())
 
     @classmethod
-    def from_objs(cls, *objs, **name_and_dflts):
+    def from_objs(
+        cls,
+        *objs,
+        default_conflict_method: str = DFLT_DEFAULT_CONFLICT_METHOD,
+        **name_and_dflts,
+    ):
         objs = list(objs)
         for name, default in name_and_dflts.items():
             objs.append([{'name': name, 'kind': PK, 'default': default}])
@@ -854,7 +905,10 @@ class Sig(Signature, Mapping):
             first_obj, *objs = objs
             sig = cls(ensure_params(first_obj))
             for obj in objs:
-                sig = sig + obj
+                sig = sig.merge_with_sig(
+                    obj, default_conflict_method=default_conflict_method
+                )
+                # sig = sig + obj
             return sig
         else:  # if no objs are given
             return cls()  # return an empty signature
@@ -888,9 +942,7 @@ class Sig(Signature, Mapping):
 
     @property
     def defaults(self):
-        return {
-            p.name: p.default for p in self.values() if p.default != Parameter.empty
-        }
+        return {p.name: p.default for p in self.values() if p.default != Parameter.empty}
 
     @property
     def annotations(self):
@@ -898,9 +950,7 @@ class Sig(Signature, Mapping):
         What `func.__annotations__` would give you.
         """
         return {
-            p.name: p.annotation
-            for p in self.values()
-            if p.annotation != Parameter.empty
+            p.name: p.annotation for p in self.values() if p.annotation != Parameter.empty
         }
 
     # def substitute(self, **sub_for_name):
@@ -951,7 +1001,13 @@ class Sig(Signature, Mapping):
             - self.has_var_positional
         )
 
-    def merge_with_sig(self, sig: ParamsAble, ch_to_all_pk=False):
+    def merge_with_sig(
+        self,
+        sig: ParamsAble,
+        ch_to_all_pk: bool = False,
+        *,
+        default_conflict_method: str = DFLT_DEFAULT_CONFLICT_METHOD,
+    ):
         """Return a signature obtained by merging self signature with another signature.
         Insofar as it can, given the kind precedence rules, the arguments of self will appear first.
 
@@ -1001,16 +1057,50 @@ class Sig(Signature, Mapping):
         assert (
             not _self.has_var_keyword or not _sig.has_var_keyword
         ), "Can't merge two signatures if they both have a VAR_KEYWORD parameter:{_msg}"
+
         assert all(
-            (_self[name].kind, _self[name].default)
-            == (_sig[name].kind, _sig[name].default)
-            for name in _self.keys() & _sig.keys()
+            _self[name].kind == _sig[name].kind for name in _self.keys() & _sig.keys()
         ), (
-            'During a signature merge, if two names are the same, they must have the **same kind and default**:\n'
-            f'\t{_msg}\n'
-            "Tip: If you're trying to merge functions in some way, consider decorating them a signature mapping that "
-            'avoids the argument name clashing'
+            'During a signature merge, if two names are the same, they must have the '
+            f'**same kind**:\n\t{_msg}\n'
+            "Tip: If you're trying to merge functions in some way, consider decorating "
+            'them with a signature mapping that avoids the argument name clashing'
         )
+
+        assert default_conflict_method in {
+            None,
+            'strict',
+            'take_first',
+        }, "default_conflict_method should be in {None, 'strict', 'take_first'}"
+
+        if default_conflict_method == 'take_first':
+            _sig = _sig - set(_self.keys() & _sig.keys())
+
+        if not all(
+            _self[name].default == _sig[name].default
+            for name in _self.keys() & _sig.keys()
+        ):
+
+            # if default_conflict_method == 'take_first':
+            #     _sig = _sig - set(_self.keys() & _sig.keys())
+            # else:
+            raise ValueError(
+                'During a signature merge, if two names are the same, they must have the '
+                f'**same default**:\n\t{_msg}\n'
+                "Tip: If you're trying to merge functions in some way, consider decorating "
+                'them with a signature mapping that avoids the argument name clashing'
+            )
+
+        # assert all(
+        #     _self[name].default == _sig[name].default
+        #     for name in _self.keys() & _sig.keys()
+        # ), (
+        #     'During a signature merge, if two names are the same, they must have the '
+        #     f'**same default**:\n\t{_msg}\n'
+        #     "Tip: If you're trying to merge functions in some way, consider decorating "
+        #     "them a signature mapping that "
+        #     'avoids the argument name clashing'
+        # )
 
         params = list(
             self._chain_params_of_signatures(
@@ -1060,16 +1150,20 @@ class Sig(Signature, Mapping):
         >>> Sig(f) + Sig(ff)  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
-        AssertionError: During a signature merge, if two names are the same, they must have the same kind and default:
+        ValueError: During a signature merge, if two names are the same, they must have the **same default**:
+        <BLANKSPACE>
         Happened during an attempt to merge (w, /, x: float = 1, y=1, *, z: int = 1) and (w, /, x: float, y=1, *, z: int = 1)
+        Tip: If you're trying to merge functions in some way, consider decorating them with a signature mapping that avoids the argument name clashing
 
 
         >>> def hh(i, j, w=1): ...  # like h, but w has a default
         >>> Sig(h) + Sig(hh)  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
-        AssertionError: During a signature merge, if two names are the same, they must have the same kind and default:
+        ValueError: During a signature merge, if two names are the same, they must have the **same default**:
+        <BLANKSPACE>
         Happened during an attempt to merge (i, j, w) and (i, j, w=1)
+        Tip: If you're trying to merge functions in some way, consider decorating them with a signature mapping that avoids the argument name clashing
 
 
         >>> Sig(f) + ['w', ('y', 1), ('d', 1.0, float),
@@ -1123,9 +1217,7 @@ class Sig(Signature, Mapping):
 
     def remove_names(self, names):
         names = {p.name for p in ensure_params(names)}
-        new_params = {
-            name: p for name, p in self.parameters.items() if name not in names
-        }
+        new_params = {name: p for name, p in self.parameters.items() if name not in names}
         return self.__class__(new_params, return_annotation=self.return_annotation)
 
     def __sub__(self, sig):
