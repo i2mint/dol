@@ -306,9 +306,7 @@ def delegate_to(
     return delegation_decorator
 
 
-def wrapped_delegator_reconstruct(
-    wrapped_cls, wrapped, class_trans, delegation_attr
-):
+def wrapped_delegator_reconstruct(wrapped_cls, wrapped, class_trans, delegation_attr):
     """"""
     type_ = delegator_wrap(wrapped_cls, wrapped, class_trans, delegation_attr)
     # produce an empty object for pickle to pour the
