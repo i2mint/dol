@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.signatures &#8212; dol 0.1.18 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.19 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -40,17 +40,35 @@
 <p>Signature calculus</p>
 <dl class="py class">
 <dt id="dol.signatures.Command">
-<em class="property">class </em><code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">Command</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">caller</span><span class="p">:</span> <span class="n">callable</span></em>, <em class="sig-param"><span class="n">args</span><span class="p">:</span> <span class="n">Iterable</span> <span class="o">=</span> <span class="default_value">()</span></em>, <em class="sig-param"><span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Command" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">Command</code><span class="sig-paren">(</span><em class="sig-param">func: Callable, args: Iterable = (), kwargs: Optional[dict] = None, caller: Callable[[Callable, tuple, dict], Any] = &lt;function function_caller&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Command" title="Permalink to this definition">¶</a></dt>
 <dd><p>A dataclass that holds a <cite>(caller, args, kwargs)</cite> triple and allows one to execute <cite>caller(*args, **kwargs)</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>caller</strong> – A callable that will be called with (<a href="#id1"><span class="problematic" id="id2">*</span></a>args, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs) argument</p></li>
+<li><p><strong>func</strong> – A callable that will be called with (<a href="#id1"><span class="problematic" id="id2">*</span></a>args, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs) argument</p></li>
 <li><p><strong>args</strong> – A tuple</p></li>
-<li><p><strong>kwargs</strong> – </p></li>
+<li><p><strong>kwargs</strong> – A dict</p></li>
+<li><p><strong>caller</strong> – How to actually implement the execution of the (func, args, kwargs)</p></li>
 </ul>
 </dd>
 </dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Command</span><span class="p">(</span><span class="nb">print</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="s2">&quot;world&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">()</span>
+<span class="go">hello, world</span>
+</pre></div>
+</div>
+<p>The usual way to call a function is to… erm… call it.
+But sometimes you want to do things differently.
+Like validate it, put it on a queue, etc.
+That’s where specifying a different caller will be useful.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">caller</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Calling </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">(*</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">, **</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">) with result: </span><span class="si">{</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">k</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Command</span><span class="p">(</span><span class="nb">print</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="s2">&quot;world&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="p">),</span> <span class="n">caller</span><span class="o">=</span><span class="n">caller</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">()</span>
+<span class="go">hello, world</span>
+<span class="go">Calling &lt;built-in function print&gt;(*(&#39;hello&#39;, &#39;world&#39;), **{&#39;sep&#39;: &#39;, &#39;}) with result: None</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py class">
@@ -123,13 +141,13 @@ Also, Sig instance is callable. It has the effect of inserting it’s signature 
 One of the intents is to be able to do things like:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">inspect</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span> <span class="o">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">g</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">g</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span> <span class="o">...</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@Sig</span><span class="o">.</span><span class="n">from_objs</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="nb">int</span><span class="p">)])</span>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">some_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="o">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">some_func</span><span class="p">)</span>
-<span class="go">&lt;Signature (w, i, a, x: float = 1, y=1, z: int = 1, j=2, b=3.14, c: int = 42)&gt;</span>
+<span class="go">&lt;Signature (w, i, /, a, x: float = 1, y=1, j=2, b=3.14, c: int = 42, *, z: int = 1)&gt;</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">+</span> <span class="n">g</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="nb">int</span><span class="p">)]</span> <span class="o">-</span> <span class="s1">&#39;b&#39;</span> <span class="o">-</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@sig</span>
@@ -357,7 +375,7 @@ Traceback (most recent call last):</p>
 
 <dl class="py method">
 <dt id="dol.signatures.Sig.merge_with_sig">
-<code class="sig-name descname">merge_with_sig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">ch_to_all_pk</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.merge_with_sig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.merge_with_sig" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">merge_with_sig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">ch_to_all_pk</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">default_conflict_method</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'strict'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.merge_with_sig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.merge_with_sig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a signature obtained by merging self signature with another signature.
 Insofar as it can, given the kind precedence rules, the arguments of self will appear first.</p>
 <dl class="field-list simple">
@@ -1192,7 +1210,8 @@ Could be a callable, Signature, iterable of Parameters…</p></li>
 <span class="gp">... </span>    <span class="k">return</span> <span class="p">((</span><span class="n">w</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="n">z</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">commands</span> <span class="o">=</span> <span class="n">extract_commands</span><span class="p">((</span><span class="n">add</span><span class="p">,</span> <span class="n">mult</span><span class="p">,</span> <span class="n">formula1</span><span class="p">),</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Calling </span><span class="si">{</span><span class="n">command</span><span class="o">.</span><span class="n">caller</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> with args=</span><span class="si">{</span><span class="n">command</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2"> and kwargs=</span><span class="si">{</span><span class="n">command</span><span class="o">.</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Calling </span><span class="si">{</span><span class="n">command</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> with &quot;</span>
+<span class="gp">... </span>            <span class="sa">f</span><span class="s2">&quot;args=</span><span class="si">{</span><span class="n">command</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2"> and kwargs=</span><span class="si">{</span><span class="n">command</span><span class="o">.</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">command</span><span class="p">())</span>
 <span class="gp">...</span>
 <span class="go">Calling add with args=() and kwargs={&#39;a&#39;: 1, &#39;b&#39;: 2}</span>
@@ -1242,6 +1261,25 @@ AssertionError: These argument names weren’t found in the signature: {‘e’}
 <dd><p>Make a Signature instance by specifying args_without_default and args_with_defaults.
 &gt;&gt;&gt; mk_sig_from_args(‘a’, ‘b’, c=1, d=’bar’)
 &lt;Signature (a, b, c=1, d=’bar’)&gt;</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.signatures.name_of_obj">
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">name_of_obj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">o</span><span class="p">:</span> <span class="n">object</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>str<span class="p">]</span><a class="reference internal" href="../../_modules/dol/signatures.html#name_of_obj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.name_of_obj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to find the (or “a”) name for an object, even if <cite>__name__</cite> doesn’t exist.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">name_of_obj</span><span class="p">(</span><span class="nb">map</span><span class="p">)</span>
+<span class="go">&#39;map&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">name_of_obj</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">&#39;list&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">name_of_obj</span><span class="p">(</span><span class="nb">print</span><span class="p">)</span>
+<span class="go">&#39;print&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">name_of_obj</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
+<span class="go">&#39;&lt;lambda&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">name_of_obj</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="nb">print</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
+<span class="go">&#39;print&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">

@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.signatures &#8212; dol 0.1.18 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.19 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -57,6 +57,7 @@
 <span class="n">var_param_kinds</span> <span class="o">=</span> <span class="p">{</span><span class="n">VP</span><span class="p">,</span> <span class="n">VK</span><span class="p">}</span>
 <span class="n">var_param_types</span> <span class="o">=</span> <span class="n">var_param_kinds</span>  <span class="c1"># Deprecate: for back-compatibility. Delete in 2021</span>
 
+<span class="n">DFLT_DEFAULT_CONFLICT_METHOD</span> <span class="o">=</span> <span class="s1">&#39;strict&#39;</span>
 
 <span class="c1"># TODO: Couldn&#39;t make this work. See https://www.python.org/dev/peps/pep-0562/</span>
 <span class="c1"># deprecated_names = {&#39;assure_callable&#39;, &#39;assure_signature&#39;, &#39;assure_params&#39;}</span>
@@ -68,6 +69,34 @@
 <span class="c1">#         from warnings import warn</span>
 <span class="c1">#         warn(f&quot;{name} is deprecated (see code for new name -- look for aliases)&quot;, DeprecationWarning)</span>
 <span class="c1">#     raise AttributeError(f&quot;module {__name__} has no attribute {name}&quot;)</span>
+
+
+<div class="viewcode-block" id="name_of_obj"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.name_of_obj">[docs]</a><span class="k">def</span> <span class="nf">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tries to find the (or &quot;a&quot;) name for an object, even if `__name__` doesn&#39;t exist.</span>
+
+<span class="sd">    &gt;&gt;&gt; name_of_obj(map)</span>
+<span class="sd">    &#39;map&#39;</span>
+<span class="sd">    &gt;&gt;&gt; name_of_obj([1, 2, 3])</span>
+<span class="sd">    &#39;list&#39;</span>
+<span class="sd">    &gt;&gt;&gt; name_of_obj(print)</span>
+<span class="sd">    &#39;print&#39;</span>
+<span class="sd">    &gt;&gt;&gt; name_of_obj(lambda x: x)</span>
+<span class="sd">    &#39;&lt;lambda&gt;&#39;</span>
+<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">    &gt;&gt;&gt; name_of_obj(partial(print, sep=&#39;,&#39;))</span>
+<span class="sd">    &#39;print&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">o</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__class__&#39;</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;partial&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;func&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">name</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <span class="k">def</span> <span class="nf">ensure_callable</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">SignatureAble</span><span class="p">):</span>
@@ -420,18 +449,40 @@
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 
 
+<span class="k">def</span> <span class="nf">function_caller</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="Command"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Command">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Command</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;A dataclass that holds a `(caller, args, kwargs)` triple and allows one to execute `caller(*args, **kwargs)`</span>
 
-<span class="sd">    :param caller: A callable that will be called with (*args, **kwargs) argument</span>
+<span class="sd">    :param func: A callable that will be called with (*args, **kwargs) argument</span>
 <span class="sd">    :param args: A tuple</span>
-<span class="sd">    :param kwargs:</span>
+<span class="sd">    :param kwargs: A dict</span>
+<span class="sd">    :param caller: How to actually implement the execution of the (func, args, kwargs)</span>
+
+<span class="sd">    &gt;&gt;&gt; c = Command(print, (&quot;hello&quot;, &quot;world&quot;), dict(sep=&#39;, &#39;))</span>
+<span class="sd">    &gt;&gt;&gt; c()</span>
+<span class="sd">    hello, world</span>
+
+<span class="sd">    The usual way to call a function is to... erm... call it.</span>
+<span class="sd">    But sometimes you want to do things differently.</span>
+<span class="sd">    Like validate it, put it on a queue, etc.</span>
+<span class="sd">    That&#39;s where specifying a different caller will be useful.</span>
+
+<span class="sd">    &gt;&gt;&gt; def caller(f, a, k):</span>
+<span class="sd">    ...     print(f&quot;Calling {f}(*{a}, **{k}) with result: {f(*a, **k)}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; c = Command(print, (&quot;hello&quot;, &quot;world&quot;), dict(sep=&#39;, &#39;), caller=caller)</span>
+<span class="sd">    &gt;&gt;&gt; c()</span>
+<span class="sd">    hello, world</span>
+<span class="sd">    Calling &lt;built-in function print&gt;(*(&#39;hello&#39;, &#39;world&#39;), **{&#39;sep&#39;: &#39;, &#39;}) with result: None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">caller</span><span class="p">:</span> <span class="n">callable</span>
+    <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span>
     <span class="n">args</span><span class="p">:</span> <span class="n">Iterable</span> <span class="o">=</span> <span class="p">()</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">caller</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">function_caller</span>
 
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">)</span>
@@ -439,7 +490,7 @@
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">caller</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">caller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="extract_commands"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.extract_commands">[docs]</a><span class="k">def</span> <span class="nf">extract_commands</span><span class="p">(</span>
@@ -464,7 +515,8 @@
 <span class="sd">    ...     return ((w + x) * y) ** z</span>
 <span class="sd">    &gt;&gt;&gt; commands = extract_commands((add, mult, formula1), a=1, b=2, c=3, d=4, e=5, w=6, x=7)</span>
 <span class="sd">    &gt;&gt;&gt; for command in commands:</span>
-<span class="sd">    ...     print(f&quot;Calling {command.caller.__name__} with args={command.args} and kwargs={command.kwargs}&quot;)</span>
+<span class="sd">    ...     print(f&quot;Calling {command.func.__name__} with &quot;</span>
+<span class="sd">    ...             f&quot;args={command.args} and kwargs={command.kwargs}&quot;)</span>
 <span class="sd">    ...     print(command())</span>
 <span class="sd">    ...</span>
 <span class="sd">    Calling add with args=() and kwargs={&#39;a&#39;: 1, &#39;b&#39;: 2}</span>
@@ -647,13 +699,13 @@
 
 <span class="sd">    &gt;&gt;&gt; import inspect</span>
 <span class="sd">    &gt;&gt;&gt; def f(w, /, x: float = 1, y=1, *, z: int = 1): ...</span>
-<span class="sd">    &gt;&gt;&gt; def g(i, w, j=2): ...</span>
+<span class="sd">    &gt;&gt;&gt; def g(i, w, /, j=2): ...</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; @Sig.from_objs(f, g, [&#39;a&#39;, (&#39;b&#39;, 3.14), (&#39;c&#39;, 42, int)])</span>
 <span class="sd">    ... def some_func(*args, **kwargs):</span>
 <span class="sd">    ...     ...</span>
 <span class="sd">    &gt;&gt;&gt; inspect.signature(some_func)</span>
-<span class="sd">    &lt;Signature (w, i, a, x: float = 1, y=1, z: int = 1, j=2, b=3.14, c: int = 42)&gt;</span>
+<span class="sd">    &lt;Signature (w, i, /, a, x: float = 1, y=1, j=2, b=3.14, c: int = 42, *, z: int = 1)&gt;</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; sig = Sig(f) + g + [&#39;a&#39;, (&#39;b&#39;, 3.14), (&#39;c&#39;, 42, int)] - &#39;b&#39; - [&#39;a&#39;, &#39;z&#39;]</span>
 <span class="sd">    &gt;&gt;&gt; @sig</span>
@@ -710,6 +762,7 @@
             <span class="n">return_annotation</span><span class="o">=</span><span class="n">return_annotation</span><span class="p">,</span>
             <span class="n">__validate_parameters__</span><span class="o">=</span><span class="n">__validate_parameters__</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Sig.wrap"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.wrap">[docs]</a>    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Gives the input function the signature.</span>
@@ -881,7 +934,12 @@
         <span class="k">return</span> <span class="n">Signature</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">to_signature_kwargs</span><span class="p">())</span></div>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_objs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">objs</span><span class="p">,</span> <span class="o">**</span><span class="n">name_and_dflts</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">from_objs</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">objs</span><span class="p">,</span>
+        <span class="n">default_conflict_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_DEFAULT_CONFLICT_METHOD</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">name_and_dflts</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="n">objs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">objs</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">default</span> <span class="ow">in</span> <span class="n">name_and_dflts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">objs</span><span class="o">.</span><span class="n">append</span><span class="p">([{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s1">&#39;kind&#39;</span><span class="p">:</span> <span class="n">PK</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">default</span><span class="p">}])</span>
@@ -889,7 +947,10 @@
             <span class="n">first_obj</span><span class="p">,</span> <span class="o">*</span><span class="n">objs</span> <span class="o">=</span> <span class="n">objs</span>
             <span class="n">sig</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ensure_params</span><span class="p">(</span><span class="n">first_obj</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objs</span><span class="p">:</span>
-                <span class="n">sig</span> <span class="o">=</span> <span class="n">sig</span> <span class="o">+</span> <span class="n">obj</span>
+                <span class="n">sig</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">merge_with_sig</span><span class="p">(</span>
+                    <span class="n">obj</span><span class="p">,</span> <span class="n">default_conflict_method</span><span class="o">=</span><span class="n">default_conflict_method</span>
+                <span class="p">)</span>
+                <span class="c1"># sig = sig + obj</span>
             <span class="k">return</span> <span class="n">sig</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># if no objs are given</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="p">()</span>  <span class="c1"># return an empty signature</span>
@@ -986,7 +1047,13 @@
             <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_var_positional</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Sig.merge_with_sig"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.merge_with_sig">[docs]</a>    <span class="k">def</span> <span class="nf">merge_with_sig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">:</span> <span class="n">ParamsAble</span><span class="p">,</span> <span class="n">ch_to_all_pk</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Sig.merge_with_sig"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.merge_with_sig">[docs]</a>    <span class="k">def</span> <span class="nf">merge_with_sig</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sig</span><span class="p">:</span> <span class="n">ParamsAble</span><span class="p">,</span>
+        <span class="n">ch_to_all_pk</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">default_conflict_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_DEFAULT_CONFLICT_METHOD</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a signature obtained by merging self signature with another signature.</span>
 <span class="sd">        Insofar as it can, given the kind precedence rules, the arguments of self will appear first.</span>
 
@@ -1036,16 +1103,50 @@
         <span class="k">assert</span> <span class="p">(</span>
             <span class="ow">not</span> <span class="n">_self</span><span class="o">.</span><span class="n">has_var_keyword</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_sig</span><span class="o">.</span><span class="n">has_var_keyword</span>
         <span class="p">),</span> <span class="s2">&quot;Can&#39;t merge two signatures if they both have a VAR_KEYWORD parameter:</span><span class="si">{_msg}</span><span class="s2">&quot;</span>
+
         <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">_self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">_self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">)</span>
-            <span class="o">==</span> <span class="p">(</span><span class="n">_sig</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">_sig</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">_sig</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="n">_self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">_sig</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">kind</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">_sig</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
         <span class="p">),</span> <span class="p">(</span>
-            <span class="s1">&#39;During a signature merge, if two names are the same, they must have the **same kind and default**:</span><span class="se">\n</span><span class="s1">&#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="si">{</span><span class="n">_msg</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
-            <span class="s2">&quot;Tip: If you&#39;re trying to merge functions in some way, consider decorating them a signature mapping that &quot;</span>
-            <span class="s1">&#39;avoids the argument name clashing&#39;</span>
+            <span class="s1">&#39;During a signature merge, if two names are the same, they must have the &#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;**same kind**:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">_msg</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="s2">&quot;Tip: If you&#39;re trying to merge functions in some way, consider decorating &quot;</span>
+            <span class="s1">&#39;them with a signature mapping that avoids the argument name clashing&#39;</span>
         <span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">default_conflict_method</span> <span class="ow">in</span> <span class="p">{</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="s1">&#39;strict&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;take_first&#39;</span><span class="p">,</span>
+        <span class="p">},</span> <span class="s2">&quot;default_conflict_method should be in {None, &#39;strict&#39;, &#39;take_first&#39;}&quot;</span>
+
+        <span class="k">if</span> <span class="n">default_conflict_method</span> <span class="o">==</span> <span class="s1">&#39;take_first&#39;</span><span class="p">:</span>
+            <span class="n">_sig</span> <span class="o">=</span> <span class="n">_sig</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">_self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">_sig</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">_self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">default</span> <span class="o">==</span> <span class="n">_sig</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">default</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">_sig</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="p">):</span>
+
+            <span class="c1"># if default_conflict_method == &#39;take_first&#39;:</span>
+            <span class="c1">#     _sig = _sig - set(_self.keys() &amp; _sig.keys())</span>
+            <span class="c1"># else:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;During a signature merge, if two names are the same, they must have the &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;**same default**:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">_msg</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s2">&quot;Tip: If you&#39;re trying to merge functions in some way, consider decorating &quot;</span>
+                <span class="s1">&#39;them with a signature mapping that avoids the argument name clashing&#39;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># assert all(</span>
+        <span class="c1">#     _self[name].default == _sig[name].default</span>
+        <span class="c1">#     for name in _self.keys() &amp; _sig.keys()</span>
+        <span class="c1"># ), (</span>
+        <span class="c1">#     &#39;During a signature merge, if two names are the same, they must have the &#39;</span>
+        <span class="c1">#     f&#39;**same default**:\n\t{_msg}\n&#39;</span>
+        <span class="c1">#     &quot;Tip: If you&#39;re trying to merge functions in some way, consider decorating &quot;</span>
+        <span class="c1">#     &quot;them a signature mapping that &quot;</span>
+        <span class="c1">#     &#39;avoids the argument name clashing&#39;</span>
+        <span class="c1"># )</span>
 
         <span class="n">params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_chain_params_of_signatures</span><span class="p">(</span>
@@ -1095,16 +1196,20 @@
 <span class="sd">        &gt;&gt;&gt; Sig(f) + Sig(ff)  # doctest: +IGNORE_EXCEPTION_DETAIL</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
-<span class="sd">        AssertionError: During a signature merge, if two names are the same, they must have the same kind and default:</span>
+<span class="sd">        ValueError: During a signature merge, if two names are the same, they must have the **same default**:</span>
+<span class="sd">        &lt;BLANKSPACE&gt;</span>
 <span class="sd">        Happened during an attempt to merge (w, /, x: float = 1, y=1, *, z: int = 1) and (w, /, x: float, y=1, *, z: int = 1)</span>
+<span class="sd">        Tip: If you&#39;re trying to merge functions in some way, consider decorating them with a signature mapping that avoids the argument name clashing</span>
 
 
 <span class="sd">        &gt;&gt;&gt; def hh(i, j, w=1): ...  # like h, but w has a default</span>
 <span class="sd">        &gt;&gt;&gt; Sig(h) + Sig(hh)  # doctest: +IGNORE_EXCEPTION_DETAIL</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
-<span class="sd">        AssertionError: During a signature merge, if two names are the same, they must have the same kind and default:</span>
+<span class="sd">        ValueError: During a signature merge, if two names are the same, they must have the **same default**:</span>
+<span class="sd">        &lt;BLANKSPACE&gt;</span>
 <span class="sd">        Happened during an attempt to merge (i, j, w) and (i, j, w=1)</span>
+<span class="sd">        Tip: If you&#39;re trying to merge functions in some way, consider decorating them with a signature mapping that avoids the argument name clashing</span>
 
 
 <span class="sd">        &gt;&gt;&gt; Sig(f) + [&#39;w&#39;, (&#39;y&#39;, 1), (&#39;d&#39;, 1.0, float),</span>
