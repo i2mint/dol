@@ -1,8 +1,10 @@
 """Signature calculus"""
 
 from inspect import Signature, Parameter, signature, unwrap
-from typing import Any, Union, Callable, Iterable
-from typing import Mapping as MappingType
+from typing import Any, Union, Callable, Iterable, Mapping as MappingType
+from types import FunctionType
+
+from functools import update_wrapper
 
 _empty = Parameter.empty
 empty = _empty
@@ -685,6 +687,7 @@ class Sig(Signature, Mapping):
         self,
         obj: ParamsAble = None,
         *,
+        name=None,
         return_annotation=empty,
         __validate_parameters__=True,
     ):
@@ -727,7 +730,7 @@ class Sig(Signature, Mapping):
             return_annotation=return_annotation,
             __validate_parameters__=__validate_parameters__,
         )
-        self.name = name_of_obj(obj)
+        self.name = name or name_of_obj(obj)
 
     def wrap(self, func: Callable):
         """Gives the input function the signature.
@@ -1761,6 +1764,119 @@ def number_of_required_arguments(obj):
     return len(sig) - len(sig.defaults)
 
 
+def ch_signature_to_all_pk(sig: Signature):
+    """Changes all (non-varadaic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.
+
+    Wrapping a function with the resulting signature doesn't make that function callable
+    with PK kinds in itself.
+    It just gives it a signature without position and keyword ONLY kinds.
+    It should be used to wrap such a function that actually carries out the
+    implementation though!
+
+    >>> def foo(w, /, x: float, y=1, *, z: int = 1, **kwargs): ...
+    >>> def bar(*args, **kwargs): ...
+    >>> from inspect import signature
+    >>> ch_signature_to_all_pk(signature(foo))
+    <Signature (w, x: float, y=1, z: int = 1, **kwargs)>
+
+    But note that the varadaic arguments *args and **kwargs remain varadaic:
+
+    >>> ch_signature_to_all_pk(signature(bar))
+    <Signature (*args, **kwargs)>
+
+    It works with `Sig` too (since Sig is a Signature), and maintains it's other
+    attributes (like name).
+
+    >>> sig = ch_signature_to_all_pk(Sig(bar))
+    >>> sig
+    <Sig (*args, **kwargs)>
+    >>> sig.name
+    'bar'
+
+    """
+
+    def changed_params():
+        for p in sig.parameters.values():
+            if p.kind not in var_param_kinds:
+                yield p.replace(kind=PK)
+            else:
+                yield p
+
+    new_sig = type(sig)(list(changed_params()), return_annotation=sig.return_annotation)
+    for attrname, attrval in getattr(sig, '__dict__', {}).items():
+        setattr(new_sig, attrname, attrval)
+    return new_sig
+
+
+def tuple_the_args(func):
+    """A decorator that will change a VAR_POSITIONAL (*args) argument to a tuple (args)
+    argument of the same name.
+    """
+    params = params_of(func)
+    is_vp = list(p.kind == VP for p in params)
+    if any(is_vp):
+        index_of_vp = is_vp.index(True)  # there's can be only one
+
+        @wraps(func)
+        def vpless_func(*args, **kwargs):
+            # extract the element of args that needs to be unraveled
+            a, _vp_args_, aa = (
+                args[:index_of_vp],
+                args[index_of_vp],
+                args[(index_of_vp + 1) :],
+            )
+            # call the original function with the unravelled args
+            return func(*a, *_vp_args_, *aa, **kwargs)
+
+        try:  # TODO: Avoid this try catch. Look in advance for default ordering
+            params[index_of_vp] = params[index_of_vp].replace(kind=PK, default=())
+            vpless_func.__signature__ = Signature(
+                params, return_annotation=signature(func).return_annotation
+            )
+        except ValueError:
+            params[index_of_vp] = params[index_of_vp].replace(kind=PK)
+            vpless_func.__signature__ = Signature(
+                params, return_annotation=signature(func).return_annotation
+            )
+        return vpless_func
+    else:
+        return func
+        # Problems with copying (like when func is a partial) so removing!
+        # return copy_func(
+        #     func
+        # )  # don't change anything (or should we wrap anyway, to be consistent?)
+
+
+def copy_func(f):
+    """Copy a function (not sure it works with all types of callables)"""
+    g = FunctionType(
+        f.__code__,
+        f.__globals__,
+        name=f.__name__,
+        argdefs=f.__defaults__,
+        closure=f.__closure__,
+    )
+    g = update_wrapper(g, f)
+    g.__kwdefaults__ = f.__kwdefaults__
+    if hasattr(f, '__signature__'):
+        g.__signature__ = f.__signature__
+    return g
+
+
+# TODO: Similar to other function in this module -- merge.
+def params_of(obj: HasParams):
+    if isinstance(obj, Signature):
+        obj = list(obj.parameters.values())
+    elif isinstance(obj, Mapping):
+        obj = list(obj.values())
+    elif callable(obj):
+        obj = list(signature(obj).parameters.values())
+    assert all(
+        isinstance(p, Parameter) for p in obj
+    ), 'obj needs to be a Iterable[Parameter] at this point'
+    return obj  # as is
+
+
 ########################################################################################################################
 # TODO: Encorporate in Sig
 def insert_annotations(s: Signature, *, return_annotation=empty, **annotations):
@@ -2016,14 +2132,3 @@ for kind in param_kinds:
         lower_kind,
         partial(param_for_kind, kind=kind, with_default=True),
     )
-
-
-def ch_signature_to_all_pk(sig):
-    def changed_params():
-        for p in sig.parameters.values():
-            if p.kind not in var_param_kinds:
-                yield p.replace(kind=PK)
-            else:
-                yield p
-
-    return Signature(list(changed_params()), return_annotation=sig.return_annotation)
