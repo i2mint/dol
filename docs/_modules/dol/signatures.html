@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.signatures &#8212; dol 0.1.19 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.20 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -36,8 +36,10 @@
 <span></span><span class="sd">&quot;&quot;&quot;Signature calculus&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">Signature</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">signature</span><span class="p">,</span> <span class="n">unwrap</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Mapping</span> <span class="k">as</span> <span class="n">MappingType</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span> <span class="k">as</span> <span class="n">MappingType</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">FunctionType</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">update_wrapper</span>
 
 <span class="n">_empty</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span>
 <span class="n">empty</span> <span class="o">=</span> <span class="n">_empty</span>
@@ -720,6 +722,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">obj</span><span class="p">:</span> <span class="n">ParamsAble</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">return_annotation</span><span class="o">=</span><span class="n">empty</span><span class="p">,</span>
         <span class="n">__validate_parameters__</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
@@ -762,7 +765,7 @@
             <span class="n">return_annotation</span><span class="o">=</span><span class="n">return_annotation</span><span class="p">,</span>
             <span class="n">__validate_parameters__</span><span class="o">=</span><span class="n">__validate_parameters__</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Sig.wrap"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.wrap">[docs]</a>    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Gives the input function the signature.</span>
@@ -1796,6 +1799,119 @@
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="ch_signature_to_all_pk"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.ch_signature_to_all_pk">[docs]</a><span class="k">def</span> <span class="nf">ch_signature_to_all_pk</span><span class="p">(</span><span class="n">sig</span><span class="p">:</span> <span class="n">Signature</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Changes all (non-varadaic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.</span>
+
+<span class="sd">    Wrapping a function with the resulting signature doesn&#39;t make that function callable</span>
+<span class="sd">    with PK kinds in itself.</span>
+<span class="sd">    It just gives it a signature without position and keyword ONLY kinds.</span>
+<span class="sd">    It should be used to wrap such a function that actually carries out the</span>
+<span class="sd">    implementation though!</span>
+
+<span class="sd">    &gt;&gt;&gt; def foo(w, /, x: float, y=1, *, z: int = 1, **kwargs): ...</span>
+<span class="sd">    &gt;&gt;&gt; def bar(*args, **kwargs): ...</span>
+<span class="sd">    &gt;&gt;&gt; from inspect import signature</span>
+<span class="sd">    &gt;&gt;&gt; ch_signature_to_all_pk(signature(foo))</span>
+<span class="sd">    &lt;Signature (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
+
+<span class="sd">    But note that the varadaic arguments *args and **kwargs remain varadaic:</span>
+
+<span class="sd">    &gt;&gt;&gt; ch_signature_to_all_pk(signature(bar))</span>
+<span class="sd">    &lt;Signature (*args, **kwargs)&gt;</span>
+
+<span class="sd">    It works with `Sig` too (since Sig is a Signature), and maintains it&#39;s other</span>
+<span class="sd">    attributes (like name).</span>
+
+<span class="sd">    &gt;&gt;&gt; sig = ch_signature_to_all_pk(Sig(bar))</span>
+<span class="sd">    &gt;&gt;&gt; sig</span>
+<span class="sd">    &lt;Sig (*args, **kwargs)&gt;</span>
+<span class="sd">    &gt;&gt;&gt; sig.name</span>
+<span class="sd">    &#39;bar&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">changed_params</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">var_param_kinds</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">p</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">p</span>
+
+    <span class="n">new_sig</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">sig</span><span class="p">)(</span><span class="nb">list</span><span class="p">(</span><span class="n">changed_params</span><span class="p">()),</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">sig</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">attrname</span><span class="p">,</span> <span class="n">attrval</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="s1">&#39;__dict__&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">new_sig</span><span class="p">,</span> <span class="n">attrname</span><span class="p">,</span> <span class="n">attrval</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_sig</span></div>
+
+
+<div class="viewcode-block" id="tuple_the_args"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.tuple_the_args">[docs]</a><span class="k">def</span> <span class="nf">tuple_the_args</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A decorator that will change a VAR_POSITIONAL (*args) argument to a tuple (args)</span>
+<span class="sd">    argument of the same name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">params_of</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="n">is_vp</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">VP</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">is_vp</span><span class="p">):</span>
+        <span class="n">index_of_vp</span> <span class="o">=</span> <span class="n">is_vp</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># there&#39;s can be only one</span>
+
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">vpless_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="c1"># extract the element of args that needs to be unraveled</span>
+            <span class="n">a</span><span class="p">,</span> <span class="n">_vp_args_</span><span class="p">,</span> <span class="n">aa</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">args</span><span class="p">[:</span><span class="n">index_of_vp</span><span class="p">],</span>
+                <span class="n">args</span><span class="p">[</span><span class="n">index_of_vp</span><span class="p">],</span>
+                <span class="n">args</span><span class="p">[(</span><span class="n">index_of_vp</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="p">:],</span>
+            <span class="p">)</span>
+            <span class="c1"># call the original function with the unravelled args</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="n">_vp_args_</span><span class="p">,</span> <span class="o">*</span><span class="n">aa</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>  <span class="c1"># TODO: Avoid this try catch. Look in advance for default ordering</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">index_of_vp</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">index_of_vp</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">())</span>
+            <span class="n">vpless_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span>
+                <span class="n">params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">index_of_vp</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">index_of_vp</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">)</span>
+            <span class="n">vpless_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span>
+                <span class="n">params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">vpless_func</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">func</span></div>
+        <span class="c1"># Problems with copying (like when func is a partial) so removing!</span>
+        <span class="c1"># return copy_func(</span>
+        <span class="c1">#     func</span>
+        <span class="c1"># )  # don&#39;t change anything (or should we wrap anyway, to be consistent?)</span>
+
+
+<div class="viewcode-block" id="copy_func"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.copy_func">[docs]</a><span class="k">def</span> <span class="nf">copy_func</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Copy a function (not sure it works with all types of callables)&quot;&quot;&quot;</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">FunctionType</span><span class="p">(</span>
+        <span class="n">f</span><span class="o">.</span><span class="vm">__code__</span><span class="p">,</span>
+        <span class="n">f</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+        <span class="n">argdefs</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="vm">__defaults__</span><span class="p">,</span>
+        <span class="n">closure</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="vm">__closure__</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">update_wrapper</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="vm">__kwdefaults__</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="vm">__kwdefaults__</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s1">&#39;__signature__&#39;</span><span class="p">):</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">__signature__</span>
+    <span class="k">return</span> <span class="n">g</span></div>
+
+
+<span class="c1"># TODO: Similar to other function in this module -- merge.</span>
+<span class="k">def</span> <span class="nf">params_of</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">HasParams</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Signature</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">obj</span>
+    <span class="p">),</span> <span class="s1">&#39;obj needs to be a Iterable[Parameter] at this point&#39;</span>
+    <span class="k">return</span> <span class="n">obj</span>  <span class="c1"># as is</span>
+
+
 <span class="c1">########################################################################################################################</span>
 <span class="c1"># TODO: Encorporate in Sig</span>
 <div class="viewcode-block" id="insert_annotations"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.insert_annotations">[docs]</a><span class="k">def</span> <span class="nf">insert_annotations</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Signature</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">empty</span><span class="p">,</span> <span class="o">**</span><span class="n">annotations</span><span class="p">):</span>
@@ -2051,17 +2167,6 @@
         <span class="n">lower_kind</span><span class="p">,</span>
         <span class="n">partial</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">with_default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">ch_signature_to_all_pk</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">changed_params</span><span class="p">():</span>
-        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">var_param_kinds</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">p</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">p</span>
-
-    <span class="k">return</span> <span class="n">Signature</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">changed_params</span><span class="p">()),</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">sig</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">)</span>
 </pre></div>
 
           </div>
