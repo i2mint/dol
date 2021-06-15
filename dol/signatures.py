@@ -9,7 +9,9 @@ from functools import update_wrapper
 _empty = Parameter.empty
 empty = _empty
 
-_ParameterKind = type(Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD))
+_ParameterKind = type(
+    Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD)
+)
 ParamsType = Iterable[Parameter]
 ParamsAble = Union[ParamsType, MappingType[str, Parameter], Callable]
 SignatureAble = Union[Signature, Callable, ParamsType, MappingType[str, Parameter]]
@@ -89,7 +91,9 @@ def ensure_signature(obj: SignatureAble):
         try:
             return Signature(parameters=params)
         except TypeError:
-            raise TypeError(f"Don't know how to make that object into a Signature: {obj}")
+            raise TypeError(
+                f"Don't know how to make that object into a Signature: {obj}"
+            )
     elif isinstance(obj, Parameter):
         return Signature(parameters=(obj,))
     elif obj is None:
@@ -796,7 +800,10 @@ class Sig(Signature, Mapping):
         )
         func.__annotations__ = self.annotations
         # endow the function with __defaults__ and __kwdefaults__ (not the default of functools.wraps!)
-        (func.__defaults__, func.__kwdefaults__,) = self._dunder_defaults_and_kwdefaults()
+        (
+            func.__defaults__,
+            func.__kwdefaults__,
+        ) = self._dunder_defaults_and_kwdefaults()
         # "copy" over all other non-dunder attributes (not the default of functools.wraps!)
         for attr in filter(lambda x: not x.startswith('__'), dir(func)):
             setattr(func, attr, getattr(func, attr))
@@ -947,7 +954,9 @@ class Sig(Signature, Mapping):
 
     @property
     def defaults(self):
-        return {p.name: p.default for p in self.values() if p.default != Parameter.empty}
+        return {
+            p.name: p.default for p in self.values() if p.default != Parameter.empty
+        }
 
     @property
     def annotations(self):
@@ -955,7 +964,9 @@ class Sig(Signature, Mapping):
         What `func.__annotations__` would give you.
         """
         return {
-            p.name: p.annotation for p in self.values() if p.annotation != Parameter.empty
+            p.name: p.annotation
+            for p in self.values()
+            if p.annotation != Parameter.empty
         }
 
     # def substitute(self, **sub_for_name):
@@ -1229,7 +1240,9 @@ class Sig(Signature, Mapping):
 
     def remove_names(self, names):
         names = {p.name for p in ensure_params(names)}
-        new_params = {name: p for name, p in self.parameters.items() if name not in names}
+        new_params = {
+            name: p for name, p in self.parameters.items() if name not in names
+        }
         return self.__class__(new_params, return_annotation=self.return_annotation)
 
     def __sub__(self, sig):
@@ -1822,6 +1835,7 @@ def all_pk_signature(callable_or_signature: Signature):
         sig = callable_or_signature
 
         last_kind = -1
+
         def changed_params():
             for p in sig.parameters.values():
                 if p.kind not in var_param_kinds:
