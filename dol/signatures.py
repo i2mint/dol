@@ -9,9 +9,7 @@ from functools import update_wrapper
 _empty = Parameter.empty
 empty = _empty
 
-_ParameterKind = type(
-    Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD)
-)
+_ParameterKind = type(Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD))
 ParamsType = Iterable[Parameter]
 ParamsAble = Union[ParamsType, MappingType[str, Parameter], Callable]
 SignatureAble = Union[Signature, Callable, ParamsType, MappingType[str, Parameter]]
@@ -91,9 +89,7 @@ def ensure_signature(obj: SignatureAble):
         try:
             return Signature(parameters=params)
         except TypeError:
-            raise TypeError(
-                f"Don't know how to make that object into a Signature: {obj}"
-            )
+            raise TypeError(f"Don't know how to make that object into a Signature: {obj}")
     elif isinstance(obj, Parameter):
         return Signature(parameters=(obj,))
     elif obj is None:
@@ -601,7 +597,9 @@ def _robust_signature_of_callable(callable_obj: Callable) -> Signature:
     try:
         return signature(callable_obj)
     except ValueError:
-        obj_name = callable_obj.__name__
+        # if isinstance(callable_obj, partial):
+        #     callable_obj = callable_obj.func
+        obj_name = getattr(callable_obj, '__name__', None)
         if obj_name in sigs_for_sigless_builtin_name:
             return sigs_for_sigless_builtin_name[obj_name] or signature(
                 lambda *no_sig_args, **no_sig_kwargs: ...
@@ -798,10 +796,7 @@ class Sig(Signature, Mapping):
         )
         func.__annotations__ = self.annotations
         # endow the function with __defaults__ and __kwdefaults__ (not the default of functools.wraps!)
-        (
-            func.__defaults__,
-            func.__kwdefaults__,
-        ) = self._dunder_defaults_and_kwdefaults()
+        (func.__defaults__, func.__kwdefaults__,) = self._dunder_defaults_and_kwdefaults()
         # "copy" over all other non-dunder attributes (not the default of functools.wraps!)
         for attr in filter(lambda x: not x.startswith('__'), dir(func)):
             setattr(func, attr, getattr(func, attr))
@@ -952,9 +947,7 @@ class Sig(Signature, Mapping):
 
     @property
     def defaults(self):
-        return {
-            p.name: p.default for p in self.values() if p.default != Parameter.empty
-        }
+        return {p.name: p.default for p in self.values() if p.default != Parameter.empty}
 
     @property
     def annotations(self):
@@ -962,9 +955,7 @@ class Sig(Signature, Mapping):
         What `func.__annotations__` would give you.
         """
         return {
-            p.name: p.annotation
-            for p in self.values()
-            if p.annotation != Parameter.empty
+            p.name: p.annotation for p in self.values() if p.annotation != Parameter.empty
         }
 
     # def substitute(self, **sub_for_name):
@@ -987,15 +978,22 @@ class Sig(Signature, Mapping):
 
     @property
     def has_var_kinds(self):
-        return any(p.kind in var_param_kinds for p in set(self.values()))
+        return any(p.kind in var_param_kinds for p in self.values())
+
+    def index_of_var_positional(self):
+        """
+        >>> assert Sig(lambda x, *y, z: None).index_of_var_positional() == 1
+        >>> assert Sig(lambda x, /, y, **z: None).index_of_var_positional() == None
+        """
+        return next((i for i, p in enumerate(self.params) if p.kind == VP), None)
 
     @property
     def has_var_positional(self):
-        return any(p.kind == VP for p in list(self.values()))
+        return any(p.kind == VP for p in self.values())
 
     @property
     def has_var_keyword(self):
-        return any(p.kind == VK for p in list(self.values()))
+        return any(p.kind == VK for p in self.values())
 
     @property
     def n_required(self):
@@ -1057,8 +1055,8 @@ class Sig(Signature, Mapping):
 
         """
         if ch_to_all_pk:
-            _self = Sig(ch_signature_to_all_pk(self))
-            _sig = Sig(ch_signature_to_all_pk(ensure_signature(sig)))
+            _self = Sig(all_pk_signature(self))
+            _sig = Sig(all_pk_signature(ensure_signature(sig)))
         else:
             _self = self
             _sig = Sig(sig)
@@ -1231,9 +1229,7 @@ class Sig(Signature, Mapping):
 
     def remove_names(self, names):
         names = {p.name for p in ensure_params(names)}
-        new_params = {
-            name: p for name, p in self.parameters.items() if name not in names
-        }
+        new_params = {name: p for name, p in self.parameters.items() if name not in names}
         return self.__class__(new_params, return_annotation=self.return_annotation)
 
     def __sub__(self, sig):
@@ -1273,11 +1269,11 @@ class Sig(Signature, Mapping):
             p for p in self.values() if param_has_default_or_is_var_kind(p)
         )
 
-    def normalize_kind(self):
+    def normalize_kind(self, kind=PK):
         def changed_params():
             for p in self.parameters.values():
                 if p.kind not in var_param_kinds:
-                    yield p.replace(kind=PK)
+                    yield p.replace(kind=kind)
                 else:
                     yield p
 
@@ -1305,7 +1301,7 @@ class Sig(Signature, Mapping):
         are there to help you manage this.
 
         If you could rely on the the fact that only `kwargs` were given it would reduce the complexity of your code.
-        This is why we have the `ch_signature_to_all_pk` function in `signatures.py`.
+        This is why we have the `all_pk_signature` function in `signatures.py`.
 
         We also need to have a means to make a `kwargs` only from the actual `(*args, **kwargs)` used at runtime.
         We have `Signature.bind` (and `bind_partial`) for that.
@@ -1415,7 +1411,8 @@ class Sig(Signature, Mapping):
         allow_excess=False,
         ignore_kind=False,
     ):
-        """Get an (args, kwargs) tuple from the kwargs, where args contain the position only arguments.
+        """Extract args and kwargs such that func(*args, **kwargs) can be called,
+        where func has instance's signature.
 
         >>> def foo(w, /, x: float, y=1, *, z: int = 1):
         ...     return ((w + x) * y) ** z
@@ -1423,12 +1420,28 @@ class Sig(Signature, Mapping):
         >>> assert (args, kwargs) == ((4,), {'x': 3, 'y': 2, 'z': 1})
         >>> assert foo(*args, **kwargs) == foo(4, 3, 2, z=1) == 14
 
+        An edge case: When a VAR_POSITIONAL follows a POSITION_OR_KEYWORD...
+
+        >>> Sig(lambda a, *b, c=2: None).args_and_kwargs_from_kwargs(
+        ...     {'a': 1, 'b': [2,3], 'c': 4})
+        ((1, [2, 3]), {'c': 4})
+
+
         See kwargs_from_args_and_kwargs (namely for the description of the arguments.
         """
-        position_only_names = {p.name for p in self.parameters.values() if p.kind == PO}
+        vp_idx = self.index_of_var_positional()
+        if vp_idx is None:
+            position_only_names = self.names_for_kind(PO)
+        else:
+            # When there's a VP present, all arguments before it can only be expressed
+            # positionally if the VP argument is non-empty.
+            # So, here we'll just consider all arguments positionally up to the VP arg.
+            position_only_names = self.names[: (vp_idx + 1)]
+
         args = tuple(kwargs[name] for name in position_only_names if name in kwargs)
-        # kwargs = self.kwargs_from_args_and_kwargs(args, kwargs, apply_defaults, allow_partial, allow_excess)
-        kwargs = {name: kwargs[name] for name in kwargs.keys() - position_only_names}
+        kwargs = {
+            name: kwargs[name] for name in kwargs if name not in position_only_names
+        }
 
         kwargs = self.kwargs_from_args_and_kwargs(
             args,
@@ -1438,7 +1451,9 @@ class Sig(Signature, Mapping):
             allow_excess=allow_excess,
             ignore_kind=ignore_kind,
         )
-        kwargs = {name: kwargs[name] for name in kwargs.keys() - position_only_names}
+        kwargs = {
+            name: kwargs[name] for name in kwargs if name not in position_only_names
+        }
 
         return args, kwargs
 
@@ -1738,6 +1753,9 @@ def call_forgivingly(func, *args, **kwargs):
     return func(*args, **kwargs)
 
 
+import inspect
+
+
 def has_signature(obj, robust=False):
     """Check if an object has a signature -- i.e. is callable and inspect.signature(obj) returns something.
 
@@ -1764,8 +1782,10 @@ def number_of_required_arguments(obj):
     return len(sig) - len(sig.defaults)
 
 
-def ch_signature_to_all_pk(sig: Signature):
-    """Changes all (non-varadaic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.
+# TODO: Need to define and use this function more carefully.
+#   Is the goal to remove positional? Remove variadics? Normalize the signature?
+def all_pk_signature(callable_or_signature: Signature):
+    """Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.
 
     Wrapping a function with the resulting signature doesn't make that function callable
     with PK kinds in itself.
@@ -1776,18 +1796,21 @@ def ch_signature_to_all_pk(sig: Signature):
     >>> def foo(w, /, x: float, y=1, *, z: int = 1, **kwargs): ...
     >>> def bar(*args, **kwargs): ...
     >>> from inspect import signature
-    >>> ch_signature_to_all_pk(signature(foo))
+    >>> new_foo = all_pk_signature(foo)
+    >>> Sig(new_foo)
+    <Sig (w, x: float, y=1, z: int = 1, **kwargs)>
+    >>> all_pk_signature(signature(foo))
     <Signature (w, x: float, y=1, z: int = 1, **kwargs)>
 
-    But note that the varadaic arguments *args and **kwargs remain varadaic:
+    But note that the variadic arguments *args and **kwargs remain variadic:
 
-    >>> ch_signature_to_all_pk(signature(bar))
+    >>> all_pk_signature(signature(bar))
     <Signature (*args, **kwargs)>
 
     It works with `Sig` too (since Sig is a Signature), and maintains it's other
     attributes (like name).
 
-    >>> sig = ch_signature_to_all_pk(Sig(bar))
+    >>> sig = all_pk_signature(Sig(bar))
     >>> sig
     <Sig (*args, **kwargs)>
     >>> sig.name
@@ -1795,46 +1818,79 @@ def ch_signature_to_all_pk(sig: Signature):
 
     """
 
-    def changed_params():
-        for p in sig.parameters.values():
-            if p.kind not in var_param_kinds:
-                yield p.replace(kind=PK)
-            else:
-                yield p
+    if isinstance(callable_or_signature, Signature):
+        sig = callable_or_signature
 
-    new_sig = type(sig)(list(changed_params()), return_annotation=sig.return_annotation)
-    for attrname, attrval in getattr(sig, '__dict__', {}).items():
-        setattr(new_sig, attrname, attrval)
-    return new_sig
+        last_kind = -1
+        def changed_params():
+            for p in sig.parameters.values():
+                if p.kind not in var_param_kinds:
+                    yield p.replace(kind=PK)
+                else:
+                    yield p
+
+        new_sig = type(sig)(
+            list(changed_params()), return_annotation=sig.return_annotation
+        )
+        for attrname, attrval in getattr(sig, '__dict__', {}).items():
+            setattr(new_sig, attrname, attrval)
+        return new_sig
+    elif isinstance(callable_or_signature, Callable):
+        func = callable_or_signature
+        sig = all_pk_signature(Sig(func))
+        return sig(func)
+
+
+# Changed ch_signature_to_all_pk to all_pk_signature because ch_signature_to_all_pk
+# was misleading: It doesn't change anything at all, it returns a constructed signature.
+# It doesn't change all kinds to PK -- just the non-variadic ones.
+ch_signature_to_all_pk = all_pk_signature  # alias for back-compatibility
 
 
 def tuple_the_args(func):
     """A decorator that will change a VAR_POSITIONAL (*args) argument to a tuple (args)
     argument of the same name.
+
+    >>> @tuple_the_args
+    ... def foo(a, *args, bar=None, **kwargs):
+    ...     print(locals())
+    >>> Sig(foo)
+    <Sig (a, args=(), *, bar=None, **kwargs)>
+    >>> foo(1,(2,3), bar=4, hello='world')
+    {'a': 1, 'bar': 4, 'args': (2, 3), 'kwargs': {'hello': 'world'}}
+
+    >>> @tuple_the_args
+    ... def hello(a, *b: Iterable[int], c=2):
+    ...     print(locals())
+
+    >>> hello(1, [2,3,4,5], c=6)
+    {'a': 1, 'c': 6, 'b': (2, 3, 4, 5)}
+
     """
-    params = params_of(func)
-    is_vp = list(p.kind == VP for p in params)
-    if any(is_vp):
-        index_of_vp = is_vp.index(True)  # there's can be only one
+    sig = Sig(func)
+    idx_of_vp = sig.index_of_var_positional()
+
+    if idx_of_vp is not None:  # i.e. the func has a VAR_POSITIONAL argument
+        params = sig.params
 
         @wraps(func)
         def vpless_func(*args, **kwargs):
             # extract the element of args that needs to be unraveled
             a, _vp_args_, aa = (
-                args[:index_of_vp],
-                args[index_of_vp],
-                args[(index_of_vp + 1) :],
+                args[:idx_of_vp],
+                args[idx_of_vp],
+                args[idx_of_vp + 1 :],
             )
             # call the original function with the unravelled args
             return func(*a, *_vp_args_, *aa, **kwargs)
 
-        try:  # TODO: Avoid this try catch. Look in advance for default ordering
-            params[index_of_vp] = params[index_of_vp].replace(kind=PK, default=())
+        try:  # TODO: Avoid this try catch. Look in advance for default ordering?
+            params[idx_of_vp] = params[idx_of_vp].replace(kind=PK, default=())
             vpless_func.__signature__ = Signature(
                 params, return_annotation=signature(func).return_annotation
             )
         except ValueError:
-            params[index_of_vp] = params[index_of_vp].replace(kind=PK)
+            params[idx_of_vp] = params[idx_of_vp].replace(kind=PK)
             vpless_func.__signature__ = Signature(
                 params, return_annotation=signature(func).return_annotation
             )
@@ -1845,6 +1901,69 @@ def tuple_the_args(func):
         # return copy_func(
         #     func
         # )  # don't change anything (or should we wrap anyway, to be consistent?)
+
+
+def ch_func_to_all_pk(func):
+    """Returns a decorated function where all arguments are of the PK kind.
+    (PK: Positional_or_keyword)
+
+    :param func: A callable
+    :return:
+
+    >>> def f(a, /, b, *, c=None, **kwargs):
+    ...     return a + b * c
+    >>> print(Sig(f))
+    (a, /, b, *, c=None, **kwargs)
+    >>> ff = ch_func_to_all_pk(f)
+    >>> print(Sig(ff))
+    (a, b, c=None, **kwargs)
+    >>> ff(1, 2, 3)
+    7
+    >>>
+    >>> def g(x, y=1, *args, **kwargs): ...
+    ...
+    >>> print(Sig(g))
+    (x, y=1, *args, **kwargs)
+    >>> gg = ch_func_to_all_pk(g)
+    >>> print(Sig(gg))
+    (x, y=1, args=(), **kwargs)
+
+    # >>> def h(x, *y, z):
+    # ...     print(f"{x=}, {y=}, {z=}")
+    # >>> h(1, 2, 3, z=4)
+    # x=1, y=(2, 3), z=4
+    # >>> hh = ch_func_to_all_pk(h)
+    # >>> hh(1, (2, 3), z=4)
+    # x=1, y=(2, 3), z=4
+    """
+
+    # _func = tuple_the_args(func)
+    # sig = Sig(_func)
+    #
+    # @wraps(func)
+    # def __func(*args, **kwargs):
+    #     # b = Sig(_func).bind_partial(*args, **kwargs)
+    #     # return _func(*b.args, **b.kwargs)
+    #     args, kwargs = Sig(_func).extract_args_and_kwargs(
+    #         *args, **kwargs, _ignore_kind=False
+    #     )
+    #     return _func(*args, **kwargs)
+    #
+    _func = tuple_the_args(func)
+    sig = Sig(_func)
+
+    @wraps(func)
+    def __func(*args, **kwargs):
+        args, kwargs = Sig(_func).extract_args_and_kwargs(
+            *args,
+            **kwargs,
+            # _ignore_kind=False,
+            # _allow_partial=True
+        )
+        return _func(*args, **kwargs)
+
+    __func.__signature__ = all_pk_signature(sig)
+    return __func
 
 
 def copy_func(f):
@@ -2034,7 +2153,7 @@ sigs_for_sigless_builtin_name = {
     'iter': None,
     # iter(iterable) -> iterator
     # iter(callable, sentinel) -> iterator
-    'map': None,
+    'map': signature(lambda func, *iterables: ...),
     # map(func, *iterables) --> map object
     'max': None,
     # max(iterable, *[, default=obj, key=func]) -> value
