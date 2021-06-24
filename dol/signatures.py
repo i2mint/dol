@@ -2534,6 +2534,10 @@ def ch_variadics_to_non_variadic_kind(func, *, ch_variadic_keyword_to_keyword=Tr
     iterable (e.g. tuple/list) and `d` expecting a `dict` to contain the
     desired inputs.
 
+    Besides this, the decorator tries to be as conservative as possible, making only
+    the minimum changes needed to meet the goal of getting to a variadic-less
+    interface. When it doubt, and error will be raised.
+
     >>> def foo(a, *args, bar, **kwargs):
     ...     return f"{a=}, {args=}, {bar=}, {kwargs=}"
     >>> assert str(Sig(foo)) == '(a, *args, bar, **kwargs)'
@@ -2559,6 +2563,24 @@ def ch_variadics_to_non_variadic_kind(func, *, ch_variadic_keyword_to_keyword=Tr
     >>> assert wfoo(1, (2, 3), bar=4) == foo(1, 2, 3, bar=4)
     >>> assert wfoo(1, (), bar=4) == foo(1, bar=4)
 
+    Note that if there is not variadic positional arguments, the variadic keyword
+    will still be a keyword-only kind.
+
+    >>> @ch_variadics_to_non_variadic_kind
+    ... def func(a, bar=None, **kwargs):
+    ...     return f"{a=}, {bar=}, {kwargs=}"
+    >>> str(Sig(func))
+    '(a, bar=None, *, kwargs={})'
+    >>> assert func(1, bar=4, kwargs=dict(hello="world")
+    ...     ) == "a=1, bar=4, kwargs={'hello': 'world'}"
+
+    If the function has neither variadic kinds, it will remain untouched.
+
+    >>> def func(a, /, b, *, c=3):
+    ...     return a + b + c
+    >>> ch_variadics_to_non_variadic_kind(func) == func
+    True
+
     If you only want the variadic positional to be handled, but leave leave any
     VARIADIC_KEYWORD kinds (**kwargs) alone, you can do so by setting
     `ch_variadic_keyword_to_keyword=False`.
@@ -2578,6 +2600,9 @@ def ch_variadics_to_non_variadic_kind(func, *, ch_variadic_keyword_to_keyword=Tr
     >>> foo(1, (2, 3), bar=4, hello="world")
     "a=1, args=(2, 3), bar=4, kwargs={'hello': 'world'}"
 
+
+
+
     """
     if func is None:
         return partial(
@@ -2586,28 +2611,33 @@ def ch_variadics_to_non_variadic_kind(func, *, ch_variadic_keyword_to_keyword=Tr
         )
     sig = Sig(func)
     idx_of_vp = sig.index_of_var_positional
+    var_keyword_argname = sig.var_keyword_name
 
-    if idx_of_vp is not None:  # i.e. the func has a VAR_POSITIONAL argument
-        var_keyword_argname = sig.var_keyword_name
+    if idx_of_vp is not None or var_keyword_argname is not None:
+        # If the function has any variadic (position or keyword)...
 
         @wraps(func)
-        def vpless_func(*args, **kwargs):
+        def variadic_less_func(*args, **kwargs):
             # extract from kwargs those inputs that need to be expressed positionally
             _args, _kwargs = sig.args_and_kwargs_from_kwargs(kwargs, allow_partial=True)
             # print(sig, kwargs, _args, _kwargs)
             # add these to the existing args
             args = args + _args
-            # separate the args that are positional, variadic, and after variadic
-            a, _vp_args_, args_after_vp = (
-                args[:idx_of_vp],
-                args[idx_of_vp],
-                args[idx_of_vp + 1 :],
-            )
-            if args_after_vp:
-                raise FuncCallNotMatchingSignature(
-                    "There should be only keyword arguments after the Variadic args. "
-                    f"Function was called with (positional={args}, keywords={_kwargs})"
+
+            if idx_of_vp is not None:
+                # separate the args that are positional, variadic, and after variadic
+                a, _vp_args_, args_after_vp = (
+                    args[:idx_of_vp],
+                    args[idx_of_vp],
+                    args[idx_of_vp + 1 :],
                 )
+                if args_after_vp:
+                    raise FuncCallNotMatchingSignature(
+                        "There should be only keyword arguments after the Variadic args. "
+                        f"Function was called with (positional={args}, keywords={_kwargs})"
+                    )
+            else:
+                a, _vp_args_ = args, ()
 
             # extract from the remaining _kwargs, the dict corresponding to the
             # variadic keywords, if any, since these need to be **-ed later
@@ -2630,18 +2660,19 @@ def ch_variadics_to_non_variadic_kind(func, *, ch_variadic_keyword_to_keyword=Tr
                 params[i] = params[i].replace(kind=Parameter.KEYWORD_ONLY, default={})
 
         try:  # TODO: Avoid this try catch. Look in advance for default ordering?
-            params[idx_of_vp] = params[idx_of_vp].replace(kind=PK, default=())
-            vpless_func.__signature__ = Signature(
+            if idx_of_vp is not None:
+                params[idx_of_vp] = params[idx_of_vp].replace(kind=PK, default=())
+            variadic_less_func.__signature__ = Signature(
                 params, return_annotation=signature(func).return_annotation
             )
         except ValueError:
-            params[idx_of_vp] = params[idx_of_vp].replace(kind=PK)
-            vpless_func.__signature__ = Signature(
+            if idx_of_vp is not None:
+                params[idx_of_vp] = params[idx_of_vp].replace(kind=PK)
+            variadic_less_func.__signature__ = Signature(
                 params, return_annotation=signature(func).return_annotation
             )
-        # if name is not None:
-        #     vpless_func.__name__ = name
-        return vpless_func
+
+        return variadic_less_func
     else:
         return func
 
