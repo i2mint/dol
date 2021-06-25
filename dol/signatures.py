@@ -24,7 +24,20 @@ from inspect import Signature, Parameter, signature, unwrap
 from typing import Any, Union, Callable, Iterable, Mapping as MappingType
 from types import FunctionType
 
-from functools import update_wrapper
+from functools import (
+    update_wrapper,
+    partialmethod,
+    partial,
+    WRAPPER_ASSIGNMENTS,
+    wraps as _wraps,
+    update_wrapper as _update_wrapper,
+)
+
+# monkey patching WRAPPER_ASSIGNMENTS to get "proper" wrapping (adding defaults and kwdefaults
+wrapper_assignments = (*WRAPPER_ASSIGNMENTS, "__defaults__", "__kwdefaults__")
+
+update_wrapper = partial(_update_wrapper, assigned=wrapper_assignments)
+wraps = partial(_wraps, assigned=wrapper_assignments)
 
 _empty = Parameter.empty
 empty = _empty
@@ -43,6 +56,7 @@ var_param_kinds = frozenset({VP, VK})
 var_param_types = var_param_kinds  # Deprecate: for back-compatibility. Delete in 2021
 
 DFLT_DEFAULT_CONFLICT_METHOD = "strict"
+param_attributes = {"name", "kind", "default", "annotation"}
 
 
 class FuncCallNotMatchingSignature(TypeError):
@@ -473,8 +487,6 @@ def extract_arguments(
         return param_args, param_kwargs
 
 
-from functools import partial
-
 extract_arguments_ignoring_remainder = partial(
     extract_arguments, what_to_do_with_remainding="ignore"
 )
@@ -658,7 +670,6 @@ def param_has_default_or_is_var_kind(p: Parameter):
 
 WRAPPER_UPDATES = ("__dict__",)
 
-from functools import wraps
 from typing import Callable
 
 
@@ -947,23 +958,31 @@ class Sig(Signature, Mapping):
           ...
         TypeError: f() takes from 2 to 3 positional arguments but 4 were given
         """
-        func.__signature__ = Signature(
+
+        # TODO: Would like to make a copy of the function so as to not override
+        #  decorated function itself!
+        # @wraps(func)
+        # def wrapped_func(*args, **kwargs):
+        #     return func(*args, **kwargs)
+        wrapped_func = func
+
+        wrapped_func.__signature__ = Signature(
             self.parameters.values(), return_annotation=self.return_annotation
         )
-        func.__annotations__ = self.annotations
+        wrapped_func.__annotations__ = self.annotations
         # endow the function with __defaults__ and __kwdefaults__ (not the default of functools.wraps!)
         (
-            func.__defaults__,
-            func.__kwdefaults__,
+            wrapped_func.__defaults__,
+            wrapped_func.__kwdefaults__,
         ) = self._dunder_defaults_and_kwdefaults()
         # "copy" over all other non-dunder attributes (not the default of functools.wraps!)
-        for attr in filter(lambda x: not x.startswith("__"), dir(func)):
+        for attr in filter(lambda x: not x.startswith("__"), dir(wrapped_func)):
             try:
-                setattr(func, attr, getattr(func, attr))
+                setattr(wrapped_func, attr, getattr(wrapped_func, attr))
             except AttributeError as e:
                 if raise_on_error_copying_attrs:
                     raise
-        return func
+        return wrapped_func
 
     def __call__(self, func: Callable):
         """Gives the input function the signature.
@@ -1223,7 +1242,16 @@ class Sig(Signature, Mapping):
             - self.has_var_positional
         )
 
-    def modified(self, **params):
+    def _transform_params(self, changes_for_name: dict):
+        for name in self:
+            if name in changes_for_name:
+                p = changes_for_name[name]
+                yield self[name].replace(**p)
+            else:
+                # if name is not in params, just use existing param
+                yield self[name]
+
+    def modified(self, _allow_reordering=False, **changes_for_name):
         """Returns a modified (new) signature object
 
         >>> def foo(pka, *vpa, koa, **vka): ...
@@ -1262,23 +1290,100 @@ class Sig(Signature, Mapping):
         defaults, these defaults will actually be used.
 
         """
-        new_return_annotation = params.pop("return_annotation", self.return_annotation)
-
-        def _transformed_params():
-            for name in self:
-                if name in params:
-                    p = params[name]
-                    if isinstance(p, dict):
-                        # If p is given by a dict, use it to replace existing param attrs
-                        p = self[name].replace(**p)
-                    yield p
-                else:
-                    # if name is not in params, just use existing param
-                    yield self[name]
-
-        return Sig.from_objs(
-            _transformed_params(), return_annotation=new_return_annotation
+        new_return_annotation = changes_for_name.pop(
+            "return_annotation", self.return_annotation
         )
+
+        if _allow_reordering:
+            params = sort_params(self._transform_params(changes_for_name))
+        else:
+            params = list(self._transform_params(changes_for_name))
+
+        return Sig(params, return_annotation=new_return_annotation)
+
+    def ch_param_attrs(
+        self, param_attr, *arg_new_vals, _allow_reordering=False, **kwargs_new_vals
+    ):
+        """Change a specific attribute of the params, returning a modified signature.
+        This is a convenience method for the modified method when we're targetting
+        a fixed param attribute: 'name', 'kind', 'default', or 'annotation'
+
+        Instead of having to do this
+
+        >>> def foo(a, *b, **c): ...
+        >>> Sig(foo).modified(a={'name': 'A'}, b={'name': 'B'}, c={'name': 'C'})
+        <Sig (A, *B, **C)>
+
+        We can simply do this
+
+        >>> Sig(foo).ch_param_attrs('name', a='A', b='B', c='C')
+        <Sig (A, *B, **C)>
+
+        One quite useful thing you can do with this is to set defaults, or set defaults
+        where there are none. If you wrap your function with such a modified signature,
+        you get a "curried" version of your function (called "partial" in python).
+        (Note that the `functools.wraps` won't deal with defaults "correctly", but
+        wrapping with `Sig` objects takes care of that oversight!)
+
+        >>> def foo(a, b, c):
+        ...     return a + b * c
+        >>> special_foo = Sig(foo).ch_param_attrs('default', b=2, c=3)(foo)
+        >>> Sig(special_foo)
+        <Sig (a, b=2, c=3)>
+        >>> special_foo(5)  # should be 5 + 2 * 3 == 11
+        11
+
+
+        # TODO: Would like to make this work:
+        # Now, if you want to set a default for a but not b and c for example, you'll
+        # get complaints:
+        #
+        # ```
+        # ValueError: non-default argument follows default argument
+        # ```
+        #
+        # will tell you.
+        #
+        # It's true. But if you're fine with rearranging the argument order,
+        # `ch_param_attrs` can take care of that for you.
+        # You'll have to tell it explicitly that you wish for this though, because
+        # it's conservative.
+        #
+        # >>> # Note that for time being, Sig.wraps doesn't make a copy of the function
+        # >>> #  so we need to redefine foo here@
+        # >>> def foo(a, b, c):
+        # ...     return a + b * c
+        # >>> wrapper = Sig(foo).ch_param_attrs(
+        # ... 'default', a=10, _allow_reordering=True
+        # ... )
+        # >>> another_foo = wrapper(foo)
+        # >>> Sig(another_foo)
+        # <Sig (b, c, a=10)>
+        # >>> another_foo(2, 3)  # should be 10 + (2 * 3) =
+        # 16
+
+        """
+
+        if not param_attr in param_attributes:
+            raise ValueError(
+                f"param_attr needs to be one of: {param_attributes}.",
+                f" Was: {param_attr}",
+            )
+        all_pk_self = self.modified(**{name: {"kind": PK} for name in self.names})
+        new_attr_vals = all_pk_self.bind_partial(
+            *arg_new_vals, **kwargs_new_vals
+        ).arguments
+        changes_for_name = {
+            name: {param_attr: val} for name, val in new_attr_vals.items()
+        }
+        return self.modified(_allow_reordering=_allow_reordering, **changes_for_name)
+
+    ch_names = partialmethod(ch_param_attrs, param_attr="name")
+    ch_kinds = partialmethod(ch_param_attrs, param_attr="kind", _allow_reordering=False)
+    ch_defaults = partialmethod(
+        ch_param_attrs, param_attr="default", _allow_reordering=False
+    )
+    ch_annotations = partialmethod(ch_param_attrs, param_attr="annotation")
 
     def merge_with_sig(
         self,
