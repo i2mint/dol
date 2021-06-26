@@ -111,6 +111,7 @@ def trace_getitem(store, k, layer_attrs=('store',)):
     >>> d = {'a.num': '1000', 'b.num': '2000'}
 
     Now let's add layers to it. For example, with wrap_kvs:
+
     >>> from dol.trans import wrap_kvs
 
     Say that we want the interface to not see the ``'.num'`` strings, and deal with numerical values, not strings.

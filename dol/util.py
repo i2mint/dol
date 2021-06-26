@@ -186,12 +186,14 @@ def copy_attrs(target, source, attrs, raise_error_if_an_attr_is_missing=True):
     {'x': 1, 'yy': 2, 'zzz': 3}
 
     But if you try to copy something that `B` (the source) doesn't have, copy_attrs will complain:
+
     >>> copy_attrs(A, B, 'this_is_not_an_attr')
     Traceback (most recent call last):
         ...
     AttributeError: type object 'B' has no attribute 'this_is_not_an_attr'
 
     If you tell it not to complain, it'll just ignore attributes that are not in source.
+
     >>> copy_attrs(A, B, ['nothing', 'here', 'exists'], raise_error_if_an_attr_is_missing=False)
     >>> dict_of(A)
     {'x': 1, 'yy': 2, 'zzz': 3}
@@ -293,6 +295,7 @@ Item = Any
 def add_attrs(remember_added_attrs=True, if_attr_exists='raise', **attrs):
     """Make a function that will add attributes to an obj.
     Originally meant to be used as a decorator of a function, to inject
+
     >>> from dol.util import add_attrs
     >>> @add_attrs(bar='bituate', hello='world')
     ... def foo():
@@ -507,6 +510,7 @@ def igroupby(
     [(0, [0, 2, 4]), (1, [1, 3, 5]), (0, [6, 8, 10]), (1, [7, 9])]
 
     If we specify ``release_remainding=False`` though, we won't get
+
     >>> g = igroupby(items=range(11),
     ...             key=lambda x: x % 2,
     ...             group_release_cond=lambda k, v: len(v) == 3,

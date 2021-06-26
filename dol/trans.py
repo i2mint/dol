@@ -94,6 +94,7 @@ def double_up_as_factory(decorator_func):
 
 def _all_but_first_arg_are_keyword_only(func):
     """
+
     >>> def foo(a, *, b, c=2): ...
     >>> _all_but_first_arg_are_keyword_only(foo)
     True
@@ -198,6 +199,7 @@ def store_decorator(func):
     >>> b = deco(x=42)(a); assert b.x == 42; # b has an x and it's 42
 
     WARNING: Note though that the type of ``b`` is not the same type as ``a``
+
     >>> isinstance(b, a.__class__)
     False
 
@@ -655,50 +657,60 @@ def cached_keys(
     - By providing a callable that will iterate through your store and collect an explicit list of keys
 
     Let's take a simple dict as our original store.
+
     >>> source = dict(c=3, b=2, a=1)
 
     Specify an iterable, and it will be used as the cached keys
+
     >>> cached = cached_keys(source, keys_cache='bc')
     >>> list(cached.items())  # notice that the order you get things is also ruled by the cache
     [('b', 2), ('c', 3)]
 
     Specify a callable, and it will apply it to the existing keys to make your cache
+
     >>> list(cached_keys(source, keys_cache=sorted))
     ['a', 'b', 'c']
 
     You can use the callable keys_cache specification to filter as well!
     Oh, and let's demo the fact that if you don't specify the store, it will make a store decorator for you:
+
     >>> cache_my_keys = cached_keys(keys_cache=lambda keys: list(filter(lambda k: k >= 'b', keys)))
     >>> d = cache_my_keys(source)  # used as to transform an instance
     >>> list(d)
     ['c', 'b']
 
     Let's use that same `cache_my_keys` to decorate a class instead:
+
     >>> cached_dict = cache_my_keys(dict)
     >>> d = cached_dict(c=3, b=2, a=1)
     >>> list(d)
     ['c', 'b']
 
     Note that there's still an underlying store (dict) that has the data:
+
     >>> repr(d)  # repr isn't wrapped, so you can still see your underlying dict
     "{'c': 3, 'b': 2, 'a': 1}"
 
     And yes, you can still add elements,
+
     >>> d['z'] = 26
     >>> list(d.items())
     [('c', 3), ('b', 2), ('z', 26)]
 
     do bulk updates,
+
     >>> d.update({'more': 'of this'}, more_of='that')
     >>> list(d.items())
     [('c', 3), ('b', 2), ('z', 26), ('more', 'of this'), ('more_of', 'that')]
 
     and delete...
+
     >>> del d['more']
     >>> list(d.items())
     [('c', 3), ('b', 2), ('z', 26), ('more_of', 'that')]
 
     But careful! Know what you're doing if you try to get creative. Have a look at this:
+
     >>> d['a'] = 100  # add an 'a' item
     >>> d.update(and_more='of that')  # update to add yet another item
     >>> list(d.items())
@@ -708,6 +720,7 @@ def cached_keys(
 
     Now... they were indeed added. Or to be more precise, the value of the already existing a was changed,
     and a new ('and_more', 'of that') item was indeed added in the underlying store:
+
     >>> repr(d)
     "{'c': 3, 'b': 2, 'a': 100, 'z': 26, 'more_of': 'that', 'and_more': 'of that'}"
 
@@ -751,6 +764,7 @@ def cached_keys(
     [('a', 1), ('b', 2), ('c', 3)]
 
     This is where the keys are stored:
+
     >>> d._keys_cache
     ['a', 'b', 'c']
 
@@ -770,6 +784,7 @@ def cached_keys(
 
     If you change the keys (adding new ones with __setitem__ or update, or removing with pop or popitem)
     then the cache is recomputed (the first time you use an operation that iterates over keys)
+
     >>> d.update(d=4)  # let's add an element (try d['d'] = 4 as well)
     >>> list(d)
     ['a', 'b', 'c', 'd']

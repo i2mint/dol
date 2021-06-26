@@ -163,6 +163,7 @@ class FileCollection(FileSysCollection):
     def __iter__(self):
         """
         Iterator of valid filepaths.
+
         >>> import os
         >>> filepath = __file__  # path to this module
         >>> dirpath = os.path.dirname(__file__)  # path of the directory where I (the module file) am
@@ -184,6 +185,7 @@ class FileCollection(FileSysCollection):
     def __contains__(self, k):
         """
         Checks if k is valid and contained in the store
+
         >>> import os
         >>> filepath = __file__  # path to this module
         >>> dirpath = os.path.dirname(__file__)  # path of the directory where I (the module file) am
@@ -218,6 +220,7 @@ class FileBytesReader(FileCollection, KvReader):
     def __getitem__(self, k):
         '''
         Gets the bytes contents of the file k.
+
         >>> import os
         >>> filepath = __file__
         >>> dirpath = os.path.dirname(__file__)  # path of the directory where I (the module file) am

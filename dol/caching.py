@@ -227,6 +227,7 @@ def mk_sourced_store(store=None, *, source=None, return_source_data=True):
     ['some']
 
     # but if we ask for a key that is in the remote store, it provides it
+
     >>> assert s['foo'] == 'bar'
     looking for foo in Local
     looking for foo in Remote

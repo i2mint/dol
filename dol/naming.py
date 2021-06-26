@@ -124,6 +124,7 @@ def validate_kwargs(
 
 def namedtuple_to_dict(nt):
     """
+
     >>> from collections import namedtuple
     >>> NT = namedtuple('MyTuple', ('foo', 'hello'))
     >>> nt = NT(1, 42)
@@ -138,6 +139,7 @@ def namedtuple_to_dict(nt):
 
 def dict_to_namedtuple(d, namedtuple_obj=None):
     """
+
     >>> from collections import namedtuple
     >>> NT = namedtuple('MyTuple', ('foo', 'hello'))
     >>> nt = NT(1, 42)
@@ -172,6 +174,7 @@ def update_fields_of_namedtuple(
     nt: tuple, *, name_of_output_type=None, remove_fields=(), **kwargs
 ):
     """Replace fields of namedtuple
+
     >>> from collections import namedtuple
     >>> NT = namedtuple('NT', ('a', 'b', 'c'))
     >>> nt = NT(1,2,3)
@@ -213,6 +216,7 @@ def get_fields_from_template(template):
     :param template: a "template" string (a string with {item} items
     -- the kind that is used to mark token for str.format)
     :return: a list of the token items of the string, in the order they appear
+
     >>> get_fields_from_template('this{is}an{example}of{a}template')
     ['is', 'example', 'a']
     """
@@ -295,6 +299,7 @@ def mk_pattern_from_template_and_format_dict(template, format_dict=None, sep=pat
         template: A format string
         format_dict: A dict whose keys are template fields and values are regex strings to capture them
     Returns: a compiled regex
+
     >>> import os
     >>> p = mk_pattern_from_template_and_format_dict('{here}/and/{there}')
     >>> if os.name == 'nt':  # for windows
@@ -908,6 +913,7 @@ class NamingInterface:
 
 class BigDocTest:
     """
+
     >>>
     >>> e_name = BigDocTest.mk_e_naming()
     >>> u_name = BigDocTest.mk_u_naming()
