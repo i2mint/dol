@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.signatures &#8212; dol 0.1.22 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.23 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -59,7 +59,20 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span> <span class="k">as</span> <span class="n">MappingType</span>
 <span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">FunctionType</span>
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">update_wrapper</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">update_wrapper</span><span class="p">,</span>
+    <span class="n">partialmethod</span><span class="p">,</span>
+    <span class="n">partial</span><span class="p">,</span>
+    <span class="n">WRAPPER_ASSIGNMENTS</span><span class="p">,</span>
+    <span class="n">wraps</span> <span class="k">as</span> <span class="n">_wraps</span><span class="p">,</span>
+    <span class="n">update_wrapper</span> <span class="k">as</span> <span class="n">_update_wrapper</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># monkey patching WRAPPER_ASSIGNMENTS to get &quot;proper&quot; wrapping (adding defaults and kwdefaults</span>
+<span class="n">wrapper_assignments</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">WRAPPER_ASSIGNMENTS</span><span class="p">,</span> <span class="s1">&#39;__defaults__&#39;</span><span class="p">,</span> <span class="s1">&#39;__kwdefaults__&#39;</span><span class="p">)</span>
+
+<span class="n">update_wrapper</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_update_wrapper</span><span class="p">,</span> <span class="n">assigned</span><span class="o">=</span><span class="n">wrapper_assignments</span><span class="p">)</span>
+<span class="n">wraps</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_wraps</span><span class="p">,</span> <span class="n">assigned</span><span class="o">=</span><span class="n">wrapper_assignments</span><span class="p">)</span>
 
 <span class="n">_empty</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span>
 <span class="n">empty</span> <span class="o">=</span> <span class="n">_empty</span>
@@ -80,6 +93,7 @@
 <span class="n">var_param_types</span> <span class="o">=</span> <span class="n">var_param_kinds</span>  <span class="c1"># Deprecate: for back-compatibility. Delete in 2021</span>
 
 <span class="n">DFLT_DEFAULT_CONFLICT_METHOD</span> <span class="o">=</span> <span class="s1">&#39;strict&#39;</span>
+<span class="n">param_attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="s1">&#39;annotation&#39;</span><span class="p">}</span>
 
 
 <div class="viewcode-block" id="FuncCallNotMatchingSignature"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.FuncCallNotMatchingSignature">[docs]</a><span class="k">class</span> <span class="nc">FuncCallNotMatchingSignature</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
@@ -301,6 +315,7 @@
 
 <div class="viewcode-block" id="MissingArgValFor"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.MissingArgValFor">[docs]</a><span class="k">class</span> <span class="nc">MissingArgValFor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A simple class to wrap an argument name, indicating that it was missing somewhere.</span>
+
 <span class="sd">    &gt;&gt;&gt; MissingArgValFor(&quot;argname&quot;)</span>
 <span class="sd">    MissingArgValFor(&quot;argname&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -354,6 +369,7 @@
 <span class="sd">    But sometimes you do have POSITION_ONLY arguments.</span>
 <span class="sd">    What extract_arguments will do for you is return the value of these as the first element of</span>
 <span class="sd">    the triple.</span>
+
 <span class="sd">    &gt;&gt;&gt; def f(a, b, c=None, /, d=0):</span>
 <span class="sd">    ...     ...</span>
 <span class="sd">    ...</span>
@@ -450,6 +466,7 @@
 
 <span class="sd">    Edge case:</span>
 <span class="sd">    No params specified? No problem. You&#39;ll just get empty args and kwargs. Everything in the remainder</span>
+
 <span class="sd">    &gt;&gt;&gt; extract_arguments(params=(), b=2, a=1, c=3, d=0)</span>
 <span class="sd">    ((), {}, {&#39;b&#39;: 2, &#39;a&#39;: 1, &#39;c&#39;: 3, &#39;d&#39;: 0})</span>
 
@@ -508,8 +525,6 @@
         <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;remaining_kwargs not empty: remaining_kwargs=</span><span class="si">{</span><span class="n">remaining_kwargs</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="k">return</span> <span class="n">param_args</span><span class="p">,</span> <span class="n">param_kwargs</span></div>
 
-
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 
 <span class="n">extract_arguments_ignoring_remainder</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
     <span class="n">extract_arguments</span><span class="p">,</span> <span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span>
@@ -694,7 +709,6 @@
 
 <span class="n">WRAPPER_UPDATES</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;__dict__&#39;</span><span class="p">,)</span>
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
 
@@ -905,6 +919,7 @@
 <span class="sd">        &lt;Sig (**kws) -&gt; str&gt;</span>
 
 <span class="sd">        And note that:</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig()</span>
 <span class="sd">        &lt;Sig ()&gt;</span>
 <span class="sd">        &gt;&gt;&gt; Sig(None)</span>
@@ -945,6 +960,7 @@
 <span class="sd">        - w is not position-only</span>
 <span class="sd">        - x annot is int instead of float, and doesn&#39;t have a default</span>
 <span class="sd">        - z&#39;s default changes to 10</span>
+
 <span class="sd">        &gt;&gt;&gt; def g(w, x: int, y=2, z: int = 10):</span>
 <span class="sd">        ...     return w + x * y ** z</span>
 <span class="sd">        &gt;&gt;&gt; s = Sig(g)</span>
@@ -962,6 +978,7 @@
 
 <span class="sd">        TODO: Something goes wrong when using keyword only arguments.</span>
 <span class="sd">            Note that the same problem occurs with functools.wraps, and even boltons.funcutils.wraps.</span>
+
 <span class="sd">        &gt;&gt;&gt; def f(w, /, x: float = 1, y=2, *, z: int = 3):</span>
 <span class="sd">        ...     return w + x * y ** z</span>
 <span class="sd">        &gt;&gt;&gt; f(0)  # 0 + 1 * 2 ** 3</span>
@@ -983,23 +1000,31 @@
 <span class="sd">          ...</span>
 <span class="sd">        TypeError: f() takes from 2 to 3 positional arguments but 4 were given</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span>
+
+        <span class="c1"># TODO: Would like to make a copy of the function so as to not override</span>
+        <span class="c1">#  decorated function itself!</span>
+        <span class="c1"># @wraps(func)</span>
+        <span class="c1"># def wrapped_func(*args, **kwargs):</span>
+        <span class="c1">#     return func(*args, **kwargs)</span>
+        <span class="n">wrapped_func</span> <span class="o">=</span> <span class="n">func</span>
+
+        <span class="n">wrapped_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">return_annotation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">return_annotation</span>
         <span class="p">)</span>
-        <span class="n">func</span><span class="o">.</span><span class="vm">__annotations__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotations</span>
+        <span class="n">wrapped_func</span><span class="o">.</span><span class="vm">__annotations__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotations</span>
         <span class="c1"># endow the function with __defaults__ and __kwdefaults__ (not the default of functools.wraps!)</span>
         <span class="p">(</span>
-            <span class="n">func</span><span class="o">.</span><span class="vm">__defaults__</span><span class="p">,</span>
-            <span class="n">func</span><span class="o">.</span><span class="vm">__kwdefaults__</span><span class="p">,</span>
+            <span class="n">wrapped_func</span><span class="o">.</span><span class="vm">__defaults__</span><span class="p">,</span>
+            <span class="n">wrapped_func</span><span class="o">.</span><span class="vm">__kwdefaults__</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dunder_defaults_and_kwdefaults</span><span class="p">()</span>
         <span class="c1"># &quot;copy&quot; over all other non-dunder attributes (not the default of functools.wraps!)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">),</span> <span class="nb">dir</span><span class="p">(</span><span class="n">func</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">),</span> <span class="nb">dir</span><span class="p">(</span><span class="n">wrapped_func</span><span class="p">)):</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">wrapped_func</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wrapped_func</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
             <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">raise_on_error_copying_attrs</span><span class="p">:</span>
                     <span class="k">raise</span>
-        <span class="k">return</span> <span class="n">func</span></div>
+        <span class="k">return</span> <span class="n">wrapped_func</span></div>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Gives the input function the signature.</span>
@@ -1192,6 +1217,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">index_of_var_positional</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="sd">        &gt;&gt;&gt; assert Sig(lambda x, *y, z: 0).index_of_var_positional == 1</span>
 <span class="sd">        &gt;&gt;&gt; assert Sig(lambda x, /, y, **z: 0).index_of_var_positional == None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1215,6 +1241,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">index_of_var_keyword</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="sd">        &gt;&gt;&gt; assert Sig(lambda **kwargs: 0).index_of_var_keyword == 0</span>
 <span class="sd">        &gt;&gt;&gt; assert Sig(lambda a, **kwargs: 0).index_of_var_keyword == 1</span>
 <span class="sd">        &gt;&gt;&gt; assert Sig(lambda a, *args, **kwargs: 0).index_of_var_keyword == 2</span>
@@ -1263,7 +1290,16 @@
             <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_var_positional</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Sig.modified"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.modified">[docs]</a>    <span class="k">def</span> <span class="nf">modified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_transform_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">changes_for_name</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">changes_for_name</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">changes_for_name</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="o">**</span><span class="n">p</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># if name is not in params, just use existing param</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Sig.modified"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.modified">[docs]</a>    <span class="k">def</span> <span class="nf">modified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns a modified (new) signature object</span>
 
 <span class="sd">        &gt;&gt;&gt; def foo(pka, *vpa, koa, **vka): ...</span>
@@ -1302,23 +1338,100 @@
 <span class="sd">        defaults, these defaults will actually be used.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">new_return_annotation</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;return_annotation&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">)</span>
+        <span class="n">new_return_annotation</span> <span class="o">=</span> <span class="n">changes_for_name</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span>
+            <span class="s1">&#39;return_annotation&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_annotation</span>
+        <span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">_transformed_params</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
-                    <span class="n">p</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                        <span class="c1"># If p is given by a dict, use it to replace existing param attrs</span>
-                        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="o">**</span><span class="n">p</span><span class="p">)</span>
-                    <span class="k">yield</span> <span class="n">p</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># if name is not in params, just use existing param</span>
-                    <span class="k">yield</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">_allow_reordering</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">sort_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transform_params</span><span class="p">(</span><span class="n">changes_for_name</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transform_params</span><span class="p">(</span><span class="n">changes_for_name</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">Sig</span><span class="o">.</span><span class="n">from_objs</span><span class="p">(</span>
-            <span class="n">_transformed_params</span><span class="p">(),</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">new_return_annotation</span>
-        <span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">Sig</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">new_return_annotation</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sig.ch_param_attrs"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.ch_param_attrs">[docs]</a>    <span class="k">def</span> <span class="nf">ch_param_attrs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">param_attr</span><span class="p">,</span> <span class="o">*</span><span class="n">arg_new_vals</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs_new_vals</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change a specific attribute of the params, returning a modified signature.</span>
+<span class="sd">        This is a convenience method for the modified method when we&#39;re targetting</span>
+<span class="sd">        a fixed param attribute: &#39;name&#39;, &#39;kind&#39;, &#39;default&#39;, or &#39;annotation&#39;</span>
+
+<span class="sd">        Instead of having to do this</span>
+
+<span class="sd">        &gt;&gt;&gt; def foo(a, *b, **c): ...</span>
+<span class="sd">        &gt;&gt;&gt; Sig(foo).modified(a={&#39;name&#39;: &#39;A&#39;}, b={&#39;name&#39;: &#39;B&#39;}, c={&#39;name&#39;: &#39;C&#39;})</span>
+<span class="sd">        &lt;Sig (A, *B, **C)&gt;</span>
+
+<span class="sd">        We can simply do this</span>
+
+<span class="sd">        &gt;&gt;&gt; Sig(foo).ch_param_attrs(&#39;name&#39;, a=&#39;A&#39;, b=&#39;B&#39;, c=&#39;C&#39;)</span>
+<span class="sd">        &lt;Sig (A, *B, **C)&gt;</span>
+
+<span class="sd">        One quite useful thing you can do with this is to set defaults, or set defaults</span>
+<span class="sd">        where there are none. If you wrap your function with such a modified signature,</span>
+<span class="sd">        you get a &quot;curried&quot; version of your function (called &quot;partial&quot; in python).</span>
+<span class="sd">        (Note that the `functools.wraps` won&#39;t deal with defaults &quot;correctly&quot;, but</span>
+<span class="sd">        wrapping with `Sig` objects takes care of that oversight!)</span>
+
+<span class="sd">        &gt;&gt;&gt; def foo(a, b, c):</span>
+<span class="sd">        ...     return a + b * c</span>
+<span class="sd">        &gt;&gt;&gt; special_foo = Sig(foo).ch_param_attrs(&#39;default&#39;, b=2, c=3)(foo)</span>
+<span class="sd">        &gt;&gt;&gt; Sig(special_foo)</span>
+<span class="sd">        &lt;Sig (a, b=2, c=3)&gt;</span>
+<span class="sd">        &gt;&gt;&gt; special_foo(5)  # should be 5 + 2 * 3 == 11</span>
+<span class="sd">        11</span>
+
+
+<span class="sd">        # TODO: Would like to make this work:</span>
+<span class="sd">        # Now, if you want to set a default for a but not b and c for example, you&#39;ll</span>
+<span class="sd">        # get complaints:</span>
+<span class="sd">        #</span>
+<span class="sd">        # ```</span>
+<span class="sd">        # ValueError: non-default argument follows default argument</span>
+<span class="sd">        # ```</span>
+<span class="sd">        #</span>
+<span class="sd">        # will tell you.</span>
+<span class="sd">        #</span>
+<span class="sd">        # It&#39;s true. But if you&#39;re fine with rearranging the argument order,</span>
+<span class="sd">        # `ch_param_attrs` can take care of that for you.</span>
+<span class="sd">        # You&#39;ll have to tell it explicitly that you wish for this though, because</span>
+<span class="sd">        # it&#39;s conservative.</span>
+<span class="sd">        #</span>
+<span class="sd">        # &gt;&gt;&gt; # Note that for time being, Sig.wraps doesn&#39;t make a copy of the function</span>
+<span class="sd">        # &gt;&gt;&gt; #  so we need to redefine foo here@</span>
+<span class="sd">        # &gt;&gt;&gt; def foo(a, b, c):</span>
+<span class="sd">        # ...     return a + b * c</span>
+<span class="sd">        # &gt;&gt;&gt; wrapper = Sig(foo).ch_param_attrs(</span>
+<span class="sd">        # ... &#39;default&#39;, a=10, _allow_reordering=True</span>
+<span class="sd">        # ... )</span>
+<span class="sd">        # &gt;&gt;&gt; another_foo = wrapper(foo)</span>
+<span class="sd">        # &gt;&gt;&gt; Sig(another_foo)</span>
+<span class="sd">        # &lt;Sig (b, c, a=10)&gt;</span>
+<span class="sd">        # &gt;&gt;&gt; another_foo(2, 3)  # should be 10 + (2 * 3) =</span>
+<span class="sd">        # 16</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">param_attr</span> <span class="ow">in</span> <span class="n">param_attributes</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;param_attr needs to be one of: </span><span class="si">{</span><span class="n">param_attributes</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39; Was: </span><span class="si">{</span><span class="n">param_attr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">all_pk_self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">modified</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;kind&#39;</span><span class="p">:</span> <span class="n">PK</span><span class="p">}</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">})</span>
+        <span class="n">new_attr_vals</span> <span class="o">=</span> <span class="n">all_pk_self</span><span class="o">.</span><span class="n">bind_partial</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">arg_new_vals</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs_new_vals</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">arguments</span>
+        <span class="n">changes_for_name</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">name</span><span class="p">:</span> <span class="p">{</span><span class="n">param_attr</span><span class="p">:</span> <span class="n">val</span><span class="p">}</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">new_attr_vals</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">modified</span><span class="p">(</span><span class="n">_allow_reordering</span><span class="o">=</span><span class="n">_allow_reordering</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">)</span></div>
+
+    <span class="n">ch_names</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="n">ch_param_attrs</span><span class="p">,</span> <span class="n">param_attr</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+    <span class="n">ch_kinds</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="n">ch_param_attrs</span><span class="p">,</span> <span class="n">param_attr</span><span class="o">=</span><span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ch_defaults</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span>
+        <span class="n">ch_param_attrs</span><span class="p">,</span> <span class="n">param_attr</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">ch_annotations</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="n">ch_param_attrs</span><span class="p">,</span> <span class="n">param_attr</span><span class="o">=</span><span class="s1">&#39;annotation&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Sig.merge_with_sig"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.merge_with_sig">[docs]</a>    <span class="k">def</span> <span class="nf">merge_with_sig</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1463,6 +1576,7 @@
 <span class="sd">        The order of the first signature will take precedence over the second,</span>
 <span class="sd">        but default-less arguments have to come before arguments with defaults.</span>
 <span class="sd">         first, and Note the difference of the orders.</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig(f) + Sig(h)</span>
 <span class="sd">        &lt;Sig (w, i, j, x: float = 1, y=1, z: int = 1)&gt;</span>
 <span class="sd">        &gt;&gt;&gt; Sig(h) + Sig(f)</span>
@@ -1596,6 +1710,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">without_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="sd">        &gt;&gt;&gt; list(Sig(lambda *args, a, b, x=1, y=1, **kwargs: ...).without_defaults)</span>
 <span class="sd">        [&#39;a&#39;, &#39;b&#39;]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1606,6 +1721,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">with_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="sd">        &gt;&gt;&gt; list(Sig(lambda *args, a, b, x=1, y=1, **kwargs: ...).with_defaults)</span>
 <span class="sd">        [&#39;args&#39;, &#39;x&#39;, &#39;y&#39;, &#39;kwargs&#39;]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1702,17 +1818,20 @@
 <span class="sd">        ... )</span>
 
 <span class="sd">        By default, `apply_defaults=False`, which will lead to only get those arguments you input.</span>
+
 <span class="sd">        &gt;&gt;&gt; sig.kwargs_from_args_and_kwargs(args=(11,), kwargs={&quot;x&quot;: 22})</span>
 <span class="sd">        {&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
 
 <span class="sd">        But if you specify `apply_defaults=True` non-specified non-require arguments</span>
 <span class="sd">        will be returned with their defaults:</span>
+
 <span class="sd">        &gt;&gt;&gt; sig.kwargs_from_args_and_kwargs(</span>
 <span class="sd">        ...     args=(11,), kwargs={&quot;x&quot;: 22}, apply_defaults=True</span>
 <span class="sd">        ... )</span>
 <span class="sd">        {&#39;w&#39;: 11, &#39;x&#39;: 22, &#39;y&#39;: &#39;YY&#39;, &#39;z&#39;: &#39;ZZ&#39;}</span>
 
 <span class="sd">        By default, `ignore_excess=False`, so specifying kwargs that are not in the signature will lead to an exception.</span>
+
 <span class="sd">        &gt;&gt;&gt; sig.kwargs_from_args_and_kwargs(</span>
 <span class="sd">        ...     args=(11,), kwargs={&quot;x&quot;: 22, &quot;not_in_sig&quot;: -1}</span>
 <span class="sd">        ... )</span>
@@ -1983,6 +2102,7 @@
 <span class="sd">        ... )</span>
 
 <span class="sd">        What about var positional and var keywords?</span>
+
 <span class="sd">        &gt;&gt;&gt; def bar(*args, **kwargs):</span>
 <span class="sd">        ...     ...</span>
 <span class="sd">        ...</span>
@@ -2062,11 +2182,13 @@
 <span class="sd">        10</span>
 
 <span class="sd">        Note that though `w` is a position only argument, you can specify `w=4` as a keyword argument too (by default):</span>
+
 <span class="sd">        &gt;&gt;&gt; args, kwargs = Sig(foo).extract_args_and_kwargs(w=4, x=3, y=2)</span>
 <span class="sd">        &gt;&gt;&gt; (args, kwargs) == ((4,), {&quot;x&quot;: 3, &quot;y&quot;: 2})</span>
 <span class="sd">        True</span>
 
 <span class="sd">        If you don&#39;t want to allow that, you can say `_ignore_kind=False`</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig(foo).extract_args_and_kwargs(w=4, x=3, y=2, _ignore_kind=False)</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
@@ -2074,12 +2196,14 @@
 
 <span class="sd">        You can use `_allow_partial` that will allow you, if</span>
 <span class="sd">        set to `True`, to underspecify the params of a function (in view of being completed later).</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig(foo).extract_args_and_kwargs(x=3, y=2)</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
 <span class="sd">        TypeError: missing a required argument: &#39;w&#39;</span>
 
 <span class="sd">        But if you specify `_allow_partial=True`...</span>
+
 <span class="sd">        &gt;&gt;&gt; args, kwargs = Sig(foo).extract_args_and_kwargs(</span>
 <span class="sd">        ...     x=3, y=2, _allow_partial=True</span>
 <span class="sd">        ... )</span>
@@ -2087,12 +2211,14 @@
 <span class="sd">        True</span>
 
 <span class="sd">        By default, `_apply_defaults=False`, which will lead to only get those arguments you input.</span>
+
 <span class="sd">        &gt;&gt;&gt; args, kwargs = Sig(foo).extract_args_and_kwargs(4, x=3, y=2)</span>
 <span class="sd">        &gt;&gt;&gt; (args, kwargs) == ((4,), {&quot;x&quot;: 3, &quot;y&quot;: 2})</span>
 <span class="sd">        True</span>
 
 <span class="sd">        But if you specify `_apply_defaults=True` non-specified non-require arguments</span>
 <span class="sd">        will be returned with their defaults:</span>
+
 <span class="sd">        &gt;&gt;&gt; args, kwargs = Sig(foo).extract_args_and_kwargs(</span>
 <span class="sd">        ...     4, x=3, y=2, _apply_defaults=True</span>
 <span class="sd">        ... )</span>
@@ -2129,10 +2255,12 @@
 <span class="sd">        {&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
 
 <span class="sd">        Note that though `w` is a position only argument, you can specify `w=11` as a keyword argument too (by default):</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig(foo).source_kwargs(w=11, x=22, extra=&quot;keywords&quot;, are=&quot;ignored&quot;)</span>
 <span class="sd">        {&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
 
 <span class="sd">        If you don&#39;t want to allow that, you can say `_ignore_kind=False`</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig(foo).source_kwargs(</span>
 <span class="sd">        ...     w=11, x=22, extra=&quot;keywords&quot;, are=&quot;ignored&quot;, _ignore_kind=False</span>
 <span class="sd">        ... )</span>
@@ -2142,23 +2270,27 @@
 
 <span class="sd">        You can use `_allow_partial` that will allow you, if</span>
 <span class="sd">        set to `True`, to underspecify the params of a function (in view of being completed later).</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig(foo).source_kwargs(x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;)</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
 <span class="sd">        TypeError: missing a required argument: &#39;w&#39;</span>
 
 <span class="sd">        But if you specify `_allow_partial=True`...</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig(foo).source_kwargs(</span>
 <span class="sd">        ...     x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;, _allow_partial=True</span>
 <span class="sd">        ... )</span>
 <span class="sd">        {&#39;x&#39;: 3, &#39;y&#39;: 2}</span>
 
 <span class="sd">        By default, `_apply_defaults=False`, which will lead to only get those arguments you input.</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig(foo).source_kwargs(4, x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;)</span>
 <span class="sd">        {&#39;w&#39;: 4, &#39;x&#39;: 3, &#39;y&#39;: 2}</span>
 
 <span class="sd">        But if you specify `_apply_defaults=True` non-specified non-require arguments</span>
 <span class="sd">        will be returned with their defaults:</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig(foo).source_kwargs(</span>
 <span class="sd">        ...     4, x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;, _apply_defaults=True</span>
 <span class="sd">        ... )</span>
@@ -2199,12 +2331,14 @@
 <span class="sd">        10</span>
 
 <span class="sd">        Note that though `w` is a position only argument, you can specify `w=4` as a keyword argument too (by default):</span>
+
 <span class="sd">        &gt;&gt;&gt; args, kwargs = Sig(foo).source_args_and_kwargs(</span>
 <span class="sd">        ...     w=4, x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; assert (args, kwargs) == ((4,), {&quot;x&quot;: 3, &quot;y&quot;: 2})</span>
 
 <span class="sd">        If you don&#39;t want to allow that, you can say `_ignore_kind=False`</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig(foo).source_args_and_kwargs(</span>
 <span class="sd">        ...     w=4, x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;, _ignore_kind=False</span>
 <span class="sd">        ... )</span>
@@ -2214,12 +2348,14 @@
 
 <span class="sd">        You can use `_allow_partial` that will allow you, if</span>
 <span class="sd">        set to `True`, to underspecify the params of a function (in view of being completed later).</span>
+
 <span class="sd">        &gt;&gt;&gt; Sig(foo).source_args_and_kwargs(x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;)</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
 <span class="sd">        TypeError: missing a required argument: &#39;w&#39;</span>
 
 <span class="sd">        But if you specify `_allow_partial=True`...</span>
+
 <span class="sd">        &gt;&gt;&gt; args, kwargs = Sig(foo).source_args_and_kwargs(</span>
 <span class="sd">        ...     x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;, _allow_partial=True</span>
 <span class="sd">        ... )</span>
@@ -2227,6 +2363,7 @@
 <span class="sd">        True</span>
 
 <span class="sd">        By default, `_apply_defaults=False`, which will lead to only get those arguments you input.</span>
+
 <span class="sd">        &gt;&gt;&gt; args, kwargs = Sig(foo).source_args_and_kwargs(</span>
 <span class="sd">        ...     4, x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;</span>
 <span class="sd">        ... )</span>
@@ -2235,6 +2372,7 @@
 
 <span class="sd">        But if you specify `_apply_defaults=True` non-specified non-require arguments</span>
 <span class="sd">        will be returned with their defaults:</span>
+
 <span class="sd">        &gt;&gt;&gt; args, kwargs = Sig(foo).source_args_and_kwargs(</span>
 <span class="sd">        ...     4, x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;, _apply_defaults=True</span>
 <span class="sd">        ... )</span>
@@ -2264,6 +2402,7 @@
 
 <div class="viewcode-block" id="mk_sig_from_args"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.mk_sig_from_args">[docs]</a><span class="k">def</span> <span class="nf">mk_sig_from_args</span><span class="p">(</span><span class="o">*</span><span class="n">args_without_default</span><span class="p">,</span> <span class="o">**</span><span class="n">args_with_defaults</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Make a Signature instance by specifying args_without_default and args_with_defaults.</span>
+
 <span class="sd">    &gt;&gt;&gt; mk_sig_from_args(&quot;a&quot;, &quot;b&quot;, c=1, d=&quot;bar&quot;)</span>
 <span class="sd">    &lt;Signature (a, b, c=1, d=&#39;bar&#39;)&gt;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2578,6 +2717,10 @@
 <span class="sd">    iterable (e.g. tuple/list) and `d` expecting a `dict` to contain the</span>
 <span class="sd">    desired inputs.</span>
 
+<span class="sd">    Besides this, the decorator tries to be as conservative as possible, making only</span>
+<span class="sd">    the minimum changes needed to meet the goal of getting to a variadic-less</span>
+<span class="sd">    interface. When it doubt, and error will be raised.</span>
+
 <span class="sd">    &gt;&gt;&gt; def foo(a, *args, bar, **kwargs):</span>
 <span class="sd">    ...     return f&quot;{a=}, {args=}, {bar=}, {kwargs=}&quot;</span>
 <span class="sd">    &gt;&gt;&gt; assert str(Sig(foo)) == &#39;(a, *args, bar, **kwargs)&#39;</span>
@@ -2603,6 +2746,24 @@
 <span class="sd">    &gt;&gt;&gt; assert wfoo(1, (2, 3), bar=4) == foo(1, 2, 3, bar=4)</span>
 <span class="sd">    &gt;&gt;&gt; assert wfoo(1, (), bar=4) == foo(1, bar=4)</span>
 
+<span class="sd">    Note that if there is not variadic positional arguments, the variadic keyword</span>
+<span class="sd">    will still be a keyword-only kind.</span>
+
+<span class="sd">    &gt;&gt;&gt; @ch_variadics_to_non_variadic_kind</span>
+<span class="sd">    ... def func(a, bar=None, **kwargs):</span>
+<span class="sd">    ...     return f&quot;{a=}, {bar=}, {kwargs=}&quot;</span>
+<span class="sd">    &gt;&gt;&gt; str(Sig(func))</span>
+<span class="sd">    &#39;(a, bar=None, *, kwargs={})&#39;</span>
+<span class="sd">    &gt;&gt;&gt; assert func(1, bar=4, kwargs=dict(hello=&quot;world&quot;)</span>
+<span class="sd">    ...     ) == &quot;a=1, bar=4, kwargs={&#39;hello&#39;: &#39;world&#39;}&quot;</span>
+
+<span class="sd">    If the function has neither variadic kinds, it will remain untouched.</span>
+
+<span class="sd">    &gt;&gt;&gt; def func(a, /, b, *, c=3):</span>
+<span class="sd">    ...     return a + b + c</span>
+<span class="sd">    &gt;&gt;&gt; ch_variadics_to_non_variadic_kind(func) == func</span>
+<span class="sd">    True</span>
+
 <span class="sd">    If you only want the variadic positional to be handled, but leave leave any</span>
 <span class="sd">    VARIADIC_KEYWORD kinds (**kwargs) alone, you can do so by setting</span>
 <span class="sd">    `ch_variadic_keyword_to_keyword=False`.</span>
@@ -2622,6 +2783,9 @@
 <span class="sd">    &gt;&gt;&gt; foo(1, (2, 3), bar=4, hello=&quot;world&quot;)</span>
 <span class="sd">    &quot;a=1, args=(2, 3), bar=4, kwargs={&#39;hello&#39;: &#39;world&#39;}&quot;</span>
 
+
+
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
@@ -2630,28 +2794,33 @@
         <span class="p">)</span>
     <span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
     <span class="n">idx_of_vp</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">index_of_var_positional</span>
+    <span class="n">var_keyword_argname</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">var_keyword_name</span>
 
-    <span class="k">if</span> <span class="n">idx_of_vp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># i.e. the func has a VAR_POSITIONAL argument</span>
-        <span class="n">var_keyword_argname</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">var_keyword_name</span>
+    <span class="k">if</span> <span class="n">idx_of_vp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">var_keyword_argname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># If the function has any variadic (position or keyword)...</span>
 
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">vpless_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">variadic_less_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="c1"># extract from kwargs those inputs that need to be expressed positionally</span>
             <span class="n">_args</span><span class="p">,</span> <span class="n">_kwargs</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">allow_partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="c1"># print(sig, kwargs, _args, _kwargs)</span>
             <span class="c1"># add these to the existing args</span>
             <span class="n">args</span> <span class="o">=</span> <span class="n">args</span> <span class="o">+</span> <span class="n">_args</span>
-            <span class="c1"># separate the args that are positional, variadic, and after variadic</span>
-            <span class="n">a</span><span class="p">,</span> <span class="n">_vp_args_</span><span class="p">,</span> <span class="n">args_after_vp</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">args</span><span class="p">[:</span><span class="n">idx_of_vp</span><span class="p">],</span>
-                <span class="n">args</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">],</span>
-                <span class="n">args</span><span class="p">[</span><span class="n">idx_of_vp</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:],</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">args_after_vp</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">FuncCallNotMatchingSignature</span><span class="p">(</span>
-                    <span class="s1">&#39;There should be only keyword arguments after the Variadic args. &#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;Function was called with (positional=</span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s1">, keywords=</span><span class="si">{</span><span class="n">_kwargs</span><span class="si">}</span><span class="s1">)&#39;</span>
+
+            <span class="k">if</span> <span class="n">idx_of_vp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># separate the args that are positional, variadic, and after variadic</span>
+                <span class="n">a</span><span class="p">,</span> <span class="n">_vp_args_</span><span class="p">,</span> <span class="n">args_after_vp</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">args</span><span class="p">[:</span><span class="n">idx_of_vp</span><span class="p">],</span>
+                    <span class="n">args</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">],</span>
+                    <span class="n">args</span><span class="p">[</span><span class="n">idx_of_vp</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:],</span>
                 <span class="p">)</span>
+                <span class="k">if</span> <span class="n">args_after_vp</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">FuncCallNotMatchingSignature</span><span class="p">(</span>
+                        <span class="s1">&#39;There should be only keyword arguments after the Variadic args. &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;Function was called with (positional=</span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s1">, keywords=</span><span class="si">{</span><span class="n">_kwargs</span><span class="si">}</span><span class="s1">)&#39;</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">a</span><span class="p">,</span> <span class="n">_vp_args_</span> <span class="o">=</span> <span class="n">args</span><span class="p">,</span> <span class="p">()</span>
 
             <span class="c1"># extract from the remaining _kwargs, the dict corresponding to the</span>
             <span class="c1"># variadic keywords, if any, since these need to be **-ed later</span>
@@ -2674,18 +2843,19 @@
                 <span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">{})</span>
 
         <span class="k">try</span><span class="p">:</span>  <span class="c1"># TODO: Avoid this try catch. Look in advance for default ordering?</span>
-            <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">())</span>
-            <span class="n">vpless_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span>
+            <span class="k">if</span> <span class="n">idx_of_vp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">())</span>
+            <span class="n">variadic_less_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span>
                 <span class="n">params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">)</span>
-            <span class="n">vpless_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span>
+            <span class="k">if</span> <span class="n">idx_of_vp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">)</span>
+            <span class="n">variadic_less_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span>
                 <span class="n">params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
             <span class="p">)</span>
-        <span class="c1"># if name is not None:</span>
-        <span class="c1">#     vpless_func.__name__ = name</span>
-        <span class="k">return</span> <span class="n">vpless_func</span>
+
+        <span class="k">return</span> <span class="n">variadic_less_func</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">func</span></div>
 
@@ -2800,6 +2970,7 @@
 <div class="viewcode-block" id="insert_annotations"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.insert_annotations">[docs]</a><span class="k">def</span> <span class="nf">insert_annotations</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Signature</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">empty</span><span class="p">,</span> <span class="o">**</span><span class="n">annotations</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Insert annotations in a signature.</span>
 <span class="sd">    (Note: not really insert but returns a copy of input signature)</span>
+
 <span class="sd">    &gt;&gt;&gt; from inspect import signature</span>
 <span class="sd">    &gt;&gt;&gt; s = signature(lambda a, b, c=1, d=&quot;bar&quot;: 0)</span>
 <span class="sd">    &gt;&gt;&gt; s</span>

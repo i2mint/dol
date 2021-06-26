@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.trans &#8212; dol 0.1.22 documentation</title>
+    <title>dol.trans &#8212; dol 0.1.23 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -276,51 +276,73 @@ update_keys_cache: Is called if a user uses the instance to mutate the store (i.
 <p>You have two ways of caching keys:
 - By providing the explicit list of keys you want cache (and use)
 - By providing a callable that will iterate through your store and collect an explicit list of keys</p>
-<p>Let’s take a simple dict as our original store.
-&gt;&gt;&gt; source = dict(c=3, b=2, a=1)</p>
-<p>Specify an iterable, and it will be used as the cached keys
-&gt;&gt;&gt; cached = cached_keys(source, keys_cache=’bc’)
-&gt;&gt;&gt; list(cached.items())  # notice that the order you get things is also ruled by the cache
-[(‘b’, 2), (‘c’, 3)]</p>
-<p>Specify a callable, and it will apply it to the existing keys to make your cache
-&gt;&gt;&gt; list(cached_keys(source, keys_cache=sorted))
-[‘a’, ‘b’, ‘c’]</p>
+<p>Let’s take a simple dict as our original store.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">source</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Specify an iterable, and it will be used as the cached keys</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cached</span> <span class="o">=</span> <span class="n">cached_keys</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">keys_cache</span><span class="o">=</span><span class="s1">&#39;bc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">cached</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># notice that the order you get things is also ruled by the cache</span>
+<span class="go">[(&#39;b&#39;, 2), (&#39;c&#39;, 3)]</span>
+</pre></div>
+</div>
+<p>Specify a callable, and it will apply it to the existing keys to make your cache</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">cached_keys</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">keys_cache</span><span class="o">=</span><span class="nb">sorted</span><span class="p">))</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+</pre></div>
+</div>
 <p>You can use the callable keys_cache specification to filter as well!
-Oh, and let’s demo the fact that if you don’t specify the store, it will make a store decorator for you:
-&gt;&gt;&gt; cache_my_keys = cached_keys(keys_cache=lambda keys: list(filter(lambda k: k &gt;= ‘b’, keys)))
-&gt;&gt;&gt; d = cache_my_keys(source)  # used as to transform an instance
-&gt;&gt;&gt; list(d)
-[‘c’, ‘b’]</p>
-<p>Let’s use that same <cite>cache_my_keys</cite> to decorate a class instead:
-&gt;&gt;&gt; cached_dict = cache_my_keys(dict)
-&gt;&gt;&gt; d = cached_dict(c=3, b=2, a=1)
-&gt;&gt;&gt; list(d)
-[‘c’, ‘b’]</p>
-<p>Note that there’s still an underlying store (dict) that has the data:
-&gt;&gt;&gt; repr(d)  # repr isn’t wrapped, so you can still see your underlying dict
-“{‘c’: 3, ‘b’: 2, ‘a’: 1}”</p>
-<p>And yes, you can still add elements,
-&gt;&gt;&gt; d[‘z’] = 26
-&gt;&gt;&gt; list(d.items())
-[(‘c’, 3), (‘b’, 2), (‘z’, 26)]</p>
-<p>do bulk updates,
-&gt;&gt;&gt; d.update({‘more’: ‘of this’}, more_of=’that’)
-&gt;&gt;&gt; list(d.items())
-[(‘c’, 3), (‘b’, 2), (‘z’, 26), (‘more’, ‘of this’), (‘more_of’, ‘that’)]</p>
-<p>and delete…
-&gt;&gt;&gt; del d[‘more’]
-&gt;&gt;&gt; list(d.items())
-[(‘c’, 3), (‘b’, 2), (‘z’, 26), (‘more_of’, ‘that’)]</p>
-<p>But careful! Know what you’re doing if you try to get creative. Have a look at this:
-&gt;&gt;&gt; d[‘a’] = 100  # add an ‘a’ item
-&gt;&gt;&gt; d.update(and_more=’of that’)  # update to add yet another item
-&gt;&gt;&gt; list(d.items())
-[(‘c’, 3), (‘b’, 2), (‘z’, 26), (‘more_of’, ‘that’)]</p>
+Oh, and let’s demo the fact that if you don’t specify the store, it will make a store decorator for you:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cache_my_keys</span> <span class="o">=</span> <span class="n">cached_keys</span><span class="p">(</span><span class="n">keys_cache</span><span class="o">=</span><span class="k">lambda</span> <span class="n">keys</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">keys</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">cache_my_keys</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>  <span class="c1"># used as to transform an instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">[&#39;c&#39;, &#39;b&#39;]</span>
+</pre></div>
+</div>
+<p>Let’s use that same <cite>cache_my_keys</cite> to decorate a class instead:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cached_dict</span> <span class="o">=</span> <span class="n">cache_my_keys</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">cached_dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">[&#39;c&#39;, &#39;b&#39;]</span>
+</pre></div>
+</div>
+<p>Note that there’s still an underlying store (dict) that has the data:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">repr</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>  <span class="c1"># repr isn&#39;t wrapped, so you can still see your underlying dict</span>
+<span class="go">&quot;{&#39;c&#39;: 3, &#39;b&#39;: 2, &#39;a&#39;: 1}&quot;</span>
+</pre></div>
+</div>
+<p>And yes, you can still add elements,</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">26</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;c&#39;, 3), (&#39;b&#39;, 2), (&#39;z&#39;, 26)]</span>
+</pre></div>
+</div>
+<p>do bulk updates,</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;more&#39;</span><span class="p">:</span> <span class="s1">&#39;of this&#39;</span><span class="p">},</span> <span class="n">more_of</span><span class="o">=</span><span class="s1">&#39;that&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;c&#39;, 3), (&#39;b&#39;, 2), (&#39;z&#39;, 26), (&#39;more&#39;, &#39;of this&#39;), (&#39;more_of&#39;, &#39;that&#39;)]</span>
+</pre></div>
+</div>
+<p>and delete…</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;more&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;c&#39;, 3), (&#39;b&#39;, 2), (&#39;z&#39;, 26), (&#39;more_of&#39;, &#39;that&#39;)]</span>
+</pre></div>
+</div>
+<p>But careful! Know what you’re doing if you try to get creative. Have a look at this:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># add an &#39;a&#39; item</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">and_more</span><span class="o">=</span><span class="s1">&#39;of that&#39;</span><span class="p">)</span>  <span class="c1"># update to add yet another item</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;c&#39;, 3), (&#39;b&#39;, 2), (&#39;z&#39;, 26), (&#39;more_of&#39;, &#39;that&#39;)]</span>
+</pre></div>
+</div>
 <p>Indeed: No ‘a’ or ‘and_more’.</p>
 <p>Now… they were indeed added. Or to be more precise, the value of the already existing a was changed,
-and a new (‘and_more’, ‘of that’) item was indeed added in the underlying store:
-&gt;&gt;&gt; repr(d)
-“{‘c’: 3, ‘b’: 2, ‘a’: 100, ‘z’: 26, ‘more_of’: ‘that’, ‘and_more’: ‘of that’}”</p>
+and a new (‘and_more’, ‘of that’) item was indeed added in the underlying store:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">repr</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">&quot;{&#39;c&#39;: 3, &#39;b&#39;: 2, &#39;a&#39;: 100, &#39;z&#39;: 26, &#39;more_of&#39;: &#39;that&#39;, &#39;and_more&#39;: &#39;of that&#39;}&quot;</span>
+</pre></div>
+</div>
 <p>But you’re not seeing it.</p>
 <p>Why?</p>
 <p>Because you chose to use a callable keys_cache that doesn’t have an ‘update’ method.
@@ -355,9 +377,11 @@ to use it.</p>
 <span class="go">[(&#39;a&#39;, 1), (&#39;b&#39;, 2), (&#39;c&#39;, 3)]</span>
 </pre></div>
 </div>
-<p>This is where the keys are stored:
-&gt;&gt;&gt; d._keys_cache
-[‘a’, ‘b’, ‘c’]</p>
+<p>This is where the keys are stored:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">_keys_cache</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+</pre></div>
+</div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Let&#39;s demo the iter_to_container argument. The default is &quot;list&quot;, which will just consume the iter in order</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sorted_dict</span> <span class="o">=</span> <span class="n">cached_keys</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">keys_cache</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">sorted_dict</span><span class="p">({</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
@@ -374,13 +398,15 @@ to use it.</p>
 </pre></div>
 </div>
 <p>If you change the keys (adding new ones with __setitem__ or update, or removing with pop or popitem)
-then the cache is recomputed (the first time you use an operation that iterates over keys)
-&gt;&gt;&gt; d.update(d=4)  # let’s add an element (try d[‘d’] = 4 as well)
-&gt;&gt;&gt; list(d)
-[‘a’, ‘b’, ‘c’, ‘d’]
-&gt;&gt;&gt; d[‘e’] = 5
-&gt;&gt;&gt; list(d.items())  # whether you iterate with .keys(), .values(), or .items()
-[(‘a’, 1), (‘b’, 2), (‘c’, 3), (‘d’, 4), (‘e’, 5)]</p>
+then the cache is recomputed (the first time you use an operation that iterates over keys)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># let&#39;s add an element (try d[&#39;d&#39;] = 4 as well)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># whether you iterate with .keys(), .values(), or .items()</span>
+<span class="go">[(&#39;a&#39;, 1), (&#39;b&#39;, 2), (&#39;c&#39;, 3), (&#39;d&#39;, 4), (&#39;e&#39;, 5)]</span>
+</pre></div>
+</div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@cached_keys</span>
 <span class="gp">... </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -475,51 +501,73 @@ update_keys_cache: Is called if a user uses the instance to mutate the store (i.
 <p>You have two ways of caching keys:
 - By providing the explicit list of keys you want cache (and use)
 - By providing a callable that will iterate through your store and collect an explicit list of keys</p>
-<p>Let’s take a simple dict as our original store.
-&gt;&gt;&gt; source = dict(c=3, b=2, a=1)</p>
-<p>Specify an iterable, and it will be used as the cached keys
-&gt;&gt;&gt; cached = cached_keys(source, keys_cache=’bc’)
-&gt;&gt;&gt; list(cached.items())  # notice that the order you get things is also ruled by the cache
-[(‘b’, 2), (‘c’, 3)]</p>
-<p>Specify a callable, and it will apply it to the existing keys to make your cache
-&gt;&gt;&gt; list(cached_keys(source, keys_cache=sorted))
-[‘a’, ‘b’, ‘c’]</p>
+<p>Let’s take a simple dict as our original store.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">source</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Specify an iterable, and it will be used as the cached keys</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cached</span> <span class="o">=</span> <span class="n">cached_keys</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">keys_cache</span><span class="o">=</span><span class="s1">&#39;bc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">cached</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># notice that the order you get things is also ruled by the cache</span>
+<span class="go">[(&#39;b&#39;, 2), (&#39;c&#39;, 3)]</span>
+</pre></div>
+</div>
+<p>Specify a callable, and it will apply it to the existing keys to make your cache</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">cached_keys</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">keys_cache</span><span class="o">=</span><span class="nb">sorted</span><span class="p">))</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+</pre></div>
+</div>
 <p>You can use the callable keys_cache specification to filter as well!
-Oh, and let’s demo the fact that if you don’t specify the store, it will make a store decorator for you:
-&gt;&gt;&gt; cache_my_keys = cached_keys(keys_cache=lambda keys: list(filter(lambda k: k &gt;= ‘b’, keys)))
-&gt;&gt;&gt; d = cache_my_keys(source)  # used as to transform an instance
-&gt;&gt;&gt; list(d)
-[‘c’, ‘b’]</p>
-<p>Let’s use that same <cite>cache_my_keys</cite> to decorate a class instead:
-&gt;&gt;&gt; cached_dict = cache_my_keys(dict)
-&gt;&gt;&gt; d = cached_dict(c=3, b=2, a=1)
-&gt;&gt;&gt; list(d)
-[‘c’, ‘b’]</p>
-<p>Note that there’s still an underlying store (dict) that has the data:
-&gt;&gt;&gt; repr(d)  # repr isn’t wrapped, so you can still see your underlying dict
-“{‘c’: 3, ‘b’: 2, ‘a’: 1}”</p>
-<p>And yes, you can still add elements,
-&gt;&gt;&gt; d[‘z’] = 26
-&gt;&gt;&gt; list(d.items())
-[(‘c’, 3), (‘b’, 2), (‘z’, 26)]</p>
-<p>do bulk updates,
-&gt;&gt;&gt; d.update({‘more’: ‘of this’}, more_of=’that’)
-&gt;&gt;&gt; list(d.items())
-[(‘c’, 3), (‘b’, 2), (‘z’, 26), (‘more’, ‘of this’), (‘more_of’, ‘that’)]</p>
-<p>and delete…
-&gt;&gt;&gt; del d[‘more’]
-&gt;&gt;&gt; list(d.items())
-[(‘c’, 3), (‘b’, 2), (‘z’, 26), (‘more_of’, ‘that’)]</p>
-<p>But careful! Know what you’re doing if you try to get creative. Have a look at this:
-&gt;&gt;&gt; d[‘a’] = 100  # add an ‘a’ item
-&gt;&gt;&gt; d.update(and_more=’of that’)  # update to add yet another item
-&gt;&gt;&gt; list(d.items())
-[(‘c’, 3), (‘b’, 2), (‘z’, 26), (‘more_of’, ‘that’)]</p>
+Oh, and let’s demo the fact that if you don’t specify the store, it will make a store decorator for you:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cache_my_keys</span> <span class="o">=</span> <span class="n">cached_keys</span><span class="p">(</span><span class="n">keys_cache</span><span class="o">=</span><span class="k">lambda</span> <span class="n">keys</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">keys</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">cache_my_keys</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>  <span class="c1"># used as to transform an instance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">[&#39;c&#39;, &#39;b&#39;]</span>
+</pre></div>
+</div>
+<p>Let’s use that same <cite>cache_my_keys</cite> to decorate a class instead:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cached_dict</span> <span class="o">=</span> <span class="n">cache_my_keys</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">cached_dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">[&#39;c&#39;, &#39;b&#39;]</span>
+</pre></div>
+</div>
+<p>Note that there’s still an underlying store (dict) that has the data:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">repr</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>  <span class="c1"># repr isn&#39;t wrapped, so you can still see your underlying dict</span>
+<span class="go">&quot;{&#39;c&#39;: 3, &#39;b&#39;: 2, &#39;a&#39;: 1}&quot;</span>
+</pre></div>
+</div>
+<p>And yes, you can still add elements,</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">26</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;c&#39;, 3), (&#39;b&#39;, 2), (&#39;z&#39;, 26)]</span>
+</pre></div>
+</div>
+<p>do bulk updates,</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;more&#39;</span><span class="p">:</span> <span class="s1">&#39;of this&#39;</span><span class="p">},</span> <span class="n">more_of</span><span class="o">=</span><span class="s1">&#39;that&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;c&#39;, 3), (&#39;b&#39;, 2), (&#39;z&#39;, 26), (&#39;more&#39;, &#39;of this&#39;), (&#39;more_of&#39;, &#39;that&#39;)]</span>
+</pre></div>
+</div>
+<p>and delete…</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;more&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;c&#39;, 3), (&#39;b&#39;, 2), (&#39;z&#39;, 26), (&#39;more_of&#39;, &#39;that&#39;)]</span>
+</pre></div>
+</div>
+<p>But careful! Know what you’re doing if you try to get creative. Have a look at this:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># add an &#39;a&#39; item</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">and_more</span><span class="o">=</span><span class="s1">&#39;of that&#39;</span><span class="p">)</span>  <span class="c1"># update to add yet another item</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;c&#39;, 3), (&#39;b&#39;, 2), (&#39;z&#39;, 26), (&#39;more_of&#39;, &#39;that&#39;)]</span>
+</pre></div>
+</div>
 <p>Indeed: No ‘a’ or ‘and_more’.</p>
 <p>Now… they were indeed added. Or to be more precise, the value of the already existing a was changed,
-and a new (‘and_more’, ‘of that’) item was indeed added in the underlying store:
-&gt;&gt;&gt; repr(d)
-“{‘c’: 3, ‘b’: 2, ‘a’: 100, ‘z’: 26, ‘more_of’: ‘that’, ‘and_more’: ‘of that’}”</p>
+and a new (‘and_more’, ‘of that’) item was indeed added in the underlying store:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">repr</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">&quot;{&#39;c&#39;: 3, &#39;b&#39;: 2, &#39;a&#39;: 100, &#39;z&#39;: 26, &#39;more_of&#39;: &#39;that&#39;, &#39;and_more&#39;: &#39;of that&#39;}&quot;</span>
+</pre></div>
+</div>
 <p>But you’re not seeing it.</p>
 <p>Why?</p>
 <p>Because you chose to use a callable keys_cache that doesn’t have an ‘update’ method.
@@ -554,9 +602,11 @@ to use it.</p>
 <span class="go">[(&#39;a&#39;, 1), (&#39;b&#39;, 2), (&#39;c&#39;, 3)]</span>
 </pre></div>
 </div>
-<p>This is where the keys are stored:
-&gt;&gt;&gt; d._keys_cache
-[‘a’, ‘b’, ‘c’]</p>
+<p>This is where the keys are stored:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">_keys_cache</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+</pre></div>
+</div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Let&#39;s demo the iter_to_container argument. The default is &quot;list&quot;, which will just consume the iter in order</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sorted_dict</span> <span class="o">=</span> <span class="n">cached_keys</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">keys_cache</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">sorted_dict</span><span class="p">({</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
@@ -573,13 +623,15 @@ to use it.</p>
 </pre></div>
 </div>
 <p>If you change the keys (adding new ones with __setitem__ or update, or removing with pop or popitem)
-then the cache is recomputed (the first time you use an operation that iterates over keys)
-&gt;&gt;&gt; d.update(d=4)  # let’s add an element (try d[‘d’] = 4 as well)
-&gt;&gt;&gt; list(d)
-[‘a’, ‘b’, ‘c’, ‘d’]
-&gt;&gt;&gt; d[‘e’] = 5
-&gt;&gt;&gt; list(d.items())  # whether you iterate with .keys(), .values(), or .items()
-[(‘a’, 1), (‘b’, 2), (‘c’, 3), (‘d’, 4), (‘e’, 5)]</p>
+then the cache is recomputed (the first time you use an operation that iterates over keys)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># let&#39;s add an element (try d[&#39;d&#39;] = 4 as well)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># whether you iterate with .keys(), .values(), or .items()</span>
+<span class="go">[(&#39;a&#39;, 1), (&#39;b&#39;, 2), (&#39;c&#39;, 3), (&#39;d&#39;, 4), (&#39;e&#39;, 5)]</span>
+</pre></div>
+</div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@cached_keys</span>
 <span class="gp">... </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1191,9 +1243,11 @@ and yes, store_decorator makes that possible to, as long as your params have def
 <span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">deco</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">42</span><span class="p">)(</span><span class="n">a</span><span class="p">);</span> <span class="k">assert</span> <span class="n">b</span><span class="o">.</span><span class="n">x</span> <span class="o">==</span> <span class="mi">42</span><span class="p">;</span> <span class="c1"># b has an x and it&#39;s 42</span>
 </pre></div>
 </div>
-<p>WARNING: Note though that the type of <code class="docutils literal notranslate"><span class="pre">b</span></code> is not the same type as <code class="docutils literal notranslate"><span class="pre">a</span></code>
-&gt;&gt;&gt; isinstance(b, a.__class__)
-False</p>
+<p>WARNING: Note though that the type of <code class="docutils literal notranslate"><span class="pre">b</span></code> is not the same type as <code class="docutils literal notranslate"><span class="pre">a</span></code></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
 <p>No, <code class="docutils literal notranslate"><span class="pre">b</span></code> is an instance of a <code class="docutils literal notranslate"><span class="pre">dol.base.Store</span></code>, which is a class containing an
 instance of a store (here, <code class="docutils literal notranslate"><span class="pre">a</span></code>).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
