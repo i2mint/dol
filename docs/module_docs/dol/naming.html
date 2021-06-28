@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.naming &#8212; dol 0.1.22 documentation</title>
+    <title>dol.naming &#8212; dol 0.1.23 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -290,9 +290,11 @@ before returning them.</p></li>
 <dd><p>Get list from {item} items of template string
 :param template: a “template” string (a string with {item} items
 – the kind that is used to mark token for str.format)
-:return: a list of the token items of the string, in the order they appear
-&gt;&gt;&gt; get_fields_from_template(‘this{is}an{example}of{a}template’)
-[‘is’, ‘example’, ‘a’]</p>
+:return: a list of the token items of the string, in the order they appear</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_fields_from_template</span><span class="p">(</span><span class="s1">&#39;this</span><span class="si">{is}</span><span class="s1">an</span><span class="si">{example}</span><span class="s1">of</span><span class="si">{a}</span><span class="s1">template&#39;</span><span class="p">)</span>
+<span class="go">[&#39;is&#39;, &#39;example&#39;, &#39;a&#39;]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -308,22 +310,24 @@ Used to easily make process_kwargs and process_info_dict arguments for LinearNam
 <dd><p>Make a compiled regex to match template
 :param template: A format string
 :param format_dict: A dict whose keys are template fields and values are regex strings to capture them</p>
-<p>Returns: a compiled regex
-&gt;&gt;&gt; import os
-&gt;&gt;&gt; p = mk_pattern_from_template_and_format_dict(‘{here}/and/{there}’)
-&gt;&gt;&gt; if os.name == ‘nt’:  # for windows
-…     assert p == re.compile(‘(?P&lt;here&gt;[^\\]+)/and/(?P&lt;there&gt;[^\\]+)’)
-… else:
-…     assert p == re.compile(‘(?P&lt;here&gt;[^/]+)/and/(?P&lt;there&gt;[^/]+)’)
-&gt;&gt;&gt; p = mk_pattern_from_template_and_format_dict(‘{here}/and/{there}’, {‘there’: r’d+’})
-&gt;&gt;&gt; if os.name == ‘nt’:  # for windows
-…     assert p == re.compile(r’(?P&lt;here&gt;[^\\]+)/and/(?P&lt;there&gt;d+)’)
-… else:
-…     assert p == re.compile(r’(?P&lt;here&gt;[^/]+)/and/(?P&lt;there&gt;d+)’)
-&gt;&gt;&gt; type(p)
-&lt;class ‘re.Pattern’&gt;
-&gt;&gt;&gt; p.match(‘HERE/and/1234’).groupdict()
-{‘here’: ‘HERE’, ‘there’: ‘1234’}</p>
+<p>Returns: a compiled regex</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;nt&#39;</span><span class="p">:</span>  <span class="c1"># for windows</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;here&gt;[^</span><span class="se">\\\\</span><span class="s1">]+)/and/(?P&lt;there&gt;[^</span><span class="se">\\\\</span><span class="s1">]+)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;here&gt;[^/]+)/and/(?P&lt;there&gt;[^/]+)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;there&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;nt&#39;</span><span class="p">:</span>  <span class="c1"># for windows</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;here&gt;[^</span><span class="se">\\\\</span><span class="s1">]+)/and/(?P&lt;there&gt;\d+)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;here&gt;[^/]+)/and/(?P&lt;there&gt;\d+)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="go">&lt;class &#39;re.Pattern&#39;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;HERE/and/1234&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+<span class="go">{&#39;here&#39;: &#39;HERE&#39;, &#39;there&#39;: &#39;1234&#39;}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -406,23 +410,25 @@ keymap_kwargs=dict(process_info_dict={‘session’: int, ‘bt’: int}))</p>
 <dl class="py function">
 <dt id="dol.naming.update_fields_of_namedtuple">
 <code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">update_fields_of_namedtuple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nt</span><span class="p">:</span> <span class="n">tuple</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">name_of_output_type</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">remove_fields</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#update_fields_of_namedtuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.update_fields_of_namedtuple" title="Permalink to this definition">¶</a></dt>
-<dd><p>Replace fields of namedtuple
-&gt;&gt;&gt; from collections import namedtuple
-&gt;&gt;&gt; NT = namedtuple(‘NT’, (‘a’, ‘b’, ‘c’))
-&gt;&gt;&gt; nt = NT(1,2,3)
-&gt;&gt;&gt; nt
-NT(a=1, b=2, c=3)
-&gt;&gt;&gt; update_fields_of_namedtuple(nt, c=3000)  # replacing a single field
-NT(a=1, b=2, c=3000)
-&gt;&gt;&gt; update_fields_of_namedtuple(nt, c=3000, a=1000)  # replacing two fields
-NT(a=1000, b=2, c=3000)
-&gt;&gt;&gt; update_fields_of_namedtuple(nt, a=1000, c=3000)  # see that the original order doesn’t change
-NT(a=1000, b=2, c=3000)
-&gt;&gt;&gt; update_fields_of_namedtuple(nt, b=2000, d=’hello’)  # replacing one field and adding a new one
-UpdatedNT(a=1, b=2000, c=3, d=’hello’)
-&gt;&gt;&gt; # Now let’s try controlling the name of the output type, remove fields, and add new ones
-&gt;&gt;&gt; update_fields_of_namedtuple(nt, name_of_output_type=’NewGuy’, remove_fields=(‘a’, ‘c’), hello=’world’)
-NewGuy(b=2, hello=’world’)</p>
+<dd><p>Replace fields of namedtuple</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;NT&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span> <span class="o">=</span> <span class="n">NT</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span>
+<span class="go">NT(a=1, b=2, c=3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span>  <span class="c1"># replacing a single field</span>
+<span class="go">NT(a=1, b=2, c=3000)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># replacing two fields</span>
+<span class="go">NT(a=1000, b=2, c=3000)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span>  <span class="c1"># see that the original order doesn&#39;t change</span>
+<span class="go">NT(a=1000, b=2, c=3000)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span>  <span class="c1"># replacing one field and adding a new one</span>
+<span class="go">UpdatedNT(a=1, b=2000, c=3, d=&#39;hello&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Now let&#39;s try controlling the name of the output type, remove fields, and add new ones</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">name_of_output_type</span><span class="o">=</span><span class="s1">&#39;NewGuy&#39;</span><span class="p">,</span> <span class="n">remove_fields</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">),</span> <span class="n">hello</span><span class="o">=</span><span class="s1">&#39;world&#39;</span><span class="p">)</span>
+<span class="go">NewGuy(b=2, hello=&#39;world&#39;)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
