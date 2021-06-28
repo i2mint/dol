@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.signatures &#8212; dol 0.1.24 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.25 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -38,28 +38,31 @@
   <section id="module-dol.signatures">
 <span id="dol-signatures"></span><h1>dol.signatures<a class="headerlink" href="#module-dol.signatures" title="Permalink to this headline">¶</a></h1>
 <p>Signature calculus: Tools to make it easier to work with function’s signatures.</p>
-<p>How to:
-- get names, kinds, defaults, annotations
-- merge two or more signatures
-- give a function a specific signature (with a choice of validations)
-- get an equivalent function with a different order of arguments
-- get an equivalent function with a subset of arguments (like partial)
-- get an equivalent function but with variadic <a href="#id1"><span class="problematic" id="id2">*</span></a>args and/or <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs replaced with</p>
-<blockquote>
-<div><p>non-variadic args (tuple) and kwargs (dict)</p>
-</div></blockquote>
+<p>How to:</p>
 <ul class="simple">
-<li><p>make an f(a) function in to a f(a, b=None) function with b ignored</p></li>
-</ul>
-<p># Notes to the reader</p>
-<dl class="simple">
-<dt>Both in the code and in the docs, we’ll use short hands for parameter (argument) kind.</dt><dd><p>PK = Parameter.POSITIONAL_OR_KEYWORD
-VP = Parameter.VAR_POSITIONAL
-VK = Parameter.VAR_KEYWORD
-PO = Parameter.POSITIONAL_ONLY
-KO = Parameter.KEYWORD_ONLY</p>
+<li><p>get names, kinds, defaults, annotations</p></li>
+<li><p>merge two or more signatures</p></li>
+<li><p>give a function a specific signature (with a choice of validations)</p></li>
+<li><p>get an equivalent function with a different order of arguments</p></li>
+<li><p>get an equivalent function with a subset of arguments (like partial)</p></li>
+<li><dl class="simple">
+<dt>get an equivalent function but with variadic <a href="#id1"><span class="problematic" id="id2">*</span></a>args and/or <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs replaced with</dt><dd><p>non-variadic args (tuple) and kwargs (dict)</p>
 </dd>
 </dl>
+</li>
+<li><p>make an f(a) function in to a f(a, b=None) function with b ignored</p></li>
+</ul>
+<p><strong>Notes to the reader</strong></p>
+<p>Both in the code and in the docs, we’ll use short hands for parameter (argument) kind.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>PK = Parameter.POSITIONAL_OR_KEYWORD</p></li>
+<li><p>VP = Parameter.VAR_POSITIONAL</p></li>
+<li><p>VK = Parameter.VAR_KEYWORD</p></li>
+<li><p>PO = Parameter.POSITIONAL_ONLY</p></li>
+<li><p>KO = Parameter.KEYWORD_ONLY</p></li>
+</ul>
+</div></blockquote>
 <dl class="py class">
 <dt id="dol.signatures.Command">
 <em class="property">class </em><code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">Command</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Command" title="Permalink to this definition">¶</a></dt>
@@ -68,10 +71,9 @@ KO = Parameter.KEYWORD_ONLY</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> – A callable that will be called with (<a href="#id5"><span class="problematic" id="id6">*</span></a>args, <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs) argument</p></li>
-<li><p><strong>args</strong> – A tuple</p></li>
-<li><p><strong>kwargs</strong> – A dict</p></li>
-<li><p><strong>caller</strong> – How to actually implement the execution of the (func, args, kwargs)</p></li>
+<li><p><strong>func</strong> – A callable that will be called with (<a href="#id5"><span class="problematic" id="id6">*</span></a>args, <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs) argument.</p></li>
+<li><p><strong>args</strong> – The positional arguments to call the func with.</p></li>
+<li><p><strong>kwargs</strong> – The keyword arguments to call the func with.</p></li>
 </ul>
 </dd>
 </dl>
@@ -80,6 +82,29 @@ KO = Parameter.KEYWORD_ONLY</p>
 <span class="go">hello, world</span>
 </pre></div>
 </div>
+<p>What happens (when a command is executed) if some of the arguments are commands
+themselves? Well, the sensible thing happens. These commands are executed.
+You can use this to define, declaratively, some pretty complex instructions, and
+only fetch the data you need and execute everything, once you’re ready.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Showing this: </span><span class="si">{</span><span class="n">a</span><span class="si">=}</span><span class="s2">, </span><span class="si">{</span><span class="n">b</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">take_five</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">double_val</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">val</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">command</span> <span class="o">=</span> <span class="n">Command</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">show</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">Command</span><span class="p">(</span><span class="n">take_five</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">b</span><span class="o">=</span><span class="n">Command</span><span class="p">(</span><span class="n">double_val</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">command</span>
+<span class="go">Command(show, Command(take_five), b=Command(double_val, &#39;hello&#39;))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">command</span><span class="p">()</span>
+<span class="go">Showing this: a=5, b=&#39;hellohello&#39;</span>
+</pre></div>
+</div>
+<p>Of course, as your use of Command gets more complex, you may want to subclass it
+and include some “validation” and “compilation” in the init.</p>
 <p>The usual way to call a function is to… erm… call it.
 But sometimes you want to do things differently.
 Like validate it, put it on a queue, etc.
@@ -113,7 +138,7 @@ That’s where specifying a different _caller will be useful.</p>
 <span class="go">&#39;hihihihi&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ff</span> <span class="o">=</span> <span class="n">foo_command</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ff</span>
-<span class="go">Command(&#39;hi&#39;)</span>
+<span class="go">Command(foo, &#39;hi&#39;)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ff</span><span class="p">()</span>
 <span class="go">&#39;hihi&#39;</span>
 </pre></div>
