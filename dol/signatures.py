@@ -1,23 +1,36 @@
 """Signature calculus: Tools to make it easier to work with function's signatures.
 
 How to:
+
 - get names, kinds, defaults, annotations
+
 - merge two or more signatures
+
 - give a function a specific signature (with a choice of validations)
+
 - get an equivalent function with a different order of arguments
+
 - get an equivalent function with a subset of arguments (like partial)
+
 - get an equivalent function but with variadic *args and/or **kwargs replaced with
     non-variadic args (tuple) and kwargs (dict)
+
 - make an f(a) function in to a f(a, b=None) function with b ignored
 
-# Notes to the reader
+**Notes to the reader**
 
 Both in the code and in the docs, we'll use short hands for parameter (argument) kind.
-    PK = Parameter.POSITIONAL_OR_KEYWORD
-    VP = Parameter.VAR_POSITIONAL
-    VK = Parameter.VAR_KEYWORD
-    PO = Parameter.POSITIONAL_ONLY
-    KO = Parameter.KEYWORD_ONLY
+
+    - PK = Parameter.POSITIONAL_OR_KEYWORD
+
+    - VP = Parameter.VAR_POSITIONAL
+
+    - VK = Parameter.VAR_KEYWORD
+
+    - PO = Parameter.POSITIONAL_ONLY
+
+    - KO = Parameter.KEYWORD_ONLY
+
 """
 
 from inspect import Signature, Parameter, signature, unwrap
@@ -510,14 +523,37 @@ class Command:
     """A class that holds a `(caller, args, kwargs)` triple and allows one to execute
     `caller(*args, **kwargs)`
 
-    :param func: A callable that will be called with (*args, **kwargs) argument
-    :param args: A tuple
-    :param kwargs: A dict
-    :param caller: How to actually implement the execution of the (func, args, kwargs)
+    :param func: A callable that will be called with (*args, **kwargs) argument.
+    :param args: The positional arguments to call the func with.
+    :param kwargs: The keyword arguments to call the func with.
 
     >>> c = Command(print, "hello", "world", sep=", ")
     >>> c()
     hello, world
+
+    What happens (when a command is executed) if some of the arguments are commands
+    themselves? Well, the sensible thing happens. These commands are executed.
+    You can use this to define, declaratively, some pretty complex instructions, and
+    only fetch the data you need and execute everything, once you're ready.
+
+    >>> def show(a, b):
+    ...     print(f"Showing this: {a=}, {b=}")
+    >>> def take_five():
+    ...     return 5
+    >>> def double_val(val):
+    ...     return val * 2
+    >>> command = Command(
+    ...     show,
+    ...     Command(take_five),
+    ...     b=Command(double_val, 'hello'),
+    ... )
+    >>> command
+    Command(show, Command(take_five), b=Command(double_val, 'hello'))
+    >>> command()
+    Showing this: a=5, b='hellohello'
+
+    Of course, as your use of Command gets more complex, you may want to subclass it
+    and include some "validation" and "compilation" in the init.
 
     The usual way to call a function is to... erm... call it.
     But sometimes you want to do things differently.
@@ -533,6 +569,8 @@ class Command:
     >>> c()
     hello, world
     Calling <built-in function print>(*('hello', 'world'), **{'sep': ', '}) with result: None
+
+
     """
 
     def __init__(self, func, *args, **kwargs):
@@ -558,7 +596,7 @@ class Command:
         'hihihihi'
         >>> ff = foo_command('hi')
         >>> ff
-        Command('hi')
+        Command(foo, 'hi')
         >>> ff()
         'hihi'
 
@@ -586,13 +624,33 @@ class Command:
         else:
             sep = ""
         args_kwargs_str = args_str + sep + kwargs_str
+
+        func_name = name_of_obj(self.func)
         if args_kwargs_str:
-            return f"{type(self).__name__}({self.func}, {args_kwargs_str})"
+            return f"{type(self).__name__}({func_name}, {args_kwargs_str})"
         else:
-            return f"{type(self).__name__}({self.func})"
+            return f"{type(self).__name__}({func_name})"
 
     def _caller(self):
         return self.func(*self.args, **self.kwargs)
+
+    def _args_with_executed_commands(self):
+        for v in self.args:
+            if isinstance(v, Command):
+                v = v()  # if a command, execute it
+            yield v
+
+    def _kwargs_with_executed_commands(self):
+        for k, v in self.kwargs.items():
+            if isinstance(v, Command):
+                v = v()  # if a command, execute it
+            yield k, v
+
+    def _caller(self):
+        return self.func(
+            *self._args_with_executed_commands(),
+            **dict(self._kwargs_with_executed_commands()),
+        )
 
     def __call__(self):
         return self._caller()
