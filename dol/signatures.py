@@ -586,7 +586,10 @@ class Command:
         else:
             sep = ""
         args_kwargs_str = args_str + sep + kwargs_str
-        return f"{type(self).__name__}({args_kwargs_str})"
+        if args_kwargs_str:
+            return f"{type(self).__name__}({self.func}, {args_kwargs_str})"
+        else:
+            return f"{type(self).__name__}({self.func})"
 
     def _caller(self):
         return self.func(*self.args, **self.kwargs)
