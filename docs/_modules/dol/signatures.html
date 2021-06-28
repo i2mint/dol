@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.signatures &#8212; dol 0.1.23 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.24 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -542,49 +542,97 @@
     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Command"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Command">[docs]</a><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Command</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;A dataclass that holds a `(caller, args, kwargs)` triple and allows one to execute `caller(*args, **kwargs)`</span>
+<div class="viewcode-block" id="Command"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Command">[docs]</a><span class="k">class</span> <span class="nc">Command</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A class that holds a `(caller, args, kwargs)` triple and allows one to execute</span>
+<span class="sd">    `caller(*args, **kwargs)`</span>
 
 <span class="sd">    :param func: A callable that will be called with (*args, **kwargs) argument</span>
 <span class="sd">    :param args: A tuple</span>
 <span class="sd">    :param kwargs: A dict</span>
 <span class="sd">    :param caller: How to actually implement the execution of the (func, args, kwargs)</span>
 
-<span class="sd">    &gt;&gt;&gt; c = Command(print, (&quot;hello&quot;, &quot;world&quot;), dict(sep=&quot;, &quot;))</span>
+<span class="sd">    &gt;&gt;&gt; c = Command(print, &quot;hello&quot;, &quot;world&quot;, sep=&quot;, &quot;)</span>
 <span class="sd">    &gt;&gt;&gt; c()</span>
 <span class="sd">    hello, world</span>
 
 <span class="sd">    The usual way to call a function is to... erm... call it.</span>
 <span class="sd">    But sometimes you want to do things differently.</span>
 <span class="sd">    Like validate it, put it on a queue, etc.</span>
-<span class="sd">    That&#39;s where specifying a different caller will be useful.</span>
+<span class="sd">    That&#39;s where specifying a different _caller will be useful.</span>
 
-<span class="sd">    &gt;&gt;&gt; def caller(f, a, k):</span>
-<span class="sd">    ...     print(f&quot;Calling {f}(*{a}, **{k}) with result: {f(*a, **k)}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; class MyCommand(Command):</span>
+<span class="sd">    ...     def _caller(self):</span>
+<span class="sd">    ...         f, a, k = self.func, self.args, self.kwargs</span>
+<span class="sd">    ...         print(f&quot;Calling {f}(*{a}, **{k}) with result: {f(*a, **k)}&quot;)</span>
 <span class="sd">    ...</span>
-<span class="sd">    &gt;&gt;&gt; c = Command(print, (&quot;hello&quot;, &quot;world&quot;), dict(sep=&quot;, &quot;), caller=caller)</span>
+<span class="sd">    &gt;&gt;&gt; c = MyCommand(print, &quot;hello&quot;, &quot;world&quot;, sep=&quot;, &quot;)</span>
 <span class="sd">    &gt;&gt;&gt; c()</span>
 <span class="sd">    hello, world</span>
 <span class="sd">    Calling &lt;built-in function print&gt;(*(&#39;hello&#39;, &#39;world&#39;), **{&#39;sep&#39;: &#39;, &#39;}) with result: None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span>
-    <span class="n">args</span><span class="p">:</span> <span class="n">Iterable</span> <span class="o">=</span> <span class="p">()</span>
-    <span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">caller</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">function_caller</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
 
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span>
+<div class="viewcode-block" id="Command.curried"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Command.curried">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">curried</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">kw_defaults</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get an Command maker for a specific function, with defaults and signature!</span>
+
+<span class="sd">        &gt;&gt;&gt; def foo(x: str, y: int):</span>
+<span class="sd">        ...     return x * y</span>
+<span class="sd">        ...</span>
+<span class="sd">        &gt;&gt;&gt; foo(&#39;hi&#39;, 3)</span>
+<span class="sd">        &#39;hihihi&#39;</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; foo_command = Command.curried(foo, y=2)</span>
+<span class="sd">        &gt;&gt;&gt; Sig(foo_command)</span>
+<span class="sd">        &lt;Sig (x: str, y: int = 2)&gt;</span>
+<span class="sd">        &gt;&gt;&gt; f = foo_command(&#39;hi&#39;, y=4)</span>
+<span class="sd">        &gt;&gt;&gt; f()</span>
+<span class="sd">        &#39;hihihihi&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ff = foo_command(&#39;hi&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; ff</span>
+<span class="sd">        Command(&#39;hi&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; ff()</span>
+<span class="sd">        &#39;hihi&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">ch_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kw_defaults</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">kw_defaults</span><span class="p">:</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">kw_defaults</span><span class="p">)</span>
+
+        <span class="n">curried_command_cls</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">Command</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sig</span><span class="p">(</span><span class="n">curried_command_cls</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">quote</span><span class="o">=</span><span class="s2">&quot;&#39;&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">quote</span> <span class="o">+</span> <span class="n">x</span> <span class="o">+</span> <span class="n">quote</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">args_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">to_str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">kwargs_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">to_str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">args_str</span> <span class="ow">and</span> <span class="n">kwargs_str</span><span class="p">:</span>
+            <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">args_kwargs_str</span> <span class="o">=</span> <span class="n">args_str</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="n">kwargs_str</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">args_kwargs_str</span><span class="si">}</span><span class="s1">)&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_caller</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">caller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caller</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="extract_commands"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.extract_commands">[docs]</a><span class="k">def</span> <span class="nf">extract_commands</span><span class="p">(</span>
-    <span class="n">funcs</span><span class="p">,</span>
+    <span class="n">funcs</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Callable</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">mk_command</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Command</span><span class="p">,</span>
     <span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span>
@@ -592,9 +640,9 @@
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="sd">    :param funcs:</span>
-<span class="sd">    :param mk_command:</span>
-<span class="sd">    :param kwargs:</span>
+<span class="sd">    :param funcs: An iterable of functions</span>
+<span class="sd">    :param mk_command: The function to make a command object</span>
+<span class="sd">    :param kwargs: The argname=argval items that the functions should draw from.</span>
 <span class="sd">    :return:</span>
 
 <span class="sd">    &gt;&gt;&gt; def add(a, b: float = 0.0) -&gt; float:</span>
@@ -632,7 +680,7 @@
 
     <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">:</span>
         <span class="n">func_args</span><span class="p">,</span> <span class="n">func_kwargs</span> <span class="o">=</span> <span class="n">extract</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="n">mk_command</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">func_args</span><span class="p">,</span> <span class="n">func_kwargs</span><span class="p">)</span></div>
+        <span class="k">yield</span> <span class="n">mk_command</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">func_args</span><span class="p">,</span> <span class="o">**</span><span class="n">func_kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="commands_dict"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.commands_dict">[docs]</a><span class="k">def</span> <span class="nf">commands_dict</span><span class="p">(</span>
@@ -1426,12 +1474,27 @@
         <span class="p">}</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">modified</span><span class="p">(</span><span class="n">_allow_reordering</span><span class="o">=</span><span class="n">_allow_reordering</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">)</span></div>
 
-    <span class="n">ch_names</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="n">ch_param_attrs</span><span class="p">,</span> <span class="n">param_attr</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
-    <span class="n">ch_kinds</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="n">ch_param_attrs</span><span class="p">,</span> <span class="n">param_attr</span><span class="o">=</span><span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">ch_defaults</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span>
-        <span class="n">ch_param_attrs</span><span class="p">,</span> <span class="n">param_attr</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">False</span>
-    <span class="p">)</span>
-    <span class="n">ch_annotations</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="n">ch_param_attrs</span><span class="p">,</span> <span class="n">param_attr</span><span class="o">=</span><span class="s1">&#39;annotation&#39;</span><span class="p">)</span>
+    <span class="c1"># Note: Oh, functools, why do you make currying so limited!</span>
+    <span class="c1"># ch_names = partialmethod(ch_param_attrs, param_attr=&quot;name&quot;)</span>
+    <span class="c1"># ch_kinds = partialmethod(ch_param_attrs, param_attr=&quot;kind&quot;, _allow_reordering=True)</span>
+    <span class="c1"># ch_defaults = partialmethod(</span>
+    <span class="c1">#     ch_param_attrs, param_attr=&quot;default&quot;, _allow_reordering=True</span>
+    <span class="c1"># )</span>
+    <span class="c1"># ch_annotations = partialmethod(ch_param_attrs, param_attr=&quot;annotation&quot;)</span>
+
+    <span class="k">def</span> <span class="nf">ch_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ch_param_attrs</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">ch_kinds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ch_param_attrs</span><span class="p">(</span><span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">ch_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ch_param_attrs</span><span class="p">(</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">ch_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ch_param_attrs</span><span class="p">(</span><span class="s1">&#39;annotation&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Sig.merge_with_sig"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.merge_with_sig">[docs]</a>    <span class="k">def</span> <span class="nf">merge_with_sig</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
