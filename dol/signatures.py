@@ -522,22 +522,23 @@ class Command:
     The usual way to call a function is to... erm... call it.
     But sometimes you want to do things differently.
     Like validate it, put it on a queue, etc.
-    That's where specifying a different caller will be useful.
+    That's where specifying a different _caller will be useful.
 
-    >>> def caller(f, a, k):
-    ...     print(f"Calling {f}(*{a}, **{k}) with result: {f(*a, **k)}")
+    >>> class MyCommand(Command):
+    ...     def _caller(self):
+    ...         f, a, k = self.func, self.args, self.kwargs
+    ...         print(f"Calling {f}(*{a}, **{k}) with result: {f(*a, **k)}")
     ...
-    >>> c = Command(print, "hello", "world", sep=", ", _caller=caller)
+    >>> c = MyCommand(print, "hello", "world", sep=", ")
     >>> c()
     hello, world
     Calling <built-in function print>(*('hello', 'world'), **{'sep': ', '}) with result: None
     """
 
-    def __init__(self, func, *args, _caller=function_caller, **kwargs):
+    def __init__(self, func, *args, **kwargs):
         self.func = func
         self.args = args
         self.kwargs = kwargs
-        self.caller = _caller
 
     @classmethod
     def curried(cls, func, **kw_defaults):
@@ -587,8 +588,11 @@ class Command:
         args_kwargs_str = args_str + sep + kwargs_str
         return f"{type(self).__name__}({args_kwargs_str})"
 
+    def _caller(self):
+        return self.func(*self.args, **self.kwargs)
+
     def __call__(self):
-        return self.caller(self.func, self.args, self.kwargs)
+        return self._caller()
 
 
 def extract_commands(
