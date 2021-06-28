@@ -506,16 +506,16 @@ def function_caller(func, args, kwargs):
     return func(*args, **kwargs)
 
 
-@dataclass
 class Command:
-    """A dataclass that holds a `(caller, args, kwargs)` triple and allows one to execute `caller(*args, **kwargs)`
+    """A class that holds a `(caller, args, kwargs)` triple and allows one to execute
+    `caller(*args, **kwargs)`
 
     :param func: A callable that will be called with (*args, **kwargs) argument
     :param args: A tuple
     :param kwargs: A dict
     :param caller: How to actually implement the execution of the (func, args, kwargs)
 
-    >>> c = Command(print, ("hello", "world"), dict(sep=", "))
+    >>> c = Command(print, "hello", "world", sep=", ")
     >>> c()
     hello, world
 
@@ -527,28 +527,72 @@ class Command:
     >>> def caller(f, a, k):
     ...     print(f"Calling {f}(*{a}, **{k}) with result: {f(*a, **k)}")
     ...
-    >>> c = Command(print, ("hello", "world"), dict(sep=", "), caller=caller)
+    >>> c = Command(print, "hello", "world", sep=", ", _caller=caller)
     >>> c()
     hello, world
     Calling <built-in function print>(*('hello', 'world'), **{'sep': ', '}) with result: None
     """
 
-    func: Callable
-    args: Iterable = ()
-    kwargs: Optional[dict] = None
-    caller: Callable[[Callable, tuple, dict], Any] = function_caller
+    def __init__(self, func, *args, _caller=function_caller, **kwargs):
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+        self.caller = _caller
 
-    def __post_init__(self):
-        assert isinstance(self.args, Iterable)
-        self.kwargs = self.kwargs or {}
-        assert isinstance(self.kwargs, Mapping)
+    @classmethod
+    def curried(cls, func, **kw_defaults):
+        """Get an Command maker for a specific function, with defaults and signature!
+
+        >>> def foo(x: str, y: int):
+        ...     return x * y
+        ...
+        >>> foo('hi', 3)
+        'hihihi'
+        >>>
+        >>> foo_command = Command.curried(foo, y=2)
+        >>> Sig(foo_command)
+        <Sig (x: str, y: int = 2)>
+        >>> f = foo_command('hi', y=4)
+        >>> f()
+        'hihihihi'
+        >>> ff = foo_command('hi')
+        >>> ff
+        Command('hi')
+        >>> ff()
+        'hihi'
+
+        """
+        sig = Sig(func)
+        sig = sig.ch_defaults(**kw_defaults)
+
+        if kw_defaults:
+            func = partial(func, **kw_defaults)
+
+        curried_command_cls = partial(Command, func)
+        return sig(curried_command_cls)
+
+    def __repr__(self):
+        def to_str(x, quote="'"):
+            if isinstance(x, str):
+                return quote + x + quote
+            else:
+                return str(x)
+
+        args_str = ", ".join(to_str(a) for a in self.args)
+        kwargs_str = ", ".join(f"{k}={to_str(v)}" for k, v in self.kwargs.items())
+        if args_str and kwargs_str:
+            sep = ", "
+        else:
+            sep = ""
+        args_kwargs_str = args_str + sep + kwargs_str
+        return f"{type(self).__name__}({args_kwargs_str})"
 
     def __call__(self):
         return self.caller(self.func, self.args, self.kwargs)
 
 
 def extract_commands(
-    funcs,
+    funcs: Iterable[Callable],
     *,
     mk_command: Callable[[Callable, tuple, dict], Any] = Command,
     what_to_do_with_remainding="ignore",
@@ -556,9 +600,9 @@ def extract_commands(
 ):
     """
 
-    :param funcs:
-    :param mk_command:
-    :param kwargs:
+    :param funcs: An iterable of functions
+    :param mk_command: The function to make a command object
+    :param kwargs: The argname=argval items that the functions should draw from.
     :return:
 
     >>> def add(a, b: float = 0.0) -> float:
@@ -596,7 +640,7 @@ def extract_commands(
 
     for func in funcs:
         func_args, func_kwargs = extract(func, **kwargs)
-        yield mk_command(func, func_args, func_kwargs)
+        yield mk_command(func, *func_args, **func_kwargs)
 
 
 def commands_dict(
@@ -1386,12 +1430,25 @@ class Sig(Signature, Mapping):
         }
         return self.modified(_allow_reordering=_allow_reordering, **changes_for_name)
 
-    ch_names = partialmethod(ch_param_attrs, param_attr="name")
-    ch_kinds = partialmethod(ch_param_attrs, param_attr="kind", _allow_reordering=False)
-    ch_defaults = partialmethod(
-        ch_param_attrs, param_attr="default", _allow_reordering=False
-    )
-    ch_annotations = partialmethod(ch_param_attrs, param_attr="annotation")
+    # Note: Oh, functools, why do you make currying so limited!
+    # ch_names = partialmethod(ch_param_attrs, param_attr="name")
+    # ch_kinds = partialmethod(ch_param_attrs, param_attr="kind", _allow_reordering=True)
+    # ch_defaults = partialmethod(
+    #     ch_param_attrs, param_attr="default", _allow_reordering=True
+    # )
+    # ch_annotations = partialmethod(ch_param_attrs, param_attr="annotation")
+
+    def ch_names(self, **changes_for_name):
+        return self.ch_param_attrs("name", **changes_for_name)
+
+    def ch_kinds(self, **changes_for_name):
+        return self.ch_param_attrs("kind", _allow_reordering=True, **changes_for_name)
+
+    def ch_defaults(self, **changes_for_name):
+        return self.ch_param_attrs("default", _allow_reordering=True, **changes_for_name)
+
+    def ch_annotations(self, **changes_for_name):
+        return self.ch_param_attrs("annotation", **changes_for_name)
 
     def merge_with_sig(
         self,
