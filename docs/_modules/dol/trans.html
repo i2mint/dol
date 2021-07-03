@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.trans &#8212; dol 0.1.26 documentation</title>
+    <title>dol.trans &#8212; dol 0.1.27 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -2401,8 +2401,13 @@
             <span class="k">raise</span> <span class="n">SetattrNotAllowed</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s1">&#39;Method is not allowed to be set (according to </span><span class="si">{</span><span class="n">validator</span><span class="si">}</span><span class="s1">): </span><span class="si">{</span><span class="n">method_func</span><span class="si">}</span><span class="s1">&#39;</span>
             <span class="p">)</span>
-    <span class="nb">setattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">method_func</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">store</span></div>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">updated</span><span class="o">=</span><span class="p">())</span>
+    <span class="k">class</span> <span class="nc">StoreWithAddedMethods</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">StoreWithAddedMethods</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">method_func</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">StoreWithAddedMethods</span></div>
 
 
 <span class="c1">########## To be deprecated ############################################################################################</span>
