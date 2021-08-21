@@ -977,6 +977,13 @@ class Sig(Signature, Mapping):
 
     """
 
+    # Adding parameter kinds as class attributes for usage convenience
+    POSITIONAL_ONLY = Parameter.POSITIONAL_ONLY
+    POSITIONAL_OR_KEYWORD = Parameter.POSITIONAL_OR_KEYWORD
+    VAR_POSITIONAL = Parameter.VAR_POSITIONAL
+    KEYWORD_ONLY = Parameter.KEYWORD_ONLY
+    VAR_KEYWORD = Parameter.VAR_KEYWORD
+
     def __init__(
         self,
         obj: ParamsAble = None,
@@ -2704,6 +2711,35 @@ def call_somewhat_forgivingly(
         return call_forgivingly(func, **_kwargs)
     else:
         return call_forgivingly(func, *args, **kwargs)
+
+
+def kind_forgiving_func(func):
+    """Make a version of the function that has all POSITIONAL_OR_KEYWORD kinds
+
+    The inspiring use case: Many builtins have restrictive parameter kinds which makes it hard to
+    curry, amongst other such annoyances. For instance, say you want to curry
+    `isinstance` to make a boolean function that detects string types.
+    You can't with partial, because you can't access the position only
+    `class_or_tuple` argument to fix it.
+
+    Well, make a `kind_forgiving_func` version, and partial to your heart's content!
+
+    >>> from functools import partial
+    >>> _isinstance = kind_forgiving_func(isinstance)
+    >>> isinstance_of_str = partial(_isinstance, class_or_tuple=str)
+    >>> isinstance_of_str('asdf')
+    True
+
+    """
+    sig = Sig(func)
+    sig = sig.ch_kinds(**{name: Sig.POSITIONAL_OR_KEYWORD for name in sig.names})
+
+    @wraps(func)
+    def _func(*args, **kwargs):
+        return call_somewhat_forgivingly(func, args, kwargs, enforce_sig=sig)
+
+    _func.__signature__ = sig
+    return _func
 
 
 def use_interface(interface_sig):
