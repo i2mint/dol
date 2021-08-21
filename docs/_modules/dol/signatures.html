@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.signatures &#8212; dol 0.1.29 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.30 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -1159,6 +1159,9 @@
             <span class="n">wrapped_func</span><span class="o">.</span><span class="vm">__defaults__</span><span class="p">,</span>
             <span class="n">wrapped_func</span><span class="o">.</span><span class="vm">__kwdefaults__</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dunder_defaults_and_kwdefaults</span><span class="p">()</span>
+        <span class="c1"># special case of functools.partial: need to tell .keywords about kwdefaults</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wrapped_func</span><span class="p">,</span> <span class="n">partial</span><span class="p">):</span>
+            <span class="n">wrapped_func</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">wrapped_func</span><span class="o">.</span><span class="vm">__kwdefaults__</span><span class="p">)</span>
         <span class="c1"># &quot;copy&quot; over all other non-dunder attributes (not the default of</span>
         <span class="c1"># functools.wraps!)</span>
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">),</span> <span class="nb">dir</span><span class="p">(</span><span class="n">wrapped_func</span><span class="p">)):</span>
@@ -1536,7 +1539,7 @@
 <span class="sd">        11</span>
 
 
-<span class="sd">        # TODO: Would like to make this work:</span>
+<span class="sd">        # TODO: Would like to make this work (reordering)</span>
 <span class="sd">        # Now, if you want to set a default for a but not b and c for example, you&#39;ll</span>
 <span class="sd">        # get complaints:</span>
 <span class="sd">        #</span>
