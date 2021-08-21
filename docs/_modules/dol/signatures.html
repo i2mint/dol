@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.signatures &#8212; dol 0.1.30 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.31 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -1008,6 +1008,13 @@
 <span class="sd">    &lt;Signature (w, i, x: float = 1, y=1, j=2, c: int = 42)&gt;</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Adding parameter kinds as class attributes for usage convenience</span>
+    <span class="n">POSITIONAL_ONLY</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_ONLY</span>
+    <span class="n">POSITIONAL_OR_KEYWORD</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_OR_KEYWORD</span>
+    <span class="n">VAR_POSITIONAL</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span>
+    <span class="n">KEYWORD_ONLY</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span>
+    <span class="n">VAR_KEYWORD</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2736,6 +2743,35 @@
         <span class="k">return</span> <span class="n">call_forgivingly</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">call_forgivingly</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="kind_forgiving_func"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.kind_forgiving_func">[docs]</a><span class="k">def</span> <span class="nf">kind_forgiving_func</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Make a version of the function that has all POSITIONAL_OR_KEYWORD kinds</span>
+
+<span class="sd">    The inspiring use case: Many builtins have restrictive parameter kinds which makes it hard to</span>
+<span class="sd">    curry, amongst other such annoyances. For instance, say you want to curry</span>
+<span class="sd">    `isinstance` to make a boolean function that detects string types.</span>
+<span class="sd">    You can&#39;t with partial, because you can&#39;t access the position only</span>
+<span class="sd">    `class_or_tuple` argument to fix it.</span>
+
+<span class="sd">    Well, make a `kind_forgiving_func` version, and partial to your heart&#39;s content!</span>
+
+<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">    &gt;&gt;&gt; _isinstance = kind_forgiving_func(isinstance)</span>
+<span class="sd">    &gt;&gt;&gt; isinstance_of_str = partial(_isinstance, class_or_tuple=str)</span>
+<span class="sd">    &gt;&gt;&gt; isinstance_of_str(&#39;asdf&#39;)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">ch_kinds</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">Sig</span><span class="o">.</span><span class="n">POSITIONAL_OR_KEYWORD</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">names</span><span class="p">})</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">call_somewhat_forgivingly</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">enforce_sig</span><span class="o">=</span><span class="n">sig</span><span class="p">)</span>
+
+    <span class="n">_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">sig</span>
+    <span class="k">return</span> <span class="n">_func</span></div>
 
 
 <div class="viewcode-block" id="use_interface"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.use_interface">[docs]</a><span class="k">def</span> <span class="nf">use_interface</span><span class="p">(</span><span class="n">interface_sig</span><span class="p">):</span>

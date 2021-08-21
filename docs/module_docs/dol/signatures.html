@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.signatures &#8212; dol 0.1.30 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.31 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -2278,6 +2278,25 @@ so will return True in most cases.</p>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="c">...</span>
 <span class="gr">AssertionError</span>: <span class="n">These argument names weren&#39;t found in the signature: {&#39;e&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.signatures.kind_forgiving_func">
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">kind_forgiving_func</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#kind_forgiving_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.kind_forgiving_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a version of the function that has all POSITIONAL_OR_KEYWORD kinds</p>
+<p>The inspiring use case: Many builtins have restrictive parameter kinds which makes it hard to
+curry, amongst other such annoyances. For instance, say you want to curry
+<cite>isinstance</cite> to make a boolean function that detects string types.
+You can’t with partial, because you can’t access the position only
+<cite>class_or_tuple</cite> argument to fix it.</p>
+<p>Well, make a <cite>kind_forgiving_func</cite> version, and partial to your heart’s content!</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_isinstance</span> <span class="o">=</span> <span class="n">kind_forgiving_func</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">isinstance_of_str</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_isinstance</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">isinstance_of_str</span><span class="p">(</span><span class="s1">&#39;asdf&#39;</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>
