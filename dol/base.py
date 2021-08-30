@@ -37,6 +37,7 @@ from collections.abc import (
 from typing import Any, Iterable, Tuple, Callable, Union, Optional
 
 from dol.util import wraps, _disabled_clear_method
+from dol.signatures import Sig
 
 Key = Any
 Val = Any
@@ -49,28 +50,28 @@ ItemIter = Iterable[Item]
 
 
 class AttrNames:
-    CollectionABC = {'__len__', '__iter__', '__contains__'}
+    CollectionABC = {"__len__", "__iter__", "__contains__"}
     Mapping = CollectionABC | {
-        'keys',
-        'get',
-        'items',
-        '__reversed__',
-        'values',
-        '__getitem__',
+        "keys",
+        "get",
+        "items",
+        "__reversed__",
+        "values",
+        "__getitem__",
     }
     MutableMapping = Mapping | {
-        'setdefault',
-        'pop',
-        'popitem',
-        'clear',
-        'update',
-        '__delitem__',
-        '__setitem__',
+        "setdefault",
+        "pop",
+        "popitem",
+        "clear",
+        "update",
+        "__delitem__",
+        "__setitem__",
     }
 
-    Collection = CollectionABC | {'head'}
-    KvReader = (Mapping | {'head'}) - {'__reversed__'}
-    KvPersister = (MutableMapping | {'head'}) - {'__reversed__'} - {'clear'}
+    Collection = CollectionABC | {"head"}
+    KvReader = (Mapping | {"head"}) - {"__reversed__"}
+    KvPersister = (MutableMapping | {"head"}) - {"__reversed__"} - {"clear"}
 
 
 class Collection(CollectionABC):
@@ -104,7 +105,7 @@ class Collection(CollectionABC):
         return count
 
     def head(self):
-        if hasattr(self, 'items'):
+        if hasattr(self, "items"):
             return next(iter(self.items()))
         else:
             return next(iter(self))
@@ -248,7 +249,7 @@ Decorator = Callable[[Callable], Any]  # TODO: Look up typing protocols
 def delegate_to(
     wrapped: type,
     class_trans: Optional[Callable] = None,
-    delegation_attr: str = 'store',
+    delegation_attr: str = "store",
     include=frozenset(),
     ignore=frozenset(),
 ) -> Decorator:
@@ -276,7 +277,7 @@ def delegate_to(
                 super().__init__(delegate)
                 assert isinstance(
                     getattr(self, delegation_attr, None), wrapped
-                ), f'The wrapper instance has no (expected) {delegation_attr!r} attribute'
+                ), f"The wrapper instance has no (expected) {delegation_attr!r} attribute"
 
             def __reduce__(self):
                 return (
@@ -295,7 +296,8 @@ def delegate_to(
         for attr in attrs:
             wrapped_attr = getattr(wrapped, attr)
             delegated_attribute = update_wrapper(
-                wrapper=DelegatedAttribute(delegation_attr, attr), wrapped=wrapped_attr,
+                wrapper=DelegatedAttribute(delegation_attr, attr),
+                wrapped=wrapped_attr,
             )
             setattr(Wrap, attr, delegated_attribute)
 
@@ -318,7 +320,7 @@ def delegator_wrap(
     delegator: Callable,
     obj: Union[type, Any],
     class_trans=None,
-    delegation_attr: str = 'store',
+    delegation_attr: str = "store",
 ):
     """Wrap a ``obj`` (type or instance) with ``delegator``.
 
@@ -398,7 +400,12 @@ def delegator_wrap(
             type_decorator = delegate_to(
                 obj, class_trans=class_trans, delegation_attr=delegation_attr
             )
-            return type_decorator(delegator)
+            wrap = type_decorator(delegator)
+            try:  # try to give the wrap the signature of obj (if it has one)
+                wrap.__signature__ = Sig(obj)
+            except ValueError:
+                pass
+            return wrap
 
         else:
             assert isinstance(delegator, Callable)
@@ -510,7 +517,7 @@ class Store(KvPersister):
     >>> test_store(s)
     """
 
-    _state_attrs = ['store', '_class_wrapper']
+    _state_attrs = ["store", "_class_wrapper"]
     # __slots__ = ('_id_of_key', '_key_of_id', '_data_of_obj', '_obj_of_data')
 
     def __init__(self, store=dict):
@@ -546,13 +553,13 @@ class Store(KvPersister):
         KeyError,
     )  # another option: (KeyError, FileNotFoundError)
 
-    wrap = classmethod(partial(delegator_wrap, delegation_attr='store'))
+    wrap = classmethod(partial(delegator_wrap, delegation_attr="store"))
 
     def __getattr__(self, attr):
         """Delegate method to wrapped store if not part of wrapper store methods"""
         # Instead of return getattr(self.store, attr), doing the following
         # because self.store had problems with pickling
-        return getattr(object.__getattribute__(self, 'store'), attr)
+        return getattr(object.__getattribute__(self, "store"), attr)
 
     def __dir__(self):
         return list(
@@ -618,13 +625,13 @@ class Store(KvPersister):
                 msg += (
                     "... because there's a layer transforming outcoming keys that are not the ones the store actually "
                     "uses? If you didn't wrap the store with the inverse ingoing keys transformation, "
-                    'that would happen.\n'
+                    "that would happen.\n"
                 )
                 msg += (
                     "I'll ask the inner-layer what it's head is, but IT MAY NOT REFLECT the reality of your store "
-                    'if you have some filtering, caching etc.'
+                    "if you have some filtering, caching etc."
                 )
-                msg += f'The error messages was: \n{e}'
+                msg += f"The error messages was: \n{e}"
                 warn(msg)
 
             for _id in self.store:
@@ -661,7 +668,7 @@ class Store(KvPersister):
         if isinstance(self._max_repr_size, int):
             half = int(self._max_repr_size)
             if len(x) > self._max_repr_size:
-                x = x[:half] + '  ...  ' + x[-half:]
+                x = x[:half] + "  ...  " + x[-half:]
         return x
         # return self.store.__repr__()
 
@@ -685,7 +692,7 @@ KvStore = Store  # alias with explict name
 # walking in trees
 
 
-inf = float('infinity')
+inf = float("infinity")
 
 
 def val_is_mapping(p, k, v):
@@ -754,10 +761,10 @@ def has_kv_store_interface(o):
 
     """
     return (
-        hasattr(o, '_id_of_key')
-        and hasattr(o, '_key_of_id')
-        and hasattr(o, '_data_of_obj')
-        and hasattr(o, '_obj_of_data')
+        hasattr(o, "_id_of_key")
+        and hasattr(o, "_key_of_id")
+        and hasattr(o, "_data_of_obj")
+        and hasattr(o, "_obj_of_data")
     )
 
 
@@ -798,12 +805,12 @@ class KeyValidationABC(metaclass=ABCMeta):
 
     def check_key_is_valid(self, k):
         if not self.is_valid_key(k):
-            raise KeyValidationError('key is not valid: {}'.format(k))
+            raise KeyValidationError("key is not valid: {}".format(k))
 
     @classmethod
     def __subclasshook__(cls, C):
         if cls is KeyValidationABC:
-            return _check_methods(C, 'is_valid_key', 'check_key_is_valid')
+            return _check_methods(C, "is_valid_key", "check_key_is_valid")
         return NotImplemented
 
 
@@ -900,7 +907,7 @@ class Stream:
     def __init__(self, stream):
         self.stream = stream
 
-    wrap = classmethod(partial(delegator_wrap, delegation_attr='stream'))
+    wrap = classmethod(partial(delegator_wrap, delegation_attr="stream"))
 
     # _data_of_obj = static_identity_method  # for write methods
     _pre_iter = static_identity_method
