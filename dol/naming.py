@@ -15,27 +15,27 @@ assert_condition = partial(_assert_condition, err_cls=KeyValidationError)
 path_sep = os.path.sep
 
 base_validation_funs = {
-    "be a": isinstance,
-    "be in": lambda val, check_val: val in check_val,
-    "be at least": lambda val, check_val: val >= check_val,
-    "be more than": lambda val, check_val: val > check_val,
-    "be no more than": lambda val, check_val: val <= check_val,
-    "be less than": lambda val, check_val: val < check_val,
+    'be a': isinstance,
+    'be in': lambda val, check_val: val in check_val,
+    'be at least': lambda val, check_val: val >= check_val,
+    'be more than': lambda val, check_val: val > check_val,
+    'be no more than': lambda val, check_val: val <= check_val,
+    'be less than': lambda val, check_val: val < check_val,
 }
 
 dflt_validation_funs = base_validation_funs
 dflt_all_kwargs_should_be_in_validation_dict = False
 dflt_ignore_misunderstood_validation_instructions = False
 
-dflt_arg_pattern = r".+"
+dflt_arg_pattern = r'.+'
 
-day_format = "%Y-%m-%d"
-day_format_pattern = re.compile(r"\d{4}-\d{2}-\d{2}")
+day_format = '%Y-%m-%d'
+day_format_pattern = re.compile(r'\d{4}-\d{2}-\d{2}')
 
-capture_template = "({format})"
-named_capture_template = "(?P<{name}>{format})"
+capture_template = '({format})'
+named_capture_template = '(?P<{name}>{format})'
 
-fields_re = re.compile("(?<={)[^}]+(?=})")
+fields_re = re.compile('(?<={)[^}]+(?=})')
 
 
 def validate_kwargs(
@@ -105,7 +105,7 @@ def validate_kwargs(
                 ):  # if you have a validation check for it
                     if not validation_funs[check](val, check_val):  # check it's valid
                         raise AssertionError(
-                            "{} must {} {}".format(var, check, check_val)
+                            '{} must {} {}'.format(var, check, check_val)
                         )  # and raise an error if not
                 elif (
                     not ignore_misunderstood_validation_instructions
@@ -154,11 +154,11 @@ def dict_to_namedtuple(d, namedtuple_obj=None):
     MyTuple(foo=1, hello=42)
     """
     if namedtuple_obj is None:
-        namedtuple_obj = "NamedTupleFromDict"
+        namedtuple_obj = 'NamedTupleFromDict'
     if isinstance(namedtuple_obj, str):
         namedtuple_name = namedtuple_obj
         namedtuple_cls = namedtuple(namedtuple_name, tuple(d.keys()))
-    elif isinstance(namedtuple_obj, tuple) and hasattr(namedtuple_obj, "_fields"):
+    elif isinstance(namedtuple_obj, tuple) and hasattr(namedtuple_obj, '_fields'):
         namedtuple_cls = namedtuple_obj.__class__
     elif isinstance(namedtuple_obj, type):
         namedtuple_cls = namedtuple_obj
@@ -203,11 +203,11 @@ def update_fields_of_namedtuple(
     if output_type_can_be_the_same_as_input_type and name_of_output_type is None:
         return dict_to_namedtuple(d, nt.__class__)
     else:
-        name_of_output_type = name_of_output_type or f"Updated{nt.__class__.__name__}"
+        name_of_output_type = name_of_output_type or f'Updated{nt.__class__.__name__}'
         return dict_to_namedtuple(d, name_of_output_type)
 
 
-empty_field_p = re.compile("{}")
+empty_field_p = re.compile('{}')
 
 
 def get_fields_from_template(template):
@@ -223,7 +223,7 @@ def get_fields_from_template(template):
     # TODO: Need to use the string module, and need to auto-name the fields instead of refusing unnamed
     assert not empty_field_p.search(
         template
-    ), "All fields must be named: That is, no empty {} allowed"
+    ), 'All fields must be named: That is, no empty {} allowed'
     return fields_re.findall(template)
 
 
@@ -232,7 +232,7 @@ def get_fields_from_template(template):
 
 
 def mk_format_mapping_dict(format_dict, required_keys, sep=path_sep):
-    until_sep = "[^" + re.escape(sep) + "]+"
+    until_sep = '[^' + re.escape(sep) + ']+'
     new_format_dict = format_dict.copy()
     for k in required_keys:
         if k not in new_format_dict:
@@ -259,13 +259,12 @@ def mk_named_capture_patterns(mapping_dict):
 def template_to_pattern(mapping_dict, template):
     if mapping_dict:
         p = re.compile(
-            "{}".format(
-                "|".join(["{" + re.escape(x) + "}" for x in list(mapping_dict.keys())])
+            '{}'.format(
+                '|'.join(['{' + re.escape(x) + '}' for x in list(mapping_dict.keys())])
             )
         )
         return p.sub(
-            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]],
-            template,
+            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]], template,
         )
     else:
         return template
@@ -281,15 +280,14 @@ def mk_extract_pattern(
     assert name is not None
     mapping_dict = dict(format_dict, **{name: named_capture_patterns[name]})
     p = re.compile(
-        "{}".format(
-            "|".join(["{" + re.escape(x) + "}" for x in list(mapping_dict.keys())])
+        '{}'.format(
+            '|'.join(['{' + re.escape(x) + '}' for x in list(mapping_dict.keys())])
         )
     )
 
     return re.compile(
         p.sub(
-            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]],
-            template,
+            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]], template,
         )
     )
 
@@ -340,7 +338,7 @@ def mk_prefix_templates_dicts(template):
                 next_name = fields[
                     1 + next(i for i, _name in enumerate(fields) if _name == name)
                 ]
-            p = "{" + next_name + "}"
+            p = '{' + next_name + '}'
             template_idx_of_next_name = re.search(p, template).start()
             prefix_template_dict_including_name[name] = template[
                 :template_idx_of_next_name
@@ -365,7 +363,7 @@ def mk_kwargs_trans(**trans_func_for_key):
     """
     assert all(
         map(callable, trans_func_for_key.values())
-    ), "all argument values must be callable"
+    ), 'all argument values must be callable'
 
     def key_based_val_trans(**kwargs):
         for k, v in kwargs.items():
@@ -388,11 +386,11 @@ def _mk(self, *args, **kwargs):
     n = len(args) + len(kwargs)
     if n > self.n_fields:
         raise ValueError(
-            f"You have too many arguments: (args, kwargs) is ({args},{kwargs})"
+            f'You have too many arguments: (args, kwargs) is ({args},{kwargs})'
         )
     elif n < self.n_fields:
         raise ValueError(
-            f"You have too few arguments: (args, kwargs) is ({args},{kwargs})"
+            f'You have too few arguments: (args, kwargs) is ({args},{kwargs})'
         )
     kwargs = dict({k: v for k, v in zip(self.fields, args)}, **kwargs)
     if self.process_kwargs is not None:
@@ -410,7 +408,7 @@ class StrTupleDict(object):
         format_dict=None,
         process_kwargs=None,
         process_info_dict=None,
-        named_tuple_type_name="NamedTuple",
+        named_tuple_type_name='NamedTuple',
         sep: str = path_sep,
     ):
         r"""Converting from and to strings, tuples, and dicts.
@@ -470,7 +468,7 @@ class StrTupleDict(object):
         if isinstance(template, str):
             self.template = template
         else:
-            self.template = self.sep.join([f"{{{x}}}" for x in template])
+            self.template = self.sep.join([f'{{{x}}}' for x in template])
 
         fields = get_fields_from_template(self.template)
 
@@ -479,7 +477,7 @@ class StrTupleDict(object):
         named_capture_patterns = mk_named_capture_patterns(format_dict)
 
         pattern = template_to_pattern(named_capture_patterns, self.template)
-        pattern += "$"
+        pattern += '$'
         pattern = re.compile(pattern)
 
         extract_pattern = {}
@@ -518,18 +516,18 @@ class StrTupleDict(object):
             n = len(args) + len(kwargs)
             if n > self.n_fields:
                 raise ValueError(
-                    f"You have too many arguments: (args, kwargs) is ({args},{kwargs})"
+                    f'You have too many arguments: (args, kwargs) is ({args},{kwargs})'
                 )
             elif n < self.n_fields:
                 raise ValueError(
-                    f"You have too few arguments: (args, kwargs) is ({args},{kwargs})"
+                    f'You have too few arguments: (args, kwargs) is ({args},{kwargs})'
                 )
             kwargs = dict({k: v for k, v in zip(self.fields, args)}, **kwargs)
             if self.process_kwargs is not None:
                 kwargs = self.process_kwargs(**kwargs)
             return self.template.format(**kwargs)
 
-        set_signature_of_func(_mk, ["self"] + self.fields)
+        set_signature_of_func(_mk, ['self'] + self.fields)
         self.mk = MethodType(_mk, self)
         self.NamedTuple = namedtuple(named_tuple_type_name, self.fields)
 
@@ -555,7 +553,7 @@ class StrTupleDict(object):
             else:
                 return info_dict
         else:
-            raise ValueError(f"Invalid string format: {s}")
+            raise ValueError(f'Invalid string format: {s}')
 
     def str_to_tuple(self, s: str):
         info_dict = self.str_to_dict(s)
@@ -580,7 +578,7 @@ class StrTupleDict(object):
     def dict_to_tuple(self, d):
         assert_condition(
             len(self.fields) == len(d),
-            f"len(d)={len(d)} but len(fields)={len(self.fields)}",
+            f'len(d)={len(d)} but len(fields)={len(self.fields)}',
         )
         return tuple(d[f] for f in self.fields)
 
@@ -590,7 +588,7 @@ class StrTupleDict(object):
     def tuple_to_dict(self, t):
         assert_condition(
             len(self.fields) == len(t),
-            f"len(d)={len(t)} but len(fields)={len(self.fields)}",
+            f'len(d)={len(t)} but len(fields)={len(self.fields)}',
         )
         return {f: x for f, x in zip(self.fields, t)}
 
@@ -631,23 +629,23 @@ class StrTupleDict(object):
     def _info_str(self):
         kv = self.__dict__.copy()
         exclude = [
-            "process_kwargs",
-            "extract_pattern",
-            "prefix_pattern",
-            "prefix_template_including_name",
-            "prefix_template_excluding_name",
+            'process_kwargs',
+            'extract_pattern',
+            'prefix_pattern',
+            'prefix_template_including_name',
+            'prefix_template_excluding_name',
         ]
         for f in exclude:
             kv.pop(f)
-        s = ""
-        s += "  * {}: {}\n".format("template", kv.pop("template"))
-        s += "  * {}: {}\n".format("template", kv.pop("sep"))
-        s += "  * {}: {}\n".format("format_dict", kv.pop("format_dict"))
+        s = ''
+        s += '  * {}: {}\n'.format('template', kv.pop('template'))
+        s += '  * {}: {}\n'.format('template', kv.pop('sep'))
+        s += '  * {}: {}\n'.format('format_dict', kv.pop('format_dict'))
 
         for k, v in kv.items():
-            if hasattr(v, "pattern"):
+            if hasattr(v, 'pattern'):
                 v = v.pattern
-            s += "  * {}: {}\n".format(k, v)
+            s += '  * {}: {}\n'.format(k, v)
 
         return s
 
@@ -707,7 +705,7 @@ class StrTupleDictWithPrefix(StrTupleDict):
             self.prefix_template_excluding_name,
         ) = mk_prefix_templates_dicts(self.template)
 
-        _prefix_pattern = "$|".join(
+        _prefix_pattern = '$|'.join(
             [
                 x.format(**self.format_dict)
                 for x in sorted(
@@ -715,7 +713,7 @@ class StrTupleDictWithPrefix(StrTupleDict):
                 )
             ]
         )
-        _prefix_pattern += "$"
+        _prefix_pattern += '$'
         self.prefix_pattern = re.compile(_prefix_pattern)
 
         def _mk_prefix(self, *args, **kwargs):
@@ -725,7 +723,7 @@ class StrTupleDictWithPrefix(StrTupleDict):
             """
             assert (
                 len(args) + len(kwargs) <= self.n_fields
-            ), "You have too many arguments"
+            ), 'You have too many arguments'
             kwargs = dict({k: v for k, v in zip(self.fields, args)}, **kwargs)
             if self.process_kwargs is not None:
                 kwargs = self.process_kwargs(**kwargs)
@@ -737,8 +735,8 @@ class StrTupleDictWithPrefix(StrTupleDict):
                     if a_name_was_skipped == True:
                         raise ValueError(
                             "You are making a PREFIX: This means you can't skip any fields. "
-                            "Once a name is omitted, you need to omit all further fields. "
-                            f"The name order is {self.fields}. You specified {tuple(kwargs.keys())}"
+                            'Once a name is omitted, you need to omit all further fields. '
+                            f'The name order is {self.fields}. You specified {tuple(kwargs.keys())}'
                         )
                     else:
                         a_name_was_skipped = True
@@ -779,7 +777,7 @@ class ParametricKeyStore(Store):
 
     @property
     def _linear_naming(self):
-        print("_linear_naming Deprecated: Use _keymap instead")
+        print('_linear_naming Deprecated: Use _keymap instead')
         return self._keymap
 
 
@@ -802,7 +800,7 @@ class StoreWithDictKeys(ParametricKeyStore):
 class StoreWithNamedTupleKeys(ParametricKeyStore):
     @lazyprop
     def NamedTupleKey(self):
-        return namedtuple("NamedTupleKey", field_names=self._keymap.fields)
+        return namedtuple('NamedTupleKey', field_names=self._keymap.fields)
 
     def _id_of_key(self, key):
         return self._keymap.mk(*key)
@@ -844,21 +842,21 @@ class NamingInterface:
         if validation_funs is None:
             validation_funs = dflt_validation_funs
         validation_dict = {
-            var: info.get("validation", {}) for var, info in params.items()
+            var: info.get('validation', {}) for var, info in params.items()
         }
-        default_dict = {var: info.get("default", None) for var, info in params.items()}
+        default_dict = {var: info.get('default', None) for var, info in params.items()}
         arg_pattern = {
-            var: info.get("arg_pattern", dflt_arg_pattern)
+            var: info.get('arg_pattern', dflt_arg_pattern)
             for var, info in params.items()
         }
         named_arg_pattern = {
-            var: "(?P<" + var + ">" + pat + ")" for var, pat in arg_pattern.items()
+            var: '(?P<' + var + '>' + pat + ')' for var, pat in arg_pattern.items()
         }
         to_str = {
-            var: info["to_str"] for var, info in params.items() if "to_str" in info
+            var: info['to_str'] for var, info in params.items() if 'to_str' in info
         }
         to_val = {
-            var: info["to_val"] for var, info in params.items() if "to_val" in info
+            var: info['to_val'] for var, info in params.items() if 'to_val' in info
         }
 
         self.validation_dict = validation_dict
@@ -889,13 +887,13 @@ class NamingInterface:
         default = self.default_dict[arg]
         if (
             not isinstance(default, dict)
-            or "args" not in default
-            or "func" not in default
+            or 'args' not in default
+            or 'func' not in default
         ):
             return default
         else:  # call the func on the default['args'] values given in kwargs
-            args = {arg_: kwargs[arg_] for arg_ in default["args"]}
-            return default["func"](*args)
+            args = {arg_: kwargs[arg_] for arg_ in default['args']}
+            return default['func'](*args)
 
     def str_kwargs_from(self, **kwargs):
         return {k: self.to_str[k](v) for k, v in kwargs.items() if k in self.to_str}
@@ -904,13 +902,13 @@ class NamingInterface:
         return {k: self.to_val[k](v) for k, v in kwargs.items() if k in self.to_val}
 
     def name_for(self, **kwargs):
-        raise NotImplementedError("Interface method: Method needs to be implemented")
+        raise NotImplementedError('Interface method: Method needs to be implemented')
 
     def info_for(self, **kwargs):
-        raise NotImplementedError("Interface method: Method needs to be implemented")
+        raise NotImplementedError('Interface method: Method needs to be implemented')
 
     def is_valid_name(self, name):
-        raise NotImplementedError("Interface method: Method needs to be implemented")
+        raise NotImplementedError('Interface method: Method needs to be implemented')
 
 
 class BigDocTest:
@@ -1014,10 +1012,10 @@ class BigDocTest:
 
     @staticmethod
     def process_info_dict_for_example(**info_dict):
-        if "s_ums" in info_dict:
-            info_dict["s_ums"] = int(info_dict["s_ums"])
-        if "e_ums" in info_dict:
-            info_dict["e_ums"] = int(info_dict["e_ums"])
+        if 's_ums' in info_dict:
+            info_dict['s_ums'] = int(info_dict['s_ums'])
+        if 'e_ums' in info_dict:
+            info_dict['e_ums'] = int(info_dict['e_ums'])
         return info_dict
 
     @staticmethod
@@ -1031,42 +1029,42 @@ class BigDocTest:
             return (datetime.utcnow() - epoch).total_seconds() * second_ms
 
         # from ut.util.time import second_ms, utcnow_ms
-        if "s_ums" in kwargs:
-            kwargs["s_ums"] = int(kwargs["s_ums"])
-        if "e_ums" in kwargs:
-            kwargs["e_ums"] = int(kwargs["e_ums"])
+        if 's_ums' in kwargs:
+            kwargs['s_ums'] = int(kwargs['s_ums'])
+        if 'e_ums' in kwargs:
+            kwargs['e_ums'] = int(kwargs['e_ums'])
 
-        if "day" in kwargs:
-            day = kwargs["day"]
+        if 'day' in kwargs:
+            day = kwargs['day']
             # get the day in the expected format
             if isinstance(day, str):
-                if day == "now":
+                if day == 'now':
                     day = datetime.utcfromtimestamp(
                         int(utcnow_ms() / second_ms)
                     ).strftime(day_format)
-                elif day == "from_s_ums":
-                    assert "s_ums" in kwargs, "need to have s_ums argument"
+                elif day == 'from_s_ums':
+                    assert 's_ums' in kwargs, 'need to have s_ums argument'
                     day = datetime.utcfromtimestamp(
-                        int(kwargs["s_ums"] / second_ms)
+                        int(kwargs['s_ums'] / second_ms)
                     ).strftime(day_format)
                 else:
                     assert day_format_pattern.match(day)
             elif isinstance(day, datetime):
                 day = day.strftime(day_format)
-            elif "s_ums" in kwargs:  # if day is neither a string nor a datetime
+            elif 's_ums' in kwargs:  # if day is neither a string nor a datetime
                 day = datetime.utcfromtimestamp(
-                    int(kwargs["s_ums"] / second_ms)
+                    int(kwargs['s_ums'] / second_ms)
                 ).strftime(day_format)
 
-            kwargs["day"] = day
+            kwargs['day'] = day
 
         return kwargs
 
     @staticmethod
     def mk_e_naming():
         return LinearNaming(
-            template="s3://bucket-{group}/example/files/{user}/{subuser}/{day}/{s_ums}_{e_ums}",
-            format_dict={"s_ums": r"\d+", "e_ums": r"\d+", "day": "[^/]+"},
+            template='s3://bucket-{group}/example/files/{user}/{subuser}/{day}/{s_ums}_{e_ums}',
+            format_dict={'s_ums': r'\d+', 'e_ums': r'\d+', 'day': '[^/]+'},
             process_kwargs=BigDocTest.example_process_kwargs,
             process_info_dict=BigDocTest.process_info_dict_for_example,
         )
@@ -1074,8 +1072,8 @@ class BigDocTest:
     @staticmethod
     def mk_u_naming():
         return LinearNaming(
-            template="s3://uploads/{group}/upload/files/{user}/{day}/{subuser}/{filename}",
-            format_dict={"day": "[^/]+", "filepath": ".+"},
+            template='s3://uploads/{group}/upload/files/{user}/{day}/{subuser}/{filename}',
+            format_dict={'day': '[^/]+', 'filepath': '.+'},
         )
 
 
@@ -1085,23 +1083,23 @@ from dol.trans import wrap_kvs, store_decorator
 
 pjoin = os.path.join
 
-KeyMapNames = namedtuple("KeyMaps", ["key_of_id", "id_of_key"])
-KeyMaps = namedtuple("KeyMaps", ["key_of_id", "id_of_key"])
+KeyMapNames = namedtuple('KeyMaps', ['key_of_id', 'id_of_key'])
+KeyMaps = namedtuple('KeyMaps', ['key_of_id', 'id_of_key'])
 
 
 def _get_keymap_names_for_str_to_key_type(key_type):
     if not isinstance(key_type, str):
         key_type = {
-            tuple: "tuple",
-            namedtuple: "namedtuple",
-            dict: "dict",
-            str: "str",
+            tuple: 'tuple',
+            namedtuple: 'namedtuple',
+            dict: 'dict',
+            str: 'str',
         }.get(key_type, None)
 
-    if key_type not in {"tuple", "namedtuple", "dict", "str"}:
-        raise ValueError(f"Not a recognized key_type: {key_type}")
+    if key_type not in {'tuple', 'namedtuple', 'dict', 'str'}:
+        raise ValueError(f'Not a recognized key_type: {key_type}')
 
-    return KeyMapNames(key_of_id=f"str_to_{key_type}", id_of_key=f"{key_type}_to_str")
+    return KeyMapNames(key_of_id=f'str_to_{key_type}', id_of_key=f'{key_type}_to_str')
 
 
 def _get_method_for_str_to_key_type(keymap, key_type):
@@ -1117,7 +1115,7 @@ def _get_method_for_str_to_key_type(keymap, key_type):
 def mk_store_from_path_format_store_cls(
     store=None,
     *,
-    subpath="",
+    subpath='',
     store_cls_kwargs=None,
     key_type=namedtuple,
     keymap=StrTupleDict,
@@ -1154,7 +1152,7 @@ def mk_store_from_path_format_store_cls(
     km = _get_method_for_str_to_key_type(keymap, key_type)
 
     if isinstance(store, type):
-        name = name or "KeyWrapped" + store.__name__
+        name = name or 'KeyWrapped' + store.__name__
         _WrappedStoreCls = wrap_kvs(
             store, name=name, key_of_id=km.key_of_id, id_of_key=km.id_of_key
         )
@@ -1166,7 +1164,7 @@ def mk_store_from_path_format_store_cls(
 
         return WrappedStoreCls
     else:
-        name = name or "KeyWrapped" + store.__class__.__name__
+        name = name or 'KeyWrapped' + store.__class__.__name__
         return wrap_kvs(
             store, name=name, key_of_id=km.key_of_id, id_of_key=km.id_of_key
         )
@@ -1201,7 +1199,7 @@ class PartialFormatter(Formatter):
         try:
             return super().get_value(key, args, kwargs)
         except KeyError:
-            return "{" + key + "}"
+            return '{' + key + '}'
 
     def format_fields_set(self, s):
         return {x[1] for x in self.parse(s) if x[1]}
