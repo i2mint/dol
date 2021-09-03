@@ -2081,50 +2081,54 @@ _method_name_for = {
 def add_path_get(store=None, *, name=None, path_type: type = tuple):
     """
     Make nested stores accessible through key paths.
+    In a way "flatten the nested keys access".
+    By default, the path object will be a tuple (e.g. ``('a', 'b', 'c')``, but you can
+    make it whatever you want, and/or use `dol.paths.KeyPath` to map to and from
+    forms like ``'a.b.c'``, ``'a/b/c'``, etc.
 
     Say you have some nested stores.
     You know... like a `ZipFileReader` store whose values are `ZipReader`s,
-    whose values are bytes of the zipped files (and you can go on... whose (json) values are...).
+    whose values are bytes of the zipped files
+    (and you can go on... whose (json) values are...).
+
+    For our example, let's take a nested dict instead:
+
+    >>> s = {'a': {'b': {'c': 42}}}
 
     Well, you can access any node of this nested tree of stores like this:
 
-    ```
-        MyStore[key_1][key_2][key_3]
-    ```
+    >>> s['a']['b']['c']
+    42
 
     And that's fine. But maybe you'd like to do it this way instead:
 
-    ```
-        MyStore[key_1, key_2, key_3]
-    ```
+    >>> s = add_path_get(s)
+    >>> s['a', 'b', 'c']
+    42
 
-    Or like this:
-
-    ```
-        MyStore['key_1/key_2/key_3']
-    ```
-
-    Or this:
-
-    ```
-        MyStore['key_1.key_2.key_3']
-    ```
-
-    You get the point. This is what `add_path_get` is meant for.
+    You might also want to access 42 with `a.b.c` or `a/b/c` etc.
+    To do that you can use `dol.paths.KeyPath` in combination with
 
     Args:
         store: The store (class or instance) you're wrapping.
             If not specified, the function will return a decorator.
         name: The name to give the class (not applicable to instance wrapping)
-        path_type: The type that paths are expressed as. Needs to be an Iterable type. By default, a tuple.
-            This is used to decide whether the key should be taken as a "normal" key of the store,
+        path_type: The type that paths are expressed as. Needs to be an Iterable type.
+            By default, a tuple.
+            This is used to decide whether the key should be taken as a "normal"
+            key of the store,
             or should be used to iterate through, recursively getting values.
 
-    Returns: A wrapped store (class or instance), or a store wrapping decorator (if store is not specified)
+    Returns:
+        A wrapped store (class or instance), or a store wrapping decorator
+        (if store is not specified)
 
-    See Also: `dol.paths.PathGetMixin`, `dol.paths.KeyPath`
+    .. seealso::
 
-    >>> # wrapping an instance
+        ``KeyPath`` in :doc:`paths`
+
+    Wrapping an instance
+
     >>> s = add_path_get({'a': {'b': {'c': 42}}})
     >>> s['a']
     {'b': {'c': 42}}
@@ -2132,28 +2136,36 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
     {'c': 42}
     >>> s['a', 'b', 'c']
     42
-    >>> # wrapping a class
+
+    Wrapping a class
+
     >>> S = add_path_get(dict)
     >>> s = S(a={'b': {'c': 42}})
-    >>> assert s['a'] == {'b': {'c': 42}}; assert s['a', 'b'] == {'c': 42}; assert s['a', 'b', 'c'] == 42
-    >>>
-    >>> # using add_path_get as a decorator
+    >>> assert s['a'] == {'b': {'c': 42}};
+    >>> assert s['a', 'b'] == {'c': 42};
+    >>> assert s['a', 'b', 'c'] == 42
+
+    Using add_path_get as a decorator
+
     >>> @add_path_get
     ... class S(dict):
     ...    pass
     >>> s = S(a={'b': {'c': 42}})
     >>> assert s['a'] == {'b': {'c': 42}};
-    >>> assert s['a', 'b'] == s['a']['b'];
-    >>> assert s['a', 'b', 'c'] == s['a']['b']['c']
-    >>>
-    >>> # a different kind of path?
-    >>> # You can choose a different path_type, but sometimes (say both keys and key paths are strings)
-    >>> # you need to involve more tools. Like dol.paths.KeyPath...
+    >>> assert s['a', 'b'] == s['a']['b'] == {'c': 42};
+    >>> assert s['a', 'b', 'c'] == s['a']['b']['c'] == 42
+
+    A different kind of path?
+    You can choose a different path_type, but sometimes (say both keys and key paths are strings)
+    You need to involve more tools. Like dol.paths.KeyPath...
+
     >>> from dol.paths import KeyPath
     >>> from dol.trans import kv_wrap
     >>> SS = kv_wrap(KeyPath(path_sep='.'))(S)
     >>> s = SS({'a': {'b': {'c': 42}}})
-    >>> assert s['a'] == {'b': {'c': 42}}; assert s['a.b'] == s['a']['b']; assert s['a.b.c'] == s['a']['b']['c']
+    >>> assert s['a'] == {'b': {'c': 42}};
+    >>> assert s['a.b'] == s['a']['b'];
+    >>> assert s['a.b.c'] == s['a']['b']['c']
     """
     name = name or store.__qualname__ + 'WithPathGet'
 

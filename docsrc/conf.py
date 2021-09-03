@@ -36,7 +36,8 @@ extensions = [
     'sphinx.ext.napoleon',  # Support for NumPy and Google style docstrings
     'sphinx.ext.todo',  # Support for todo items
     'sphinx.ext.viewcode',  # Add links to highlighted source code
-    'recommonmark',  # Parse .md files
+    'recommonmark',  # Parse .md files,
+    # 'myst_parser',  # https://www.sphinx-doc.org/en/master/usage/markdown.html
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -14,48 +14,6 @@ from dol.dig import recursive_get_attr
 path_sep = os.path.sep
 
 
-class PathGetMixin:
-    """
-    Mixin allows you to access nested stores through a path of keys.
-    That is, give you a path_store from a store, such that:
-    ```
-        path_store['a','b','c'] == store['a']['b']['c']
-    ```
-    The mixin will check if the key is of the path type (by default `tuple`), and if it is, it will iterate through
-    the path, recursively getting the elements.
-
-    Plays well with:
-        KeyPath
-
-    >>> class P(PathGetMixin, dict):
-    ...     pass
-    >>> s = P({'a': {'b': {'c': 42}}})
-    >>> s['a']
-    {'b': {'c': 42}}
-    >>> s['a', 'b']
-    {'c': 42}
-    >>> s['a', 'b', 'c']
-    42
-    >>>
-    >>> from dol import kv_wrap
-    >>> class P(PathGetMixin, dict): ...
-    >>> PP = kv_wrap(KeyPath(path_sep='.'))(P)
-    >>>
-    >>> s = PP({'a': {'b': {'c': 42}}})
-    >>> assert s['a'] == {'b': {'c': 42}}
-    >>> assert s['a.b'] == {'c': 42}
-    >>> assert s['a.b.c'] == 42
-    """
-
-    _path_type: type = tuple
-
-    def __getitem__(self, k):
-        if isinstance(k, self._path_type):
-            return reduce(lambda store, key: store[key], k, self)
-        else:
-            return super().__getitem__(k)
-
-
 @dataclass
 class KeyPath:
     """
@@ -66,8 +24,7 @@ class KeyPath:
         _path_type: The type of the outcoming (inner) path. But really, any function to convert from a list to
             the outer path type we want.
 
-    Plays well with:
-        KeyPath
+    See also:
 
     >>> kp = KeyPath(path_sep='/')
     >>> kp._key_of_id(('a', 'b', 'c'))
