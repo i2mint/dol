@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.trans &#8212; dol 0.1.34 documentation</title>
+    <title>dol.trans &#8212; dol 0.1.35 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -935,6 +935,87 @@ iterable: The collection of keys you want to filter “in”</p></li>
 # …     raise ValueError(“This should have failed”)
 # … except KeyError:
 # …     pass</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.trans.flatten">
+<code class="sig-prename descclassname">dol.trans.</code><code class="sig-name descname">flatten</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">store</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">levels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cache_keys</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">__module__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__name__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__qualname__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__doc__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__annotations__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__defaults__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__kwdefaults__</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.trans.flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten a nested store.</p>
+<p>Say you have a store that has three levels (or more), that is, that you can always
+ask for the value <code class="docutils literal notranslate"><span class="pre">store[a][b][c]</span></code> if <code class="docutils literal notranslate"><span class="pre">a</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store</span></code>,
+<code class="docutils literal notranslate"><span class="pre">b</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store[a]</span></code> and <code class="docutils literal notranslate"><span class="pre">c</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store[a][b]</span></code>.</p>
+<p>What <code class="docutils literal notranslate"><span class="pre">flattened_store</span> <span class="pre">=</span> <span class="pre">flatten(store,</span> <span class="pre">levels=3)</span></code> will give you is the ability
+to access the <code class="docutils literal notranslate"><span class="pre">store[a][b][c]</span></code> as <code class="docutils literal notranslate"><span class="pre">store[a,</span> <span class="pre">b,</span> <span class="pre">c]</span></code>, while still being able
+to access these stores “normally”.</p>
+<p>If that’s all you need, you can just use the <code class="docutils literal notranslate"><span class="pre">add_get_path</span></code> wrapper for this.</p>
+<p>Why would you use <code class="docutils literal notranslate"><span class="pre">flatten</span></code>? Because <code class="docutils literal notranslate"><span class="pre">add_get_path(store)</span></code> would still only
+give you the <code class="docutils literal notranslate"><span class="pre">KvReader</span></code> point of view of the root <code class="docutils literal notranslate"><span class="pre">store</span></code>.
+If you <code class="docutils literal notranslate"><span class="pre">list(store)</span></code>, you’d only get the first level keys,
+or if you ask if <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code> is in the store, it will tell you it’s not
+(though you can access data with such a key.</p>
+<p>Instead, a flattened store will consider that the keys are those <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code>
+key paths.</p>
+<p>Further, when flattening a store, you can ask for the view to cache the keys,
+specifying <code class="docutils literal notranslate"><span class="pre">cache_keys=True</span></code> or give it an explicit place to cache or
+factory to make a cache (see <code class="docutils literal notranslate"><span class="pre">cached_keys</span></code> wrapper for more details).
+Though caching keys is not the default it’s highly recommended to do so in most
+cases. The only reason it is not the default is because if you have millions of
+keys, but little memory, that’s not what you might want.</p>
+<p>Note: Flattening just provides a wrapper giving you a “flattened view”. It doesn’t
+change the store itself, or it’s contents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>store</strong> – The store instance or class to be wrapped</p></li>
+<li><p><strong>levels</strong> – The number of nested levels to flatten</p></li>
+<li><p><strong>cache_keys</strong> – Whether to cache the keys, or a cache factory or instance.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol</span> <span class="kn">import</span> <span class="n">flatten</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}},</span>
+<span class="gp">... </span>    <span class="s1">&#39;aa&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;bb&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cc&#39;</span><span class="p">:</span> <span class="s1">&#39;dragon_con&#39;</span><span class="p">}}</span>
+<span class="gp">... </span><span class="p">}</span>
+</pre></div>
+</div>
+<p>You can get a flattened view of an instance:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cache_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
+<span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">),</span> <span class="mi">42</span><span class="p">),</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="s1">&#39;bb&#39;</span><span class="p">,</span> <span class="s1">&#39;cc&#39;</span><span class="p">),</span> <span class="s1">&#39;dragon_con&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can make a flattener and apply it to an instance (or a class):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_flattener</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">(</span><span class="n">levels</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">my_flattener</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
+<span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">),</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}),</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="s1">&#39;bb&#39;</span><span class="p">),</span> <span class="p">{</span><span class="s1">&#39;cc&#39;</span><span class="p">:</span> <span class="s1">&#39;dragon_con&#39;</span><span class="p">})</span>
+<span class="gp">... </span>        <span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, you can wrap a class itself.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@flatten</span><span class="p">(</span><span class="n">levels</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">class</span> <span class="nc">MyFlatDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">MyFlatDict</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
+<span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,),</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}),</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;aa&#39;</span><span class="p">,),</span> <span class="p">{</span><span class="s1">&#39;bb&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cc&#39;</span><span class="p">:</span> <span class="s1">&#39;dragon_con&#39;</span><span class="p">}})</span>
+<span class="gp">... </span>        <span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">

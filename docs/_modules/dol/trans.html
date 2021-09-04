@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.trans &#8212; dol 0.1.34 documentation</title>
+    <title>dol.trans &#8212; dol 0.1.35 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -42,7 +42,7 @@
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">KeysView</span><span class="p">,</span> <span class="n">ValuesView</span><span class="p">,</span> <span class="n">ItemsView</span>
 
 <span class="kn">from</span> <span class="nn">dol.errors</span> <span class="kn">import</span> <span class="n">SetattrNotAllowed</span>
-<span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">,</span> <span class="n">AttrNames</span>
+<span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">,</span> <span class="n">AttrNames</span><span class="p">,</span> <span class="n">kv_walk</span>
 <span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">lazyprop</span><span class="p">,</span> <span class="n">num_of_args</span><span class="p">,</span> <span class="n">attrs_of</span><span class="p">,</span> <span class="n">wraps</span>
 <span class="kn">from</span> <span class="nn">dol.signatures</span> <span class="kn">import</span> <span class="n">Sig</span><span class="p">,</span> <span class="n">KO</span>
 
@@ -2222,6 +2222,140 @@
     <span class="n">store_cls</span><span class="o">.</span><span class="fm">__getitem__</span> <span class="o">=</span> <span class="fm">__getitem__</span>
 
     <span class="k">return</span> <span class="n">store_cls</span></div>
+
+
+<div class="viewcode-block" id="flatten"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.flatten">[docs]</a><span class="nd">@store_decorator</span>
+<span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flatten a nested store.</span>
+
+<span class="sd">    Say you have a store that has three levels (or more), that is, that you can always</span>
+<span class="sd">    ask for the value ``store[a][b][c]`` if ``a`` is a valid key of ``store``,</span>
+<span class="sd">    ``b`` is a valid key of ``store[a]`` and ``c`` is a valid key of ``store[a][b]``.</span>
+
+<span class="sd">    What ``flattened_store = flatten(store, levels=3)`` will give you is the ability</span>
+<span class="sd">    to access the ``store[a][b][c]`` as ``store[a, b, c]``, while still being able</span>
+<span class="sd">    to access these stores &quot;normally&quot;.</span>
+
+<span class="sd">    If that&#39;s all you need, you can just use the ``add_get_path`` wrapper for this.</span>
+
+<span class="sd">    Why would you use ``flatten``? Because ``add_get_path(store)`` would still only</span>
+<span class="sd">    give you the ``KvReader`` point of view of the root ``store``.</span>
+<span class="sd">    If you ``list(store)``, you&#39;d only get the first level keys,</span>
+<span class="sd">    or if you ask if ``(a, b, c)`` is in the store, it will tell you it&#39;s not</span>
+<span class="sd">    (though you can access data with such a key.</span>
+
+<span class="sd">    Instead, a flattened store will consider that the keys are those ``(a, b, c)``</span>
+<span class="sd">    key paths.</span>
+
+<span class="sd">    Further, when flattening a store, you can ask for the view to cache the keys,</span>
+<span class="sd">    specifying ``cache_keys=True`` or give it an explicit place to cache or</span>
+<span class="sd">    factory to make a cache (see ``cached_keys`` wrapper for more details).</span>
+<span class="sd">    Though caching keys is not the default it&#39;s highly recommended to do so in most</span>
+<span class="sd">    cases. The only reason it is not the default is because if you have millions of</span>
+<span class="sd">    keys, but little memory, that&#39;s not what you might want.</span>
+
+<span class="sd">    Note: Flattening just provides a wrapper giving you a &quot;flattened view&quot;. It doesn&#39;t</span>
+<span class="sd">    change the store itself, or it&#39;s contents.</span>
+
+<span class="sd">    :param store: The store instance or class to be wrapped</span>
+<span class="sd">    :param levels: The number of nested levels to flatten</span>
+<span class="sd">    :param cache_keys: Whether to cache the keys, or a cache factory or instance.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol import flatten</span>
+<span class="sd">    &gt;&gt;&gt; d = {</span>
+<span class="sd">    ...     &#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 42}},</span>
+<span class="sd">    ...     &#39;aa&#39;: {&#39;bb&#39;: {&#39;cc&#39;: &#39;dragon_con&#39;}}</span>
+<span class="sd">    ... }</span>
+
+<span class="sd">    You can get a flattened view of an instance:</span>
+
+<span class="sd">    &gt;&gt;&gt; m = flatten(d, levels=3, cache_keys=True)</span>
+<span class="sd">    &gt;&gt;&gt; assert (</span>
+<span class="sd">    ...         list(m.items())</span>
+<span class="sd">    ...         == [</span>
+<span class="sd">    ...             ((&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), 42),</span>
+<span class="sd">    ...             ((&#39;aa&#39;, &#39;bb&#39;, &#39;cc&#39;), &#39;dragon_con&#39;)</span>
+<span class="sd">    ...         ]</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    You can make a flattener and apply it to an instance (or a class):</span>
+
+<span class="sd">    &gt;&gt;&gt; my_flattener = flatten(levels=2)</span>
+<span class="sd">    &gt;&gt;&gt; m = my_flattener(d)</span>
+<span class="sd">    &gt;&gt;&gt; assert (</span>
+<span class="sd">    ...         list(m.items())</span>
+<span class="sd">    ...         == [</span>
+<span class="sd">    ...             ((&#39;a&#39;, &#39;b&#39;), {&#39;c&#39;: 42}),</span>
+<span class="sd">    ...             ((&#39;aa&#39;, &#39;bb&#39;), {&#39;cc&#39;: &#39;dragon_con&#39;})</span>
+<span class="sd">    ...         ]</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    Finally, you can wrap a class itself.</span>
+
+<span class="sd">    &gt;&gt;&gt; @flatten(levels=1)</span>
+<span class="sd">    ... class MyFlatDict(dict):</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; m = MyFlatDict(d)</span>
+<span class="sd">    &gt;&gt;&gt; assert (</span>
+<span class="sd">    ...         list(m.items())</span>
+<span class="sd">    ...         == [</span>
+<span class="sd">    ...             ((&#39;a&#39;,), {&#39;b&#39;: {&#39;c&#39;: 42}}),</span>
+<span class="sd">    ...             ((&#39;aa&#39;,), {&#39;bb&#39;: {&#39;cc&#39;: &#39;dragon_con&#39;}})</span>
+<span class="sd">    ...         ]</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;arguments&#39;</span><span class="p">}</span>
+    <span class="n">store</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;store&#39;</span><span class="p">)</span>
+
+    <span class="n">class_trans</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_flatten</span><span class="p">,</span> <span class="o">**</span><span class="n">arguments</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Store</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">class_trans</span><span class="o">=</span><span class="n">class_trans</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_flatten</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">cache_keys</span><span class="p">):</span>
+    <span class="n">store</span><span class="o">.</span><span class="n">_levels</span> <span class="o">=</span> <span class="n">levels</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">yield from</span> <span class="n">leveled_paths_walk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="p">)</span>
+
+    <span class="n">store</span><span class="o">.</span><span class="fm">__iter__</span> <span class="o">=</span> <span class="fm">__iter__</span>
+
+    <span class="k">if</span> <span class="n">cache_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cache_keys</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">cache_keys</span> <span class="o">=</span> <span class="nb">list</span>
+        <span class="k">return</span> <span class="n">add_path_get</span><span class="p">(</span><span class="n">cached_keys</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">keys_cache</span><span class="o">=</span><span class="n">cache_keys</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">pass</span>
+            <span class="k">return</span> <span class="n">i</span>
+
+        <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span>
+                <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__contains__</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span>
+                    <span class="n">k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__contains__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+        <span class="n">store</span><span class="o">.</span><span class="fm">__len__</span> <span class="o">=</span> <span class="fm">__len__</span>
+        <span class="n">store</span><span class="o">.</span><span class="fm">__contains__</span> <span class="o">=</span> <span class="fm">__contains__</span>
+
+        <span class="c1"># TODO: This adds read access to all levels, not limited to levels</span>
+        <span class="k">return</span> <span class="n">add_path_get</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">mk_level_walk_filt</span><span class="p">(</span><span class="n">levels</span><span class="p">):</span>
+    <span class="k">return</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">levels</span> <span class="o">-</span> <span class="mi">1</span>
+
+
+<span class="k">def</span> <span class="nf">leveled_paths_walk</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+    <span class="k">yield from</span> <span class="n">kv_walk</span><span class="p">(</span>
+        <span class="n">m</span><span class="p">,</span> <span class="n">yield_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">p</span><span class="p">,</span> <span class="n">walk_filt</span><span class="o">=</span><span class="n">mk_level_walk_filt</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+    <span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_insert_alias</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.base &#8212; dol 0.1.34 documentation</title>
+    <title>dol.base &#8212; dol 0.1.35 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -768,6 +768,51 @@
 <span class="sd">    [((&#39;a&#39;,), &#39;a&#39;, 1), ((&#39;b&#39;, &#39;c&#39;), &#39;c&#39;, 2), ((&#39;b&#39;, &#39;d&#39;), &#39;d&#39;, 3)]</span>
 <span class="sd">    &gt;&gt;&gt; list(kv_walk(d, lambda p, k, v: &#39;.&#39;.join(p)))</span>
 <span class="sd">    [&#39;a&#39;, &#39;b.c&#39;, &#39;b.d&#39;]</span>
+
+<span class="sd">    The `walk_filt` argument allows you to control what values the walk encountered</span>
+<span class="sd">    should be walked through. This also means that this function is what controls</span>
+<span class="sd">    when to stop the recursive traversal of the tree, and yield an actual &quot;leaf&quot;.</span>
+
+<span class="sd">    Say we want to get (path, values) items from a nested mapping/store based on</span>
+<span class="sd">    a ``levels`` argument that determines what the desired values are.</span>
+<span class="sd">    This can be done as follows:</span>
+
+<span class="sd">    &gt;&gt;&gt; def mk_level_walk_filt(levels):</span>
+<span class="sd">    ...     return lambda p, k, v: len(p) &lt; levels - 1</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; def leveled_map_walk(m, levels):</span>
+<span class="sd">    ...     yield from kv_walk(</span>
+<span class="sd">    ...         m,</span>
+<span class="sd">    ...         yield_func=lambda p, k, v: (p, v),</span>
+<span class="sd">    ...         walk_filt=mk_level_walk_filt(levels)</span>
+<span class="sd">    ...     )</span>
+<span class="sd">    &gt;&gt;&gt; m = {</span>
+<span class="sd">    ...     &#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 42}},</span>
+<span class="sd">    ...     &#39;aa&#39;: {&#39;bb&#39;: {&#39;cc&#39;: &#39;dragon_con&#39;}}</span>
+<span class="sd">    ... }</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; assert (</span>
+<span class="sd">    ...         list(leveled_map_walk(m, 3))</span>
+<span class="sd">    ...         == [</span>
+<span class="sd">    ...             ((&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), 42),</span>
+<span class="sd">    ...             ((&#39;aa&#39;, &#39;bb&#39;, &#39;cc&#39;), &#39;dragon_con&#39;)</span>
+<span class="sd">    ...         ]</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; assert (</span>
+<span class="sd">    ...         list(leveled_map_walk(m, 2))</span>
+<span class="sd">    ...         == [</span>
+<span class="sd">    ...             ((&#39;a&#39;, &#39;b&#39;), {&#39;c&#39;: 42}),</span>
+<span class="sd">    ...             ((&#39;aa&#39;, &#39;bb&#39;), {&#39;cc&#39;: &#39;dragon_con&#39;})</span>
+<span class="sd">    ...         ]</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; assert (</span>
+<span class="sd">    ...         list(leveled_map_walk(m, 1))</span>
+<span class="sd">    ...         == [</span>
+<span class="sd">    ...             ((&#39;a&#39;,), {&#39;b&#39;: {&#39;c&#39;: 42}}),</span>
+<span class="sd">    ...             ((&#39;aa&#39;,), {&#39;bb&#39;: {&#39;cc&#39;: &#39;dragon_con&#39;}})</span>
+<span class="sd">    ...         ]</span>
+<span class="sd">    ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># print(f&quot;1: entered with: v={v}, p={p}&quot;)</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
