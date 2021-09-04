@@ -7,7 +7,7 @@ from warnings import warn
 from collections.abc import Iterable, KeysView, ValuesView, ItemsView
 
 from dol.errors import SetattrNotAllowed
-from dol.base import Store, KvReader, AttrNames
+from dol.base import Store, KvReader, AttrNames, kv_walk
 from dol.util import lazyprop, num_of_args, attrs_of, wraps
 from dol.signatures import Sig, KO
 
@@ -2187,6 +2187,140 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
     store_cls.__getitem__ = __getitem__
 
     return store_cls
+
+
+@store_decorator
+def flatten(store=None, *, levels=None, cache_keys=False):
+    """
+    Flatten a nested store.
+
+    Say you have a store that has three levels (or more), that is, that you can always
+    ask for the value ``store[a][b][c]`` if ``a`` is a valid key of ``store``,
+    ``b`` is a valid key of ``store[a]`` and ``c`` is a valid key of ``store[a][b]``.
+
+    What ``flattened_store = flatten(store, levels=3)`` will give you is the ability
+    to access the ``store[a][b][c]`` as ``store[a, b, c]``, while still being able
+    to access these stores "normally".
+
+    If that's all you need, you can just use the ``add_get_path`` wrapper for this.
+
+    Why would you use ``flatten``? Because ``add_get_path(store)`` would still only
+    give you the ``KvReader`` point of view of the root ``store``.
+    If you ``list(store)``, you'd only get the first level keys,
+    or if you ask if ``(a, b, c)`` is in the store, it will tell you it's not
+    (though you can access data with such a key.
+
+    Instead, a flattened store will consider that the keys are those ``(a, b, c)``
+    key paths.
+
+    Further, when flattening a store, you can ask for the view to cache the keys,
+    specifying ``cache_keys=True`` or give it an explicit place to cache or
+    factory to make a cache (see ``cached_keys`` wrapper for more details).
+    Though caching keys is not the default it's highly recommended to do so in most
+    cases. The only reason it is not the default is because if you have millions of
+    keys, but little memory, that's not what you might want.
+
+    Note: Flattening just provides a wrapper giving you a "flattened view". It doesn't
+    change the store itself, or it's contents.
+
+    :param store: The store instance or class to be wrapped
+    :param levels: The number of nested levels to flatten
+    :param cache_keys: Whether to cache the keys, or a cache factory or instance.
+
+    >>> from dol import flatten
+    >>> d = {
+    ...     'a': {'b': {'c': 42}},
+    ...     'aa': {'bb': {'cc': 'dragon_con'}}
+    ... }
+
+    You can get a flattened view of an instance:
+
+    >>> m = flatten(d, levels=3, cache_keys=True)
+    >>> assert (
+    ...         list(m.items())
+    ...         == [
+    ...             (('a', 'b', 'c'), 42),
+    ...             (('aa', 'bb', 'cc'), 'dragon_con')
+    ...         ]
+    ... )
+
+    You can make a flattener and apply it to an instance (or a class):
+
+    >>> my_flattener = flatten(levels=2)
+    >>> m = my_flattener(d)
+    >>> assert (
+    ...         list(m.items())
+    ...         == [
+    ...             (('a', 'b'), {'c': 42}),
+    ...             (('aa', 'bb'), {'cc': 'dragon_con'})
+    ...         ]
+    ... )
+
+    Finally, you can wrap a class itself.
+
+    >>> @flatten(levels=1)
+    ... class MyFlatDict(dict):
+    ...     pass
+    >>> m = MyFlatDict(d)
+    >>> assert (
+    ...         list(m.items())
+    ...         == [
+    ...             (('a',), {'b': {'c': 42}}),
+    ...             (('aa',), {'bb': {'cc': 'dragon_con'}})
+    ...         ]
+    ... )
+    """
+    arguments = {k: v for k, v in locals().items() if k != 'arguments'}
+    store = arguments.pop('store')
+
+    class_trans = partial(_flatten, **arguments)
+    return Store.wrap(store, class_trans=class_trans)
+
+
+def _flatten(store, *, levels, cache_keys):
+    store._levels = levels
+
+    def __iter__(self):
+        yield from leveled_paths_walk(self.store, self._levels)
+
+    store.__iter__ = __iter__
+
+    if cache_keys:
+        if cache_keys is True:
+            cache_keys = list
+        return add_path_get(cached_keys(store, keys_cache=cache_keys))
+    else:
+
+        def __len__(self):
+            i = 0
+            for i, _ in enumerate(self, 1):
+                pass
+            return i
+
+        def __contains__(self, k):
+            if isinstance(k, tuple):
+                assert len(k) < self._levels
+                return super(store, self).__contains__(k[0]) and all(
+                    k[i] in self[k[i - 1]] for i in range(1, self._levels)
+                )
+            else:
+                return super(store, self).__contains__(k)
+
+        store.__len__ = __len__
+        store.__contains__ = __contains__
+
+        # TODO: This adds read access to all levels, not limited to levels
+        return add_path_get(store)
+
+
+def mk_level_walk_filt(levels):
+    return lambda p, k, v: len(p) < levels - 1
+
+
+def leveled_paths_walk(m, levels):
+    yield from kv_walk(
+        m, yield_func=lambda p, k, v: p, walk_filt=mk_level_walk_filt(levels)
+    )
 
 
 def _insert_alias(store, method_name, alias=None):

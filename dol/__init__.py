@@ -45,6 +45,7 @@ from dol.trans import (
     cached_keys,
     filt_iter,
     add_path_get,
+    flatten,
     insert_aliases,
     add_ipython_key_completions,
     cache_iter,  # being deprecated

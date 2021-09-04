@@ -733,6 +733,51 @@ def kv_walk(
     [(('a',), 'a', 1), (('b', 'c'), 'c', 2), (('b', 'd'), 'd', 3)]
     >>> list(kv_walk(d, lambda p, k, v: '.'.join(p)))
     ['a', 'b.c', 'b.d']
+
+    The `walk_filt` argument allows you to control what values the walk encountered
+    should be walked through. This also means that this function is what controls
+    when to stop the recursive traversal of the tree, and yield an actual "leaf".
+
+    Say we want to get (path, values) items from a nested mapping/store based on
+    a ``levels`` argument that determines what the desired values are.
+    This can be done as follows:
+
+    >>> def mk_level_walk_filt(levels):
+    ...     return lambda p, k, v: len(p) < levels - 1
+    ...
+    >>> def leveled_map_walk(m, levels):
+    ...     yield from kv_walk(
+    ...         m,
+    ...         yield_func=lambda p, k, v: (p, v),
+    ...         walk_filt=mk_level_walk_filt(levels)
+    ...     )
+    >>> m = {
+    ...     'a': {'b': {'c': 42}},
+    ...     'aa': {'bb': {'cc': 'dragon_con'}}
+    ... }
+    >>>
+    >>> assert (
+    ...         list(leveled_map_walk(m, 3))
+    ...         == [
+    ...             (('a', 'b', 'c'), 42),
+    ...             (('aa', 'bb', 'cc'), 'dragon_con')
+    ...         ]
+    ... )
+    >>> assert (
+    ...         list(leveled_map_walk(m, 2))
+    ...         == [
+    ...             (('a', 'b'), {'c': 42}),
+    ...             (('aa', 'bb'), {'cc': 'dragon_con'})
+    ...         ]
+    ... )
+    >>>
+    >>> assert (
+    ...         list(leveled_map_walk(m, 1))
+    ...         == [
+    ...             (('a',), {'b': {'c': 42}}),
+    ...             (('aa',), {'bb': {'cc': 'dragon_con'}})
+    ...         ]
+    ... )
     """
     # print(f"1: entered with: v={v}, p={p}")
     for k, vv in v.items():
