@@ -5,6 +5,8 @@ The package is light-weight: Pure python; not third-party dependencies.
 
 To install:	```pip install dol```
 
+[Documentation here](https://i2mint.github.io/dol/)
+
 Note: This project started as [`py2store`](https://github.com/i2mint/py2store). 
 `dol` is the core of py2store has now been factored out 
 and many of the specialized data object layers moved to separate packages. 
