@@ -768,6 +768,18 @@ def commands_dict(
 
 
 class Param(Parameter):
+    """A thin wrap of Parameters: Adds shorter aliases to argument kinds and
+    a POSITIONAL_OR_KEYWORD default to the argument kind to make it faster to make
+    Parameter objects
+
+    >>> list(map(Param, 'some quick arg params'.split()))
+    [<Param "some">, <Param "quick">, <Param "arg">, <Param "params">]
+    >>> from inspect import Signature
+    >>> P = Param
+    >>> Signature([P('x', P.PO), P('y', default=42, annotation=int), P('kw', P.KO)])
+    <Signature (x, /, y: int = 42, *, kw)>
+    """
+
     # aliases
     PK = Parameter.POSITIONAL_OR_KEYWORD
     PO = Parameter.POSITIONAL_ONLY
@@ -775,14 +787,11 @@ class Param(Parameter):
     VP = Parameter.VAR_POSITIONAL
     VK = Parameter.VAR_KEYWORD
 
-    # OP = Parameter.POSITIONAL_ONLY
-    # OK = Parameter.KEYWORD_ONLY
-
     def __init__(self, name, kind=PK, *, default=empty, annotation=empty):
         super().__init__(name, kind, default=default, annotation=annotation)
 
-    # Note: Was useful to make Param a mapping, to get (dict(param))
-    #  Is not useful anymore, so comment-deprecating
+    # # Note: Was useful to make Param a mapping, to get (dict(param))
+    # #  Is not useful anymore, so comment-deprecating
     # def __iter__(self):
     #     yield from ['name', 'kind', 'default', 'annotation']
     #
@@ -798,6 +807,10 @@ P = Param  # useful shorthand alias
 
 def param_has_default_or_is_var_kind(p: Parameter):
     return p.default != Parameter.empty or p.kind in var_param_kinds
+
+
+def parameter_to_dict(p: Parameter) -> dict:
+    return dict(name=p.name, kind=p.kind, default=p.default, annotation=p.annotation)
 
 
 WRAPPER_UPDATES = ('__dict__',)
@@ -1047,6 +1060,7 @@ class Sig(Signature, Mapping):
     # TODO: Add params for more validation (e.g. arg number/name matching?)
     def wrap(self, func: Callable, raise_on_error_copying_attrs=False):
         """Gives the input function the signature.
+
         This is similar to the `functools.wraps` function, but parametrized by a
         signature
         (not a callable). Also, where as both write to the input func's `__signature__`
@@ -1058,6 +1072,10 @@ class Sig(Signature, Mapping):
         - does not write to `__module__`, `__name__`, `__qualname__`, `__doc__`
             (because again, we're basinig the injecton on a signature, not a function,
             so we have no name, doc, etc...)
+
+        WARNING: The fact that you've modified the signature of your function doesn't
+        mean that the decorated function will work as expected (or even work at all).
+        See below for examples.
 
         >>> def f(w, /, x: float = 1, y=2, z: int = 3):
         ...     return w + x * y ** z
@@ -1088,9 +1106,10 @@ class Sig(Signature, Mapping):
         ... )  # see that now we get a different output because using different defaults
         1024
 
-        TODO: Something goes wrong when using keyword only arguments.
-            Note that the same problem occurs with functools.wraps, and even
-            boltons.funcutils.wraps.
+        Remember that you are modifying the signature, not the function itself.
+        Signature changes in defaults will indeed change the function's behavior.
+        But changes in name or kind will only be reflected in the signature, and
+        misalignment with the wrapped function will lead to unexpected results.
 
         >>> def f(w, /, x: float = 1, y=2, *, z: int = 3):
         ...     return w + x * y ** z
@@ -1100,22 +1119,27 @@ class Sig(Signature, Mapping):
         Traceback (most recent call last):
           ...
         TypeError: f() takes from 1 to 3 positional arguments but 4 were given
-        >>> def g(w, x: int, y=2, *, z: int = 10):
+
+        But if you try to remove the argument kind constraint by just changing the
+        signature, you'll fail.
+
+        >>> def g(w, x: float = 1, y=2, z: int = 3):
         ...     return w + x * y ** z
-        >>> s = Sig(g)
-        >>> f = s.wrap(f)
-        >>> f.__defaults__
-        (2,)
-        >>> f.__kwdefaults__
-        {'z': 10}
-        >>> f(0, 1, 2, 3)  # error not expected! TODO: Make it work!!
+        >>> f = Sig(g).wrap(f)
+        >>> f(0)
         Traceback (most recent call last):
           ...
-        TypeError: f() takes from 2 to 3 positional arguments but 4 were given
+        TypeError: f() missing 1 required keyword-only argument: 'z'
+        >>> f(0, 1, 2, 3)
+        Traceback (most recent call last):
+          ...
+        TypeError: f() takes from 0 to 3 positional arguments but 4 were given
+
+        TODO: Give more explanations why this is.
         """
 
-        # TODO: Would like to make a copy of the function so as to not override
-        #  decorated function itself!
+        # TODO: Should we make a copy/wrap of the function so as to not override
+        #  decorated function itself? Make sure the func remains pickalable!
         # @wraps(func)
         # def wrapped_func(*args, **kwargs):
         #     return func(*args, **kwargs)
@@ -1125,15 +1149,18 @@ class Sig(Signature, Mapping):
             self.parameters.values(), return_annotation=self.return_annotation
         )
         wrapped_func.__annotations__ = self.annotations
+
         # endow the function with __defaults__ and __kwdefaults__ (not the default of
         # functools.wraps!)
         (
             wrapped_func.__defaults__,
             wrapped_func.__kwdefaults__,
         ) = self._dunder_defaults_and_kwdefaults()
+
         # special case of functools.partial: need to tell .keywords about kwdefaults
         if isinstance(wrapped_func, partial):
             wrapped_func.keywords.update(wrapped_func.__kwdefaults__)
+
         # "copy" over all other non-dunder attributes (not the default of
         # functools.wraps!)
         for attr in filter(lambda x: not x.startswith('__'), dir(wrapped_func)):
@@ -1142,6 +1169,7 @@ class Sig(Signature, Mapping):
             except AttributeError as e:
                 if raise_on_error_copying_attrs:
                     raise
+
         return wrapped_func
 
     def __call__(self, func: Callable):
@@ -1423,13 +1451,21 @@ class Sig(Signature, Mapping):
         for name in self:
             if name in changes_for_name:
                 p = changes_for_name[name]
+                if isinstance(p, Parameter):
+                    p = parameter_to_dict(p)
                 yield self[name].replace(**p)
             else:
                 # if name is not in params, just use existing param
                 yield self[name]
 
     def modified(self, _allow_reordering=False, **changes_for_name):
-        """Returns a modified (new) signature object
+        """Returns a modified (new) signature object.
+
+        Note: This function doesn't modify the signature, but creates a modified copy
+        of the signature.
+
+        IMPORTANT WARNING: This is an advanced feature. Avoid wrapping a function with
+        a modified signature, as this may not have the intended effect.
 
         >>> def foo(pka, *vpa, koa, **vka): ...
         >>> sig = Sig(foo)
@@ -1457,14 +1493,14 @@ class Sig(Signature, Mapping):
         >>> sig.modified(**{name: {'kind': PK} for name in sig.names})
         <Sig (pka, vpa, koa, vka)>
 
-        But be warned: This gives you a signature with all PK kinds.
+        Repetition of the above: This gives you a signature with all PK kinds.
         If you wrap a function with it, it will look like it has all PK kinds.
         But that doesn't mean you can actually use thenm as such.
         You'll need to modify (decorate further) your function further to reflect
         its new signature.
 
         On the other hand, if you decorate a function with a sig that adds or modifies
-        defaults, these defaults will actually be used.
+        defaults, these defaults will actually be used (unlike with `functools.wraps`).
 
         """
         new_return_annotation = changes_for_name.pop(
