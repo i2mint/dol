@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.signatures &#8212; dol 0.1.38 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.39 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -173,7 +173,18 @@ That’s where specifying a different _caller will be useful.</p>
 <dl class="py class">
 <dt id="dol.signatures.Param">
 <em class="property">class </em><code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">Param</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">kind=&lt;_ParameterKind.POSITIONAL_OR_KEYWORD: 1&gt;</em>, <em class="sig-param">*</em>, <em class="sig-param">default</em>, <em class="sig-param">annotation</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Param" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A thin wrap of Parameters: Adds shorter aliases to argument kinds and
+a POSITIONAL_OR_KEYWORD default to the argument kind to make it faster to make
+Parameter objects</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">Param</span><span class="p">,</span> <span class="s1">&#39;some quick arg params&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span>
+<span class="go">[&lt;Param &quot;some&quot;&gt;, &lt;Param &quot;quick&quot;&gt;, &lt;Param &quot;arg&quot;&gt;, &lt;Param &quot;params&quot;&gt;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">Signature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">P</span> <span class="o">=</span> <span class="n">Param</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Signature</span><span class="p">([</span><span class="n">P</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">.</span><span class="n">PO</span><span class="p">),</span> <span class="n">P</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span> <span class="n">P</span><span class="p">(</span><span class="s1">&#39;kw&#39;</span><span class="p">,</span> <span class="n">P</span><span class="o">.</span><span class="n">KO</span><span class="p">)])</span>
+<span class="go">&lt;Signature (x, /, y: int = 42, *, kw)&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py class">
 <dt id="dol.signatures.Sig">
@@ -884,7 +895,11 @@ according to whether they have defaults and what their kind is:</p>
 <dl class="py method">
 <dt id="dol.signatures.Sig.modified">
 <code class="sig-name descname">modified</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_allow_reordering</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">changes_for_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.modified"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.modified" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a modified (new) signature object</p>
+<dd><p>Returns a modified (new) signature object.</p>
+<p>Note: This function doesn’t modify the signature, but creates a modified copy
+of the signature.</p>
+<p>IMPORTANT WARNING: This is an advanced feature. Avoid wrapping a function with
+a modified signature, as this may not have the intended effect.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">pka</span><span class="p">,</span> <span class="o">*</span><span class="n">vpa</span><span class="p">,</span> <span class="n">koa</span><span class="p">,</span> <span class="o">**</span><span class="n">vka</span><span class="p">):</span> <span class="o">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span>
@@ -916,13 +931,13 @@ Here we change all kinds to be the friendly PK kind.</p>
 <span class="go">&lt;Sig (pka, vpa, koa, vka)&gt;</span>
 </pre></div>
 </div>
-<p>But be warned: This gives you a signature with all PK kinds.
+<p>Repetition of the above: This gives you a signature with all PK kinds.
 If you wrap a function with it, it will look like it has all PK kinds.
 But that doesn’t mean you can actually use thenm as such.
 You’ll need to modify (decorate further) your function further to reflect
 its new signature.</p>
 <p>On the other hand, if you decorate a function with a sig that adds or modifies
-defaults, these defaults will actually be used.</p>
+defaults, these defaults will actually be used (unlike with <cite>functools.wraps</cite>).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1187,8 +1202,8 @@ properties and methods)</p>
 <dl class="py method">
 <dt id="dol.signatures.Sig.wrap">
 <code class="sig-name descname">wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span></em>, <em class="sig-param"><span class="n">raise_on_error_copying_attrs</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.wrap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gives the input function the signature.
-This is similar to the <cite>functools.wraps</cite> function, but parametrized by a
+<dd><p>Gives the input function the signature.</p>
+<p>This is similar to the <cite>functools.wraps</cite> function, but parametrized by a
 signature
 (not a callable). Also, where as both write to the input func’s <cite>__signature__</cite>
 attribute, here we also write to
@@ -1206,6 +1221,9 @@ so we have no name, doc, etc…)</p>
 </dl>
 </li>
 </ul>
+<p>WARNING: The fact that you’ve modified the signature of your function doesn’t
+mean that the decorated function will work as expected (or even work at all).
+See below for examples.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">w</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">**</span> <span class="n">z</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># 0 + 1 * 2 ** 3</span>
@@ -1236,11 +1254,10 @@ so we have no name, doc, etc…)</p>
 <span class="go">1024</span>
 </pre></div>
 </div>
-<dl class="simple">
-<dt>TODO: Something goes wrong when using keyword only arguments.</dt><dd><p>Note that the same problem occurs with functools.wraps, and even
-boltons.funcutils.wraps.</p>
-</dd>
-</dl>
+<p>Remember that you are modifying the signature, not the function itself.
+Signature changes in defaults will indeed change the function’s behavior.
+But changes in name or kind will only be reflected in the signature, and
+misalignment with the wrapped function will lead to unexpected results.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">w</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">**</span> <span class="n">z</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># 0 + 1 * 2 ** 3</span>
@@ -1249,20 +1266,24 @@ boltons.funcutils.wraps.</p>
 <span class="gt">Traceback (most recent call last):</span>
   <span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">f() takes from 1 to 3 positional arguments but 4 were given</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">g</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">w</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">**</span> <span class="n">z</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="vm">__defaults__</span>
-<span class="go">(2,)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="vm">__kwdefaults__</span>
-<span class="go">{&#39;z&#39;: 10}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>  <span class="c1"># error not expected! TODO: Make it work!!</span>
-<span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
-<span class="gr">TypeError</span>: <span class="n">f() takes from 2 to 3 positional arguments but 4 were given</span>
 </pre></div>
 </div>
+<p>But if you try to remove the argument kind constraint by just changing the
+signature, you’ll fail.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">g</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">w</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">**</span> <span class="n">z</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">g</span><span class="p">)</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">f() missing 1 required keyword-only argument: &#39;z&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">f() takes from 0 to 3 positional arguments but 4 were given</span>
+</pre></div>
+</div>
+<p>TODO: Give more explanations why this is.</p>
 </dd></dl>
 
 </dd></dl>

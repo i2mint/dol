@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dol.signatures &#8212; dol 0.1.38 documentation</title>
+    <title>dol.signatures &#8212; dol 0.1.39 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -803,6 +803,18 @@
 
 
 <div class="viewcode-block" id="Param"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Param">[docs]</a><span class="k">class</span> <span class="nc">Param</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A thin wrap of Parameters: Adds shorter aliases to argument kinds and</span>
+<span class="sd">    a POSITIONAL_OR_KEYWORD default to the argument kind to make it faster to make</span>
+<span class="sd">    Parameter objects</span>
+
+<span class="sd">    &gt;&gt;&gt; list(map(Param, &#39;some quick arg params&#39;.split()))</span>
+<span class="sd">    [&lt;Param &quot;some&quot;&gt;, &lt;Param &quot;quick&quot;&gt;, &lt;Param &quot;arg&quot;&gt;, &lt;Param &quot;params&quot;&gt;]</span>
+<span class="sd">    &gt;&gt;&gt; from inspect import Signature</span>
+<span class="sd">    &gt;&gt;&gt; P = Param</span>
+<span class="sd">    &gt;&gt;&gt; Signature([P(&#39;x&#39;, P.PO), P(&#39;y&#39;, default=42, annotation=int), P(&#39;kw&#39;, P.KO)])</span>
+<span class="sd">    &lt;Signature (x, /, y: int = 42, *, kw)&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="c1"># aliases</span>
     <span class="n">PK</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_OR_KEYWORD</span>
     <span class="n">PO</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_ONLY</span>
@@ -810,14 +822,11 @@
     <span class="n">VP</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span>
     <span class="n">VK</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
 
-    <span class="c1"># OP = Parameter.POSITIONAL_ONLY</span>
-    <span class="c1"># OK = Parameter.KEYWORD_ONLY</span>
-
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">empty</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">empty</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">annotation</span><span class="p">)</span></div>
 
-    <span class="c1"># Note: Was useful to make Param a mapping, to get (dict(param))</span>
-    <span class="c1">#  Is not useful anymore, so comment-deprecating</span>
+    <span class="c1"># # Note: Was useful to make Param a mapping, to get (dict(param))</span>
+    <span class="c1"># #  Is not useful anymore, so comment-deprecating</span>
     <span class="c1"># def __iter__(self):</span>
     <span class="c1">#     yield from [&#39;name&#39;, &#39;kind&#39;, &#39;default&#39;, &#39;annotation&#39;]</span>
     <span class="c1">#</span>
@@ -833,6 +842,10 @@
 
 <span class="k">def</span> <span class="nf">param_has_default_or_is_var_kind</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">default</span> <span class="o">!=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span> <span class="ow">or</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="n">var_param_kinds</span>
+
+
+<span class="k">def</span> <span class="nf">parameter_to_dict</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">default</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">annotation</span><span class="p">)</span>
 
 
 <span class="n">WRAPPER_UPDATES</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;__dict__&#39;</span><span class="p">,)</span>
@@ -1082,6 +1095,7 @@
     <span class="c1"># TODO: Add params for more validation (e.g. arg number/name matching?)</span>
 <div class="viewcode-block" id="Sig.wrap"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.wrap">[docs]</a>    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">raise_on_error_copying_attrs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Gives the input function the signature.</span>
+
 <span class="sd">        This is similar to the `functools.wraps` function, but parametrized by a</span>
 <span class="sd">        signature</span>
 <span class="sd">        (not a callable). Also, where as both write to the input func&#39;s `__signature__`</span>
@@ -1093,6 +1107,10 @@
 <span class="sd">        - does not write to `__module__`, `__name__`, `__qualname__`, `__doc__`</span>
 <span class="sd">            (because again, we&#39;re basinig the injecton on a signature, not a function,</span>
 <span class="sd">            so we have no name, doc, etc...)</span>
+
+<span class="sd">        WARNING: The fact that you&#39;ve modified the signature of your function doesn&#39;t</span>
+<span class="sd">        mean that the decorated function will work as expected (or even work at all).</span>
+<span class="sd">        See below for examples.</span>
 
 <span class="sd">        &gt;&gt;&gt; def f(w, /, x: float = 1, y=2, z: int = 3):</span>
 <span class="sd">        ...     return w + x * y ** z</span>
@@ -1123,9 +1141,10 @@
 <span class="sd">        ... )  # see that now we get a different output because using different defaults</span>
 <span class="sd">        1024</span>
 
-<span class="sd">        TODO: Something goes wrong when using keyword only arguments.</span>
-<span class="sd">            Note that the same problem occurs with functools.wraps, and even</span>
-<span class="sd">            boltons.funcutils.wraps.</span>
+<span class="sd">        Remember that you are modifying the signature, not the function itself.</span>
+<span class="sd">        Signature changes in defaults will indeed change the function&#39;s behavior.</span>
+<span class="sd">        But changes in name or kind will only be reflected in the signature, and</span>
+<span class="sd">        misalignment with the wrapped function will lead to unexpected results.</span>
 
 <span class="sd">        &gt;&gt;&gt; def f(w, /, x: float = 1, y=2, *, z: int = 3):</span>
 <span class="sd">        ...     return w + x * y ** z</span>
@@ -1135,22 +1154,27 @@
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
 <span class="sd">        TypeError: f() takes from 1 to 3 positional arguments but 4 were given</span>
-<span class="sd">        &gt;&gt;&gt; def g(w, x: int, y=2, *, z: int = 10):</span>
+
+<span class="sd">        But if you try to remove the argument kind constraint by just changing the</span>
+<span class="sd">        signature, you&#39;ll fail.</span>
+
+<span class="sd">        &gt;&gt;&gt; def g(w, x: float = 1, y=2, z: int = 3):</span>
 <span class="sd">        ...     return w + x * y ** z</span>
-<span class="sd">        &gt;&gt;&gt; s = Sig(g)</span>
-<span class="sd">        &gt;&gt;&gt; f = s.wrap(f)</span>
-<span class="sd">        &gt;&gt;&gt; f.__defaults__</span>
-<span class="sd">        (2,)</span>
-<span class="sd">        &gt;&gt;&gt; f.__kwdefaults__</span>
-<span class="sd">        {&#39;z&#39;: 10}</span>
-<span class="sd">        &gt;&gt;&gt; f(0, 1, 2, 3)  # error not expected! TODO: Make it work!!</span>
+<span class="sd">        &gt;&gt;&gt; f = Sig(g).wrap(f)</span>
+<span class="sd">        &gt;&gt;&gt; f(0)</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
-<span class="sd">        TypeError: f() takes from 2 to 3 positional arguments but 4 were given</span>
+<span class="sd">        TypeError: f() missing 1 required keyword-only argument: &#39;z&#39;</span>
+<span class="sd">        &gt;&gt;&gt; f(0, 1, 2, 3)</span>
+<span class="sd">        Traceback (most recent call last):</span>
+<span class="sd">          ...</span>
+<span class="sd">        TypeError: f() takes from 0 to 3 positional arguments but 4 were given</span>
+
+<span class="sd">        TODO: Give more explanations why this is.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># TODO: Would like to make a copy of the function so as to not override</span>
-        <span class="c1">#  decorated function itself!</span>
+        <span class="c1"># TODO: Should we make a copy/wrap of the function so as to not override</span>
+        <span class="c1">#  decorated function itself? Make sure the func remains pickalable!</span>
         <span class="c1"># @wraps(func)</span>
         <span class="c1"># def wrapped_func(*args, **kwargs):</span>
         <span class="c1">#     return func(*args, **kwargs)</span>
@@ -1160,15 +1184,18 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">return_annotation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">return_annotation</span>
         <span class="p">)</span>
         <span class="n">wrapped_func</span><span class="o">.</span><span class="vm">__annotations__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotations</span>
+
         <span class="c1"># endow the function with __defaults__ and __kwdefaults__ (not the default of</span>
         <span class="c1"># functools.wraps!)</span>
         <span class="p">(</span>
             <span class="n">wrapped_func</span><span class="o">.</span><span class="vm">__defaults__</span><span class="p">,</span>
             <span class="n">wrapped_func</span><span class="o">.</span><span class="vm">__kwdefaults__</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dunder_defaults_and_kwdefaults</span><span class="p">()</span>
+
         <span class="c1"># special case of functools.partial: need to tell .keywords about kwdefaults</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wrapped_func</span><span class="p">,</span> <span class="n">partial</span><span class="p">):</span>
             <span class="n">wrapped_func</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">wrapped_func</span><span class="o">.</span><span class="vm">__kwdefaults__</span><span class="p">)</span>
+
         <span class="c1"># &quot;copy&quot; over all other non-dunder attributes (not the default of</span>
         <span class="c1"># functools.wraps!)</span>
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">),</span> <span class="nb">dir</span><span class="p">(</span><span class="n">wrapped_func</span><span class="p">)):</span>
@@ -1177,6 +1204,7 @@
             <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">raise_on_error_copying_attrs</span><span class="p">:</span>
                     <span class="k">raise</span>
+
         <span class="k">return</span> <span class="n">wrapped_func</span></div>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
@@ -1458,13 +1486,21 @@
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">changes_for_name</span><span class="p">:</span>
                 <span class="n">p</span> <span class="o">=</span> <span class="n">changes_for_name</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">):</span>
+                    <span class="n">p</span> <span class="o">=</span> <span class="n">parameter_to_dict</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
                 <span class="k">yield</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="o">**</span><span class="n">p</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># if name is not in params, just use existing param</span>
                 <span class="k">yield</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
 <div class="viewcode-block" id="Sig.modified"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.modified">[docs]</a>    <span class="k">def</span> <span class="nf">modified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns a modified (new) signature object</span>
+        <span class="sd">&quot;&quot;&quot;Returns a modified (new) signature object.</span>
+
+<span class="sd">        Note: This function doesn&#39;t modify the signature, but creates a modified copy</span>
+<span class="sd">        of the signature.</span>
+
+<span class="sd">        IMPORTANT WARNING: This is an advanced feature. Avoid wrapping a function with</span>
+<span class="sd">        a modified signature, as this may not have the intended effect.</span>
 
 <span class="sd">        &gt;&gt;&gt; def foo(pka, *vpa, koa, **vka): ...</span>
 <span class="sd">        &gt;&gt;&gt; sig = Sig(foo)</span>
@@ -1492,14 +1528,14 @@
 <span class="sd">        &gt;&gt;&gt; sig.modified(**{name: {&#39;kind&#39;: PK} for name in sig.names})</span>
 <span class="sd">        &lt;Sig (pka, vpa, koa, vka)&gt;</span>
 
-<span class="sd">        But be warned: This gives you a signature with all PK kinds.</span>
+<span class="sd">        Repetition of the above: This gives you a signature with all PK kinds.</span>
 <span class="sd">        If you wrap a function with it, it will look like it has all PK kinds.</span>
 <span class="sd">        But that doesn&#39;t mean you can actually use thenm as such.</span>
 <span class="sd">        You&#39;ll need to modify (decorate further) your function further to reflect</span>
 <span class="sd">        its new signature.</span>
 
 <span class="sd">        On the other hand, if you decorate a function with a sig that adds or modifies</span>
-<span class="sd">        defaults, these defaults will actually be used.</span>
+<span class="sd">        defaults, these defaults will actually be used (unlike with `functools.wraps`).</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_return_annotation</span> <span class="o">=</span> <span class="n">changes_for_name</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span>
