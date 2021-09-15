@@ -56,9 +56,7 @@ wraps = partial(_wraps, assigned=wrapper_assignments)
 _empty = Parameter.empty
 empty = _empty
 
-_ParameterKind = type(
-    Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD)
-)
+_ParameterKind = type(Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD))
 ParamsType = Iterable[Parameter]
 ParamsAble = Union[ParamsType, MappingType[str, Parameter], Callable]
 SignatureAble = Union[Signature, Callable, ParamsType, MappingType[str, Parameter]]
@@ -153,9 +151,7 @@ def ensure_signature(obj: SignatureAble):
         try:
             return Signature(parameters=params)
         except TypeError:
-            raise TypeError(
-                f"Don't know how to make that object into a Signature: {obj}"
-            )
+            raise TypeError(f"Don't know how to make that object into a Signature: {obj}")
     elif isinstance(obj, Parameter):
         return Signature(parameters=(obj,))
     elif obj is None:
@@ -817,7 +813,7 @@ WRAPPER_UPDATES = ('__dict__',)
 
 from typing import Callable
 
-
+# TODO: Might want to monkey-patch inspect._signature_from_callable to use sigs_for_sigless_builtin_name
 def _robust_signature_of_callable(callable_obj: Callable) -> Signature:
     r"""Get the signature of a Callable, returning a custom made one for those
     builtins that don't have one
@@ -1330,9 +1326,7 @@ class Sig(Signature, Mapping):
 
     @property
     def defaults(self):
-        return {
-            p.name: p.default for p in self.values() if p.default != Parameter.empty
-        }
+        return {p.name: p.default for p in self.values() if p.default != Parameter.empty}
 
     @property
     def annotations(self):
@@ -1340,9 +1334,7 @@ class Sig(Signature, Mapping):
         What `func.__annotations__` would give you.
         """
         return {
-            p.name: p.annotation
-            for p in self.values()
-            if p.annotation != Parameter.empty
+            p.name: p.annotation for p in self.values() if p.annotation != Parameter.empty
         }
 
     # def substitute(self, **sub_for_name):
@@ -1609,9 +1601,7 @@ class Sig(Signature, Mapping):
         return all_pk_signature(self)
 
     def ch_defaults(self, **changes_for_name):
-        return self.ch_param_attrs(
-            'default', _allow_reordering=True, **changes_for_name
-        )
+        return self.ch_param_attrs('default', _allow_reordering=True, **changes_for_name)
 
     def ch_annotations(self, **changes_for_name):
         return self.ch_param_attrs('annotation', **changes_for_name)
@@ -1884,9 +1874,7 @@ class Sig(Signature, Mapping):
 
     def remove_names(self, names):
         names = {p.name for p in ensure_params(names)}
-        new_params = {
-            name: p for name, p in self.parameters.items() if name not in names
-        }
+        new_params = {name: p for name, p in self.parameters.items() if name not in names}
         return self.__class__(new_params, return_annotation=self.return_annotation)
 
     def __sub__(self, sig):
@@ -2128,9 +2116,7 @@ class Sig(Signature, Mapping):
 
         binder = sig.bind_partial if allow_partial else sig.bind
         if not self.has_var_positional and allow_excess:
-            max_allowed_num_of_posisional_args = sum(
-                k <= PK for k in self.kinds.values()
-            )
+            max_allowed_num_of_posisional_args = sum(k <= PK for k in self.kinds.values())
             args = args[:max_allowed_num_of_posisional_args]
 
         b = binder(*args, **sig_relevant_kwargs)
@@ -3407,7 +3393,7 @@ sigs_for_sigless_builtin_name = {
     # dict(**kwargs) -> new dictionary initialized with the name=value pairs
     'dir': None,
     # dir([object]) -> list of strings
-    'filter': None,
+    'filter': signature(lambda function, iterable: ...),
     # filter(function or None, iterable) --> filter object
     'frozenset': None,
     # frozenset() -> empty frozenset object
