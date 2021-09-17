@@ -430,18 +430,19 @@ class Store(KvPersister):
         __iter__    calls:	            _key_of_id
 
 
-    >>> # Default store: no key or value conversion ################################################
+    >>> # Default store: no key or value conversion #####################################
+    >>> from dol import Store
     >>> s = Store()
     >>> s['foo'] = 33
     >>> s['bar'] = 65
     >>> assert list(s.items()) == [('foo', 33), ('bar', 65)]
     >>> assert list(s.store.items()) == [('foo', 33), ('bar', 65)]  # see that the store contains the same thing
     >>>
-    >>> ################################################################################################
-    >>> # Now let's make stores that have a key and value conversion layer #############################
-    >>> # input keys will be upper cased, and output keys lower cased ##################################
-    >>> # input values (assumed int) will be converted to ascii string, and visa versa #################
-    >>> ################################################################################################
+    >>> #################################################################################
+    >>> # Now let's make stores that have a key and value conversion layer ##############
+    >>> # input keys will be upper cased, and output keys lower cased ###################
+    >>> # input values (assumed int) will be converted to ascii string, and visa versa ##
+    >>> #################################################################################
     >>>
     >>> def test_store(s):
     ...     s['foo'] = 33  # write 33 to 'foo'
