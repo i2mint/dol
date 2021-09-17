@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>dol.base &#8212; dol 0.1.40 documentation</title>
+    <title>dol.base &#8212; dol 0.1.41 documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -165,18 +165,19 @@ how the content is stored should be specified, but StoreInterface offers a dict-
 <span class="fm">__iter__</span>    <span class="n">calls</span><span class="p">:</span>                  <span class="n">_key_of_id</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Default store: no key or value conversion ################################################</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Default store: no key or value conversion #####################################</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol</span> <span class="kn">import</span> <span class="n">Store</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Store</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">33</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;bar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">65</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>  <span class="c1"># see that the store contains the same thing</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1">################################################################################################</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Now let&#39;s make stores that have a key and value conversion layer #############################</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># input keys will be upper cased, and output keys lower cased ##################################</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># input values (assumed int) will be converted to ascii string, and visa versa #################</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1">################################################################################################</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">#################################################################################</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Now let&#39;s make stores that have a key and value conversion layer ##############</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># input keys will be upper cased, and output keys lower cased ###################</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># input values (assumed int) will be converted to ascii string, and visa versa ##</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">#################################################################################</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">test_store</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">s</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">33</span>  <span class="c1"># write 33 to &#39;foo&#39;</span>
