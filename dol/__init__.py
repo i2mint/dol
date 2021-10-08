@@ -24,7 +24,7 @@ def ihead(store, n=1):
         return [item for i, item in enumerate(store) if i < n]
 
 
-from dol.util import lazyprop, partialclass, groupby, regroupby, igroupby
+from dol.util import Pipe, lazyprop, partialclass, groupby, regroupby, igroupby
 
 from dol.base import (
     Collection,
