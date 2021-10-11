@@ -114,6 +114,27 @@ class PrefixRelativizationMixin:
         return _id[self._prefix_length :]
 
 
+class MakeMissingDirsStoreMixin:
+    """Will make a local file store automatically create the directories needed to create a file.
+    Should be placed before the concrete perisister in the mro but in such a manner so that it receives full paths.
+    """
+
+    def __setitem__(self, k, v):
+        _id = self._id_of_key(k)
+        dirname = os.path.dirname(_id)
+        os.makedirs(dirname, exist_ok=1)
+        super().__setitem__(k, v)
+
+
+# TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)
+@store_decorator
+def mk_dirs_if_missing(
+    store_cls=None, *, key_condition=None,
+):
+    name = getattr(store_cls, __name__, 'WrappedStoreWithConditionalDirMaking')
+    return type(name, (MakeMissingDirsStoreMixin, store_cls), {})
+
+
 @store_decorator
 def mk_relative_path_store(
     store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',

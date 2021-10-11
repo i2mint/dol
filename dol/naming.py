@@ -398,9 +398,9 @@ def _mk(self, *args, **kwargs):
     return self.template.format(**kwargs)
 
 
-from dol.trans import add_wrapper_method
-
-# @add_wrapper_method
+# from dol.trans import add_wrapper_method
+#
+# # @add_wrapper_method
 class StrTupleDict(object):
     def __init__(
         self,
