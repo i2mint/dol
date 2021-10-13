@@ -2525,6 +2525,45 @@ def add_store_method(
     return StoreWithAddedMethods
 
 
+class MapInvertabilityError(ValueError):
+    """To be used to indicate that a mapping isn't, or wouldn't be, invertible"""
+
+
+class CachedInvertibleTrans:
+    """
+    >>> t = CachedInvertibleTrans(lambda x: x[1])
+    >>> t.ingress('ab')
+    'b'
+    >>> t.ingress((1, 2))
+    2
+    >>> t.egress('b')
+    'ab'
+    >>> t.egress(2)
+    (1, 2)
+    """
+
+    def __init__(self, trans_func: Callable):
+        self.trans_func = trans_func
+        self.ingress_map = dict()
+        self.egress_map = dict()
+
+    def ingress(self, x):
+        if x not in self.ingress_map:
+            y = self.trans_func(x)
+            self.ingress_map[x] = y
+            if y in self.egress_map:
+                raise MapInvertabilityError(
+                    f'egress_map (the inverse map) already had key: {y}'
+                )
+            self.egress_map[y] = x
+            return y
+        else:
+            return self.ingress_map[x]
+
+    def egress(self, y):
+        return self.egress_map[y]
+
+
 ########## To be deprecated ############################################################################################
 
 # TODO: Factor out the method injection pattern (e.g. __getitem__, __setitem__ and __delitem__ are nearly identical)
