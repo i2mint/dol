@@ -59,13 +59,10 @@ class iSliceStore(Mapping):
     def __init__(self, store):
         self.store = store
 
-    def _get_key(self, k: int):
-        return next(islice(self.store.keys(), k, k + 1))
-
-    def _get_keys(self, k: slice):
+    def _get_islice(self, k: slice):
         start, stop, step = k.start, k.stop, k.step
-        assert (step is None) or (step > 0), "step of slice can't be negative"
 
+        assert (step is None) or (step > 0), "step of slice can't be negative"
         negative_start = start is not None and start < 0
         negative_stop = stop is not None and stop < 0
         if negative_start or negative_stop:
@@ -81,7 +78,7 @@ class iSliceStore(Mapping):
         if not isinstance(k, slice):
             return self.store[k]
         else:
-            return map(self.store.__getitem__, self._get_keys(k))
+            return map(self.store.__getitem__, self._get_islice(k))
 
     def __iter__(self):
         return iter(self.store)
