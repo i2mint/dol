@@ -133,6 +133,34 @@ class KvReader(Collection, Mapping):
     """Acts as a Mapping abc, but with default __len__ (implemented by counting keys)
     and head method to get the first (k, v) item of the store"""
 
+    def head(self):
+        """Get the first (key, value) pair"""
+        for k, v in self.items():
+            return k, v
+
+    def __reversed__(self):
+        """The __reversed__ is disabled at the base, but can be re-defined in subclasses.
+        Rationale: KvReader is meant to wrap a variety of storage backends or key-value
+        perspectives thereof.
+        Not all of these would have a natural or intuitive order nor do we want to
+        incur the cost of maintaining one systematically.
+
+        If you need a reversed list, here's one way to do it, but note that it
+        depends on how self iterates, which is not even assured to be consistent at
+        every call:
+        ```
+        reversed = list(self)[::-1]
+        ```
+
+        If the keys are comparable, therefore sortable, another natural option would be:
+        ```
+        reversed = sorted(self)[::-1]
+        ```
+        """
+        raise NotImplementedError(__doc__)
+
+    # Mapping Views.
+
     KeysView = BaseKeysView
     ValuesView = BaseValuesView
     ItemsView = BaseItemsView
@@ -146,27 +174,8 @@ class KvReader(Collection, Mapping):
     def items(self):
         return self.ItemsView(self)
 
-    def head(self):
-        for k, v in self.items():
-            return k, v
 
-    def __reversed__(self):
-        """The __reversed__ is disabled at the base, but can be re-defined in subclasses.
-        Rationale: KvReader is meant to wrap a variety of storage backends or key-value perspectives thereof.
-        Not all of these would have a natural or intuitive order nor do we want to maintain one systematically.
 
-        If you need a reversed list, here's one way to do it, but note that it
-        depends on how self iterates, which is not even assured to be consistent at every call:
-        ```
-        reversed = list(self)[::-1]
-        ```
-
-        If the keys are comparable, therefore sortable, another natural option would be:
-        ```
-        reversed = sorted(self)[::-1]
-        ```
-        """
-        raise NotImplementedError(__doc__)
 
 
 Reader = KvReader  # alias
@@ -529,7 +538,18 @@ class Store(KvPersister):
     >>> s._obj_of_data=lambda data: ord(data)
     >>> test_store(s)
 
-    >>> # defining own views #########################################
+    Defining your own "Mapping Views".
+
+    When you do a `.keys()`, a `.values()` or `.items()` you're getting a `MappingView`
+    instance; an iterable and sized container that provides some methods to access
+    particular aspects of the wrapped mapping.
+
+    If you need to customize the behavior of these instances, you should avoid
+    overriding the `keys`, `values` or `items` methods directly, but instead
+    override the `KeysView`, `ValuesView` or `ItemsView` classes that they use.
+
+    For more, see: https://github.com/i2mint/dol/wiki/Mapping-Views
+
     >>> from collections.abc import KeysView, ValuesView, ItemsView
     >>> from dol.util import wraps
     >>> def add_print_to_iter(wrapped_cls):
@@ -605,20 +625,20 @@ class Store(KvPersister):
     _data_of_obj = static_identity_method
     _obj_of_data = static_identity_method
 
-    KeysView = BaseKeysView
-    ValuesView = BaseValuesView
-    ItemsView = BaseItemsView
-
-    def keys(self):
-        # each of these methods use the factory method on self,
-        # here that's self.KeysView(), and expect it to take specific arguments.
-        return self.KeysView(self)
-
-    def values(self):
-        return self.ValuesView(self)
-
-    def items(self):
-        return self.ItemsView(self)
+    # KeysView = BaseKeysView
+    # ValuesView = BaseValuesView
+    # ItemsView = BaseItemsView
+    #
+    # def keys(self):
+    #     # each of these methods use the factory method on self,
+    #     # here that's self.KeysView(), and expect it to take specific arguments.
+    #     return self.KeysView(self)
+    #
+    # def values(self):
+    #     return self.ValuesView(self)
+    #
+    # def items(self):
+    #     return self.ItemsView(self)
 
     _max_repr_size = None
 
