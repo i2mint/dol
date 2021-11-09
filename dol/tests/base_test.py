@@ -71,7 +71,11 @@ def test_mapping_views():
     # But other things still work
     # Note: Using sorted instead of list here, to not be sensitive to ordering differences that occur with set.
     assert sorted(wwd) == ['a', 'b', 'c']
-    assert sorted(wwd.values()) == [1, 3, 3]  # different than in assert_store_functionality
+    assert sorted(wwd.values()) == [
+        1,
+        3,
+        3,
+    ]  # different than in assert_store_functionality
     assert sorted(wwd.keys()) == ['a', 'b', 'c']
     assert isinstance(wwd.values().distinct(), set)
     assert sorted(wwd.values().distinct()) == [1, 3]
