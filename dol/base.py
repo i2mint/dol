@@ -128,8 +128,22 @@ class Collection(CollectionABC):
 #     except KeyError:
 #         return False
 
+class MappingViewMixin:
+    KeysView: type = BaseKeysView
+    ValuesView: type = BaseValuesView
+    ItemsView: type = BaseItemsView
 
-class KvReader(Collection, Mapping):
+    def keys(self) -> KeysView:
+        return self.KeysView(self)
+
+    def values(self) -> ValuesView:
+        return self.ValuesView(self)
+
+    def items(self) -> ItemsView:
+        return self.ItemsView(self)
+
+
+class KvReader(MappingViewMixin, Collection, Mapping):
     """Acts as a Mapping abc, but with default __len__ (implemented by counting keys)
     and head method to get the first (k, v) item of the store"""
 
@@ -158,23 +172,6 @@ class KvReader(Collection, Mapping):
         ```
         """
         raise NotImplementedError(__doc__)
-
-    # Mapping Views.
-
-    KeysView = BaseKeysView
-    ValuesView = BaseValuesView
-    ItemsView = BaseItemsView
-
-    def keys(self):
-        return self.KeysView(self)
-
-    def values(self):
-        return self.ValuesView(self)
-
-    def items(self):
-        return self.ItemsView(self)
-
-
 
 
 

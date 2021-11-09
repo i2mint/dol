@@ -2,7 +2,7 @@
 from functools import wraps, partial, reduce
 import types
 from inspect import signature, Parameter
-from typing import Union, Iterable, Optional, Collection, Callable
+from typing import Union, Iterable, Optional, Collection, Callable, Any
 from warnings import warn
 from collections.abc import Iterable, KeysView, ValuesView, ItemsView
 
@@ -1177,6 +1177,7 @@ def iterate_values_and_accumulate_non_error_keys(
 def take_everything(key):
     return True
 
+FiltFunc = Callable[[Any], bool]
 
 @store_decorator
 def filt_iter(
