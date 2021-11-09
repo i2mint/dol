@@ -133,6 +133,19 @@ class KvReader(Collection, Mapping):
     """Acts as a Mapping abc, but with default __len__ (implemented by counting keys)
     and head method to get the first (k, v) item of the store"""
 
+    KeysView = BaseKeysView
+    ValuesView = BaseValuesView
+    ItemsView = BaseItemsView
+
+    def keys(self):
+        return self.KeysView(self)
+
+    def values(self):
+        return self.ValuesView(self)
+
+    def items(self):
+        return self.ItemsView(self)
+
     def head(self):
         for k, v in self.items():
             return k, v
@@ -515,6 +528,56 @@ class Store(KvPersister):
     >>> s._data_of_obj=lambda obj: chr(obj)
     >>> s._obj_of_data=lambda data: ord(data)
     >>> test_store(s)
+
+    >>> # defining own views #########################################
+    >>> from collections.abc import KeysView, ValuesView, ItemsView
+    >>> from dol.util import wraps
+    >>> def add_print_to_iter(wrapped_cls):
+    ...     @wraps(wrapped_cls.__iter__)
+    ...     def __iter__(self):
+    ...         print(f'Calling {type(self).__name__}.__iter__')
+    ...         return super(wrapped_cls, self).__iter__()
+    ...     wrapped_cls.__iter__ = __iter__
+    ...     return wrapped_cls
+    ...
+    >>> @add_print_to_iter
+    ... class WrappedKeysView(KeysView):
+    ...     pass
+    >>> @add_print_to_iter
+    ... class WrappedValuesView(ValuesView):
+    ...     pass
+    >>> @add_print_to_iter
+    ... class WrappedItemsView(ItemsView):
+    ...     pass
+
+    >>> class WrappedDict(KvReader,
+    ...     keys_view=WrappedKeysView,
+    ...     values_view=WrappedValuesView,
+    ...     items_view=WrappedItemsView,
+    ... ):
+    ...     KeysView = WrappedKeysView
+    ...     ValuesView = WrappedValuesView
+    ...     ItemsView = WrappedItemsView
+    ...     def values(self):
+    ...         return ValuesView(self)
+
+    def items(self) -> MongoItemsView:
+        return MongoItemsView(self)
+
+    >>> d = WrappedDict(a=1, b=2, c=2)
+    >>> list(d.keys())
+    ['a', 'b', 'c']
+    >>> s = Store(d)
+    >>> list(s.keys())
+    Calling WrappedKeysView.__iter__
+    ['a', 'b', 'c']
+    >>> list(s.values())
+    Calling WrappedValuesView.__iter__
+    [1, 2, 2]
+    >>> list(s.items())
+    Calling WrappedItemsView.__iter__
+    [('a', 1), ('b', 2), ('c', 2)]
+
     """
 
     _state_attrs = ['store', '_class_wrapper']
@@ -525,7 +588,17 @@ class Store(KvPersister):
 
         if isinstance(store, type):
             store = store()
+
         self.store = store
+
+        if hasattr(self.store, 'KeysView'):
+            self.KeysView = self.store.KeysView
+
+        if hasattr(self.store, 'ValuesView'):
+            self.ValuesView = self.store.ValuesView
+
+        if hasattr(self.store, 'ItemsView'):
+            self.ItemsView = self.store.ItemsView
 
     _id_of_key = static_identity_method
     _key_of_id = static_identity_method
