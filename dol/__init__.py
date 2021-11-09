@@ -37,7 +37,7 @@ from dol.base import (
     Store,
     BaseKeysView,
     BaseValuesView,
-    BaseItemsView
+    BaseItemsView,
 )
 
 from dol.trans import (

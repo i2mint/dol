@@ -128,6 +128,7 @@ class Collection(CollectionABC):
 #     except KeyError:
 #         return False
 
+
 class MappingViewMixin:
     KeysView: type = BaseKeysView
     ValuesView: type = BaseValuesView
@@ -172,7 +173,6 @@ class KvReader(MappingViewMixin, Collection, Mapping):
         ```
         """
         raise NotImplementedError(__doc__)
-
 
 
 Reader = KvReader  # alias
@@ -535,7 +535,7 @@ class Store(KvPersister):
     >>> s._obj_of_data=lambda data: ord(data)
     >>> test_store(s)
 
-    Defining your own "Mapping Views".
+    Note on defining your own "Mapping Views".
 
     When you do a `.keys()`, a `.values()` or `.items()` you're getting a `MappingView`
     instance; an iterable and sized container that provides some methods to access
@@ -546,54 +546,6 @@ class Store(KvPersister):
     override the `KeysView`, `ValuesView` or `ItemsView` classes that they use.
 
     For more, see: https://github.com/i2mint/dol/wiki/Mapping-Views
-
-    >>> from collections.abc import KeysView, ValuesView, ItemsView
-    >>> from dol.util import wraps
-    >>> def add_print_to_iter(wrapped_cls):
-    ...     @wraps(wrapped_cls.__iter__)
-    ...     def __iter__(self):
-    ...         print(f'Calling {type(self).__name__}.__iter__')
-    ...         return super(wrapped_cls, self).__iter__()
-    ...     wrapped_cls.__iter__ = __iter__
-    ...     return wrapped_cls
-    ...
-    >>> @add_print_to_iter
-    ... class WrappedKeysView(KeysView):
-    ...     pass
-    >>> @add_print_to_iter
-    ... class WrappedValuesView(ValuesView):
-    ...     pass
-    >>> @add_print_to_iter
-    ... class WrappedItemsView(ItemsView):
-    ...     pass
-
-    >>> class WrappedDict(KvReader,
-    ...     keys_view=WrappedKeysView,
-    ...     values_view=WrappedValuesView,
-    ...     items_view=WrappedItemsView,
-    ... ):
-    ...     KeysView = WrappedKeysView
-    ...     ValuesView = WrappedValuesView
-    ...     ItemsView = WrappedItemsView
-    ...     def values(self):
-    ...         return ValuesView(self)
-
-    def items(self) -> MongoItemsView:
-        return MongoItemsView(self)
-
-    >>> d = WrappedDict(a=1, b=2, c=2)
-    >>> list(d.keys())
-    ['a', 'b', 'c']
-    >>> s = Store(d)
-    >>> list(s.keys())
-    Calling WrappedKeysView.__iter__
-    ['a', 'b', 'c']
-    >>> list(s.values())
-    Calling WrappedValuesView.__iter__
-    [1, 2, 2]
-    >>> list(s.items())
-    Calling WrappedItemsView.__iter__
-    [('a', 1), ('b', 2), ('c', 2)]
 
     """
 
@@ -621,21 +573,6 @@ class Store(KvPersister):
     _key_of_id = static_identity_method
     _data_of_obj = static_identity_method
     _obj_of_data = static_identity_method
-
-    # KeysView = BaseKeysView
-    # ValuesView = BaseValuesView
-    # ItemsView = BaseItemsView
-    #
-    # def keys(self):
-    #     # each of these methods use the factory method on self,
-    #     # here that's self.KeysView(), and expect it to take specific arguments.
-    #     return self.KeysView(self)
-    #
-    # def values(self):
-    #     return self.ValuesView(self)
-    #
-    # def items(self):
-    #     return self.ItemsView(self)
 
     _max_repr_size = None
 
@@ -684,19 +621,11 @@ class Store(KvPersister):
         yield from (self._key_of_id(k) for k in self.store)
         # return map(self._key_of_id, self.store.__iter__())
 
-    # def items(self) -> ItemIter:
-    #     if hasattr(self.store, 'items'):
-    #         yield from ((self._key_of_id(k), self._obj_of_data(v)) for k, v in self.store.items())
-    #     else:
-    #         yield from ((self._key_of_id(k), self._obj_of_data(self.store[k])) for k in self.store.__iter__())
-
     def __len__(self) -> int:
         return len(self.store)
-        # return self.store.__len__()
 
     def __contains__(self, k) -> bool:
         return self._id_of_key(k) in self.store
-        # return self.store.__contains__(self._id_of_key(k))
 
     def head(self) -> Item:
         k = None
