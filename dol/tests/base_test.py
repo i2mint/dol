@@ -58,7 +58,7 @@ def test_mapping_views(
     value_input_mapper,
     value_output_mapper,
     postget,
-    key_filter
+    key_filter,
 ):
     def assert_store_functionality(
         store,
@@ -66,25 +66,27 @@ def test_mapping_views(
         value_output_mapper=None,
         postget=None,
         key_filter=None,
-        collection=list
+        collection=list,
     ):
         key_output_mapper = key_output_mapper or (lambda k: k)
         value_output_mapper = value_output_mapper or (lambda v: v)
         postget = postget or (lambda k, v: v)
         key_filter = key_filter or (lambda k: True)
-        assert collection(store) == collection([
-            key_output_mapper(k) for k in source_dict if key_filter(k)
-        ])
+        assert collection(store) == collection(
+            [key_output_mapper(k) for k in source_dict if key_filter(k)]
+        )
         assert not store.keys_iterated
-        assert collection(store.keys()) == collection([
-            key_output_mapper(k) for k in source_dict.keys() if key_filter(k)
-        ])
+        assert collection(store.keys()) == collection(
+            [key_output_mapper(k) for k in source_dict.keys() if key_filter(k)]
+        )
         assert store.keys_iterated
-        assert collection(store.values()) == collection([
-            postget(key_output_mapper(k), value_output_mapper(v))
-            for k, v in source_dict.items()
-            if key_filter(k)
-        ])
+        assert collection(store.values()) == collection(
+            [
+                postget(key_output_mapper(k), value_output_mapper(v))
+                for k, v in source_dict.items()
+                if key_filter(k)
+            ]
+        )
         assert sorted(store.values().distinct()) == sorted(
             {
                 postget(key_output_mapper(k), value_output_mapper(v))
@@ -92,14 +94,16 @@ def test_mapping_views(
                 if key_filter(k)
             }
         )
-        assert collection(store.items()) == collection([
+        assert collection(store.items()) == collection(
             [
-                key_output_mapper(k),
-                postget(key_output_mapper(k), value_output_mapper(v)),
+                [
+                    key_output_mapper(k),
+                    postget(key_output_mapper(k), value_output_mapper(v)),
+                ]
+                for k, v in source_dict.items()
+                if key_filter(k)
             ]
-            for k, v in source_dict.items()
-            if key_filter(k)
-        ])
+        )
 
     wd = WrappedDict(**source_dict)
     assert_store_functionality(wd)
