@@ -2,9 +2,14 @@
 from functools import wraps, partial, reduce
 import types
 from inspect import signature, Parameter
-from typing import Union, Iterable, Optional, Collection, Callable
+from typing import Union, Iterable, Optional, Collection, Callable, Any
 from warnings import warn
-from collections.abc import Iterable, KeysView, ValuesView, ItemsView
+from collections.abc import Iterable
+from collections.abc import (
+    KeysView as BaseKeysView,
+    ValuesView as BaseValuesView,
+    ItemsView as BaseItemsView,
+)
 
 from dol.errors import SetattrNotAllowed
 from dol.base import Store, KvReader, AttrNames, kv_walk
@@ -864,7 +869,7 @@ def _cached_keys(
 
     # The following class is not the class that will be returned, but the class from which we'll take the methods
     #   that will be copied in the class that will be returned.
-    @_define_keys_values_and_items_according_to_iter
+    # @_define_keys_values_and_items_according_to_iter
     class CachedIterMethods:
         _explicit_keys = False
         _updatable_cache = False
@@ -902,10 +907,6 @@ def _cached_keys(
 
         def __len__(self):
             return len(self._keys_cache)
-
-        def items(self):
-            for k in self._keys_cache:
-                yield k, self[k]
 
         def __contains__(self, k):
             return k in self._keys_cache
@@ -1023,16 +1024,22 @@ def catch_and_cache_error_keys(
 
 
     See that? First we had three keys, then we iterated and got only 2 items (fortunately,
-    we specified an ``error_callback`` so we ccould see that the iteration actually dropped a key).
-    That's strange. And even stranger is the fact that when we list our keys again, we get only two.
+    we specified an ``error_callback`` so we ccould see that the iteration actually
+    dropped a key).
+
+    That's strange. And even stranger is the fact that when we list our keys again,
+    we get only two.
 
     You don't like it? Neither do I. But
+
     - It's not a completely outrageous behavior -- if you're talking to live data, it
         often happens that you get more, or less, from one second to another.
-    - This store isn't meant to be long living, but rather meant to solve the problem of skiping
-        items that are problematic (for example, malformatted files), with a trace of
-        what was skipped and what's valid (in case we need to iterate again and don't want to
-        bear the hit of requesting values for keys we already know are problematic.
+
+    - This store isn't meant to be long living, but rather meant to solve the problem of
+        skiping items that are problematic (for example, malformatted files),
+        with a trace of what was skipped and what's valid (in case we need to iterate
+        again and don't want to bear the hit of requesting values for keys we already
+        know are problematic.
 
     Here's a little peep of what is happening under the hood.
     Meet ``_keys_cache`` and ``_error_keys`` sets (yes, unordered -- so know it) that are meant
@@ -1059,15 +1066,16 @@ def catch_and_cache_error_keys(
     >>> list(s)
     ['black', 'friday', 'frenzy']
 
-    Meet ``use_cached_keys``: He's the culprit. It's a flag that indicates whether we should be
-    using the cached keys or not. Obviously, it'll start off being ``False``:
+    Meet ``use_cached_keys``: He's the culprit. It's a flag that indicates whether
+    we should be using the cached keys or not. Obviously, it'll start off being
+    ``False``:
 
     >>> s.use_cached_keys
     False
 
     Now we could set it to ``True`` manually to change the mode.
-    But know that this switch happens automatically (UNLESS you specify otherwise by saying:
-    ``use_cached_keys_after_completed_iter=False``) when ever you got through a
+    But know that this switch happens automatically (UNLESS you specify otherwise by
+    saying:``use_cached_keys_after_completed_iter=False``) when ever you got through a
     VALUE-PRODUCING iteration (i.e. entirely consuming `items()` or `values()`).
 
     >>> sorted(s.values())  # sorting to get consistent output
@@ -1080,16 +1088,19 @@ def catch_and_cache_error_keys(
         store, type
     ), f'store_cls must be a type, was a {type(store)}: {store}'
 
-    # assert isinstance(store, Mapping), f"store_cls must be a Mapping. Was not. mro is {store.mro()}: {store}"
+    # assert isinstance(store, Mapping), f"store_cls must be a Mapping.
+    #  Was not. mro is {store.mro()}: {store}"
 
     # class cached_cls(store):
     #     _keys_cache = None
     #     _error_keys = None
 
-    # The following class is not the class that will be returned, but the class from which we'll take the methods
+    from dol.base import MappingViewMixin
+
+    # The following class is not the class that will be returned,
+    #   but the class from which we'll take the methods
     #   that will be copied in the class that will be returned.
-    # @_define_keys_values_and_items_according_to_iter
-    class CachedKeyErrorsStore(store):
+    class CachedKeyErrorsStore(MappingViewMixin, store):
         @wraps(store.__init__)
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -1110,15 +1121,19 @@ def catch_and_cache_error_keys(
                     v = super().__getitem__(k)
                     self._keys_cache.add(k)
                     return v
-                except self.errors_caught:
+                except self.errors_caught as err:
                     self._error_keys.add(k)
+                    # if self.error_callback is not None:
+                    #     self.error_callback(store, k, err)
                     raise
 
         def __iter__(self):
             # if getattr(self, '_keys_cache', None) is None:
-            #     self._keys_cache = iter_to_container(super(cached_cls, self).__iter__())
+            #    self._keys_cache = iter_to_container(super(cached_cls, self).__iter__())
             if self.use_cached_keys:
                 yield from self._keys_cache
+                if self.use_cached_keys_after_completed_iter:
+                    self.use_cached_keys = True
             else:
                 yield from super().__iter__()
 
@@ -1128,25 +1143,36 @@ def catch_and_cache_error_keys(
             else:
                 return super().__len__()
 
-        def items(self):
-            if self.use_cached_keys:
-                for k in self._keys_cache:
-                    yield k, self[k]
-            else:
-                for k in self:
-                    try:
-                        yield k, self[k]
-                    except self.errors_caught as err:
-                        if self.error_callback is not None:
-                            self.error_callback(store, k, err)
-            if self.use_cached_keys_after_completed_iter:
-                self.use_cached_keys = True
+        class ItemsView(BaseKeysView):
+            def __iter__(self):
+                m = self._mapping
+                if m.use_cached_keys:
+                    for k in m._keys_cache:
+                        yield k, m[k]
+                else:
+                    for k in m:
+                        try:
+                            yield k, m[k]
+                        except m.errors_caught as err:
+                            if m.error_callback is not None:
+                                m.error_callback(store, k, err)
+                if m.use_cached_keys_after_completed_iter:
+                    m.use_cached_keys = True
 
-        def values(self):
-            if self.use_cached_keys:
-                yield from (self[k] for k in self._keys_cache)
-            else:
-                yield from (v for k, v in self.items())
+            def __contains__(self, k):
+                m = self._mapping
+                if m.use_cached_keys:
+                    return k in m._keys_cache
+                else:
+                    return k in m
+
+        class ValuesView(BaseValuesView):
+            def __iter__(self):
+                m = self._mapping
+                if m.use_cached_keys:
+                    yield from (m[k] for k in m._keys_cache)
+                else:
+                    yield from (v for k, v in m.items())
 
         def __contains__(self, k):
             if self.use_cached_keys:
@@ -1176,6 +1202,9 @@ def iterate_values_and_accumulate_non_error_keys(
 
 def take_everything(key):
     return True
+
+
+FiltFunc = Callable[[Any], bool]
 
 
 @store_decorator
@@ -1254,7 +1283,6 @@ def _filt_iter(store_cls: type, filt, name, __module__):
         yield from filter(filt, super(store_cls, self).__iter__())
 
     store_cls.__iter__ = __iter__
-    _define_keys_values_and_items_according_to_iter(store_cls)
 
     def __len__(self):
         c = 0
@@ -1315,46 +1343,6 @@ def _filt_iter(store_cls: type, filt, name, __module__):
 # Wrapping keys and values
 
 self_names = frozenset(['self', 'store'])
-
-
-def _define_keys_values_and_items_according_to_iter(cls):
-    if hasattr(cls, 'keys'):
-
-        def keys(self):
-            # yield from self.__iter__()  # TODO: Should it be iter(self)?
-            return KeysView(self)
-
-        cls.keys = keys
-
-    if hasattr(cls, 'values'):
-
-        def values(self):
-            # yield from (self[k] for k in self)
-            return ValuesView(self)
-
-        cls.values = values
-
-    if hasattr(cls, 'items'):
-
-        def items(self):
-            # yield from ((k, self[k]) for k in self)
-            return ItemsView(self)
-
-        cls.items = items
-
-    return cls
-
-
-# TODO: would like to keep dict_keys methods (like __sub__, isdisjoint). How do I do so?
-class _DefineKeysValuesAndItemsAccordingToIter:
-    def keys(self):
-        yield from self.__iter__()  # TODO: Should it be iter(self)?
-
-    def values(self):
-        yield from (self[k] for k in self)
-
-    def items(self):
-        yield from ((k, self[k]) for k in self)
 
 
 # TODO: Consider deprecation. Besides the name arg (whose usefulness is doubtful), this is just Store.wrap
@@ -2562,168 +2550,3 @@ class CachedInvertibleTrans:
 
     def egress(self, y):
         return self.egress_map[y]
-
-
-########## To be deprecated ############################################################################################
-
-# TODO: Factor out the method injection pattern (e.g. __getitem__, __setitem__ and __delitem__ are nearly identical)
-
-
-def filtered_iter(
-    filt: Union[callable, Iterable],
-    store=None,
-    *,
-    name=None,
-    __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
-):
-    """Make a wrapper that will transform a store (class or instance thereof) into a sub-store (i.e. subset of keys).
-
-    Args:
-        filt: A callable or iterable:
-            callable: Boolean filter function. A func taking a key and and returns True iff the key should be included.
-            iterable: The collection of keys you want to filter "in"
-        name: The name to give the wrapped class
-
-    Returns: A wrapper (that then needs to be applied to a store instance or class.
-
-    # Commented out doctests since filtered_iter is deprecated
-    #
-    # >>> filtered_dict = filtered_iter(filt=lambda k: (len(k) % 2) == 1)(dict)  # keep only odd length keys
-    # >>>
-    # >>> s = filtered_dict({'a': 1, 'bb': object, 'ccc': 'a string', 'dddd': [1, 2]})
-    # >>>
-    # >>> list(s)
-    # ['a', 'ccc']
-    # >>> 'a' in s  # True because odd (length) key
-    # True
-    # >>> 'bb' in s  # False because odd (length) key
-    # False
-    # >>> assert s.get('bb', None) == None
-    # >>> len(s)
-    # 2
-    # >>> list(s.keys())
-    # ['a', 'ccc']
-    # >>> list(s.values())
-    # [1, 'a string']
-    # >>> list(s.items())
-    # [('a', 1), ('ccc', 'a string')]
-    # >>> s.get('a')
-    # 1
-    # >>> assert s.get('bb') is None
-    # >>> s['x'] = 10
-    # >>> list(s.items())
-    # [('a', 1), ('ccc', 'a string'), ('x', 10)]
-    # >>> try:
-    # ...     s['xx'] = 'not an odd key'
-    # ...     raise ValueError("This should have failed")
-    # ... except KeyError:
-    # ...     pass
-    """
-
-    from warnings import warn
-
-    warn(
-        '''filtered_iter is on it's way to be deprecated. Use filt_iter instead.
-     To do so, replace:
-        - imports of filtered_iter by filt_iter
-        - non-keyword arguments by explicitly using arg names, for instance:
-            ```filtered_iter(lambda x: True) -> filt_iter(filt=lambda x: True)```
-    '''
-    )
-    if store is None:
-        if not callable(filt):  # if filt is not a callable...
-            # ... assume it's the collection of keys you want and make a filter function to filter those "in".
-            assert next(iter(filt)), 'filt should be a callable, or an iterable'
-            keys_that_should_be_filtered_in = set(filt)
-
-            def filt(k):
-                return k in keys_that_should_be_filtered_in
-
-        def wrap(store, name=name, __module__=__module__):
-            if not isinstance(store, type):  # then consider it to be an instance
-                store_instance = store
-                WrapperStore = filtered_iter(filt, name=name, __module__=__module__)(
-                    Store
-                )
-                return WrapperStore(store_instance)
-            else:  # it's a class we're wrapping
-                collection_cls = store
-                __module__ = __module__ or getattr(collection_cls, '__module__', None)
-
-                name = name or 'Filtered' + get_class_name(collection_cls)
-                wrapped_cls = type(name, (collection_cls,), {})
-
-                def __iter__(self):
-                    yield from filter(filt, super(wrapped_cls, self).__iter__())
-
-                wrapped_cls.__iter__ = __iter__
-
-                _define_keys_values_and_items_according_to_iter(wrapped_cls)
-
-                def __len__(self):
-                    c = 0
-                    for _ in self.__iter__():
-                        c += 1
-                    return c
-
-                wrapped_cls.__len__ = __len__
-
-                def __contains__(self, k):
-                    if filt(k):
-                        return super(wrapped_cls, self).__contains__(k)
-                    else:
-                        return False
-
-                wrapped_cls.__contains__ = __contains__
-
-                if hasattr(wrapped_cls, '__getitem__'):
-
-                    def __getitem__(self, k):
-                        if filt(k):
-                            return super(wrapped_cls, self).__getitem__(k)
-                        else:
-                            raise KeyError(f'Key not in store: {k}')
-
-                    wrapped_cls.__getitem__ = __getitem__
-
-                if hasattr(wrapped_cls, 'get'):
-
-                    def get(self, k, default=None):
-                        if filt(k):
-                            return super(wrapped_cls, self).get(k, default)
-                        else:
-                            return default
-
-                    wrapped_cls.get = get
-
-                if hasattr(wrapped_cls, '__setitem__'):
-
-                    def __setitem__(self, k, v):
-                        if filt(k):
-                            return super(wrapped_cls, self).__setitem__(k, v)
-                        else:
-                            raise KeyError(f'Key not in store: {k}')
-
-                    wrapped_cls.__setitem__ = __setitem__
-
-                if hasattr(wrapped_cls, '__delitem__'):
-
-                    def __delitem__(self, k):
-                        if filt(k):
-                            return super(wrapped_cls, self).__delitem__(k)
-                        else:
-                            raise KeyError(f'Key not in store: {k}')
-
-                    wrapped_cls.__delitem__ = __delitem__
-
-                if __module__ is not None:
-                    wrapped_cls.__module__ = __module__
-
-                if hasattr(collection_cls, '__doc__'):
-                    wrapped_cls.__doc__ = collection_cls.__doc__
-
-                return wrapped_cls
-
-        return wrap
-    else:
-        return filtered_iter(filt, store=None, name=name, __module__=__module__)(store)

@@ -28,12 +28,16 @@ from dol.util import Pipe, lazyprop, partialclass, groupby, regroupby, igroupby
 
 from dol.base import (
     Collection,
+    MappingViewMixin,
     KvReader,
     KvPersister,
     Reader,
     Persister,
     kv_walk,
     Store,
+    BaseKeysView,
+    BaseValuesView,
+    BaseItemsView,
 )
 
 from dol.trans import (
