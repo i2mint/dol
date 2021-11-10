@@ -1,82 +1,129 @@
 """Testing base.py objects"""
 
-from dol import MappingViewMixin, BaseKeysView, BaseValuesView, BaseItemsView
+import pytest
+from dol import (
+    MappingViewMixin,
+    BaseKeysView,
+    BaseValuesView,
+    BaseItemsView,
+    Store,
+    wrap_kvs,
+    filt_iter,
+    cached_keys,
+)
+from dol.trans import take_everything
 
 
-def test_mapping_views():
-    class WrappedDict(MappingViewMixin, dict):
-        # you can log method calls
-        class KeysView(BaseKeysView):
-            def __iter__(self):
-                print('A KeysView is being iterated on...')
-                return super().__iter__()
+class WrappedDict(MappingViewMixin, dict):
+    keys_iterated = False
 
-        # You can add functionality:
-        class ValuesView(BaseValuesView):
-            def distinct(self):
-                return set(self._mapping.values())
+    # you can log method calls
+    class KeysView(BaseKeysView):
+        def __iter__(self):
+            self._mapping.keys_iterated = True
+            return super().__iter__()
 
-        # you can modify existing functionality:
-        class ItemsView(BaseItemsView):
-            """Just like BaseKeysView, but yields the [key,val] pairs as lists instead of tuples"""
+    # You can add functionality:
+    class ValuesView(BaseValuesView):
+        def distinct(self):
+            return set(self._mapping.values())
 
-            def __iter__(self):
-                return map(list, super().__iter__())
+    # you can modify existing functionality:
+    class ItemsView(BaseItemsView):
+        """Just like BaseKeysView, but yields the [key,val] pairs as lists instead of tuples"""
 
-    wd = WrappedDict(a=3, b=1, c=3)
+        def __iter__(self):
+            return map(list, super().__iter__())
 
-    def assert_store_functionality(s):
-        assert list(s) == ['a', 'b', 'c']
-        assert list(s.values()) == [3, 1, 3]
-        assert list(s.keys()) == ['a', 'b', 'c']
-        assert isinstance(s.values().distinct(), set)
-        assert sorted(s.values().distinct()) == [1, 3]
-        assert list(s.items()) == [['a', 3], ['b', 1], ['c', 3]]
 
+@pytest.mark.parametrize(
+    'source_dict, key_input_mapper, key_output_mapper, value_input_mapper, value_output_mapper, postget, key_filter',
+    [
+        ({'a': 1, 'b': 2, 'c': 3}, None, None, None, None, None, None),
+        (
+            {'a': 3, 'b': 1, 'c': 3},  # source_dict
+            lambda k: k.lower(),  # key_input_mapper
+            lambda k: k.upper(),  # key_output_mapper
+            lambda v: v // 10,  # value_input_mapper
+            lambda v: v * 10,  # value_output_mapper
+            lambda k, v: f'{k}{v}',  # postget
+            lambda k: k in {'a', 'c'},  # key_filter
+        ),
+    ],
+)
+def test_mapping_views(
+    source_dict,
+    key_input_mapper,
+    key_output_mapper,
+    value_input_mapper,
+    value_output_mapper,
+    postget,
+    key_filter,
+):
+    def assert_store_functionality(
+        store,
+        key_output_mapper=None,
+        value_output_mapper=None,
+        postget=None,
+        key_filter=None,
+    ):
+        key_output_mapper = key_output_mapper or (lambda k: k)
+        value_output_mapper = value_output_mapper or (lambda v: v)
+        postget = postget or (lambda k, v: v)
+        key_filter = key_filter or (lambda k: True)
+        assert list(store) == [
+            key_output_mapper(k) for k in source_dict if key_filter(k)
+        ]
+        assert not store.keys_iterated
+        assert list(store.keys()) == [
+            key_output_mapper(k) for k in source_dict.keys() if key_filter(k)
+        ]
+        assert store.keys_iterated
+        assert list(store.values()) == [
+            postget(key_output_mapper(k), value_output_mapper(v))
+            for k, v in source_dict.items()
+            if key_filter(k)
+        ]
+        assert sorted(store.values().distinct()) == sorted(
+            {
+                postget(key_output_mapper(k), value_output_mapper(v))
+                for k, v in source_dict.items()
+                if key_filter(k)
+            }
+        )
+        assert list(store.items()) == [
+            [
+                key_output_mapper(k),
+                postget(key_output_mapper(k), value_output_mapper(v)),
+            ]
+            for k, v in source_dict.items()
+            if key_filter(k)
+        ]
+
+    wd = WrappedDict(**source_dict)
     assert_store_functionality(wd)
 
-    from dol import Store
-
-    # testing wrapping an instance:
-    wwd = Store.wrap(wd)
+    wwd = Store.wrap(WrappedDict(**source_dict))
     assert_store_functionality(wwd)
+
     WWD = Store.wrap(WrappedDict)
-    wwd = WWD(a=3, b=1, c=3)
+    wwd = WWD(**source_dict)
     assert_store_functionality(wwd)
-
-    from dol.trans import wrap_kvs, filt_iter, cached_keys
 
     wwd = wrap_kvs(
-        wd,
-        key_of_id=lambda x: x.upper(),
-        id_of_key=lambda x: x.lower(),
-        obj_of_data=lambda x: x * 10,
-        data_of_obj=lambda x: x // 10,
+        WrappedDict(**source_dict),
+        id_of_key=key_input_mapper,
+        key_of_id=key_output_mapper,
+        data_of_obj=value_input_mapper,
+        obj_of_data=value_output_mapper,
+        postget=postget,
     )
-    assert list(wwd) == ['A', 'B', 'C']
-    assert list(wwd.keys()) == ['A', 'B', 'C']
-    assert list(wwd.values()) == [30, 10, 30]
-    assert sorted(wwd.values().distinct()) == [10, 30]
-    assert list(wwd.items()) == [['A', 30], ['B', 10], ['C', 30]]
+    assert_store_functionality(
+        wwd,
+        key_output_mapper=key_output_mapper,
+        value_output_mapper=value_output_mapper,
+        postget=postget,
+    )
 
-    wwd = filt_iter(wd, filt=lambda k: k in {'a', 'c'})
-    assert list(wwd) == ['a', 'c']
-    assert list(wwd.values()) == [3, 3]
-    assert list(wwd.keys()) == ['a', 'c']
-    assert sorted(wwd.values().distinct()) == [3]
-    assert list(wwd.items()) == [['a', 3], ['c', 3]]
-
-    wwd = cached_keys(wd, keys_cache=set)
-    assert wwd._keys_cache == {'a', 'b', 'c'}  # the wrapped store has a cache
-    # But other things still work
-    # Note: Using sorted instead of list here, to not be sensitive to ordering differences that occur with set.
-    assert sorted(wwd) == ['a', 'b', 'c']
-    assert sorted(wwd.values()) == [
-        1,
-        3,
-        3,
-    ]  # different than in assert_store_functionality
-    assert sorted(wwd.keys()) == ['a', 'b', 'c']
-    assert isinstance(wwd.values().distinct(), set)
-    assert sorted(wwd.values().distinct()) == [1, 3]
-    assert sorted(wwd.items()) == [['a', 3], ['b', 1], ['c', 3]]
+    wwd = filt_iter(WrappedDict(**source_dict), filt=key_filter or take_everything)
+    assert_store_functionality(wwd, key_filter=key_filter)
