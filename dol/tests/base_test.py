@@ -17,7 +17,7 @@ from dol.trans import take_everything
 class WrappedDict(MappingViewMixin, dict):
     keys_iterated = False
 
-    # you can log method calls
+    # you can modify the mapping object
     class KeysView(BaseKeysView):
         def __iter__(self):
             self._mapping.keys_iterated = True
@@ -58,7 +58,7 @@ def test_mapping_views(
     value_input_mapper,
     value_output_mapper,
     postget,
-    key_filter,
+    key_filter
 ):
     def assert_store_functionality(
         store,
@@ -66,24 +66,25 @@ def test_mapping_views(
         value_output_mapper=None,
         postget=None,
         key_filter=None,
+        collection=list
     ):
         key_output_mapper = key_output_mapper or (lambda k: k)
         value_output_mapper = value_output_mapper or (lambda v: v)
         postget = postget or (lambda k, v: v)
         key_filter = key_filter or (lambda k: True)
-        assert list(store) == [
+        assert collection(store) == collection([
             key_output_mapper(k) for k in source_dict if key_filter(k)
-        ]
+        ])
         assert not store.keys_iterated
-        assert list(store.keys()) == [
+        assert collection(store.keys()) == collection([
             key_output_mapper(k) for k in source_dict.keys() if key_filter(k)
-        ]
+        ])
         assert store.keys_iterated
-        assert list(store.values()) == [
+        assert collection(store.values()) == collection([
             postget(key_output_mapper(k), value_output_mapper(v))
             for k, v in source_dict.items()
             if key_filter(k)
-        ]
+        ])
         assert sorted(store.values().distinct()) == sorted(
             {
                 postget(key_output_mapper(k), value_output_mapper(v))
@@ -91,14 +92,14 @@ def test_mapping_views(
                 if key_filter(k)
             }
         )
-        assert list(store.items()) == [
+        assert collection(store.items()) == collection([
             [
                 key_output_mapper(k),
                 postget(key_output_mapper(k), value_output_mapper(v)),
             ]
             for k, v in source_dict.items()
             if key_filter(k)
-        ]
+        ])
 
     wd = WrappedDict(**source_dict)
     assert_store_functionality(wd)
@@ -127,3 +128,8 @@ def test_mapping_views(
 
     wwd = filt_iter(WrappedDict(**source_dict), filt=key_filter or take_everything)
     assert_store_functionality(wwd, key_filter=key_filter)
+
+    wwd = cached_keys(WrappedDict(**source_dict), keys_cache=set)
+    assert wwd._keys_cache == set(source_dict)
+    assert isinstance(wwd.values().distinct(), set)
+    assert_store_functionality(wwd, collection=sorted)
