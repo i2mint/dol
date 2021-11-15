@@ -1219,7 +1219,6 @@ class Sig(Signature, Mapping):
             # if a ValueError is raised, return the default_signature
             return default_signature
 
-
     @classmethod
     def sig_or_none(cls, obj):
         """Returns a Sig instance, or None if there was a ValueError trying to
