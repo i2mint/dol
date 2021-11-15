@@ -1217,7 +1217,7 @@ class Sig(Signature, Mapping):
                 return cls(obj)
         except ValueError:
             # if a ValueError is raised, return the default_signature
-            return default_signature
+            return Sig(default_signature)
 
     @classmethod
     def sig_or_none(cls, obj):
