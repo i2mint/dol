@@ -1,16 +1,15 @@
 """Testing base.py objects"""
 
+from typing import Iterable, KT, VT, Tuple
 import pytest
 from dol import (
     MappingViewMixin,
-    BaseKeysView,
-    BaseValuesView,
-    BaseItemsView,
     Store,
     wrap_kvs,
     filt_iter,
     cached_keys,
 )
+from dol.base import BaseItemsView, BaseKeysView, BaseValuesView
 from dol.trans import take_everything
 
 
@@ -19,20 +18,20 @@ class WrappedDict(MappingViewMixin, dict):
 
     # you can modify the mapping object
     class KeysView(BaseKeysView):
-        def __iter__(self):
+        def __iter__(self) -> Iterable[KT]:
             self._mapping.keys_iterated = True
             return super().__iter__()
 
     # You can add functionality:
     class ValuesView(BaseValuesView):
-        def distinct(self):
-            return set(self._mapping.values())
+        def distinct(self) -> Iterable[VT]:
+            return set(super().__iter__())
 
     # you can modify existing functionality:
     class ItemsView(BaseItemsView):
         """Just like BaseKeysView, but yields the [key,val] pairs as lists instead of tuples"""
 
-        def __iter__(self):
+        def __iter__(self) -> Iterable[Tuple[KT, VT]]:
             return map(list, super().__iter__())
 
 

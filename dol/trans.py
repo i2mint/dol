@@ -1544,6 +1544,7 @@ def _wrap_ingoing(
 def wrap_kvs(
     store=None,
     *,
+    wrapper=None,
     name=None,
     key_of_id=None,
     id_of_key=None,
@@ -1690,12 +1691,13 @@ def wrap_kvs(
     """
     arguments = {k: v for k, v in locals().items() if k != 'arguments'}
     store = arguments.pop('store')
+    wrapper = wrapper or Store
     arguments['name'] = arguments['name'] or store.__qualname__ + 'Wrapped'
 
     # return Store.wrap(store, _wrap_kvs)  <-- make this work
 
     class_trans = partial(_wrap_kvs, **arguments)
-    return Store.wrap(store, class_trans=class_trans)
+    return wrapper.wrap(store, class_trans=class_trans)
     # store_cls = Store.wrap(store)
     #
     # return class_trans(store_cls)
@@ -1717,6 +1719,7 @@ def _wrap_kvs(
     outcoming_value_methods=(),
     ingoing_key_methods=(),
     ingoing_value_methods=(),
+    **kwargs
 ):
     for method_name in {'_key_of_id'} | ensure_set(outcoming_key_methods):
         _wrap_outcoming(store_cls, method_name, key_of_id)
