@@ -1719,7 +1719,7 @@ def _wrap_kvs(
     outcoming_value_methods=(),
     ingoing_key_methods=(),
     ingoing_value_methods=(),
-    **kwargs
+    **kwargs,
 ):
     for method_name in {'_key_of_id'} | ensure_set(outcoming_key_methods):
         _wrap_outcoming(store_cls, method_name, key_of_id)
