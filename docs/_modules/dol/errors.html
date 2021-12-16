@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dol.errors &mdash; dol 0.1.56 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/toggleprompt.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> dol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol.html">dol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/appendable.html">dol.appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/base.html">dol.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/caching.html">dol.caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/core.html">dol.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/dig.html">dol.dig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/errors.html">dol.errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/mixins.html">dol.mixins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/naming.html">dol.naming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/signatures.html">dol.signatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/sources.html">dol.sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/base_test.html">dol.tests.base_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/pickability_test.html">dol.tests.pickability_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/util.html">dol.util</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+          <li><a href="../dol.html">dol</a> &raquo;</li>
+      <li>dol.errors</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dol.errors</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Error objects and utils&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span>
+
+
+<span class="c1"># TODO: More on wrapped_callback: Handle *args too. Make it work with builtins (no signature!)</span>
+<span class="c1"># TODO: What about traceback?</span>
+<span class="c1"># TODO: Make it a more general and useful store decorator. Trans store into an getitem exception catching store.</span>
+<div class="viewcode-block" id="items_with_caught_exceptions"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.items_with_caught_exceptions">[docs]</a><span class="k">def</span> <span class="nf">items_with_caught_exceptions</span><span class="p">(</span>
+    <span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
+    <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">catch_exceptions</span><span class="o">=</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,),</span>
+    <span class="n">yield_callback_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Do what Mapping.items() does, but catching exceptions when getting the values for a key.</span>
+
+
+<span class="sd">    Some time your `store.items()` is annoying because of some exceptions that happen</span>
+<span class="sd">    when you&#39;re retrieving some value for some of the keys.</span>
+
+<span class="sd">    Yes, if that happens, it&#39;s that something is wrong with your store, and yes,</span>
+<span class="sd">    if it&#39;s a store that&#39;s going to be used a lot, you really should build the right store</span>
+<span class="sd">    that doesn&#39;t have that problem.</span>
+
+<span class="sd">    But now that we appeased the paranoid naysayers with that warning, let&#39;s get to business:</span>
+<span class="sd">    Sometimes you just want to get through the hurdle to get the job done. Sometimes your store is good enough,</span>
+<span class="sd">    except for a few exceptions. Sometimes your store gets it&#39;s keys from a large pool of possible keys</span>
+<span class="sd">    (e.g. github stores or kaggle stores, or any store created by a free-form search seed),</span>
+<span class="sd">    so you can&#39;t really depend on the fact that all the keys given by your key iterator</span>
+<span class="sd">    will give you a value without exception</span>
+<span class="sd">    -- especially if you slapped on a bunch of post-processing on the out-coming values.</span>
+
+<span class="sd">    So you can right a for loop to iterate over your keys, catch the exceptions, do something with it...</span>
+
+<span class="sd">    Or, in many cases, you can just use `items_with_caught_exceptions`.</span>
+
+<span class="sd">    :param d: Any Mapping</span>
+<span class="sd">    :param catch_exceptions: A tuple of exceptions that should be caught</span>
+<span class="sd">    :param callback: A function that will be called every time an exception is caught.</span>
+<span class="sd">        The signature of the callback function is required to be:</span>
+<span class="sd">            k (key), e (error obj), d (mapping), i (index)</span>
+<span class="sd">        but</span>
+<span class="sd">    :return: An (key, val) generator with exceptions caught</span>
+
+<span class="sd">    &gt;&gt;&gt; from collections.abc import Mapping</span>
+<span class="sd">    &gt;&gt;&gt; class Test(Mapping):  # a Mapping class that has keys 0..9, but raises of KeyError if the key is not even</span>
+<span class="sd">    ...     n = 10</span>
+<span class="sd">    ...     def __iter__(self):</span>
+<span class="sd">    ...         yield from range(2, self.n)</span>
+<span class="sd">    ...     def __len__(self):</span>
+<span class="sd">    ...         return self.n</span>
+<span class="sd">    ...     def __getitem__(self, k):</span>
+<span class="sd">    ...         if k % 2 == 0:</span>
+<span class="sd">    ...             return k</span>
+<span class="sd">    ...         else:</span>
+<span class="sd">    ...             raise KeyError(&#39;Not even&#39;)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; list(items_with_caught_exceptions(Test()))</span>
+<span class="sd">    [(2, 2), (4, 4), (6, 6), (8, 8)]</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; def my_log(k, e):</span>
+<span class="sd">    ...     print(k, e)</span>
+<span class="sd">    &gt;&gt;&gt; list(items_with_caught_exceptions(Test(), callback=my_log))</span>
+<span class="sd">    3 &#39;Not even&#39;</span>
+<span class="sd">    5 &#39;Not even&#39;</span>
+<span class="sd">    7 &#39;Not even&#39;</span>
+<span class="sd">    9 &#39;Not even&#39;</span>
+<span class="sd">    [(2, 2), (4, 4), (6, 6), (8, 8)]</span>
+<span class="sd">    &gt;&gt;&gt; def my_other_log(i):</span>
+<span class="sd">    ...     print(i)</span>
+<span class="sd">    &gt;&gt;&gt; list(items_with_caught_exceptions(Test(), callback=my_other_log))</span>
+<span class="sd">    1</span>
+<span class="sd">    3</span>
+<span class="sd">    5</span>
+<span class="sd">    7</span>
+<span class="sd">    [(2, 2), (4, 4), (6, 6), (8, 8)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># wrap the input callback to make the callback definition less constrained for the user.</span>
+    <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span>
+
+            <span class="k">def</span> <span class="nf">wrapped_callback</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span><span class="p">}</span>
+                <span class="k">return</span> <span class="n">callback</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">wrapped_callback</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">callback</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="k">def</span> <span class="nf">wrapped_callback</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+            <span class="k">pass</span>  <span class="c1"># do nothing</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>  <span class="c1"># iterate over keys of the mapping</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>  <span class="c1"># try getting the value...</span>
+            <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span>  <span class="c1"># and if you do, yield the (k, v) pair</span>
+        <span class="k">except</span> <span class="n">catch_exceptions</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># catch the specific exceptions you requested to catch</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">wrapped_callback</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="n">e</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>  <span class="c1"># call it</span>
+            <span class="k">if</span> <span class="n">yield_callback_output</span><span class="p">:</span>  <span class="c1"># if the user wants the output of the callback</span>
+                <span class="k">yield</span> <span class="n">t</span>  <span class="c1"># yield it</span></div>
+
+
+<span class="k">def</span> <span class="nf">_assert_condition</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">err_msg</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">err_cls</span><span class="o">=</span><span class="ne">AssertionError</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">condition</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">err_cls</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="NotValid"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.NotValid">[docs]</a><span class="k">class</span> <span class="nc">NotValid</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;To use to indicate when an object doesn&#39;t fit expected properties&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="KeyValidationError"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.KeyValidationError">[docs]</a><span class="k">class</span> <span class="nc">KeyValidationError</span><span class="p">(</span><span class="n">NotValid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error to raise when a key is not valid&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="NoSuchKeyError"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.NoSuchKeyError">[docs]</a><span class="k">class</span> <span class="nc">NoSuchKeyError</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;When a requested key doesn&#39;t exist&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="NotAllowed"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.NotAllowed">[docs]</a><span class="k">class</span> <span class="nc">NotAllowed</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;To use to indicate that something is not allowed&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="OperationNotAllowed"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.OperationNotAllowed">[docs]</a><span class="k">class</span> <span class="nc">OperationNotAllowed</span><span class="p">(</span><span class="n">NotAllowed</span><span class="p">,</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;When a given operation is not allowed (through being disabled, conditioned, or just implemented)&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ReadsNotAllowed"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.ReadsNotAllowed">[docs]</a><span class="k">class</span> <span class="nc">ReadsNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read OperationNotAllowed&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="WritesNotAllowed"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.WritesNotAllowed">[docs]</a><span class="k">class</span> <span class="nc">WritesNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Write OperationNotAllowed&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DeletionsNotAllowed"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.DeletionsNotAllowed">[docs]</a><span class="k">class</span> <span class="nc">DeletionsNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Delete OperationNotAllowed&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="IterationNotAllowed"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.IterationNotAllowed">[docs]</a><span class="k">class</span> <span class="nc">IterationNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Iteration OperationNotAllowed&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="OverWritesNotAllowedError"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.OverWritesNotAllowedError">[docs]</a><span class="k">class</span> <span class="nc">OverWritesNotAllowedError</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error to raise when a key is not valid&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="AlreadyExists"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.AlreadyExists">[docs]</a><span class="k">class</span> <span class="nc">AlreadyExists</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;To use if an object already exists (and shouldn&#39;t; for example, to protect overwrites)&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MethodNameAlreadyExists"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.MethodNameAlreadyExists">[docs]</a><span class="k">class</span> <span class="nc">MethodNameAlreadyExists</span><span class="p">(</span><span class="n">AlreadyExists</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;To use when a method name already exists (and shouldn&#39;t)&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MethodFuncNotValid"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.MethodFuncNotValid">[docs]</a><span class="k">class</span> <span class="nc">MethodFuncNotValid</span><span class="p">(</span><span class="n">NotValid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Use when method function is not valid&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="SetattrNotAllowed"><a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.SetattrNotAllowed">[docs]</a><span class="k">class</span> <span class="nc">SetattrNotAllowed</span><span class="p">(</span><span class="n">NotAllowed</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An attribute was requested to be set, but some conditions didn&#39;t apply&quot;&quot;&quot;</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

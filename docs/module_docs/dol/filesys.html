@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dol.filesys &mdash; dol 0.1.56 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/toggleprompt.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="dol.mixins" href="mixins.html" />
+    <link rel="prev" title="dol.errors" href="errors.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> dol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dol.html">dol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appendable.html">dol.appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">dol.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">dol.caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">dol.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dig.html">dol.dig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">dol.errors</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>dol.filesys</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/dol/filesys.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dol.filesys">
+<span id="dol-filesys"></span><h1>dol.filesys<a class="headerlink" href="#module-dol.filesys" title="Permalink to this headline">¶</a></h1>
+<p>File system access</p>
+<dl class="py class">
+<dt id="dol.filesys.DirCollection">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">DirCollection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rootdir</span></em>, <em class="sig-param"><span class="n">subpath</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">pattern_for_field</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_levels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">include_hidden</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#DirCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.DirCollection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.FileBytesPersister">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">FileBytesPersister</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rootdir</span></em>, <em class="sig-param"><span class="n">subpath</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">pattern_for_field</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_levels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">include_hidden</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#FileBytesPersister"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.FileBytesPersister" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.FileBytesReader">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">FileBytesReader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rootdir</span></em>, <em class="sig-param"><span class="n">subpath</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">pattern_for_field</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_levels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">include_hidden</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#FileBytesReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.FileBytesReader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.FileCollection">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">FileCollection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rootdir</span></em>, <em class="sig-param"><span class="n">subpath</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">pattern_for_field</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_levels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">include_hidden</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#FileCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.FileCollection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.FileInfoReader">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">FileInfoReader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rootdir</span></em>, <em class="sig-param"><span class="n">subpath</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">pattern_for_field</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_levels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">include_hidden</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#FileInfoReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.FileInfoReader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.FileStringPersister">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">FileStringPersister</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rootdir</span></em>, <em class="sig-param"><span class="n">subpath</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">pattern_for_field</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_levels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">include_hidden</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#FileStringPersister"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.FileStringPersister" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.FileStringReader">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">FileStringReader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rootdir</span></em>, <em class="sig-param"><span class="n">subpath</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">pattern_for_field</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_levels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">include_hidden</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#FileStringReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.FileStringReader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.FileSysCollection">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">FileSysCollection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rootdir</span></em>, <em class="sig-param"><span class="n">subpath</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">pattern_for_field</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_levels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">include_hidden</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#FileSysCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.FileSysCollection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt id="dol.filesys.KeyValidationError">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">KeyValidationError</code><a class="reference internal" href="../../_modules/dol/filesys.html#KeyValidationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.KeyValidationError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.PickleStore">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">PickleStore</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#PickleStore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.PickleStore" title="Permalink to this definition">¶</a></dt>
+<dd><p>A store of pickles</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.PickleStores">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">PickleStores</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#PickleStores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.PickleStores" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.RelPathFileBytesPersister">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">RelPathFileBytesPersister</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#RelPathFileBytesPersister"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.RelPathFileBytesPersister" title="Permalink to this definition">¶</a></dt>
+<dd><p>FileBytesPersister with relative paths</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.RelPathFileBytesReader">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">RelPathFileBytesReader</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.filesys.RelPathFileBytesReader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.RelPathFileStringPersister">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">RelPathFileStringPersister</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.filesys.RelPathFileStringPersister" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.filesys.RelPathFileStringReader">
+<em class="property">class </em><code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">RelPathFileStringReader</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.filesys.RelPathFileStringReader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="dol.filesys.ensure_slash_suffix">
+<code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">ensure_slash_suffix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#ensure_slash_suffix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.ensure_slash_suffix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a file separation (/ or ) at the end of path str, if not already present.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.filesys.iter_dirpaths_in_folder_recursively">
+<code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">iter_dirpaths_in_folder_recursively</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root_folder</span></em>, <em class="sig-param"><span class="n">max_levels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_current_level</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">include_hidden</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#iter_dirpaths_in_folder_recursively"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.iter_dirpaths_in_folder_recursively" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursively generates dirpaths of folder (and subfolders, etc.) up to a given level</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.filesys.iter_filepaths_in_folder_recursively">
+<code class="sig-prename descclassname">dol.filesys.</code><code class="sig-name descname">iter_filepaths_in_folder_recursively</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root_folder</span></em>, <em class="sig-param"><span class="n">max_levels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_current_level</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">include_hidden</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#iter_filepaths_in_folder_recursively"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.filesys.iter_filepaths_in_folder_recursively" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursively generates filepaths of folder (and subfolders, etc.) up to a given level</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="errors.html" class="btn btn-neutral float-left" title="dol.errors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mixins.html" class="btn btn-neutral float-right" title="dol.mixins" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
