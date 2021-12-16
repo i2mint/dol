@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.1.56 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.1.57 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -238,7 +238,7 @@ a basic Python-style function call.</p>
 <dl class="py function">
 <dt id="dol.util.groupby">
 <code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">groupby</code><span class="sig-paren">(</span><em class="sig-param">items: Iterable[Any], key: Callable[[Any], Hashable], val: Optional[Callable[[Any], Any]] = None, group_factory=&lt;class 'list'&gt;</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../../_modules/dol/util.html#groupby"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.groupby" title="Permalink to this definition">¶</a></dt>
-<dd><p>Groups items according to group keys updated from those items through the given (<a href="#id17"><span class="problematic" id="id18">item_to_</span></a>)key function.</p>
+<dd><p>Groups items according to group keys updated from those items through the given (<a href="#id7"><span class="problematic" id="id8">item_to_</span></a>)key function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -282,7 +282,7 @@ The default is <cite>list</cite></p></li>
 <dt id="dol.util.igroupby">
 <code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">igroupby</code><span class="sig-paren">(</span><em class="sig-param">items: Iterable[Any], key: Callable[[Any], Hashable], val: Optional[Callable[[Any], Any]] = None, group_factory: Callable[[], Iterable[Any]] = &lt;class 'list'&gt;, group_release_cond: Union[Callable[[Hashable, Iterable[Any]], bool], Callable[[dict, Hashable, Iterable[Any]], bool]] = &lt;function &lt;lambda&gt;&gt;, release_remainding=True, append_to_group_items: Callable[[Iterable[Any], Any], Any] = &lt;method 'append' of 'list' objects&gt;, grouper_mapping=&lt;class 'collections.defaultdict'&gt;</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../../_modules/dol/util.html#igroupby"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.igroupby" title="Permalink to this definition">¶</a></dt>
 <dd><p>The generator version of dol groupby.
-Groups items according to group keys updated from those items through the given (<a href="#id19"><span class="problematic" id="id20">item_to_</span></a>)key function,
+Groups items according to group keys updated from those items through the given (<a href="#id9"><span class="problematic" id="id10">item_to_</span></a>)key function,
 yielding the groups according to a logic defined by <code class="docutils literal notranslate"><span class="pre">group_release_cond</span></code></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -449,9 +449,15 @@ Inserts a <cite>self.func.__name__ + ‘__cache_active’</cite> attribute</p>
 <dl class="py function">
 <dt id="dol.util.max_common_prefix">
 <code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">max_common_prefix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#max_common_prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.max_common_prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a list of strings (or other sliceable sequences), returns the longest common prefix
-:param a: list-like of strings
-:return: the smallest common prefix of all strings in a</p>
+<dd><p>Given a list of strings (or other sliceable sequences), returns the longest common prefix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>a</strong> – list-like of strings</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the smallest common prefix of all strings in a</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -469,13 +475,11 @@ whether it’s a key-based, value-based, or key-value-based one, and it will mak
 ready-to-use with <cite>filter</cite> function for you.</p>
 <p>Only thing: Your function needs to call a key <cite>k</cite> and a value <cite>v</cite>.
 But hey, it’s alright, if you have a function that calls things differently, just do
-something like
-<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a></p>
-<blockquote>
-<div><p>new_filt_func = lambda k, v: your_filt_func(…, key=k, …, value=v, …)</p>
-</div></blockquote>
-<p><a href="#id5"><span class="problematic" id="id6">``</span></a>`
-and all will be fine.</p>
+something like</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">new_filt_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">your_filt_func</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">v</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and all will be fine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>kv_filt</strong> – callable (starting with signature (k), (v), or (k, v)), and returning  a boolean</p>
@@ -498,7 +502,7 @@ and all will be fine.</p>
 <dl class="py function">
 <dt id="dol.util.partialclass">
 <code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">partialclass</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cls</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#partialclass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.partialclass" title="Permalink to this definition">¶</a></dt>
-<dd><p>What partial(cls, <a href="#id7"><span class="problematic" id="id8">*</span></a>args, <a href="#id9"><span class="problematic" id="id10">**</span></a>kwargs) does, but returning a class instead of an object.</p>
+<dd><p>What partial(cls, <a href="#id1"><span class="problematic" id="id2">*</span></a>args, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs) does, but returning a class instead of an object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -556,20 +560,19 @@ a useless class.</p>
 <span class="gr">TypeError</span>: <span class="n">__init__() got multiple values for argument &#39;a&#39;</span>
 </pre></div>
 </div>
-<p>On the other hand, you can use <a href="#id11"><span class="problematic" id="id12">*</span></a>args to specify the fixtures:</p>
+<p>On the other hand, you can use <a href="#id5"><span class="problematic" id="id6">*</span></a>args to specify the fixtures:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">AA</span> <span class="o">=</span> <span class="n">partialclass</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="mi">22</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">AA</span><span class="p">())</span> <span class="o">==</span> <span class="s1">&#39;A(a=22, b=1)&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">AA</span><span class="p">))</span> <span class="o">==</span> <span class="s1">&#39;(b=1)&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">AA</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span> <span class="o">==</span> <span class="s1">&#39;A(a=22, b=3)&#39;</span>
 </pre></div>
 </div>
-<p><a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="dol.util.regroupby">
 <code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">regroupby</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">items</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">key_funcs</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">named_key_funcs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#regroupby"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.regroupby" title="Permalink to this definition">¶</a></dt>
-<dd><p>REcursive groupby. Applies the groupby function recursively, using a sequence of key functions.</p>
+<dd><p>Recursive groupby. Applies the groupby function recursively, using a sequence of key functions.</p>
 <dl class="simple">
 <dt>Note: The named_key_funcs argument names don’t have any external effect.</dt><dd><p>They just give a name to the key function, for code reading clarity purposes.</p>
 </dd>
