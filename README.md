@@ -1,7 +1,8 @@
 # dol
+
 Base builtin tools make and transform data object layers (dols).
 
-The package is light-weight: Pure python; not third-party dependencies.
+The package is light-weight: Pure python; no third-party dependencies.
 
 To install:	```pip install dol```
 
