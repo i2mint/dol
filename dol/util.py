@@ -17,6 +17,27 @@ update_wrapper = partial(_update_wrapper, assigned=wrapper_assignments)
 wraps = partial(_wraps, assigned=wrapper_assignments)
 
 
+def not_a_mac_junk_path(path: str):
+    """A function that will tell you if the path is not a mac junk path/
+    More precisely, doesn't end with '.DS_Store' or have a `__MACOSX` folder somewhere
+    on it's way.
+
+    This is usually meant to be used with `filter` or `filt_iter` to "filter in" only
+    those actually wanted files (not the junk that mac writes to your filesystem).
+
+    These files annoyingly show up often in zip files, and are usually unwanted.
+
+    See https://apple.stackexchange.com/questions/239578/compress-without-ds-store-and-macosx
+
+    >>> paths = ['A/normal/path', 'A/__MACOSX/path', 'path/ending/in/.DS_Store', 'foo/b']
+    >>> list(filter(not_a_mac_junk_path, paths))
+    ['A/normal/path', 'foo/b']
+    """
+    if path.endswith('.DS_Store') or '__MACOSX' in path.split(os.path.sep):
+        return False  # This is indeed math junk (so filter out)
+    return True  # this is not mac junk (you can keep it)
+
+
 def inject_method(obj, method_function, method_name=None):
     """
     method_function could be:

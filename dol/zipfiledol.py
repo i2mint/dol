@@ -3,6 +3,8 @@ Data object layers and other utils to work with zip files.
 """
 import os
 from io import BytesIO
+from functools import partial
+from typing import Callable, Union, Iterable
 import zipfile
 from zipfile import (
     ZipFile,
@@ -35,6 +37,8 @@ __all__ = [
     'OverwriteNotAllowed',
     'EmptyZipError',
     'ZipStore',
+    'remove_some_entries_from_zip',
+    'remove_mac_junk_from_zip',
 ]
 
 # TODO: Do all systems have this? If not, need to choose dflt carefully
@@ -753,6 +757,58 @@ class ZipStore(KvPersister):
         self.close()
         return False
 
+
+PathString = str
+PathFilterFunc = Callable[[PathString], bool]
+
+
+def remove_some_entries_from_zip(
+    zip_source,
+    keys_to_be_removed: Union[PathFilterFunc, Iterable[PathString]],
+    ask_before_before_deleting=True,
+):
+    """Removes specific keys from a zip file.
+
+    :param zip_source: zip filepath, bytes, or whatever a ``ZipStore`` can take
+    :param keys_to_be_removed: An iterable of keys or a boolean filter function
+    :param ask_before_before_deleting: True (default) if the user should be
+        presented with the keys first, and asked permission to delete.
+    :return: The ZipStore (in case you want to do further work with it)
+
+    Tip: If you want to delete with no questions asked, use currying:
+
+    >>> from functools import partial
+    >>> rm_keys_without_asking = partial(
+    ...     remove_some_entries_from_zip,
+    ...     ask_before_before_deleting=False
+    ... )
+
+    """
+    z = ZipStore(zip_source)
+    keys_that_will_be_deleted = list(filter(keys_to_be_removed, z))
+    if keys_that_will_be_deleted:
+        if ask_before_before_deleting:
+            print('These keys will be removed:\n\r')
+            print(*keys_that_will_be_deleted, sep='\n')
+            n = len(keys_that_will_be_deleted)
+            answer = input(f'\nShould I go ahead and delete these {n} keys? (y/N)')
+            if not answer == 'y':
+                print('Okay, I will NOT delete these.')
+                return
+    for k in keys_that_will_be_deleted:
+        del z[k]
+
+    return z
+
+
+from dol.util import not_a_mac_junk_path
+
+remove_mac_junk_from_zip = partial(
+    remove_some_entries_from_zip,
+    keys_to_be_removed=not_a_mac_junk_path,
+    ask_before_before_deleting=False,
+)
+remove_mac_junk_from_zip.__doc__ = 'Removes mac junk keys from zip'
 
 # TODO: The way prefix and file_info_filt is handled is not efficient
 # TODO: prefix is silly: less general than filename_filt would be, and not even producing
