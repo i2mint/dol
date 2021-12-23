@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.zipfiledol &mdash; dol 0.1.61 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.zipfiledol &mdash; dol 0.1.63 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -363,6 +363,39 @@ Note that <cite>zip_pair_path_preproc</cite> can be used to control how to resol
 The last path encountered by <cite>zip_pair_path_preproc(zip_path_pairs)</cite> is the one that will be
 used, so
 one should make <cite>zip_pair_path_preproc</cite> act accordingly.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.zipfiledol.remove_mac_junk_from_zip">
+<code class="sig-prename descclassname">dol.zipfiledol.</code><code class="sig-name descname">remove_mac_junk_from_zip</code><span class="sig-paren">(</span><em class="sig-param">zip_source, *, keys_to_be_removed: Union[Callable[[str], bool], Iterable[str]] = &lt;function not_a_mac_junk_path&gt;, ask_before_before_deleting=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dol.zipfiledol.remove_mac_junk_from_zip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes mac junk keys from zip</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.zipfiledol.remove_some_entries_from_zip">
+<code class="sig-prename descclassname">dol.zipfiledol.</code><code class="sig-name descname">remove_some_entries_from_zip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zip_source</span></em>, <em class="sig-param"><span class="n">keys_to_be_removed</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Callable<span class="p">[</span><span class="p">[</span>str<span class="p">]</span><span class="p">, </span>bool<span class="p">]</span><span class="p">, </span>Iterable<span class="p">[</span>str<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">ask_before_before_deleting</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/zipfiledol.html#remove_some_entries_from_zip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.zipfiledol.remove_some_entries_from_zip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes specific keys from a zip file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zip_source</strong> – zip filepath, bytes, or whatever a <code class="docutils literal notranslate"><span class="pre">ZipStore</span></code> can take</p></li>
+<li><p><strong>keys_to_be_removed</strong> – An iterable of keys or a boolean filter function</p></li>
+<li><p><strong>ask_before_before_deleting</strong> – True (default) if the user should be
+presented with the keys first, and asked permission to delete.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The ZipStore (in case you want to do further work with it)</p>
+</dd>
+</dl>
+<p>Tip: If you want to delete with no questions asked, use currying:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rm_keys_without_asking</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">remove_some_entries_from_zip</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">ask_before_before_deleting</span><span class="o">=</span><span class="kc">False</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">

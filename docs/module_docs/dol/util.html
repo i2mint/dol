@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.1.61 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.1.63 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -498,6 +498,23 @@ something like</p>
 <span class="go">[(&#39;c&#39;, 3), (&#39;d&#39;, 4)]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">norm_kv_filt</span><span class="p">(</span><span class="k">lambda</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;c&#39;</span><span class="p">)),</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
 <span class="go">[(&#39;b&#39;, 2), (&#39;d&#39;, 4)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.util.not_a_mac_junk_path">
+<code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">not_a_mac_junk_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#not_a_mac_junk_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.not_a_mac_junk_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function that will tell you if the path is not a mac junk path/
+More precisely, doesn’t end with ‘.DS_Store’ or have a <cite>__MACOSX</cite> folder somewhere
+on it’s way.</p>
+<p>This is usually meant to be used with <cite>filter</cite> or <cite>filt_iter</cite> to “filter in” only
+those actually wanted files (not the junk that mac writes to your filesystem).</p>
+<p>These files annoyingly show up often in zip files, and are usually unwanted.</p>
+<p>See <a class="reference external" href="https://apple.stackexchange.com/questions/239578/compress-without-ds-store-and-macosx">https://apple.stackexchange.com/questions/239578/compress-without-ds-store-and-macosx</a></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A/normal/path&#39;</span><span class="p">,</span> <span class="s1">&#39;A/__MACOSX/path&#39;</span><span class="p">,</span> <span class="s1">&#39;path/ending/in/.DS_Store&#39;</span><span class="p">,</span> <span class="s1">&#39;foo/b&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">not_a_mac_junk_path</span><span class="p">,</span> <span class="n">paths</span><span class="p">))</span>
+<span class="go">[&#39;A/normal/path&#39;, &#39;foo/b&#39;]</span>
 </pre></div>
 </div>
 </dd></dl>

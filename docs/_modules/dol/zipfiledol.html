@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.zipfiledol &mdash; dol 0.1.61 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.zipfiledol &mdash; dol 0.1.63 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -94,6 +94,8 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">import</span> <span class="nn">zipfile</span>
 <span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ZipFile</span><span class="p">,</span>
@@ -126,6 +128,8 @@
     <span class="s1">&#39;OverwriteNotAllowed&#39;</span><span class="p">,</span>
     <span class="s1">&#39;EmptyZipError&#39;</span><span class="p">,</span>
     <span class="s1">&#39;ZipStore&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;remove_some_entries_from_zip&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;remove_mac_junk_from_zip&#39;</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="c1"># TODO: Do all systems have this? If not, need to choose dflt carefully</span>
@@ -844,6 +848,58 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
+
+<span class="n">PathString</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="n">PathFilterFunc</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PathString</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="remove_some_entries_from_zip"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.remove_some_entries_from_zip">[docs]</a><span class="k">def</span> <span class="nf">remove_some_entries_from_zip</span><span class="p">(</span>
+    <span class="n">zip_source</span><span class="p">,</span>
+    <span class="n">keys_to_be_removed</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PathFilterFunc</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">PathString</span><span class="p">]],</span>
+    <span class="n">ask_before_before_deleting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Removes specific keys from a zip file.</span>
+
+<span class="sd">    :param zip_source: zip filepath, bytes, or whatever a ``ZipStore`` can take</span>
+<span class="sd">    :param keys_to_be_removed: An iterable of keys or a boolean filter function</span>
+<span class="sd">    :param ask_before_before_deleting: True (default) if the user should be</span>
+<span class="sd">        presented with the keys first, and asked permission to delete.</span>
+<span class="sd">    :return: The ZipStore (in case you want to do further work with it)</span>
+
+<span class="sd">    Tip: If you want to delete with no questions asked, use currying:</span>
+
+<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">    &gt;&gt;&gt; rm_keys_without_asking = partial(</span>
+<span class="sd">    ...     remove_some_entries_from_zip,</span>
+<span class="sd">    ...     ask_before_before_deleting=False</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">ZipStore</span><span class="p">(</span><span class="n">zip_source</span><span class="p">)</span>
+    <span class="n">keys_that_will_be_deleted</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">keys_to_be_removed</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">keys_that_will_be_deleted</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ask_before_before_deleting</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;These keys will be removed:</span><span class="se">\n\r</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="o">*</span><span class="n">keys_that_will_be_deleted</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys_that_will_be_deleted</span><span class="p">)</span>
+            <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Should I go ahead and delete these </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1"> keys? (y/N)&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">answer</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Okay, I will NOT delete these.&#39;</span><span class="p">)</span>
+                <span class="k">return</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys_that_will_be_deleted</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">z</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">z</span></div>
+
+
+<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">not_a_mac_junk_path</span>
+
+<span class="n">remove_mac_junk_from_zip</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+    <span class="n">remove_some_entries_from_zip</span><span class="p">,</span>
+    <span class="n">keys_to_be_removed</span><span class="o">=</span><span class="n">not_a_mac_junk_path</span><span class="p">,</span>
+    <span class="n">ask_before_before_deleting</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">remove_mac_junk_from_zip</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Removes mac junk keys from zip&#39;</span>
 
 <span class="c1"># TODO: The way prefix and file_info_filt is handled is not efficient</span>
 <span class="c1"># TODO: prefix is silly: less general than filename_filt would be, and not even producing</span>
