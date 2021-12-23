@@ -9,6 +9,7 @@
    module_docs/dol/core
    module_docs/dol/dig
    module_docs/dol/errors
+   module_docs/dol/explicit
    module_docs/dol/filesys
    module_docs/dol/mixins
    module_docs/dol/naming
@@ -21,3 +22,4 @@
    module_docs/dol/tools
    module_docs/dol/trans
    module_docs/dol/util
+   module_docs/dol/zipfiledol
