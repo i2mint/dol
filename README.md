@@ -30,12 +30,13 @@ If you're not a "read from top to bottom" kinda person, here are some tips:
 [Use cases](#use-cases) will give you an idea of how py2store can be useful to you, if at all. 
 
 The section with the best bang for the buck is probably 
-[remove (much of the) data access entropy](#remove--much-of-the--data-access-entropy). 
+[remove (much of the) data access entropy](#remove-data-access-entropy). 
 It will give you simple (but real) examples of how to use `py2store` tooling 
 to bend your interface with data to your will. 
 
-[How it works](#how-it-works) will give you a sense of how it works.
-[More examples](#more-examples) will give you a taste of how you can adapt the three main aspects of 
+[How it works](#a-few-words-about-design) will give you a sense of how it works.
+[More examples](https://github.com/i2mint/py2store#more-examples) 
+will give you a taste of how you can adapt the three main aspects of 
 storage (persistence, serialization, and indexing) to your needs.
 
 Install it (e.g. `pip install py2store`).
