@@ -142,15 +142,17 @@ def trace_getitem(store, k, layer_attrs=('store',)):
     {'A': 1.0, 'B': 2.0}
 
     Well, if we had bugs, we'd like to inspect the various layers, and how they transform the data.
+    
+    .. code-block:: python
 
-    # Here's how to do that:
+        # Here's how to do that:
 
-    # >>> for layer, method, value in trace_getitem(sss, 'A'):
-    # ...     print(layer, method, value)
-    # ...
-    # Traceback (most recent call last):
-    #   File "<stdin>", line 1, in <module>
-    # NameError: name 'trace_getitem' is not defined
+        # >>> for layer, method, value in trace_getitem(sss, 'A'):
+        # ...     print(layer, method, value)
+        # ...
+        # Traceback (most recent call last):
+        #   File "<stdin>", line 1, in <module>
+        # NameError: name 'trace_getitem' is not defined
 
     >>> from dol.dig import trace_getitem
     >>>

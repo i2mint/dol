@@ -29,6 +29,8 @@ project, copyright, author, release, display_name = parse_config(
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx_toggleprompt',
+    'sphinx_copybutton',
     'sphinx.ext.autodoc',  # Include documentation from docstrings
     'sphinx.ext.doctest',  # Test snippets in the documentation
     'sphinx.ext.githubpages',  # This extension creates .nojekyll file
@@ -36,8 +38,7 @@ extensions = [
     'sphinx.ext.napoleon',  # Support for NumPy and Google style docstrings
     'sphinx.ext.todo',  # Support for todo items
     'sphinx.ext.viewcode',  # Add links to highlighted source code
-    'recommonmark',  # Parse .md files,
-    # 'myst_parser',  # https://www.sphinx-doc.org/en/master/usage/markdown.html
+    'myst_parser',  # Parse .md files
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -53,9 +54,29 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+
+# -- Options for Markdown support -------------------------------------------
+# TODO: fix md support so that it doesn't interfere with rst docs
+# import commonmark
+#
+#
+# def docstring(app, what, name, obj, options, lines):
+#     md = '\n'.join(lines)
+#     ast = commonmark.Parser().parse(md)
+#     rst = commonmark.ReStructuredTextRenderer().render(ast)
+#     lines.clear()
+#     lines += rst.splitlines()
+#
+#
+# def setup(app):
+#     app.connect('autodoc-process-docstring', docstring)
+
+
+toggleprompt_offset_right = 30

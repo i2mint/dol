@@ -163,14 +163,18 @@ class KvReader(MappingViewMixin, Collection, Mapping):
         If you need a reversed list, here's one way to do it, but note that it
         depends on how self iterates, which is not even assured to be consistent at
         every call:
-        ```
-        reversed = list(self)[::-1]
-        ```
+
+        .. code-block:: python
+
+            reversed = list(self)[::-1]
+        
 
         If the keys are comparable, therefore sortable, another natural option would be:
-        ```
-        reversed = sorted(self)[::-1]
-        ```
+        
+        .. code-block:: python
+
+            reversed = sorted(self)[::-1]
+        
         """
         raise NotImplementedError(__doc__)
 
@@ -188,10 +192,12 @@ class KvPersister(KvReader, MutableMapping):
     But that doesn't mean it's a dict.
 
     For instance, consider the following code:
-    ```
+
+    .. code-block:: python
+
         s = SomeKvPersister()
         s['a']['b'] = 3
-    ```
+    
     If `s` is a dict, this would have the effect of adding a ('b', 3) item under 'a'.
     But in the general case, this might
     - fail, because the `s['a']` doesn't support sub-scripting (doesn't have a `__getitem__`)
@@ -962,10 +968,12 @@ class Stream:
     ['1', '2', '3']
 
     Recipes:
-    - _pre_iter: involving itertools.islice to skip header lines
-    - _pre_iter: involving enumerate to get line indices in stream iterator
-    - _pre_iter = functools.partial(map, line_pre_proc_func) to preprocess all lines with line_pre_proc_func
-    - _pre_iter: include filter before obj
+
+    .. hlist::
+        * _pre_iter: involving itertools.islice to skip header lines
+        * _pre_iter: involving enumerate to get line indices in stream iterator
+        * _pre_iter = functools.partial(map, line_pre_proc_func) to preprocess all lines with line_pre_proc_func
+        * _pre_iter: include filter before obj
     """
 
     def __init__(self, stream):

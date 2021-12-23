@@ -11,3 +11,8 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+Release: |release|
+
+Last change: |today|

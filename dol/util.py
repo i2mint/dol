@@ -42,20 +42,23 @@ def _disabled_clear_method(self):
     """The clear method is disabled to make dangerous difficult.
     You don't want to delete your whole DB
     If you really want to delete all your data, you can do so by doing something like this:
-        ```
+
+    .. code-block:: python
+
         for k in self:
             del self[k]
-        ```
+        
 
     or (in some cases)
 
-        ```
+    .. code-block:: python
+
         for k in self:
             try:
                 del self[k]
             except KeyError:
                 pass
-        ```
+        
     """
     raise NotImplementedError(f'Instance of {type(self)}: {self.clear.__doc__}')
 
@@ -217,7 +220,7 @@ def partialclass(cls, *args, **kwargs):
     >>> assert str(signature(AA)) == '(b=1)'
     >>> assert str(AA(3)) == 'A(a=22, b=3)'
 
-    ```
+    
     """
     assert isinstance(cls, type), f'cls should be a type, was a {type(cls)}: {cls}'
 
@@ -299,9 +302,11 @@ def norm_kv_filt(kv_filt: Callable[[Any], bool]):
     Only thing: Your function needs to call a key `k` and a value `v`.
     But hey, it's alright, if you have a function that calls things differently, just do
     something like
-    ```
+
+    .. code-block:: python
+
         new_filt_func = lambda k, v: your_filt_func(..., key=k, ..., value=v, ...)
-    ```
+    
     and all will be fine.
 
     :param kv_filt: callable (starting with signature (k), (v), or (k, v)), and returning  a boolean
@@ -487,7 +492,7 @@ def groupby(
 
 
 def regroupby(items, *key_funcs, **named_key_funcs):
-    """REcursive groupby. Applies the groupby function recursively, using a sequence of key functions.
+    """Recursive groupby. Applies the groupby function recursively, using a sequence of key functions.
 
     Note: The named_key_funcs argument names don't have any external effect.
         They just give a name to the key function, for code reading clarity purposes.
@@ -863,6 +868,7 @@ class MutableStruct(Struct):
 def max_common_prefix(a):
     """
     Given a list of strings (or other sliceable sequences), returns the longest common prefix
+    
     :param a: list-like of strings
     :return: the smallest common prefix of all strings in a
     """
