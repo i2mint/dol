@@ -278,25 +278,26 @@ class FileBytesPersister(FileBytesReader, KvPersister):
         os.remove(k)
 
 
-# ----------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
 # TODO: Once test coverage sufficient, apply this pattern to all other convenience stores
 
 with_relative_paths = partial(mk_relative_path_store, prefix_attr='rootdir')
 
 
 @with_relative_paths
-class RelPathFileBytesPersister(FileBytesPersister):
+class FilesReader(FileBytesReader):
+    """FileBytesReader with relative paths"""
+
+
+@with_relative_paths
+class Files(FileBytesPersister):
     """FileBytesPersister with relative paths"""
 
 
-# ----------------------------------------------------------------------------------------------------------------------
+RelPathFileBytesReader = FilesReader
+RelPathFileBytesPersister = Files  # back-compatibility alias
 
-RelPathFileBytesReader = mk_relative_path_store(
-    FileBytesReader,
-    prefix_attr='rootdir',
-    __name__='RelPathFileBytesReader',
-    __module__=__name__,
-)
+# ---------------------------------------------------------------------------------------
 
 
 class FileStringReader(FileBytesReader):
@@ -308,15 +309,21 @@ class FileStringPersister(FileBytesPersister):
     _write_open_kwargs = dict(FileBytesPersister._write_open_kwargs, mode='wt')
 
 
-RelPathFileStringReader = mk_relative_path_store(
-    FileStringReader, prefix_attr='rootdir', __name__='RelPathFileStringReader',
-)
+@with_relative_paths(prefix_attr='rootdir')
+class TextFilesReader(FileStringReader):
+    """FileStringReader with relative paths"""
 
-RelPathFileStringPersister = mk_relative_path_store(
-    FileStringPersister, prefix_attr='rootdir', __name__='RelPathFileStringPersister',
-)
 
-# --------------------------------------------------- misc -------------------------------------------------------------
+@with_relative_paths(prefix_attr='rootdir')
+class TextFiles(FileStringPersister):
+    """FileStringPersister with relative paths"""
+
+
+RelPathFileStringReader = TextFilesReader
+RelPathFileStringPersister = TextFiles
+
+
+# ------------------------------------ misc ---------------------------------------------
 import pickle
 
 pickle_bytes_wrap = wrap_kvs(obj_of_data=pickle.loads, data_of_obj=pickle.dumps)

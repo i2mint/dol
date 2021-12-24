@@ -24,6 +24,12 @@ def ihead(store, n=1):
         return [item for i, item in enumerate(store) if i < n]
 
 
+from dol.filesys import (
+    Files,  # for read-write-delete access to files; relative paths, bytes values
+    FilesReader,  # read-only version of LocalFiles
+
+
+)
 from dol.util import (
     Pipe,
     lazyprop,

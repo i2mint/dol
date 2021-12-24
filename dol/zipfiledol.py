@@ -2,6 +2,7 @@
 Data object layers and other utils to work with zip files.
 """
 import os
+from pathlib import Path
 from io import BytesIO
 from functools import partial
 from typing import Callable, Union, Iterable
@@ -15,15 +16,17 @@ from zipfile import (
     ZIP_LZMA,
 )
 from dol.base import KvReader, KvPersister
-from dol.filesys import FileCollection
+from dol.filesys import FileCollection, Files
 from dol.util import lazyprop, fullpath
 
 __all__ = [
     'COMPRESSION',
     'DFLT_COMPRESSION',
     'compression_methods',
-    'bytes_to_zipped_bytes',
+    'to_zipped_bytes',
     'zipped_bytes_to_bytes',
+    'to_zip_file',
+    'file_or_folder_to_zip_file',
     'if_i_zipped_stats',
     'ZipReader',
     'ZipInfoReader',
@@ -44,6 +47,7 @@ __all__ = [
 # TODO: Do all systems have this? If not, need to choose dflt carefully
 #  (choose dynamically?)
 DFLT_COMPRESSION = zipfile.ZIP_DEFLATED
+DFLT_ENCODING = 'utf-8'
 
 
 class COMPRESSION:
@@ -69,14 +73,15 @@ def take_everything(fileinfo):
     return True
 
 
-def bytes_to_zipped_bytes(
-    b: bytes,
+def to_zipped_bytes(
+    b: Union[bytes, str],
     filename='some_bytes',
     *,
     compression=DFLT_COMPRESSION,
     allowZip64=True,
     compresslevel=None,
     strict_timestamps=True,
+    encoding=DFLT_ENCODING,
 ) -> bytes:
     """Compress input bytes, returning the compressed bytes
 
@@ -84,21 +89,23 @@ def bytes_to_zipped_bytes(
     >>> len(b)
     2000
     >>>
-    >>> zipped_bytes = bytes_to_zipped_bytes(b)
+    >>> zipped_bytes = to_zipped_bytes(b)
     >>> # Note: Compression details will be system dependent
     >>> len(zipped_bytes)  # doctest: +SKIP
     137
     >>> unzipped_bytes = zipped_bytes_to_bytes(zipped_bytes)
-    >>> assert unzipped_bytes == b, "the uncompressed bytes were different than the original"
+    >>> assert unzipped_bytes == b, "the uncompressed bytes were different than the
+    original"
     >>>
     >>> from dol.zipfiledol import compression_methods
     >>>
-    >>> zipped_bytes = bytes_to_zipped_bytes(b, compression=compression_methods['bzip2'])
+    >>> zipped_bytes = to_zipped_bytes(b, compression=compression_methods['bzip2'])
     >>> # Note: Compression details will be system dependent
     >>> len(zipped_bytes)  # doctest: +SKIP
     221
     >>> unzipped_bytes = zipped_bytes_to_bytes(zipped_bytes)
-    >>> assert unzipped_bytes == b, "the uncompressed bytes were different than the original"
+    >>> assert unzipped_bytes == b, "the uncompressed bytes were different than the
+    original"
     """
     kwargs = dict(
         compression=compression,
@@ -107,6 +114,8 @@ def bytes_to_zipped_bytes(
         strict_timestamps=strict_timestamps,
     )
     bytes_buffer = BytesIO()
+    if isinstance(b, str):  # if b is a string, need to convert to bytes
+        b = b.encode(encoding)
     with ZipFile(bytes_buffer, 'w', **kwargs) as fp:
         fp.writestr(filename, b)
     return bytes_buffer.getvalue()
@@ -117,7 +126,7 @@ def zipped_bytes_to_bytes(
 ) -> bytes:
     """Decompress input bytes of a single file zip, returning the uncompressed bytes
 
-    See ``bytes_to_zipped_bytes`` for usage examples.
+    See ``to_zipped_bytes`` for usage examples.
     """
     kwargs = dict(
         allowZip64=allowZip64,
@@ -133,6 +142,76 @@ def zipped_bytes_to_bytes(
         with zip_file.open(filename, 'r') as fp:
             file_bytes = fp.read()
     return file_bytes
+
+
+def _filename_from_zip_path(path):
+    filename = path  # default
+    if path.endswith('.zip'):
+        filename, _ = os.path.splitext(os.path.basename(path))
+    return filename
+
+
+# TODO: Look into pwd: Should we use it for setting pwd when pwd doesn't exist?
+def to_zip_file(
+    b: Union[bytes, str],
+    zip_filepath,
+    filename=None,
+    *,
+    compression=DFLT_COMPRESSION,
+    allow_overwrites=True,
+    pwd=None,
+    encoding=DFLT_ENCODING,
+):
+    """Zip input bytes and save to a single-file zip file.
+
+    :param b: Input bytes or string
+    :param zip_filepath: zip filepath to save the zipped input to
+    :param filename: The name/path of the zip entry we want to save to
+    :param encoding: In case the input is str, the encoding to use to convert to bytes
+
+    """
+    z = ZipStore(
+        zip_filepath,
+        compression=compression,
+        allow_overwrites=allow_overwrites,
+        pwd=pwd,
+    )
+    filename = filename or _filename_from_zip_path(zip_filepath)
+    if isinstance(b, str):  # if b is a string, need to convert to bytes
+        b = b.encode(encoding)
+    z[filename] = b
+
+
+def file_or_folder_to_zip_file(
+    src_path: str,
+    zip_filepath=None,
+    filename=None,
+    *,
+    compression=DFLT_COMPRESSION,
+    allow_overwrites=True,
+    pwd=None,
+):
+    """Zip input bytes and save to a single-file zip file."""
+
+    if zip_filepath is None:
+        zip_filepath = os.path.basename(src_path) + '.zip'
+
+    z = ZipStore(
+        zip_filepath,
+        compression=compression,
+        allow_overwrites=allow_overwrites,
+        pwd=pwd,
+    )
+
+    if os.path.isfile(src_path):
+        filename = filename or os.path.basename(src_path)
+        z[filename] = Path(src_path).read_bytes()
+    elif os.path.isdir(src_path):
+        src = Files(src_path)
+        for k, v in src.items():
+            z[k] = v
+    else:
+        raise FileNotFoundError(f"{src_path}")
 
 
 def if_i_zipped_stats(b: bytes):
@@ -163,7 +242,7 @@ def if_i_zipped_stats(b: bytes):
             try:
                 stats[name] = dict.fromkeys(stats['uncompressed'])
                 tic = time.time()
-                compressed = bytes_to_zipped_bytes(b, compression=compression)
+                compressed = to_zipped_bytes(b, compression=compression)
                 elapsed = time.time() - tic
                 stats[name]['bytes'] = len(compressed)
                 stats[name]['comp_time'] = elapsed
@@ -785,6 +864,11 @@ def remove_some_entries_from_zip(
 
     """
     z = ZipStore(zip_source)
+    if not isinstance(keys_to_be_removed, Callable):
+        if isinstance(keys_to_be_removed, str):
+            keys_to_be_removed = [keys_to_be_removed]
+        assert isinstance(keys_to_be_removed, Iterable)
+        keys_to_be_removed = lambda x: x in set(keys_to_be_removed)
     keys_that_will_be_deleted = list(filter(keys_to_be_removed, z))
     if keys_that_will_be_deleted:
         if ask_before_before_deleting:
@@ -803,9 +887,14 @@ def remove_some_entries_from_zip(
 
 from dol.util import not_a_mac_junk_path
 
+
+def is_a_mac_junk_path(path):
+    return not not_a_mac_junk_path(path)
+
+
 remove_mac_junk_from_zip = partial(
     remove_some_entries_from_zip,
-    keys_to_be_removed=not_a_mac_junk_path,
+    keys_to_be_removed=is_a_mac_junk_path,
     ask_before_before_deleting=False,
 )
 remove_mac_junk_from_zip.__doc__ = 'Removes mac junk keys from zip'
