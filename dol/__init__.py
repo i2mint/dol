@@ -27,8 +27,7 @@ def ihead(store, n=1):
 from dol.filesys import (
     Files,  # for read-write-delete access to files; relative paths, bytes values
     FilesReader,  # read-only version of LocalFiles
-
-
+    MakeMissingDirsStoreMixin,  # Mixin to enable auto-dir-making on write
 )
 from dol.util import (
     Pipe,

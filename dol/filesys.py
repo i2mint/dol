@@ -108,6 +108,17 @@ def validate_key_and_raise_key_error_on_exception(func):
     return wrapped_method
 
 
+def _resolve_dir(dirpath, assert_existence=False):
+    """Resolve a path to a full, real, path to a directory"""
+    if dirpath.startswith('.'):
+        dirpath = os.path.abspath(dirpath)
+    elif dirpath.startswith('~'):
+        dirpath = os.path.expanduser(dirpath)
+    if assert_existence:
+        assert os.path.isdir(dirpath), f"This directory wasn't found: {dirpath}"
+    return dirpath
+
+
 class FileSysCollection(Collection):
     # rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.
 
@@ -117,8 +128,11 @@ class FileSysCollection(Collection):
         subpath='',
         pattern_for_field=None,
         max_levels=None,
+        *,
         include_hidden=False,
+        assert_rootdir_existence=False,
     ):
+        rootdir = _resolve_dir(rootdir, assert_existence=assert_rootdir_existence)
         if max_levels is None:
             max_levels = inf
         subpath_implied_min_levels = len(subpath.split(os.path.sep)) - 1
@@ -342,3 +356,15 @@ class PickleStores(DirCollection):
 
     def __repr__(self):
         return f"{type(self).__name__}('{self.rootdir}', ...)"
+
+
+class MakeMissingDirsStoreMixin:
+    """Will make a local file store automatically create the directories needed to create a file.
+    Should be placed before the concrete perisister in the mro but in such a manner so that it receives full paths.
+    """
+
+    def __setitem__(self, k, v):
+        _id = self._id_of_key(k)
+        dirname = os.path.dirname(_id)
+        os.makedirs(dirname, exist_ok=1)
+        super().__setitem__(k, v)
