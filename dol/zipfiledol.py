@@ -94,8 +94,8 @@ def to_zipped_bytes(
     >>> len(zipped_bytes)  # doctest: +SKIP
     137
     >>> unzipped_bytes = zipped_bytes_to_bytes(zipped_bytes)
-    >>> assert unzipped_bytes == b, "the uncompressed bytes were different than the
-    original"
+    >>> unzipped_bytes == b  # verify that unzipped bytes are the same as the original
+    True
     >>>
     >>> from dol.zipfiledol import compression_methods
     >>>
@@ -104,8 +104,8 @@ def to_zipped_bytes(
     >>> len(zipped_bytes)  # doctest: +SKIP
     221
     >>> unzipped_bytes = zipped_bytes_to_bytes(zipped_bytes)
-    >>> assert unzipped_bytes == b, "the uncompressed bytes were different than the
-    original"
+    >>> unzipped_bytes == b  # verify that unzipped bytes are the same as the original
+    True
     """
     kwargs = dict(
         compression=compression,
@@ -211,7 +211,7 @@ def file_or_folder_to_zip_file(
         for k, v in src.items():
             z[k] = v
     else:
-        raise FileNotFoundError(f"{src_path}")
+        raise FileNotFoundError(f'{src_path}')
 
 
 def if_i_zipped_stats(b: bytes):
