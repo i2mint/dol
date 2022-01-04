@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.filesys &mdash; dol 0.1.64 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.filesys &mdash; dol 0.1.65 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -199,6 +199,17 @@
     <span class="k">return</span> <span class="n">wrapped_method</span>
 
 
+<span class="k">def</span> <span class="nf">_resolve_dir</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">assert_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Resolve a path to a full, real, path to a directory&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dirpath</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+        <span class="n">dirpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dirpath</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">):</span>
+        <span class="n">dirpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">assert_existence</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dirpath</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;This directory wasn&#39;t found: </span><span class="si">{</span><span class="n">dirpath</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">dirpath</span>
+
+
 <div class="viewcode-block" id="FileSysCollection"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.FileSysCollection">[docs]</a><span class="k">class</span> <span class="nc">FileSysCollection</span><span class="p">(</span><span class="n">Collection</span><span class="p">):</span>
     <span class="c1"># rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.</span>
 
@@ -208,8 +219,11 @@
         <span class="n">subpath</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
         <span class="n">pattern_for_field</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">max_levels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">include_hidden</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">assert_rootdir_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="n">rootdir</span> <span class="o">=</span> <span class="n">_resolve_dir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">assert_existence</span><span class="o">=</span><span class="n">assert_rootdir_existence</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">max_levels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">max_levels</span> <span class="o">=</span> <span class="n">inf</span>
         <span class="n">subpath_implied_min_levels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subpath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
@@ -369,25 +383,26 @@
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
 
 
-<span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
+<span class="c1"># ---------------------------------------------------------------------------------------</span>
 <span class="c1"># TODO: Once test coverage sufficient, apply this pattern to all other convenience stores</span>
 
 <span class="n">with_relative_paths</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">mk_relative_path_store</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="RelPathFileBytesPersister"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.RelPathFileBytesPersister">[docs]</a><span class="nd">@with_relative_paths</span>
-<span class="k">class</span> <span class="nc">RelPathFileBytesPersister</span><span class="p">(</span><span class="n">FileBytesPersister</span><span class="p">):</span>
+<div class="viewcode-block" id="FilesReader"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.FilesReader">[docs]</a><span class="nd">@with_relative_paths</span>
+<span class="k">class</span> <span class="nc">FilesReader</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;FileBytesReader with relative paths&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Files"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.Files">[docs]</a><span class="nd">@with_relative_paths</span>
+<span class="k">class</span> <span class="nc">Files</span><span class="p">(</span><span class="n">FileBytesPersister</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;FileBytesPersister with relative paths&quot;&quot;&quot;</span></div>
 
 
-<span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
+<span class="n">RelPathFileBytesReader</span> <span class="o">=</span> <span class="n">FilesReader</span>
+<span class="n">RelPathFileBytesPersister</span> <span class="o">=</span> <span class="n">Files</span>  <span class="c1"># back-compatibility alias</span>
 
-<span class="n">RelPathFileBytesReader</span> <span class="o">=</span> <span class="n">mk_relative_path_store</span><span class="p">(</span>
-    <span class="n">FileBytesReader</span><span class="p">,</span>
-    <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">,</span>
-    <span class="vm">__name__</span><span class="o">=</span><span class="s1">&#39;RelPathFileBytesReader&#39;</span><span class="p">,</span>
-    <span class="vm">__module__</span><span class="o">=</span><span class="vm">__name__</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="c1"># ---------------------------------------------------------------------------------------</span>
 
 
 <div class="viewcode-block" id="FileStringReader"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.FileStringReader">[docs]</a><span class="k">class</span> <span class="nc">FileStringReader</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="p">):</span>
@@ -399,15 +414,21 @@
     <span class="n">_write_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">FileBytesPersister</span><span class="o">.</span><span class="n">_write_open_kwargs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span></div>
 
 
-<span class="n">RelPathFileStringReader</span> <span class="o">=</span> <span class="n">mk_relative_path_store</span><span class="p">(</span>
-    <span class="n">FileStringReader</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="o">=</span><span class="s1">&#39;RelPathFileStringReader&#39;</span><span class="p">,</span>
-<span class="p">)</span>
+<div class="viewcode-block" id="TextFilesReader"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.TextFilesReader">[docs]</a><span class="nd">@with_relative_paths</span><span class="p">(</span><span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">TextFilesReader</span><span class="p">(</span><span class="n">FileStringReader</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;FileStringReader with relative paths&quot;&quot;&quot;</span></div>
 
-<span class="n">RelPathFileStringPersister</span> <span class="o">=</span> <span class="n">mk_relative_path_store</span><span class="p">(</span>
-    <span class="n">FileStringPersister</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="o">=</span><span class="s1">&#39;RelPathFileStringPersister&#39;</span><span class="p">,</span>
-<span class="p">)</span>
 
-<span class="c1"># --------------------------------------------------- misc -------------------------------------------------------------</span>
+<div class="viewcode-block" id="TextFiles"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.TextFiles">[docs]</a><span class="nd">@with_relative_paths</span><span class="p">(</span><span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">TextFiles</span><span class="p">(</span><span class="n">FileStringPersister</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;FileStringPersister with relative paths&quot;&quot;&quot;</span></div>
+
+
+<span class="n">RelPathFileStringReader</span> <span class="o">=</span> <span class="n">TextFilesReader</span>
+<span class="n">RelPathFileStringPersister</span> <span class="o">=</span> <span class="n">TextFiles</span>
+
+
+<span class="c1"># ------------------------------------ misc ---------------------------------------------</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
 
 <span class="n">pickle_bytes_wrap</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">obj_of_data</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">)</span>
@@ -426,6 +447,18 @@
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span><span class="si">}</span><span class="s2">&#39;, ...)&quot;</span></div>
+
+
+<div class="viewcode-block" id="MakeMissingDirsStoreMixin"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.MakeMissingDirsStoreMixin">[docs]</a><span class="k">class</span> <span class="nc">MakeMissingDirsStoreMixin</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Will make a local file store automatically create the directories needed to create a file.</span>
+<span class="sd">    Should be placed before the concrete perisister in the mro but in such a manner so that it receives full paths.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="n">_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">_id</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
