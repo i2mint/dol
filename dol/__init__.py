@@ -30,6 +30,7 @@ from dol.filesys import (
     Files,  # for read-write-delete access to files; relative paths, bytes values
     FilesReader,  # read-only version of LocalFiles
     MakeMissingDirsStoreMixin,  # Mixin to enable auto-dir-making on write
+    resolve_path,  # to get a full path (resolve ~ and .)
 )
 
 from dol.util import (

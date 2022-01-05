@@ -108,12 +108,22 @@ def validate_key_and_raise_key_error_on_exception(func):
     return wrapped_method
 
 
-def _resolve_dir(dirpath, assert_existence=False):
+def resolve_path(path, assert_existence: bool = False):
+    """Resolve a path to a full, real, (file or folder) path (opt assert existence).
+    That is, resolve situations where ~ and . prefix the paths.
+    """
+    if path.startswith('.'):
+        path = os.path.abspath(path)
+    elif path.startswith('~'):
+        path = os.path.expanduser(path)
+    if assert_existence:
+        assert os.path.exists(path), f"This path (file or folder) wasn't found: {path}"
+    return path
+
+
+def _resolve_dir(dirpath: str, assert_existence: bool = False):
     """Resolve a path to a full, real, path to a directory"""
-    if dirpath.startswith('.'):
-        dirpath = os.path.abspath(dirpath)
-    elif dirpath.startswith('~'):
-        dirpath = os.path.expanduser(dirpath)
+    dirpath = resolve_path(dirpath)
     if assert_existence:
         assert os.path.isdir(dirpath), f"This directory wasn't found: {dirpath}"
     return dirpath
