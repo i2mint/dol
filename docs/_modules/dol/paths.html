@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.1.65 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.1.66 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -91,11 +91,10 @@
   <h1>Source code for dol.paths</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Module for path (and path-like) object manipulation&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">reduce</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 
 <span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
 <span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">lazyprop</span>
@@ -203,27 +202,6 @@
 
     <span class="k">def</span> <span class="nf">_key_of_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_id</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix_length</span> <span class="p">:]</span></div>
-
-
-<div class="viewcode-block" id="MakeMissingDirsStoreMixin"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.MakeMissingDirsStoreMixin">[docs]</a><span class="k">class</span> <span class="nc">MakeMissingDirsStoreMixin</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Will make a local file store automatically create the directories needed to create a file.</span>
-<span class="sd">    Should be placed before the concrete perisister in the mro but in such a manner so that it receives full paths.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-        <span class="n">_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-        <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">_id</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
-
-
-<span class="c1"># TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)</span>
-<span class="nd">@store_decorator</span>
-<span class="k">def</span> <span class="nf">mk_dirs_if_missing</span><span class="p">(</span>
-    <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">key_condition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="s1">&#39;WrappedStoreWithConditionalDirMaking&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">MakeMissingDirsStoreMixin</span><span class="p">,</span> <span class="n">store_cls</span><span class="p">),</span> <span class="p">{})</span>
 
 
 <div class="viewcode-block" id="mk_relative_path_store"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.mk_relative_path_store">[docs]</a><span class="nd">@store_decorator</span>
@@ -358,7 +336,6 @@
 
 <span class="kn">from</span> <span class="nn">dol.naming</span> <span class="kn">import</span> <span class="n">StrTupleDict</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
 
 
 <div class="viewcode-block" id="PathKeyTypes"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.PathKeyTypes">[docs]</a><span class="k">class</span> <span class="nc">PathKeyTypes</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
