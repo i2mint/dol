@@ -5,7 +5,7 @@ from os import stat as os_stat
 from functools import wraps, partial
 
 from dol.base import Collection, KvReader, KvPersister
-from dol.trans import wrap_kvs
+from dol.trans import wrap_kvs, store_decorator
 from dol.naming import mk_pattern_from_template_and_format_dict
 from dol.paths import mk_relative_path_store
 
@@ -368,3 +368,13 @@ class MakeMissingDirsStoreMixin:
         dirname = os.path.dirname(_id)
         os.makedirs(dirname, exist_ok=1)
         super().__setitem__(k, v)
+
+
+# TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)
+@store_decorator
+def mk_dirs_if_missing(
+    store_cls=None, *, key_condition=None,
+):
+    """Store decorator that will make the store create directories on write as needed"""
+    name = getattr(store_cls, __name__, 'WrappedStoreWithConditionalDirMaking')
+    return type(name, (MakeMissingDirsStoreMixin, store_cls), {})

@@ -24,11 +24,14 @@ def ihead(store, n=1):
         return [item for i, item in enumerate(store) if i < n]
 
 
+from dol.zipfiledol import *
+
 from dol.filesys import (
     Files,  # for read-write-delete access to files; relative paths, bytes values
     FilesReader,  # read-only version of LocalFiles
     MakeMissingDirsStoreMixin,  # Mixin to enable auto-dir-making on write
 )
+
 from dol.util import (
     Pipe,
     lazyprop,
@@ -37,20 +40,6 @@ from dol.util import (
     regroupby,
     igroupby,
     not_a_mac_junk_path,
-)
-
-from dol.base import (
-    Collection,
-    MappingViewMixin,
-    KvReader,
-    KvPersister,
-    Reader,
-    Persister,
-    kv_walk,
-    Store,
-    BaseKeysView,
-    BaseValuesView,
-    BaseItemsView,
 )
 
 from dol.trans import (
@@ -81,6 +70,21 @@ from dol.caching import (
 from dol.appendable import appendable
 
 from dol.naming import StrTupleDict, mk_store_from_path_format_store_cls
-from dol.paths import mk_relative_path_store
 
-from dol.zipfiledol import *
+from dol.paths import (
+    mk_relative_path_store,
+)
+
+from dol.base import (
+    Collection,
+    MappingViewMixin,
+    KvReader,
+    KvPersister,
+    Reader,
+    Persister,
+    kv_walk,
+    Store,
+    BaseKeysView,
+    BaseValuesView,
+    BaseItemsView,
+)
