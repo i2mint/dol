@@ -1054,6 +1054,11 @@ class Sig(Signature, Mapping):
             and return_annotation is empty
         ):
             return_annotation = _robust_signature_of_callable(obj).return_annotation
+        # TODO: Catch errors and enhance error message with more what-to-do-about it
+        #  message. For example,
+        #  ValueError: wrong parameter order: positional or keyword parameter before
+        #  positional-only parameter
+        #  --> Here we could tell the user what pair of variables violated the rule
         super().__init__(
             ensure_params(obj),
             return_annotation=return_annotation,
