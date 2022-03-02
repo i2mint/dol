@@ -806,7 +806,7 @@ P = Param  # useful shorthand alias
 
 
 def param_has_default_or_is_var_kind(p: Parameter):
-    return p.default != Parameter.empty or p.kind in var_param_kinds
+    return p.default is not p.empty or p.kind in var_param_kinds
 
 
 def parameter_to_dict(p: Parameter) -> dict:
@@ -1373,7 +1373,7 @@ class Sig(Signature, Mapping):
     @property
     def defaults(self):
         return {
-            p.name: p.default for p in self.values() if p.default != Parameter.empty
+            p.name: p.default for p in self.values() if p.default is not p.empty
         }
 
     @property
@@ -1384,7 +1384,7 @@ class Sig(Signature, Mapping):
         return {
             p.name: p.annotation
             for p in self.values()
-            if p.annotation != Parameter.empty
+            if p.annotation is not p.empty
         }
 
     # def substitute(self, **sub_for_name):
