@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.1.70 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.1.71 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -168,11 +168,12 @@
 
     <span class="k">def</span> <span class="nf">validate_decorator_func</span><span class="p">(</span><span class="n">decorator_func</span><span class="p">):</span>
         <span class="n">first_param</span><span class="p">,</span> <span class="o">*</span><span class="n">other_params</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">decorator_func</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">first_param</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="kc">None</span>
-        <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;First argument of the decorator function needs to default to None. Was </span><span class="si">{</span><span class="n">first_param</span><span class="o">.</span><span class="n">default</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">assert</span> <span class="n">first_param</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;First argument of the decorator function needs to default to None. &#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;Was </span><span class="si">{</span><span class="n">first_param</span><span class="o">.</span><span class="n">default</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
         <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
-            <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">p</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">other_params</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">{</span><span class="n">p</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">}</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">other_params</span>
         <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;All arguments (besides the first) need to be keyword-only&#39;</span>
         <span class="k">return</span> <span class="kc">True</span>
 
