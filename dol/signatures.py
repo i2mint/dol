@@ -1374,9 +1374,7 @@ class Sig(Signature, Mapping):
 
     @property
     def defaults(self):
-        return {
-            p.name: p.default for p in self.values() if p.default is not p.empty
-        }
+        return {p.name: p.default for p in self.values() if p.default is not p.empty}
 
     @property
     def annotations(self):
@@ -1384,9 +1382,7 @@ class Sig(Signature, Mapping):
         What `func.__annotations__` would give you.
         """
         return {
-            p.name: p.annotation
-            for p in self.values()
-            if p.annotation is not p.empty
+            p.name: p.annotation for p in self.values() if p.annotation is not p.empty
         }
 
     # def substitute(self, **sub_for_name):
