@@ -1045,6 +1045,8 @@ class Sig(Signature, Mapping):
         >>> Sig(None)
         <Sig ()>
         """
+        if isinstance(obj, str):
+            obj = obj.split()
         if (
             not isinstance(obj, Signature)
             and callable(obj)
