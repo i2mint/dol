@@ -2726,7 +2726,7 @@ def call_forgivingly(func, *args, **kwargs):
 
     Tip: If you into trouble because your kwargs has a 'func' key,
     (which would then clash with the ``func`` param of call_forgivingly), then
-    use `call_somewhat_forgivingly` instead, specifying args and kwargs as tuple and
+    use `_call_forgivingly` instead, specifying args and kwargs as tuple and
     dict.
 
     >>> def foo(a, b: int = 0, c=None) -> int:
@@ -2739,6 +2739,13 @@ def call_forgivingly(func, *args, **kwargs):
     ... )  # well, as it happens, nothing bad -- the intruder argument is just ignored
     ('foo', ('input for a', 0, 42))
 
+    """
+    return _call_forgivingly(func, args, kwargs)
+
+
+def _call_forgivingly(func, args, kwargs):
+    """
+    Helper for _call_forgivingly
     """
     args, kwargs = Sig(func).source_args_and_kwargs(*args, **kwargs)
     return func(*args, **kwargs)
@@ -2813,9 +2820,9 @@ def call_somewhat_forgivingly(
         else:
             enforce_sig = Sig(enforce_sig)
         _kwargs = enforce_sig.bind(*args, **kwargs).arguments
-        return call_forgivingly(func, **_kwargs)
+        return _call_forgivingly(func, (), _kwargs)
     else:
-        return call_forgivingly(func, *args, **kwargs)
+        return _call_forgivingly(func, args, kwargs)
 
 
 def kind_forgiving_func(func):
