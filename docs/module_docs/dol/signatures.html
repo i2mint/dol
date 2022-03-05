@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.73 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.74 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -1449,6 +1449,10 @@ attributes (like name).</p>
 <code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">call_forgivingly</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#call_forgivingly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.call_forgivingly" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call function on given args and kwargs, but only taking what the function needs
 (not choking if they’re extras variables)</p>
+<p>Tip: If you into trouble because your kwargs has a ‘func’ key,
+(which would then clash with the <code class="docutils literal notranslate"><span class="pre">func</span></code> param of call_forgivingly), then
+use <cite>call_somewhat_forgivingly</cite> instead, specifying args and kwargs as tuple and
+dict.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">call_forgivingly</span><span class="p">(</span>
