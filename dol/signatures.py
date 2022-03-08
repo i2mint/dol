@@ -1663,15 +1663,17 @@ class Sig(Signature, Mapping):
             )
         return self.ch_param_attrs('name', **changes_for_name)
 
-    def ch_kinds(self, **changes_for_name):
-        return self.ch_param_attrs('kind', _allow_reordering=True, **changes_for_name)
+    def ch_kinds(self, _allow_reordering=True, **changes_for_name):
+        return self.ch_param_attrs(
+            'kind', _allow_reordering=_allow_reordering, **changes_for_name
+        )
 
     def ch_kinds_to_position_or_keyword(self):
         return all_pk_signature(self)
 
-    def ch_defaults(self, **changes_for_name):
+    def ch_defaults(self, _allow_reordering=True, **changes_for_name):
         return self.ch_param_attrs(
-            'default', _allow_reordering=True, **changes_for_name
+            'default', _allow_reordering=_allow_reordering, **changes_for_name
         )
 
     def ch_annotations(self, **changes_for_name):
@@ -2986,6 +2988,8 @@ def all_pk_signature(callable_or_signature: Union[Callable, Signature]):
     <Sig (*args, **kwargs)>
     >>> sig.name
     'bar'
+
+    See also: ``i2.wrappers.nice_kinds``
 
     """
 
