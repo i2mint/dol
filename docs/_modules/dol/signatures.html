@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.76 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.77 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -95,8 +95,11 @@
 
 <span class="sd">    - get names, kinds, defaults, annotations</span>
 
+<span class="sd">    - make signatures flexibly</span>
+
 <span class="sd">    - merge two or more signatures</span>
 
+<span class="sd">    -</span>
 <span class="sd">    - give a function a specific signature (with a choice of validations)</span>
 
 <span class="sd">    - get an equivalent function with a different order of arguments</span>
@@ -106,7 +109,53 @@
 <span class="sd">    - get an equivalent function but with variadic *args and/or **kwargs replaced with</span>
 <span class="sd">    non-variadic args (tuple) and kwargs (dict)</span>
 
-<span class="sd">- make an f(a) function in to a f(a, b=None) function with b ignored</span>
+<span class="sd">    - make an f(a) function in to a f(a, b=None) function with b ignored</span>
+
+
+<span class="sd">Get names, kinds, defaults, annotations:</span>
+
+<span class="sd">&gt;&gt;&gt; def func(z, a: float=1.0, /, b=2, *, c: int=3):</span>
+<span class="sd">...     pass</span>
+<span class="sd">&gt;&gt;&gt; sig = Sig(func)</span>
+<span class="sd">&gt;&gt;&gt; sig.names</span>
+<span class="sd">[&#39;z&#39;, &#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">&gt;&gt;&gt; from inspect import Parameter</span>
+<span class="sd">&gt;&gt;&gt; assert sig.kinds == {</span>
+<span class="sd">...     &#39;z&#39;: Parameter.POSITIONAL_ONLY,</span>
+<span class="sd">...     &#39;a&#39;: Parameter.POSITIONAL_ONLY,</span>
+<span class="sd">...     &#39;b&#39;: Parameter.POSITIONAL_OR_KEYWORD,</span>
+<span class="sd">...     &#39;c&#39;: Parameter.KEYWORD_ONLY</span>
+<span class="sd">... }</span>
+<span class="sd">&gt;&gt;&gt; # Note z is not in there (only defaulted params are included)</span>
+<span class="sd">&gt;&gt;&gt; sig.defaults</span>
+<span class="sd">{&#39;a&#39;: 1.0, &#39;b&#39;: 2, &#39;c&#39;: 3}</span>
+<span class="sd">&gt;&gt;&gt; sig.annotations</span>
+<span class="sd">{&#39;a&#39;: &lt;class &#39;float&#39;&gt;, &#39;c&#39;: &lt;class &#39;int&#39;&gt;}</span>
+
+<span class="sd">Make signatures flexibly:</span>
+
+<span class="sd">&gt;&gt;&gt; Sig(func)</span>
+<span class="sd">&lt;Sig (z, a: float = 1.0, /, b=2, *, c: int = 3)&gt;</span>
+<span class="sd">&gt;&gt;&gt; Sig([&#39;a&#39;, &#39;b&#39;])</span>
+<span class="sd">&lt;Sig (a, b)&gt;</span>
+<span class="sd">&gt;&gt;&gt; Sig(&#39;x y z&#39;)</span>
+<span class="sd">&lt;Sig (x, y, z)&gt;</span>
+
+<span class="sd">Merge signatures.</span>
+
+<span class="sd">&gt;&gt;&gt; def foo(x): pass</span>
+<span class="sd">&gt;&gt;&gt; def bar(y: int, *, z=2): pass  # note the * (keyword only) will be lost!</span>
+<span class="sd">&gt;&gt;&gt; Sig(foo) + [&#39;a&#39;, &#39;b&#39;] + Sig(bar)</span>
+<span class="sd">&lt;Sig (x, a, b, y: int, z=2)&gt;</span>
+
+<span class="sd">Give a function a signature.</span>
+
+<span class="sd">&gt;&gt;&gt; @Sig(&#39;a b c&#39;)</span>
+<span class="sd">... def func(*args, **kwargs):</span>
+<span class="sd">...     print(args, kwargs)</span>
+<span class="sd">&gt;&gt;&gt; Sig(func)</span>
+<span class="sd">&lt;Sig (a, b, c)&gt;</span>
+
 
 <span class="sd">**Notes to the reader**</span>
 
@@ -125,12 +174,11 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">Signature</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">signature</span><span class="p">,</span> <span class="n">unwrap</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span> <span class="k">as</span> <span class="n">MappingType</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span> <span class="k">as</span> <span class="n">MappingType</span>
 <span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">FunctionType</span>
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">update_wrapper</span><span class="p">,</span>
-    <span class="n">partialmethod</span><span class="p">,</span>
     <span class="n">partial</span><span class="p">,</span>
     <span class="n">WRAPPER_ASSIGNMENTS</span><span class="p">,</span>
     <span class="n">wraps</span> <span class="k">as</span> <span class="n">_wraps</span><span class="p">,</span>
@@ -139,6 +187,7 @@
 
 <span class="c1"># monkey patching WRAPPER_ASSIGNMENTS to get &quot;proper&quot; wrapping (adding defaults and</span>
 <span class="c1"># kwdefaults</span>
+
 <span class="n">wrapper_assignments</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">WRAPPER_ASSIGNMENTS</span><span class="p">,</span> <span class="s1">&#39;__defaults__&#39;</span><span class="p">,</span> <span class="s1">&#39;__kwdefaults__&#39;</span><span class="p">)</span>
 
 <span class="n">update_wrapper</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_update_wrapper</span><span class="p">,</span> <span class="n">assigned</span><span class="o">=</span><span class="n">wrapper_assignments</span><span class="p">)</span>
@@ -623,239 +672,10 @@
 
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterable</span>
-<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 
 
 <span class="k">def</span> <span class="nf">function_caller</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="Command"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Command">[docs]</a><span class="k">class</span> <span class="nc">Command</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;A class that holds a `(caller, args, kwargs)` triple and allows one to execute</span>
-<span class="sd">    `caller(*args, **kwargs)`</span>
-
-<span class="sd">    :param func: A callable that will be called with (*args, **kwargs) argument.</span>
-<span class="sd">    :param args: The positional arguments to call the func with.</span>
-<span class="sd">    :param kwargs: The keyword arguments to call the func with.</span>
-
-<span class="sd">    &gt;&gt;&gt; c = Command(print, &quot;hello&quot;, &quot;world&quot;, sep=&quot;, &quot;)</span>
-<span class="sd">    &gt;&gt;&gt; c()</span>
-<span class="sd">    hello, world</span>
-
-<span class="sd">    What happens (when a command is executed) if some of the arguments are commands</span>
-<span class="sd">    themselves? Well, the sensible thing happens. These commands are executed.</span>
-<span class="sd">    You can use this to define, declaratively, some pretty complex instructions, and</span>
-<span class="sd">    only fetch the data you need and execute everything, once you&#39;re ready.</span>
-
-<span class="sd">    &gt;&gt;&gt; def show(a, b):</span>
-<span class="sd">    ...     print(f&quot;Showing this: {a=}, {b=}&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; def take_five():</span>
-<span class="sd">    ...     return 5</span>
-<span class="sd">    &gt;&gt;&gt; def double_val(val):</span>
-<span class="sd">    ...     return val * 2</span>
-<span class="sd">    &gt;&gt;&gt; command = Command(</span>
-<span class="sd">    ...     show,</span>
-<span class="sd">    ...     Command(take_five),</span>
-<span class="sd">    ...     b=Command(double_val, &#39;hello&#39;),</span>
-<span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; command</span>
-<span class="sd">    Command(show, Command(take_five), b=Command(double_val, &#39;hello&#39;))</span>
-<span class="sd">    &gt;&gt;&gt; command()</span>
-<span class="sd">    Showing this: a=5, b=&#39;hellohello&#39;</span>
-
-<span class="sd">    Of course, as your use of Command gets more complex, you may want to subclass it</span>
-<span class="sd">    and include some &quot;validation&quot; and &quot;compilation&quot; in the init.</span>
-
-<span class="sd">    The usual way to call a function is to... erm... call it.</span>
-<span class="sd">    But sometimes you want to do things differently.</span>
-<span class="sd">    Like validate it, put it on a queue, etc.</span>
-<span class="sd">    That&#39;s where specifying a different _caller will be useful.</span>
-
-<span class="sd">    &gt;&gt;&gt; class MyCommand(Command):</span>
-<span class="sd">    ...     def _caller(self):</span>
-<span class="sd">    ...         f, a, k = self.func, self.args, self.kwargs</span>
-<span class="sd">    ...         print(f&quot;Calling {f}(*{a}, **{k}) with result: {f(*a, **k)}&quot;)</span>
-<span class="sd">    ...</span>
-<span class="sd">    &gt;&gt;&gt; c = MyCommand(print, &quot;hello&quot;, &quot;world&quot;, sep=&quot;, &quot;)</span>
-<span class="sd">    &gt;&gt;&gt; c()</span>
-<span class="sd">    hello, world</span>
-<span class="sd">    Calling &lt;built-in function print&gt;(*(&#39;hello&#39;, &#39;world&#39;), **{&#39;sep&#39;: &#39;, &#39;}) with result: None</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
-
-<div class="viewcode-block" id="Command.curried"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Command.curried">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">curried</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">kw_defaults</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get an Command maker for a specific function, with defaults and signature!</span>
-
-<span class="sd">        &gt;&gt;&gt; def foo(x: str, y: int):</span>
-<span class="sd">        ...     return x * y</span>
-<span class="sd">        ...</span>
-<span class="sd">        &gt;&gt;&gt; foo(&#39;hi&#39;, 3)</span>
-<span class="sd">        &#39;hihihi&#39;</span>
-<span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt; foo_command = Command.curried(foo, y=2)</span>
-<span class="sd">        &gt;&gt;&gt; Sig(foo_command)</span>
-<span class="sd">        &lt;Sig (x: str, y: int = 2)&gt;</span>
-<span class="sd">        &gt;&gt;&gt; f = foo_command(&#39;hi&#39;, y=4)</span>
-<span class="sd">        &gt;&gt;&gt; f()</span>
-<span class="sd">        &#39;hihihihi&#39;</span>
-<span class="sd">        &gt;&gt;&gt; ff = foo_command(&#39;hi&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; ff</span>
-<span class="sd">        Command(foo, &#39;hi&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; ff()</span>
-<span class="sd">        &#39;hihi&#39;</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="n">sig</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">ch_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kw_defaults</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">kw_defaults</span><span class="p">:</span>
-            <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">kw_defaults</span><span class="p">)</span>
-
-        <span class="n">curried_command_cls</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">Command</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">sig</span><span class="p">(</span><span class="n">curried_command_cls</span><span class="p">)</span></div>
-
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">quote</span><span class="o">=</span><span class="s2">&quot;&#39;&quot;</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">quote</span> <span class="o">+</span> <span class="n">x</span> <span class="o">+</span> <span class="n">quote</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-        <span class="n">args_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">to_str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
-        <span class="n">kwargs_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">to_str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-        <span class="k">if</span> <span class="n">args_str</span> <span class="ow">and</span> <span class="n">kwargs_str</span><span class="p">:</span>
-            <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-        <span class="n">args_kwargs_str</span> <span class="o">=</span> <span class="n">args_str</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="n">kwargs_str</span>
-
-        <span class="n">func_name</span> <span class="o">=</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">args_kwargs_str</span><span class="p">:</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">args_kwargs_str</span><span class="si">}</span><span class="s1">)&#39;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s1">)&#39;</span>
-
-    <span class="k">def</span> <span class="nf">_caller</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_args_with_executed_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Command</span><span class="p">):</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">()</span>  <span class="c1"># if a command, execute it</span>
-            <span class="k">yield</span> <span class="n">v</span>
-
-    <span class="k">def</span> <span class="nf">_kwargs_with_executed_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Command</span><span class="p">):</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">()</span>  <span class="c1"># if a command, execute it</span>
-            <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span>
-
-    <span class="k">def</span> <span class="nf">_caller</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span>
-            <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_args_with_executed_commands</span><span class="p">(),</span>
-            <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs_with_executed_commands</span><span class="p">()),</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caller</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="extract_commands"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.extract_commands">[docs]</a><span class="k">def</span> <span class="nf">extract_commands</span><span class="p">(</span>
-    <span class="n">funcs</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Callable</span><span class="p">],</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">mk_command</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Command</span><span class="p">,</span>
-    <span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">    :param funcs: An iterable of functions</span>
-<span class="sd">    :param mk_command: The function to make a command object</span>
-<span class="sd">    :param kwargs: The argname=argval items that the functions should draw from.</span>
-<span class="sd">    :return:</span>
-
-<span class="sd">    &gt;&gt;&gt; def add(a, b: float = 0.0) -&gt; float:</span>
-<span class="sd">    ...     return a + b</span>
-<span class="sd">    &gt;&gt;&gt; def mult(x: float, y=1):</span>
-<span class="sd">    ...     return x * y</span>
-<span class="sd">    &gt;&gt;&gt; def formula1(w, /, x: float, y=1, *, z: int = 1):</span>
-<span class="sd">    ...     return ((w + x) * y) ** z</span>
-<span class="sd">    &gt;&gt;&gt; commands = extract_commands(</span>
-<span class="sd">    ...     (add, mult, formula1), a=1, b=2, c=3, d=4, e=5, w=6, x=7</span>
-<span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; for command in commands:</span>
-<span class="sd">    ...     print(</span>
-<span class="sd">    ...         f&quot;Calling {command.func.__name__} with &quot;</span>
-<span class="sd">    ...         f&quot;args={command.args} and kwargs={command.kwargs}&quot;</span>
-<span class="sd">    ...     )</span>
-<span class="sd">    ...     print(command())</span>
-<span class="sd">    ...</span>
-<span class="sd">    Calling add with args=() and kwargs={&#39;a&#39;: 1, &#39;b&#39;: 2}</span>
-<span class="sd">    3</span>
-<span class="sd">    Calling mult with args=() and kwargs={&#39;x&#39;: 7}</span>
-<span class="sd">    7</span>
-<span class="sd">    Calling formula1 with args=(6,) and kwargs={&#39;x&#39;: 7}</span>
-<span class="sd">    13</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">extract</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
-        <span class="n">extract_arguments</span><span class="p">,</span>
-        <span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="n">what_to_do_with_remainding</span><span class="p">,</span>
-        <span class="n">include_all_when_var_keywords_in_params</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">assert_no_missing_position_only_args</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">funcs</span><span class="p">):</span>
-        <span class="n">funcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">funcs</span><span class="p">]</span>
-
-    <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">:</span>
-        <span class="n">func_args</span><span class="p">,</span> <span class="n">func_kwargs</span> <span class="o">=</span> <span class="n">extract</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="n">mk_command</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">func_args</span><span class="p">,</span> <span class="o">**</span><span class="n">func_kwargs</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="commands_dict"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.commands_dict">[docs]</a><span class="k">def</span> <span class="nf">commands_dict</span><span class="p">(</span>
-    <span class="n">funcs</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">mk_command</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Command</span><span class="p">,</span>
-    <span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">    :param funcs:</span>
-<span class="sd">    :param mk_command:</span>
-<span class="sd">    :param kwargs:</span>
-<span class="sd">    :return:</span>
-
-<span class="sd">    &gt;&gt;&gt; def add(a, b: float = 0.0) -&gt; float:</span>
-<span class="sd">    ...     return a + b</span>
-<span class="sd">    &gt;&gt;&gt; def mult(x: float, y=1):</span>
-<span class="sd">    ...     return x * y</span>
-<span class="sd">    &gt;&gt;&gt; def formula1(w, /, x: float, y=1, *, z: int = 1):</span>
-<span class="sd">    ...     return ((w + x) * y) ** z</span>
-<span class="sd">    &gt;&gt;&gt; d = commands_dict((add, mult, formula1), a=1, b=2, c=3, d=4, e=5, w=6, x=7)</span>
-<span class="sd">    &gt;&gt;&gt; d[add]()</span>
-<span class="sd">    3</span>
-<span class="sd">    &gt;&gt;&gt; d[mult]()</span>
-<span class="sd">    7</span>
-<span class="sd">    &gt;&gt;&gt; d[formula1]()</span>
-<span class="sd">    13</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">funcs</span><span class="p">):</span>
-        <span class="n">funcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">funcs</span><span class="p">]</span>
-    <span class="n">it</span> <span class="o">=</span> <span class="n">extract_commands</span><span class="p">(</span>
-        <span class="n">funcs</span><span class="p">,</span>
-        <span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="n">what_to_do_with_remainding</span><span class="p">,</span>
-        <span class="n">mk_command</span><span class="o">=</span><span class="n">mk_command</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">funcs</span><span class="p">,</span> <span class="n">it</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="Param"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Param">[docs]</a><span class="k">class</span> <span class="nc">Param</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>

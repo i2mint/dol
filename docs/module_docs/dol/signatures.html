@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.76 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.77 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -97,17 +97,63 @@
 <blockquote>
 <div><ul class="simple">
 <li><p>get names, kinds, defaults, annotations</p></li>
+<li><p>make signatures flexibly</p></li>
 <li><p>merge two or more signatures</p></li>
+<li></li>
 <li><p>give a function a specific signature (with a choice of validations)</p></li>
 <li><p>get an equivalent function with a different order of arguments</p></li>
 <li><p>get an equivalent function with a subset of arguments (like partial)</p></li>
 <li><p>get an equivalent function but with variadic <a href="#id1"><span class="problematic" id="id2">*</span></a>args and/or <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs replaced with</p></li>
 </ul>
 <p>non-variadic args (tuple) and kwargs (dict)</p>
-</div></blockquote>
 <ul class="simple">
 <li><p>make an f(a) function in to a f(a, b=None) function with b ignored</p></li>
 </ul>
+</div></blockquote>
+<p>Get names, kinds, defaults, annotations:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">names</span>
+<span class="go">[&#39;z&#39;, &#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">Parameter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">sig</span><span class="o">.</span><span class="n">kinds</span> <span class="o">==</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_ONLY</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_ONLY</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_OR_KEYWORD</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Note z is not in there (only defaulted params are included)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">defaults</span>
+<span class="go">{&#39;a&#39;: 1.0, &#39;b&#39;: 2, &#39;c&#39;: 3}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">annotations</span>
+<span class="go">{&#39;a&#39;: &lt;class &#39;float&#39;&gt;, &#39;c&#39;: &lt;class &#39;int&#39;&gt;}</span>
+</pre></div>
+</div>
+<p>Make signatures flexibly:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+<span class="go">&lt;Sig (z, a: float = 1.0, /, b=2, *, c: int = 3)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span>
+<span class="go">&lt;Sig (a, b)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;x y z&#39;</span><span class="p">)</span>
+<span class="go">&lt;Sig (x, y, z)&gt;</span>
+</pre></div>
+</div>
+<p>Merge signatures.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span> <span class="k">pass</span>  <span class="c1"># note the * (keyword only) will be lost!</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">Sig</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
+<span class="go">&lt;Sig (x, a, b, y: int, z=2)&gt;</span>
+</pre></div>
+</div>
+<p>Give a function a signature.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@Sig</span><span class="p">(</span><span class="s1">&#39;a b c&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+<span class="go">&lt;Sig (a, b, c)&gt;</span>
+</pre></div>
+</div>
 <p><strong>Notes to the reader</strong></p>
 <p>Both in the code and in the docs, we’ll use short hands for parameter (argument) kind.</p>
 <blockquote>
@@ -119,90 +165,6 @@
 <li><p>KO = Parameter.KEYWORD_ONLY</p></li>
 </ul>
 </div></blockquote>
-<dl class="py class">
-<dt id="dol.signatures.Command">
-<em class="property">class </em><code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">Command</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Command" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class that holds a <cite>(caller, args, kwargs)</cite> triple and allows one to execute
-<cite>caller(*args, **kwargs)</cite></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> – A callable that will be called with (<a href="#id5"><span class="problematic" id="id6">*</span></a>args, <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs) argument.</p></li>
-<li><p><strong>args</strong> – The positional arguments to call the func with.</p></li>
-<li><p><strong>kwargs</strong> – The keyword arguments to call the func with.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Command</span><span class="p">(</span><span class="nb">print</span><span class="p">,</span> <span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="s2">&quot;world&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">()</span>
-<span class="go">hello, world</span>
-</pre></div>
-</div>
-<p>What happens (when a command is executed) if some of the arguments are commands
-themselves? Well, the sensible thing happens. These commands are executed.
-You can use this to define, declaratively, some pretty complex instructions, and
-only fetch the data you need and execute everything, once you’re ready.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Showing this: </span><span class="si">{</span><span class="n">a</span><span class="si">=}</span><span class="s2">, </span><span class="si">{</span><span class="n">b</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">take_five</span><span class="p">():</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="mi">5</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">double_val</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">val</span> <span class="o">*</span> <span class="mi">2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">command</span> <span class="o">=</span> <span class="n">Command</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">show</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">Command</span><span class="p">(</span><span class="n">take_five</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="n">b</span><span class="o">=</span><span class="n">Command</span><span class="p">(</span><span class="n">double_val</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span><span class="p">),</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">command</span>
-<span class="go">Command(show, Command(take_five), b=Command(double_val, &#39;hello&#39;))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">command</span><span class="p">()</span>
-<span class="go">Showing this: a=5, b=&#39;hellohello&#39;</span>
-</pre></div>
-</div>
-<p>Of course, as your use of Command gets more complex, you may want to subclass it
-and include some “validation” and “compilation” in the init.</p>
-<p>The usual way to call a function is to… erm… call it.
-But sometimes you want to do things differently.
-Like validate it, put it on a queue, etc.
-That’s where specifying a different _caller will be useful.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyCommand</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">_caller</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Calling </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">(*</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">, **</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">) with result: </span><span class="si">{</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">k</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="gp">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">MyCommand</span><span class="p">(</span><span class="nb">print</span><span class="p">,</span> <span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="s2">&quot;world&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">()</span>
-<span class="go">hello, world</span>
-<span class="go">Calling &lt;built-in function print&gt;(*(&#39;hello&#39;, &#39;world&#39;), **{&#39;sep&#39;: &#39;, &#39;}) with result: None</span>
-</pre></div>
-</div>
-<dl class="py method">
-<dt id="dol.signatures.Command.curried">
-<em class="property">classmethod </em><code class="sig-name descname">curried</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kw_defaults</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Command.curried"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Command.curried" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an Command maker for a specific function, with defaults and signature!</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span>
-<span class="gp">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="go">&#39;hihihi&#39;</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_command</span> <span class="o">=</span> <span class="n">Command</span><span class="o">.</span><span class="n">curried</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo_command</span><span class="p">)</span>
-<span class="go">&lt;Sig (x: str, y: int = 2)&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">foo_command</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">()</span>
-<span class="go">&#39;hihihihi&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ff</span> <span class="o">=</span> <span class="n">foo_command</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ff</span>
-<span class="go">Command(foo, &#39;hi&#39;)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ff</span><span class="p">()</span>
-<span class="go">&#39;hihi&#39;</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</dd></dl>
-
 <dl class="py exception">
 <dt id="dol.signatures.FuncCallNotMatchingSignature">
 <em class="property">exception </em><code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">FuncCallNotMatchingSignature</code><a class="reference internal" href="../../_modules/dol/signatures.html#FuncCallNotMatchingSignature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.FuncCallNotMatchingSignature" title="Permalink to this definition">¶</a></dt>
@@ -400,7 +362,7 @@ What <cite>func.__annotations__</cite> would give you.</p>
 <dl class="py method">
 <dt id="dol.signatures.Sig.args_and_kwargs_from_kwargs">
 <code class="sig-name descname">args_and_kwargs_from_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwargs</span></em>, <em class="sig-param"><span class="n">apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_excess</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_kind</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">args_limit</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.args_and_kwargs_from_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.args_and_kwargs_from_kwargs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract args and kwargs such that func(<a href="#id9"><span class="problematic" id="id10">*</span></a>args, <a href="#id11"><span class="problematic" id="id12">**</span></a>kwargs) can be called,
+<dd><p>Extract args and kwargs such that func(<a href="#id5"><span class="problematic" id="id6">*</span></a>args, <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs) can be called,
 where func has instance’s signature.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -994,14 +956,14 @@ defaults, these defaults will actually be used (unlike with <cite>functools.wrap
 <em class="property">property </em><code class="sig-name descname">n_required</code><a class="headerlink" href="#dol.signatures.Sig.n_required" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of required arguments.
 A required argument is one that doesn’t have a default, nor is VAR_POSITIONAL
-(<a href="#id13"><span class="problematic" id="id14">*</span></a>args) or VAR_KEYWORD (<a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs).
+(<a href="#id9"><span class="problematic" id="id10">*</span></a>args) or VAR_KEYWORD (<a href="#id11"><span class="problematic" id="id12">**</span></a>kwargs).
 Note: Sometimes a minimum number of arguments in VAR_POSITIONAL and
 VAR_KEYWORD are in fact required,
 but we can’t see this from the signature, so we can’t tell you about that! You
 do the math.</p>
 <p># Skipping the actual running of the doctest because some IDEs don’t handle
 &#64;property testing well.
-# &gt;&gt;&gt; Sig(lambda x, y, z=None, <a href="#id17"><span class="problematic" id="id18">*</span></a>args, <a href="#id19"><span class="problematic" id="id20">**</span></a>kwargs: …).n_required
+# &gt;&gt;&gt; Sig(lambda x, y, z=None, <a href="#id13"><span class="problematic" id="id14">*</span></a>args, <a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs: …).n_required
 # 2</p>
 </dd></dl>
 
@@ -1227,7 +1189,7 @@ will be returned with their defaults:</p>
 </pre></div>
 </div>
 <p>Note that this does NOT return:
-<a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a></p>
 <blockquote>
 <div><p>{‘parameters’: self.parameters,
 ‘return_annotation’: self.return_annotation}</p>
@@ -1383,7 +1345,7 @@ implementation though!</p>
 <span class="go">&lt;Signature (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
 </pre></div>
 </div>
-<p>But note that the variadic arguments <a href="#id25"><span class="problematic" id="id26">*</span></a>args and <a href="#id27"><span class="problematic" id="id28">**</span></a>kwargs remain variadic:</p>
+<p>But note that the variadic arguments <a href="#id21"><span class="problematic" id="id22">*</span></a>args and <a href="#id23"><span class="problematic" id="id24">**</span></a>kwargs remain variadic:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">all_pk_signature</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">bar</span><span class="p">))</span>
 <span class="go">&lt;Signature (*args, **kwargs)&gt;</span>
 </pre></div>
@@ -1562,7 +1524,7 @@ raise a <cite>TypeError</cite>:</p>
 <span class="go">(x, y=1, args=(), **kwargs)</span>
 </pre></div>
 </div>
-<p># &gt;&gt;&gt; def h(x, <a href="#id29"><span class="problematic" id="id30">*</span></a>y, z):
+<p># &gt;&gt;&gt; def h(x, <a href="#id25"><span class="problematic" id="id26">*</span></a>y, z):
 # …     print(f”{x=}, {y=}, {z=}”)
 # &gt;&gt;&gt; h(1, 2, 3, z=4)
 # x=1, y=(2, 3), z=4
@@ -1593,7 +1555,7 @@ implementation though!</p>
 <span class="go">&lt;Signature (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
 </pre></div>
 </div>
-<p>But note that the variadic arguments <a href="#id31"><span class="problematic" id="id32">*</span></a>args and <a href="#id33"><span class="problematic" id="id34">**</span></a>kwargs remain variadic:</p>
+<p>But note that the variadic arguments <a href="#id27"><span class="problematic" id="id28">*</span></a>args and <a href="#id29"><span class="problematic" id="id30">**</span></a>kwargs remain variadic:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">all_pk_signature</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">bar</span><span class="p">))</span>
 <span class="go">&lt;Signature (*args, **kwargs)&gt;</span>
 </pre></div>
@@ -1613,12 +1575,12 @@ attributes (like name).</p>
 <dl class="py function">
 <dt id="dol.signatures.ch_variadics_to_non_variadic_kind">
 <code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">ch_variadics_to_non_variadic_kind</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">ch_variadic_keyword_to_keyword</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#ch_variadics_to_non_variadic_kind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.ch_variadics_to_non_variadic_kind" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id35"><span class="problematic" id="id36">*</span></a>args) argument to a tuple (args)
+<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id31"><span class="problematic" id="id32">*</span></a>args) argument to a tuple (args)
 argument of the same name.</p>
 <p>Essentially, given a <cite>func(a, *b, c, **d)</cite> function want to get a
 <cite>new_func(a, b=(), c=None, d={})</cite> that has the same functionality
 (in fact, calls the original <cite>func</cite> function behind the scenes), but without
-where the variadic arguments <a href="#id37"><span class="problematic" id="id38">*</span></a>b and <a href="#id39"><span class="problematic" id="id40">**</span></a>d are replaced with a <cite>b</cite> expecting an
+where the variadic arguments <a href="#id33"><span class="problematic" id="id34">*</span></a>b and <a href="#id35"><span class="problematic" id="id36">**</span></a>d are replaced with a <cite>b</cite> expecting an
 iterable (e.g. tuple/list) and <cite>d</cite> expecting a <cite>dict</cite> to contain the
 desired inputs.</p>
 <p>Besides this, the decorator tries to be as conservative as possible, making only
@@ -1669,7 +1631,7 @@ will still be a keyword-only kind.</p>
 </pre></div>
 </div>
 <p>If you only want the variadic positional to be handled, but leave leave any
-VARIADIC_KEYWORD kinds (<a href="#id41"><span class="problematic" id="id42">**</span></a>kwargs) alone, you can do so by setting
+VARIADIC_KEYWORD kinds (<a href="#id37"><span class="problematic" id="id38">**</span></a>kwargs) alone, you can do so by setting
 <cite>ch_variadic_keyword_to_keyword=False</cite>.
 If you’ll need to use <cite>ch_variadics_to_non_variadic_kind</cite> in such a way
 repeatedly, we suggest you use <cite>functools.partial</cite> to not have to specify this
@@ -1685,38 +1647,6 @@ configuration repeatedly.</p>
 <span class="go">&lt;Sig (a, args=(), *, bar=None, **kwargs)&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">bar</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">hello</span><span class="o">=</span><span class="s2">&quot;world&quot;</span><span class="p">)</span>
 <span class="go">&quot;a=1, args=(2, 3), bar=4, kwargs={&#39;hello&#39;: &#39;world&#39;}&quot;</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt id="dol.signatures.commands_dict">
-<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">commands_dict</code><span class="sig-paren">(</span><em class="sig-param">funcs, *, mk_command: Callable[[Callable, tuple, dict], Any] = &lt;class 'dol.signatures.Command'&gt;, what_to_do_with_remainding='ignore', **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#commands_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.commands_dict" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>funcs</strong> – </p></li>
-<li><p><strong>mk_command</strong> – </p></li>
-<li><p><strong>kwargs</strong> – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-</dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">mult</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">formula1</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="p">((</span><span class="n">w</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="n">z</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">commands_dict</span><span class="p">((</span><span class="n">add</span><span class="p">,</span> <span class="n">mult</span><span class="p">,</span> <span class="n">formula1</span><span class="p">),</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="n">add</span><span class="p">]()</span>
-<span class="go">3</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="n">mult</span><span class="p">]()</span>
-<span class="go">7</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="n">formula1</span><span class="p">]()</span>
-<span class="go">13</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2296,47 +2226,6 @@ return <cite>param_args</cite>, <cite>param_kwargs</cite></p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="dol.signatures.extract_commands">
-<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">extract_commands</code><span class="sig-paren">(</span><em class="sig-param">funcs: Iterable[Callable], *, mk_command: Callable[[Callable, tuple, dict], Any] = &lt;class 'dol.signatures.Command'&gt;, what_to_do_with_remainding='ignore', **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#extract_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.extract_commands" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>funcs</strong> – An iterable of functions</p></li>
-<li><p><strong>mk_command</strong> – The function to make a command object</p></li>
-<li><p><strong>kwargs</strong> – The argname=argval items that the functions should draw from.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-</dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">mult</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">formula1</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="p">((</span><span class="n">w</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="n">z</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">commands</span> <span class="o">=</span> <span class="n">extract_commands</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="p">(</span><span class="n">add</span><span class="p">,</span> <span class="n">mult</span><span class="p">,</span> <span class="n">formula1</span><span class="p">),</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">7</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span>
-<span class="gp">... </span>        <span class="sa">f</span><span class="s2">&quot;Calling </span><span class="si">{</span><span class="n">command</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> with &quot;</span>
-<span class="gp">... </span>        <span class="sa">f</span><span class="s2">&quot;args=</span><span class="si">{</span><span class="n">command</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2"> and kwargs=</span><span class="si">{</span><span class="n">command</span><span class="o">.</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="gp">... </span>    <span class="p">)</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">command</span><span class="p">())</span>
-<span class="gp">...</span>
-<span class="go">Calling add with args=() and kwargs={&#39;a&#39;: 1, &#39;b&#39;: 2}</span>
-<span class="go">3</span>
-<span class="go">Calling mult with args=() and kwargs={&#39;x&#39;: 7}</span>
-<span class="go">7</span>
-<span class="go">Calling formula1 with args=(6,) and kwargs={&#39;x&#39;: 7}</span>
-<span class="go">13</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
 <dt id="dol.signatures.has_signature">
 <code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">has_signature</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">robust</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#has_signature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.has_signature" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if an object has a signature – i.e. is callable and inspect.signature(
@@ -2503,7 +2392,7 @@ This tool should help making it less annoying.</p>
 <dl class="py function">
 <dt id="dol.signatures.tuple_the_args">
 <code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">tuple_the_args</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">ch_variadic_keyword_to_keyword</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.tuple_the_args" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id43"><span class="problematic" id="id44">*</span></a>args) argument to a tuple (args)
+<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id39"><span class="problematic" id="id40">*</span></a>args) argument to a tuple (args)
 argument of the same name.</p>
 </dd></dl>
 
@@ -2519,12 +2408,12 @@ function <cite>g</cite> taking two inputs, <cite>a</cite>, and <cite>b</cite>.
 Now you want to carry out this functionality using a function <cite>f</cite> that does what
 <cite>g</cite> should do, but doesn’t use <cite>a</cite>, and doesn’t even have it in it’s arguments.</p>
 <p>The solution to this is to _adapt_ <cite>f</cite> to the <cite>g</cite> interface:
-<a href="#id45"><span class="problematic" id="id46">``</span></a>`
+<a href="#id41"><span class="problematic" id="id42">``</span></a>`
 def my_g(a, b):</p>
 <blockquote>
 <div><p>return f(a)</p>
 </div></blockquote>
-<p><a href="#id47"><span class="problematic" id="id48">``</span></a>`
+<p><a href="#id43"><span class="problematic" id="id44">``</span></a>`
 and use <cite>my_g</cite>.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="o">*</span> <span class="mi">11</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
