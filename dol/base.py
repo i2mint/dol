@@ -600,7 +600,9 @@ class Store(KvPersister):
         )  # to forward dir to delegated stream as well
 
     def __hash__(self):
-        return self.store.__hash__()
+        return hash(self.store)
+        # changed from the following (store.__hash__ was None sometimes (so not callable)
+        # return self.store.__hash__()
 
     # Read ####################################################################
 
