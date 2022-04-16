@@ -18,6 +18,7 @@ from zipfile import (
 from dol.base import KvReader, KvPersister
 from dol.filesys import FileCollection, Files
 from dol.util import lazyprop, fullpath
+from dol.sources import FlatReader
 
 __all__ = [
     'COMPRESSION',
@@ -478,7 +479,7 @@ ZipFileReader = ZipFilesReader  # back-compatibility alias
 
 # TODO: Add easy connection to ExplicitKeymapReader and other path trans and cache useful for the
 #  folder of zips context
-class FlatZipFilesReader(ZipFilesReader):
+class FlatZipFilesReader(FlatReader, ZipFilesReader):
     """Read the union of the contents of multiple zip files.
     A local file reader whose keys are the zip filepaths of the rootdir and values are
     corresponding ZipReaders.
@@ -515,32 +516,17 @@ class FlatZipFilesReader(ZipFilesReader):
 
     """
 
+    __init__ = ZipFilesReader.__init__
+
     @lazyprop
-    def _zip_readers(self):
+    def _readers(self):
         rootdir_len = len(self.rootdir)
         return {
-            path[rootdir_len:]: super(FlatZipFilesReader, self).__getitem__(path)
-            for path in super().__iter__()
+            path[rootdir_len:]: ZipFilesReader.__getitem__(self, path)
+            for path in ZipFilesReader.__iter__(self)
         }
 
-    def __iter__(self):
-        for (
-            zip_relpath,
-            zip_reader,
-        ) in self._zip_readers.items():  # go through the zip paths
-            for (
-                path_in_zip
-            ) in (
-                zip_reader
-            ):  # go through the keys of the ZipReader (the zipped filepaths)
-                yield (zip_relpath, path_in_zip)
-
-    def __getitem__(self, k):
-        (
-            zip_relpath,
-            path_in_zip,
-        ) = k  # k is a pair of the path to the zip file and the path of a file within it
-        return self._zip_readers[zip_relpath][path_in_zip]
+    _zip_readers = _readers  # back-compatibility alias
 
 
 def mk_flatzips_store(
@@ -890,7 +876,7 @@ from dol.util import not_a_mac_junk_path
 
 def is_a_mac_junk_path(path):
     return not not_a_mac_junk_path(path)
-
+ 
 
 remove_mac_junk_from_zip = partial(
     remove_some_entries_from_zip,

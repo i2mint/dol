@@ -87,3 +87,10 @@ from dol.base import (
     BaseValuesView,
     BaseItemsView,
 )
+
+from dol.sources import (
+    FlatReader,
+    SequenceKvReader,
+    FuncReader,
+    Attrs
+)

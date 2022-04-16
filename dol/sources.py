@@ -66,6 +66,40 @@ def _kv_spec_to_func(kv_spec: KvSpec) -> Callable:
 # TODO: This doesn't work
 # KvSpec.from = _kv_spec_to_func  # I'd like to be able to couple KvSpec and it's conversion function (even more: __call__ instead of from)
 
+# TODO: Generalize to several layers
+# TODO: Same pattern for DirStore and kv_walk. Need a general tool for flattening views.
+#   Should to a situation where number layers are not fixed in advanced,
+#   but determined by some rules executed dynamically.
+class FlatReader(KvReader):
+    """Get a 'flat view' of a store of stores. 
+    That is, where keys are `(first_level_key, second_level_key)` pairs.
+
+    >>> readers = {
+    ...     'fr': {1: 'un', 2: 'deux'},
+    ...     'it': {1: 'uno', 2: 'due', 3: 'tre'},
+    ... }
+    >>> s = FlatReader(readers)
+    >>> list(s)
+    [('fr', 1), ('fr', 2), ('it', 1), ('it', 2), ('it', 3)]
+    >>> s[('fr', 1)]
+    'un'
+    >>> s['it', 2]
+    'due'
+    """
+
+    def __init__(self, readers):
+        self._readers = readers
+
+    def __iter__(self):
+        # go through the first level paths:
+        for first_level_path, reader in self._readers.items():
+            for second_level_path in reader:  # go through the keys of the reader
+                yield first_level_path, second_level_path
+
+    def __getitem__(self, k):
+        first_level_path, second_level_path = k
+        return self._readers[first_level_path][second_level_path]
+
 
 class SequenceKvReader(KvReader):
     """
@@ -216,6 +250,7 @@ class CachedSequenceKvReader(SequenceKvReader):
     """SequenceKvReader but with the whole mapping cached as a dict. Use this one if you will perform multiple accesses to the store"""
 
 
+# TODO: Basically same could be acheived with wrap_kvs(obj_of_data=methodcaller('__call__'))
 class FuncReader(KvReader):
     """Reader that seeds itself from a data fetching function list
     Uses the function list names as the keys, and their returned value as the values.
@@ -236,24 +271,37 @@ class FuncReader(KvReader):
     'bar'
     >>> s['pi']
     3.14159
+
+    You might want to give your own names to the functions. 
+    You might even have to (because the callable you're using doesn't have a `__name__`). 
+    In that case, you can specify a ``{name: func, ...}`` dict instead of a simple iterable.
+
+    >>> s = FuncReader({'FU': foo, 'Pie': pi})
+    >>> list(s)
+    ['FU', 'Pie']
+    >>> s['FU']
+    'bar'
+
     """
 
     def __init__(self, funcs):
         # TODO: assert no free arguments (arguments are allowed but must all have defaults)
-        self.funcs = funcs
-        self._func = {func.__name__: func for func in funcs}
+        if isinstance(funcs, Mapping):
+            self.funcs = dict(funcs)
+        else:
+            self.funcs = {func.__name__: func for func in funcs}
 
     def __contains__(self, k):
-        return k in self._func
+        return k in self.funcs
 
     def __iter__(self):
-        yield from self._func
+        yield from self.funcs
 
     def __len__(self):
-        return len(self._func)
+        return len(self.funcs)
 
     def __getitem__(self, k):
-        return self._func[k]()  # call the func
+        return self.funcs[k]()  # call the func
 
 
 class FuncDag(FuncReader):
