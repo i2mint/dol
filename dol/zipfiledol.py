@@ -876,7 +876,7 @@ from dol.util import not_a_mac_junk_path
 
 def is_a_mac_junk_path(path):
     return not not_a_mac_junk_path(path)
- 
+
 
 remove_mac_junk_from_zip = partial(
     remove_some_entries_from_zip,
