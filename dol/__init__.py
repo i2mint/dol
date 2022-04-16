@@ -88,9 +88,4 @@ from dol.base import (
     BaseItemsView,
 )
 
-from dol.sources import (
-    FlatReader,
-    SequenceKvReader,
-    FuncReader,
-    Attrs
-)
+from dol.sources import FlatReader, SequenceKvReader, FuncReader, Attrs
