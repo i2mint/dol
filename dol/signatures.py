@@ -687,6 +687,7 @@ def _names_of_kind(sig):
         d[param.kind].append(param.name)
     return tuple(tuple(d[kind]) for kind in range(5))
 
+
 # TODO: See other signature operating functions below in this module:
 #   Do we need them now that we have Sig?
 #   Do we want to keep them and have Sig use them?
@@ -1311,14 +1312,26 @@ class Sig(Signature, Mapping):
         and caches the result.
         """
         from warnings import warn
-        warn("Deprecated", DeprecationWarning)
+
+        warn('Deprecated', DeprecationWarning)
         return self.names_of_kind[kind]
 
     # TODO: Consider using names_of_kind in other methods/properties
 
     @property
     def has_var_kinds(self):
-        return any(p.kind in var_param_kinds for p in self.values())
+        """
+        >>> from i2.signatures import Sig  # somehow needed in IDE for @property
+        >>> Sig(lambda x, *, y: None).has_var_kinds
+        False
+        >>> Sig(lambda x, *y: None).has_var_kinds
+        True
+        >>> Sig(lambda x, **y: None).has_var_kinds
+        True
+        """
+        return bool(self.names_of_kind[VP]) or bool(self.names_of_kind[VK])
+        # Old version:
+        # return any(p.kind in var_param_kinds for p in self.values())
 
     @property
     def index_of_var_positional(self):
