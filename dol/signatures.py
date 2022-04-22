@@ -83,10 +83,13 @@ Both in the code and in the docs, we'll use short hands for parameter (argument)
 """
 
 from inspect import Signature, Parameter, signature, unwrap
+import re
 from typing import Union, Callable, Iterable, Mapping as MappingType
 from types import FunctionType
+from collections import defaultdict
 
 from functools import (
+    cached_property,
     update_wrapper,
     partial,
     WRAPPER_ASSIGNMENTS,
@@ -109,8 +112,8 @@ _ParameterKind = type(
     Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD)
 )
 ParamsType = Iterable[Parameter]
-ParamsAble = Union[ParamsType, MappingType[str, Parameter], Callable]
-SignatureAble = Union[Signature, Callable, ParamsType, MappingType[str, Parameter]]
+ParamsAble = Union[ParamsType, MappingType[str, Parameter], Callable, str]
+SignatureAble = Union[Signature, ParamsAble]
 HasParams = Union[Iterable[Parameter], MappingType[str, Parameter], Signature, Callable]
 
 # short hands for Parameter kinds
@@ -126,6 +129,12 @@ param_attributes = {'name', 'kind', 'default', 'annotation'}
 
 class FuncCallNotMatchingSignature(TypeError):
     """Raise when the call signature is not valid"""
+
+
+class IncompatibleSignatures(ValueError):
+    """Raise when two signatures are not compatible.
+    (see https://github.com/i2mint/i2/issues/16 for more information on signature
+    compatibility)"""
 
 
 # TODO: Couldn't make this work. See https://www.python.org/dev/peps/pep-0562/
@@ -671,6 +680,13 @@ def _robust_signature_of_callable(callable_obj: Callable) -> Signature:
             raise
 
 
+def _names_of_kind(sig):
+    """Compute a tuple containing tuples of names for each kind"""
+    d = defaultdict(list)
+    for param in sig.params:
+        d[param.kind].append(param.name)
+    return tuple(tuple(d[kind]) for kind in range(5))
+
 # TODO: See other signature operating functions below in this module:
 #   Do we need them now that we have Sig?
 #   Do we want to keep them and have Sig use them?
@@ -849,6 +865,8 @@ class Sig(Signature, Mapping):
         <Sig (a, b: int)>
         >>> Sig(["a", "b", "c"], return_annotation=str)  # specifying return annotation
         <Sig (a, b, c) -> str>
+        >>> Sig('(a: int = 0, b: str = None, c: float = 3.14) -> str')
+        <Sig (a: int = 0, b: str = None, c: float = 3.14) -> str>
 
         But you can always specify parameters the "long" way
 
@@ -866,7 +884,16 @@ class Sig(Signature, Mapping):
         <Sig ()>
         """
         if isinstance(obj, str):
-            obj = obj.split()
+            if re.match(r'^\(.*\)', obj):
+                # This is a string representation of a signature
+                # Dynamically create a function with the given signature then generate
+                # the Sig object from this function.
+                exec_env = dict()
+                f_def = f'def f{obj}: pass'
+                exec(f_def, exec_env)
+                obj = exec_env['f']
+            else:
+                obj = obj.split()
         if (
             not isinstance(obj, Signature)
             and callable(obj)
@@ -883,10 +910,19 @@ class Sig(Signature, Mapping):
             return_annotation=return_annotation,
             __validate_parameters__=__validate_parameters__,
         )
+        self.names_of_kind = _names_of_kind(self)
+
+        if vps := len(self.names_of_kind[Parameter.VAR_POSITIONAL]) > 1:
+            raise ValueError(f"You can't have several variadic keywords: {vps}")
+        if vks := len(self.names_of_kind[Parameter.VAR_KEYWORD]) > 1:
+            raise ValueError(f"You can't have several variadic keywords: {vks}")
+
         self.name = name or name_of_obj(obj)
 
     # TODO: Add params for more validation (e.g. arg number/name matching?)
-    def wrap(self, func: Callable, raise_on_error_copying_attrs=False):
+    # TODO: Switch to ignore_incompatible_signatures=False when existing code is
+    #   changed accordingly.
+    def wrap(self, func: Callable, ignore_incompatible_signatures=True):
         """Gives the input function the signature.
 
         This is similar to the `functools.wraps` function, but parametrized by a
@@ -968,37 +1004,26 @@ class Sig(Signature, Mapping):
 
         # TODO: Should we make a copy/wrap of the function so as to not override
         #  decorated function itself? Make sure the func remains pickalable!
-        # @wraps(func)
-        # def wrapped_func(*args, **kwargs):
-        #     return func(*args, **kwargs)
-        wrapped_func = func
 
-        wrapped_func.__signature__ = Signature(
+        # Analyze self and func signature to validate sanity
+        _validate_sanity_of_signature_change(func, self, ignore_incompatible_signatures)
+
+        # Change (mutate!) func, writing a new __signature__, __annotations__,
+        # __defaults__ and __kwdefaults__
+        func.__signature__ = Signature(
             self.parameters.values(), return_annotation=self.return_annotation
         )
-        wrapped_func.__annotations__ = self.annotations
-
-        # endow the function with __defaults__ and __kwdefaults__ (not the default of
-        # functools.wraps!)
-        (
-            wrapped_func.__defaults__,
-            wrapped_func.__kwdefaults__,
-        ) = self._dunder_defaults_and_kwdefaults()
+        func.__annotations__ = self.annotations
+        func.__defaults__, func.__kwdefaults__ = self._dunder_defaults_and_kwdefaults()
 
         # special case of functools.partial: need to tell .keywords about kwdefaults
-        if isinstance(wrapped_func, partial):
-            wrapped_func.keywords.update(wrapped_func.__kwdefaults__)
+        if isinstance(func, partial):
+            # TODO: .args can't be modified -- write test to see if problem.
+            #   If it is, consider returning a new partial with updated args & keywords.
+            # wrapped_func.args = wrapped_func.args + wrapped_func.__defaults__
+            func.keywords.update(func.__kwdefaults__)
 
-        # "copy" over all other non-dunder attributes (not the default of
-        # functools.wraps!)
-        for attr in filter(lambda x: not x.startswith('__'), dir(wrapped_func)):
-            try:
-                setattr(wrapped_func, attr, getattr(wrapped_func, attr))
-            except AttributeError as e:
-                if raise_on_error_copying_attrs:
-                    raise
-
-        return wrapped_func
+        return func
 
     def __call__(self, func: Callable):
         """Gives the input function the signature.
@@ -1077,6 +1102,24 @@ class Sig(Signature, Mapping):
     def __bool__(self):
         return True
 
+    def _positional_and_keyword_defaults(self):
+        """Get ``{name: default, ...}`` dicts of positional and keyword defaults.
+
+        >>> def foo(w, /, x: float, y=1, *, z: int = 1):
+        ...     ...
+        >>> pos_defaults, kw_defaults = Sig(foo)._positional_and_keyword_defaults()
+        >>> pos_defaults
+        {'y': 1}
+        >>> kw_defaults
+        {'z': 1}
+        """
+        ko_names = self.names_of_kind[KO]
+        dflts = self.defaults
+        return (
+            {name: dflts[name] for name in dflts if name not in ko_names},
+            {name: dflts[name] for name in dflts if name in ko_names},
+        )
+
     def _dunder_defaults_and_kwdefaults(self):
         """Get the __defaults__, __kwdefaults__ (i.e. what would be the dunders baring
         these names in a python callable)
@@ -1089,14 +1132,13 @@ class Sig(Signature, Mapping):
         >>> __kwdefaults__
         {'z': 1}
         """
-        ko_names = self.names_for_kind(kind=KO)
-        dflts = self.defaults
+
+        pos_defaults, kw_defaults = self._positional_and_keyword_defaults()
         return (
-            tuple(dflts[name] for name in dflts if name not in ko_names),
-            # as known as __defaults__ in python callables
-            {
-                name: dflts[name] for name in dflts if name in ko_names
-            },  # as known as __kwdefaults__ in python callables
+            tuple(
+                pos_defaults.values()
+            ),  # as known as __defaults__ in python callables
+            kw_defaults,  # as known as __kwdefaults__ in python callables
         )
 
     def to_signature_kwargs(self):
@@ -1140,6 +1182,29 @@ class Sig(Signature, Mapping):
 
         """
         return Signature(**self.to_signature_kwargs())
+
+    def is_call_compatible_with(self, other_sig, *, param_comparator: Callable = None):
+        """Return True if the signature is compatible with ``other_sig``. Meaning that
+        all valid ways to call the signature are valid for ``other_sig``.
+        """
+        return is_call_compatible_with(
+            self, other_sig, param_comparator=param_comparator
+        )
+
+    # TODO: Make these dunders open/close
+    # def __le__(self, other_sig):
+    #     """The "less than or equal" operator (<=).
+    #     Return True if the signature is compatible with ``other_sig``. Meaning that
+    #     all valid ways to call the signature are valid for ``other_sig``.
+    #     """
+    #     return self.is_call_compatible_with(other_sig)
+
+    # def __ge__(self, other_sig):
+    #     """The "greater than or equal" operator (>=).
+    #     Return True if ``other_sig`` is compatible with the signature. Meaning that
+    #     all valid ways to call ``other_sig`` are valid for the signature.
+    #     """
+    #     return other_sig <= self
 
     @classmethod
     def from_objs(
@@ -1205,14 +1270,15 @@ class Sig(Signature, Mapping):
             p.name: p.annotation for p in self.values() if p.annotation is not p.empty
         }
 
-    # def substitute(self, **sub_for_name):
-    #     def gen():
-    #
-    #         for name, substitution in sub_for_name.items():
-    #
-
-    def names_for_kind(self, kind):
-        return tuple(p.name for p in self.values() if p.kind == kind)
+    def detail_names_by_kind(self):
+        return (
+            self.names_of_kind[PO],
+            self.names_of_kind[PK],
+            # get_variadic_name(VP),
+            self.names_of_kind[VP],
+            self.names_of_kind[KO],
+            self.names_of_kind[VK],
+        )
 
     def __iter__(self):
         return iter(self.parameters)
@@ -1236,6 +1302,19 @@ class Sig(Signature, Mapping):
             names = k
         params = [self[name] for name in names]
         return Sig.from_params(params)
+
+    # TODO: Deprecate. Should use names_of_kind directly
+    def names_for_kind(self, kind):
+        """Get the arg names tuple for a given kind.
+        Note, if you need to do this several times, or for several kinds, use
+        ``names_of_kind`` property (a tuple) instead: It groups all names of kinds once,
+        and caches the result.
+        """
+        from warnings import warn
+        warn("Deprecated", DeprecationWarning)
+        return self.names_of_kind[kind]
+
+    # TODO: Consider using names_of_kind in other methods/properties
 
     @property
     def has_var_kinds(self):
@@ -1322,6 +1401,12 @@ class Sig(Signature, Mapping):
             - self.has_var_keyword
             - self.has_var_positional
         )
+
+    @property
+    def positional_names(self):
+        for n, k in self.kinds.items():
+            if k in (PO, PK):
+                yield n
 
     def _transform_params(self, changes_for_name: dict):
         for name in self:
@@ -1689,7 +1774,8 @@ class Sig(Signature, Mapping):
         have the **same default**:
         <BLANKSPACE>
         Happened during an attempt to merge (i, j, w) and (i, j, w=1)
-        Tip: If you're trying to merge functions in some way, consider decorating them
+        Tip: If you're trying to merge fposiunctions in some way, consider decorating
+        them
         with a signature mapping that avoids the argument name clashing
 
 
@@ -2162,7 +2248,7 @@ class Sig(Signature, Mapping):
             # Only those that are position only or before a var-positional.
             vp_idx = self.index_of_var_positional
             if vp_idx is None:
-                names_for_args = self.names_for_kind(PO)
+                names_for_args = self.names_of_kind[PO]
             else:
                 # When there's a VP present, all arguments before it can only be
                 # expressed positionally if the VP argument is non-empty.
@@ -2519,6 +2605,37 @@ class Sig(Signature, Mapping):
         )
 
 
+def _validate_sanity_of_signature_change(
+    func: Callable, new_sig: Sig, ignore_incompatible_signatures: bool = True
+):
+
+    func_pos, func_kw = Sig(func)._positional_and_keyword_defaults()
+    self_pos, self_kw = new_sig._positional_and_keyword_defaults()
+    # print(func_pos, func_kw )
+    # print(self_pos, self_kw)
+
+    pos_default_switching_to_kw = set(func_pos) & set(self_kw)
+    kw_default_switching_to_pos = set(func_kw) & set(self_pos)
+
+    # print(pos_default_switching_to_kw, kw_default_switching_to_pos)
+
+    if not ignore_incompatible_signatures and (
+        pos_default_switching_to_kw or kw_default_switching_to_pos
+    ):
+        raise IncompatibleSignatures(
+            f'Changing both the kind and the default of a param will result to '
+            f'unexpected behaviors if the function is not properly wrapped to do so.'
+            f'If you really want to do this, inject signature using the '
+            f'`ignore_incompatible_signatures=True`'
+            f'argument in `Sig.wrap(...)`. '
+            f'Alternatively, you can use `i2.wrapper` tools to have more control '
+            f'over function defaults and signatures.'
+            f'The function you were wrapping had signature: '
+            f"{name_of_obj(func) or ''}{Sig(func)} and "
+            f"the signature you wanted to inject was {new_sig.name or ''}{new_sig}"
+        )
+
+
 ########################################################################################
 # Recipes
 
@@ -2558,16 +2675,54 @@ def call_forgivingly(func, *args, **kwargs):
     ... )  # well, as it happens, nothing bad -- the intruder argument is just ignored
     ('foo', ('input for a', 0, 42))
 
+    An example of what happens when variadic kinds are involved:
+
+    >>> def bar(x, *args1, y=1, **kwargs1):
+    ...     return x, args1, y, kwargs1
+    >>> call_forgivingly(bar, 1, 2, 3, y=4, z=5)
+    (1, (2, 3), 4, {'z': 5})
+
+    # >>> def bar(x, y=1, **kwargs1):
+    # ...     return x, y, kwargs1
+    # >>> call_forgivingly(bar, 1, 2, 3, y=4, z=5)
+    # (1, 4, {'z': 5})
+
+    # >>> call_forgivingly(bar, 1, 2, 3, y=4, z=5)
+
+    # >>> def bar(x, *args1, y=1):
+    # ...     return x, args1, y
+    # >>> call_forgivingly(bar, 1, 2, 3, y=4, z=5)
+    # (1, (2, 3), {'z': 5})
+
     """
     return _call_forgivingly(func, args, kwargs)
 
 
+# TODO: See if there's a more elegant way to do this
 def _call_forgivingly(func, args, kwargs):
     """
-    Helper for _call_forgivingly
+    Helper for _call_forgivingly.
     """
-    args, kwargs = Sig(func).source_args_and_kwargs(*args, **kwargs)
-    return func(*args, **kwargs)
+
+    sig = Sig(func)
+    variadic_kinds = {
+        name: kind for name, kind in sig.kinds.items() if kind in [VP, VK]
+    }
+    if VP in variadic_kinds.values() and VK in variadic_kinds.values():
+        _args = args
+        _kwargs = kwargs
+    else:
+        new_sig = sig - variadic_kinds.keys()
+        _args, _kwargs = new_sig.source_args_and_kwargs(*args, **kwargs)
+        for k, v in _kwargs.items():
+            if k not in kwargs:
+                _args = _args + (v,)
+        _kwargs = {k: v for k, v in _kwargs.items() if k in kwargs}
+        if VP in variadic_kinds.values():
+            _args = args
+        elif VK in variadic_kinds.values():
+            _kwargs = dict(_kwargs, **kwargs)
+    return func(*_args, **_kwargs)
 
 
 def call_somewhat_forgivingly(
@@ -2765,11 +2920,6 @@ def has_signature(obj, robust=False):
             return bool((callable(obj) or None) and signature(obj))
         except ValueError:
             return False
-
-
-def number_of_required_arguments(obj):
-    sig = Sig(obj)
-    return len(sig) - len(sig.defaults)
 
 
 # TODO: Need to define and use this function more carefully.
@@ -3415,4 +3565,211 @@ for kind in param_kinds:
         getattr(param_for_kind, 'with_default'),
         lower_kind,
         partial(param_for_kind, kind=kind, with_default=True),
+    )
+
+###########################
+# Signature Compatibility #
+###########################
+
+# TODO: Implement annotation compatibility
+def is_annotation_compatible_with(annot1, annot2):
+    return True
+
+
+def is_default_value_compatible_with(dflt1, dflt2):
+    return dflt1 is empty or dflt2 is not empty
+
+
+def is_param_compatible_with(
+    p1: Parameter,
+    p2: Parameter,
+    annotation_comparator: Callable = None,
+    default_value_comparator: Callable = None,
+):
+    """Return True if ``p1`` is compatible with ``p2``. Meaning that any value valid
+    for ``p1`` is valid for ``p2``.
+
+    :param p1: The main parameter.
+    :param p2: The parameter to be compared with.
+    :param annotation_comparator: The function used to compare the annotations
+    :param default_value_comparator: The function used to compare the default values
+
+    >>> is_param_compatible_with(
+    ...     Parameter('a', PO),
+    ...     Parameter('b', PO)
+    ... )
+    True
+    >>> is_param_compatible_with(
+    ...     Parameter('a', PO),
+    ...     Parameter('b', PO, default=0)
+    ... )
+    True
+    >>> is_param_compatible_with(
+    ...     Parameter('a', PO, default=0),
+    ...     Parameter('b', PO)
+    ... )
+    False
+    """
+    annotation_comparator = annotation_comparator or is_annotation_compatible_with
+    default_value_comparator = (
+        default_value_comparator or is_default_value_compatible_with
+    )
+
+    return annotation_comparator(
+        p1.annotation, p2.annotation
+    ) and default_value_comparator(p1.default, p2.default)
+
+
+def is_call_compatible_with(
+    sig1: Sig, sig2: Sig, *, param_comparator: Callable = None
+) -> bool:
+    """Return True if ``sig1`` is compatible with ``sig2``. Meaning that all valid ways
+    to call ``sig1`` are valid for ``sig2``.
+
+    :param sig1: The main signature.
+    :param sig2: The signature to be compared with.
+    :param param_comparator: The function used to compare two parameters
+
+    >>> is_call_compatible_with(
+    ...     Sig('(a, /, b, *, c)'),
+    ...     Sig('(a, b, c)')
+    ... )
+    True
+    >>> is_call_compatible_with(
+    ...     Sig('()'),
+    ...     Sig('(a)')
+    ... )
+    False
+    >>> is_call_compatible_with(
+    ...     Sig('()'),
+    ...     Sig('(a=0)')
+    ... )
+    True
+    >>> is_call_compatible_with(
+    ...     Sig('(a, /, *, c)'),
+    ...     Sig('(a, /, b, *, c)')
+    ... )
+    False
+    >>> is_call_compatible_with(
+    ...     Sig('(a, /, *, c)'),
+    ...     Sig('(a, /, b=0, *, c)')
+    ... )
+    True
+    >>> is_call_compatible_with(
+    ...     Sig('(a, /, b)'),
+    ...     Sig('(a, /, b, *, c)')
+    ... )
+    False
+    >>> is_call_compatible_with(
+    ...     Sig('(a, /, b)'),
+    ...     Sig('(a, /, b, *, c=0)')
+    ... )
+    True
+    >>> is_call_compatible_with(
+    ...     Sig('(a, /, b, *, c)'),
+    ...     Sig('(*args, **kwargs)')
+    ... )
+    True
+    """
+
+    def validate_variadics():
+        # sig1 can only have a VP if sig2 also has one
+        if vp1:
+            if not vp2:
+                return False
+            sig1 -= vp1
+            sig2 -= vp2
+        # sig1 can only have a VK if sig2 also has one
+        if vk1:
+            if not vk2:
+                return False
+            sig1 -= vk1
+            sig2 -= vk2
+        return True
+
+    def validate_param_counts():
+        # sig1 cannot have more positional params than sig2
+        if len(ps1) > len(ps2) and not vp2:
+            return False
+        # sig1 cannot have keyword params that do not exist in sig2
+        if len([n for n in ks1 if n not in ks2]) > 0 and not vk2:
+            return False
+        return True
+
+    def validate_extra_params():
+        # Any extra PO in sig2 must have a default value
+        if len(pos1) < len(pos2) and not all(
+            sig2.parameters[n].default is not empty for n in pos2[len(pos1) :]
+        ):
+            return False
+        # Any extra PK in sig2 must have its corresponding PO or KO in sig1, or a
+        # default value
+        for i, n in enumerate(pks2):
+            if (
+                n not in pks1
+                and len(pos1) <= len(pos2) + i
+                and n not in kos1
+                and sig2.parameters[n].default is empty
+            ):
+                return False
+        # Any extra KO in sig2 must have a default value
+        for n in kos2:
+            if n not in kos1 and sig2.parameters[n].default == empty:
+                return False
+        return True
+
+    def validate_param_positions():
+        for i, n2 in enumerate(ps2):
+            for j, n1 in enumerate(ks1):
+                if n1 == n2:
+                    if (
+                        # It can be a PK in sig1 and a P (PO or PK) in sig2 only if
+                        # its position in sig2 is >= to its position in sig1
+                        (n1 in pks1 and i < len(pos1) + j)
+                        or (
+                            n1 in kos1
+                            and (
+                                # Cannot be a KO in sig1 and a PO in sig2
+                                n2 in pos2
+                                or
+                                # It can be a KO in sig1 and a PK in sig2 only if its
+                                # position in sig2 is > than the total number of POs
+                                # and PKs in sig1
+                                i < len(ps1)
+                            )
+                        )
+                    ):
+                        return False
+        return True
+
+    def validate_param_compatibility():
+        # Every positional param in sig1 must be compatible with its
+        # correspondant param in sig2 (at the same index).
+        for i in range(len(ps1)):
+            if i < len(ps2) and not param_comparator(sig1.params[i], sig2.params[i]):
+                return False
+        # Every keyword param in sig1 must be compatible with its
+        # correspondant param in sig2 (with the same name).
+        for n in ks1:
+            if n in ks2 and not param_comparator(
+                sig1.parameters[n], sig2.parameters[n]
+            ):
+                return False
+        return True
+
+    param_comparator = param_comparator or is_param_compatible_with
+
+    pos1, pks1, vp1, kos1, vk1 = sig1.detail_names_by_kind()
+    ps1 = pos1 + pks1
+    ks1 = pks1 + kos1
+    pos2, pks2, vp2, kos2, vk2 = sig2.detail_names_by_kind()
+    ps2 = pos2 + pks2
+    ks2 = pks2 + kos2
+
+    return (
+        validate_variadics()
+        and validate_param_counts()
+        and validate_extra_params()
+        and validate_param_positions()
+        and validate_param_compatibility()
     )
