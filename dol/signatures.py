@@ -681,7 +681,12 @@ def _robust_signature_of_callable(callable_obj: Callable) -> Signature:
 
 
 def _names_of_kind(sig):
-    """Compute a tuple containing tuples of names for each kind"""
+    """Compute a tuple containing tuples of names for each kind
+
+    >>> f = lambda a00, /, a11, a12, *a23, a34, a35, a36, **a47: None
+    >>> _names_of_kind(Sig(f))
+    (('a00',), ('a11', 'a12'), ('a23',), ('a34', 'a35', 'a36'), ('a47',))
+    """
     d = defaultdict(list)
     for param in sig.params:
         d[param.kind].append(param.name)
@@ -1323,7 +1328,6 @@ class Sig(Signature, Mapping):
     @property
     def has_var_kinds(self):
         """
-        >>> from i2.signatures import Sig  # somehow needed in IDE for @property
         >>> Sig(lambda x, *, y: None).has_var_kinds
         False
         >>> Sig(lambda x, *y: None).has_var_kinds
@@ -1396,6 +1400,27 @@ class Sig(Signature, Mapping):
         return any(p.kind == VK for p in self.values())
 
     @property
+    def required_names(self):
+        """A tuple of required names, preserving the original signature order.
+
+        A required name is that must be given in a function call, that is, the name of a
+        paramater that doesn't have a default, and is not a variadic.
+
+        That lost one is a frequent gotcha, so oo not fall in that gotcha that easily,
+        we provide a property that contains what we need.
+
+        >>> f = lambda a00, /, a11, a12, *a23, a34, a35=1, a36='two', **a47: None
+        >>> Sig(f).required_names
+        ('a00', 'a11', 'a12', 'a34')
+        """
+        # Note: This is quicker than using self.names_of_kind:
+        return tuple(
+            p.name
+            for p in self.params
+            if p.default is empty and p.kind not in var_param_kinds
+        )
+
+    @property
     def n_required(self):
         """The number of required arguments.
         A required argument is one that doesn't have a default, nor is VAR_POSITIONAL
@@ -1405,17 +1430,11 @@ class Sig(Signature, Mapping):
         but we can't see this from the signature, so we can't tell you about that! You
         do the math.
 
-        # Skipping the actual running of the doctest because some IDEs don't handle
-        @property testing well.
-        # >>> Sig(lambda x, y, z=None, *args, **kwargs: ...).n_required
-        # 2
+        >>> f = lambda a00, /, a11, a12, *a23, a34, a35=1, a36='two', **a47: None
+        >>> Sig(f).n_required
+        4
         """
-        return (
-            len(self)
-            - len(self.defaults)
-            - self.has_var_keyword
-            - self.has_var_positional
-        )
+        return len(self.required_names)
 
     @property
     def positional_names(self):
