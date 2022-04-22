@@ -913,9 +913,11 @@ class Sig(Signature, Mapping):
         )
         self.names_of_kind = _names_of_kind(self)
 
-        if vps := len(self.names_of_kind[Parameter.VAR_POSITIONAL]) > 1:
+        if len(self.names_of_kind[Parameter.VAR_POSITIONAL]) > 1:
+            vps = self.names_of_kind[Parameter.VAR_POSITIONAL]
             raise ValueError(f"You can't have several variadic keywords: {vps}")
-        if vks := len(self.names_of_kind[Parameter.VAR_KEYWORD]) > 1:
+        if len(self.names_of_kind[Parameter.VAR_KEYWORD]) > 1:
+            vks = self.names_of_kind[Parameter.VAR_KEYWORD]
             raise ValueError(f"You can't have several variadic keywords: {vks}")
 
         self.name = name or name_of_obj(obj)
