@@ -687,6 +687,7 @@ def _names_of_kind(sig):
         d[param.kind].append(param.name)
     return tuple(tuple(d[kind]) for kind in range(5))
 
+
 # TODO: See other signature operating functions below in this module:
 #   Do we need them now that we have Sig?
 #   Do we want to keep them and have Sig use them?
@@ -1311,7 +1312,8 @@ class Sig(Signature, Mapping):
         and caches the result.
         """
         from warnings import warn
-        warn("Deprecated", DeprecationWarning)
+
+        warn('Deprecated', DeprecationWarning)
         return self.names_of_kind[kind]
 
     # TODO: Consider using names_of_kind in other methods/properties
