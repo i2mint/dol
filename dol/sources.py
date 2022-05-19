@@ -377,9 +377,10 @@ class Attrs(ObjReader):
         pip install guide
     """
 
-    def __init__(self, obj, key_filt=not_underscore_prefixed):
+    def __init__(self, obj, key_filt=not_underscore_prefixed, getattrs=dir):
         super().__init__(obj)
         self._key_filt = key_filt
+        self.getattrs = getattrs
 
     @classmethod
     def module_from_path(
@@ -399,10 +400,10 @@ class Attrs(ObjReader):
         return cls(foo, key_filt)
 
     def __iter__(self):
-        yield from filter(self._key_filt, dir(self.src))
+        yield from filter(self._key_filt, self.getattrs(self.src))
 
     def __getitem__(self, k):
-        return self.__class__(getattr(self.src, k))
+        return self.__class__(getattr(self.src, k), self._key_filt, self.getattrs)
 
     def __repr__(self):
         return f'{self.__class__.__qualname__}({self.src}, {self._key_filt})'

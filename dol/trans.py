@@ -2306,7 +2306,15 @@ def _flatten(store, *, levels, cache_keys):
 
 
 def mk_level_walk_filt(levels):
-    return lambda p, k, v: len(p) < levels - 1
+    """Makes a ``walk_filt`` function for ``kv_walk`` based on some level logic.
+    If ``levels`` is an integer, will consider it as the max path length,
+    if not it will just assert that ``levels`` is callable, and return it
+    """
+    if isinstance(levels, int):
+        return lambda p, k, v: len(p) < levels - 1
+    else:
+        assert callable(levels), f"levels must be a callable or an integer: {levels=}"
+        return levels
 
 
 def leveled_paths_walk(m, levels):
