@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.77 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.83 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -171,6 +171,14 @@
 <dd><p>Raise when the call signature is not valid</p>
 </dd></dl>
 
+<dl class="py exception">
+<dt id="dol.signatures.IncompatibleSignatures">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">IncompatibleSignatures</code><a class="reference internal" href="../../_modules/dol/signatures.html#IncompatibleSignatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.IncompatibleSignatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise when two signatures are not compatible.
+(see <a class="reference external" href="https://github.com/i2mint/i2/issues/16">https://github.com/i2mint/i2/issues/16</a> for more information on signature
+compatibility)</p>
+</dd></dl>
+
 <dl class="py class">
 <dt id="dol.signatures.MissingArgValFor">
 <em class="property">class </em><code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">MissingArgValFor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">argname</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#MissingArgValFor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.MissingArgValFor" title="Permalink to this definition">¶</a></dt>
@@ -205,7 +213,7 @@ Parameter objects</p>
 
 <dl class="py class">
 <dt id="dol.signatures.Sig">
-<em class="property">class </em><code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">Sig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_annotation</span></em>, <em class="sig-param"><span class="n">__validate_parameters__</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">Sig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">, </span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_annotation</span></em>, <em class="sig-param"><span class="n">__validate_parameters__</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig" title="Permalink to this definition">¶</a></dt>
 <dd><p>A subclass of inspect.Signature that has a lot of extra api sugar,
 such as</p>
 <blockquote>
@@ -692,6 +700,24 @@ information as well. This will avoid having to check the kinds list twice.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="dol.signatures.Sig.has_var_kinds">
+<em class="property">property </em><code class="sig-name descname">has_var_kinds</code><a class="headerlink" href="#dol.signatures.Sig.has_var_kinds" title="Permalink to this definition">¶</a></dt>
+<dd><p>None).has_var_kinds
+False
+&gt;&gt;&gt; Sig(lambda x, <a href="#id9"><span class="problematic" id="id10">*</span></a>y: None).has_var_kinds
+True
+&gt;&gt;&gt; Sig(lambda x, <a href="#id11"><span class="problematic" id="id12">**</span></a>y: None).has_var_kinds
+True</p>
+<dl class="field-list">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">y</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="dol.signatures.Sig.has_var_positional">
 <em class="property">property </em><code class="sig-name descname">has_var_positional</code><a class="headerlink" href="#dol.signatures.Sig.has_var_positional" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use index_of_var_positional or var_keyword_name directly when needing that
@@ -723,6 +749,13 @@ See also, Sig.index_of_var_keyword</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">Sig</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">z</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">index_of_var_positional</span> <span class="o">==</span> <span class="kc">None</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.signatures.Sig.is_call_compatible_with">
+<code class="sig-name descname">is_call_compatible_with</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other_sig</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">param_comparator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.is_call_compatible_with"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.is_call_compatible_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the signature is compatible with <code class="docutils literal notranslate"><span class="pre">other_sig</span></code>. Meaning that
+all valid ways to call the signature are valid for <code class="docutils literal notranslate"><span class="pre">other_sig</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -856,7 +889,7 @@ Position only and keyword only kinds need to be respected:</p>
 
 <dl class="py method">
 <dt id="dol.signatures.Sig.merge_with_sig">
-<code class="sig-name descname">merge_with_sig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">ch_to_all_pk</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">default_conflict_method</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'strict'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.merge_with_sig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.merge_with_sig" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">merge_with_sig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">, </span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">ch_to_all_pk</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">default_conflict_method</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'strict'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.merge_with_sig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.merge_with_sig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a signature obtained by merging self signature with another signature.
 Insofar as it can, given the kind precedence rules, the arguments of self will
 appear first.</p>
@@ -956,15 +989,25 @@ defaults, these defaults will actually be used (unlike with <cite>functools.wrap
 <em class="property">property </em><code class="sig-name descname">n_required</code><a class="headerlink" href="#dol.signatures.Sig.n_required" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of required arguments.
 A required argument is one that doesn’t have a default, nor is VAR_POSITIONAL
-(<a href="#id9"><span class="problematic" id="id10">*</span></a>args) or VAR_KEYWORD (<a href="#id11"><span class="problematic" id="id12">**</span></a>kwargs).
+(<a href="#id13"><span class="problematic" id="id14">*</span></a>args) or VAR_KEYWORD (<a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs).
 Note: Sometimes a minimum number of arguments in VAR_POSITIONAL and
 VAR_KEYWORD are in fact required,
 but we can’t see this from the signature, so we can’t tell you about that! You
 do the math.</p>
-<p># Skipping the actual running of the doctest because some IDEs don’t handle
-&#64;property testing well.
-# &gt;&gt;&gt; Sig(lambda x, y, z=None, <a href="#id13"><span class="problematic" id="id14">*</span></a>args, <a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs: …).n_required
-# 2</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a00</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">a11</span><span class="p">,</span> <span class="n">a12</span><span class="p">,</span> <span class="o">*</span><span class="n">a23</span><span class="p">,</span> <span class="n">a34</span><span class="p">,</span> <span class="n">a35</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a36</span><span class="o">=</span><span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">a47</span><span class="p">:</span> <span class="kc">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">n_required</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.signatures.Sig.names_for_kind">
+<code class="sig-name descname">names_for_kind</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kind</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.names_for_kind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.names_for_kind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the arg names tuple for a given kind.
+Note, if you need to do this several times, or for several kinds, use
+<code class="docutils literal notranslate"><span class="pre">names_of_kind</span></code> property (a tuple) instead: It groups all names of kinds once,
+and caches the result.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -977,6 +1020,21 @@ is a name-&gt;Parameter mapping, but the Signature argument <cite>parameters</ci
 though baring the same name,
 is expected to be a list of Parameter instances.</p>
 <p>So Sig.params is there to restore semantic consistence sanity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.signatures.Sig.required_names">
+<em class="property">property </em><code class="sig-name descname">required_names</code><a class="headerlink" href="#dol.signatures.Sig.required_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>A tuple of required names, preserving the original signature order.</p>
+<p>A required name is that must be given in a function call, that is, the name of a
+paramater that doesn’t have a default, and is not a variadic.</p>
+<p>That lost one is a frequent gotcha, so oo not fall in that gotcha that easily,
+we provide a property that contains what we need.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a00</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">a11</span><span class="p">,</span> <span class="n">a12</span><span class="p">,</span> <span class="o">*</span><span class="n">a23</span><span class="p">,</span> <span class="n">a34</span><span class="p">,</span> <span class="n">a35</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">a36</span><span class="o">=</span><span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">a47</span><span class="p">:</span> <span class="kc">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">required_names</span>
+<span class="go">(&#39;a00&#39;, &#39;a11&#39;, &#39;a12&#39;, &#39;a34&#39;)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1236,7 +1294,7 @@ properties and methods)</p>
 
 <dl class="py method">
 <dt id="dol.signatures.Sig.wrap">
-<code class="sig-name descname">wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span></em>, <em class="sig-param"><span class="n">raise_on_error_copying_attrs</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.wrap" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span></em>, <em class="sig-param"><span class="n">ignore_incompatible_signatures</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.wrap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gives the input function the signature.</p>
 <p>This is similar to the <cite>functools.wraps</cite> function, but parametrized by a
 signature
@@ -1364,7 +1422,7 @@ attributes (like name).</p>
 
 <dl class="py function">
 <dt id="dol.signatures.assure_params">
-<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">assure_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.assure_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">assure_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">, </span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.assure_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an interable of Parameter instances from an object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1427,11 +1485,27 @@ dict.</p>
 <span class="go">(&#39;foo&#39;, (&#39;input for a&#39;, 0, 42))</span>
 </pre></div>
 </div>
+<p>An example of what happens when variadic kinds are involved:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">args1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs1</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">args1</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">kwargs1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">call_forgivingly</span><span class="p">(</span><span class="n">bar</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="go">(1, (2, 3), 4, {&#39;z&#39;: 5})</span>
+</pre></div>
+</div>
+<p># &gt;&gt;&gt; def bar(x, y=1, <a href="#id25"><span class="problematic" id="id26">**</span></a>kwargs1):
+# …     return x, y, kwargs1
+# &gt;&gt;&gt; call_forgivingly(bar, 1, 2, 3, y=4, z=5)
+# (1, 4, {‘z’: 5})</p>
+<p># &gt;&gt;&gt; call_forgivingly(bar, 1, 2, 3, y=4, z=5)</p>
+<p># &gt;&gt;&gt; def bar(x, <a href="#id27"><span class="problematic" id="id28">*</span></a>args1, y=1):
+# …     return x, args1, y
+# &gt;&gt;&gt; call_forgivingly(bar, 1, 2, 3, y=4, z=5)
+# (1, (2, 3), {‘z’: 5})</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="dol.signatures.call_somewhat_forgivingly">
-<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">call_somewhat_forgivingly</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="n">kwargs</span></em>, <em class="sig-param"><span class="n">enforce_sig</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>inspect.Signature<span class="p">, </span>Callable<span class="p">, </span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#call_somewhat_forgivingly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.call_somewhat_forgivingly" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">call_somewhat_forgivingly</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="n">kwargs</span></em>, <em class="sig-param"><span class="n">enforce_sig</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>inspect.Signature<span class="p">, </span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">, </span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#call_somewhat_forgivingly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.call_somewhat_forgivingly" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call function on given args and kwargs, but with controllable argument leniency.
 By default, the function will only pick from args and kwargs what matches it’s
 signature, ignoring anything else in args and kwargs.</p>
@@ -1524,7 +1598,7 @@ raise a <cite>TypeError</cite>:</p>
 <span class="go">(x, y=1, args=(), **kwargs)</span>
 </pre></div>
 </div>
-<p># &gt;&gt;&gt; def h(x, <a href="#id25"><span class="problematic" id="id26">*</span></a>y, z):
+<p># &gt;&gt;&gt; def h(x, <a href="#id29"><span class="problematic" id="id30">*</span></a>y, z):
 # …     print(f”{x=}, {y=}, {z=}”)
 # &gt;&gt;&gt; h(1, 2, 3, z=4)
 # x=1, y=(2, 3), z=4
@@ -1555,7 +1629,7 @@ implementation though!</p>
 <span class="go">&lt;Signature (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
 </pre></div>
 </div>
-<p>But note that the variadic arguments <a href="#id27"><span class="problematic" id="id28">*</span></a>args and <a href="#id29"><span class="problematic" id="id30">**</span></a>kwargs remain variadic:</p>
+<p>But note that the variadic arguments <a href="#id31"><span class="problematic" id="id32">*</span></a>args and <a href="#id33"><span class="problematic" id="id34">**</span></a>kwargs remain variadic:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">all_pk_signature</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">bar</span><span class="p">))</span>
 <span class="go">&lt;Signature (*args, **kwargs)&gt;</span>
 </pre></div>
@@ -1575,12 +1649,12 @@ attributes (like name).</p>
 <dl class="py function">
 <dt id="dol.signatures.ch_variadics_to_non_variadic_kind">
 <code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">ch_variadics_to_non_variadic_kind</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">ch_variadic_keyword_to_keyword</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#ch_variadics_to_non_variadic_kind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.ch_variadics_to_non_variadic_kind" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id31"><span class="problematic" id="id32">*</span></a>args) argument to a tuple (args)
+<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id35"><span class="problematic" id="id36">*</span></a>args) argument to a tuple (args)
 argument of the same name.</p>
 <p>Essentially, given a <cite>func(a, *b, c, **d)</cite> function want to get a
 <cite>new_func(a, b=(), c=None, d={})</cite> that has the same functionality
 (in fact, calls the original <cite>func</cite> function behind the scenes), but without
-where the variadic arguments <a href="#id33"><span class="problematic" id="id34">*</span></a>b and <a href="#id35"><span class="problematic" id="id36">**</span></a>d are replaced with a <cite>b</cite> expecting an
+where the variadic arguments <a href="#id37"><span class="problematic" id="id38">*</span></a>b and <a href="#id39"><span class="problematic" id="id40">**</span></a>d are replaced with a <cite>b</cite> expecting an
 iterable (e.g. tuple/list) and <cite>d</cite> expecting a <cite>dict</cite> to contain the
 desired inputs.</p>
 <p>Besides this, the decorator tries to be as conservative as possible, making only
@@ -1631,7 +1705,7 @@ will still be a keyword-only kind.</p>
 </pre></div>
 </div>
 <p>If you only want the variadic positional to be handled, but leave leave any
-VARIADIC_KEYWORD kinds (<a href="#id37"><span class="problematic" id="id38">**</span></a>kwargs) alone, you can do so by setting
+VARIADIC_KEYWORD kinds (<a href="#id41"><span class="problematic" id="id42">**</span></a>kwargs) alone, you can do so by setting
 <cite>ch_variadic_keyword_to_keyword=False</cite>.
 If you’ll need to use <cite>ch_variadics_to_non_variadic_kind</cite> in such a way
 repeatedly, we suggest you use <cite>functools.partial</cite> to not have to specify this
@@ -1687,7 +1761,7 @@ lists of names that are different</p>
 
 <dl class="py function">
 <dt id="dol.signatures.ensure_params">
-<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">ensure_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#ensure_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.ensure_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">ensure_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">, </span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#ensure_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.ensure_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an interable of Parameter instances from an object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1732,7 +1806,7 @@ lists of names that are different</p>
 
 <dl class="py function">
 <dt id="dol.signatures.extract_arguments">
-<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">extract_arguments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">]</span></span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="default_value">'return'</span></em>, <em class="sig-param"><span class="n">include_all_when_var_keywords_in_params</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">assert_no_missing_position_only_args</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#extract_arguments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.extract_arguments" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">extract_arguments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">, </span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="default_value">'return'</span></em>, <em class="sig-param"><span class="n">include_all_when_var_keywords_in_params</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">assert_no_missing_position_only_args</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#extract_arguments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.extract_arguments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract arguments needed to satisfy the params of a callable, dealing with the
 dirty details.</p>
 <p>Returns an (param_args, param_kwargs, remaining_kwargs) tuple where
@@ -1897,7 +1971,7 @@ return <cite>param_args</cite>, <cite>param_kwargs</cite></p></li>
 
 <dl class="py function">
 <dt id="dol.signatures.extract_arguments_asserting_no_remainder">
-<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">extract_arguments_asserting_no_remainder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">]</span></span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="default_value">'assert_empty'</span></em>, <em class="sig-param"><span class="n">include_all_when_var_keywords_in_params</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">assert_no_missing_position_only_args</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.extract_arguments_asserting_no_remainder" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">extract_arguments_asserting_no_remainder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">, </span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="default_value">'assert_empty'</span></em>, <em class="sig-param"><span class="n">include_all_when_var_keywords_in_params</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">assert_no_missing_position_only_args</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.extract_arguments_asserting_no_remainder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract arguments needed to satisfy the params of a callable, dealing with the
 dirty details.</p>
 <p>Returns an (param_args, param_kwargs, remaining_kwargs) tuple where
@@ -2062,7 +2136,7 @@ return <cite>param_args</cite>, <cite>param_kwargs</cite></p></li>
 
 <dl class="py function">
 <dt id="dol.signatures.extract_arguments_ignoring_remainder">
-<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">extract_arguments_ignoring_remainder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">]</span></span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="default_value">'ignore'</span></em>, <em class="sig-param"><span class="n">include_all_when_var_keywords_in_params</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">assert_no_missing_position_only_args</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.extract_arguments_ignoring_remainder" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">extract_arguments_ignoring_remainder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Iterable<span class="p">[</span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Mapping<span class="p">[</span>str<span class="p">, </span>inspect.Parameter<span class="p">]</span><span class="p">, </span>Callable<span class="p">, </span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">what_to_do_with_remainding</span><span class="o">=</span><span class="default_value">'ignore'</span></em>, <em class="sig-param"><span class="n">include_all_when_var_keywords_in_params</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">assert_no_missing_position_only_args</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.extract_arguments_ignoring_remainder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract arguments needed to satisfy the params of a callable, dealing with the
 dirty details.</p>
 <p>Returns an (param_args, param_kwargs, remaining_kwargs) tuple where
@@ -2272,6 +2346,98 @@ so will return True in most cases.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="dol.signatures.is_call_compatible_with">
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">is_call_compatible_with</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig1</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#dol.signatures.Sig" title="dol.signatures.Sig">dol.signatures.Sig</a></span></em>, <em class="sig-param"><span class="n">sig2</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#dol.signatures.Sig" title="dol.signatures.Sig">dol.signatures.Sig</a></span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">param_comparator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../../_modules/dol/signatures.html#is_call_compatible_with"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.is_call_compatible_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if <code class="docutils literal notranslate"><span class="pre">sig1</span></code> is compatible with <code class="docutils literal notranslate"><span class="pre">sig2</span></code>. Meaning that all valid ways
+to call <code class="docutils literal notranslate"><span class="pre">sig1</span></code> are valid for <code class="docutils literal notranslate"><span class="pre">sig2</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sig1</strong> – The main signature.</p></li>
+<li><p><strong>sig2</strong> – The signature to be compared with.</p></li>
+<li><p><strong>param_comparator</strong> – The function used to compare two parameters</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_call_compatible_with</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, /, b, *, c)&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, b, c)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_call_compatible_with</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;()&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_call_compatible_with</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;()&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a=0)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_call_compatible_with</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, /, *, c)&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, /, b, *, c)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_call_compatible_with</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, /, *, c)&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, /, b=0, *, c)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_call_compatible_with</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, /, b)&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, /, b, *, c)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_call_compatible_with</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, /, b)&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, /, b, *, c=0)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_call_compatible_with</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, /, b, *, c)&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(*args, **kwargs)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.signatures.is_param_compatible_with">
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">is_param_compatible_with</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p1</span><span class="p">:</span> <span class="n">inspect.Parameter</span></em>, <em class="sig-param"><span class="n">p2</span><span class="p">:</span> <span class="n">inspect.Parameter</span></em>, <em class="sig-param"><span class="n">annotation_comparator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default_value_comparator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#is_param_compatible_with"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.is_param_compatible_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if <code class="docutils literal notranslate"><span class="pre">p1</span></code> is compatible with <code class="docutils literal notranslate"><span class="pre">p2</span></code>. Meaning that any value valid
+for <code class="docutils literal notranslate"><span class="pre">p1</span></code> is valid for <code class="docutils literal notranslate"><span class="pre">p2</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> – The main parameter.</p></li>
+<li><p><strong>p2</strong> – The parameter to be compared with.</p></li>
+<li><p><strong>annotation_comparator</strong> – The function used to compare the annotations</p></li>
+<li><p><strong>default_value_comparator</strong> – The function used to compare the default values</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_param_compatible_with</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Parameter</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">PO</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Parameter</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">PO</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_param_compatible_with</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Parameter</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">PO</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Parameter</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">PO</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_param_compatible_with</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">Parameter</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">PO</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Parameter</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">PO</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt id="dol.signatures.kind_forgiving_func">
 <code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">kind_forgiving_func</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#kind_forgiving_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.kind_forgiving_func" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a version of the function that has all POSITIONAL_OR_KEYWORD kinds</p>
@@ -2392,7 +2558,7 @@ This tool should help making it less annoying.</p>
 <dl class="py function">
 <dt id="dol.signatures.tuple_the_args">
 <code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">tuple_the_args</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">ch_variadic_keyword_to_keyword</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.tuple_the_args" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id39"><span class="problematic" id="id40">*</span></a>args) argument to a tuple (args)
+<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id43"><span class="problematic" id="id44">*</span></a>args) argument to a tuple (args)
 argument of the same name.</p>
 </dd></dl>
 
@@ -2408,12 +2574,12 @@ function <cite>g</cite> taking two inputs, <cite>a</cite>, and <cite>b</cite>.
 Now you want to carry out this functionality using a function <cite>f</cite> that does what
 <cite>g</cite> should do, but doesn’t use <cite>a</cite>, and doesn’t even have it in it’s arguments.</p>
 <p>The solution to this is to _adapt_ <cite>f</cite> to the <cite>g</cite> interface:
-<a href="#id41"><span class="problematic" id="id42">``</span></a>`
+<a href="#id45"><span class="problematic" id="id46">``</span></a>`
 def my_g(a, b):</p>
 <blockquote>
 <div><p>return f(a)</p>
 </div></blockquote>
-<p><a href="#id43"><span class="problematic" id="id44">``</span></a>`
+<p><a href="#id47"><span class="problematic" id="id48">``</span></a>`
 and use <cite>my_g</cite>.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="o">*</span> <span class="mi">11</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">:</span> <span class="o">...</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.1.77 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.sources &mdash; dol 0.1.83 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -157,6 +157,40 @@
 <span class="c1"># TODO: This doesn&#39;t work</span>
 <span class="c1"># KvSpec.from = _kv_spec_to_func  # I&#39;d like to be able to couple KvSpec and it&#39;s conversion function (even more: __call__ instead of from)</span>
 
+<span class="c1"># TODO: Generalize to several layers</span>
+<span class="c1"># TODO: Same pattern for DirStore and kv_walk. Need a general tool for flattening views.</span>
+<span class="c1">#   Should to a situation where number layers are not fixed in advanced,</span>
+<span class="c1">#   but determined by some rules executed dynamically.</span>
+<div class="viewcode-block" id="FlatReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FlatReader">[docs]</a><span class="k">class</span> <span class="nc">FlatReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get a &#39;flat view&#39; of a store of stores. </span>
+<span class="sd">    That is, where keys are `(first_level_key, second_level_key)` pairs.</span>
+
+<span class="sd">    &gt;&gt;&gt; readers = {</span>
+<span class="sd">    ...     &#39;fr&#39;: {1: &#39;un&#39;, 2: &#39;deux&#39;},</span>
+<span class="sd">    ...     &#39;it&#39;: {1: &#39;uno&#39;, 2: &#39;due&#39;, 3: &#39;tre&#39;},</span>
+<span class="sd">    ... }</span>
+<span class="sd">    &gt;&gt;&gt; s = FlatReader(readers)</span>
+<span class="sd">    &gt;&gt;&gt; list(s)</span>
+<span class="sd">    [(&#39;fr&#39;, 1), (&#39;fr&#39;, 2), (&#39;it&#39;, 1), (&#39;it&#39;, 2), (&#39;it&#39;, 3)]</span>
+<span class="sd">    &gt;&gt;&gt; s[(&#39;fr&#39;, 1)]</span>
+<span class="sd">    &#39;un&#39;</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;it&#39;, 2]</span>
+<span class="sd">    &#39;due&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">readers</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span> <span class="o">=</span> <span class="n">readers</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># go through the first level paths:</span>
+        <span class="k">for</span> <span class="n">first_level_path</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">second_level_path</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>  <span class="c1"># go through the keys of the reader</span>
+                <span class="k">yield</span> <span class="n">first_level_path</span><span class="p">,</span> <span class="n">second_level_path</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="n">first_level_path</span><span class="p">,</span> <span class="n">second_level_path</span> <span class="o">=</span> <span class="n">k</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span><span class="p">[</span><span class="n">first_level_path</span><span class="p">][</span><span class="n">second_level_path</span><span class="p">]</span></div>
+
 
 <div class="viewcode-block" id="SequenceKvReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.SequenceKvReader">[docs]</a><span class="k">class</span> <span class="nc">SequenceKvReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -307,6 +341,7 @@
     <span class="sd">&quot;&quot;&quot;SequenceKvReader but with the whole mapping cached as a dict. Use this one if you will perform multiple accesses to the store&quot;&quot;&quot;</span></div>
 
 
+<span class="c1"># TODO: Basically same could be acheived with wrap_kvs(obj_of_data=methodcaller(&#39;__call__&#39;))</span>
 <div class="viewcode-block" id="FuncReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FuncReader">[docs]</a><span class="k">class</span> <span class="nc">FuncReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Reader that seeds itself from a data fetching function list</span>
 <span class="sd">    Uses the function list names as the keys, and their returned value as the values.</span>
@@ -327,24 +362,37 @@
 <span class="sd">    &#39;bar&#39;</span>
 <span class="sd">    &gt;&gt;&gt; s[&#39;pi&#39;]</span>
 <span class="sd">    3.14159</span>
+
+<span class="sd">    You might want to give your own names to the functions. </span>
+<span class="sd">    You might even have to (because the callable you&#39;re using doesn&#39;t have a `__name__`). </span>
+<span class="sd">    In that case, you can specify a ``{name: func, ...}`` dict instead of a simple iterable.</span>
+
+<span class="sd">    &gt;&gt;&gt; s = FuncReader({&#39;FU&#39;: foo, &#39;Pie&#39;: pi})</span>
+<span class="sd">    &gt;&gt;&gt; list(s)</span>
+<span class="sd">    [&#39;FU&#39;, &#39;Pie&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;FU&#39;]</span>
+<span class="sd">    &#39;bar&#39;</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">funcs</span><span class="p">):</span>
         <span class="c1"># TODO: assert no free arguments (arguments are allowed but must all have defaults)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">funcs</span> <span class="o">=</span> <span class="n">funcs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_func</span> <span class="o">=</span> <span class="p">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="n">func</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">funcs</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">funcs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">funcs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">funcs</span> <span class="o">=</span> <span class="p">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="n">func</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_func</span>
+        <span class="k">return</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">funcs</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_func</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">funcs</span>
 
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">funcs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="p">[</span><span class="n">k</span><span class="p">]()</span>  <span class="c1"># call the func</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">funcs</span><span class="p">[</span><span class="n">k</span><span class="p">]()</span>  <span class="c1"># call the func</span></div>
 
 
 <div class="viewcode-block" id="FuncDag"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FuncDag">[docs]</a><span class="k">class</span> <span class="nc">FuncDag</span><span class="p">(</span><span class="n">FuncReader</span><span class="p">):</span>
@@ -420,9 +468,10 @@
 <span class="sd">        pip install guide</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">key_filt</span><span class="o">=</span><span class="n">not_underscore_prefixed</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">key_filt</span><span class="o">=</span><span class="n">not_underscore_prefixed</span><span class="p">,</span> <span class="n">getattrs</span><span class="o">=</span><span class="nb">dir</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_key_filt</span> <span class="o">=</span> <span class="n">key_filt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">getattrs</span> <span class="o">=</span> <span class="n">getattrs</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">module_from_path</span><span class="p">(</span>
@@ -442,10 +491,10 @@
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">key_filt</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">yield from</span> <span class="nb">filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_filt</span><span class="p">,</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">))</span>
+        <span class="k">yield from</span> <span class="nb">filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_filt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getattrs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_filt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getattrs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_filt</span><span class="si">}</span><span class="s1">)&#39;</span></div>
