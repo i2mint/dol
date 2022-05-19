@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.1.77 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.1.83 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -2396,8 +2396,16 @@
         <span class="k">return</span> <span class="n">add_path_get</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">mk_level_walk_filt</span><span class="p">(</span><span class="n">levels</span><span class="p">):</span>
-    <span class="k">return</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">levels</span> <span class="o">-</span> <span class="mi">1</span>
+<div class="viewcode-block" id="mk_level_walk_filt"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.mk_level_walk_filt">[docs]</a><span class="k">def</span> <span class="nf">mk_level_walk_filt</span><span class="p">(</span><span class="n">levels</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Makes a ``walk_filt`` function for ``kv_walk`` based on some level logic.</span>
+<span class="sd">    If ``levels`` is an integer, will consider it as the max path length,</span>
+<span class="sd">    if not it will just assert that ``levels`` is callable, and return it</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">levels</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">callable</span><span class="p">(</span><span class="n">levels</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;levels must be a callable or an integer: </span><span class="si">{</span><span class="n">levels</span><span class="si">=}</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="n">levels</span></div>
 
 
 <span class="k">def</span> <span class="nf">leveled_paths_walk</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>

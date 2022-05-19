@@ -2313,7 +2313,7 @@ def mk_level_walk_filt(levels):
     if isinstance(levels, int):
         return lambda p, k, v: len(p) < levels - 1
     else:
-        assert callable(levels), f"levels must be a callable or an integer: {levels=}"
+        assert callable(levels), f'levels must be a callable or an integer: {levels=}'
         return levels
 
 
