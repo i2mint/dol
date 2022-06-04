@@ -4,8 +4,7 @@ utils to make stores based on a the input data itself
 from collections.abc import Mapping
 from typing import Callable, Collection as CollectionType
 
-from dol import Store
-from dol.base import Collection, KvReader
+from dol.base import Collection, KvReader, Store
 from dol.trans import kv_wrap
 from dol.paths import PrefixRelativizationMixin
 from dol.util import max_common_prefix
