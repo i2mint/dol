@@ -74,6 +74,8 @@ from dol.naming import StrTupleDict, mk_store_from_path_format_store_cls
 
 from dol.paths import mk_relative_path_store
 
+from dol.explicit import ExplicitKeyMap, invertible_maps
+
 from dol.base import (
     Collection,
     MappingViewMixin,
