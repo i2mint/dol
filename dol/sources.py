@@ -64,12 +64,16 @@ def _kv_spec_to_func(kv_spec: KvSpec) -> Callable:
 
 
 # TODO: This doesn't work
-# KvSpec.from = _kv_spec_to_func  # I'd like to be able to couple KvSpec and it's conversion function (even more: __call__ instead of from)
+# KvSpec.from = _kv_spec_to_func  # I'd like to be able to couple KvSpec and it's
+# conversion function (even more: __call__ instead of from)
 
 # TODO: Generalize to several layers
-# TODO: Same pattern for DirStore and kv_walk. Need a general tool for flattening views.
-#   Should to a situation where number layers are not fixed in advanced,
+#   Need a general tool for flattening views.
+#   What we're doing here is giving access to a nested/tree structure through a key-value
+#   view where keys specify tree paths.
+#   Should handle situations where number layers are not fixed in advanced,
 #   but determined by some rules executed dynamically.
+#   Related DirStore and kv_walk.
 class FlatReader(KvReader):
     """Get a 'flat view' of a store of stores. 
     That is, where keys are `(first_level_key, second_level_key)` pairs.
@@ -103,15 +107,16 @@ class FlatReader(KvReader):
 
 class SequenceKvReader(KvReader):
     """
-    A KvReader that sources itself in an iterable of elements from which keys and values will be extracted and
-    grouped by key.
+    A KvReader that sources itself in an iterable of elements from which keys and values
+    will be extracted and grouped by key.
 
     >>> docs = [{'_id': 0, 's': 'a', 'n': 1},
     ...  {'_id': 1, 's': 'b', 'n': 2},
     ...  {'_id': 2, 's': 'b', 'n': 3}]
     >>>
 
-    Out of the box, SequenceKvReader gives you enumerated integer indices as keys, and the sequence items as is, as vals
+    Out of the box, SequenceKvReader gives you enumerated integer indices as keys,
+    and the sequence items as is, as vals
 
     >>> s = SequenceKvReader(docs)
     >>> list(s)
@@ -120,7 +125,8 @@ class SequenceKvReader(KvReader):
     {'_id': 1, 's': 'b', 'n': 2}
     >>> assert s.get('not_a_key') is None
 
-    You can make it more interesting by specifying a val function to compute the vals from the sequence elements
+    You can make it more interesting by specifying a val function to compute the vals
+    from the sequence elements
 
     >>> s = SequenceKvReader(docs, val=lambda x: (x['_id'] + x['n']) * x['s'])
     >>> assert list(s) == [0, 1, 2]  # as before
@@ -128,8 +134,8 @@ class SequenceKvReader(KvReader):
     ['a', 'bbb', 'bbbbb']
 
     But where it becomes more useful is when you specify a key as well.
-    SequenceKvReader will then compute the keys with that function, group them, and return as the value, the
-    list of sequence elements that match that key.
+    SequenceKvReader will then compute the keys with that function, group them,
+    and return as the value, the list of sequence elements that match that key.
 
     >>> s = SequenceKvReader(docs,
     ...         key=lambda x: x['s'],
@@ -138,28 +144,32 @@ class SequenceKvReader(KvReader):
     >>> assert s['a'] == [{'_id': 0, 'n': 1}]
     >>> assert s['b'] == [{'_id': 1, 'n': 2}, {'_id': 2, 'n': 3}]
 
-    The cannonical form of key and val is a function, but if you specify a str, int, or iterable thereof,
+    The cannonical form of key and val is a function, but if you specify a str, int,
+    or iterable thereof,
     SequenceKvReader will make an itemgetter function from it, for your convenience.
 
     >>> s = SequenceKvReader(docs, key='_id')
     >>> assert list(s) == [0, 1, 2]
     >>> assert s[1] == [{'_id': 1, 's': 'b', 'n': 2}]
 
-    The ``val_postproc`` argument is ``list`` by default, but what if we don't specify any?
+    The ``val_postproc`` argument is ``list`` by default, but what if we don't specify
+    any?
     Well then you'll get an unconsumed iterable of matches
 
     >>> s = SequenceKvReader(docs, key='_id', val_postproc=None)
     >>> assert isinstance(s[1], Iterable)
 
     The ``val_postproc`` argument specifies what to apply to this iterable of matches.
-    For example, you can specify ``val_postproc=next`` to simply get the first matched element:
+    For example, you can specify ``val_postproc=next`` to simply get the first matched
+    element:
 
 
     >>> s = SequenceKvReader(docs, key='_id', val_postproc=next)
     >>> assert list(s) == [0, 1, 2]
     >>> assert s[1] == {'_id': 1, 's': 'b', 'n': 2}
 
-    We got the whole dict there. What if we just want we didn't want the _id, which is used by the key, in our val?
+    We got the whole dict there. What if we just want we didn't want the _id, which is
+    used by the key, in our val?
 
     >>> from functools import partial
     >>> all_but_s = partial(exclusive_subdict, exclude=['s'])
@@ -167,20 +177,23 @@ class SequenceKvReader(KvReader):
     >>> assert list(s) == [0, 1, 2]
     >>> assert s[1] == {'_id': 1, 'n': 2}
 
-    Suppose we want to have the pair of ('_id', 'n') values as a key, and only 's' as a value...
+    Suppose we want to have the pair of ('_id', 'n') values as a key, and only 's'
+    as a value...
 
     >>> s = SequenceKvReader(docs, key=('_id', 'n'), val='s', val_postproc=next)
     >>> assert list(s) == [(0, 1), (1, 2), (2, 3)]
     >>> assert s[1, 2] == 'b'
 
-    But remember that using ``val_postproc=next`` will only give you the first match as a val.
+    But remember that using ``val_postproc=next`` will only give you the first match
+    as a val.
 
     >>> s = SequenceKvReader(docs, key='s', val=all_but_s, val_postproc=next)
     >>> assert list(s) == ['a', 'b']
     >>> assert s['a'] == {'_id': 0, 'n': 1}
     >>> assert s['b'] == {'_id': 1, 'n': 2}   # note that only the first match is returned.
 
-    If you do want to only grab the first match, but want to additionally assert that there is no more than one,
+    If you do want to only grab the first match, but want to additionally assert
+    that there is no more than one,
     you can specify this with ``val_postproc=unique_element``:
 
     >>> s = SequenceKvReader(docs, key='s', val=all_but_s, val_postproc=unique_element)
@@ -210,8 +223,10 @@ class SequenceKvReader(KvReader):
             If None, will use the element as is, as the value.
             val can be a callable, a str or int, or an iterable of strs and ints.
         :param val_postproc: Function to apply to the iterable of vals.
-            Default is ``list``, which will have the effect of values being lists of all vals matching a key.
-            Another popular choice is ``next`` which will have the effect of values being the first matched to the key
+            Default is ``list``, which will have the effect of values being lists of all
+            vals matching a key.
+            Another popular choice is ``next`` which will have the effect of values
+            being the first matched to the key
         """
         self.sequence = sequence
         if key is not None:
@@ -242,23 +257,28 @@ class SequenceKvReader(KvReader):
 
 @cached_keys
 class CachedKeysSequenceKvReader(SequenceKvReader):
-    """SequenceKvReader but with keys cached. Use this one if you will perform multiple accesses to only some of the keys of the store"""
+    """SequenceKvReader but with keys cached. Use this one if you will perform multiple
+    accesses to only some of the keys of the store"""
 
 
 @mk_cached_store
 class CachedSequenceKvReader(SequenceKvReader):
-    """SequenceKvReader but with the whole mapping cached as a dict. Use this one if you will perform multiple accesses to the store"""
+    """SequenceKvReader but with the whole mapping cached as a dict. Use this one if
+    you will perform multiple accesses to the store"""
 
 
-# TODO: Basically same could be acheived with wrap_kvs(obj_of_data=methodcaller('__call__'))
+# TODO: Basically same could be acheived with
+#  wrap_kvs(obj_of_data=methodcaller('__call__'))
 class FuncReader(KvReader):
     """Reader that seeds itself from a data fetching function list
     Uses the function list names as the keys, and their returned value as the values.
 
-    For example: You have a list of urls that contain the data you want to have access to.
-    You can write functions that bare the names you want to give to each dataset, and have the function
-    fetch the data from the url, extract the data from the response and possibly prepare it
-    (we advise minimally, since you can always transform from the raw source, but the opposite can be impossible).
+    For example: You have a list of urls that contain the data you want to have access
+    to.
+    You can write functions that bare the names you want to give to each dataset,
+    and have the function fetch the data from the url, extract the data from the
+    response and possibly prepare it (we advise minimally, since you can always
+    transform from the raw source, but the opposite can be impossible).
 
     >>> def foo():
     ...     return 'bar'
@@ -274,7 +294,8 @@ class FuncReader(KvReader):
 
     You might want to give your own names to the functions. 
     You might even have to (because the callable you're using doesn't have a `__name__`). 
-    In that case, you can specify a ``{name: func, ...}`` dict instead of a simple iterable.
+    In that case, you can specify a ``{name: func, ...}`` dict instead of a simple
+    iterable.
 
     >>> s = FuncReader({'FU': foo, 'Pie': pi})
     >>> list(s)
@@ -285,7 +306,8 @@ class FuncReader(KvReader):
     """
 
     def __init__(self, funcs):
-        # TODO: assert no free arguments (arguments are allowed but must all have defaults)
+        # TODO: assert no free arguments (arguments are allowed but must all have
+        #  defaults)
         if isinstance(funcs, Mapping):
             self.funcs = dict(funcs)
         else:
@@ -373,7 +395,10 @@ class Attrs(ObjReader):
     """A simple recursive KvReader for the attributes of a python object.
     Keys are attr names, values are Attrs(attr_val) instances.
 
-    Note: A more significant version of Attrs, along with many tools based on it, was moved to pypi package: guide.
+    Note: A more significant version of Attrs, along with many tools based on it,
+    was moved to pypi package: guide.
+
+
         pip install guide
     """
 
@@ -414,11 +439,12 @@ Ddir = Attrs  # for back-compatibility, temporarily
 
 # TODO: Make it work with a store, without having to load and store the values explicitly.
 class DictAttr(KvPersister):
-    """Convenience class to hold Key-Val pairs with both a dict-like and struct-like interface.
+    """Convenience class to hold Key-Val pairs with both a dict-like and struct-like
+    interface.
     The dict-like interface has just the basic get/set/del/iter/len
     (all "dunders": none visible as methods). There is no get, update, etc.
-    This is on purpose, so that the only visible attributes (those you get by tab-completion for instance)
-    are the those you injected.
+    This is on purpose, so that the only visible attributes
+    (those you get by tab-completion for instance) are the those you injected.
 
     >>> da = DictAttr(foo='bar', life=42)
     >>> da.foo

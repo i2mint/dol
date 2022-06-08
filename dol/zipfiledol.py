@@ -4,7 +4,7 @@ Data object layers and other utils to work with zip files.
 import os
 from pathlib import Path
 from io import BytesIO
-from functools import partial
+from functools import partial, wraps
 from typing import Callable, Union, Iterable
 import zipfile
 from zipfile import (
@@ -278,18 +278,25 @@ class ZipReader(KvReader):
     But you might find it useful to remove them from view. One choice is to use
     `dol.trans.filt_iter`
     to get a filtered view of the zips contents. In most cases, this should do the job:
-    ```
-    # applied to store instance or class:
-    store = filt_iter(filt=lambda x: not x.startswith('__MACOSX') and '.DS_Store' not in x)(store)
-    ```
+
+    .. code-block::
+
+        # applied to store instance or class:
+        store = filt_iter(filt=lambda x: not x.startswith('__MACOSX') and '.DS_Store' not in x)(store)
+
 
     Another option is just to remove these from the zip file once and for all. In unix-like systems:
-    ```
-    zip -d filename.zip __MACOSX/\*
-    zip -d filename.zip \*/.DS_Store
-    ```
+
+    .. code-block::
+
+        zip -d filename.zip __MACOSX/\*
+        zip -d filename.zip \*/.DS_Store
+
 
     Examples:
+
+    .. code-block::
+
         # >>> s = ZipReader('/path/to/some_zip_file.zip')
         # >>> len(s)
         # 53432
@@ -434,6 +441,34 @@ class ZipInfoReader(ZipReader):
         return self.zip_file.getinfo(k)
 
 
+class FilesOfZip(ZipReader):
+    def __init__(self, zip_file, prefix='', open_kws=None):
+        super().__init__(
+            zip_file,
+            prefix=prefix,
+            open_kws=open_kws,
+            file_info_filt=ZipReader.FILES_ONLY,
+        )
+
+
+# TODO: This file object item is more fundemental than file contents.
+#  Should it be at the base?
+class FileStreamsOfZip(FilesOfZip):
+    """Like FilesOfZip, but object returns are file streams instead.
+    So you use it like this:
+
+    .. code-block::
+
+        z = FileStreamsOfZip(rootdir)
+        with z[relpath] as fp:
+            ...  # do stuff with fp, like fp.readlines() or such...
+
+    """
+
+    def __getitem__(self, k):
+        return self.zip_file.open(k, **self.open_kws)
+
+
 class ZipFilesReader(FileCollection, KvReader):
     """A local file reader whose keys are the zip filepaths of the rootdir and values are
     corresponding ZipReaders.
@@ -465,8 +500,8 @@ class ZipFilesReader(FileCollection, KvReader):
 
 
 class ZipFilesReaderAndBytesWriter(ZipFilesReader):
-    """Like ZipFilesReader, but the ability to write bytes (assumed to be valid bytes of the zip
-    format) to a key
+    """Like ZipFilesReader, but the ability to write bytes (assumed to be valid bytes of
+    the zip format) to a key
     """
 
     def __setitem__(self, k, v):
@@ -477,8 +512,9 @@ class ZipFilesReaderAndBytesWriter(ZipFilesReader):
 ZipFileReader = ZipFilesReader  # back-compatibility alias
 
 
-# TODO: Add easy connection to ExplicitKeymapReader and other path trans and cache useful for the
-#  folder of zips context
+# TODO: Add easy connection to ExplicitKeymapReader and other path trans and cache useful
+#  for the folder of zips context
+# TODO: The "injection" of _readers to be able to use FlatReader stinks.
 class FlatZipFilesReader(FlatReader, ZipFilesReader):
     """Read the union of the contents of multiple zip files.
     A local file reader whose keys are the zip filepaths of the rootdir and values are
@@ -486,33 +522,37 @@ class FlatZipFilesReader(FlatReader, ZipFilesReader):
 
     Example use case:
 
-    A remote data provider creates snapshots of whatever changed (modified files and new ones...)
-    since the last snapshot, dumping snapshot zip files in a specic accessible location.
+    A remote data provider creates snapshots of whatever changed (modified files and new
+    ones...) since the last snapshot, dumping snapshot zip files in a specic
+    accessible location.
 
     You make `remote` and `local` stores and can update your local. Then you can perform
     syncing actions such as:
 
-    ```
-    missing_keys = remote.keys() - local.keys()
-    local.update({k: remote[k] for k in missing_keys})  # downloads missing snapshots
-    ```
+    .. code-block:: python
+
+        missing_keys = remote.keys() - local.keys()
+        local.update({k: remote[k] for k in missing_keys})  # downloads missing snapshots
+
 
     The data will look something like this:
 
-    ```
-    dump_folder/
-       2021_09_11.zip
-       2021_09_12.zip
-       2021_09_13.zip
-       etc.
-    ```
+    .. code-block:: python
+
+        dump_folder/
+           2021_09_11.zip
+           2021_09_12.zip
+           2021_09_13.zip
+           etc.
+
     both on remote and local.
 
     What should then local do to use this data?
     Unzip and merge?
 
-    Well, one solution, provided through FlatZipFilesReader, is to not unzip at all, but instead,
-    give you a store that provides you a view "as if you unzipped and merged".
+    Well, one solution, provided through FlatZipFilesReader, is to not unzip at all,
+    but instead, give you a store that provides you a view "as if you unzipped and
+    merged".
 
     """
 
@@ -529,6 +569,25 @@ class FlatZipFilesReader(FlatReader, ZipFilesReader):
     _zip_readers = _readers  # back-compatibility alias
 
 
+# TODO: Refactor zipfiledol to make it possible to design FlatZipFilesReaderFromBytes
+#  better than the following.
+#  * init doesn't use super, but super is locked to rootdir specification
+#  * perhaps better making _readers a lazy mapping (not precompute all FilesOfZip(v))?
+#  * Should ZipFilesReader be generalized to take bytes instead of rootdir?
+#  * Using .zips to delegate the what in is
+class FlatZipFilesReaderFromBytes(FlatReader, FilesOfZip):
+    """Like FlatZipFilesReader but instead of sourcing with folder of zips, we source
+    with the bytes of a zipped folder of zips"""
+
+    @wraps(FilesOfZip.__init__)
+    def __init__(self, *args, **kwargs):
+        self.zips = FilesOfZip(*args, **kwargs)
+
+    @lazyprop
+    def _readers(self):
+        return {k: FilesOfZip(v) for k, v in self.zips.items()}
+
+
 def mk_flatzips_store(
     dir_of_zips,
     zip_pair_path_preproc=sorted,
@@ -539,41 +598,14 @@ def mk_flatzips_store(
     as if they've all been extracted in the same folder.
     Note that `zip_pair_path_preproc` can be used to control how to resolve key conflicts
     (i.e. when you get two different zip files that have a same path in their contents).
-    The last path encountered by `zip_pair_path_preproc(zip_path_pairs)` is the one that will be
-    used, so
-    one should make `zip_pair_path_preproc` act accordingly.
+    The last path encountered by `zip_pair_path_preproc(zip_path_pairs)` is the one that
+    will be used, so one should make `zip_pair_path_preproc` act accordingly.
     """
     from dol.explicit import ExplicitKeymapReader
 
     z = mk_store(dir_of_zips, **extra_mk_store_kwargs)
     path_to_pair = {pair[1]: pair for pair in zip_pair_path_preproc(z)}
     return ExplicitKeymapReader(z, id_of_key=path_to_pair)
-
-
-class FilesOfZip(ZipReader):
-    def __init__(self, zip_file, prefix='', open_kws=None):
-        super().__init__(
-            zip_file,
-            prefix=prefix,
-            open_kws=open_kws,
-            file_info_filt=ZipReader.FILES_ONLY,
-        )
-
-
-# TODO: This file object item is more fundemental than file contents. Should it be at the base?
-class FileStreamsOfZip(FilesOfZip):
-    """Like FilesOfZip, but object returns are file streams instead.
-    So you use it like this:
-
-    ```
-    z = FileStreamsOfZip(rootdir)
-    with z[relpath] as fp:
-        ...  # do stuff with fp, like fp.readlines() or such...
-    ```
-    """
-
-    def __getitem__(self, k):
-        return self.zip_file.open(k, **self.open_kws)
 
 
 from dol.paths import mk_relative_path_store
