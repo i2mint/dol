@@ -156,22 +156,37 @@ class Pipe:
     Notes:
         - Pipe instances don't have a __name__ etc. So some expectations of normal functions are not met.
         - Pipe instance are pickalable (as long as the functions that compose them are)
+
+    You can specify a single functions:
+
+    >>> Pipe(lambda x: x + 1)(2)
+    3
+
+    but
+
+    >>> Pipe()
+    Traceback (most recent call last):
+      ...
+    ValueError: You need to specify at least one function!
+
     """
 
     def __init__(self, *funcs, **named_funcs):
         funcs = list(funcs) + list(named_funcs.values())
         n_funcs = len(funcs)
-        other_funcs = ()
         if n_funcs == 0:
             raise ValueError('You need to specify at least one function!')
+
         elif n_funcs == 1:
+            other_funcs = ()
             first_func = last_func = funcs[0]
         else:
-            first_func, *other_funcs, last_func = funcs
+            first_func, *other_funcs = funcs
+            *_, last_func = other_funcs
 
         self.__signature__ = _signature_from_first_and_last_func(first_func, last_func)
         self.first_func = first_func
-        self.other_funcs = tuple(other_funcs) + (last_func,)
+        self.other_funcs = other_funcs
 
     def __call__(self, *args, **kwargs):
         out = self.first_func(*args, **kwargs)
@@ -189,6 +204,7 @@ def partialclass(cls, *args, **kwargs):
     The raison d'être of partialclass is that it returns a type, so let's have a look at that with
     a useless class.
 
+    >>> from inspect import signature
     >>> class A:
     ...     pass
     >>> assert isinstance(A, type) == isinstance(partialclass(A), type) == True
