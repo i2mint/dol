@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.zipfiledol &mdash; dol 0.1.85 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.zipfiledol &mdash; dol 0.1.86 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -102,13 +102,11 @@
 <em class="property">class </em><code class="sig-prename descclassname">dol.zipfiledol.</code><code class="sig-name descname">FileStreamsOfZip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zip_file</span></em>, <em class="sig-param"><span class="n">prefix</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">open_kws</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/zipfiledol.html#FileStreamsOfZip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.zipfiledol.FileStreamsOfZip" title="Permalink to this definition">¶</a></dt>
 <dd><p>Like FilesOfZip, but object returns are file streams instead.
 So you use it like this:</p>
-<p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
-z = FileStreamsOfZip(rootdir)
-with z[relpath] as fp:</p>
-<blockquote>
-<div><p>…  # do stuff with fp, like fp.readlines() or such…</p>
-</div></blockquote>
-<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">z</span> <span class="o">=</span> <span class="n">FileStreamsOfZip</span><span class="p">(</span><span class="n">rootdir</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">z</span><span class="p">[</span><span class="n">relpath</span><span class="p">]</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="o">...</span>  <span class="c1"># do stuff with fp, like fp.readlines() or such...</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py class">
@@ -123,29 +121,29 @@ with z[relpath] as fp:</p>
 A local file reader whose keys are the zip filepaths of the rootdir and values are
 corresponding ZipReaders.</p>
 <p>Example use case:</p>
-<p>A remote data provider creates snapshots of whatever changed (modified files and new ones…)
-since the last snapshot, dumping snapshot zip files in a specic accessible location.</p>
+<p>A remote data provider creates snapshots of whatever changed (modified files and new
+ones…) since the last snapshot, dumping snapshot zip files in a specic
+accessible location.</p>
 <p>You make <cite>remote</cite> and <cite>local</cite> stores and can update your local. Then you can perform
 syncing actions such as:</p>
-<p><code class="docutils literal notranslate"><span class="pre">`</span>
-<span class="pre">missing_keys</span> <span class="pre">=</span> <span class="pre">remote.keys()</span> <span class="pre">-</span> <span class="pre">local.keys()</span>
-<span class="pre">local.update({k:</span> <span class="pre">remote[k]</span> <span class="pre">for</span> <span class="pre">k</span> <span class="pre">in</span> <span class="pre">missing_keys})</span>&#160; <span class="pre">#</span> <span class="pre">downloads</span> <span class="pre">missing</span> <span class="pre">snapshots</span>
-<span class="pre">`</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">missing_keys</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">-</span> <span class="n">local</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="n">local</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">remote</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">missing_keys</span><span class="p">})</span>  <span class="c1"># downloads missing snapshots</span>
+</pre></div>
+</div>
 <p>The data will look something like this:</p>
-<p><a href="#id7"><span class="problematic" id="id8">``</span></a>`
-dump_folder/</p>
-<blockquote>
-<div><p>2021_09_11.zip
-2021_09_12.zip
-2021_09_13.zip
-etc.</p>
-</div></blockquote>
-<p><a href="#id9"><span class="problematic" id="id10">``</span></a>`
-both on remote and local.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dump_folder</span><span class="o">/</span>
+   <span class="mf">2021_09_11.</span><span class="n">zip</span>
+   <span class="mf">2021_09_12.</span><span class="n">zip</span>
+   <span class="mf">2021_09_13.</span><span class="n">zip</span>
+   <span class="n">etc</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>both on remote and local.</p>
 <p>What should then local do to use this data?
 Unzip and merge?</p>
-<p>Well, one solution, provided through FlatZipFilesReader, is to not unzip at all, but instead,
-give you a store that provides you a view “as if you unzipped and merged”.</p>
+<p>Well, one solution, provided through FlatZipFilesReader, is to not unzip at all,
+but instead, give you a store that provides you a view “as if you unzipped and
+merged”.</p>
 </dd></dl>
 
 <dl class="py exception">
@@ -169,8 +167,8 @@ corresponding ZipReaders.</p>
 <dl class="py class">
 <dt id="dol.zipfiledol.ZipFilesReaderAndBytesWriter">
 <em class="property">class </em><code class="sig-prename descclassname">dol.zipfiledol.</code><code class="sig-name descname">ZipFilesReaderAndBytesWriter</code><span class="sig-paren">(</span><em class="sig-param">rootdir</em>, <em class="sig-param">subpath='.+\\.zip'</em>, <em class="sig-param">pattern_for_field=None</em>, <em class="sig-param">max_levels=0</em>, <em class="sig-param">zip_reader=&lt;class 'dol.zipfiledol.ZipReader'&gt;</em>, <em class="sig-param">**zip_reader_kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/zipfiledol.html#ZipFilesReaderAndBytesWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.zipfiledol.ZipFilesReaderAndBytesWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Like ZipFilesReader, but the ability to write bytes (assumed to be valid bytes of the zip
-format) to a key</p>
+<dd><p>Like ZipFilesReader, but the ability to write bytes (assumed to be valid bytes of
+the zip format) to a key</p>
 </dd></dl>
 
 <dl class="py class">
@@ -195,59 +193,61 @@ except for the <code class="docutils literal notranslate"><span class="pre">pref
 Namely <cite>__MACOSX</cite> folders <cite>.DS_Store</cite> files. I won’t rant about it, since others have.
 But you might find it useful to remove them from view. One choice is to use
 <cite>dol.trans.filt_iter</cite>
-to get a filtered view of the zips contents. In most cases, this should do the job:
-<code class="docutils literal notranslate"><span class="pre">`</span>
-<span class="pre">#</span> <span class="pre">applied</span> <span class="pre">to</span> <span class="pre">store</span> <span class="pre">instance</span> <span class="pre">or</span> <span class="pre">class:</span>
-<span class="pre">store</span> <span class="pre">=</span> <span class="pre">filt_iter(filt=lambda</span> <span class="pre">x:</span> <span class="pre">not</span> <span class="pre">x.startswith('__MACOSX')</span> <span class="pre">and</span> <span class="pre">'.DS_Store'</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">x)(store)</span>
-<span class="pre">`</span></code></p>
-<p>Another option is just to remove these from the zip file once and for all. In unix-like systems:
-<code class="docutils literal notranslate"><span class="pre">`</span>
-<span class="pre">zip</span> <span class="pre">-d</span> <span class="pre">filename.zip</span> <span class="pre">__MACOSX/\*</span>
-<span class="pre">zip</span> <span class="pre">-d</span> <span class="pre">filename.zip</span> <span class="pre">\*/.DS_Store</span>
-<span class="pre">`</span></code></p>
-<p class="rubric">Examples</p>
-<p># &gt;&gt;&gt; s = ZipReader(‘/path/to/some_zip_file.zip’)
-# &gt;&gt;&gt; len(s)
-# 53432
-# &gt;&gt;&gt; list(s)[:3]  # the first 3 elements (well… their keys)
-# [‘odir/’, ‘odir/app/’, ‘odir/app/data/’]
-# &gt;&gt;&gt; list(s)[-3:]  # the last 3 elements (well… their keys)
-# [‘odir/app/data/audio/d/1574287049078391/m/Ctor.json’,
-#  ‘odir/app/data/audio/d/1574287049078391/m/intensity.json’,
-#  ‘odir/app/data/run/status.json’]
-# &gt;&gt;&gt; # getting a file (note that by default, you get bytes, so need to decode)
-# &gt;&gt;&gt; s[‘odir/app/data/run/status.json’].decode()
-# b’{“test_phase_number”: 9, “test_phase”: “TestActions.IGNORE_TEST”, “session_id”: 0}’
-# &gt;&gt;&gt; # when you ask for the contents for a key that’s a directory,
-# &gt;&gt;&gt; # you get a ZipReader filtered for that prefix:
-# &gt;&gt;&gt; s[‘odir/app/data/audio/’]
-# ZipReader(‘/path/to/some_zip_file.zip’, ‘odir/app/data/audio/’, {}, &lt;function
-take_everything at 0x1538999e0&gt;)
-# &gt;&gt;&gt; # Often, you only want files (not directories)
-# &gt;&gt;&gt; # You can filter directories out using the file_info_filt argument
-# &gt;&gt;&gt; s = ZipReader(‘/path/to/some_zip_file.zip’, file_info_filt=ZipReader.FILES_ONLY)
-# &gt;&gt;&gt; len(s)  # compare to the 53432 above, that contained dirs too
-# 53280
-# &gt;&gt;&gt; list(s)[:3]  # first 3 keys are all files now
-# [‘odir/app/data/plc/d/1574304926795633/d/1574305026895702’,
-#  ‘odir/app/data/plc/d/1574304926795633/d/1574305276853053’,
-#  ‘odir/app/data/plc/d/1574304926795633/d/1574305159343326’]
-# &gt;&gt;&gt;
-# &gt;&gt;&gt; # ZipReader.FILES_ONLY and ZipReader.DIRS_ONLY are just convenience filt functions
-# &gt;&gt;&gt; # Really, you can provide any custom one yourself.
-# &gt;&gt;&gt; # This filter function should take a ZipInfo object, and return True or False.
-# &gt;&gt;&gt; # (<a class="reference external" href="https://docs.python.org/3/library/zipfile.html#zipfile.ZipInfo">https://docs.python.org/3/library/zipfile.html#zipfile.ZipInfo</a>)
-# &gt;&gt;&gt;
-# &gt;&gt;&gt; import re
-# &gt;&gt;&gt; p = re.compile(‘audio.*.json$’)
-# &gt;&gt;&gt; my_filt_func = lambda fileinfo: bool(p.search(fileinfo.filename))
-# &gt;&gt;&gt; s = ZipReader(‘/Users/twhalen/Downloads/2019_11_21.zip’, file_info_filt=my_filt_func)
-# &gt;&gt;&gt; len(s)
-# 48
-# &gt;&gt;&gt; list(s)[:3]
-# [‘odir/app/data/audio/d/1574333557263758/m/Ctor.json’,
-#  ‘odir/app/data/audio/d/1574333557263758/m/intensity.json’,
-#  ‘odir/app/data/audio/d/1574288084739961/m/Ctor.json’]</p>
+to get a filtered view of the zips contents. In most cases, this should do the job:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># applied to store instance or class:</span>
+<span class="n">store</span> <span class="o">=</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__MACOSX&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;.DS_Store&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)(</span><span class="n">store</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Another option is just to remove these from the zip file once and for all. In unix-like systems:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">zip</span> <span class="o">-</span><span class="n">d</span> <span class="n">filename</span><span class="o">.</span><span class="n">zip</span> <span class="n">__MACOSX</span><span class="o">/</span>\<span class="o">*</span>
+<span class="nb">zip</span> <span class="o">-</span><span class="n">d</span> <span class="n">filename</span><span class="o">.</span><span class="n">zip</span> \<span class="o">*/.</span><span class="n">DS_Store</span>
+</pre></div>
+</div>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># &gt;&gt;&gt; s = ZipReader(&#39;/path/to/some_zip_file.zip&#39;)</span>
+<span class="c1"># &gt;&gt;&gt; len(s)</span>
+<span class="c1"># 53432</span>
+<span class="c1"># &gt;&gt;&gt; list(s)[:3]  # the first 3 elements (well... their keys)</span>
+<span class="c1"># [&#39;odir/&#39;, &#39;odir/app/&#39;, &#39;odir/app/data/&#39;]</span>
+<span class="c1"># &gt;&gt;&gt; list(s)[-3:]  # the last 3 elements (well... their keys)</span>
+<span class="c1"># [&#39;odir/app/data/audio/d/1574287049078391/m/Ctor.json&#39;,</span>
+<span class="c1">#  &#39;odir/app/data/audio/d/1574287049078391/m/intensity.json&#39;,</span>
+<span class="c1">#  &#39;odir/app/data/run/status.json&#39;]</span>
+<span class="c1"># &gt;&gt;&gt; # getting a file (note that by default, you get bytes, so need to decode)</span>
+<span class="c1"># &gt;&gt;&gt; s[&#39;odir/app/data/run/status.json&#39;].decode()</span>
+<span class="c1"># b&#39;{&quot;test_phase_number&quot;: 9, &quot;test_phase&quot;: &quot;TestActions.IGNORE_TEST&quot;, &quot;session_id&quot;: 0}&#39;</span>
+<span class="c1"># &gt;&gt;&gt; # when you ask for the contents for a key that&#39;s a directory,</span>
+<span class="c1"># &gt;&gt;&gt; # you get a ZipReader filtered for that prefix:</span>
+<span class="c1"># &gt;&gt;&gt; s[&#39;odir/app/data/audio/&#39;]</span>
+<span class="c1"># ZipReader(&#39;/path/to/some_zip_file.zip&#39;, &#39;odir/app/data/audio/&#39;, {}, &lt;function</span>
+<span class="n">take_everything</span> <span class="n">at</span> <span class="mh">0x1538999e0</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="c1"># &gt;&gt;&gt; # Often, you only want files (not directories)</span>
+<span class="c1"># &gt;&gt;&gt; # You can filter directories out using the file_info_filt argument</span>
+<span class="c1"># &gt;&gt;&gt; s = ZipReader(&#39;/path/to/some_zip_file.zip&#39;, file_info_filt=ZipReader.FILES_ONLY)</span>
+<span class="c1"># &gt;&gt;&gt; len(s)  # compare to the 53432 above, that contained dirs too</span>
+<span class="c1"># 53280</span>
+<span class="c1"># &gt;&gt;&gt; list(s)[:3]  # first 3 keys are all files now</span>
+<span class="c1"># [&#39;odir/app/data/plc/d/1574304926795633/d/1574305026895702&#39;,</span>
+<span class="c1">#  &#39;odir/app/data/plc/d/1574304926795633/d/1574305276853053&#39;,</span>
+<span class="c1">#  &#39;odir/app/data/plc/d/1574304926795633/d/1574305159343326&#39;]</span>
+<span class="c1"># &gt;&gt;&gt;</span>
+<span class="c1"># &gt;&gt;&gt; # ZipReader.FILES_ONLY and ZipReader.DIRS_ONLY are just convenience filt functions</span>
+<span class="c1"># &gt;&gt;&gt; # Really, you can provide any custom one yourself.</span>
+<span class="c1"># &gt;&gt;&gt; # This filter function should take a ZipInfo object, and return True or False.</span>
+<span class="c1"># &gt;&gt;&gt; # (https://docs.python.org/3/library/zipfile.html#zipfile.ZipInfo)</span>
+<span class="c1"># &gt;&gt;&gt;</span>
+<span class="c1"># &gt;&gt;&gt; import re</span>
+<span class="c1"># &gt;&gt;&gt; p = re.compile(&#39;audio.*\.json$&#39;)</span>
+<span class="c1"># &gt;&gt;&gt; my_filt_func = lambda fileinfo: bool(p.search(fileinfo.filename))</span>
+<span class="c1"># &gt;&gt;&gt; s = ZipReader(&#39;/Users/twhalen/Downloads/2019_11_21.zip&#39;, file_info_filt=my_filt_func)</span>
+<span class="c1"># &gt;&gt;&gt; len(s)</span>
+<span class="c1"># 48</span>
+<span class="c1"># &gt;&gt;&gt; list(s)[:3]</span>
+<span class="c1"># [&#39;odir/app/data/audio/d/1574333557263758/m/Ctor.json&#39;,</span>
+<span class="c1">#  &#39;odir/app/data/audio/d/1574333557263758/m/intensity.json&#39;,</span>
+<span class="c1">#  &#39;odir/app/data/audio/d/1574288084739961/m/Ctor.json&#39;]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py class">
@@ -339,9 +339,8 @@ of (size and time) stats.</p>
 as if they’ve all been extracted in the same folder.
 Note that <cite>zip_pair_path_preproc</cite> can be used to control how to resolve key conflicts
 (i.e. when you get two different zip files that have a same path in their contents).
-The last path encountered by <cite>zip_pair_path_preproc(zip_path_pairs)</cite> is the one that will be
-used, so
-one should make <cite>zip_pair_path_preproc</cite> act accordingly.</p>
+The last path encountered by <cite>zip_pair_path_preproc(zip_path_pairs)</cite> is the one that
+will be used, so one should make <cite>zip_pair_path_preproc</cite> act accordingly.</p>
 </dd></dl>
 
 <dl class="py function">
