@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.zipfiledol &mdash; dol 0.1.85 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.zipfiledol &mdash; dol 0.1.86 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -95,7 +95,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">import</span> <span class="nn">zipfile</span>
 <span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="p">(</span>
@@ -369,18 +369,25 @@
 <span class="sd">    But you might find it useful to remove them from view. One choice is to use</span>
 <span class="sd">    `dol.trans.filt_iter`</span>
 <span class="sd">    to get a filtered view of the zips contents. In most cases, this should do the job:</span>
-<span class="sd">    ```</span>
-<span class="sd">    # applied to store instance or class:</span>
-<span class="sd">    store = filt_iter(filt=lambda x: not x.startswith(&#39;__MACOSX&#39;) and &#39;.DS_Store&#39; not in x)(store)</span>
-<span class="sd">    ```</span>
+
+<span class="sd">    .. code-block::</span>
+
+<span class="sd">        # applied to store instance or class:</span>
+<span class="sd">        store = filt_iter(filt=lambda x: not x.startswith(&#39;__MACOSX&#39;) and &#39;.DS_Store&#39; not in x)(store)</span>
+
 
 <span class="sd">    Another option is just to remove these from the zip file once and for all. In unix-like systems:</span>
-<span class="sd">    ```</span>
-<span class="sd">    zip -d filename.zip __MACOSX/\*</span>
-<span class="sd">    zip -d filename.zip \*/.DS_Store</span>
-<span class="sd">    ```</span>
+
+<span class="sd">    .. code-block::</span>
+
+<span class="sd">        zip -d filename.zip __MACOSX/\*</span>
+<span class="sd">        zip -d filename.zip \*/.DS_Store</span>
+
 
 <span class="sd">    Examples:</span>
+
+<span class="sd">    .. code-block::</span>
+
 <span class="sd">        # &gt;&gt;&gt; s = ZipReader(&#39;/path/to/some_zip_file.zip&#39;)</span>
 <span class="sd">        # &gt;&gt;&gt; len(s)</span>
 <span class="sd">        # 53432</span>
@@ -525,6 +532,34 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_file</span><span class="o">.</span><span class="n">getinfo</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="FilesOfZip"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.FilesOfZip">[docs]</a><span class="k">class</span> <span class="nc">FilesOfZip</span><span class="p">(</span><span class="n">ZipReader</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zip_file</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">open_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">zip_file</span><span class="p">,</span>
+            <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
+            <span class="n">open_kws</span><span class="o">=</span><span class="n">open_kws</span><span class="p">,</span>
+            <span class="n">file_info_filt</span><span class="o">=</span><span class="n">ZipReader</span><span class="o">.</span><span class="n">FILES_ONLY</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<span class="c1"># TODO: This file object item is more fundemental than file contents.</span>
+<span class="c1">#  Should it be at the base?</span>
+<div class="viewcode-block" id="FileStreamsOfZip"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.FileStreamsOfZip">[docs]</a><span class="k">class</span> <span class="nc">FileStreamsOfZip</span><span class="p">(</span><span class="n">FilesOfZip</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Like FilesOfZip, but object returns are file streams instead.</span>
+<span class="sd">    So you use it like this:</span>
+
+<span class="sd">    .. code-block::</span>
+
+<span class="sd">        z = FileStreamsOfZip(rootdir)</span>
+<span class="sd">        with z[relpath] as fp:</span>
+<span class="sd">            ...  # do stuff with fp, like fp.readlines() or such...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">open_kws</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="ZipFilesReader"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.ZipFilesReader">[docs]</a><span class="k">class</span> <span class="nc">ZipFilesReader</span><span class="p">(</span><span class="n">FileCollection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A local file reader whose keys are the zip filepaths of the rootdir and values are</span>
 <span class="sd">    corresponding ZipReaders.</span>
@@ -556,8 +591,8 @@
 
 
 <div class="viewcode-block" id="ZipFilesReaderAndBytesWriter"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.ZipFilesReaderAndBytesWriter">[docs]</a><span class="k">class</span> <span class="nc">ZipFilesReaderAndBytesWriter</span><span class="p">(</span><span class="n">ZipFilesReader</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Like ZipFilesReader, but the ability to write bytes (assumed to be valid bytes of the zip</span>
-<span class="sd">    format) to a key</span>
+    <span class="sd">&quot;&quot;&quot;Like ZipFilesReader, but the ability to write bytes (assumed to be valid bytes of</span>
+<span class="sd">    the zip format) to a key</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
@@ -568,8 +603,9 @@
 <span class="n">ZipFileReader</span> <span class="o">=</span> <span class="n">ZipFilesReader</span>  <span class="c1"># back-compatibility alias</span>
 
 
-<span class="c1"># TODO: Add easy connection to ExplicitKeymapReader and other path trans and cache useful for the</span>
-<span class="c1">#  folder of zips context</span>
+<span class="c1"># TODO: Add easy connection to ExplicitKeymapReader and other path trans and cache useful</span>
+<span class="c1">#  for the folder of zips context</span>
+<span class="c1"># TODO: The &quot;injection&quot; of _readers to be able to use FlatReader stinks.</span>
 <div class="viewcode-block" id="FlatZipFilesReader"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.FlatZipFilesReader">[docs]</a><span class="k">class</span> <span class="nc">FlatZipFilesReader</span><span class="p">(</span><span class="n">FlatReader</span><span class="p">,</span> <span class="n">ZipFilesReader</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Read the union of the contents of multiple zip files.</span>
 <span class="sd">    A local file reader whose keys are the zip filepaths of the rootdir and values are</span>
@@ -577,33 +613,37 @@
 
 <span class="sd">    Example use case:</span>
 
-<span class="sd">    A remote data provider creates snapshots of whatever changed (modified files and new ones...)</span>
-<span class="sd">    since the last snapshot, dumping snapshot zip files in a specic accessible location.</span>
+<span class="sd">    A remote data provider creates snapshots of whatever changed (modified files and new</span>
+<span class="sd">    ones...) since the last snapshot, dumping snapshot zip files in a specic</span>
+<span class="sd">    accessible location.</span>
 
 <span class="sd">    You make `remote` and `local` stores and can update your local. Then you can perform</span>
 <span class="sd">    syncing actions such as:</span>
 
-<span class="sd">    ```</span>
-<span class="sd">    missing_keys = remote.keys() - local.keys()</span>
-<span class="sd">    local.update({k: remote[k] for k in missing_keys})  # downloads missing snapshots</span>
-<span class="sd">    ```</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        missing_keys = remote.keys() - local.keys()</span>
+<span class="sd">        local.update({k: remote[k] for k in missing_keys})  # downloads missing snapshots</span>
+
 
 <span class="sd">    The data will look something like this:</span>
 
-<span class="sd">    ```</span>
-<span class="sd">    dump_folder/</span>
-<span class="sd">       2021_09_11.zip</span>
-<span class="sd">       2021_09_12.zip</span>
-<span class="sd">       2021_09_13.zip</span>
-<span class="sd">       etc.</span>
-<span class="sd">    ```</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        dump_folder/</span>
+<span class="sd">           2021_09_11.zip</span>
+<span class="sd">           2021_09_12.zip</span>
+<span class="sd">           2021_09_13.zip</span>
+<span class="sd">           etc.</span>
+
 <span class="sd">    both on remote and local.</span>
 
 <span class="sd">    What should then local do to use this data?</span>
 <span class="sd">    Unzip and merge?</span>
 
-<span class="sd">    Well, one solution, provided through FlatZipFilesReader, is to not unzip at all, but instead,</span>
-<span class="sd">    give you a store that provides you a view &quot;as if you unzipped and merged&quot;.</span>
+<span class="sd">    Well, one solution, provided through FlatZipFilesReader, is to not unzip at all,</span>
+<span class="sd">    but instead, give you a store that provides you a view &quot;as if you unzipped and</span>
+<span class="sd">    merged&quot;.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -620,6 +660,25 @@
     <span class="n">_zip_readers</span> <span class="o">=</span> <span class="n">_readers</span>  <span class="c1"># back-compatibility alias</span></div>
 
 
+<span class="c1"># TODO: Refactor zipfiledol to make it possible to design FlatZipFilesReaderFromBytes</span>
+<span class="c1">#  better than the following.</span>
+<span class="c1">#  * init doesn&#39;t use super, but super is locked to rootdir specification</span>
+<span class="c1">#  * perhaps better making _readers a lazy mapping (not precompute all FilesOfZip(v))?</span>
+<span class="c1">#  * Should ZipFilesReader be generalized to take bytes instead of rootdir?</span>
+<span class="c1">#  * Using .zips to delegate the what in is</span>
+<span class="k">class</span> <span class="nc">FlatZipFilesReaderFromBytes</span><span class="p">(</span><span class="n">FlatReader</span><span class="p">,</span> <span class="n">FilesOfZip</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Like FlatZipFilesReader but instead of sourcing with folder of zips, we source</span>
+<span class="sd">    with the bytes of a zipped folder of zips&quot;&quot;&quot;</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">FilesOfZip</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zips</span> <span class="o">=</span> <span class="n">FilesOfZip</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@lazyprop</span>
+    <span class="k">def</span> <span class="nf">_readers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">FilesOfZip</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">zips</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+
 <div class="viewcode-block" id="mk_flatzips_store"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.mk_flatzips_store">[docs]</a><span class="k">def</span> <span class="nf">mk_flatzips_store</span><span class="p">(</span>
     <span class="n">dir_of_zips</span><span class="p">,</span>
     <span class="n">zip_pair_path_preproc</span><span class="o">=</span><span class="nb">sorted</span><span class="p">,</span>
@@ -630,41 +689,14 @@
 <span class="sd">    as if they&#39;ve all been extracted in the same folder.</span>
 <span class="sd">    Note that `zip_pair_path_preproc` can be used to control how to resolve key conflicts</span>
 <span class="sd">    (i.e. when you get two different zip files that have a same path in their contents).</span>
-<span class="sd">    The last path encountered by `zip_pair_path_preproc(zip_path_pairs)` is the one that will be</span>
-<span class="sd">    used, so</span>
-<span class="sd">    one should make `zip_pair_path_preproc` act accordingly.</span>
+<span class="sd">    The last path encountered by `zip_pair_path_preproc(zip_path_pairs)` is the one that</span>
+<span class="sd">    will be used, so one should make `zip_pair_path_preproc` act accordingly.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">dol.explicit</span> <span class="kn">import</span> <span class="n">ExplicitKeymapReader</span>
 
     <span class="n">z</span> <span class="o">=</span> <span class="n">mk_store</span><span class="p">(</span><span class="n">dir_of_zips</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_mk_store_kwargs</span><span class="p">)</span>
     <span class="n">path_to_pair</span> <span class="o">=</span> <span class="p">{</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">pair</span> <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">zip_pair_path_preproc</span><span class="p">(</span><span class="n">z</span><span class="p">)}</span>
     <span class="k">return</span> <span class="n">ExplicitKeymapReader</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="n">path_to_pair</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="FilesOfZip"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.FilesOfZip">[docs]</a><span class="k">class</span> <span class="nc">FilesOfZip</span><span class="p">(</span><span class="n">ZipReader</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zip_file</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">open_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">zip_file</span><span class="p">,</span>
-            <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
-            <span class="n">open_kws</span><span class="o">=</span><span class="n">open_kws</span><span class="p">,</span>
-            <span class="n">file_info_filt</span><span class="o">=</span><span class="n">ZipReader</span><span class="o">.</span><span class="n">FILES_ONLY</span><span class="p">,</span>
-        <span class="p">)</span></div>
-
-
-<span class="c1"># TODO: This file object item is more fundemental than file contents. Should it be at the base?</span>
-<div class="viewcode-block" id="FileStreamsOfZip"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.FileStreamsOfZip">[docs]</a><span class="k">class</span> <span class="nc">FileStreamsOfZip</span><span class="p">(</span><span class="n">FilesOfZip</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Like FilesOfZip, but object returns are file streams instead.</span>
-<span class="sd">    So you use it like this:</span>
-
-<span class="sd">    ```</span>
-<span class="sd">    z = FileStreamsOfZip(rootdir)</span>
-<span class="sd">    with z[relpath] as fp:</span>
-<span class="sd">        ...  # do stuff with fp, like fp.readlines() or such...</span>
-<span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">open_kws</span><span class="p">)</span></div>
 
 
 <span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="n">mk_relative_path_store</span>

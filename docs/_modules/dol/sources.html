@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.1.85 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.sources &mdash; dol 0.1.86 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -155,12 +155,16 @@
 
 
 <span class="c1"># TODO: This doesn&#39;t work</span>
-<span class="c1"># KvSpec.from = _kv_spec_to_func  # I&#39;d like to be able to couple KvSpec and it&#39;s conversion function (even more: __call__ instead of from)</span>
+<span class="c1"># KvSpec.from = _kv_spec_to_func  # I&#39;d like to be able to couple KvSpec and it&#39;s</span>
+<span class="c1"># conversion function (even more: __call__ instead of from)</span>
 
 <span class="c1"># TODO: Generalize to several layers</span>
-<span class="c1"># TODO: Same pattern for DirStore and kv_walk. Need a general tool for flattening views.</span>
-<span class="c1">#   Should to a situation where number layers are not fixed in advanced,</span>
+<span class="c1">#   Need a general tool for flattening views.</span>
+<span class="c1">#   What we&#39;re doing here is giving access to a nested/tree structure through a key-value</span>
+<span class="c1">#   view where keys specify tree paths.</span>
+<span class="c1">#   Should handle situations where number layers are not fixed in advanced,</span>
 <span class="c1">#   but determined by some rules executed dynamically.</span>
+<span class="c1">#   Related DirStore and kv_walk.</span>
 <div class="viewcode-block" id="FlatReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FlatReader">[docs]</a><span class="k">class</span> <span class="nc">FlatReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get a &#39;flat view&#39; of a store of stores. </span>
 <span class="sd">    That is, where keys are `(first_level_key, second_level_key)` pairs.</span>
@@ -194,15 +198,16 @@
 
 <div class="viewcode-block" id="SequenceKvReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.SequenceKvReader">[docs]</a><span class="k">class</span> <span class="nc">SequenceKvReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A KvReader that sources itself in an iterable of elements from which keys and values will be extracted and</span>
-<span class="sd">    grouped by key.</span>
+<span class="sd">    A KvReader that sources itself in an iterable of elements from which keys and values</span>
+<span class="sd">    will be extracted and grouped by key.</span>
 
 <span class="sd">    &gt;&gt;&gt; docs = [{&#39;_id&#39;: 0, &#39;s&#39;: &#39;a&#39;, &#39;n&#39;: 1},</span>
 <span class="sd">    ...  {&#39;_id&#39;: 1, &#39;s&#39;: &#39;b&#39;, &#39;n&#39;: 2},</span>
 <span class="sd">    ...  {&#39;_id&#39;: 2, &#39;s&#39;: &#39;b&#39;, &#39;n&#39;: 3}]</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 
-<span class="sd">    Out of the box, SequenceKvReader gives you enumerated integer indices as keys, and the sequence items as is, as vals</span>
+<span class="sd">    Out of the box, SequenceKvReader gives you enumerated integer indices as keys,</span>
+<span class="sd">    and the sequence items as is, as vals</span>
 
 <span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs)</span>
 <span class="sd">    &gt;&gt;&gt; list(s)</span>
@@ -211,7 +216,8 @@
 <span class="sd">    {&#39;_id&#39;: 1, &#39;s&#39;: &#39;b&#39;, &#39;n&#39;: 2}</span>
 <span class="sd">    &gt;&gt;&gt; assert s.get(&#39;not_a_key&#39;) is None</span>
 
-<span class="sd">    You can make it more interesting by specifying a val function to compute the vals from the sequence elements</span>
+<span class="sd">    You can make it more interesting by specifying a val function to compute the vals</span>
+<span class="sd">    from the sequence elements</span>
 
 <span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, val=lambda x: (x[&#39;_id&#39;] + x[&#39;n&#39;]) * x[&#39;s&#39;])</span>
 <span class="sd">    &gt;&gt;&gt; assert list(s) == [0, 1, 2]  # as before</span>
@@ -219,8 +225,8 @@
 <span class="sd">    [&#39;a&#39;, &#39;bbb&#39;, &#39;bbbbb&#39;]</span>
 
 <span class="sd">    But where it becomes more useful is when you specify a key as well.</span>
-<span class="sd">    SequenceKvReader will then compute the keys with that function, group them, and return as the value, the</span>
-<span class="sd">    list of sequence elements that match that key.</span>
+<span class="sd">    SequenceKvReader will then compute the keys with that function, group them,</span>
+<span class="sd">    and return as the value, the list of sequence elements that match that key.</span>
 
 <span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs,</span>
 <span class="sd">    ...         key=lambda x: x[&#39;s&#39;],</span>
@@ -229,28 +235,32 @@
 <span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;] == [{&#39;_id&#39;: 0, &#39;n&#39;: 1}]</span>
 <span class="sd">    &gt;&gt;&gt; assert s[&#39;b&#39;] == [{&#39;_id&#39;: 1, &#39;n&#39;: 2}, {&#39;_id&#39;: 2, &#39;n&#39;: 3}]</span>
 
-<span class="sd">    The cannonical form of key and val is a function, but if you specify a str, int, or iterable thereof,</span>
+<span class="sd">    The cannonical form of key and val is a function, but if you specify a str, int,</span>
+<span class="sd">    or iterable thereof,</span>
 <span class="sd">    SequenceKvReader will make an itemgetter function from it, for your convenience.</span>
 
 <span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=&#39;_id&#39;)</span>
 <span class="sd">    &gt;&gt;&gt; assert list(s) == [0, 1, 2]</span>
 <span class="sd">    &gt;&gt;&gt; assert s[1] == [{&#39;_id&#39;: 1, &#39;s&#39;: &#39;b&#39;, &#39;n&#39;: 2}]</span>
 
-<span class="sd">    The ``val_postproc`` argument is ``list`` by default, but what if we don&#39;t specify any?</span>
+<span class="sd">    The ``val_postproc`` argument is ``list`` by default, but what if we don&#39;t specify</span>
+<span class="sd">    any?</span>
 <span class="sd">    Well then you&#39;ll get an unconsumed iterable of matches</span>
 
 <span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=&#39;_id&#39;, val_postproc=None)</span>
 <span class="sd">    &gt;&gt;&gt; assert isinstance(s[1], Iterable)</span>
 
 <span class="sd">    The ``val_postproc`` argument specifies what to apply to this iterable of matches.</span>
-<span class="sd">    For example, you can specify ``val_postproc=next`` to simply get the first matched element:</span>
+<span class="sd">    For example, you can specify ``val_postproc=next`` to simply get the first matched</span>
+<span class="sd">    element:</span>
 
 
 <span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=&#39;_id&#39;, val_postproc=next)</span>
 <span class="sd">    &gt;&gt;&gt; assert list(s) == [0, 1, 2]</span>
 <span class="sd">    &gt;&gt;&gt; assert s[1] == {&#39;_id&#39;: 1, &#39;s&#39;: &#39;b&#39;, &#39;n&#39;: 2}</span>
 
-<span class="sd">    We got the whole dict there. What if we just want we didn&#39;t want the _id, which is used by the key, in our val?</span>
+<span class="sd">    We got the whole dict there. What if we just want we didn&#39;t want the _id, which is</span>
+<span class="sd">    used by the key, in our val?</span>
 
 <span class="sd">    &gt;&gt;&gt; from functools import partial</span>
 <span class="sd">    &gt;&gt;&gt; all_but_s = partial(exclusive_subdict, exclude=[&#39;s&#39;])</span>
@@ -258,20 +268,23 @@
 <span class="sd">    &gt;&gt;&gt; assert list(s) == [0, 1, 2]</span>
 <span class="sd">    &gt;&gt;&gt; assert s[1] == {&#39;_id&#39;: 1, &#39;n&#39;: 2}</span>
 
-<span class="sd">    Suppose we want to have the pair of (&#39;_id&#39;, &#39;n&#39;) values as a key, and only &#39;s&#39; as a value...</span>
+<span class="sd">    Suppose we want to have the pair of (&#39;_id&#39;, &#39;n&#39;) values as a key, and only &#39;s&#39;</span>
+<span class="sd">    as a value...</span>
 
 <span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=(&#39;_id&#39;, &#39;n&#39;), val=&#39;s&#39;, val_postproc=next)</span>
 <span class="sd">    &gt;&gt;&gt; assert list(s) == [(0, 1), (1, 2), (2, 3)]</span>
 <span class="sd">    &gt;&gt;&gt; assert s[1, 2] == &#39;b&#39;</span>
 
-<span class="sd">    But remember that using ``val_postproc=next`` will only give you the first match as a val.</span>
+<span class="sd">    But remember that using ``val_postproc=next`` will only give you the first match</span>
+<span class="sd">    as a val.</span>
 
 <span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=&#39;s&#39;, val=all_but_s, val_postproc=next)</span>
 <span class="sd">    &gt;&gt;&gt; assert list(s) == [&#39;a&#39;, &#39;b&#39;]</span>
 <span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;] == {&#39;_id&#39;: 0, &#39;n&#39;: 1}</span>
 <span class="sd">    &gt;&gt;&gt; assert s[&#39;b&#39;] == {&#39;_id&#39;: 1, &#39;n&#39;: 2}   # note that only the first match is returned.</span>
 
-<span class="sd">    If you do want to only grab the first match, but want to additionally assert that there is no more than one,</span>
+<span class="sd">    If you do want to only grab the first match, but want to additionally assert</span>
+<span class="sd">    that there is no more than one,</span>
 <span class="sd">    you can specify this with ``val_postproc=unique_element``:</span>
 
 <span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=&#39;s&#39;, val=all_but_s, val_postproc=unique_element)</span>
@@ -301,8 +314,10 @@
 <span class="sd">            If None, will use the element as is, as the value.</span>
 <span class="sd">            val can be a callable, a str or int, or an iterable of strs and ints.</span>
 <span class="sd">        :param val_postproc: Function to apply to the iterable of vals.</span>
-<span class="sd">            Default is ``list``, which will have the effect of values being lists of all vals matching a key.</span>
-<span class="sd">            Another popular choice is ``next`` which will have the effect of values being the first matched to the key</span>
+<span class="sd">            Default is ``list``, which will have the effect of values being lists of all</span>
+<span class="sd">            vals matching a key.</span>
+<span class="sd">            Another popular choice is ``next`` which will have the effect of values</span>
+<span class="sd">            being the first matched to the key</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="n">sequence</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -333,23 +348,28 @@
 
 <div class="viewcode-block" id="CachedKeysSequenceKvReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.CachedKeysSequenceKvReader">[docs]</a><span class="nd">@cached_keys</span>
 <span class="k">class</span> <span class="nc">CachedKeysSequenceKvReader</span><span class="p">(</span><span class="n">SequenceKvReader</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;SequenceKvReader but with keys cached. Use this one if you will perform multiple accesses to only some of the keys of the store&quot;&quot;&quot;</span></div>
+    <span class="sd">&quot;&quot;&quot;SequenceKvReader but with keys cached. Use this one if you will perform multiple</span>
+<span class="sd">    accesses to only some of the keys of the store&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="CachedSequenceKvReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.CachedSequenceKvReader">[docs]</a><span class="nd">@mk_cached_store</span>
 <span class="k">class</span> <span class="nc">CachedSequenceKvReader</span><span class="p">(</span><span class="n">SequenceKvReader</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;SequenceKvReader but with the whole mapping cached as a dict. Use this one if you will perform multiple accesses to the store&quot;&quot;&quot;</span></div>
+    <span class="sd">&quot;&quot;&quot;SequenceKvReader but with the whole mapping cached as a dict. Use this one if</span>
+<span class="sd">    you will perform multiple accesses to the store&quot;&quot;&quot;</span></div>
 
 
-<span class="c1"># TODO: Basically same could be acheived with wrap_kvs(obj_of_data=methodcaller(&#39;__call__&#39;))</span>
+<span class="c1"># TODO: Basically same could be acheived with</span>
+<span class="c1">#  wrap_kvs(obj_of_data=methodcaller(&#39;__call__&#39;))</span>
 <div class="viewcode-block" id="FuncReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FuncReader">[docs]</a><span class="k">class</span> <span class="nc">FuncReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Reader that seeds itself from a data fetching function list</span>
 <span class="sd">    Uses the function list names as the keys, and their returned value as the values.</span>
 
-<span class="sd">    For example: You have a list of urls that contain the data you want to have access to.</span>
-<span class="sd">    You can write functions that bare the names you want to give to each dataset, and have the function</span>
-<span class="sd">    fetch the data from the url, extract the data from the response and possibly prepare it</span>
-<span class="sd">    (we advise minimally, since you can always transform from the raw source, but the opposite can be impossible).</span>
+<span class="sd">    For example: You have a list of urls that contain the data you want to have access</span>
+<span class="sd">    to.</span>
+<span class="sd">    You can write functions that bare the names you want to give to each dataset,</span>
+<span class="sd">    and have the function fetch the data from the url, extract the data from the</span>
+<span class="sd">    response and possibly prepare it (we advise minimally, since you can always</span>
+<span class="sd">    transform from the raw source, but the opposite can be impossible).</span>
 
 <span class="sd">    &gt;&gt;&gt; def foo():</span>
 <span class="sd">    ...     return &#39;bar&#39;</span>
@@ -365,7 +385,8 @@
 
 <span class="sd">    You might want to give your own names to the functions. </span>
 <span class="sd">    You might even have to (because the callable you&#39;re using doesn&#39;t have a `__name__`). </span>
-<span class="sd">    In that case, you can specify a ``{name: func, ...}`` dict instead of a simple iterable.</span>
+<span class="sd">    In that case, you can specify a ``{name: func, ...}`` dict instead of a simple</span>
+<span class="sd">    iterable.</span>
 
 <span class="sd">    &gt;&gt;&gt; s = FuncReader({&#39;FU&#39;: foo, &#39;Pie&#39;: pi})</span>
 <span class="sd">    &gt;&gt;&gt; list(s)</span>
@@ -376,7 +397,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">funcs</span><span class="p">):</span>
-        <span class="c1"># TODO: assert no free arguments (arguments are allowed but must all have defaults)</span>
+        <span class="c1"># TODO: assert no free arguments (arguments are allowed but must all have</span>
+        <span class="c1">#  defaults)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">funcs</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">funcs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">funcs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -464,7 +486,10 @@
     <span class="sd">&quot;&quot;&quot;A simple recursive KvReader for the attributes of a python object.</span>
 <span class="sd">    Keys are attr names, values are Attrs(attr_val) instances.</span>
 
-<span class="sd">    Note: A more significant version of Attrs, along with many tools based on it, was moved to pypi package: guide.</span>
+<span class="sd">    Note: A more significant version of Attrs, along with many tools based on it,</span>
+<span class="sd">    was moved to pypi package: guide.</span>
+
+
 <span class="sd">        pip install guide</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -505,11 +530,12 @@
 
 <span class="c1"># TODO: Make it work with a store, without having to load and store the values explicitly.</span>
 <div class="viewcode-block" id="DictAttr"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.DictAttr">[docs]</a><span class="k">class</span> <span class="nc">DictAttr</span><span class="p">(</span><span class="n">KvPersister</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convenience class to hold Key-Val pairs with both a dict-like and struct-like interface.</span>
+    <span class="sd">&quot;&quot;&quot;Convenience class to hold Key-Val pairs with both a dict-like and struct-like</span>
+<span class="sd">    interface.</span>
 <span class="sd">    The dict-like interface has just the basic get/set/del/iter/len</span>
 <span class="sd">    (all &quot;dunders&quot;: none visible as methods). There is no get, update, etc.</span>
-<span class="sd">    This is on purpose, so that the only visible attributes (those you get by tab-completion for instance)</span>
-<span class="sd">    are the those you injected.</span>
+<span class="sd">    This is on purpose, so that the only visible attributes</span>
+<span class="sd">    (those you get by tab-completion for instance) are the those you injected.</span>
 
 <span class="sd">    &gt;&gt;&gt; da = DictAttr(foo=&#39;bar&#39;, life=42)</span>
 <span class="sd">    &gt;&gt;&gt; da.foo</span>
