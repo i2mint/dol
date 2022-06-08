@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.1.86 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.1.87 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -247,22 +247,37 @@
 <span class="sd">    Notes:</span>
 <span class="sd">        - Pipe instances don&#39;t have a __name__ etc. So some expectations of normal functions are not met.</span>
 <span class="sd">        - Pipe instance are pickalable (as long as the functions that compose them are)</span>
+
+<span class="sd">    You can specify a single functions:</span>
+
+<span class="sd">    &gt;&gt;&gt; Pipe(lambda x: x + 1)(2)</span>
+<span class="sd">    3</span>
+
+<span class="sd">    but</span>
+
+<span class="sd">    &gt;&gt;&gt; Pipe()</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    ValueError: You need to specify at least one function!</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">funcs</span><span class="p">,</span> <span class="o">**</span><span class="n">named_funcs</span><span class="p">):</span>
         <span class="n">funcs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">funcs</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">named_funcs</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="n">n_funcs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">funcs</span><span class="p">)</span>
-        <span class="n">other_funcs</span> <span class="o">=</span> <span class="p">()</span>
         <span class="k">if</span> <span class="n">n_funcs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;You need to specify at least one function!&#39;</span><span class="p">)</span>
+
         <span class="k">elif</span> <span class="n">n_funcs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">other_funcs</span> <span class="o">=</span> <span class="p">()</span>
             <span class="n">first_func</span> <span class="o">=</span> <span class="n">last_func</span> <span class="o">=</span> <span class="n">funcs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">first_func</span><span class="p">,</span> <span class="o">*</span><span class="n">other_funcs</span><span class="p">,</span> <span class="n">last_func</span> <span class="o">=</span> <span class="n">funcs</span>
+            <span class="n">first_func</span><span class="p">,</span> <span class="o">*</span><span class="n">other_funcs</span> <span class="o">=</span> <span class="n">funcs</span>
+            <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">last_func</span> <span class="o">=</span> <span class="n">other_funcs</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">_signature_from_first_and_last_func</span><span class="p">(</span><span class="n">first_func</span><span class="p">,</span> <span class="n">last_func</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">first_func</span> <span class="o">=</span> <span class="n">first_func</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">other_funcs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">other_funcs</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">last_func</span><span class="p">,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">other_funcs</span> <span class="o">=</span> <span class="n">other_funcs</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -280,6 +295,7 @@
 <span class="sd">    The raison d&#39;être of partialclass is that it returns a type, so let&#39;s have a look at that with</span>
 <span class="sd">    a useless class.</span>
 
+<span class="sd">    &gt;&gt;&gt; from inspect import signature</span>
 <span class="sd">    &gt;&gt;&gt; class A:</span>
 <span class="sd">    ...     pass</span>
 <span class="sd">    &gt;&gt;&gt; assert isinstance(A, type) == isinstance(partialclass(A), type) == True</span>
