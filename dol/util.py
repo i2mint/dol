@@ -171,6 +171,8 @@ class Pipe:
 
     """
 
+    funcs = ()
+
     def __init__(self, *funcs, **named_funcs):
         funcs = list(funcs) + list(named_funcs.values())
         n_funcs = len(funcs)
@@ -193,6 +195,37 @@ class Pipe:
         for func in self.other_funcs:
             out = func(out)
         return out
+
+    def __len__(self):
+        return len(self.funcs)
+
+
+def _flatten_pipe(pipe):
+    for func in pipe.funcs:
+        if isinstance(func, Pipe):
+            yield from _flatten_pipe(func)
+        else:
+            yield func
+
+
+def flatten_pipe(pipe):
+    """Unravel nested Pipes to get a flat 'sequence of functions' version of input.
+
+    >>> def f(x): return x + 1
+    >>> def g(x): return x * 2
+    >>> def h(x): return x - 3
+    >>> a = Pipe(f, g, h)
+    >>> b = Pipe(f, Pipe(g, h))
+    >>> len(a)
+    3
+    >>> len(b)
+    2
+    >>> c = flatten_pipe(b)
+    >>> len(c)
+    3
+    >>> assert a(10) == b(10) == c(10) == 19
+    """
+    return Pipe(*_flatten_pipe(pipe))
 
 
 def partialclass(cls, *args, **kwargs):
