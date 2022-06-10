@@ -2173,13 +2173,148 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
     def __getitem__(self, k):
         if isinstance(k, self._path_type):
             return reduce(lambda store, key: store[key], k, self)
-        else:
+        else:  # do things normally if the key is not a _path_type
             return super(store_cls, self).__getitem__(k)
 
     store_cls.__getitem__ = __getitem__
 
     return store_cls
 
+# TODO: Should we keep add_path_get, or add "read_only" flag to add_path_access?
+@store_decorator
+def add_path_access(store=None, *, name=None, path_type: type = tuple):
+    """Make nested stores (read/write) accessible through key paths (iterable of keys).
+
+    Like ``add_path_get``, but with write and delete accessible through key paths.
+
+    In a way "flatten the nested keys access".
+
+    By default, the path object will be a tuple (e.g. ``('a', 'b', 'c')``, but you can
+    make it whatever you want, and/or use `dol.paths.KeyPath` to map to and from
+    forms like ``'a.b.c'``, ``'a/b/c'``, etc.
+
+    Say you have some nested stores.
+    You know... like a `ZipFileReader` store whose values are `ZipReader`s,
+    whose values are bytes of the zipped files
+    (and you can go on... whose (json) values are...).
+
+    For our example, let's take a nested dict instead:
+
+    >>> s = {'a': {'b': {'c': 42}}}
+
+    Well, you can access any node of this nested tree of stores like this:
+
+    >>> s['a']['b']['c']
+    42
+
+    And that's fine. But maybe you'd like to do it this way instead:
+
+    >>> s = add_path_access(s)
+    >>> s['a', 'b', 'c']
+    42
+
+    So far, this is what ``add_path_get`` does. With ``add_path_access`` though you
+    can also write and delete that way too:
+
+    >>> s['a', 'b', 'c'] = 3.14
+    >>> s['a', 'b', 'c']
+    3.14
+    >>> del s['a', 'b', 'c']
+    >>> s
+    {'a': {'b': {}}}
+
+    You might also want to access 42 with `a.b.c` or `a/b/c` etc.
+    To do that you can use `dol.paths.KeyPath` in combination with
+
+    Args:
+        store: The store (class or instance) you're wrapping.
+            If not specified, the function will return a decorator.
+        name: The name to give the class (not applicable to instance wrapping)
+        path_type: The type that paths are expressed as. Needs to be an Iterable type.
+            By default, a tuple.
+            This is used to decide whether the key should be taken as a "normal"
+            key of the store,
+            or should be used to iterate through, recursively getting values.
+
+    Returns:
+        A wrapped store (class or instance), or a store wrapping decorator
+        (if store is not specified)
+
+    .. seealso::
+
+        ``KeyPath`` in :doc:`paths`
+
+    Wrapping a class
+
+    >>> S = add_path_access(dict)
+    >>> s = S(a={'b': {'c': 42}})
+    >>> assert s['a'] == {'b': {'c': 42}};
+    >>> assert s['a', 'b'] == {'c': 42};
+    >>> assert s['a', 'b', 'c'] == 42
+    >>> s['a', 'b', 'c'] = 3.14
+    >>> s['a', 'b', 'c']
+    3.14
+    >>> del s['a', 'b', 'c']
+    >>> s
+    {'a': {'b': {}}}
+
+    Using add_path_get as a decorator
+
+    >>> @add_path_access
+    ... class S(dict):
+    ...    pass
+    >>> s = S(a={'b': {'c': 42}})
+    >>> assert s['a'] == {'b': {'c': 42}};
+    >>> assert s['a', 'b'] == s['a']['b'] == {'c': 42};
+    >>> assert s['a', 'b', 'c'] == s['a']['b']['c'] == 42
+    >>> s['a', 'b', 'c'] = 3.14
+    >>> s['a', 'b', 'c']
+    3.14
+    >>> del s['a', 'b', 'c']
+    >>> s
+    {'a': {'b': {}}}
+
+    A different kind of path?
+    You can choose a different path_type, but sometimes (say both keys and key paths are strings)
+    You need to involve more tools. Like dol.paths.KeyPath...
+
+    >>> from dol.paths import KeyPath
+    >>> from dol.trans import kv_wrap
+    >>> SS = kv_wrap(KeyPath(path_sep='.'))(S)
+    >>> s = SS({'a': {'b': {'c': 42}}})
+    >>> assert s['a'] == {'b': {'c': 42}};
+    >>> assert s['a.b'] == s['a']['b'];
+    >>> assert s['a.b.c'] == s['a']['b']['c']
+    >>> s['a.b.c'] = 3.14
+    >>> s
+    {'a': {'b': {'c': 3.14}}}
+    >>> del s['a.b.c']
+    >>> s
+    {'a': {'b': {}}}
+    """
+    store_cls = kv_wrap_persister_cls(store, name=name)
+    store_cls = add_path_get(store_cls, name=name, path_type=path_type)
+
+    def __setitem__(self, k, v):
+        if isinstance(k, self._path_type):
+            *path_head, last_key = k
+            penultimate_level = reduce(lambda s, key: s[key], path_head, self)
+            penultimate_level[last_key] = v
+        else:  # do things normally if the key is not a _path_type
+            return super(store_cls, self).__setitem__(k, v)
+
+    def __delitem__(self, k):
+        if isinstance(k, self._path_type):
+            *path_head, last_key = k
+            penultimate_level = reduce(lambda s, key: s[key], path_head, self)
+            del penultimate_level[last_key]
+        else:  # do things normally if the key is not a _path_type
+            return super(store_cls, self).__delitem__(k)
+
+    store_cls.__setitem__ = __setitem__
+    store_cls.__delitem__ = __delitem__
+
+    return store_cls
 
 @store_decorator
 def flatten(store=None, *, levels=None, cache_keys=False):

@@ -1,16 +1,78 @@
 """Module for path (and path-like) object manipulation"""
 
-from functools import wraps
+from functools import wraps, partialmethod
 from dataclasses import dataclass
-from typing import Union
+from typing import Union, Callable, Any
 import os
 
 from dol.base import Store
 from dol.util import lazyprop
-from dol.trans import store_decorator
+from dol.trans import store_decorator, kv_wrap, add_path_access
 from dol.dig import recursive_get_attr
 
 path_sep = os.path.sep
+
+
+def raise_on_error(d: dict):
+    raise
+
+
+def return_none_on_error(d: dict):
+    return None
+
+
+def return_empty_tuple_on_error(d: dict):
+    return ()
+
+
+OnErrorType = Union[Callable[[dict], Any], str]
+
+
+def path_get(
+    mapping, path, on_error: OnErrorType = raise_on_error, caught_errors=(KeyError,),
+):
+    """Get elements of a mapping through a path to be called recursively.
+
+    >>> path_get({'a': {'b': 2}}, 'a')
+    {'b': 2}
+    >>> path_get({'a': {'b': 2}}, ['a', 'b'])
+    2
+    >>> path_get({'a': {'b': 2}}, ['a', 'c'])
+    Traceback (most recent call last):
+        ...
+    KeyError: 'c'
+    >>> path_get({'a': {'b': 2}}, ['a', 'c'], lambda x: x)
+    {'mapping': {'a': {'b': 2}}, 'path': ['a', 'c'], 'result': {'b': 2}, 'k': 'c', 'error': KeyError('c')}
+
+
+    # >>> assert path_get({'a': {'b': 2}}, ['a', 'c'], lambda x: x) == {
+    # ...     'mapping': {'a': {'b': 2}},
+    # ...     'path': ['a', 'c'],
+    # ...     'result': {'b': 2},
+    # ...     'k': 'c',
+    # ...     'error': KeyError('c')
+    # ... }
+
+    """
+    result = mapping
+    for k in path:
+        try:
+            result = result[k]
+        except caught_errors as error:
+            if callable(on_error):
+                return on_error(
+                    dict(mapping=mapping, path=path, result=result, k=k, error=error,)
+                )
+            elif isinstance(on_error, str):
+                raise error.__class__(
+                    on_error
+                )  # use on_error as a message, raising the same error class
+            else:
+                raise ValueError(
+                    f'on_error should be a callable (input is a dict) or a string. '
+                    f'Was: {on_error}'
+                )
+    return result
 
 
 @dataclass
@@ -25,11 +87,16 @@ class KeyPath:
 
     See also:
 
+    With ``'/'`` as a separator:
+
     >>> kp = KeyPath(path_sep='/')
     >>> kp._key_of_id(('a', 'b', 'c'))
     'a/b/c'
     >>> kp._id_of_key('a/b/c')
     ('a', 'b', 'c')
+
+    With ``'.'`` as a separator:
+
     >>> kp = KeyPath(path_sep='.')
     >>> kp._key_of_id(('a', 'b', 'c'))
     'a.b.c'
@@ -43,6 +110,23 @@ class KeyPath:
     'a:::b:::c'
     >>> kp._id_of_key('a:::b:::c')
     {'a': None, 'b': None, 'c': None}
+
+    Calling a ``KeyPath`` instance on a store wraps it so we can have path access to
+    it.
+
+    >>> s = {'a': {'b': {'c': 42}}}
+    >>> s['a']['b']['c']
+    42
+    >>> # Now let's wrap the store
+    >>> s = KeyPath('.')(s)
+    >>> s['a.b.c']
+    42
+    >>> s['a.b.c'] = 3.14
+    >>> s['a.b.c']
+    3.14
+    >>> del s['a.b.c']
+    >>> s
+    {'a': {'b': {}}}
     """
 
     path_sep: str = path_sep
@@ -56,6 +140,10 @@ class KeyPath:
 
     def _id_of_key(self, k):
         return self._path_type(k.split(self.path_sep))
+
+    def __call__(self, store):
+        path_accessible_store = add_path_access(store, path_type=self._path_type)
+        return kv_wrap(self)(path_accessible_store)
 
 
 class PrefixRelativizationMixin:

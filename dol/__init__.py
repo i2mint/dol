@@ -52,6 +52,7 @@ from dol.trans import (
     cached_keys,
     filt_iter,
     add_path_get,
+    add_path_access,
     flatten,
     insert_aliases,
     add_ipython_key_completions,
@@ -72,7 +73,7 @@ from dol.appendable import appendable
 
 from dol.naming import StrTupleDict, mk_store_from_path_format_store_cls
 
-from dol.paths import mk_relative_path_store
+from dol.paths import mk_relative_path_store, KeyPath
 
 from dol.explicit import ExplicitKeyMap, invertible_maps
 
