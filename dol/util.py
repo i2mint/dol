@@ -133,6 +133,7 @@ def _signature_from_first_and_last_func(first_func, last_func):
 
 # Pipe code is completely independent. If you only need simple pipelines, use this, or even copy/paste it where needed.
 # TODO: Give it a __name__ and make it more like a "normal" function so it works well when so assumed
+# TODO: Mis-aligned with i2. funcs list here, in i2 it's dict. Align?
 class Pipe:
     """Simple function composition. That is, gives you a callable that implements input -> f_1 -> ... -> f_n -> output.
 
@@ -141,6 +142,8 @@ class Pipe:
     >>> f = Pipe(foo, lambda x: print(f"x: {x}"))
     >>> f(3)
     x: 5
+    >>> len(f)
+    2
 
     You can name functions, but this would just be for documentation purposes.
     The names are completely ignored.
@@ -152,6 +155,7 @@ class Pipe:
     ... )
     >>> g(2, 3)
     '10'
+    >>> len()
 
     Notes:
         - Pipe instances don't have a __name__ etc. So some expectations of normal functions are not met.
@@ -175,6 +179,7 @@ class Pipe:
 
     def __init__(self, *funcs, **named_funcs):
         funcs = list(funcs) + list(named_funcs.values())
+        self.funcs = funcs
         n_funcs = len(funcs)
         if n_funcs == 0:
             raise ValueError('You need to specify at least one function!')
