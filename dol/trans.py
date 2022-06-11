@@ -2181,6 +2181,9 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
     return store_cls
 
 # TODO: Should we keep add_path_get, or add "read_only" flag to add_path_access?
+# TODO: store['a','b','c'] works, but store['a']['b','c'] doesn't because the "path
+#  accessibility" doesn't carry on to values by default. See doctest on how to make it
+#  happen an integrate here with one argument only: value condition.
 @store_decorator
 def add_path_access(store=None, *, name=None, path_type: type = tuple):
     """Make nested stores (read/write) accessible through key paths (iterable of keys).
@@ -2291,6 +2294,44 @@ def add_path_access(store=None, *, name=None, path_type: type = tuple):
     >>> del s['a.b.c']
     >>> s
     {'a': {'b': {}}}
+
+    Note: The add_path_access doesn't carry on to values.
+
+    >>> s = add_path_access({'a': {'b': {'c': 42}}})
+    >>> s['a', 'b', 'c']
+    42
+    >>> # but
+    >>> s['a']['b', 'c']
+    Traceback (most recent call last):
+      ...
+    KeyError: ('b', 'c')
+
+    That said,
+
+    >>> add_path_access(s['a'])['b', 'c']
+    42
+
+    The reason why we don't do this automatically is that it may not always be desirable.
+    If one wanted to though, one could use ``wrap_kvs(obj_of_data=...)`` to wrap
+    specific values with ``add_path_access``.
+    For example, if you wanted to wrap all mappings recursively, you could:
+
+    >>> from typing import Mapping
+    >>> from dol.trans import wrap_kvs
+    >>> def add_path_access_if_mapping(v):
+    ...     if isinstance(v, Mapping):
+    ...         return wrap_kvs(
+    ...             add_path_access(v),
+    ...             obj_of_data=add_path_access_if_mapping
+    ... )
+    ...     return v
+    >>> s = add_path_access_if_mapping({'a': {'b': {'c': 42}}})
+    >>> s['a', 'b', 'c']
+    42
+    >>> # But now this works:
+    >>> s['a']['b', 'c']
+    42
+
     """
     store_cls = kv_wrap_persister_cls(store, name=name)
     store_cls = add_path_get(store_cls, name=name, path_type=path_type)
