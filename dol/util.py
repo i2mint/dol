@@ -177,7 +177,8 @@ class Pipe:
     ... )
     >>> g(2, 3)
     '10'
-    >>> len()
+    >>> len(g)
+    3
 
     Notes:
         - Pipe instances don't have a __name__ etc. So some expectations of normal functions are not met.

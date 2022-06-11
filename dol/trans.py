@@ -13,7 +13,7 @@ from collections.abc import (
 
 from dol.errors import SetattrNotAllowed
 from dol.base import Store, KvReader, AttrNames, kv_walk
-from dol.util import lazyprop, num_of_args, attrs_of, wraps
+from dol.util import lazyprop, num_of_args, attrs_of, wraps, Pipe
 from dol.signatures import Sig, KO
 
 
@@ -2075,8 +2075,6 @@ def _conditional_data_trans(v, condition, data_trans):
     return v
 
 
-from dol.util import Pipe
-
 @store_decorator
 def conditional_data_trans(store=None, *, condition, data_trans):
     _data_trans = partial(
@@ -2195,6 +2193,7 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
     store_cls.__getitem__ = __getitem__
 
     return store_cls
+
 
 # TODO: Should we keep add_path_get, or add "read_only" flag to add_path_access?
 # TODO: See https://github.com/i2mint/dol/issues/10
@@ -2366,6 +2365,7 @@ def add_path_access(store=None, *, name=None, path_type: type = tuple):
     store_cls.__delitem__ = __delitem__
 
     return store_cls
+
 
 @store_decorator
 def flatten(store=None, *, levels=None, cache_keys=False):
