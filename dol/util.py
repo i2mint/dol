@@ -10,11 +10,33 @@ from functools import wraps as _wraps
 from functools import partialmethod, partial, WRAPPER_ASSIGNMENTS
 from types import MethodType
 
+
 # monkey patching WRAPPER_ASSIGNMENTS to get "proper" wrapping (adding defaults and kwdefaults
 wrapper_assignments = (*WRAPPER_ASSIGNMENTS, '__defaults__', '__kwdefaults__')
 
 update_wrapper = partial(_update_wrapper, assigned=wrapper_assignments)
 wraps = partial(_wraps, assigned=wrapper_assignments)
+
+
+def _isinstance(obj, class_or_tuple):
+    """The same as the builtin isinstance, but without the position only restriction,
+    allowing us to use partial to define filter functions for specific types
+    """
+    return isinstance(obj, class_or_tuple)
+
+
+def instance_checker(*types):
+    """Makes a filter function that checks the type of an object.
+
+    >>> f = instance_checker(int, float)
+    >>> f(1)
+    True
+    >>> f(1.0)
+    True
+    >>> f('1.0')
+    False
+    """
+    return partial(_isinstance, class_or_tuple=types)
 
 
 def not_a_mac_junk_path(path: str):

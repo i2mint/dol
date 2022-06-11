@@ -2069,6 +2069,22 @@ _method_name_for = {
 }
 
 
+def _conditional_data_trans(v, condition, data_trans):
+    if condition(v):
+        return data_trans(v)
+    return v
+
+
+from dol.util import Pipe
+
+@store_decorator
+def conditional_data_trans(store=None, *, condition, data_trans):
+    _data_trans = partial(
+        _conditional_data_trans, condition=condition, data_trans=data_trans
+    )
+    return Pipe(data_trans, wrap_kvs(store, obj_of_data=_data_trans))
+
+
 @store_decorator
 def add_path_get(store=None, *, name=None, path_type: type = tuple):
     """
@@ -2181,9 +2197,7 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
     return store_cls
 
 # TODO: Should we keep add_path_get, or add "read_only" flag to add_path_access?
-# TODO: store['a','b','c'] works, but store['a']['b','c'] doesn't because the "path
-#  accessibility" doesn't carry on to values by default. See doctest on how to make it
-#  happen an integrate here with one argument only: value condition.
+# TODO: See https://github.com/i2mint/dol/issues/10
 @store_decorator
 def add_path_access(store=None, *, name=None, path_type: type = tuple):
     """Make nested stores (read/write) accessible through key paths (iterable of keys).
@@ -2317,14 +2331,10 @@ def add_path_access(store=None, *, name=None, path_type: type = tuple):
     For example, if you wanted to wrap all mappings recursively, you could:
 
     >>> from typing import Mapping
-    >>> from dol.trans import wrap_kvs
-    >>> def add_path_access_if_mapping(v):
-    ...     if isinstance(v, Mapping):
-    ...         return wrap_kvs(
-    ...             add_path_access(v),
-    ...             obj_of_data=add_path_access_if_mapping
+    >>> from dol.util import instance_checker
+    >>> add_path_access_if_mapping = conditional_data_trans(
+    ...     condition=instance_checker(Mapping), data_trans=add_path_access
     ... )
-    ...     return v
     >>> s = add_path_access_if_mapping({'a': {'b': {'c': 42}}})
     >>> s['a', 'b', 'c']
     42

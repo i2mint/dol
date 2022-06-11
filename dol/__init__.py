@@ -41,6 +41,7 @@ from dol.util import (
     regroupby,
     igroupby,
     not_a_mac_junk_path,
+    instance_checker,
 )
 
 from dol.trans import (
