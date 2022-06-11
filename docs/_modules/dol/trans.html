@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.1.87 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.1.88 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -104,7 +104,7 @@
 
 <span class="kn">from</span> <span class="nn">dol.errors</span> <span class="kn">import</span> <span class="n">SetattrNotAllowed</span>
 <span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">,</span> <span class="n">AttrNames</span><span class="p">,</span> <span class="n">kv_walk</span>
-<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">lazyprop</span><span class="p">,</span> <span class="n">num_of_args</span><span class="p">,</span> <span class="n">attrs_of</span><span class="p">,</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">lazyprop</span><span class="p">,</span> <span class="n">num_of_args</span><span class="p">,</span> <span class="n">attrs_of</span><span class="p">,</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">Pipe</span>
 <span class="kn">from</span> <span class="nn">dol.signatures</span> <span class="kn">import</span> <span class="n">Sig</span><span class="p">,</span> <span class="n">KO</span>
 
 
@@ -2160,6 +2160,20 @@
 <span class="p">}</span>
 
 
+<span class="k">def</span> <span class="nf">_conditional_data_trans</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">data_trans</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">condition</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">data_trans</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">v</span>
+
+
+<span class="nd">@store_decorator</span>
+<span class="k">def</span> <span class="nf">conditional_data_trans</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">data_trans</span><span class="p">):</span>
+    <span class="n">_data_trans</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">_conditional_data_trans</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="n">condition</span><span class="p">,</span> <span class="n">data_trans</span><span class="o">=</span><span class="n">data_trans</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">data_trans</span><span class="p">,</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">_data_trans</span><span class="p">))</span>
+
+
 <div class="viewcode-block" id="add_path_get"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.add_path_get">[docs]</a><span class="nd">@store_decorator</span>
 <span class="k">def</span> <span class="nf">add_path_get</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path_type</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -2264,10 +2278,182 @@
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_type</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">store</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># do things normally if the key is not a _path_type</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
     <span class="n">store_cls</span><span class="o">.</span><span class="fm">__getitem__</span> <span class="o">=</span> <span class="fm">__getitem__</span>
+
+    <span class="k">return</span> <span class="n">store_cls</span></div>
+
+
+<span class="c1"># TODO: Should we keep add_path_get, or add &quot;read_only&quot; flag to add_path_access?</span>
+<span class="c1"># TODO: See https://github.com/i2mint/dol/issues/10</span>
+<div class="viewcode-block" id="add_path_access"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.add_path_access">[docs]</a><span class="nd">@store_decorator</span>
+<span class="k">def</span> <span class="nf">add_path_access</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path_type</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Make nested stores (read/write) accessible through key paths (iterable of keys).</span>
+
+<span class="sd">    Like ``add_path_get``, but with write and delete accessible through key paths.</span>
+
+<span class="sd">    In a way &quot;flatten the nested keys access&quot;.</span>
+
+<span class="sd">    By default, the path object will be a tuple (e.g. ``(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;)``, but you can</span>
+<span class="sd">    make it whatever you want, and/or use `dol.paths.KeyPath` to map to and from</span>
+<span class="sd">    forms like ``&#39;a.b.c&#39;``, ``&#39;a/b/c&#39;``, etc.</span>
+
+<span class="sd">    Say you have some nested stores.</span>
+<span class="sd">    You know... like a `ZipFileReader` store whose values are `ZipReader`s,</span>
+<span class="sd">    whose values are bytes of the zipped files</span>
+<span class="sd">    (and you can go on... whose (json) values are...).</span>
+
+<span class="sd">    For our example, let&#39;s take a nested dict instead:</span>
+
+<span class="sd">    &gt;&gt;&gt; s = {&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 42}}}</span>
+
+<span class="sd">    Well, you can access any node of this nested tree of stores like this:</span>
+
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;][&#39;b&#39;][&#39;c&#39;]</span>
+<span class="sd">    42</span>
+
+<span class="sd">    And that&#39;s fine. But maybe you&#39;d like to do it this way instead:</span>
+
+<span class="sd">    &gt;&gt;&gt; s = add_path_access(s)</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    42</span>
+
+<span class="sd">    So far, this is what ``add_path_get`` does. With ``add_path_access`` though you</span>
+<span class="sd">    can also write and delete that way too:</span>
+
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;] = 3.14</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    3.14</span>
+<span class="sd">    &gt;&gt;&gt; del s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; s</span>
+<span class="sd">    {&#39;a&#39;: {&#39;b&#39;: {}}}</span>
+
+<span class="sd">    You might also want to access 42 with `a.b.c` or `a/b/c` etc.</span>
+<span class="sd">    To do that you can use `dol.paths.KeyPath` in combination with</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        store: The store (class or instance) you&#39;re wrapping.</span>
+<span class="sd">            If not specified, the function will return a decorator.</span>
+<span class="sd">        name: The name to give the class (not applicable to instance wrapping)</span>
+<span class="sd">        path_type: The type that paths are expressed as. Needs to be an Iterable type.</span>
+<span class="sd">            By default, a tuple.</span>
+<span class="sd">            This is used to decide whether the key should be taken as a &quot;normal&quot;</span>
+<span class="sd">            key of the store,</span>
+<span class="sd">            or should be used to iterate through, recursively getting values.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A wrapped store (class or instance), or a store wrapping decorator</span>
+<span class="sd">        (if store is not specified)</span>
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        ``KeyPath`` in :doc:`paths`</span>
+
+<span class="sd">    Wrapping a class</span>
+
+<span class="sd">    &gt;&gt;&gt; S = add_path_access(dict)</span>
+<span class="sd">    &gt;&gt;&gt; s = S(a={&#39;b&#39;: {&#39;c&#39;: 42}})</span>
+<span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;] == {&#39;b&#39;: {&#39;c&#39;: 42}};</span>
+<span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;, &#39;b&#39;] == {&#39;c&#39;: 42};</span>
+<span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;] == 42</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;] = 3.14</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    3.14</span>
+<span class="sd">    &gt;&gt;&gt; del s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; s</span>
+<span class="sd">    {&#39;a&#39;: {&#39;b&#39;: {}}}</span>
+
+<span class="sd">    Using add_path_get as a decorator</span>
+
+<span class="sd">    &gt;&gt;&gt; @add_path_access</span>
+<span class="sd">    ... class S(dict):</span>
+<span class="sd">    ...    pass</span>
+<span class="sd">    &gt;&gt;&gt; s = S(a={&#39;b&#39;: {&#39;c&#39;: 42}})</span>
+<span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;] == {&#39;b&#39;: {&#39;c&#39;: 42}};</span>
+<span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;, &#39;b&#39;] == s[&#39;a&#39;][&#39;b&#39;] == {&#39;c&#39;: 42};</span>
+<span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;] == s[&#39;a&#39;][&#39;b&#39;][&#39;c&#39;] == 42</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;] = 3.14</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    3.14</span>
+<span class="sd">    &gt;&gt;&gt; del s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; s</span>
+<span class="sd">    {&#39;a&#39;: {&#39;b&#39;: {}}}</span>
+
+<span class="sd">    A different kind of path?</span>
+<span class="sd">    You can choose a different path_type, but sometimes (say both keys and key paths are strings)</span>
+<span class="sd">    You need to involve more tools. Like dol.paths.KeyPath...</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.paths import KeyPath</span>
+<span class="sd">    &gt;&gt;&gt; from dol.trans import kv_wrap</span>
+<span class="sd">    &gt;&gt;&gt; SS = kv_wrap(KeyPath(path_sep=&#39;.&#39;))(S)</span>
+<span class="sd">    &gt;&gt;&gt; s = SS({&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 42}}})</span>
+<span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;] == {&#39;b&#39;: {&#39;c&#39;: 42}};</span>
+<span class="sd">    &gt;&gt;&gt; assert s[&#39;a.b&#39;] == s[&#39;a&#39;][&#39;b&#39;];</span>
+<span class="sd">    &gt;&gt;&gt; assert s[&#39;a.b.c&#39;] == s[&#39;a&#39;][&#39;b&#39;][&#39;c&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a.b.c&#39;] = 3.14</span>
+<span class="sd">    &gt;&gt;&gt; s</span>
+<span class="sd">    {&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 3.14}}}</span>
+<span class="sd">    &gt;&gt;&gt; del s[&#39;a.b.c&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; s</span>
+<span class="sd">    {&#39;a&#39;: {&#39;b&#39;: {}}}</span>
+
+<span class="sd">    Note: The add_path_access doesn&#39;t carry on to values.</span>
+
+<span class="sd">    &gt;&gt;&gt; s = add_path_access({&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 42}}})</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; # but</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;][&#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    KeyError: (&#39;b&#39;, &#39;c&#39;)</span>
+
+<span class="sd">    That said,</span>
+
+<span class="sd">    &gt;&gt;&gt; add_path_access(s[&#39;a&#39;])[&#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    42</span>
+
+<span class="sd">    The reason why we don&#39;t do this automatically is that it may not always be desirable.</span>
+<span class="sd">    If one wanted to though, one could use ``wrap_kvs(obj_of_data=...)`` to wrap</span>
+<span class="sd">    specific values with ``add_path_access``.</span>
+<span class="sd">    For example, if you wanted to wrap all mappings recursively, you could:</span>
+
+<span class="sd">    &gt;&gt;&gt; from typing import Mapping</span>
+<span class="sd">    &gt;&gt;&gt; from dol.util import instance_checker</span>
+<span class="sd">    &gt;&gt;&gt; add_path_access_if_mapping = conditional_data_trans(</span>
+<span class="sd">    ...     condition=instance_checker(Mapping), data_trans=add_path_access</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; s = add_path_access_if_mapping({&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 42}}})</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; # But now this works:</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;][&#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    42</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">store_cls</span> <span class="o">=</span> <span class="n">kv_wrap_persister_cls</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">store_cls</span> <span class="o">=</span> <span class="n">add_path_get</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">path_type</span><span class="o">=</span><span class="n">path_type</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_type</span><span class="p">):</span>
+            <span class="o">*</span><span class="n">path_head</span><span class="p">,</span> <span class="n">last_key</span> <span class="o">=</span> <span class="n">k</span>
+            <span class="n">penultimate_level</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">path_head</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="n">penultimate_level</span><span class="p">[</span><span class="n">last_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># do things normally if the key is not a _path_type</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_type</span><span class="p">):</span>
+            <span class="o">*</span><span class="n">path_head</span><span class="p">,</span> <span class="n">last_key</span> <span class="o">=</span> <span class="n">k</span>
+            <span class="n">penultimate_level</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">path_head</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">penultimate_level</span><span class="p">[</span><span class="n">last_key</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># do things normally if the key is not a _path_type</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__delitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+    <span class="n">store_cls</span><span class="o">.</span><span class="fm">__setitem__</span> <span class="o">=</span> <span class="fm">__setitem__</span>
+    <span class="n">store_cls</span><span class="o">.</span><span class="fm">__delitem__</span> <span class="o">=</span> <span class="fm">__delitem__</span>
 
     <span class="k">return</span> <span class="n">store_cls</span></div>
 
