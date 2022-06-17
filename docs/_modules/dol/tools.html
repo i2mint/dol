@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.1.88 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.tools &mdash; dol 0.1.89 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -95,6 +95,62 @@
 
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">islice</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
+
+
+<span class="n">NoSuchKey</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;NoSuchKey&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})</span>
+
+
+<span class="c1"># ------------ useful trans functions to be used with wrap_kvs etc. ---------------------</span>
+
+<span class="n">_dflt_confirm_overwrite_user_input_msg</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s1">&#39;The key </span><span class="si">{k}</span><span class="s1"> already exists and has value </span><span class="si">{existing_v}</span><span class="s1">. &#39;</span>
+    <span class="s1">&#39;If you want to overwrite it with </span><span class="si">{v}</span><span class="s1">, confirm by typing </span><span class="si">{v}</span><span class="s1"> here: &#39;</span>
+<span class="p">)</span>
+
+<span class="c1"># TODO: Parametrize user messages (bring to interface)</span>
+<div class="viewcode-block" id="confirm_overwrite"><a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.confirm_overwrite">[docs]</a><span class="k">def</span> <span class="nf">confirm_overwrite</span><span class="p">(</span>
+    <span class="n">mapping</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">user_input_msg</span><span class="o">=</span><span class="n">_dflt_confirm_overwrite_user_input_msg</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A preset function you can use in wrap_kvs to ask the user to confirm if</span>
+<span class="sd">    they&#39;re writing a value in a key that already has a different value under it.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.trans import wrap_kvs</span>
+<span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: &#39;apple&#39;, &#39;b&#39;: &#39;banana&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; d = wrap_kvs(d, preset=confirm_overwrite)</span>
+
+<span class="sd">    Overwriting ``a`` with the same value it already has is fine (not really an</span>
+<span class="sd">    over-write):</span>
+
+<span class="sd">    &gt;&gt;&gt; d[&#39;a&#39;] = &#39;apple&#39;</span>
+
+<span class="sd">    Creating new values is also fine:</span>
+
+<span class="sd">    &gt;&gt;&gt; d[&#39;c&#39;] = &#39;coconut&#39;</span>
+<span class="sd">    &gt;&gt;&gt; assert d == {&#39;a&#39;: &#39;apple&#39;, &#39;b&#39;: &#39;banana&#39;, &#39;c&#39;: &#39;coconut&#39;}</span>
+
+<span class="sd">    But if we tried to do ``d[&#39;a&#39;] = &#39;alligator&#39;``, we&#39;ll get a user input request:</span>
+
+<span class="sd">    .. code-block::</span>
+
+<span class="sd">        The key a already exists and has value apple.</span>
+<span class="sd">        If you want to overwrite it with alligator, confirm by typing alligator here:</span>
+
+<span class="sd">    And we&#39;ll have to type `alligator` and press RETURN to make the write go through.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">existing_v</span> <span class="o">:=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">NoSuchKey</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">NoSuchKey</span> <span class="ow">and</span> <span class="n">existing_v</span> <span class="o">!=</span> <span class="n">v</span><span class="p">:</span>
+        <span class="n">user_input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span>
+            <span class="n">_dflt_confirm_overwrite_user_input_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span> <span class="n">existing_v</span><span class="o">=</span><span class="n">existing_v</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">user_input</span> <span class="o">!=</span> <span class="n">v</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;--&gt; User confirmation failed: I won&#39;t overwrite </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">existing_v</span>  <span class="c1"># this will have the effect of rewriting the same value that&#39;s there already</span>
+    <span class="k">return</span> <span class="n">v</span></div>
+
+
+<span class="c1"># --------------------------------------- Misc ------------------------------------------</span>
 
 
 <div class="viewcode-block" id="iSliceStore"><a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.iSliceStore">[docs]</a><span class="k">class</span> <span class="nc">iSliceStore</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>

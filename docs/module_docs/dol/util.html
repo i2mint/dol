@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.1.88 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.1.89 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -93,6 +93,30 @@
   <section id="module-dol.util">
 <span id="dol-util"></span><h1>dol.util<a class="headerlink" href="#module-dol.util" title="Permalink to this headline">¶</a></h1>
 <p>General util objects</p>
+<dl class="py class">
+<dt id="dol.util.Literal">
+<em class="property">class </em><code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">Literal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">val</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#Literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.Literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object to indicate that the value should be considered literally.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">get_val</span><span class="p">()</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">()</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="dol.util.Literal.get_val">
+<code class="sig-name descname">get_val</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#Literal.get_val"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.Literal.get_val" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value wrapped by Literal instance.</p>
+<p>One might want to use <code class="docutils literal notranslate"><span class="pre">literal.get_val()</span></code> instead <code class="docutils literal notranslate"><span class="pre">literal()</span></code> to get the
+value a <code class="docutils literal notranslate"><span class="pre">Literal</span></code> is wrapping because <code class="docutils literal notranslate"><span class="pre">.get_val</span></code> is more explicit.</p>
+<p>That said, with a bit of hesitation, we allow the <code class="docutils literal notranslate"><span class="pre">literal()</span></code> form as well
+since it is useful in situations where we need to use a callback function to
+get a value.</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt id="dol.util.Pipe">
 <em class="property">class </em><code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">Pipe</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">funcs</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">named_funcs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#Pipe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.Pipe" title="Permalink to this definition">¶</a></dt>
@@ -567,6 +591,37 @@ those actually wanted files (not the junk that mac writes to your filesystem).</
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A/normal/path&#39;</span><span class="p">,</span> <span class="s1">&#39;A/__MACOSX/path&#39;</span><span class="p">,</span> <span class="s1">&#39;path/ending/in/.DS_Store&#39;</span><span class="p">,</span> <span class="s1">&#39;foo/b&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">not_a_mac_junk_path</span><span class="p">,</span> <span class="n">paths</span><span class="p">))</span>
 <span class="go">[&#39;A/normal/path&#39;, &#39;foo/b&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.util.num_of_args">
+<code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">num_of_args</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#num_of_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.num_of_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of arguments (parameters) of the function.</p>
+<p>Contrast the behavior below with that of <code class="docutils literal notranslate"><span class="pre">num_of_required_args</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">num_of_args</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">num_of_args</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">num_of_args</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
+<span class="go">6</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.util.num_of_required_args">
+<code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">num_of_required_args</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#num_of_required_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.num_of_required_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number or REQUIRED arguments of a function.</p>
+<p>Contrast the behavior below with that of <code class="docutils literal notranslate"><span class="pre">num_of_args</span></code>, which counts all
+parameters, including the variadics and defaulted ones.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">num_of_required_args</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">num_of_required_args</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">num_of_required_args</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
+<span class="go">2</span>
 </pre></div>
 </div>
 </dd></dl>

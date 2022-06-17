@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.1.88 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.tools &mdash; dol 0.1.89 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -169,6 +169,34 @@ above, this might look like this:</p>
 <span class="go">[&#39;granny&#39;, &#39;fuji&#39;]</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.tools.confirm_overwrite">
+<code class="sig-prename descclassname">dol.tools.</code><code class="sig-name descname">confirm_overwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mapping</span></em>, <em class="sig-param"><span class="n">k</span></em>, <em class="sig-param"><span class="n">v</span></em>, <em class="sig-param"><span class="n">user_input_msg</span><span class="o">=</span><span class="default_value">'The key {k} already exists and has value {existing_v}. If you want to overwrite it with {v}, confirm by typing {v} here: '</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#confirm_overwrite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.tools.confirm_overwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p>A preset function you can use in wrap_kvs to ask the user to confirm if
+they’re writing a value in a key that already has a different value under it.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">wrap_kvs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;apple&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;banana&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="n">confirm_overwrite</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Overwriting <code class="docutils literal notranslate"><span class="pre">a</span></code> with the same value it already has is fine (not really an
+over-write):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;apple&#39;</span>
+</pre></div>
+</div>
+<p>Creating new values is also fine:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;coconut&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">d</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;apple&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;banana&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="s1">&#39;coconut&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>But if we tried to do <code class="docutils literal notranslate"><span class="pre">d['a']</span> <span class="pre">=</span> <span class="pre">'alligator'</span></code>, we’ll get a user input request:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">The</span> <span class="n">key</span> <span class="n">a</span> <span class="n">already</span> <span class="n">exists</span> <span class="ow">and</span> <span class="n">has</span> <span class="n">value</span> <span class="n">apple</span><span class="o">.</span>
+<span class="n">If</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="n">overwrite</span> <span class="n">it</span> <span class="k">with</span> <span class="n">alligator</span><span class="p">,</span> <span class="n">confirm</span> <span class="n">by</span> <span class="n">typing</span> <span class="n">alligator</span> <span class="n">here</span><span class="p">:</span>
+</pre></div>
+</div>
+<p>And we’ll have to type <cite>alligator</cite> and press RETURN to make the write go through.</p>
 </dd></dl>
 
 <dl class="py class">
