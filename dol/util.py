@@ -9,6 +9,7 @@ from functools import update_wrapper as _update_wrapper
 from functools import wraps as _wraps
 from functools import partialmethod, partial, WRAPPER_ASSIGNMENTS
 from types import MethodType
+from inspect import Signature, signature, Parameter
 
 
 # monkey patching WRAPPER_ASSIGNMENTS to get "proper" wrapping (adding defaults and kwdefaults
@@ -16,6 +17,35 @@ wrapper_assignments = (*WRAPPER_ASSIGNMENTS, '__defaults__', '__kwdefaults__')
 
 update_wrapper = partial(_update_wrapper, assigned=wrapper_assignments)
 wraps = partial(_wraps, assigned=wrapper_assignments)
+
+
+class Literal:
+    """An object to indicate that the value should be considered literally.
+
+    >>> t = Literal(42)
+    >>> t.get_val()
+    42
+    >>> t()
+    42
+
+    """
+
+    def __init__(self, val):
+        self.val = val
+
+    def get_val(self):
+        """Get the value wrapped by Literal instance.
+
+        One might want to use ``literal.get_val()`` instead ``literal()`` to get the
+        value a ``Literal`` is wrapping because ``.get_val`` is more explicit.
+
+        That said, with a bit of hesitation, we allow the ``literal()`` form as well
+        since it is useful in situations where we need to use a callback function to
+        get a value.
+        """
+        return self.val
+
+    __call__ = get_val
 
 
 def _isinstance(obj, class_or_tuple):
@@ -135,8 +165,6 @@ def _delete_keys_one_by_one_with_keyerror_supressed(self):
 
 _delete_keys_one_by_one.disabled = False
 _delete_keys_one_by_one_with_keyerror_supressed.disabled = False
-
-from inspect import Signature
 
 _dflt_signature = Signature.from_callable(lambda *args, **kwargs: None)
 
@@ -630,8 +658,6 @@ GroupReleaseCond = Union[
     Callable[[GroupKey, GroupItems], bool],
     Callable[[Groups, GroupKey, GroupItems], bool],
 ]
-
-from inspect import signature
 
 
 def igroupby(
@@ -1141,5 +1167,38 @@ class ModuleNotFoundIgnore:
         return True
 
 
+def num_of_required_args(func):
+    """Number or REQUIRED arguments of a function.
+
+    Contrast the behavior below with that of ``num_of_args``, which counts all
+    parameters, including the variadics and defaulted ones.
+
+    >>> num_of_required_args(lambda a, b, c: None)
+    3
+    >>> num_of_required_args(lambda a, b, c=3: None)
+    2
+    >>> num_of_required_args(lambda a, *args, b, c=1, d=2, **kwargs: None)
+    2
+    """
+    var_param_kinds = {Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD}
+    sig = signature(func)
+    return sum(
+        1
+        for p in sig.parameters.values()
+        if p.default is Parameter.empty and p.kind not in var_param_kinds
+    )
+
+
 def num_of_args(func):
+    """Number of arguments (parameters) of the function.
+
+    Contrast the behavior below with that of ``num_of_required_args``.
+
+    >>> num_of_args(lambda a, b, c: None)
+    3
+    >>> num_of_args(lambda a, b, c=3: None)
+    3
+    >>> num_of_args(lambda a, *args, b, c=1, d=2, **kwargs: None)
+    6
+    """
     return len(signature(func).parameters)
