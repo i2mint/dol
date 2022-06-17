@@ -6,6 +6,62 @@ from itertools import islice
 from collections.abc import Mapping
 
 
+NoSuchKey = type('NoSuchKey', (), {})
+
+
+# ------------ useful trans functions to be used with wrap_kvs etc. ---------------------
+
+_dflt_confirm_overwrite_user_input_msg = (
+    'The key {k} already exists and has value {existing_v}. '
+    'If you want to overwrite it with {v}, confirm by typing {v} here: '
+)
+
+# TODO: Parametrize user messages (bring to interface)
+def confirm_overwrite(
+    mapping, k, v, user_input_msg=_dflt_confirm_overwrite_user_input_msg
+):
+    """A preset function you can use in wrap_kvs to ask the user to confirm if
+    they're writing a value in a key that already has a different value under it.
+
+    >>> from dol.trans import wrap_kvs
+    >>> d = {'a': 'apple', 'b': 'banana'}
+    >>> d = wrap_kvs(d, preset=confirm_overwrite)
+
+    Overwriting ``a`` with the same value it already has is fine (not really an
+    over-write):
+
+    >>> d['a'] = 'apple'
+
+    Creating new values is also fine:
+
+    >>> d['c'] = 'coconut'
+    >>> assert d == {'a': 'apple', 'b': 'banana', 'c': 'coconut'}
+
+    But if we tried to do ``d['a'] = 'alligator'``, we'll get a user input request:
+
+    .. code-block::
+
+        The key a already exists and has value apple.
+        If you want to overwrite it with alligator, confirm by typing alligator here:
+
+    And we'll have to type `alligator` and press RETURN to make the write go through.
+
+    """
+    if (existing_v := mapping.get(k, NoSuchKey)) is not NoSuchKey and existing_v != v:
+        user_input = input(
+            _dflt_confirm_overwrite_user_input_msg.format(
+                k=k, v=v, existing_v=existing_v
+            )
+        )
+        if user_input != v:
+            print(f"--> User confirmation failed: I won't overwrite {k}")
+            return existing_v  # this will have the effect of rewriting the same value that's there already
+    return v
+
+
+# --------------------------------------- Misc ------------------------------------------
+
+
 class iSliceStore(Mapping):
     """
     Wraps a store to make a reader that acts as if the store was a list
