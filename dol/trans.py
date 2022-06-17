@@ -13,7 +13,14 @@ from collections.abc import (
 
 from dol.errors import SetattrNotAllowed
 from dol.base import Store, KvReader, AttrNames, kv_walk
-from dol.util import lazyprop, num_of_args, attrs_of, wraps, Pipe
+from dol.util import (
+    lazyprop,
+    attrs_of,
+    wraps,
+    Pipe,
+    Literal,
+    num_of_args,
+)
 from dol.signatures import Sig, KO
 
 
@@ -408,7 +415,8 @@ def _first_param_is_an_instance_param(params):
     return len(params) > 0 and list(params)[0] in self_names
 
 
-# TODO: Add validation of func: That all but perhaps 1 argument (not counting self) has a default
+# TODO: Add validation of func: That all but perhaps 1 argument (not counting self)
+#  has a default
 def _has_unbound_self(func):
     """
 
@@ -1343,7 +1351,7 @@ def _filt_iter(store_cls: type, filt, name, __module__):
 ########################################################################################################################
 # Wrapping keys and values
 
-self_names = frozenset(['self', 'store'])
+self_names = frozenset(['self', 'store', 'mapping'])
 
 
 # TODO: Consider deprecation. Besides the name arg (whose usefulness is doubtful), this is just Store.wrap
@@ -1703,6 +1711,17 @@ def wrap_kvs(
     #
     # return class_trans(store_cls)
     # return _wrap_kvs(store_cls, **arguments)
+
+
+class FirstArgIsMapping(Literal):
+    """A Literal class to mark a function as being one where the first argument is
+    a mapping (store). This is intended to be used in wrappers such as ``wrap_kvs``
+    to indicate when the first argument of a transformer function ``trans`` like
+    ``key_of_id``, ``preset``, etc. is the store itself, therefore should be applied as
+    ``trans(store, ...)`` instead of ``trans(...)``.
+    """
+
+    # TODO: Use this for it's intent!
 
 
 def _wrap_kvs(
