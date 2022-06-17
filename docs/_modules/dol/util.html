@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.1.87 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.1.88 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -101,11 +101,33 @@
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partialmethod</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">WRAPPER_ASSIGNMENTS</span>
 <span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">MethodType</span>
 
+
 <span class="c1"># monkey patching WRAPPER_ASSIGNMENTS to get &quot;proper&quot; wrapping (adding defaults and kwdefaults</span>
 <span class="n">wrapper_assignments</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">WRAPPER_ASSIGNMENTS</span><span class="p">,</span> <span class="s1">&#39;__defaults__&#39;</span><span class="p">,</span> <span class="s1">&#39;__kwdefaults__&#39;</span><span class="p">)</span>
 
 <span class="n">update_wrapper</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_update_wrapper</span><span class="p">,</span> <span class="n">assigned</span><span class="o">=</span><span class="n">wrapper_assignments</span><span class="p">)</span>
 <span class="n">wraps</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_wraps</span><span class="p">,</span> <span class="n">assigned</span><span class="o">=</span><span class="n">wrapper_assignments</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The same as the builtin isinstance, but without the position only restriction,</span>
+<span class="sd">    allowing us to use partial to define filter functions for specific types</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="instance_checker"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.instance_checker">[docs]</a><span class="k">def</span> <span class="nf">instance_checker</span><span class="p">(</span><span class="o">*</span><span class="n">types</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Makes a filter function that checks the type of an object.</span>
+
+<span class="sd">    &gt;&gt;&gt; f = instance_checker(int, float)</span>
+<span class="sd">    &gt;&gt;&gt; f(1)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; f(1.0)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; f(&#39;1.0&#39;)</span>
+<span class="sd">    False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_isinstance</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="o">=</span><span class="n">types</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="not_a_mac_junk_path"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.not_a_mac_junk_path">[docs]</a><span class="k">def</span> <span class="nf">not_a_mac_junk_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -224,6 +246,7 @@
 
 <span class="c1"># Pipe code is completely independent. If you only need simple pipelines, use this, or even copy/paste it where needed.</span>
 <span class="c1"># TODO: Give it a __name__ and make it more like a &quot;normal&quot; function so it works well when so assumed</span>
+<span class="c1"># TODO: Mis-aligned with i2. funcs list here, in i2 it&#39;s dict. Align?</span>
 <div class="viewcode-block" id="Pipe"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.Pipe">[docs]</a><span class="k">class</span> <span class="nc">Pipe</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Simple function composition. That is, gives you a callable that implements input -&gt; f_1 -&gt; ... -&gt; f_n -&gt; output.</span>
 
@@ -232,6 +255,8 @@
 <span class="sd">    &gt;&gt;&gt; f = Pipe(foo, lambda x: print(f&quot;x: {x}&quot;))</span>
 <span class="sd">    &gt;&gt;&gt; f(3)</span>
 <span class="sd">    x: 5</span>
+<span class="sd">    &gt;&gt;&gt; len(f)</span>
+<span class="sd">    2</span>
 
 <span class="sd">    You can name functions, but this would just be for documentation purposes.</span>
 <span class="sd">    The names are completely ignored.</span>
@@ -243,6 +268,8 @@
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; g(2, 3)</span>
 <span class="sd">    &#39;10&#39;</span>
+<span class="sd">    &gt;&gt;&gt; len(g)</span>
+<span class="sd">    3</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        - Pipe instances don&#39;t have a __name__ etc. So some expectations of normal functions are not met.</span>
@@ -262,8 +289,11 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">funcs</span> <span class="o">=</span> <span class="p">()</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">funcs</span><span class="p">,</span> <span class="o">**</span><span class="n">named_funcs</span><span class="p">):</span>
         <span class="n">funcs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">funcs</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">named_funcs</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">funcs</span> <span class="o">=</span> <span class="n">funcs</span>
         <span class="n">n_funcs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">funcs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">n_funcs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;You need to specify at least one function!&#39;</span><span class="p">)</span>
@@ -283,7 +313,38 @@
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">other_funcs</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">out</span></div>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">funcs</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_flatten_pipe</span><span class="p">(</span><span class="n">pipe</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">pipe</span><span class="o">.</span><span class="n">funcs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">Pipe</span><span class="p">):</span>
+            <span class="k">yield from</span> <span class="n">_flatten_pipe</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">func</span>
+
+
+<div class="viewcode-block" id="flatten_pipe"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.flatten_pipe">[docs]</a><span class="k">def</span> <span class="nf">flatten_pipe</span><span class="p">(</span><span class="n">pipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unravel nested Pipes to get a flat &#39;sequence of functions&#39; version of input.</span>
+
+<span class="sd">    &gt;&gt;&gt; def f(x): return x + 1</span>
+<span class="sd">    &gt;&gt;&gt; def g(x): return x * 2</span>
+<span class="sd">    &gt;&gt;&gt; def h(x): return x - 3</span>
+<span class="sd">    &gt;&gt;&gt; a = Pipe(f, g, h)</span>
+<span class="sd">    &gt;&gt;&gt; b = Pipe(f, Pipe(g, h))</span>
+<span class="sd">    &gt;&gt;&gt; len(a)</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; len(b)</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; c = flatten_pipe(b)</span>
+<span class="sd">    &gt;&gt;&gt; len(c)</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; assert a(10) == b(10) == c(10) == 19</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Pipe</span><span class="p">(</span><span class="o">*</span><span class="n">_flatten_pipe</span><span class="p">(</span><span class="n">pipe</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="partialclass"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.partialclass">[docs]</a><span class="k">def</span> <span class="nf">partialclass</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>

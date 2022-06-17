@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.1.87 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.1.88 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -151,6 +151,151 @@ Note: ipython already adds local path listing automatically,</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="dol.trans.add_path_access">
+<code class="sig-prename descclassname">dol.trans.</code><code class="sig-name descname">add_path_access</code><span class="sig-paren">(</span><em class="sig-param">store=None</em>, <em class="sig-param">*</em>, <em class="sig-param">name=None</em>, <em class="sig-param">path_type: type = &lt;class 'tuple'&gt;</em>, <em class="sig-param">__module__=None</em>, <em class="sig-param">__name__=None</em>, <em class="sig-param">__qualname__=None</em>, <em class="sig-param">__doc__=None</em>, <em class="sig-param">__annotations__=None</em>, <em class="sig-param">__defaults__=None</em>, <em class="sig-param">__kwdefaults__=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#add_path_access"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.trans.add_path_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make nested stores (read/write) accessible through key paths (iterable of keys).</p>
+<p>Like <code class="docutils literal notranslate"><span class="pre">add_path_get</span></code>, but with write and delete accessible through key paths.</p>
+<p>In a way “flatten the nested keys access”.</p>
+<p>By default, the path object will be a tuple (e.g. <code class="docutils literal notranslate"><span class="pre">('a',</span> <span class="pre">'b',</span> <span class="pre">'c')</span></code>, but you can
+make it whatever you want, and/or use <cite>dol.paths.KeyPath</cite> to map to and from
+forms like <code class="docutils literal notranslate"><span class="pre">'a.b.c'</span></code>, <code class="docutils literal notranslate"><span class="pre">'a/b/c'</span></code>, etc.</p>
+<p>Say you have some nested stores.
+You know… like a <cite>ZipFileReader</cite> store whose values are <a href="#id1"><span class="problematic" id="id2">`</span></a>ZipReader`s,
+whose values are bytes of the zipped files
+(and you can go on… whose (json) values are…).</p>
+<p>For our example, let’s take a nested dict instead:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}}</span>
+</pre></div>
+</div>
+<p>Well, you can access any node of this nested tree of stores like this:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">][</span><span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>And that’s fine. But maybe you’d like to do it this way instead:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add_path_access</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>So far, this is what <code class="docutils literal notranslate"><span class="pre">add_path_get</span></code> does. With <code class="docutils literal notranslate"><span class="pre">add_path_access</span></code> though you
+can also write and delete that way too:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.14</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">3.14</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
+<span class="go">{&#39;a&#39;: {&#39;b&#39;: {}}}</span>
+</pre></div>
+</div>
+<p>You might also want to access 42 with <cite>a.b.c</cite> or <cite>a/b/c</cite> etc.
+To do that you can use <cite>dol.paths.KeyPath</cite> in combination with</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>store</strong> – The store (class or instance) you’re wrapping.
+If not specified, the function will return a decorator.</p></li>
+<li><p><strong>name</strong> – The name to give the class (not applicable to instance wrapping)</p></li>
+<li><p><strong>path_type</strong> – The type that paths are expressed as. Needs to be an Iterable type.
+By default, a tuple.
+This is used to decide whether the key should be taken as a “normal”
+key of the store,
+or should be used to iterate through, recursively getting values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A wrapped store (class or instance), or a store wrapping decorator
+(if store is not specified)</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="docutils literal notranslate"><span class="pre">KeyPath</span></code> in <a class="reference internal" href="paths.html"><span class="doc">dol.paths</span></a></p>
+</div>
+<p>Wrapping a class</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">S</span> <span class="o">=</span> <span class="n">add_path_access</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}};</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">};</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.14</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">3.14</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
+<span class="go">{&#39;a&#39;: {&#39;b&#39;: {}}}</span>
+</pre></div>
+</div>
+<p>Using add_path_get as a decorator</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@add_path_access</span>
+<span class="gp">... </span><span class="k">class</span> <span class="nc">S</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}};</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">};</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">][</span><span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.14</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">3.14</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
+<span class="go">{&#39;a&#39;: {&#39;b&#39;: {}}}</span>
+</pre></div>
+</div>
+<p>A different kind of path?
+You can choose a different path_type, but sometimes (say both keys and key paths are strings)
+You need to involve more tools. Like dol.paths.KeyPath…</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="n">KeyPath</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">kv_wrap</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SS</span> <span class="o">=</span> <span class="n">kv_wrap</span><span class="p">(</span><span class="n">KeyPath</span><span class="p">(</span><span class="n">path_sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">))(</span><span class="n">S</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">SS</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}};</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a.b&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">];</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a.b.c&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">][</span><span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a.b.c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.14</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
+<span class="go">{&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 3.14}}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a.b.c&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
+<span class="go">{&#39;a&#39;: {&#39;b&#39;: {}}}</span>
+</pre></div>
+</div>
+<p>Note: The add_path_access doesn’t carry on to values.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add_path_access</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># but</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="gr">KeyError</span>: <span class="n">(&#39;b&#39;, &#39;c&#39;)</span>
+</pre></div>
+</div>
+<p>That said,</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_path_access</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">])[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>The reason why we don’t do this automatically is that it may not always be desirable.
+If one wanted to though, one could use <code class="docutils literal notranslate"><span class="pre">wrap_kvs(obj_of_data=...)</span></code> to wrap
+specific values with <code class="docutils literal notranslate"><span class="pre">add_path_access</span></code>.
+For example, if you wanted to wrap all mappings recursively, you could:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Mapping</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">instance_checker</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add_path_access_if_mapping</span> <span class="o">=</span> <span class="n">conditional_data_trans</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">condition</span><span class="o">=</span><span class="n">instance_checker</span><span class="p">(</span><span class="n">Mapping</span><span class="p">),</span> <span class="n">data_trans</span><span class="o">=</span><span class="n">add_path_access</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add_path_access_if_mapping</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># But now this works:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt id="dol.trans.add_path_get">
 <code class="sig-prename descclassname">dol.trans.</code><code class="sig-name descname">add_path_get</code><span class="sig-paren">(</span><em class="sig-param">store=None</em>, <em class="sig-param">*</em>, <em class="sig-param">name=None</em>, <em class="sig-param">path_type: type = &lt;class 'tuple'&gt;</em>, <em class="sig-param">__module__=None</em>, <em class="sig-param">__name__=None</em>, <em class="sig-param">__qualname__=None</em>, <em class="sig-param">__doc__=None</em>, <em class="sig-param">__annotations__=None</em>, <em class="sig-param">__defaults__=None</em>, <em class="sig-param">__kwdefaults__=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#add_path_get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.trans.add_path_get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make nested stores accessible through key paths.
@@ -159,7 +304,7 @@ By default, the path object will be a tuple (e.g. <code class="docutils literal 
 make it whatever you want, and/or use <cite>dol.paths.KeyPath</cite> to map to and from
 forms like <code class="docutils literal notranslate"><span class="pre">'a.b.c'</span></code>, <code class="docutils literal notranslate"><span class="pre">'a/b/c'</span></code>, etc.</p>
 <p>Say you have some nested stores.
-You know… like a <cite>ZipFileReader</cite> store whose values are <a href="#id1"><span class="problematic" id="id2">`</span></a>ZipReader`s,
+You know… like a <cite>ZipFileReader</cite> store whose values are <a href="#id3"><span class="problematic" id="id4">`</span></a>ZipReader`s,
 whose values are bytes of the zipped files
 (and you can go on… whose (json) values are…).</p>
 <p>For our example, let’s take a nested dict instead:</p>
