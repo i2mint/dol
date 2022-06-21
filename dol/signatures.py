@@ -693,6 +693,50 @@ def _names_of_kind(sig):
     return tuple(tuple(d[kind]) for kind in range(5))
 
 
+def maybe_first(items):
+    return next(iter(items), None)
+
+
+def name_of_var_kw_argument(sig):
+    var_kw_list = [param.name for param in sig.params if param.kind == VK]
+    result = maybe_first(var_kw_list)
+    return result
+
+
+def _map_action_on_cond(kvs, cond, expand):
+    for k, v in kvs:
+        if cond(
+            k
+        ):  # make a conditional on (k,v), use type KV, Iterable[KV], expand:KV -> Iterable[KV]
+            yield from expand(v[k])  # expand should result in (k,v)
+        else:
+            yield k, v
+
+
+def expand_nested_key(d, k):
+    for key in d:
+        if key == k and isinstance(d[k], dict) and k in d[k]:
+            pass
+
+    if k in d and len(d) >= 2:
+        return d.items()
+
+    if k in d and isinstance(d[k], dict) and k in d[k]:
+        if len(d[k]) == 1:
+            return expand_nested_key(d[k], k)
+        else:
+            return d[k].items()
+    else:
+        return d.items()
+
+
+def flatten_if_var_kw(kvs, var_kw_name):
+    cond = lambda k: k == var_kw_name
+    expand = lambda k: k.items()
+    # expand = lambda k: k.values()
+    return _map_action_on_cond(kvs, cond, expand)
+
+
 # TODO: See other signature operating functions below in this module:
 #   Do we need them now that we have Sig?
 #   Do we want to keep them and have Sig use them?
@@ -819,14 +863,14 @@ class Sig(Signature, Mapping):
     ... def some_func(*args, **kwargs):
     ...     ...
     >>> inspect.signature(some_func)
-    <Signature (w, i, /, a, x: float = 1, y=1, j=2, b=3.14, c: int = 42, *, z: int = 1)>
+    <Sig (w, i, /, a, x: float = 1, y=1, j=2, b=3.14, c: int = 42, *, z: int = 1)>
     >>>
     >>> sig = Sig(f) + g + ["a", ("b", 3.14), ("c", 42, int)] - "b" - ["a", "z"]
     >>> @sig
     ... def some_func(*args, **kwargs):
     ...     ...
     >>> inspect.signature(some_func)
-    <Signature (w, i, x: float = 1, y=1, j=2, c: int = 42)>
+    <Sig (w, i, x: float = 1, y=1, j=2, c: int = 42)>
 
     """
 
@@ -968,7 +1012,7 @@ class Sig(Signature, Mapping):
         >>> f = s.wrap(f)
         >>> import inspect
         >>> inspect.signature(f)  # see that
-        <Signature (w, x: int, y=2, z: int = 10)>
+        <Sig (w, x: int, y=2, z: int = 10)>
         >>> # But (unlike with functools.wraps) here we get __defaults__ and
         __kwdefault__
         >>> f.__defaults__  # see that x has no more default & z's default is now 10
@@ -1018,7 +1062,7 @@ class Sig(Signature, Mapping):
 
         # Change (mutate!) func, writing a new __signature__, __annotations__,
         # __defaults__ and __kwdefaults__
-        func.__signature__ = Signature(
+        func.__signature__ = Sig(
             self.parameters.values(), return_annotation=self.return_annotation
         )
         func.__annotations__ = self.annotations
@@ -1282,10 +1326,9 @@ class Sig(Signature, Mapping):
         return (
             self.names_of_kind[PO],
             self.names_of_kind[PK],
-            # get_variadic_name(VP),
-            self.names_of_kind[VP],
+            next(iter(self.names_of_kind[VP]), None),
             self.names_of_kind[KO],
-            self.names_of_kind[VK],
+            next(iter(self.names_of_kind[VK]), None),
         )
 
     def __iter__(self):
@@ -1438,9 +1481,11 @@ class Sig(Signature, Mapping):
 
     @property
     def positional_names(self):
-        for n, k in self.kinds.items():
-            if k in (PO, PK):
-                yield n
+        return self.names_of_kind[PO] + self.names_of_kind[PK]
+
+    @property
+    def keyword_names(self):
+        return self.names_of_kind[PK] + self.names_of_kind[KO]
 
     def _transform_params(self, changes_for_name: dict):
         for name in self:
@@ -1577,7 +1622,9 @@ class Sig(Signature, Mapping):
                 f'param_attr needs to be one of: {param_attributes}.',
                 f' Was: {param_attr}',
             )
-        all_pk_self = self.modified(**{name: {'kind': PK} for name in self.names})
+        all_pk_self = self.modified(
+            _allow_reordering=True, **{name: {'kind': PK} for name in self.names}
+        )
         new_attr_vals = all_pk_self.bind_partial(
             *arg_new_vals, **kwargs_new_vals
         ).arguments
@@ -1892,6 +1939,30 @@ class Sig(Signature, Mapping):
         }
         return self.__class__(new_params, return_annotation=self.return_annotation)
 
+    def add_params(self, params: Iterable):
+        """Creates a new instance of Sig after merging the parameters of this signature
+        with a list of new parameters. The new list of parameters is automatically
+        sorted based on signature constraints given by kinds and default values.
+        See Python native signature documentation for more details.
+
+        >>> s = Sig('(a, /, b, *, c)')
+        >>> s.add_params([
+        ...     Param('kwargs', VK),
+        ...     dict(name='d', kind=KO),
+        ...     Param('args', VP),
+        ...     'e',
+        ...     Param('f', PO),
+        ... ])
+        <Sig (a, f, /, b, e, *args, c, d, **kwargs)>
+        """
+
+        def comparator(param):
+            return (param.kind, param.kind == KO or param.default is not empty)
+
+        new_params = self.params + [ensure_param(p) for p in params]
+        new_params = sorted(new_params, key=comparator)
+        return type(self)(new_params)
+
     def __sub__(self, sig):
         return self.remove_names(sig)
 
@@ -1986,6 +2057,7 @@ class Sig(Signature, Mapping):
         allow_partial=False,
         allow_excess=False,
         ignore_kind=False,
+        debug=False,
     ):
         """Extracts a dict of input argument values for target signature, from args
         and kwargs.
@@ -2078,7 +2150,7 @@ class Sig(Signature, Mapping):
 
         >>> sig.kwargs_from_args_and_kwargs(args=(), kwargs={"x": 22})
         Traceback (most recent call last):
-          ...
+        ...
         TypeError: missing a required argument: 'w'
 
         But if you specify `allow_partial=True`...
@@ -2094,11 +2166,11 @@ class Sig(Signature, Mapping):
 
         >>> sig.kwargs_from_args_and_kwargs(args=(1, 2, 3, 4), kwargs={})
         Traceback (most recent call last):
-          ...
+        ...
         TypeError: too many positional arguments
         >>> sig.kwargs_from_args_and_kwargs(args=(), kwargs=dict(w=1, x=2, y=3, z=4))
         Traceback (most recent call last):
-          ...
+        ...
         TypeError: 'w' parameter is positional only, but was passed as a keyword
 
         But if you want to ignore the kind of parameter, just say so:
@@ -2112,23 +2184,23 @@ class Sig(Signature, Mapping):
         ... )
         {'w': 1, 'x': 2, 'y': 3, 'z': 4}
         """
-        no_var_kw = not self.has_var_keyword
+
+        vk_name = self.var_keyword_name
 
         if ignore_kind:
-            sig = self.normalize_kind(
-                # except_kinds=frozenset()
-            )
+            sig = self.normalize_kind()
         else:
             sig = self
 
-        # no_var_kw = not sig.has_var_keyword
-        if no_var_kw:  # has no var keyword kinds
+        if not vk_name:  # has no var keyword kinds
             sig_relevant_kwargs = {
                 name: kwargs[name] for name in sig if name in kwargs
             }  # take only what you need
         else:
-            sig_relevant_kwargs = kwargs  # take all the kwargs
-
+            sig_relevant_kwargs = dict(
+                {k: v for k, v in kwargs.items() if k != vk_name},
+                **kwargs.get(vk_name, {}),
+            )
         binder = sig.bind_partial if allow_partial else sig.bind
         if not self.has_var_positional and allow_excess:
             max_allowed_num_of_posisional_args = sum(
@@ -2140,15 +2212,18 @@ class Sig(Signature, Mapping):
         if apply_defaults:
             b.apply_defaults()
 
-        if no_var_kw and not allow_excess:  # don't ignore excess kwargs
+        if not vk_name and not allow_excess:  # don't ignore excess kwargs
             excess = kwargs.keys() - b.arguments
             if excess:
                 excess_str = ', '.join(excess)
                 raise TypeError(f'Got unexpected keyword arguments: {excess_str}')
 
-        return dict(b.arguments)
-        # not doing it as dict(b.arguments) because order can be different.
-        # return {name: b.arguments[name] for name in self.names if name in b.arguments}
+        var_kw_name = name_of_var_kw_argument(self)
+
+        flattened_kvs = expand_nested_key(b.arguments, var_kw_name)
+        result = dict(flattened_kvs)
+
+        return result
 
     def args_and_kwargs_from_kwargs(
         self,
@@ -2689,6 +2764,65 @@ def mk_sig_from_args(*args_without_default, **args_with_defaults):
     ).to_simple_signature()
 
 
+def _remove_variadics_from_sig(sig, ch_variadic_keyword_to_keyword=True):
+    """Remove variadics from signature
+    >>> def foo(a, *args, bar, **kwargs):
+    ...     return f"{a=}, {args=}, {bar=}, {kwargs=}"
+    >>> sig = Sig(foo)
+    >>> assert str(sig) == '(a, *args, bar, **kwargs)'
+    >>> new_sig = _remove_variadics_from_sig(sig)
+    >>> str(new_sig)=='(a, args=(), *, bar, kwargs={})'
+    True
+
+    Note that if there is not variadic positional arguments, the variadic keyword
+    will still be a keyword-only kind.
+
+    >>> def func(a, bar=None, **kwargs):
+    ...     return f"{a=}, {bar=}, {kwargs=}"
+    >>> nsig = _remove_variadics_from_sig(Sig(func))
+    >>> assert str(nsig)=='(a, bar=None, *, kwargs={})'
+
+    If the function has neither variadic kinds, it will remain untouched.
+
+    >>> def func(a, /, b, *, c=3):
+    ...     return a + b + c
+    >>> sig = _remove_variadics_from_sig(Sig(func))
+
+    >>> assert sig == Sig(func)
+
+
+    If you only want the variadic positional to be handled, but leave leave any
+    VARIADIC_KEYWORD kinds (**kwargs) alone, you can do so by setting
+    `ch_variadic_keyword_to_keyword=False`.
+
+    >>> def foo(a, *args, bar=None, **kwargs):
+    ...     return f"{a=}, {args=}, {bar=}, {kwargs=}"
+    >>> assert str(Sig(_remove_variadics_from_sig(Sig(foo))))=='(a, args=(), *, bar=None, kwargs={})'
+    """
+
+    idx_of_vp = sig.index_of_var_positional
+    var_keyword_argname = sig.var_keyword_name
+    result_sig = sig
+    if idx_of_vp is not None or var_keyword_argname is not None:
+        params = sig.params
+        if var_keyword_argname:  # if there's a VAR_KEYWORD argument
+            if ch_variadic_keyword_to_keyword:
+                i = sig.index_of_var_keyword
+                # TODO: Reflect on pros/cons of having mutable {} default here:
+                params[i] = params[i].replace(kind=Parameter.KEYWORD_ONLY, default={})
+
+        try:  # TODO: Avoid this try catch. Look in advance for default ordering?
+            if idx_of_vp is not None:
+                params[idx_of_vp] = params[idx_of_vp].replace(kind=PK, default=())
+            result_sig = Signature(params, return_annotation=sig.return_annotation)
+        except ValueError:
+            if idx_of_vp is not None:
+                params[idx_of_vp] = params[idx_of_vp].replace(kind=PK)
+            result_sig = Signature(params, return_annotation=sig.return_annotation)
+
+    return result_sig
+
+
 def call_forgivingly(func, *args, **kwargs):
     """
     Call function on given args and kwargs, but only taking what the function needs
@@ -2977,7 +3111,7 @@ def all_pk_signature(callable_or_signature: Union[Callable, Signature]):
     >>> Sig(new_foo)
     <Sig (w, x: float, y=1, z: int = 1, **kwargs)>
     >>> all_pk_signature(signature(foo))
-    <Signature (w, x: float, y=1, z: int = 1, **kwargs)>
+    <Sig (w, x: float, y=1, z: int = 1, **kwargs)>
 
     But note that the variadic arguments *args and **kwargs remain variadic:
 
@@ -3190,7 +3324,7 @@ def ch_variadics_to_non_variadic_kind(func, *, ch_variadic_keyword_to_keyword=Tr
 
             if ch_variadic_keyword_to_keyword:
                 # an extra level of extraction is needed in this case
-                _var_keyword_kwargs = _var_keyword_kwargs.pop(var_keyword_argname, {})
+                # _var_keyword_kwargs = _var_keyword_kwargs.pop(var_keyword_argname, {})
                 return func(*a, *_vp_args_, **_kwargs, **_var_keyword_kwargs)
             else:
                 # call the original function with the unravelled args
@@ -3207,13 +3341,13 @@ def ch_variadics_to_non_variadic_kind(func, *, ch_variadic_keyword_to_keyword=Tr
         try:  # TODO: Avoid this try catch. Look in advance for default ordering?
             if idx_of_vp is not None:
                 params[idx_of_vp] = params[idx_of_vp].replace(kind=PK, default=())
-            variadic_less_func.__signature__ = Signature(
+            variadic_less_func.__signature__ = Sig(
                 params, return_annotation=signature(func).return_annotation
             )
         except ValueError:
             if idx_of_vp is not None:
                 params[idx_of_vp] = params[idx_of_vp].replace(kind=PK)
-            variadic_less_func.__signature__ = Signature(
+            variadic_less_func.__signature__ = Sig(
                 params, return_annotation=signature(func).return_annotation
             )
 
@@ -3707,19 +3841,13 @@ def is_call_compatible_with(
     """
 
     def validate_variadics():
-        # sig1 can only have a VP if sig2 also has one
-        if vp1:
-            if not vp2:
-                return False
-            sig1 -= vp1
-            sig2 -= vp2
-        # sig1 can only have a VK if sig2 also has one
-        if vk1:
-            if not vk2:
-                return False
-            sig1 -= vk1
-            sig2 -= vk2
-        return True
+        return (
+            # sig1 can only have a VP if sig2 also has one
+            (vp1 is None or vp2 is not None)
+            and
+            # sig1 can only have a VK if sig2 also has one
+            (vk1 is None or vk2 is not None)
+        )
 
     def validate_param_counts():
         # sig1 cannot have more positional params than sig2
@@ -3799,6 +3927,15 @@ def is_call_compatible_with(
     pos2, pks2, vp2, kos2, vk2 = sig2.detail_names_by_kind()
     ps2 = pos2 + pks2
     ks2 = pks2 + kos2
+
+    if vp1:
+        sig1 -= vp1
+    if vk1:
+        sig1 -= vk1
+    if vp2:
+        sig2 -= vp2
+    if vk2:
+        sig2 -= vk2
 
     return (
         validate_variadics()
