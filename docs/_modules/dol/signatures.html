@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.89 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.90 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -784,6 +784,50 @@
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">kind</span><span class="p">])</span> <span class="k">for</span> <span class="n">kind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
 
 
+<span class="k">def</span> <span class="nf">maybe_first</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">items</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">name_of_var_kw_argument</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
+    <span class="n">var_kw_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">param</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">params</span> <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">VK</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">maybe_first</span><span class="p">(</span><span class="n">var_kw_list</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span> <span class="nf">_map_action_on_cond</span><span class="p">(</span><span class="n">kvs</span><span class="p">,</span> <span class="n">cond</span><span class="p">,</span> <span class="n">expand</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kvs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cond</span><span class="p">(</span>
+            <span class="n">k</span>
+        <span class="p">):</span>  <span class="c1"># make a conditional on (k,v), use type KV, Iterable[KV], expand:KV -&gt; Iterable[KV]</span>
+            <span class="k">yield from</span> <span class="n">expand</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>  <span class="c1"># expand should result in (k,v)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span>
+
+
+<span class="k">def</span> <span class="nf">expand_nested_key</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">k</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+            <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">expand_nested_key</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">k</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">flatten_if_var_kw</span><span class="p">(</span><span class="n">kvs</span><span class="p">,</span> <span class="n">var_kw_name</span><span class="p">):</span>
+    <span class="n">cond</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span> <span class="o">==</span> <span class="n">var_kw_name</span>
+    <span class="n">expand</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="c1"># expand = lambda k: k.values()</span>
+    <span class="k">return</span> <span class="n">_map_action_on_cond</span><span class="p">(</span><span class="n">kvs</span><span class="p">,</span> <span class="n">cond</span><span class="p">,</span> <span class="n">expand</span><span class="p">)</span>
+
+
 <span class="c1"># TODO: See other signature operating functions below in this module:</span>
 <span class="c1">#   Do we need them now that we have Sig?</span>
 <span class="c1">#   Do we want to keep them and have Sig use them?</span>
@@ -910,14 +954,14 @@
 <span class="sd">    ... def some_func(*args, **kwargs):</span>
 <span class="sd">    ...     ...</span>
 <span class="sd">    &gt;&gt;&gt; inspect.signature(some_func)</span>
-<span class="sd">    &lt;Signature (w, i, /, a, x: float = 1, y=1, j=2, b=3.14, c: int = 42, *, z: int = 1)&gt;</span>
+<span class="sd">    &lt;Sig (w, i, /, a, x: float = 1, y=1, j=2, b=3.14, c: int = 42, *, z: int = 1)&gt;</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; sig = Sig(f) + g + [&quot;a&quot;, (&quot;b&quot;, 3.14), (&quot;c&quot;, 42, int)] - &quot;b&quot; - [&quot;a&quot;, &quot;z&quot;]</span>
 <span class="sd">    &gt;&gt;&gt; @sig</span>
 <span class="sd">    ... def some_func(*args, **kwargs):</span>
 <span class="sd">    ...     ...</span>
 <span class="sd">    &gt;&gt;&gt; inspect.signature(some_func)</span>
-<span class="sd">    &lt;Signature (w, i, x: float = 1, y=1, j=2, c: int = 42)&gt;</span>
+<span class="sd">    &lt;Sig (w, i, x: float = 1, y=1, j=2, c: int = 42)&gt;</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -1059,7 +1103,7 @@
 <span class="sd">        &gt;&gt;&gt; f = s.wrap(f)</span>
 <span class="sd">        &gt;&gt;&gt; import inspect</span>
 <span class="sd">        &gt;&gt;&gt; inspect.signature(f)  # see that</span>
-<span class="sd">        &lt;Signature (w, x: int, y=2, z: int = 10)&gt;</span>
+<span class="sd">        &lt;Sig (w, x: int, y=2, z: int = 10)&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # But (unlike with functools.wraps) here we get __defaults__ and</span>
 <span class="sd">        __kwdefault__</span>
 <span class="sd">        &gt;&gt;&gt; f.__defaults__  # see that x has no more default &amp; z&#39;s default is now 10</span>
@@ -1109,7 +1153,7 @@
 
         <span class="c1"># Change (mutate!) func, writing a new __signature__, __annotations__,</span>
         <span class="c1"># __defaults__ and __kwdefaults__</span>
-        <span class="n">func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span>
+        <span class="n">func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">return_annotation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">return_annotation</span>
         <span class="p">)</span>
         <span class="n">func</span><span class="o">.</span><span class="vm">__annotations__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotations</span>
@@ -1373,10 +1417,9 @@
         <span class="k">return</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">names_of_kind</span><span class="p">[</span><span class="n">PO</span><span class="p">],</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">names_of_kind</span><span class="p">[</span><span class="n">PK</span><span class="p">],</span>
-            <span class="c1"># get_variadic_name(VP),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">names_of_kind</span><span class="p">[</span><span class="n">VP</span><span class="p">],</span>
+            <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names_of_kind</span><span class="p">[</span><span class="n">VP</span><span class="p">]),</span> <span class="kc">None</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">names_of_kind</span><span class="p">[</span><span class="n">KO</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">names_of_kind</span><span class="p">[</span><span class="n">VK</span><span class="p">],</span>
+            <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names_of_kind</span><span class="p">[</span><span class="n">VK</span><span class="p">]),</span> <span class="kc">None</span><span class="p">),</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1529,9 +1572,11 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">positional_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kinds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="n">PO</span><span class="p">,</span> <span class="n">PK</span><span class="p">):</span>
-                <span class="k">yield</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">names_of_kind</span><span class="p">[</span><span class="n">PO</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">names_of_kind</span><span class="p">[</span><span class="n">PK</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">keyword_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">names_of_kind</span><span class="p">[</span><span class="n">PK</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">names_of_kind</span><span class="p">[</span><span class="n">KO</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_transform_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">changes_for_name</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
@@ -1668,7 +1713,9 @@
                 <span class="sa">f</span><span class="s1">&#39;param_attr needs to be one of: </span><span class="si">{</span><span class="n">param_attributes</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">,</span>
                 <span class="sa">f</span><span class="s1">&#39; Was: </span><span class="si">{</span><span class="n">param_attr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="n">all_pk_self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">modified</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;kind&#39;</span><span class="p">:</span> <span class="n">PK</span><span class="p">}</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">})</span>
+        <span class="n">all_pk_self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">modified</span><span class="p">(</span>
+            <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;kind&#39;</span><span class="p">:</span> <span class="n">PK</span><span class="p">}</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">}</span>
+        <span class="p">)</span>
         <span class="n">new_attr_vals</span> <span class="o">=</span> <span class="n">all_pk_self</span><span class="o">.</span><span class="n">bind_partial</span><span class="p">(</span>
             <span class="o">*</span><span class="n">arg_new_vals</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs_new_vals</span>
         <span class="p">)</span><span class="o">.</span><span class="n">arguments</span>
@@ -1983,6 +2030,30 @@
         <span class="p">}</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">new_params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">)</span>
 
+<div class="viewcode-block" id="Sig.add_params"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.add_params">[docs]</a>    <span class="k">def</span> <span class="nf">add_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new instance of Sig after merging the parameters of this signature</span>
+<span class="sd">        with a list of new parameters. The new list of parameters is automatically</span>
+<span class="sd">        sorted based on signature constraints given by kinds and default values.</span>
+<span class="sd">        See Python native signature documentation for more details.</span>
+
+<span class="sd">        &gt;&gt;&gt; s = Sig(&#39;(a, /, b, *, c)&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; s.add_params([</span>
+<span class="sd">        ...     Param(&#39;kwargs&#39;, VK),</span>
+<span class="sd">        ...     dict(name=&#39;d&#39;, kind=KO),</span>
+<span class="sd">        ...     Param(&#39;args&#39;, VP),</span>
+<span class="sd">        ...     &#39;e&#39;,</span>
+<span class="sd">        ...     Param(&#39;f&#39;, PO),</span>
+<span class="sd">        ... ])</span>
+<span class="sd">        &lt;Sig (a, f, /, b, e, *args, c, d, **kwargs)&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">comparator</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">KO</span> <span class="ow">or</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">empty</span><span class="p">)</span>
+
+        <span class="n">new_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">+</span> <span class="p">[</span><span class="n">ensure_param</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">]</span>
+        <span class="n">new_params</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">new_params</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">comparator</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">new_params</span><span class="p">)</span></div>
+
     <span class="k">def</span> <span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_names</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
 
@@ -2077,6 +2148,7 @@
         <span class="n">allow_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">allow_excess</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">ignore_kind</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Extracts a dict of input argument values for target signature, from args</span>
 <span class="sd">        and kwargs.</span>
@@ -2169,7 +2241,7 @@
 
 <span class="sd">        &gt;&gt;&gt; sig.kwargs_from_args_and_kwargs(args=(), kwargs={&quot;x&quot;: 22})</span>
 <span class="sd">        Traceback (most recent call last):</span>
-<span class="sd">          ...</span>
+<span class="sd">        ...</span>
 <span class="sd">        TypeError: missing a required argument: &#39;w&#39;</span>
 
 <span class="sd">        But if you specify `allow_partial=True`...</span>
@@ -2185,11 +2257,11 @@
 
 <span class="sd">        &gt;&gt;&gt; sig.kwargs_from_args_and_kwargs(args=(1, 2, 3, 4), kwargs={})</span>
 <span class="sd">        Traceback (most recent call last):</span>
-<span class="sd">          ...</span>
+<span class="sd">        ...</span>
 <span class="sd">        TypeError: too many positional arguments</span>
 <span class="sd">        &gt;&gt;&gt; sig.kwargs_from_args_and_kwargs(args=(), kwargs=dict(w=1, x=2, y=3, z=4))</span>
 <span class="sd">        Traceback (most recent call last):</span>
-<span class="sd">          ...</span>
+<span class="sd">        ...</span>
 <span class="sd">        TypeError: &#39;w&#39; parameter is positional only, but was passed as a keyword</span>
 
 <span class="sd">        But if you want to ignore the kind of parameter, just say so:</span>
@@ -2203,23 +2275,23 @@
 <span class="sd">        ... )</span>
 <span class="sd">        {&#39;w&#39;: 1, &#39;x&#39;: 2, &#39;y&#39;: 3, &#39;z&#39;: 4}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">no_var_kw</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_var_keyword</span>
+
+        <span class="n">vk_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_keyword_name</span>
 
         <span class="k">if</span> <span class="n">ignore_kind</span><span class="p">:</span>
-            <span class="n">sig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize_kind</span><span class="p">(</span>
-                <span class="c1"># except_kinds=frozenset()</span>
-            <span class="p">)</span>
+            <span class="n">sig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize_kind</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">sig</span> <span class="o">=</span> <span class="bp">self</span>
 
-        <span class="c1"># no_var_kw = not sig.has_var_keyword</span>
-        <span class="k">if</span> <span class="n">no_var_kw</span><span class="p">:</span>  <span class="c1"># has no var keyword kinds</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">vk_name</span><span class="p">:</span>  <span class="c1"># has no var keyword kinds</span>
             <span class="n">sig_relevant_kwargs</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="n">name</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sig</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">kwargs</span>
             <span class="p">}</span>  <span class="c1"># take only what you need</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">sig_relevant_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>  <span class="c1"># take all the kwargs</span>
-
+            <span class="n">sig_relevant_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">vk_name</span><span class="p">},</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">vk_name</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="p">)</span>
         <span class="n">binder</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">bind_partial</span> <span class="k">if</span> <span class="n">allow_partial</span> <span class="k">else</span> <span class="n">sig</span><span class="o">.</span><span class="n">bind</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_var_positional</span> <span class="ow">and</span> <span class="n">allow_excess</span><span class="p">:</span>
             <span class="n">max_allowed_num_of_posisional_args</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
@@ -2231,15 +2303,18 @@
         <span class="k">if</span> <span class="n">apply_defaults</span><span class="p">:</span>
             <span class="n">b</span><span class="o">.</span><span class="n">apply_defaults</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">no_var_kw</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">allow_excess</span><span class="p">:</span>  <span class="c1"># don&#39;t ignore excess kwargs</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">vk_name</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">allow_excess</span><span class="p">:</span>  <span class="c1"># don&#39;t ignore excess kwargs</span>
             <span class="n">excess</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">arguments</span>
             <span class="k">if</span> <span class="n">excess</span><span class="p">:</span>
                 <span class="n">excess_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">excess</span><span class="p">)</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Got unexpected keyword arguments: </span><span class="si">{</span><span class="n">excess_str</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span></div>
-        <span class="c1"># not doing it as dict(b.arguments) because order can be different.</span>
-        <span class="c1"># return {name: b.arguments[name] for name in self.names if name in b.arguments}</span>
+        <span class="n">var_kw_name</span> <span class="o">=</span> <span class="n">name_of_var_kw_argument</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">flattened_kvs</span> <span class="o">=</span> <span class="n">expand_nested_key</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">arguments</span><span class="p">,</span> <span class="n">var_kw_name</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">flattened_kvs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
 
 <div class="viewcode-block" id="Sig.args_and_kwargs_from_kwargs"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.args_and_kwargs_from_kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">args_and_kwargs_from_kwargs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2780,6 +2855,65 @@
     <span class="p">)</span><span class="o">.</span><span class="n">to_simple_signature</span><span class="p">()</span></div>
 
 
+<span class="k">def</span> <span class="nf">_remove_variadics_from_sig</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">ch_variadic_keyword_to_keyword</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove variadics from signature</span>
+<span class="sd">    &gt;&gt;&gt; def foo(a, *args, bar, **kwargs):</span>
+<span class="sd">    ...     return f&quot;{a=}, {args=}, {bar=}, {kwargs=}&quot;</span>
+<span class="sd">    &gt;&gt;&gt; sig = Sig(foo)</span>
+<span class="sd">    &gt;&gt;&gt; assert str(sig) == &#39;(a, *args, bar, **kwargs)&#39;</span>
+<span class="sd">    &gt;&gt;&gt; new_sig = _remove_variadics_from_sig(sig)</span>
+<span class="sd">    &gt;&gt;&gt; str(new_sig)==&#39;(a, args=(), *, bar, kwargs={})&#39;</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Note that if there is not variadic positional arguments, the variadic keyword</span>
+<span class="sd">    will still be a keyword-only kind.</span>
+
+<span class="sd">    &gt;&gt;&gt; def func(a, bar=None, **kwargs):</span>
+<span class="sd">    ...     return f&quot;{a=}, {bar=}, {kwargs=}&quot;</span>
+<span class="sd">    &gt;&gt;&gt; nsig = _remove_variadics_from_sig(Sig(func))</span>
+<span class="sd">    &gt;&gt;&gt; assert str(nsig)==&#39;(a, bar=None, *, kwargs={})&#39;</span>
+
+<span class="sd">    If the function has neither variadic kinds, it will remain untouched.</span>
+
+<span class="sd">    &gt;&gt;&gt; def func(a, /, b, *, c=3):</span>
+<span class="sd">    ...     return a + b + c</span>
+<span class="sd">    &gt;&gt;&gt; sig = _remove_variadics_from_sig(Sig(func))</span>
+
+<span class="sd">    &gt;&gt;&gt; assert sig == Sig(func)</span>
+
+
+<span class="sd">    If you only want the variadic positional to be handled, but leave leave any</span>
+<span class="sd">    VARIADIC_KEYWORD kinds (**kwargs) alone, you can do so by setting</span>
+<span class="sd">    `ch_variadic_keyword_to_keyword=False`.</span>
+
+<span class="sd">    &gt;&gt;&gt; def foo(a, *args, bar=None, **kwargs):</span>
+<span class="sd">    ...     return f&quot;{a=}, {args=}, {bar=}, {kwargs=}&quot;</span>
+<span class="sd">    &gt;&gt;&gt; assert str(Sig(_remove_variadics_from_sig(Sig(foo))))==&#39;(a, args=(), *, bar=None, kwargs={})&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">idx_of_vp</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">index_of_var_positional</span>
+    <span class="n">var_keyword_argname</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">var_keyword_name</span>
+    <span class="n">result_sig</span> <span class="o">=</span> <span class="n">sig</span>
+    <span class="k">if</span> <span class="n">idx_of_vp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">var_keyword_argname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">params</span>
+        <span class="k">if</span> <span class="n">var_keyword_argname</span><span class="p">:</span>  <span class="c1"># if there&#39;s a VAR_KEYWORD argument</span>
+            <span class="k">if</span> <span class="n">ch_variadic_keyword_to_keyword</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">index_of_var_keyword</span>
+                <span class="c1"># TODO: Reflect on pros/cons of having mutable {} default here:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">{})</span>
+
+        <span class="k">try</span><span class="p">:</span>  <span class="c1"># TODO: Avoid this try catch. Look in advance for default ordering?</span>
+            <span class="k">if</span> <span class="n">idx_of_vp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">())</span>
+            <span class="n">result_sig</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">sig</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">idx_of_vp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">)</span>
+            <span class="n">result_sig</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">sig</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result_sig</span>
+
+
 <div class="viewcode-block" id="call_forgivingly"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.call_forgivingly">[docs]</a><span class="k">def</span> <span class="nf">call_forgivingly</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Call function on given args and kwargs, but only taking what the function needs</span>
@@ -3068,7 +3202,7 @@
 <span class="sd">    &gt;&gt;&gt; Sig(new_foo)</span>
 <span class="sd">    &lt;Sig (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
 <span class="sd">    &gt;&gt;&gt; all_pk_signature(signature(foo))</span>
-<span class="sd">    &lt;Signature (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
+<span class="sd">    &lt;Sig (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
 
 <span class="sd">    But note that the variadic arguments *args and **kwargs remain variadic:</span>
 
@@ -3281,7 +3415,7 @@
 
             <span class="k">if</span> <span class="n">ch_variadic_keyword_to_keyword</span><span class="p">:</span>
                 <span class="c1"># an extra level of extraction is needed in this case</span>
-                <span class="n">_var_keyword_kwargs</span> <span class="o">=</span> <span class="n">_var_keyword_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">var_keyword_argname</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="c1"># _var_keyword_kwargs = _var_keyword_kwargs.pop(var_keyword_argname, {})</span>
                 <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="n">_vp_args_</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">_var_keyword_kwargs</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># call the original function with the unravelled args</span>
@@ -3298,13 +3432,13 @@
         <span class="k">try</span><span class="p">:</span>  <span class="c1"># TODO: Avoid this try catch. Look in advance for default ordering?</span>
             <span class="k">if</span> <span class="n">idx_of_vp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">())</span>
-            <span class="n">variadic_less_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span>
+            <span class="n">variadic_less_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span>
                 <span class="n">params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">idx_of_vp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">)</span>
-            <span class="n">variadic_less_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Signature</span><span class="p">(</span>
+            <span class="n">variadic_less_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span>
                 <span class="n">params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
             <span class="p">)</span>
 
@@ -3798,19 +3932,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">validate_variadics</span><span class="p">():</span>
-        <span class="c1"># sig1 can only have a VP if sig2 also has one</span>
-        <span class="k">if</span> <span class="n">vp1</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">vp2</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">False</span>
-            <span class="n">sig1</span> <span class="o">-=</span> <span class="n">vp1</span>
-            <span class="n">sig2</span> <span class="o">-=</span> <span class="n">vp2</span>
-        <span class="c1"># sig1 can only have a VK if sig2 also has one</span>
-        <span class="k">if</span> <span class="n">vk1</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">vk2</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">False</span>
-            <span class="n">sig1</span> <span class="o">-=</span> <span class="n">vk1</span>
-            <span class="n">sig2</span> <span class="o">-=</span> <span class="n">vk2</span>
-        <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="c1"># sig1 can only have a VP if sig2 also has one</span>
+            <span class="p">(</span><span class="n">vp1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vp2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="ow">and</span>
+            <span class="c1"># sig1 can only have a VK if sig2 also has one</span>
+            <span class="p">(</span><span class="n">vk1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">vk2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">validate_param_counts</span><span class="p">():</span>
         <span class="c1"># sig1 cannot have more positional params than sig2</span>
@@ -3890,6 +4018,15 @@
     <span class="n">pos2</span><span class="p">,</span> <span class="n">pks2</span><span class="p">,</span> <span class="n">vp2</span><span class="p">,</span> <span class="n">kos2</span><span class="p">,</span> <span class="n">vk2</span> <span class="o">=</span> <span class="n">sig2</span><span class="o">.</span><span class="n">detail_names_by_kind</span><span class="p">()</span>
     <span class="n">ps2</span> <span class="o">=</span> <span class="n">pos2</span> <span class="o">+</span> <span class="n">pks2</span>
     <span class="n">ks2</span> <span class="o">=</span> <span class="n">pks2</span> <span class="o">+</span> <span class="n">kos2</span>
+
+    <span class="k">if</span> <span class="n">vp1</span><span class="p">:</span>
+        <span class="n">sig1</span> <span class="o">-=</span> <span class="n">vp1</span>
+    <span class="k">if</span> <span class="n">vk1</span><span class="p">:</span>
+        <span class="n">sig1</span> <span class="o">-=</span> <span class="n">vk1</span>
+    <span class="k">if</span> <span class="n">vp2</span><span class="p">:</span>
+        <span class="n">sig2</span> <span class="o">-=</span> <span class="n">vp2</span>
+    <span class="k">if</span> <span class="n">vk2</span><span class="p">:</span>
+        <span class="n">sig2</span> <span class="o">-=</span> <span class="n">vk2</span>
 
     <span class="k">return</span> <span class="p">(</span>
         <span class="n">validate_variadics</span><span class="p">()</span>

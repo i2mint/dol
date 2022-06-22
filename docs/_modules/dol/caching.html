@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.1.89 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.caching &mdash; dol 0.1.90 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -745,20 +745,79 @@
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">ChainMap</span><span class="p">,</span> <span class="n">deque</span>
 
 
+<span class="c1"># Note: A (big) generalization of this is a set of graphs that determines how to</span>
+<span class="c1"># operate with multiple (mutuable) mappings: The order in which to search, the stores</span>
+<span class="c1"># that should be &quot;written back&quot; to according to where the key was found, the stores that</span>
+<span class="c1"># should be synced with other stores (possibly even when searched), etc.</span>
 <div class="viewcode-block" id="WriteBackChainMap"><a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.WriteBackChainMap">[docs]</a><span class="k">class</span> <span class="nc">WriteBackChainMap</span><span class="p">(</span><span class="n">ChainMap</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A collections.ChainMap that also &#39;writes back&#39; when a key is found.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.caching import WriteBackChainMap</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; d = WriteBackChainMap({&#39;a&#39;: 1, &#39;b&#39;: 2}, {&#39;b&#39;: 22, &#39;c&#39;: 33}, {&#39;d&#39;: 444})</span>
+
+<span class="sd">    In a ``ChainMap``, when you ask for the value for a key, each mapping in the</span>
+<span class="sd">    sequence is checked for, and the first mapping found that contains it will be</span>
+<span class="sd">    the one determining the value.</span>
+
+<span class="sd">    So here if you look for `b`, though the first mapping will give you the value,</span>
+<span class="sd">    though the second mapping also contains a `b` with a different value:</span>
+
+<span class="sd">    &gt;&gt;&gt; d[&#39;b&#39;]</span>
+<span class="sd">    2</span>
+
+<span class="sd">    if you ask for `c`, it&#39;s the second mapping that will give you the value:</span>
+
+<span class="sd">    &gt;&gt;&gt; d[&#39;c&#39;]</span>
+<span class="sd">    33</span>
+
+<span class="sd">    But unlike with the builtin ``ChainMap``, something else is going to happen here:</span>
+
+<span class="sd">    &gt;&gt;&gt; d</span>
+<span class="sd">    WriteBackChainMap({&#39;a&#39;: 1, &#39;b&#39;: 2, &#39;c&#39;: 33}, {&#39;b&#39;: 22, &#39;c&#39;: 33}, {&#39;d&#39;: 444})</span>
+
+<span class="sd">    See that now the first mapping also has the ``(&#39;c&#39;, 33)`` key-value pair:</span>
+
+<span class="sd">    That is what we call &quot;write back&quot;.</span>
+
+<span class="sd">    When a key is found in a mapping, all previous mappings (which by definition of</span>
+<span class="sd">    ``ChainMap`` did not have a value for that key) will be revisited and that key-value</span>
+<span class="sd">    pair will be written in it.</span>
+
+<span class="sd">    As in with ``ChainMap``, all writes will be carried out in the first mapping,</span>
+<span class="sd">    and only the first mapping:</span>
+
+<span class="sd">    &gt;&gt;&gt; d[&#39;e&#39;] = 5</span>
+<span class="sd">    &gt;&gt;&gt; d</span>
+<span class="sd">    WriteBackChainMap({&#39;a&#39;: 1, &#39;b&#39;: 2, &#39;c&#39;: 33, &#39;e&#39;: 5}, {&#39;b&#39;: 22, &#39;c&#39;: 33}, {&#39;d&#39;: 444})</span>
+
+<span class="sd">    Example use cases:</span>
+
+<span class="sd">    - You&#39;re working with a local and a remote source of data. You&#39;d like to list the</span>
+<span class="sd">    keys available in both, and use the local item if it&#39;s available, and if it&#39;s not,</span>
+<span class="sd">    you want it to be sourced from remote, but written in local for quicker access</span>
+<span class="sd">    next time.</span>
+
+<span class="sd">    - You have several sources to look for configuration values: a sequence of</span>
+<span class="sd">    configuration files/folders to look through (like a unix search path for command</span>
+<span class="sd">    resolution) and environment variables.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">max_key_search_depth</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="n">q</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([])</span>
-        <span class="k">for</span> <span class="n">mapping</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>  <span class="c1"># can&#39;t use &#39;key in mapping&#39; with defaultdict</span>
-                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">q</span><span class="p">:</span>
-                    <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-                <span class="k">return</span> <span class="n">v</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__missing__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([])</span>  <span class="c1"># a queue to remember the &quot;failed&quot; mappings</span>
+        <span class="k">for</span> <span class="n">mapping</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="p">:</span>  <span class="c1"># for each mapping</span>
+            <span class="k">try</span><span class="p">:</span>  <span class="c1"># try getting  a value for that key</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>  <span class="c1"># Note: can&#39;t use &#39;key in mapping&#39; with defaultdict</span>
+                <span class="c1"># if that mapping had that key</span>
+                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">q</span><span class="p">:</span>  <span class="c1"># make sure all other previous mappings</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>  <span class="c1"># get that value too (* this is the &quot;write back&quot;)</span>
+                <span class="k">return</span> <span class="n">v</span>  <span class="c1"># and then return the value</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>  <span class="c1"># if you get a key error for that mapping</span>
+                <span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>  <span class="c1"># remember that mapping, so you can write back (*)</span>
+        <span class="c1"># if no such key was found in any of the self.maps...</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__missing__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>  <span class="c1"># ... call __missing__</span>
 
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span>
