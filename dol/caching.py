@@ -654,20 +654,78 @@ def mk_write_cached_store(store=None, *, w_cache=dict, flush_cache_condition=Non
 from collections import ChainMap, deque
 
 
+# Note: A (big) generalization of this is a set of graphs that determines how to
+# operate with multiple (mutuable) mappings: The order in which to search, the stores
+# that should be "written back" to according to where the key was found, the stores that
+# should be synced with other stores (possibly even when searched), etc.
 class WriteBackChainMap(ChainMap):
+    """A collections.ChainMap that also 'writes back' when a key is found.
+
+    >>> from dol.caching import WriteBackChainMap
+    >>>
+    >>> d = WriteBackChainMap({'a': 1, 'b': 2}, {'b': 22, 'c': 33}, {'d': 444})
+
+    In a ``ChainMap``, when you ask for the value for a key, each mapping in the
+    sequence is checked for, and the first mapping found that contains it will be
+    the one determining the value.
+
+    So here if you look for `b`, though the first mapping will give you the value,
+    though the second mapping also contains a `b` with a different value:
+
+    >>> d['b']
+    2
+
+    if you ask for `c`, it's the second mapping that will give you the value:
+
+    >>> d['c']
+    33
+
+    But unlike with the builtin ``ChainMap``, something else is going to happen here:
+
+    >>> d
+    WriteBackChainMap({'a': 1, 'b': 2, 'c': 33}, {'b': 22, 'c': 33}, {'d': 444})
+
+    See that now the first mapping also has the ``('c', 33)`` key-value pair:
+
+    That is what we call "write back".
+
+    When a key is found in a mapping, all previous mappings (which by definition of
+    ``ChainMap`` did not have a value for that key) will be revisited and that key-value
+    pair will be written in it.
+
+    As in with ``ChainMap``, all writes will be carried out in the first mapping,
+    and only the first mapping:
+
+    >>> d['e'] = 5
+    >>> d
+    WriteBackChainMap({'a': 1, 'b': 2, 'c': 33, 'e': 5}, {'b': 22, 'c': 33}, {'d': 444})
+
+    Example use cases:
+
+    - You're working with a local and a remote source of data. You'd like to list the
+    keys available in both, and use the local item if it's available, and if it's not,
+    you want it to be sourced from remote, but written in local for quicker access
+    next time.
+
+    - You have several sources to look for configuration values: a sequence of
+    configuration files/folders to look through (like a unix search path for command
+    resolution) and environment variables.
+    """
     max_key_search_depth = 1
 
     def __getitem__(self, key):
-        q = deque([])
-        for mapping in self.maps:
-            try:
-                v = mapping[key]  # can't use 'key in mapping' with defaultdict
-                for d in q:
-                    d[key] = v
-                return v
-            except KeyError:
-                q.append(mapping)
-        return self.__missing__(key)
+        q = deque([])  # a queue to remember the "failed" mappings
+        for mapping in self.maps:  # for each mapping
+            try:  # try getting  a value for that key
+                v = mapping[key]  # Note: can't use 'key in mapping' with defaultdict
+                # if that mapping had that key
+                for d in q:  # make sure all other previous mappings
+                    d[key] = v  # get that value too (* this is the "write back")
+                return v  # and then return the value
+            except KeyError:  # if you get a key error for that mapping
+                q.append(mapping)  # remember that mapping, so you can write back (*)
+        # if no such key was found in any of the self.maps...
+        return self.__missing__(key)  # ... call __missing__
 
     def __len__(self):
         return len(
