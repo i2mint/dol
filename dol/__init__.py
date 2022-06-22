@@ -28,7 +28,9 @@ from dol.zipfiledol import *
 
 from dol.filesys import (
     Files,  # for read-write-delete access to files; relative paths, bytes values
-    FilesReader,  # read-only version of LocalFiles
+    FilesReader,  # read-only version of LocalFiles,
+    TextFiles,
+    mk_dirs_if_missing,  # store deco to create directories on write, when missing
     MakeMissingDirsStoreMixin,  # Mixin to enable auto-dir-making on write
     resolve_path,  # to get a full path (resolve ~ and .)
 )

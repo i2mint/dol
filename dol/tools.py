@@ -2,14 +2,19 @@
 Various tools to add functionality to stores
 """
 
-from itertools import islice
+from typing import Optional, Callable
 from collections.abc import Mapping
 
+from dol.base import Store
+from dol.trans import store_decorator
 
 NoSuchKey = type('NoSuchKey', (), {})
 
 
 # ------------ useful trans functions to be used with wrap_kvs etc. ---------------------
+# TODO: Consider typing or decorating functions to indicate their role (e.g. id_of_key,
+#   key_of_id, data_of_obj, obj_of_data, preset, postget...)
+
 
 _dflt_confirm_overwrite_user_input_msg = (
     'The key {k} already exists and has value {existing_v}. '
@@ -17,6 +22,7 @@ _dflt_confirm_overwrite_user_input_msg = (
 )
 
 # TODO: Parametrize user messages (bring to interface)
+# role: preset
 def confirm_overwrite(
     mapping, k, v, user_input_msg=_dflt_confirm_overwrite_user_input_msg
 ):
@@ -48,18 +54,79 @@ def confirm_overwrite(
 
     """
     if (existing_v := mapping.get(k, NoSuchKey)) is not NoSuchKey and existing_v != v:
-        user_input = input(
-            _dflt_confirm_overwrite_user_input_msg.format(
-                k=k, v=v, existing_v=existing_v
-            )
-        )
+        user_input = input(user_input_msg.format(k=k, v=v, existing_v=existing_v))
         if user_input != v:
             print(f"--> User confirmation failed: I won't overwrite {k}")
-            return existing_v  # this will have the effect of rewriting the same value that's there already
+            # this will have the effect of rewriting the same value that's there already:
+            return existing_v
     return v
 
 
 # --------------------------------------- Misc ------------------------------------------
+
+_dflt_ask_user_for_value_when_missing_msg = (
+    'No such key was found. You can enter a value for it here '
+    'or simply hit enter to leave the slot empty'
+)
+
+
+def convert_to_numerical_if_possible(s: str):
+    """To be used with ``ask_user_for_value_when_missing`` ``value_preprocessor`` arg
+
+    >>> convert_to_numerical_if_possible("123")
+    123
+    >>> convert_to_numerical_if_possible("123.4")
+    123.4
+    >>> convert_to_numerical_if_possible("one")
+    'one'
+
+    Border case: The strings "infinity" and "inf" actually convert to a valid float.
+
+    >>> convert_to_numerical_if_possible("infinity")
+    inf
+    """
+    try:
+        s = int(s)
+    except ValueError:
+        try:
+            s = float(s)
+        except ValueError:
+            pass
+    return s
+
+
+@store_decorator
+def ask_user_for_value_when_missing(
+    store=None,
+    *,
+    value_preprocessor: Optional[Callable] = None,
+    on_missing_msg: str = _dflt_ask_user_for_value_when_missing_msg,
+):
+    """Wrap a store so if a value is missing when the user asks for it, they will be
+    given a chance to enter the value they want to write.
+
+    :param store: The store (instance or class) to wrap
+    :param value_preprocessor: Function to transform the user value before trying to
+        write it (bearing in mind all user specified values are strings)
+    :param on_missing_msg: String that will be displayed to prompt the user to enter a
+        value
+    :return:
+    """
+
+    store = Store.wrap(store)
+
+    def __missing__(self, k):
+        user_value = input(on_missing_msg + f' Value for {k}:\n')
+
+        if user_value:
+            if value_preprocessor:
+                user_value = value_preprocessor(user_value)
+            self[k] = user_value
+        else:
+            super().__missing__(k)
+
+    store.__missing__ = __missing__
+    return store
 
 
 class iSliceStore(Mapping):
