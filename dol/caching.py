@@ -711,6 +711,7 @@ class WriteBackChainMap(ChainMap):
     configuration files/folders to look through (like a unix search path for command
     resolution) and environment variables.
     """
+
     max_key_search_depth = 1
 
     def __getitem__(self, key):

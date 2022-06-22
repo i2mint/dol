@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.89 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.90 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -345,16 +345,36 @@ One of the intents is to be able to do things like:</p>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">some_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="o">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">some_func</span><span class="p">)</span>
-<span class="go">&lt;Signature (w, i, /, a, x: float = 1, y=1, j=2, b=3.14, c: int = 42, *, z: int = 1)&gt;</span>
+<span class="go">&lt;Sig (w, i, /, a, x: float = 1, y=1, j=2, b=3.14, c: int = 42, *, z: int = 1)&gt;</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">+</span> <span class="n">g</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="nb">int</span><span class="p">)]</span> <span class="o">-</span> <span class="s2">&quot;b&quot;</span> <span class="o">-</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@sig</span>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">some_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="o">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">some_func</span><span class="p">)</span>
-<span class="go">&lt;Signature (w, i, x: float = 1, y=1, j=2, c: int = 42)&gt;</span>
+<span class="go">&lt;Sig (w, i, x: float = 1, y=1, j=2, c: int = 42)&gt;</span>
 </pre></div>
 </div>
+<dl class="py method">
+<dt id="dol.signatures.Sig.add_params">
+<code class="sig-name descname">add_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">Iterable</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.add_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.add_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new instance of Sig after merging the parameters of this signature
+with a list of new parameters. The new list of parameters is automatically
+sorted based on signature constraints given by kinds and default values.
+See Python native signature documentation for more details.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, /, b, *, c)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">add_params</span><span class="p">([</span>
+<span class="gp">... </span>    <span class="n">Param</span><span class="p">(</span><span class="s1">&#39;kwargs&#39;</span><span class="p">,</span> <span class="n">VK</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">KO</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Param</span><span class="p">(</span><span class="s1">&#39;args&#39;</span><span class="p">,</span> <span class="n">VP</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="s1">&#39;e&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">Param</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">PO</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">])</span>
+<span class="go">&lt;Sig (a, f, /, b, e, *args, c, d, **kwargs)&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py method">
 <dt id="dol.signatures.Sig.annotations">
 <em class="property">property </em><code class="sig-name descname">annotations</code><a class="headerlink" href="#dol.signatures.Sig.annotations" title="Permalink to this definition">¶</a></dt>
@@ -760,7 +780,7 @@ all valid ways to call the signature are valid for <code class="docutils literal
 
 <dl class="py method">
 <dt id="dol.signatures.Sig.kwargs_from_args_and_kwargs">
-<code class="sig-name descname">kwargs_from_args_and_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="n">kwargs</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_excess</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_kind</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.kwargs_from_args_and_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.kwargs_from_args_and_kwargs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">kwargs_from_args_and_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="n">kwargs</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_excess</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_kind</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.kwargs_from_args_and_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.kwargs_from_args_and_kwargs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extracts a dict of input argument values for target signature, from args
 and kwargs.</p>
 <p>When you need to manage how the arguments of a function are specified,
@@ -850,7 +870,7 @@ set to <cite>True</cite>, to underspecify the params of a function (in view of b
 completed later).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">})</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;w&#39;</span>
 </pre></div>
 </div>
@@ -866,11 +886,11 @@ controllable here:
 Position only and keyword only kinds need to be respected:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{})</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">too many positional arguments</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">&#39;w&#39; parameter is positional only, but was passed as a keyword</span>
 </pre></div>
 </div>
@@ -1336,7 +1356,7 @@ See below for examples.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">inspect</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>  <span class="c1"># see that</span>
-<span class="go">&lt;Signature (w, x: int, y=2, z: int = 10)&gt;</span>
+<span class="go">&lt;Sig (w, x: int, y=2, z: int = 10)&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># But (unlike with functools.wraps) here we get __defaults__ and</span>
 <span class="go">__kwdefault__</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="vm">__defaults__</span>  <span class="c1"># see that x has no more default &amp; z&#39;s default is now 10</span>
@@ -1400,7 +1420,7 @@ implementation though!</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">new_foo</span><span class="p">)</span>
 <span class="go">&lt;Sig (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">all_pk_signature</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">foo</span><span class="p">))</span>
-<span class="go">&lt;Signature (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
+<span class="go">&lt;Sig (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
 </pre></div>
 </div>
 <p>But note that the variadic arguments <a href="#id21"><span class="problematic" id="id22">*</span></a>args and <a href="#id23"><span class="problematic" id="id24">**</span></a>kwargs remain variadic:</p>
@@ -1626,7 +1646,7 @@ implementation though!</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">new_foo</span><span class="p">)</span>
 <span class="go">&lt;Sig (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">all_pk_signature</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">foo</span><span class="p">))</span>
-<span class="go">&lt;Signature (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
+<span class="go">&lt;Sig (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
 </pre></div>
 </div>
 <p>But note that the variadic arguments <a href="#id31"><span class="problematic" id="id32">*</span></a>args and <a href="#id33"><span class="problematic" id="id34">**</span></a>kwargs remain variadic:</p>
