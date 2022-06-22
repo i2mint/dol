@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.1.88 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.1.89 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -100,6 +100,7 @@
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span> <span class="k">as</span> <span class="n">_wraps</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partialmethod</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">WRAPPER_ASSIGNMENTS</span>
 <span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">MethodType</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">Signature</span><span class="p">,</span> <span class="n">signature</span><span class="p">,</span> <span class="n">Parameter</span>
 
 
 <span class="c1"># monkey patching WRAPPER_ASSIGNMENTS to get &quot;proper&quot; wrapping (adding defaults and kwdefaults</span>
@@ -107,6 +108,35 @@
 
 <span class="n">update_wrapper</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_update_wrapper</span><span class="p">,</span> <span class="n">assigned</span><span class="o">=</span><span class="n">wrapper_assignments</span><span class="p">)</span>
 <span class="n">wraps</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_wraps</span><span class="p">,</span> <span class="n">assigned</span><span class="o">=</span><span class="n">wrapper_assignments</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Literal"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.Literal">[docs]</a><span class="k">class</span> <span class="nc">Literal</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;An object to indicate that the value should be considered literally.</span>
+
+<span class="sd">    &gt;&gt;&gt; t = Literal(42)</span>
+<span class="sd">    &gt;&gt;&gt; t.get_val()</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; t()</span>
+<span class="sd">    42</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">val</span>
+
+<div class="viewcode-block" id="Literal.get_val"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.Literal.get_val">[docs]</a>    <span class="k">def</span> <span class="nf">get_val</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the value wrapped by Literal instance.</span>
+
+<span class="sd">        One might want to use ``literal.get_val()`` instead ``literal()`` to get the</span>
+<span class="sd">        value a ``Literal`` is wrapping because ``.get_val`` is more explicit.</span>
+
+<span class="sd">        That said, with a bit of hesitation, we allow the ``literal()`` form as well</span>
+<span class="sd">        since it is useful in situations where we need to use a callback function to</span>
+<span class="sd">        get a value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">val</span></div>
+
+    <span class="fm">__call__</span> <span class="o">=</span> <span class="n">get_val</span></div>
 
 
 <span class="k">def</span> <span class="nf">_isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="p">):</span>
@@ -226,8 +256,6 @@
 
 <span class="n">_delete_keys_one_by_one</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">_delete_keys_one_by_one_with_keyerror_supressed</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">False</span>
-
-<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">Signature</span>
 
 <span class="n">_dflt_signature</span> <span class="o">=</span> <span class="n">Signature</span><span class="o">.</span><span class="n">from_callable</span><span class="p">(</span><span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
 
@@ -721,8 +749,6 @@
     <span class="n">Callable</span><span class="p">[[</span><span class="n">GroupKey</span><span class="p">,</span> <span class="n">GroupItems</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
     <span class="n">Callable</span><span class="p">[[</span><span class="n">Groups</span><span class="p">,</span> <span class="n">GroupKey</span><span class="p">,</span> <span class="n">GroupItems</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
 <span class="p">]</span>
-
-<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span>
 
 
 <div class="viewcode-block" id="igroupby"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.igroupby">[docs]</a><span class="k">def</span> <span class="nf">igroupby</span><span class="p">(</span>
@@ -1232,8 +1258,41 @@
         <span class="k">return</span> <span class="kc">True</span>
 
 
-<span class="k">def</span> <span class="nf">num_of_args</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+<div class="viewcode-block" id="num_of_required_args"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.num_of_required_args">[docs]</a><span class="k">def</span> <span class="nf">num_of_required_args</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Number or REQUIRED arguments of a function.</span>
+
+<span class="sd">    Contrast the behavior below with that of ``num_of_args``, which counts all</span>
+<span class="sd">    parameters, including the variadics and defaulted ones.</span>
+
+<span class="sd">    &gt;&gt;&gt; num_of_required_args(lambda a, b, c: None)</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; num_of_required_args(lambda a, b, c=3: None)</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; num_of_required_args(lambda a, *args, b, c=1, d=2, **kwargs: None)</span>
+<span class="sd">    2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">var_param_kinds</span> <span class="o">=</span> <span class="p">{</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span><span class="p">,</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">}</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">var_param_kinds</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="num_of_args"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.num_of_args">[docs]</a><span class="k">def</span> <span class="nf">num_of_args</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Number of arguments (parameters) of the function.</span>
+
+<span class="sd">    Contrast the behavior below with that of ``num_of_required_args``.</span>
+
+<span class="sd">    &gt;&gt;&gt; num_of_args(lambda a, b, c: None)</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; num_of_args(lambda a, b, c=3: None)</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; num_of_args(lambda a, *args, b, c=1, d=2, **kwargs: None)</span>
+<span class="sd">    6</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
