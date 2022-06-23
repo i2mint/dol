@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.1.90 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.tools &mdash; dol 0.1.91 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -93,14 +93,19 @@
 <span class="sd">Various tools to add functionality to stores</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">islice</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
 
+<span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
+<span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">store_decorator</span>
 
 <span class="n">NoSuchKey</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;NoSuchKey&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})</span>
 
 
 <span class="c1"># ------------ useful trans functions to be used with wrap_kvs etc. ---------------------</span>
+<span class="c1"># TODO: Consider typing or decorating functions to indicate their role (e.g. id_of_key,</span>
+<span class="c1">#   key_of_id, data_of_obj, obj_of_data, preset, postget...)</span>
+
 
 <span class="n">_dflt_confirm_overwrite_user_input_msg</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s1">&#39;The key </span><span class="si">{k}</span><span class="s1"> already exists and has value </span><span class="si">{existing_v}</span><span class="s1">. &#39;</span>
@@ -108,6 +113,7 @@
 <span class="p">)</span>
 
 <span class="c1"># TODO: Parametrize user messages (bring to interface)</span>
+<span class="c1"># role: preset</span>
 <div class="viewcode-block" id="confirm_overwrite"><a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.confirm_overwrite">[docs]</a><span class="k">def</span> <span class="nf">confirm_overwrite</span><span class="p">(</span>
     <span class="n">mapping</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">user_input_msg</span><span class="o">=</span><span class="n">_dflt_confirm_overwrite_user_input_msg</span>
 <span class="p">):</span>
@@ -139,18 +145,79 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">existing_v</span> <span class="o">:=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">NoSuchKey</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">NoSuchKey</span> <span class="ow">and</span> <span class="n">existing_v</span> <span class="o">!=</span> <span class="n">v</span><span class="p">:</span>
-        <span class="n">user_input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span>
-            <span class="n">_dflt_confirm_overwrite_user_input_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span> <span class="n">existing_v</span><span class="o">=</span><span class="n">existing_v</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
+        <span class="n">user_input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">user_input_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span> <span class="n">existing_v</span><span class="o">=</span><span class="n">existing_v</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">user_input</span> <span class="o">!=</span> <span class="n">v</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;--&gt; User confirmation failed: I won&#39;t overwrite </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">existing_v</span>  <span class="c1"># this will have the effect of rewriting the same value that&#39;s there already</span>
+            <span class="c1"># this will have the effect of rewriting the same value that&#39;s there already:</span>
+            <span class="k">return</span> <span class="n">existing_v</span>
     <span class="k">return</span> <span class="n">v</span></div>
 
 
 <span class="c1"># --------------------------------------- Misc ------------------------------------------</span>
+
+<span class="n">_dflt_ask_user_for_value_when_missing_msg</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s1">&#39;No such key was found. You can enter a value for it here &#39;</span>
+    <span class="s1">&#39;or simply hit enter to leave the slot empty&#39;</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="convert_to_numerical_if_possible"><a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.convert_to_numerical_if_possible">[docs]</a><span class="k">def</span> <span class="nf">convert_to_numerical_if_possible</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;To be used with ``ask_user_for_value_when_missing`` ``value_preprocessor`` arg</span>
+
+<span class="sd">    &gt;&gt;&gt; convert_to_numerical_if_possible(&quot;123&quot;)</span>
+<span class="sd">    123</span>
+<span class="sd">    &gt;&gt;&gt; convert_to_numerical_if_possible(&quot;123.4&quot;)</span>
+<span class="sd">    123.4</span>
+<span class="sd">    &gt;&gt;&gt; convert_to_numerical_if_possible(&quot;one&quot;)</span>
+<span class="sd">    &#39;one&#39;</span>
+
+<span class="sd">    Border case: The strings &quot;infinity&quot; and &quot;inf&quot; actually convert to a valid float.</span>
+
+<span class="sd">    &gt;&gt;&gt; convert_to_numerical_if_possible(&quot;infinity&quot;)</span>
+<span class="sd">    inf</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">s</span></div>
+
+
+<div class="viewcode-block" id="ask_user_for_value_when_missing"><a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.ask_user_for_value_when_missing">[docs]</a><span class="nd">@store_decorator</span>
+<span class="k">def</span> <span class="nf">ask_user_for_value_when_missing</span><span class="p">(</span>
+    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">value_preprocessor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">on_missing_msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_dflt_ask_user_for_value_when_missing_msg</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrap a store so if a value is missing when the user asks for it, they will be</span>
+<span class="sd">    given a chance to enter the value they want to write.</span>
+
+<span class="sd">    :param store: The store (instance or class) to wrap</span>
+<span class="sd">    :param value_preprocessor: Function to transform the user value before trying to</span>
+<span class="sd">        write it (bearing in mind all user specified values are strings)</span>
+<span class="sd">    :param on_missing_msg: String that will be displayed to prompt the user to enter a</span>
+<span class="sd">        value</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">store</span> <span class="o">=</span> <span class="n">Store</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__missing__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="n">user_value</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">on_missing_msg</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39; Value for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">user_value</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value_preprocessor</span><span class="p">:</span>
+                <span class="n">user_value</span> <span class="o">=</span> <span class="n">value_preprocessor</span><span class="p">(</span><span class="n">user_value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__missing__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+    <span class="n">store</span><span class="o">.</span><span class="fm">__missing__</span> <span class="o">=</span> <span class="fm">__missing__</span>
+    <span class="k">return</span> <span class="n">store</span></div>
 
 
 <div class="viewcode-block" id="iSliceStore"><a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.iSliceStore">[docs]</a><span class="k">class</span> <span class="nc">iSliceStore</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
