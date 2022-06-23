@@ -129,9 +129,13 @@ def resolve_path(path, assert_existence: bool = False):
     return path
 
 
-def _resolve_dir(dirpath: str, assert_existence: bool = False):
+def resolve_dir(
+    dirpath: str, assert_existence: bool = False, ensure_existence: bool = False
+):
     """Resolve a path to a full, real, path to a directory"""
     dirpath = resolve_path(dirpath)
+    if ensure_existence and not os.path.isdir(dirpath):
+        os.makedirs(dirpath, exist_ok=True)
     if assert_existence:
         assert os.path.isdir(dirpath), f"This directory wasn't found: {dirpath}"
     return dirpath
@@ -150,7 +154,7 @@ class FileSysCollection(Collection):
         include_hidden=False,
         assert_rootdir_existence=False,
     ):
-        rootdir = _resolve_dir(rootdir, assert_existence=assert_rootdir_existence)
+        rootdir = resolve_dir(rootdir, assert_existence=assert_rootdir_existence)
         if max_levels is None:
             max_levels = inf
         subpath_implied_min_levels = len(subpath.split(os.path.sep)) - 1
@@ -384,7 +388,7 @@ class MakeMissingDirsStoreMixin:
     def __setitem__(self, k, v):
         _id = self._id_of_key(k)
         dirname = os.path.dirname(_id)
-        os.makedirs(dirname, exist_ok=1)
+        os.makedirs(dirname, exist_ok=True)
         super().__setitem__(k, v)
 
 

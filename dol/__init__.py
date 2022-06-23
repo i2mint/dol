@@ -32,7 +32,8 @@ from dol.filesys import (
     TextFiles,
     mk_dirs_if_missing,  # store deco to create directories on write, when missing
     MakeMissingDirsStoreMixin,  # Mixin to enable auto-dir-making on write
-    resolve_path,  # to get a full path (resolve ~ and .)
+    resolve_path,  # to get a full path (resolve ~ and .),
+    resolve_dir,
 )
 
 from dol.util import (
