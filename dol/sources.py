@@ -437,17 +437,15 @@ class Attrs(ObjReader):
 Ddir = Attrs  # for back-compatibility, temporarily
 
 
-# TODO: Make it work with a store, without having to load and store the values explicitly.
-class DictAttr(KvPersister):
-    """Convenience class to hold Key-Val pairs with both a dict-like and struct-like
-    interface.
+class AttrContainer:
+    """Convenience class to hold Key-Val pairs as attribute-val pairs, with all the
+    magic methods of mappings.
 
-    The dict-like interface has just the basic get/set/del/iter/len
-    (all "dunders": none visible as methods). There is no get, update, etc.
-    This is on purpose, so that the only visible attributes
-    (those you get by tab-completion for instance) are the those you injected.
+    On the other hand, you will not get the usuall non-dunders (non magic methods) of
+    ``Mappings``. This is so that you can use tab completion to access only the keys
+    the container has, and no any of the non-dunder methods like ``get``, ``items``, etc.
 
-    >>> da = DictAttr(foo='bar', life=42)
+    >>> da = AttrContainer(foo='bar', life=42)
     >>> da.foo
     'bar'
     >>> da['life']
@@ -460,13 +458,12 @@ class DictAttr(KvPersister):
     'forever'
     >>> list(da)  # list fields (i.e. keys i.e. attributes)
     ['foo', 'life', 'true', 'friends']
-    >>> list(da.items())
-    [('foo', 'bar'), ('life', 42), ('true', 'love'), ('friends', 'forever')]
+
     >>> del da['friends']  # delete as dict
     >>> del da.foo # delete as attribute
     >>> list(da)
     ['life', 'true']
-    >>> da._source  # the hidden dict that is wrapped
+    >>> da._source  # the hidden Mapping (here dict) that is wrapped
     {'life': 42, 'true': 'love'}
 
     .. seealso:: Objects in ``py2store.utils.attr_dict`` module
@@ -476,12 +473,11 @@ class DictAttr(KvPersister):
 
     def __init__(self, _source: Optional[Mapping] = None, **keys_and_values):
         if _source is not None:
-            assert isinstance(_source, Mapping)
-            self._source = _source
-        else:
-            super().__setattr__('_source', {})
-            for k, v in keys_and_values.items():
-                setattr(self, k, v)
+            assert isinstance(_source, Mapping), f'Must be a mapping, was {_source}'
+            keys_and_values = dict(_source, **keys_and_values)
+        super().__setattr__('_source', {})
+        for k, v in keys_and_values.items():
+            setattr(self, k, v)
 
     def __getitem__(self, k):
         return self._source[k]
@@ -505,3 +501,43 @@ class DictAttr(KvPersister):
     def __delattr__(self, k):
         del self._source[k]
         super().__delattr__(k)
+
+    def __repr__(self):
+        return super().__repr__()
+
+
+# TODO: Make it work with a store, without having to load and store the values explicitly.
+class AttrDict(AttrContainer, KvPersister):
+    """Convenience class to hold Key-Val pairs with both a dict-like and struct-like
+    interface.
+
+    The dict-like interface has just the basic get/set/del/iter/len
+    (all "dunders": none visible as methods). There is no get, update, etc.
+    This is on purpose, so that the only visible attributes
+    (those you get by tab-completion for instance) are the those you injected.
+
+    >>> da = AttrDict(foo='bar', life=42)
+
+    You get the "keys as attributes" that you get with ``AttrContainer``:
+
+    >>> da.foo
+    'bar'
+
+    But additionally, you get the extra ``Mapping`` methods:
+
+    >>> da.get('foo')
+    'bar'
+    >>> da.get('not_a_key', 'default')
+    'default'
+    >>> list(da.items())
+    [('foo', 'bar'), ('life', 42), ('true', 'love'), ('friends', 'forever')]
+    >>> list(da.keys())
+    ['foo', 'life]
+    >>> list(da.values())
+    ['bar', 42]
+
+    etc.
+
+    .. seealso:: Objects in ``py2store.utils.attr_dict`` module
+    """
+
