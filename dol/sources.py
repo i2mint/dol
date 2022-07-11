@@ -441,6 +441,7 @@ Ddir = Attrs  # for back-compatibility, temporarily
 class DictAttr(KvPersister):
     """Convenience class to hold Key-Val pairs with both a dict-like and struct-like
     interface.
+
     The dict-like interface has just the basic get/set/del/iter/len
     (all "dunders": none visible as methods). There is no get, update, etc.
     This is on purpose, so that the only visible attributes
@@ -467,6 +468,8 @@ class DictAttr(KvPersister):
     ['life', 'true']
     >>> da._source  # the hidden dict that is wrapped
     {'life': 42, 'true': 'love'}
+
+    .. seealso:: Objects in ``py2store.utils.attr_dict`` module
     """
 
     _source = None
