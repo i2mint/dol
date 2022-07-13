@@ -1,8 +1,8 @@
 """
 This module contains key-value views of disparate sources.
 """
-from typing import Mapping, Iterable, Optional, Callable, Union
-from operator import itemgetter
+from typing import Mapping, Iterable, Optional, Callable, Union, Any
+from operator import itemgetter, attrgetter
 from itertools import groupby as itertools_groupby
 from contextlib import suppress
 
@@ -466,18 +466,52 @@ class AttrContainer:
     >>> da._source  # the hidden Mapping (here dict) that is wrapped
     {'life': 42, 'true': 'love'}
 
+    If you don't specify a name for some objects, ``AttrContainer`` will use the
+    ``__name__`` attribute of the objects:
+
+    >>> d = AttrContainer(map, tuple, obj='objects')
+    >>> list(d)
+    ['map', 'tuple', 'obj']
+
+    You can also specify a different way of auto naming the objects:
+
+    >>> d = AttrContainer('an', 'example', _object_namer=lambda x: f"_{len(x)}")
+    >>> {k: getattr(d, k) for k in d}
+    {'_2': 'an', '_7': 'example'}
+
     .. seealso:: Objects in ``py2store.utils.attr_dict`` module
     """
 
     _source = None
 
-    def __init__(self, _source: Optional[Mapping] = None, **keys_and_values):
-        if _source is not None:
-            assert isinstance(_source, Mapping), f'Must be a mapping, was {_source}'
-            keys_and_values = dict(_source, **keys_and_values)
+    def __init__(
+        self,
+        *objects,
+        _object_namer: Callable[[Any], str] = attrgetter('__name__'),
+        **named_objects,
+    ):
+        if objects:
+            auto_named_objects = {_object_namer(obj): obj for obj in objects}
+            self._validate_named_objects(auto_named_objects, named_objects)
+            named_objects = dict(auto_named_objects, **named_objects)
+
         super().__setattr__('_source', {})
-        for k, v in keys_and_values.items():
+        for k, v in named_objects.items():
             setattr(self, k, v)
+
+    @staticmethod
+    def _validate_named_objects(auto_named_objects, named_objects):
+        if not all(map(str.isidentifier, auto_named_objects)):
+            raise ValueError(
+                'All names produced by _object_namer should be valid python identifiers:'
+                f" {', '.join(x for x in auto_named_objects if not x.isidentifier())}"
+            )
+        clashing_names = auto_named_objects.keys() & named_objects.keys()
+        if clashing_names:
+            raise ValueError(
+                'Some auto named objects clashed with named ones: '
+                f"{', '.join(clashing_names)}"
+            )
 
     def __getitem__(self, k):
         return self._source[k]
@@ -525,19 +559,24 @@ class AttrDict(AttrContainer, KvPersister):
 
     But additionally, you get the extra ``Mapping`` methods:
 
+    >>> list(da.keys())
+    ['foo', 'life']
+    >>> list(da.values())
+    ['bar', 42]
     >>> da.get('foo')
     'bar'
     >>> da.get('not_a_key', 'default')
     'default'
+
+    You can assign through key or attribute assignment:
+
+    >>> da['true'] = 'love'
+    >>> da.friends = 'forever'
     >>> list(da.items())
     [('foo', 'bar'), ('life', 42), ('true', 'love'), ('friends', 'forever')]
-    >>> list(da.keys())
-    ['foo', 'life]
-    >>> list(da.values())
-    ['bar', 42]
+
 
     etc.
 
     .. seealso:: Objects in ``py2store.utils.attr_dict`` module
     """
-
