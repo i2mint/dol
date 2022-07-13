@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.1.93 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.sources &mdash; dol 0.1.94 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -94,6 +94,98 @@
 <span id="dol-sources"></span><h1>dol.sources<a class="headerlink" href="#module-dol.sources" title="Permalink to this headline">¶</a></h1>
 <p>This module contains key-value views of disparate sources.</p>
 <dl class="py class">
+<dt id="dol.sources.AttrContainer">
+<em class="property">class </em><code class="sig-prename descclassname">dol.sources.</code><code class="sig-name descname">AttrContainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">objects</span></em>, <em class="sig-param"><span class="n">_object_namer</span><span class="p">:</span> <span class="n">Callable<span class="p">[</span><span class="p">[</span>Any<span class="p">]</span><span class="p">, </span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">operator.attrgetter('__name__')</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">named_objects</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#AttrContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.sources.AttrContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience class to hold Key-Val pairs as attribute-val pairs, with all the
+magic methods of mappings.</p>
+<p>On the other hand, you will not get the usuall non-dunders (non magic methods) of
+<code class="docutils literal notranslate"><span class="pre">Mappings</span></code>. This is so that you can use tab completion to access only the keys
+the container has, and no any of the non-dunder methods like <code class="docutils literal notranslate"><span class="pre">get</span></code>, <code class="docutils literal notranslate"><span class="pre">items</span></code>, etc.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">da</span> <span class="o">=</span> <span class="n">AttrContainer</span><span class="p">(</span><span class="n">foo</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">life</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">&#39;bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="p">[</span><span class="s1">&#39;life&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">true</span> <span class="o">=</span> <span class="s1">&#39;love&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>  <span class="c1"># count the number of fields</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="p">[</span><span class="s1">&#39;friends&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;forever&#39;</span>  <span class="c1"># write as dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">friends</span>  <span class="c1"># read as attribute</span>
+<span class="go">&#39;forever&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>  <span class="c1"># list fields (i.e. keys i.e. attributes)</span>
+<span class="go">[&#39;foo&#39;, &#39;life&#39;, &#39;true&#39;, &#39;friends&#39;]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">da</span><span class="p">[</span><span class="s1">&#39;friends&#39;</span><span class="p">]</span>  <span class="c1"># delete as dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">da</span><span class="o">.</span><span class="n">foo</span> <span class="c1"># delete as attribute</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
+<span class="go">[&#39;life&#39;, &#39;true&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">_source</span>  <span class="c1"># the hidden Mapping (here dict) that is wrapped</span>
+<span class="go">{&#39;life&#39;: 42, &#39;true&#39;: &#39;love&#39;}</span>
+</pre></div>
+</div>
+<p>If you don’t specify a name for some objects, <code class="docutils literal notranslate"><span class="pre">AttrContainer</span></code> will use the
+<code class="docutils literal notranslate"><span class="pre">__name__</span></code> attribute of the objects:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">AttrContainer</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="s1">&#39;objects&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">[&#39;map&#39;, &#39;tuple&#39;, &#39;obj&#39;]</span>
+</pre></div>
+</div>
+<p>You can also specify a different way of auto naming the objects:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">AttrContainer</span><span class="p">(</span><span class="s1">&#39;an&#39;</span><span class="p">,</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span> <span class="n">_object_namer</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="p">}</span>
+<span class="go">{&#39;_2&#39;: &#39;an&#39;, &#39;_7&#39;: &#39;example&#39;}</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Objects in <code class="docutils literal notranslate"><span class="pre">py2store.utils.attr_dict</span></code> module</p>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.sources.AttrDict">
+<em class="property">class </em><code class="sig-prename descclassname">dol.sources.</code><code class="sig-name descname">AttrDict</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">objects</span></em>, <em class="sig-param"><span class="n">_object_namer</span><span class="p">:</span> <span class="n">Callable<span class="p">[</span><span class="p">[</span>Any<span class="p">]</span><span class="p">, </span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">operator.attrgetter('__name__')</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">named_objects</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#AttrDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.sources.AttrDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience class to hold Key-Val pairs with both a dict-like and struct-like
+interface.</p>
+<p>The dict-like interface has just the basic get/set/del/iter/len
+(all “dunders”: none visible as methods). There is no get, update, etc.
+This is on purpose, so that the only visible attributes
+(those you get by tab-completion for instance) are the those you injected.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">da</span> <span class="o">=</span> <span class="n">AttrDict</span><span class="p">(</span><span class="n">foo</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">life</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You get the “keys as attributes” that you get with <code class="docutils literal notranslate"><span class="pre">AttrContainer</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">&#39;bar&#39;</span>
+</pre></div>
+</div>
+<p>But additionally, you get the extra <code class="docutils literal notranslate"><span class="pre">Mapping</span></code> methods:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="go">[&#39;foo&#39;, &#39;life&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="go">[&#39;bar&#39;, 42]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+<span class="go">&#39;bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;not_a_key&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">)</span>
+<span class="go">&#39;default&#39;</span>
+</pre></div>
+</div>
+<p>You can assign through key or attribute assignment:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="p">[</span><span class="s1">&#39;true&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;love&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">friends</span> <span class="o">=</span> <span class="s1">&#39;forever&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;foo&#39;, &#39;bar&#39;), (&#39;life&#39;, 42), (&#39;true&#39;, &#39;love&#39;), (&#39;friends&#39;, &#39;forever&#39;)]</span>
+</pre></div>
+</div>
+<p>etc.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Objects in <code class="docutils literal notranslate"><span class="pre">py2store.utils.attr_dict</span></code> module</p>
+</div>
+</dd></dl>
+
+<dl class="py class">
 <dt id="dol.sources.Attrs">
 <em class="property">class </em><code class="sig-prename descclassname">dol.sources.</code><code class="sig-name descname">Attrs</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#Attrs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.sources.Attrs" title="Permalink to this definition">¶</a></dt>
 <dd><p>A simple recursive KvReader for the attributes of a python object.
@@ -135,44 +227,6 @@ you will perform multiple accesses to the store</p>
 <dt id="dol.sources.Ddir">
 <code class="sig-prename descclassname">dol.sources.</code><code class="sig-name descname">Ddir</code><a class="headerlink" href="#dol.sources.Ddir" title="Permalink to this definition">¶</a></dt>
 <dd><p>alias of <a class="reference internal" href="#dol.sources.Attrs" title="dol.sources.Attrs"><code class="xref py py-class docutils literal notranslate"><span class="pre">dol.sources.Attrs</span></code></a></p>
-</dd></dl>
-
-<dl class="py class">
-<dt id="dol.sources.DictAttr">
-<em class="property">class </em><code class="sig-prename descclassname">dol.sources.</code><code class="sig-name descname">DictAttr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_source</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Mapping<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">keys_and_values</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#DictAttr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.sources.DictAttr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convenience class to hold Key-Val pairs with both a dict-like and struct-like
-interface.</p>
-<p>The dict-like interface has just the basic get/set/del/iter/len
-(all “dunders”: none visible as methods). There is no get, update, etc.
-This is on purpose, so that the only visible attributes
-(those you get by tab-completion for instance) are the those you injected.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">da</span> <span class="o">=</span> <span class="n">DictAttr</span><span class="p">(</span><span class="n">foo</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">life</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">foo</span>
-<span class="go">&#39;bar&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="p">[</span><span class="s1">&#39;life&#39;</span><span class="p">]</span>
-<span class="go">42</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">true</span> <span class="o">=</span> <span class="s1">&#39;love&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>  <span class="c1"># count the number of fields</span>
-<span class="go">3</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="p">[</span><span class="s1">&#39;friends&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;forever&#39;</span>  <span class="c1"># write as dict</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">friends</span>  <span class="c1"># read as attribute</span>
-<span class="go">&#39;forever&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>  <span class="c1"># list fields (i.e. keys i.e. attributes)</span>
-<span class="go">[&#39;foo&#39;, &#39;life&#39;, &#39;true&#39;, &#39;friends&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-<span class="go">[(&#39;foo&#39;, &#39;bar&#39;), (&#39;life&#39;, 42), (&#39;true&#39;, &#39;love&#39;), (&#39;friends&#39;, &#39;forever&#39;)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">da</span><span class="p">[</span><span class="s1">&#39;friends&#39;</span><span class="p">]</span>  <span class="c1"># delete as dict</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">da</span><span class="o">.</span><span class="n">foo</span> <span class="c1"># delete as attribute</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
-<span class="go">[&#39;life&#39;, &#39;true&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">da</span><span class="o">.</span><span class="n">_source</span>  <span class="c1"># the hidden dict that is wrapped</span>
-<span class="go">{&#39;life&#39;: 42, &#39;true&#39;: &#39;love&#39;}</span>
-</pre></div>
-</div>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p>Objects in <code class="docutils literal notranslate"><span class="pre">py2store.utils.attr_dict</span></code> module</p>
-</div>
 </dd></dl>
 
 <dl class="py class">

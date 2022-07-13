@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.1.93 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.sources &mdash; dol 0.1.94 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -92,8 +92,8 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module contains key-value views of disparate sources.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">itemgetter</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">itemgetter</span><span class="p">,</span> <span class="n">attrgetter</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">groupby</span> <span class="k">as</span> <span class="n">itertools_groupby</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">suppress</span>
 
@@ -528,17 +528,15 @@
 <span class="n">Ddir</span> <span class="o">=</span> <span class="n">Attrs</span>  <span class="c1"># for back-compatibility, temporarily</span>
 
 
-<span class="c1"># TODO: Make it work with a store, without having to load and store the values explicitly.</span>
-<div class="viewcode-block" id="DictAttr"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.DictAttr">[docs]</a><span class="k">class</span> <span class="nc">DictAttr</span><span class="p">(</span><span class="n">KvPersister</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convenience class to hold Key-Val pairs with both a dict-like and struct-like</span>
-<span class="sd">    interface.</span>
+<div class="viewcode-block" id="AttrContainer"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.AttrContainer">[docs]</a><span class="k">class</span> <span class="nc">AttrContainer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Convenience class to hold Key-Val pairs as attribute-val pairs, with all the</span>
+<span class="sd">    magic methods of mappings.</span>
 
-<span class="sd">    The dict-like interface has just the basic get/set/del/iter/len</span>
-<span class="sd">    (all &quot;dunders&quot;: none visible as methods). There is no get, update, etc.</span>
-<span class="sd">    This is on purpose, so that the only visible attributes</span>
-<span class="sd">    (those you get by tab-completion for instance) are the those you injected.</span>
+<span class="sd">    On the other hand, you will not get the usuall non-dunders (non magic methods) of</span>
+<span class="sd">    ``Mappings``. This is so that you can use tab completion to access only the keys</span>
+<span class="sd">    the container has, and no any of the non-dunder methods like ``get``, ``items``, etc.</span>
 
-<span class="sd">    &gt;&gt;&gt; da = DictAttr(foo=&#39;bar&#39;, life=42)</span>
+<span class="sd">    &gt;&gt;&gt; da = AttrContainer(foo=&#39;bar&#39;, life=42)</span>
 <span class="sd">    &gt;&gt;&gt; da.foo</span>
 <span class="sd">    &#39;bar&#39;</span>
 <span class="sd">    &gt;&gt;&gt; da[&#39;life&#39;]</span>
@@ -551,28 +549,60 @@
 <span class="sd">    &#39;forever&#39;</span>
 <span class="sd">    &gt;&gt;&gt; list(da)  # list fields (i.e. keys i.e. attributes)</span>
 <span class="sd">    [&#39;foo&#39;, &#39;life&#39;, &#39;true&#39;, &#39;friends&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; list(da.items())</span>
-<span class="sd">    [(&#39;foo&#39;, &#39;bar&#39;), (&#39;life&#39;, 42), (&#39;true&#39;, &#39;love&#39;), (&#39;friends&#39;, &#39;forever&#39;)]</span>
+
 <span class="sd">    &gt;&gt;&gt; del da[&#39;friends&#39;]  # delete as dict</span>
 <span class="sd">    &gt;&gt;&gt; del da.foo # delete as attribute</span>
 <span class="sd">    &gt;&gt;&gt; list(da)</span>
 <span class="sd">    [&#39;life&#39;, &#39;true&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; da._source  # the hidden dict that is wrapped</span>
+<span class="sd">    &gt;&gt;&gt; da._source  # the hidden Mapping (here dict) that is wrapped</span>
 <span class="sd">    {&#39;life&#39;: 42, &#39;true&#39;: &#39;love&#39;}</span>
+
+<span class="sd">    If you don&#39;t specify a name for some objects, ``AttrContainer`` will use the</span>
+<span class="sd">    ``__name__`` attribute of the objects:</span>
+
+<span class="sd">    &gt;&gt;&gt; d = AttrContainer(map, tuple, obj=&#39;objects&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; list(d)</span>
+<span class="sd">    [&#39;map&#39;, &#39;tuple&#39;, &#39;obj&#39;]</span>
+
+<span class="sd">    You can also specify a different way of auto naming the objects:</span>
+
+<span class="sd">    &gt;&gt;&gt; d = AttrContainer(&#39;an&#39;, &#39;example&#39;, _object_namer=lambda x: f&quot;_{len(x)}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; {k: getattr(d, k) for k in d}</span>
+<span class="sd">    {&#39;_2&#39;: &#39;an&#39;, &#39;_7&#39;: &#39;example&#39;}</span>
 
 <span class="sd">    .. seealso:: Objects in ``py2store.utils.attr_dict`` module</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_source</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_source</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">keys_and_values</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_source</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_source</span> <span class="o">=</span> <span class="n">_source</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">,</span> <span class="p">{})</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">keys_and_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">objects</span><span class="p">,</span>
+        <span class="n">_object_namer</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">attrgetter</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">),</span>
+        <span class="o">**</span><span class="n">named_objects</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">objects</span><span class="p">:</span>
+            <span class="n">auto_named_objects</span> <span class="o">=</span> <span class="p">{</span><span class="n">_object_namer</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span> <span class="n">obj</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_validate_named_objects</span><span class="p">(</span><span class="n">auto_named_objects</span><span class="p">,</span> <span class="n">named_objects</span><span class="p">)</span>
+            <span class="n">named_objects</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">auto_named_objects</span><span class="p">,</span> <span class="o">**</span><span class="n">named_objects</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">named_objects</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_validate_named_objects</span><span class="p">(</span><span class="n">auto_named_objects</span><span class="p">,</span> <span class="n">named_objects</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">,</span> <span class="n">auto_named_objects</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;All names produced by _object_namer should be valid python identifiers:&#39;</span>
+                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">auto_named_objects</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">clashing_names</span> <span class="o">=</span> <span class="n">auto_named_objects</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">named_objects</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">clashing_names</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;Some auto named objects clashed with named ones: &#39;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">clashing_names</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -595,7 +625,52 @@
 
     <span class="k">def</span> <span class="fm">__delattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__delattr__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__delattr__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span></div>
+
+
+<span class="c1"># TODO: Make it work with a store, without having to load and store the values explicitly.</span>
+<div class="viewcode-block" id="AttrDict"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.AttrDict">[docs]</a><span class="k">class</span> <span class="nc">AttrDict</span><span class="p">(</span><span class="n">AttrContainer</span><span class="p">,</span> <span class="n">KvPersister</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convenience class to hold Key-Val pairs with both a dict-like and struct-like</span>
+<span class="sd">    interface.</span>
+
+<span class="sd">    The dict-like interface has just the basic get/set/del/iter/len</span>
+<span class="sd">    (all &quot;dunders&quot;: none visible as methods). There is no get, update, etc.</span>
+<span class="sd">    This is on purpose, so that the only visible attributes</span>
+<span class="sd">    (those you get by tab-completion for instance) are the those you injected.</span>
+
+<span class="sd">    &gt;&gt;&gt; da = AttrDict(foo=&#39;bar&#39;, life=42)</span>
+
+<span class="sd">    You get the &quot;keys as attributes&quot; that you get with ``AttrContainer``:</span>
+
+<span class="sd">    &gt;&gt;&gt; da.foo</span>
+<span class="sd">    &#39;bar&#39;</span>
+
+<span class="sd">    But additionally, you get the extra ``Mapping`` methods:</span>
+
+<span class="sd">    &gt;&gt;&gt; list(da.keys())</span>
+<span class="sd">    [&#39;foo&#39;, &#39;life&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; list(da.values())</span>
+<span class="sd">    [&#39;bar&#39;, 42]</span>
+<span class="sd">    &gt;&gt;&gt; da.get(&#39;foo&#39;)</span>
+<span class="sd">    &#39;bar&#39;</span>
+<span class="sd">    &gt;&gt;&gt; da.get(&#39;not_a_key&#39;, &#39;default&#39;)</span>
+<span class="sd">    &#39;default&#39;</span>
+
+<span class="sd">    You can assign through key or attribute assignment:</span>
+
+<span class="sd">    &gt;&gt;&gt; da[&#39;true&#39;] = &#39;love&#39;</span>
+<span class="sd">    &gt;&gt;&gt; da.friends = &#39;forever&#39;</span>
+<span class="sd">    &gt;&gt;&gt; list(da.items())</span>
+<span class="sd">    [(&#39;foo&#39;, &#39;bar&#39;), (&#39;life&#39;, 42), (&#39;true&#39;, &#39;love&#39;), (&#39;friends&#39;, &#39;forever&#39;)]</span>
+
+
+<span class="sd">    etc.</span>
+
+<span class="sd">    .. seealso:: Objects in ``py2store.utils.attr_dict`` module</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
 </pre></div>
 
            </div>
