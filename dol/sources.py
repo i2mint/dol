@@ -458,6 +458,8 @@ class AttrContainer:
     'forever'
     >>> list(da)  # list fields (i.e. keys i.e. attributes)
     ['foo', 'life', 'true', 'friends']
+    >>> 'life' in da  # check containement
+    True
 
     >>> del da['friends']  # delete as dict
     >>> del da.foo # delete as attribute
@@ -535,6 +537,9 @@ class AttrContainer:
     def __delattr__(self, k):
         del self._source[k]
         super().__delattr__(k)
+
+    def __contains__(self, k):
+        return k in self._source
 
     def __repr__(self):
         return super().__repr__()
