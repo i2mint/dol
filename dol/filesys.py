@@ -72,6 +72,7 @@ def ensure_dir(dirpath, verbose=False):
         if verbose:
             print(f'Making the directory: {dirpath}')
         os.makedirs(dirpath, exist_ok=True)
+    return dirpath
 
 
 def mk_tmp_dol_dir(dirname='', make_it_if_necessary=True, verbose=False):
