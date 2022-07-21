@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.1.94 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.sources &mdash; dol 0.1.95 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -549,6 +549,8 @@
 <span class="sd">    &#39;forever&#39;</span>
 <span class="sd">    &gt;&gt;&gt; list(da)  # list fields (i.e. keys i.e. attributes)</span>
 <span class="sd">    [&#39;foo&#39;, &#39;life&#39;, &#39;true&#39;, &#39;friends&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; &#39;life&#39; in da  # check containement</span>
+<span class="sd">    True</span>
 
 <span class="sd">    &gt;&gt;&gt; del da[&#39;friends&#39;]  # delete as dict</span>
 <span class="sd">    &gt;&gt;&gt; del da.foo # delete as attribute</span>
@@ -626,6 +628,9 @@
     <span class="k">def</span> <span class="fm">__delattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__delattr__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span></div>
