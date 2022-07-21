@@ -399,5 +399,5 @@ def mk_dirs_if_missing(
     store_cls=None, *, key_condition=None,
 ):
     """Store decorator that will make the store create directories on write as needed"""
-    name = getattr(store_cls, __name__, 'WrappedStoreWithConditionalDirMaking')
+    name = getattr(store_cls, "__name__", 'WrappedStoreWithConditionalDirMaking')
     return type(name, (MakeMissingDirsStoreMixin, store_cls), {})
