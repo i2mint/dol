@@ -449,9 +449,9 @@ def _extract_first_identifier(string: str) -> str:
 
 def _dflt_object_namer(obj, dflt_name: str = 'name_not_found'):
     return (
-            getattr(obj, '__name__')
-            or _extract_first_identifier(getattr(obj, '__doc__'))
-            or dflt_name
+        getattr(obj, '__name__')
+        or _extract_first_identifier(getattr(obj, '__doc__'))
+        or dflt_name
     )
 
 
