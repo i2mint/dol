@@ -436,6 +436,24 @@ class Attrs(ObjReader):
 
 Ddir = Attrs  # for back-compatibility, temporarily
 
+import re
+
+
+def _extract_first_identifier(string: str) -> str:
+    m = re.match('\w+', string)
+    if m:
+        return m.group(0)
+    else:
+        return ''
+
+
+def _dflt_object_namer(obj, dflt_name: str = 'name_not_found'):
+    return (
+            getattr(obj, '__name__')
+            or _extract_first_identifier(getattr(obj, '__doc__'))
+            or dflt_name
+    )
+
 
 class AttrContainer:
     """Convenience class to hold Key-Val pairs as attribute-val pairs, with all the
@@ -489,7 +507,7 @@ class AttrContainer:
     def __init__(
         self,
         *objects,
-        _object_namer: Callable[[Any], str] = attrgetter('__name__'),
+        _object_namer: Callable[[Any], str] = _dflt_object_namer,
         **named_objects,
     ):
         if objects:
