@@ -2,7 +2,7 @@
 import os
 import shutil
 import re
-from collections import namedtuple, defaultdict
+from collections import deque, namedtuple, defaultdict
 from warnings import warn
 from typing import Any, Hashable, Callable, Iterable, Optional, Union
 from functools import update_wrapper as _update_wrapper
@@ -17,6 +17,8 @@ wrapper_assignments = (*WRAPPER_ASSIGNMENTS, '__defaults__', '__kwdefaults__')
 
 update_wrapper = partial(_update_wrapper, assigned=wrapper_assignments)
 wraps = partial(_wraps, assigned=wrapper_assignments)
+
+exhaust = partial(deque, maxlen=0)
 
 
 class Literal:

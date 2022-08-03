@@ -11,6 +11,7 @@ import time
 import types
 
 from dol.trans import store_decorator
+from dol.util import exhaust
 
 
 def define_extend_as_seq_of_appends(obj):
@@ -304,7 +305,7 @@ class mk_item2kv_for:
 
 @store_decorator
 def appendable(
-    store_cls=None, *, item2kv,
+    store_cls=None, *, item2kv, return_keys=False
 ):
     """Makes a new class with append (and consequential extend) methods
 
@@ -347,15 +348,31 @@ def appendable(
     >>> s = appendable(d, item2kv=item_to_kv)
     >>> s.append({'L': 'let', 'I': 'it', 'G': 'go'}); list(s.items())
     [(('go', 'let'), {'I': 'it'})]
+
+    You can make the "append" and "extend" methods to return the new generated keys by
+    using the "return_keys" flag.
+
+    >>> d = {}
+    >>> s = appendable(d, item2kv=item_to_kv, return_keys=True)
+    >>> s.append({'L': 'let', 'I': 'it', 'G': 'go'})
+    ('go', 'let')
     """
 
     def append(self, item):
         k, v = item2kv(item)
         self[k] = v
+        if return_keys:
+            return k
 
     def extend(self, items):
-        for item in items:
-            self.append(item)
+        def gen_keys():
+            for item in items:
+                yield self.append(item)
+
+        gen = gen_keys()
+        if return_keys:
+            return list(gen)
+        exhaust(gen)
 
     return type(
         'Appendable' + store_cls.__name__,
