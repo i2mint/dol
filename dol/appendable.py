@@ -304,9 +304,7 @@ class mk_item2kv_for:
 
 
 @store_decorator
-def appendable(
-    store_cls=None, *, item2kv, return_keys=False
-):
+def appendable(store_cls=None, *, item2kv, return_keys=False):
     """Makes a new class with append (and consequential extend) methods
 
     Args:
