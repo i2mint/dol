@@ -155,6 +155,27 @@ def _param_sort_key(param):
 
 
 def sort_params(params):
+    """
+
+    :param params: An iterable of `Parameter` instances
+    :return: A list of these instances sorted so as to obey the ``kind`` and ``default``
+        order rules of python signatures.
+
+    Note 1: It doesn't mean that these params constitute a valid signature together,
+    since it doesn't verify rules like unicity of names and variadic kinds.
+
+    Note 2: Though you can use ``sorted`` on an iterable of ``i2.signatures.Param``
+    instances, know that even for sorting the three parameters below,
+    the ``sort_params`` function is more than twice as fast.
+
+    >>> from inspect import Parameter
+    >>> sort_params(
+    ...     [Parameter('a', kind=Parameter.POSITIONAL_OR_KEYWORD, default=1),
+    ...     Parameter('b', kind=Parameter.POSITIONAL_ONLY),
+    ...     Parameter('c', kind=Parameter.POSITIONAL_OR_KEYWORD)]
+    ... )
+    [<Parameter "b">, <Parameter "c">, <Parameter "a=1">]
+    """
     return sorted(params, key=_param_sort_key)
 
 
@@ -619,16 +640,36 @@ class Param(Parameter):
     def __init__(self, name, kind=PK, *, default=empty, annotation=empty):
         super().__init__(name, kind, default=default, annotation=annotation)
 
-    # # Note: Was useful to make Param a mapping, to get (dict(param))
-    # #  Is not useful anymore, so comment-deprecating
-    # def __iter__(self):
-    #     yield from ['name', 'kind', 'default', 'annotation']
-    #
-    # def __getitem__(self, k):
-    #     return getattr(self, k)
-    #
-    # def __len__(self):
-    #     return 4
+    def __lt__(self, other) -> bool:
+        """Whether the self parameter can be before the other parameter in a signature.
+
+        >>> Param('b') < Param('a', default=1)
+        True
+        >>> Param('b') > Param('a', default=1)
+        False
+        >>> Param('b', kind=Param.POSITIONAL_OR_KEYWORD) < Param('a', kind=Param.KEYWORD_ONLY)
+        True
+        >>> Param('b', kind=Param.POSITIONAL_OR_KEYWORD) > Param('a', kind=Param.KEYWORD_ONLY)
+        False
+
+        Note 1: The dual ``>`` operator is also infered.
+
+        Note 2: This means that you can used ``sorted`` on an iterable of Param
+        instances, but know that even for sorting the three parameters below,
+        the ``sort_params`` function in the ``i2.signatures`` module is more than twice
+        as fast.
+
+        >>> sorted(
+        ...     [Param('a', default=1),
+        ...     Param('b', kind=Param.POSITIONAL_ONLY),
+        ...     Param('c')]
+        ... )
+        [<Param "b">, <Param "c">, <Param "a=1">]
+        """
+        return (self.kind, self.default is not empty) < (
+            other.kind,
+            other.default is not empty,
+        )
 
 
 P = Param  # useful shorthand alias
