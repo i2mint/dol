@@ -149,7 +149,7 @@ class IterationNotAllowed(OperationNotAllowed):
 
 
 class OverWritesNotAllowedError(OperationNotAllowed):
-    """Error to raise when a key is not valid"""
+    """Error to raise when a writes to existing keys are not allowed"""
 
 
 class AlreadyExists(ValueError):
