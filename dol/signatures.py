@@ -112,7 +112,7 @@ _ParameterKind = type(
     Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD)
 )
 ParamsType = Iterable[Parameter]
-ParamsAble = Union[ParamsType, MappingType[str, Parameter], Callable, str]
+ParamsAble = Union[ParamsType, Signature, MappingType[str, Parameter], Callable, str]
 SignatureAble = Union[Signature, ParamsAble]
 HasParams = Union[Iterable[Parameter], MappingType[str, Parameter], Signature, Callable]
 
@@ -222,7 +222,7 @@ def ensure_callable(obj: SignatureAble):
 assure_callable = ensure_callable  # alias for backcompatibility
 
 
-def ensure_signature(obj: SignatureAble):
+def ensure_signature(obj: SignatureAble) -> Signature:
     if isinstance(obj, Signature):
         return obj
     elif isinstance(obj, Callable):
@@ -3625,7 +3625,57 @@ def set_signature_of_func(
     # Not returning func so it's clear(er) that the function is transformed in place
 
 
-########################################################################################################################
+# Pattern: (rewiring) wrapper of make_dataclass
+# TODO: Is there a clean way for module to be populated by __name__ of caller module?
+def sig_to_dataclass(
+    sig: SignatureAble, *, cls_name=None, bases=(), module=None, **kwargs
+):
+    """
+    Make a ``class`` (through ``make_dataclass``) from the given signature.
+
+    :param sig: A ``SignatureAble``, that is, anything that ensure_signature can
+        resolve into an ``inspect.Signature`` object, including a signature object
+        itself, but also most callables, a list or params, etc.
+    :param cls_name: The same as ``cls_name`` of ``dataclasses.make_dataclass``
+    :param bases: The same as ``bases`` of ``dataclasses.make_dataclass``
+    :param module: Set to module (usually ``__name__`` to specify ther module of
+        caller) so that the class and instances can be pickle-able.
+    :param kwargs: Passed on to ``dataclasses.make_dataclass``
+    :return: A dataclass
+
+    >>> def foo(a, /, b : int=2, *, c=3):
+    ...     pass
+    ...
+    >>> K = sig_to_dataclass(foo, cls_name='K')
+    >>> str(Sig(K))
+    '(a, b: int = 2, c=3) -> None'
+    >>> k = K(1,2,3)
+    >>> (k.a, k.b, k.c)
+    (1, 2, 3)
+
+    Would also work with any of these (and more):
+
+    >>> K = sig_to_dataclass(Sig(foo), cls_name='K')
+    >>> K = sig_to_dataclass(Sig(foo).params, cls_name='K')
+
+    Note: ``cls_name`` is not required (we'll try to figure out a good default for you),
+    but it's advised to only use this convenience in extreme mode.
+    Choosing your own name might make for a safer future if you're reusing your class.
+
+    """
+    from dataclasses import make_dataclass
+
+    sig = ensure_signature(sig)
+    cls_name = cls_name or getattr(sig, 'name', '_made_by_sig_to_dataclass')
+    params = ensure_params(sig)
+    fields = [(p.name, p.annotation, p.default) for p in params]
+    cls = make_dataclass(cls_name, fields, bases=bases, **kwargs)
+    if module:
+        cls.__module__ = module
+    return cls
+
+
+#########################################################################################
 # Manual construction of missing signatures
 # ############################################################################
 
@@ -3719,9 +3769,7 @@ sigs_for_sigless_builtin_name = {
     # zip(*iterables) --> A zip object yielding tuples until an input is exhausted.
 }
 
-############# Tools for testing
-# ########################################################################################
-from functools import partial
+############# Tools for testing #########################################################
 
 
 def param_for_kind(
