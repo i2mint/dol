@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.100 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.101 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -245,8 +245,29 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">empty</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">sort_params</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">_param_sort_key</span><span class="p">)</span>
+<div class="viewcode-block" id="sort_params"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.sort_params">[docs]</a><span class="k">def</span> <span class="nf">sort_params</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    :param params: An iterable of `Parameter` instances</span>
+<span class="sd">    :return: A list of these instances sorted so as to obey the ``kind`` and ``default``</span>
+<span class="sd">        order rules of python signatures.</span>
+
+<span class="sd">    Note 1: It doesn&#39;t mean that these params constitute a valid signature together,</span>
+<span class="sd">    since it doesn&#39;t verify rules like unicity of names and variadic kinds.</span>
+
+<span class="sd">    Note 2: Though you can use ``sorted`` on an iterable of ``i2.signatures.Param``</span>
+<span class="sd">    instances, know that even for sorting the three parameters below,</span>
+<span class="sd">    the ``sort_params`` function is more than twice as fast.</span>
+
+<span class="sd">    &gt;&gt;&gt; from inspect import Parameter</span>
+<span class="sd">    &gt;&gt;&gt; sort_params(</span>
+<span class="sd">    ...     [Parameter(&#39;a&#39;, kind=Parameter.POSITIONAL_OR_KEYWORD, default=1),</span>
+<span class="sd">    ...     Parameter(&#39;b&#39;, kind=Parameter.POSITIONAL_ONLY),</span>
+<span class="sd">    ...     Parameter(&#39;c&#39;, kind=Parameter.POSITIONAL_OR_KEYWORD)]</span>
+<span class="sd">    ... )</span>
+<span class="sd">    [&lt;Parameter &quot;b&quot;&gt;, &lt;Parameter &quot;c&quot;&gt;, &lt;Parameter &quot;a=1&quot;&gt;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">_param_sort_key</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="name_of_obj"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.name_of_obj">[docs]</a><span class="k">def</span> <span class="nf">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
@@ -708,18 +729,38 @@
     <span class="n">VK</span> <span class="o">=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">empty</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">empty</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">annotation</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">annotation</span><span class="p">)</span>
 
-    <span class="c1"># # Note: Was useful to make Param a mapping, to get (dict(param))</span>
-    <span class="c1"># #  Is not useful anymore, so comment-deprecating</span>
-    <span class="c1"># def __iter__(self):</span>
-    <span class="c1">#     yield from [&#39;name&#39;, &#39;kind&#39;, &#39;default&#39;, &#39;annotation&#39;]</span>
-    <span class="c1">#</span>
-    <span class="c1"># def __getitem__(self, k):</span>
-    <span class="c1">#     return getattr(self, k)</span>
-    <span class="c1">#</span>
-    <span class="c1"># def __len__(self):</span>
-    <span class="c1">#     return 4</span>
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Whether the self parameter can be before the other parameter in a signature.</span>
+
+<span class="sd">        &gt;&gt;&gt; Param(&#39;b&#39;) &lt; Param(&#39;a&#39;, default=1)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; Param(&#39;b&#39;) &gt; Param(&#39;a&#39;, default=1)</span>
+<span class="sd">        False</span>
+<span class="sd">        &gt;&gt;&gt; Param(&#39;b&#39;, kind=Param.POSITIONAL_OR_KEYWORD) &lt; Param(&#39;a&#39;, kind=Param.KEYWORD_ONLY)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; Param(&#39;b&#39;, kind=Param.POSITIONAL_OR_KEYWORD) &gt; Param(&#39;a&#39;, kind=Param.KEYWORD_ONLY)</span>
+<span class="sd">        False</span>
+
+<span class="sd">        Note 1: The dual ``&gt;`` operator is also infered.</span>
+
+<span class="sd">        Note 2: This means that you can used ``sorted`` on an iterable of Param</span>
+<span class="sd">        instances, but know that even for sorting the three parameters below,</span>
+<span class="sd">        the ``sort_params`` function in the ``i2.signatures`` module is more than twice</span>
+<span class="sd">        as fast.</span>
+
+<span class="sd">        &gt;&gt;&gt; sorted(</span>
+<span class="sd">        ...     [Param(&#39;a&#39;, default=1),</span>
+<span class="sd">        ...     Param(&#39;b&#39;, kind=Param.POSITIONAL_ONLY),</span>
+<span class="sd">        ...     Param(&#39;c&#39;)]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        [&lt;Param &quot;b&quot;&gt;, &lt;Param &quot;c&quot;&gt;, &lt;Param &quot;a=1&quot;&gt;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">empty</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span>
+            <span class="n">other</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span>
+            <span class="n">other</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">empty</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
 <span class="n">P</span> <span class="o">=</span> <span class="n">Param</span>  <span class="c1"># useful shorthand alias</span>

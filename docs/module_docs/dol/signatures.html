@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.100 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.101 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -2571,6 +2571,34 @@ This tool should help making it less annoying.</p>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
 <span class="go">&lt;Signature (**kws) -&gt; str&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.signatures.sort_params">
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">sort_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#sort_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.sort_params" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>params</strong> – An iterable of <cite>Parameter</cite> instances</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of these instances sorted so as to obey the <code class="docutils literal notranslate"><span class="pre">kind</span></code> and <code class="docutils literal notranslate"><span class="pre">default</span></code>
+order rules of python signatures.</p>
+</dd>
+</dl>
+<p>Note 1: It doesn’t mean that these params constitute a valid signature together,
+since it doesn’t verify rules like unicity of names and variadic kinds.</p>
+<p>Note 2: Though you can use <code class="docutils literal notranslate"><span class="pre">sorted</span></code> on an iterable of <code class="docutils literal notranslate"><span class="pre">i2.signatures.Param</span></code>
+instances, know that even for sorting the three parameters below,
+the <code class="docutils literal notranslate"><span class="pre">sort_params</span></code> function is more than twice as fast.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">Parameter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sort_params</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_OR_KEYWORD</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Parameter</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_ONLY</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Parameter</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_OR_KEYWORD</span><span class="p">)]</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">[&lt;Parameter &quot;b&quot;&gt;, &lt;Parameter &quot;c&quot;&gt;, &lt;Parameter &quot;a=1&quot;&gt;]</span>
 </pre></div>
 </div>
 </dd></dl>
