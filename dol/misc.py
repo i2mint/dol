@@ -159,12 +159,51 @@ class MiscReaderMixin:
         return trans_func(super().__getitem__(k))
 
 
-try:
-    from py2store.examples.dropbox_w_urllib import bytes_from_dropbox
-except Exception:
-    _dropbox_as_special_case = False
-else:
-    _dropbox_as_special_case = True
+# import urllib
+import urllib.request
+
+DFLT_USER_AGENT = 'Wget/1.16 (linux-gnu)'
+
+
+def _is_dropbox_url(url):
+    return url.startswith('http://www.dropbox.com') or url.startswith(
+        'https://www.dropbox.com'
+    )
+
+
+def _bytes_from_dropbox(url, chk_size=1024, user_agent=DFLT_USER_AGENT):
+    from io import BytesIO
+
+    def _download_from_dropbox(url, file, chk_size=1024, user_agent=DFLT_USER_AGENT):
+        def iter_content_and_copy_to(file):
+            req = urllib.request.Request(url)
+            req.add_header('user-agent', user_agent)
+            with urllib.request.urlopen(req) as response:
+                while True:
+                    chk = response.read(chk_size)
+                    if len(chk) > 0:
+                        file.write(chk)
+                    else:
+                        break
+
+        if not isinstance(file, str):
+            iter_content_and_copy_to(file)
+        else:
+            with open(file, 'wb') as _target_file:
+                iter_content_and_copy_to(_target_file)
+
+    with BytesIO() as file:
+        _download_from_dropbox(url, file, chk_size=chk_size, user_agent=user_agent)
+        file.seek(0)
+        return file.read()
+
+
+def url_to_bytes(url):
+    if _is_dropbox_url(url):
+        return _bytes_from_dropbox(url)
+    else:
+        with urllib.request.urlopen(url) as response:
+            return response.read()
 
 
 # TODO: I'd really like to reuse MiscReaderMixin here! There's a lot of potential.
@@ -181,16 +220,7 @@ def get_obj(
 ):
     """A quick way to get an object, with default... everything (but the key, you know, a clue of what you want)"""
     if k.startswith('http://') or k.startswith('https://'):
-        if _dropbox_as_special_case and (
-            k.startswith('http://www.dropbox.com')
-            or k.startswith('https://www.dropbox.com')
-        ):
-            v = bytes_from_dropbox(k)
-        else:
-            import urllib.request
-
-            with urllib.request.urlopen(k) as response:
-                v = response.read()
+        v = url_to_bytes(k)
     else:
         if isinstance(
             store, Files
@@ -214,7 +244,7 @@ class MiscGetter:
     An object to write (and only write) to a store (default local files) with automatic deserialization
     according to a property of the key (default: file extension).
 
-    >>> from py2store.misc import get_obj, misc_objs_get
+    >>> from dol.misc import get_obj, misc_objs_get
     >>> import os
     >>> import json
     >>>
@@ -276,7 +306,7 @@ class MiscStoreMixin(MiscReaderMixin):
     r"""Mixin to transform incoming and outgoing vals according to the key their under.
     Warning: If used as a subclass, this mixin should (in general) be placed before the store
 
-    See also: preset and postget args from wrap_kvs decorator from py2store.trans.
+    See also: preset and postget args from wrap_kvs decorator from dol.trans.
 
     >>> # Make a class to wrap a dict with a layer that transforms written and read values
     >>> class MiscStore(MiscStoreMixin, dict):
@@ -377,7 +407,7 @@ class MiscGetterAndSetter(MiscGetter):
     An object to read and write (and nothing else) to a store (default local) with automatic (de)serialization
     according to a property of the key (default: file extension).
 
-    >>> from py2store.misc import set_obj, misc_objs  # the function and the object
+    >>> from dol.misc import set_obj, misc_objs  # the function and the object
     >>> import json
     >>> import os
     >>>
