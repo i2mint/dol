@@ -1,10 +1,9 @@
 """
 This module contains key-value views of disparate sources.
 """
-from typing import Mapping, Iterable, Optional, Callable, Union, Any
-from operator import itemgetter, attrgetter
+from typing import Mapping, Iterable, Callable, Union, Any
+from operator import itemgetter
 from itertools import groupby as itertools_groupby
-from contextlib import suppress
 
 from dol.base import KvReader, KvPersister
 from dol.trans import cached_keys
@@ -440,7 +439,7 @@ import re
 
 
 def _extract_first_identifier(string: str) -> str:
-    m = re.match('\w+', string)
+    m = re.match(r'\w+', string)
     if m:
         return m.group(0)
     else:
