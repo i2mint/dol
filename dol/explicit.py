@@ -108,9 +108,30 @@ class ExplicitKeys(Collection):
         return k in self._keys_cache
 
 
+# TODO: Should we deprecate or replace with recipe?
 class ExplicitKeysSource(ExplicitKeys, ObjReader, KvReader):
     """
-    An object source that uses an explicit keys collection and a specified function to read contents for a key.
+    An object source that uses an explicit keys collection and a specified function to
+    read contents for a key.
+
+    >>> s = ExplicitKeysSource([1, 2, 3], str)
+    >>> list(s)
+    [1, 2, 3]
+    >>> list(s.values())
+    ['1', '2', '3']
+
+    Main functionality equivalent to recipe:
+
+    >>> def explicit_keys_source(key_collection, _obj_of_key):
+    ...     from dol.trans import wrap_kvs
+    ...     return wrap_kvs({k: k for k in key_collection}, obj_of_data=_obj_of_key)
+
+    >>> s = explicit_keys_source([1, 2, 3], str)
+    >>> list(s)
+    [1, 2, 3]
+    >>> list(s.values())
+    ['1', '2', '3']
+
     """
 
     def __init__(self, key_collection: CollectionType, _obj_of_key: Callable):
