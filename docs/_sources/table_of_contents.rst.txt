@@ -11,6 +11,7 @@
    module_docs/dol/errors
    module_docs/dol/explicit
    module_docs/dol/filesys
+   module_docs/dol/misc
    module_docs/dol/mixins
    module_docs/dol/naming
    module_docs/dol/paths
