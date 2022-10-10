@@ -34,6 +34,7 @@ from dol.filesys import (
     MakeMissingDirsStoreMixin,  # Mixin to enable auto-dir-making on write
     resolve_path,  # to get a full path (resolve ~ and .),
     resolve_dir,
+    DirReader,
 )
 
 from dol.util import (

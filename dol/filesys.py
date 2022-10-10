@@ -142,6 +142,22 @@ def resolve_dir(
     return dirpath
 
 
+def _for_repr(obj, quote="'"):
+    """
+    >>> _for_repr('a string')
+    "'a string'"
+    >>> _for_repr(10)
+    10
+    >>> _for_repr(None)
+    'None'
+    """
+    if isinstance(obj, str):
+        obj = f'{quote}{obj}{quote}'
+    elif obj is None:
+        obj = 'None'
+    return obj
+
+
 class FileSysCollection(Collection):
     # rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.
 
@@ -155,6 +171,7 @@ class FileSysCollection(Collection):
         include_hidden=False,
         assert_rootdir_existence=False,
     ):
+        self._init_kwargs = {k: v for k, v in locals().items() if k != 'self'}
         rootdir = resolve_dir(rootdir, assert_existence=assert_rootdir_existence)
         if max_levels is None:
             max_levels = inf
@@ -179,6 +196,12 @@ class FileSysCollection(Collection):
     ):
         if not self.is_valid_key(k):
             raise err_type(err_msg_format.format(k))
+
+    def __repr__(self):
+        input_str = ', '.join(
+            f'{k}={_for_repr(v)}' for k, v in self._init_kwargs.items()
+        )
+        return f'{type(self).__name__}({input_str})'
 
 
 class DirCollection(FileSysCollection):
@@ -391,6 +414,11 @@ class MakeMissingDirsStoreMixin:
         dirname = os.path.dirname(_id)
         os.makedirs(dirname, exist_ok=True)
         super().__setitem__(k, v)
+
+
+class DirReader(DirCollection, KvReader):
+    def __getitem__(self, k):
+        return DirReader(k)
 
 
 # TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)
