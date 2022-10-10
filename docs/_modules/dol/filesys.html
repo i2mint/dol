@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.filesys &mdash; dol 0.1.103 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.filesys &mdash; dol 0.1.104 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -234,6 +234,22 @@
     <span class="k">return</span> <span class="n">dirpath</span></div>
 
 
+<span class="k">def</span> <span class="nf">_for_repr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">quote</span><span class="o">=</span><span class="s2">&quot;&#39;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &gt;&gt;&gt; _for_repr(&#39;a string&#39;)</span>
+<span class="sd">    &quot;&#39;a string&#39;&quot;</span>
+<span class="sd">    &gt;&gt;&gt; _for_repr(10)</span>
+<span class="sd">    10</span>
+<span class="sd">    &gt;&gt;&gt; _for_repr(None)</span>
+<span class="sd">    &#39;None&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">quote</span><span class="si">}{</span><span class="n">obj</span><span class="si">}{</span><span class="n">quote</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="k">elif</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span>
+    <span class="k">return</span> <span class="n">obj</span>
+
+
 <div class="viewcode-block" id="FileSysCollection"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.FileSysCollection">[docs]</a><span class="k">class</span> <span class="nc">FileSysCollection</span><span class="p">(</span><span class="n">Collection</span><span class="p">):</span>
     <span class="c1"># rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.</span>
 
@@ -247,6 +263,7 @@
         <span class="n">include_hidden</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">assert_rootdir_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;self&#39;</span><span class="p">}</span>
         <span class="n">rootdir</span> <span class="o">=</span> <span class="n">resolve_dir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">assert_existence</span><span class="o">=</span><span class="n">assert_rootdir_existence</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">max_levels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">max_levels</span> <span class="o">=</span> <span class="n">inf</span>
@@ -270,7 +287,13 @@
         <span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">err_msg_format</span><span class="o">=</span><span class="n">_dflt_not_valid_error_msg</span><span class="p">,</span> <span class="n">err_type</span><span class="o">=</span><span class="n">KeyValidationError</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid_key</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">err_type</span><span class="p">(</span><span class="n">err_msg_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">))</span></div>
+            <span class="k">raise</span> <span class="n">err_type</span><span class="p">(</span><span class="n">err_msg_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">input_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">_for_repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">input_str</span><span class="si">}</span><span class="s1">)&#39;</span></div>
 
 
 <div class="viewcode-block" id="DirCollection"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.DirCollection">[docs]</a><span class="k">class</span> <span class="nc">DirCollection</span><span class="p">(</span><span class="n">FileSysCollection</span><span class="p">):</span>
@@ -483,6 +506,11 @@
         <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">_id</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DirReader"><a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.DirReader">[docs]</a><span class="k">class</span> <span class="nc">DirReader</span><span class="p">(</span><span class="n">DirCollection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">DirReader</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
 
 
 <span class="c1"># TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)</span>
