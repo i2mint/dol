@@ -288,6 +288,7 @@ def _flatten_pipe(pipe):
         else:
             yield func
 
+
 def flatten_pipe(pipe):
     """
     Unravel nested Pipes to get a flat 'sequence of functions' version of input.

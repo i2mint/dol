@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.1.104 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.1.105 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -260,24 +260,12 @@
 <span class="n">_delete_keys_one_by_one</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">_delete_keys_one_by_one_with_keyerror_supressed</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">False</span>
 
-<span class="n">_dflt_signature</span> <span class="o">=</span> <span class="n">Signature</span><span class="o">.</span><span class="n">from_callable</span><span class="p">(</span><span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">_signature_from_first_and_last_func</span><span class="p">(</span><span class="n">first_func</span><span class="p">,</span> <span class="n">last_func</span><span class="p">):</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">input_params</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">first_func</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># function doesn&#39;t have a signature, so take default</span>
-        <span class="n">input_params</span> <span class="o">=</span> <span class="n">_dflt_signature</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">return_annotation</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">last_func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># function doesn&#39;t have a signature, so take default</span>
-        <span class="n">return_annotation</span> <span class="o">=</span> <span class="n">_dflt_signature</span><span class="o">.</span><span class="n">return_annotation</span>
-    <span class="k">return</span> <span class="n">Signature</span><span class="p">(</span><span class="n">input_params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">return_annotation</span><span class="p">)</span>
-
-
-<span class="c1"># Pipe code is completely independent. If you only need simple pipelines, use this, or even copy/paste it where needed.</span>
-<span class="c1"># TODO: Give it a __name__ and make it more like a &quot;normal&quot; function so it works well when so assumed</span>
-<span class="c1"># TODO: Mis-aligned with i2. funcs list here, in i2 it&#39;s dict. Align?</span>
+<span class="c1"># Note: Pipe code is completely independent (with inspect imports signature &amp; Signature)</span>
+<span class="c1">#  If you only need simple pipelines, use this, or even copy/paste it where needed.</span>
+<span class="c1"># TODO: Public interface mis-aligned with i2. funcs list here, in i2 it&#39;s dict. Align?</span>
+<span class="c1">#  If we do so, it would be a breaking change since any dependents that expect funcs</span>
+<span class="c1">#  to be a list of funcs will iterate over a iterable of names instead.</span>
 <div class="viewcode-block" id="Pipe"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.Pipe">[docs]</a><span class="k">class</span> <span class="nc">Pipe</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Simple function composition. That is, gives you a callable that implements input -&gt; f_1 -&gt; ... -&gt; f_n -&gt; output.</span>
 
@@ -318,11 +306,23 @@
 <span class="sd">      ...</span>
 <span class="sd">    ValueError: You need to specify at least one function!</span>
 
+<span class="sd">    You can specify an instance name and/or doc with the special (reserved) argument</span>
+<span class="sd">    names ``__name__`` and ``__doc__`` (which therefore can&#39;t be used as function names):</span>
+
+<span class="sd">    &gt;&gt;&gt; f = Pipe(map, add_it=sum, __name__=&#39;map_and_sum&#39;, __doc__=&#39;Apply func and add&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; f(lambda x: x * 10, [1, 2, 3])</span>
+<span class="sd">    60</span>
+<span class="sd">    &gt;&gt;&gt; f.__name__</span>
+<span class="sd">    &#39;map_and_sum&#39;</span>
+<span class="sd">    &gt;&gt;&gt; f.__doc__</span>
+<span class="sd">    &#39;Apply func and add&#39;</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">funcs</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">funcs</span><span class="p">,</span> <span class="o">**</span><span class="n">named_funcs</span><span class="p">):</span>
+        <span class="n">named_funcs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_reserved_names</span><span class="p">(</span><span class="n">named_funcs</span><span class="p">)</span>
         <span class="n">funcs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">funcs</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">named_funcs</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">funcs</span> <span class="o">=</span> <span class="n">funcs</span>
         <span class="n">n_funcs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">funcs</span><span class="p">)</span>
@@ -336,9 +336,18 @@
             <span class="n">first_func</span><span class="p">,</span> <span class="o">*</span><span class="n">other_funcs</span> <span class="o">=</span> <span class="n">funcs</span>
             <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">last_func</span> <span class="o">=</span> <span class="n">other_funcs</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">_signature_from_first_and_last_func</span><span class="p">(</span><span class="n">first_func</span><span class="p">,</span> <span class="n">last_func</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">first_func</span> <span class="o">=</span> <span class="n">first_func</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">other_funcs</span> <span class="o">=</span> <span class="n">other_funcs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Pipe</span><span class="o">.</span><span class="n">_signature_from_first_and_last_func</span><span class="p">(</span>
+            <span class="n">first_func</span><span class="p">,</span> <span class="n">last_func</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">other_funcs</span> <span class="o">=</span> <span class="n">first_func</span><span class="p">,</span> <span class="n">other_funcs</span>
+
+    <span class="n">_reserved_names</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_process_reserved_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">named_funcs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reserved_names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">:=</span> <span class="n">named_funcs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">named_funcs</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -347,7 +356,21 @@
         <span class="k">return</span> <span class="n">out</span>
 
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">funcs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">funcs</span><span class="p">)</span>
+
+    <span class="n">_dflt_signature</span> <span class="o">=</span> <span class="n">Signature</span><span class="o">.</span><span class="n">from_callable</span><span class="p">(</span><span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_signature_from_first_and_last_func</span><span class="p">(</span><span class="n">first_func</span><span class="p">,</span> <span class="n">last_func</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">input_params</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">first_func</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># function doesn&#39;t have a signature, so take default</span>
+            <span class="n">input_params</span> <span class="o">=</span> <span class="n">Pipe</span><span class="o">.</span><span class="n">_dflt_signature</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">return_annotation</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">last_func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># function doesn&#39;t have a signature, so take default</span>
+            <span class="n">return_annotation</span> <span class="o">=</span> <span class="n">Pipe</span><span class="o">.</span><span class="n">_dflt_signature</span><span class="o">.</span><span class="n">return_annotation</span>
+        <span class="k">return</span> <span class="n">Signature</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">input_params</span><span class="p">),</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">return_annotation</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_flatten_pipe</span><span class="p">(</span><span class="n">pipe</span><span class="p">):</span>
@@ -359,7 +382,8 @@
 
 
 <div class="viewcode-block" id="flatten_pipe"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.flatten_pipe">[docs]</a><span class="k">def</span> <span class="nf">flatten_pipe</span><span class="p">(</span><span class="n">pipe</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Unravel nested Pipes to get a flat &#39;sequence of functions&#39; version of input.</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unravel nested Pipes to get a flat &#39;sequence of functions&#39; version of input.</span>
 
 <span class="sd">    &gt;&gt;&gt; def f(x): return x + 1</span>
 <span class="sd">    &gt;&gt;&gt; def g(x): return x * 2</span>
