@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.1.106 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.1.107 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -80,8 +80,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>dol.util</li>
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">dol.util</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/module_docs/dol/util.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -191,6 +191,30 @@ Originally meant to be used as a decorator of a function, to inject</p>
 <span class="go">&#39;world&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span><span class="o">.</span><span class="n">_added_attrs</span>  <span class="c1"># Another attr was added to hold the list of attributes added (in case we need to remove them</span>
 <span class="go">[&#39;bar&#39;, &#39;hello&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.util.chain_get">
+<code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">chain_get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span></em>, <em class="sig-param"><span class="n">keys</span></em>, <em class="sig-param"><span class="n">default</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#chain_get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.chain_get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <code class="docutils literal notranslate"><span class="pre">d[key]</span></code> value for the first <code class="docutils literal notranslate"><span class="pre">key</span></code> in <code class="docutils literal notranslate"><span class="pre">keys</span></code> that is in <code class="docutils literal notranslate"><span class="pre">d</span></code>, and default if none are found</p>
+<p>Note: Think of <code class="docutils literal notranslate"><span class="pre">collections.ChainMap</span></code> where you can look for a single key in a sequence of maps until we find it.
+Here we look for a sequence of keys in a single map, stopping as soon as we find a key that the map has.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;here&#39;</span><span class="p">:</span> <span class="s1">&#39;&amp;&#39;</span><span class="p">,</span> <span class="s1">&#39;there&#39;</span><span class="p">:</span> <span class="s1">&#39;and&#39;</span><span class="p">,</span> <span class="s1">&#39;every&#39;</span><span class="p">:</span> <span class="s1">&#39;where&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chain_get</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;not there&#39;</span><span class="p">,</span> <span class="s1">&#39;not there either&#39;</span><span class="p">,</span> <span class="s1">&#39;there&#39;</span><span class="p">,</span> <span class="s1">&#39;every&#39;</span><span class="p">])</span>
+<span class="go">&#39;and&#39;</span>
+</pre></div>
+</div>
+<p>Notice how <code class="docutils literal notranslate"><span class="pre">'not</span> <span class="pre">there'</span></code> and <code class="docutils literal notranslate"><span class="pre">'not</span> <span class="pre">there</span> <span class="pre">either'</span></code> are skipped, <code class="docutils literal notranslate"><span class="pre">'there'</span></code> is found and used to retrieve
+the value, and <code class="docutils literal notranslate"><span class="pre">'every'</span></code> is not even checked (because <code class="docutils literal notranslate"><span class="pre">'there'</span></code> was found).
+If non of the keys are found, <code class="docutils literal notranslate"><span class="pre">None</span></code> is returned by default.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">chain_get</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;of&#39;</span><span class="p">,</span> <span class="s1">&#39;these&#39;</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>You can change this default though:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">chain_get</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;of&#39;</span><span class="p">,</span> <span class="s1">&#39;these&#39;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;Not Found&#39;</span><span class="p">)</span>
+<span class="go">&#39;Not Found&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
