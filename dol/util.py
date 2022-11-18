@@ -4,7 +4,7 @@ import shutil
 import re
 from collections import deque, namedtuple, defaultdict
 from warnings import warn
-from typing import Any, Hashable, Callable, Iterable, Optional, Union
+from typing import Any, Hashable, Callable, Iterable, Optional, Union, Mapping
 from functools import update_wrapper as _update_wrapper
 from functools import wraps as _wraps
 from functools import partialmethod, partial, WRAPPER_ASSIGNMENTS
@@ -19,6 +19,35 @@ update_wrapper = partial(_update_wrapper, assigned=wrapper_assignments)
 wraps = partial(_wraps, assigned=wrapper_assignments)
 
 exhaust = partial(deque, maxlen=0)
+
+
+def chain_get(d: Mapping, keys, default=None):
+    """
+    Returns the ``d[key]`` value for the first ``key`` in ``keys`` that is in ``d``, and default if none are found
+
+    Note: Think of ``collections.ChainMap`` where you can look for a single key in a sequence of maps until we find it.
+    Here we look for a sequence of keys in a single map, stopping as soon as we find a key that the map has.
+
+    >>> d = {'here': '&', 'there': 'and', 'every': 'where'}
+    >>> chain_get(d, ['not there', 'not there either', 'there', 'every'])
+    'and'
+
+    Notice how ``'not there'`` and ``'not there either'`` are skipped, ``'there'`` is found and used to retrieve
+    the value, and ``'every'`` is not even checked (because ``'there'`` was found).
+    If non of the keys are found, ``None`` is returned by default.
+
+    >>> assert chain_get(d, ('none', 'of', 'these')) is None
+
+    You can change this default though:
+
+    >>> chain_get(d, ('none', 'of', 'these'), default='Not Found')
+    'Not Found'
+
+    """
+    for key in keys:
+        if key in d:
+            return d[key]
+    return default
 
 
 class Literal:
