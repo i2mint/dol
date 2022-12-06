@@ -78,14 +78,15 @@ def path_get(
 @dataclass
 class KeyPath:
     """
-    A key mapper that converts from an iterable key (default tuple) to a string (given a path-separator str)
+    A key mapper that converts from an iterable key (default tuple) to a string
+    (given a path-separator str)
 
     Args:
-        path_sep: The path separator (used to make string paths from iterable paths and visa versa
-        _path_type: The type of the outcoming (inner) path. But really, any function to convert from a list to
+        path_sep: The path separator (used to make string paths from iterable paths and
+            visa versa
+        _path_type: The type of the outcoming (inner) path. But really, any function to
+        convert from a list to
             the outer path type we want.
-
-    See also:
 
     With ``'/'`` as a separator:
 
@@ -127,6 +128,12 @@ class KeyPath:
     >>> del s['a.b.c']
     >>> s
     {'a': {'b': {}}}
+
+    Note: ``KeyPath`` enables you to read with paths when all the keys of the paths
+    are valid (i.e. have a value), but just as with a ``dict``, it will not create
+    intermediate nested values for you (as for example, you could make for yourself
+    using  ``collections.defaultdict``).
+
     """
 
     path_sep: str = path_sep

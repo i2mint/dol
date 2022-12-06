@@ -1878,7 +1878,7 @@ def _kv_wrap_outcoming_vals(trans_func):
 
     Warning: If it matters, make sure you also wrapped with a corresponding inverse serialization.
 
-    >>> from collections import UserDict
+    >>>  from collections import UserDict
     >>> S = kv_wrap.outcoming_vals(lambda x: x * 2)(UserDict)
     >>> s = S(foo=10, bar='xo')
     >>> list(s.values())
