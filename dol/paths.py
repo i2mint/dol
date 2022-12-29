@@ -116,14 +116,14 @@ def get_attr_or_item(obj, k):
 
 
 def path_get(
-        obj: Any,
-        path,
-        on_error: OnErrorType = raise_on_error,
-        *,
-        sep='.',
-        key_transformer=cast_to_int_if_numeric_str,
-        get_value: Callable = get_attr_or_item,
-        caught_errors=(Exception,)
+    obj: Any,
+    path,
+    on_error: OnErrorType = raise_on_error,
+    *,
+    sep='.',
+    key_transformer=cast_to_int_if_numeric_str,
+    get_value: Callable = get_attr_or_item,
+    caught_errors=(Exception,),
 ):
     """
     Get elements of a mapping through a path to be called recursively.
@@ -154,12 +154,14 @@ def path_get(
         path_to_keys = lambda path: map(key_transformer, _path_to_keys(path))
 
     return _path_get(
-        obj, path,
+        obj,
+        path,
         on_error=on_error,
         path_to_keys=path_to_keys,
         get_value=get_value,
-        caught_errors=caught_errors
+        caught_errors=caught_errors,
     )
+
 
 @dataclass
 class KeyPath:

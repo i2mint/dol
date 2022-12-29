@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.1.110 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.1.111 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -92,9 +92,10 @@
   <h1>Source code for dol.paths</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Module for path (and path-like) object manipulation&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partialmethod</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">getitem</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
@@ -120,24 +121,29 @@
 <span class="n">OnErrorType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="path_get"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.path_get">[docs]</a><span class="k">def</span> <span class="nf">path_get</span><span class="p">(</span>
-    <span class="n">mapping</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">on_error</span><span class="p">:</span> <span class="n">OnErrorType</span> <span class="o">=</span> <span class="n">raise_on_error</span><span class="p">,</span> <span class="n">caught_errors</span><span class="o">=</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,),</span>
+<span class="k">def</span> <span class="nf">_path_get</span><span class="p">(</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">,</span>
+    <span class="n">on_error</span><span class="p">:</span> <span class="n">OnErrorType</span> <span class="o">=</span> <span class="n">raise_on_error</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">path_to_keys</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Iterable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">get_value</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">getitem</span><span class="p">,</span>
+    <span class="n">caught_errors</span><span class="o">=</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">),</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get elements of a mapping through a path to be called recursively.</span>
 
-<span class="sd">    &gt;&gt;&gt; path_get({&#39;a&#39;: {&#39;b&#39;: 2}}, &#39;a&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; _path_get({&#39;a&#39;: {&#39;b&#39;: 2}}, &#39;a&#39;)</span>
 <span class="sd">    {&#39;b&#39;: 2}</span>
-<span class="sd">    &gt;&gt;&gt; path_get({&#39;a&#39;: {&#39;b&#39;: 2}}, [&#39;a&#39;, &#39;b&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; _path_get({&#39;a&#39;: {&#39;b&#39;: 2}}, [&#39;a&#39;, &#39;b&#39;])</span>
 <span class="sd">    2</span>
-<span class="sd">    &gt;&gt;&gt; path_get({&#39;a&#39;: {&#39;b&#39;: 2}}, [&#39;a&#39;, &#39;c&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; _path_get({&#39;a&#39;: {&#39;b&#39;: 2}}, [&#39;a&#39;, &#39;c&#39;])</span>
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
 <span class="sd">    KeyError: &#39;c&#39;</span>
-<span class="sd">    &gt;&gt;&gt; path_get({&#39;a&#39;: {&#39;b&#39;: 2}}, [&#39;a&#39;, &#39;c&#39;], lambda x: x)</span>
-<span class="sd">    {&#39;mapping&#39;: {&#39;a&#39;: {&#39;b&#39;: 2}}, &#39;path&#39;: [&#39;a&#39;, &#39;c&#39;], &#39;result&#39;: {&#39;b&#39;: 2}, &#39;k&#39;: &#39;c&#39;, &#39;error&#39;: KeyError(&#39;c&#39;)}</span>
+<span class="sd">    &gt;&gt;&gt; _path_get({&#39;a&#39;: {&#39;b&#39;: 2}}, [&#39;a&#39;, &#39;c&#39;], lambda x: x)</span>
+<span class="sd">    {&#39;obj&#39;: {&#39;a&#39;: {&#39;b&#39;: 2}}, &#39;path&#39;: [&#39;a&#39;, &#39;c&#39;], &#39;result&#39;: {&#39;b&#39;: 2}, &#39;k&#39;: &#39;c&#39;, &#39;error&#39;: KeyError(&#39;c&#39;)}</span>
 
-
-<span class="sd">    # &gt;&gt;&gt; assert path_get({&#39;a&#39;: {&#39;b&#39;: 2}}, [&#39;a&#39;, &#39;c&#39;], lambda x: x) == {</span>
+<span class="sd">    # &gt;&gt;&gt; assert _path_get({&#39;a&#39;: {&#39;b&#39;: 2}}, [&#39;a&#39;, &#39;c&#39;], lambda x: x) == {</span>
 <span class="sd">    # ...     &#39;mapping&#39;: {&#39;a&#39;: {&#39;b&#39;: 2}},</span>
 <span class="sd">    # ...     &#39;path&#39;: [&#39;a&#39;, &#39;c&#39;],</span>
 <span class="sd">    # ...     &#39;result&#39;: {&#39;b&#39;: 2},</span>
@@ -146,14 +152,21 @@
 <span class="sd">    # ... }</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">mapping</span>
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+
+    <span class="k">if</span> <span class="n">path_to_keys</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">path_to_keys</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">path</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">obj</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">get_value</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">caught_errors</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">on_error</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">on_error</span><span class="p">(</span>
-                    <span class="nb">dict</span><span class="p">(</span><span class="n">mapping</span><span class="o">=</span><span class="n">mapping</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,)</span>
+                    <span class="nb">dict</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,)</span>
                 <span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">on_error</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
@@ -164,7 +177,82 @@
                     <span class="sa">f</span><span class="s1">&#39;on_error should be a callable (input is a dict) or a string. &#39;</span>
                     <span class="sa">f</span><span class="s1">&#39;Was: </span><span class="si">{</span><span class="n">on_error</span><span class="si">}</span><span class="s1">&#39;</span>
                 <span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span></div>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span> <span class="nf">split_if_str</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obj</span>
+
+
+<span class="k">def</span> <span class="nf">cast_to_int_if_numeric_str</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">str</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">k</span>
+
+
+<span class="k">def</span> <span class="nf">separate_keys_with_separator</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="n">cast_to_int_if_numeric_str</span><span class="p">,</span> <span class="n">split_if_str</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="get_attr_or_item"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.get_attr_or_item">[docs]</a><span class="k">def</span> <span class="nf">get_attr_or_item</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;If ``k`` is a string, tries to get ``k`` as an attribute of ``obj`` first,</span>
+<span class="sd">    and if that fails, gets it as ``obj[k]``&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="path_get"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.path_get">[docs]</a><span class="k">def</span> <span class="nf">path_get</span><span class="p">(</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">,</span>
+    <span class="n">on_error</span><span class="p">:</span> <span class="n">OnErrorType</span> <span class="o">=</span> <span class="n">raise_on_error</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span>
+    <span class="n">key_transformer</span><span class="o">=</span><span class="n">cast_to_int_if_numeric_str</span><span class="p">,</span>
+    <span class="n">get_value</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">get_attr_or_item</span><span class="p">,</span>
+    <span class="n">caught_errors</span><span class="o">=</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,),</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get elements of a mapping through a path to be called recursively.</span>
+<span class="sd">    Like ``_path_get``, but with defaults that are more convenient out of the box.</span>
+
+<span class="sd">    It will</span>
+
+<span class="sd">    - split a path into keys if it is a string, using the specified seperator ``sep``</span>
+
+<span class="sd">    - consider string keys that are numeric as ints (convenient for lists)</span>
+
+<span class="sd">    - get items also as attributes (attributes are checked for first for string keys)</span>
+
+<span class="sd">    - catch all exceptions (that are subclasses of ``Exception``)</span>
+
+
+<span class="sd">    &gt;&gt;&gt; class A:</span>
+<span class="sd">    ...      an_attribute = 42</span>
+<span class="sd">    &gt;&gt;&gt; path_get([1, [4, 5, {&#39;a&#39;: A}], 3], &#39;1.2.a.an_attribute&#39;)</span>
+<span class="sd">    42</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">path_to_keys</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">path_to_keys</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+    <span class="k">if</span> <span class="n">key_transformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_path_to_keys</span> <span class="o">=</span> <span class="n">path_to_keys</span>
+        <span class="n">path_to_keys</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">path</span><span class="p">:</span> <span class="nb">map</span><span class="p">(</span><span class="n">key_transformer</span><span class="p">,</span> <span class="n">_path_to_keys</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">_path_get</span><span class="p">(</span>
+        <span class="n">obj</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">,</span>
+        <span class="n">on_error</span><span class="o">=</span><span class="n">on_error</span><span class="p">,</span>
+        <span class="n">path_to_keys</span><span class="o">=</span><span class="n">path_to_keys</span><span class="p">,</span>
+        <span class="n">get_value</span><span class="o">=</span><span class="n">get_value</span><span class="p">,</span>
+        <span class="n">caught_errors</span><span class="o">=</span><span class="n">caught_errors</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="KeyPath"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyPath">[docs]</a><span class="nd">@dataclass</span>

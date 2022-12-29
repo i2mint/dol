@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.110 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.111 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -578,6 +578,12 @@ wrapping with <cite>Sig</cite> objects takes care of that oversight!)</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="dol.signatures.Sig.defaults">
+<em class="property">property </em><code class="sig-name descname">defaults</code><a class="headerlink" href="#dol.signatures.Sig.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">{name:</span> <span class="pre">default,...}</span></code> dict of defaults (regardless of kind)</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="dol.signatures.Sig.extract_args_and_kwargs">
 <code class="sig-name descname">extract_args_and_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">_ignore_kind</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">_allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_args_limit</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.extract_args_and_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.extract_args_and_kwargs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Source the (args, kwargs) for the signature instance, ignoring excess
@@ -709,6 +715,49 @@ you input.</p>
 will be returned with their defaults:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">_apply_defaults</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 4, &#39;x&#39;: 3, &#39;y&#39;: 2, &#39;z&#39;: &#39;ZZ&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.signatures.Sig.get_names">
+<code class="sig-name descname">get_names</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spec</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">conserve_sig_order</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">allow_excess</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.get_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.get_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of names corresponding to the given spec.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> – An integer, string, or iterable of intergers and strings</p></li>
+<li><p><strong>conserve_sig_order</strong> – Whether to order according to the signature</p></li>
+<li><p><strong>allow_excess</strong> – Whether to allow items in spec that are not in signature</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;a b c d e&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">get_names</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">(&#39;a&#39;,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">get_names</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">(&#39;a&#39;, &#39;c&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">get_names</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
+<span class="go">(&#39;b&#39;,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">get_names</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="go">(&#39;a&#39;, &#39;c&#39;, &#39;e&#39;)</span>
+</pre></div>
+</div>
+<p>See that by default the order of the signature is conserved:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">get_names</span><span class="p">(</span><span class="s1">&#39;b e d&#39;</span><span class="p">)</span>
+<span class="go">(&#39;b&#39;, &#39;d&#39;, &#39;e&#39;)</span>
+</pre></div>
+</div>
+<p>But you can change that default to conserve the order of the <code class="docutils literal notranslate"><span class="pre">spec</span></code> instead:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">get_names</span><span class="p">(</span><span class="s1">&#39;b e d&#39;</span><span class="p">,</span> <span class="n">conserve_sig_order</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">(&#39;b&#39;, &#39;e&#39;, &#39;d&#39;)</span>
+</pre></div>
+</div>
+<p>By default, you can’t mention names that are not in signature.
+To allow this (making <code class="docutils literal notranslate"><span class="pre">spec</span></code> have “extract these” interpretation),
+set <code class="docutils literal notranslate"><span class="pre">allow_excess=True</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">get_names</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">],</span> <span class="n">allow_excess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">(&#39;a&#39;, &#39;c&#39;, &#39;e&#39;)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1778,6 +1827,30 @@ lists of names that are different</p>
 <dt id="dol.signatures.copy_func">
 <code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">copy_func</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#copy_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.copy_func" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy a function (not sure it works with all types of callables)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.signatures.dict_of_attribute_signatures">
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">dict_of_attribute_signatures</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cls</span><span class="p">:</span> <span class="n">type</span></em><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span>str<span class="p">, </span>inspect.Signature<span class="p">]</span><a class="reference internal" href="../../_modules/dol/signatures.html#dict_of_attribute_signatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.dict_of_attribute_signatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function that extracts the signatures of all callable attributes of a class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cls</strong> – The class that holds the the <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">func)</span></code> pairs we want to extract.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dict of <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">signature(func))</span></code> pairs extracted from class.</p>
+</dd>
+</dl>
+<p>One of the intended applications is to use <code class="docutils literal notranslate"><span class="pre">dict_of_attribute_signatures</span></code> as a
+decorator, like so:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@dict_of_attribute_signatures</span>
+<span class="gp">... </span><span class="k">class</span> <span class="nc">names_and_signatures</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span> <span class="o">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">names_and_signatures</span>
+<span class="go">{&#39;foo&#39;: &lt;Signature (x: str, *, y=2) -&gt; tuple&gt;, &#39;bar&#39;: &lt;Signature (z, /) -&gt; float&gt;}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
