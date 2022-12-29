@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.1.109 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.sources &mdash; dol 0.1.110 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -540,7 +540,7 @@
 
 <span class="k">def</span> <span class="nf">_dflt_object_namer</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dflt_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;name_not_found&#39;</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span>
-        <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">)</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="ow">or</span> <span class="n">_extract_first_identifier</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">))</span>
         <span class="ow">or</span> <span class="n">dflt_name</span>
     <span class="p">)</span>
@@ -552,7 +552,8 @@
 
 <span class="sd">    On the other hand, you will not get the usuall non-dunders (non magic methods) of</span>
 <span class="sd">    ``Mappings``. This is so that you can use tab completion to access only the keys</span>
-<span class="sd">    the container has, and no any of the non-dunder methods like ``get``, ``items``, etc.</span>
+<span class="sd">    the container has, and not any of the non-dunder methods like ``get``, ``items``,</span>
+<span class="sd">    etc.</span>
 
 <span class="sd">    &gt;&gt;&gt; da = AttrContainer(foo=&#39;bar&#39;, life=42)</span>
 <span class="sd">    &gt;&gt;&gt; da.foo</span>
