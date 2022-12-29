@@ -448,7 +448,7 @@ def _extract_first_identifier(string: str) -> str:
 
 def _dflt_object_namer(obj, dflt_name: str = 'name_not_found'):
     return (
-        getattr(obj, '__name__')
+        getattr(obj, '__name__', None)
         or _extract_first_identifier(getattr(obj, '__doc__'))
         or dflt_name
     )
@@ -460,7 +460,8 @@ class AttrContainer:
 
     On the other hand, you will not get the usuall non-dunders (non magic methods) of
     ``Mappings``. This is so that you can use tab completion to access only the keys
-    the container has, and no any of the non-dunder methods like ``get``, ``items``, etc.
+    the container has, and not any of the non-dunder methods like ``get``, ``items``,
+    etc.
 
     >>> da = AttrContainer(foo='bar', life=42)
     >>> da.foo
