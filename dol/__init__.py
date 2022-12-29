@@ -79,7 +79,7 @@ from dol.appendable import appendable
 
 from dol.naming import StrTupleDict, mk_store_from_path_format_store_cls
 
-from dol.paths import mk_relative_path_store, KeyPath
+from dol.paths import mk_relative_path_store, KeyPath, path_get
 
 from dol.explicit import ExplicitKeyMap, invertible_maps
 

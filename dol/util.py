@@ -389,7 +389,7 @@ def partialclass(cls, *args, **kwargs):
     Note in the last partial that since ``a`` was fixed, you need to specify the keyword ``AA(a=3)``.
     ``AA(3)`` won't work:
 
-    >>> AA(3)
+    >>> AA(3)  # doctest: +SKIP
     Traceback (most recent call last):
       ...
     TypeError: __init__() got multiple values for argument 'a'

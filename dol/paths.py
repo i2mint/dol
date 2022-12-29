@@ -1,8 +1,9 @@
 """Module for path (and path-like) object manipulation"""
 
-from functools import wraps, partialmethod
+from functools import wraps, partial
 from dataclasses import dataclass
-from typing import Union, Callable, Any
+from typing import Union, Callable, Any, Mapping, Iterable
+from operator import getitem
 import os
 
 from dol.base import Store
@@ -28,24 +29,29 @@ def return_empty_tuple_on_error(d: dict):
 OnErrorType = Union[Callable[[dict], Any], str]
 
 
-def path_get(
-    mapping, path, on_error: OnErrorType = raise_on_error, caught_errors=(KeyError,),
+def _path_get(
+    obj: Any,
+    path,
+    on_error: OnErrorType = raise_on_error,
+    *,
+    path_to_keys: Callable[[Any], Iterable] = None,
+    get_value: Callable = getitem,
+    caught_errors=(KeyError, IndexError),
 ):
     """Get elements of a mapping through a path to be called recursively.
 
-    >>> path_get({'a': {'b': 2}}, 'a')
+    >>> _path_get({'a': {'b': 2}}, 'a')
     {'b': 2}
-    >>> path_get({'a': {'b': 2}}, ['a', 'b'])
+    >>> _path_get({'a': {'b': 2}}, ['a', 'b'])
     2
-    >>> path_get({'a': {'b': 2}}, ['a', 'c'])
+    >>> _path_get({'a': {'b': 2}}, ['a', 'c'])
     Traceback (most recent call last):
         ...
     KeyError: 'c'
-    >>> path_get({'a': {'b': 2}}, ['a', 'c'], lambda x: x)
-    {'mapping': {'a': {'b': 2}}, 'path': ['a', 'c'], 'result': {'b': 2}, 'k': 'c', 'error': KeyError('c')}
+    >>> _path_get({'a': {'b': 2}}, ['a', 'c'], lambda x: x)
+    {'obj': {'a': {'b': 2}}, 'path': ['a', 'c'], 'result': {'b': 2}, 'k': 'c', 'error': KeyError('c')}
 
-
-    # >>> assert path_get({'a': {'b': 2}}, ['a', 'c'], lambda x: x) == {
+    # >>> assert _path_get({'a': {'b': 2}}, ['a', 'c'], lambda x: x) == {
     # ...     'mapping': {'a': {'b': 2}},
     # ...     'path': ['a', 'c'],
     # ...     'result': {'b': 2},
@@ -54,14 +60,21 @@ def path_get(
     # ... }
 
     """
-    result = mapping
-    for k in path:
+
+    if path_to_keys is not None:
+        keys = path_to_keys(path)
+    else:
+        keys = path
+
+    result = obj
+
+    for k in keys:
         try:
-            result = result[k]
+            result = get_value(result, k)
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(mapping=mapping, path=path, result=result, k=k, error=error,)
+                    dict(obj=obj, path=path, result=result, k=k, error=error,)
                 )
             elif isinstance(on_error, str):
                 raise error.__class__(
@@ -74,6 +87,79 @@ def path_get(
                 )
     return result
 
+
+def split_if_str(obj, sep='.'):
+    if isinstance(obj, str):
+        return obj.split(sep)
+    return obj
+
+
+def cast_to_int_if_numeric_str(k):
+    if isinstance(k, str) and str.isnumeric(k):
+        return int(k)
+    return k
+
+
+def separate_keys_with_separator(obj, sep='.'):
+    return map(cast_to_int_if_numeric_str, split_if_str(obj, sep))
+
+
+def get_attr_or_item(obj, k):
+    """If ``k`` is a string, tries to get ``k`` as an attribute of ``obj`` first,
+    and if that fails, gets it as ``obj[k]``"""
+    if isinstance(k, str):
+        try:
+            return getattr(obj, k)
+        except AttributeError:
+            pass
+    return obj[k]
+
+
+def path_get(
+        obj: Any,
+        path,
+        on_error: OnErrorType = raise_on_error,
+        *,
+        sep='.',
+        key_transformer=cast_to_int_if_numeric_str,
+        get_value: Callable = get_attr_or_item,
+        caught_errors=(Exception,)
+):
+    """
+    Get elements of a mapping through a path to be called recursively.
+    Like ``_path_get``, but with defaults that are more convenient out of the box.
+
+    It will
+
+    - split a path into keys if it is a string, using the specified seperator ``sep``
+
+    - consider string keys that are numeric as ints (convenient for lists)
+
+    - get items also as attributes (attributes are checked for first for string keys)
+
+    - catch all exceptions (that are subclasses of ``Exception``)
+
+
+    >>> class A:
+    ...      an_attribute = 42
+    >>> path_get([1, [4, 5, {'a': A}], 3], '1.2.a.an_attribute')
+    42
+    """
+    if sep is not None:
+        path_to_keys = lambda x: x.split(sep)
+    else:
+        path_to_keys = lambda x: x
+    if key_transformer is not None:
+        _path_to_keys = path_to_keys
+        path_to_keys = lambda path: map(key_transformer, _path_to_keys(path))
+
+    return _path_get(
+        obj, path,
+        on_error=on_error,
+        path_to_keys=path_to_keys,
+        get_value=get_value,
+        caught_errors=caught_errors
+    )
 
 @dataclass
 class KeyPath:

@@ -84,7 +84,18 @@ Both in the code and in the docs, we'll use short hands for parameter (argument)
 
 from inspect import Signature, Parameter, signature, unwrap
 import re
-from typing import Union, Callable, Iterable, Mapping as MappingType
+import sys
+from typing import (
+    Union,
+    Callable,
+    Any,
+    Dict,
+    Iterable,
+    Tuple,
+    Iterator,
+    Mapping as MappingType,
+)
+from typing import KT, VT
 from types import FunctionType
 from collections import defaultdict
 
@@ -685,40 +696,8 @@ def parameter_to_dict(p: Parameter) -> dict:
 
 WRAPPER_UPDATES = ('__dict__',)
 
-from typing import Callable
-
 # A default signature of (*no_sig_args, **no_sig_kwargs)
 DFLT_SIGNATURE = signature(lambda *no_sig_args, **no_sig_kwargs: ...)
-
-# TODO: Might want to monkey-patch inspect._signature_from_callable to use sigs_for_sigless_builtin_name
-def _robust_signature_of_callable(callable_obj: Callable) -> Signature:
-    r"""Get the signature of a Callable, returning a custom made one for those
-    builtins that don't have one
-
-    >>> _robust_signature_of_callable(
-    ...     _robust_signature_of_callable
-    ... )  # has a normal signature
-    <Signature (callable_obj: Callable) -> inspect.Signature>
-    >>> s = _robust_signature_of_callable(print)  # has one that this module provides
-    >>> assert isinstance(s, Signature)
-    >>> # Will be: <Signature (*value, sep=' ', end='\n', file=<_io.TextIOWrapper
-    name='<stdout>' mode='w' encoding='utf-8'>, flush=False)>
-    >>> _robust_signature_of_callable(
-    ...     zip
-    ... )  # doesn't have one, so will return a blanket one
-    <Signature (*no_sig_args, **no_sig_kwargs)>
-
-    """
-    try:
-        return signature(callable_obj)
-    except ValueError:
-        # if isinstance(callable_obj, partial):
-        #     callable_obj = callable_obj.func
-        obj_name = getattr(callable_obj, '__name__', None)
-        if obj_name in sigs_for_sigless_builtin_name:
-            return sigs_for_sigless_builtin_name[obj_name] or DFLT_SIGNATURE
-        else:
-            raise
 
 
 def _names_of_kind(sig):
@@ -1160,6 +1139,8 @@ class Sig(Signature, Mapping):
             # (try to) return cls(obj) if obj is callable:
             if callable(obj):
                 return cls(obj)
+            else:
+                raise TypeError(f'Object is not callable: {obj}')
         except ValueError:
             # if a ValueError is raised, return the default_signature
             return Sig(default_signature)
@@ -1352,7 +1333,26 @@ class Sig(Signature, Mapping):
 
     @property
     def defaults(self):
+        """A ``{name: default,...}`` dict of defaults (regardless of kind)"""
         return {p.name: p.default for p in self.values() if p.default is not p.empty}
+
+    @property
+    def _defaults_(self):
+        """What the ``__defaults__`` value would be for a func of the same signature"""
+        return tuple(
+            p.default
+            for p in self.values()
+            if (p.default is not p.empty and p.kind != KO)
+        )
+
+    @property
+    def _kwdefaults_(self):
+        """What the ``__kwdefaults__`` value would be for a func of the same signature"""
+        return {
+            p.name: p.default
+            for p in self.values()
+            if p.default is not p.empty and p.kind == KO
+        }
 
     @property
     def annotations(self):
@@ -1371,6 +1371,77 @@ class Sig(Signature, Mapping):
             self.names_of_kind[KO],
             next(iter(self.names_of_kind[VK]), None),
         )
+
+    # TODO: Can be cleaned and generalized (include/exclude, function filter etc.)
+    def get_names(self, spec, *, conserve_sig_order=True, allow_excess=False):
+        """Return a tuple of names corresponding to the given spec.
+
+        :param spec: An integer, string, or iterable of intergers and strings
+        :param conserve_sig_order: Whether to order according to the signature
+        :param allow_excess: Whether to allow items in spec that are not in signature
+
+        >>> sig = Sig('a b c d e')
+        >>> sig.get_names(0)
+        ('a',)
+        >>> sig.get_names([0, 2])
+        ('a', 'c')
+        >>> sig.get_names('b')
+        ('b',)
+        >>> sig.get_names([0, 'c', -1])
+        ('a', 'c', 'e')
+
+        See that by default the order of the signature is conserved:
+
+        >>> sig.get_names('b e d')
+        ('b', 'd', 'e')
+
+        But you can change that default to conserve the order of the ``spec`` instead:
+
+        >>> sig.get_names('b e d', conserve_sig_order=False)
+        ('b', 'e', 'd')
+
+        By default, you can't mention names that are not in signature.
+        To allow this (making ``spec`` have "extract these" interpretation),
+        set ``allow_excess=True``:
+
+        >>> sig.get_names(['a', 'c', 'e', 'g', 'h'], allow_excess=True)
+        ('a', 'c', 'e')
+
+        """
+        if isinstance(spec, str):
+            spec = spec.split()
+        elif isinstance(spec, int):
+            spec = [spec]
+        if isinstance(spec, Iterable):
+
+            def find_names():
+                names = self.names
+                for item in spec:
+                    if isinstance(item, int):
+                        if item < len(names):
+                            yield names[item]
+                        elif not allow_excess:
+                            raise IndexError(
+                                f'There are only {len(names)} names in the signatures,'
+                                f'but you asked for the index: {item}'
+                            )
+                    else:
+                        if item in names:
+                            yield item
+                        elif not allow_excess:
+                            raise ValueError(
+                                f'No such param name in signatures: {item}'
+                            )
+
+            matched_names = tuple(find_names())
+            if conserve_sig_order:
+                _matched_names = tuple(x for x in self.names if x in matched_names)
+                matched_names = _matched_names + tuple(
+                    x for x in matched_names if x not in _matched_names
+                )
+            return matched_names
+        else:
+            raise TypeError(f'Unknown spec type: {spec}')
 
     def __iter__(self):
         return iter(self.parameters)
@@ -1706,6 +1777,8 @@ class Sig(Signature, Mapping):
     def ch_annotations(self, **changes_for_name):
         return self.ch_param_attrs('annotation', **changes_for_name)
 
+    # TODO: Make default_conflict_method be able to be a callable and get rid of string
+    #  mapping complexity in merge_with_sig code
     def merge_with_sig(
         self,
         sig: ParamsAble,
@@ -1783,10 +1856,17 @@ class Sig(Signature, Mapping):
             None,
             'strict',
             'take_first',
-        }, "default_conflict_method should be in {None, 'strict', 'take_first'}"
+            'fill_defaults_and_annotations',
+        }, (
+            'default_conflict_method should be in '
+            "{None, 'strict', 'take_first', 'fill_defaults_and_annotations'}"
+        )
 
         if default_conflict_method == 'take_first':
             _sig = _sig - set(_self.keys() & _sig.keys())
+        elif default_conflict_method == 'fill_defaults_and_annotations':
+            _self = _fill_defaults_and_annotations(_self, _sig)
+            _sig = _fill_defaults_and_annotations(_sig, _self)
 
         if not all(
             _self[name].default == _sig[name].default
@@ -1964,7 +2044,8 @@ class Sig(Signature, Mapping):
         ...     )
         ... )
         >>> sigs = filter(lambda sig: not sig.has_var_kinds, map(Sig, funcs))
-        >>> sum(sigs)
+        >>> # Note: Skipping because not stable between python versions
+        >>> sum(sigs)  # doctest: +SKIP
         <Sig (path, p, paths, m, filename, s, f1, f2, fp1, fp2, s1, s2, start=None)>
         """
         if sig == 0:  # so that we can do ``sum(iterable_of_sigs)``
@@ -2755,6 +2836,40 @@ class Sig(Signature, Mapping):
         )
 
 
+def _fill_defaults_and_annotations(sig1: Sig, sig2: Sig):
+    """Return the same signature as ``sig1``, but where empty param properties
+    (default or annotation) were filled by the property found in ``sig2`` if it has a
+    param of the same name
+
+    >>> _fill_defaults_and_annotations(
+    ...    Sig('(a, /, b: str, *, c=3)'), Sig('(a: float, b: int = 2, c=300)')
+    ... )
+    <Sig (a: float, /, b: str = 2, *, c=3)>
+
+    """
+
+    def filled_properties_of_sig1():
+        alt_defaults = sig2.defaults
+        alt_annotations = sig2.annotations
+        for p in sig1.params:
+            yield Parameter(
+                p.name,
+                p.kind,
+                default=(
+                    p.default
+                    if p.default is not empty
+                    else alt_defaults.get(p.name, empty)
+                ),
+                annotation=(
+                    p.annotation
+                    if p.annotation is not empty
+                    else alt_annotations.get(p.name, empty)
+                ),
+            )
+
+    return Sig(filled_properties_of_sig1())
+
+
 def _validate_sanity_of_signature_change(
     func: Callable, new_sig: Sig, ignore_incompatible_signatures: bool = True
 ):
@@ -3383,7 +3498,10 @@ def ch_variadics_to_non_variadic_kind(func, *, ch_variadic_keyword_to_keyword=Tr
             if idx_of_vp is not None:
                 params[idx_of_vp] = params[idx_of_vp].replace(kind=PK, default=())
             variadic_less_func.__signature__ = Sig(
-                params, return_annotation=signature(func).return_annotation
+                # Note: Changed signature(func) to Sig(func) but don't know if the first
+                #  was on purpose.
+                params,
+                return_annotation=signature(func).return_annotation,
             )
         except ValueError:
             if idx_of_vp is not None:
@@ -3679,95 +3797,257 @@ def sig_to_dataclass(
 # Manual construction of missing signatures
 # ############################################################################
 
-import sys
+# TODO: Might want to monkey-patch inspect._signature_from_callable to use
+#  sigs_for_sigless_builtin_name
+def _robust_signature_of_callable(callable_obj: Callable) -> Signature:
+    r"""Get the signature of a Callable, returning a custom made one for those
+    builtins that don't have one
 
-sigs_for_sigless_builtin_name = {
-    '__build_class__': None,
-    # __build_class__(func, name, /, *bases, [metaclass], **kwds) -> class
-    '__import__': None,
-    # __import__(name, globals=None, locals=None, fromlist=(), level=0) -> module
-    'bool': None,
-    # bool(x) -> bool
-    'breakpoint': None,
-    # breakpoint(*args, **kws)
-    'bytearray': None,
-    # bytearray(iterable_of_ints) -> bytearray
-    # bytearray(string, encoding[, errors]) -> bytearray
-    # bytearray(bytes_or_buffer) -> mutable copy of bytes_or_buffer
-    # bytearray(int) -> bytes array of size given by the parameter initialized with
-    # null bytes
-    # bytearray() -> empty bytes array
-    'bytes': None,
-    # bytes(iterable_of_ints) -> bytes
-    # bytes(string, encoding[, errors]) -> bytes
-    # bytes(bytes_or_buffer) -> immutable copy of bytes_or_buffer
-    # bytes(int) -> bytes object of size given by the parameter initialized with null
-    # bytes
-    # bytes() -> empty bytes object
-    'classmethod': None,
-    # classmethod(function) -> method
-    'dict': None,
-    # dict() -> new empty dictionary
-    # dict(mapping) -> new dictionary initialized from a mapping object's
-    # dict(iterable) -> new dictionary initialized as if via:
-    # dict(**kwargs) -> new dictionary initialized with the name=value pairs
-    'dir': None,
-    # dir([object]) -> list of strings
-    'filter': signature(lambda function, iterable: ...),
-    # filter(function or None, iterable) --> filter object
-    'frozenset': None,
-    # frozenset() -> empty frozenset object
-    # frozenset(iterable) -> frozenset object
-    'getattr': None,
-    # getattr(object, name[, default]) -> value
-    'int': None,
-    # int([x]) -> integer
-    # int(x, base=10) -> integer
-    'iter': None,
-    # iter(iterable) -> iterator
-    # iter(callable, sentinel) -> iterator
-    'map': signature(lambda func, *iterables: ...),
-    # map(func, *iterables) --> map object
-    'max': None,
-    # max(iterable, *[, default=obj, key=func]) -> value
-    # max(arg1, arg2, *args, *[, key=func]) -> value
-    'min': None,
-    # min(iterable, *[, default=obj, key=func]) -> value
-    # min(arg1, arg2, *args, *[, key=func]) -> value
-    'next': None,
-    # next(iterator[, default])
-    'print': signature(
-        lambda *value, sep=' ', end='\n', file=sys.stdout, flush=False: ...
-    ),
-    # print(value, ..., sep=' ', end='\n', file=sys.stdout, flush=False)
-    'range': None,
-    # range(stop) -> range object
-    # range(start, stop[, step]) -> range object
-    'set': None,
-    # set() -> new empty set object
-    # set(iterable) -> new set object
-    'slice': None,
-    # slice(stop)
-    # slice(start, stop[, step])
-    'staticmethod': None,
-    # staticmethod(function) -> method
-    'str': None,
-    # str(object='') -> str
-    # str(bytes_or_buffer[, encoding[, errors]]) -> str
-    'super': None,
-    # super() -> same as super(__class__, <first argument>)
-    # super(type) -> unbound super object
-    # super(type, obj) -> bound super object; requires isinstance(obj, type)
-    # super(type, type2) -> bound super object; requires issubclass(type2, type)
-    'type': None,
-    # type(object_or_name, bases, dict)
-    # type(object) -> the object's type
-    # type(name, bases, dict) -> a new type
-    'vars': None,
-    # vars([object]) -> dictionary
-    'zip': None,
-    # zip(*iterables) --> A zip object yielding tuples until an input is exhausted.
-}
+    >>> _robust_signature_of_callable(
+    ...     _robust_signature_of_callable
+    ... )  # has a normal signature
+    <Signature (callable_obj: Callable) -> inspect.Signature>
+    >>> s = _robust_signature_of_callable(print)  # has one that this module provides
+    >>> assert isinstance(s, Signature)
+    >>> # Will be: <Signature (*value, sep=' ', end='\n', file=<_io.TextIOWrapper
+    name='<stdout>' mode='w' encoding='utf-8'>, flush=False)>
+    >>> _robust_signature_of_callable(
+    ...     slice
+    ... )  # doesn't have one, so will return a blanket one
+    <Signature (*no_sig_args, **no_sig_kwargs)>
+
+    """
+    try:
+        return signature(callable_obj)
+    except ValueError:
+        # if isinstance(callable_obj, partial):
+        #     callable_obj = callable_obj.func
+        obj_name = getattr(callable_obj, '__name__', None)
+        if obj_name in sigs_for_sigless_builtin_name:
+            return sigs_for_sigless_builtin_name[obj_name] or DFLT_SIGNATURE
+        type_name = getattr(type(callable_obj), '__name__', None)
+        if type_name in sigs_for_type_name:
+            return sigs_for_type_name[type_name] or DFLT_SIGNATURE
+        # if all attempts fail, raise the original error
+        raise
+
+
+def dict_of_attribute_signatures(cls: type) -> Dict[str, Signature]:
+    """
+    A function that extracts the signatures of all callable attributes of a class.
+
+    :param cls: The class that holds the the ``(name, func)`` pairs we want to extract.
+    :return: A dict of ``(name, signature(func))`` pairs extracted from class.
+
+    One of the intended applications is to use ``dict_of_attribute_signatures`` as a
+    decorator, like so:
+
+    >>> @dict_of_attribute_signatures
+    ... class names_and_signatures:
+    ...     def foo(x: str, *, y=2) -> tuple: ...
+    ...     def bar(z, /) -> float: ...
+    >>> names_and_signatures
+    {'foo': <Signature (x: str, *, y=2) -> tuple>, 'bar': <Signature (z, /) -> float>}
+    """
+
+    def gen():
+        object_attr_names = set(vars(object))
+        for attr_name, attr_val in vars(cls).items():
+            if callable(attr_val):
+                if attr_name not in object_attr_names:
+                    # if the attr is a callable attribute that's not in all objects...
+                    yield attr_name, signature(attr_val)
+
+    return dict(gen())
+
+
+@dict_of_attribute_signatures
+class sigs_for_builtins:
+    def __import__(name, globals=None, locals=None, fromlist=(), level=0):
+        """__import__(name, globals=None, locals=None, fromlist=(), level=0) -> module"""
+
+    def filter(function, iterable, /):
+        """filter(function or None, iterable) --> filter object"""
+
+    def map(func, iterable, /, *iterables):
+        """map(func, *iterables) --> map object"""
+
+    def print(*value, sep=' ', end='\n', file=sys.stdout, flush=False):
+        """print(value, ..., sep=' ', end='\n', file=sys.stdout, flush=False)"""
+
+    def zip(*iterables):
+        """
+        zip(*iterables) --> A zip object yielding tuples until an input is exhausted.
+        """
+
+    def bool(x: Any, /) -> bool:
+        ...
+
+    def bytearray(iterable_of_ints: Iterable[int], /):
+        ...
+
+    def classmethod(function: Callable, /):
+        ...
+
+    def int(x, base=10, /):
+        ...
+
+    def iter(callable: Callable, sentinel=None, /):
+        ...
+
+    def next(iterator: Iterator, default=None, /):
+        ...
+
+    def staticmethod(function: Callable, /):
+        ...
+
+    def str(bytes_or_buffer, encoding=None, errors=None, /):
+        ...
+
+    def super(type_, obj=None, /):
+        ...
+
+    # def type(name, bases=None, dict=None, /):
+    #     ...
+
+
+sigs_for_builtins = dict(
+    sigs_for_builtins,
+    **{
+        '__build_class__': None,
+        # __build_class__(func, name, /, *bases, [metaclass], **kwds) -> class
+        # "bool": None,
+        # bool(x) -> bool
+        'breakpoint': None,
+        # breakpoint(*args, **kws)
+        # "bytearray": None,
+        # bytearray(iterable_of_ints) -> bytearray
+        # bytearray(string, encoding[, errors]) -> bytearray
+        # bytearray(bytes_or_buffer) -> mutable copy of bytes_or_buffer
+        # bytearray(int) -> bytes array of size given by the parameter initialized with
+        # null bytes
+        # bytearray() -> empty bytes array
+        'bytes': None,
+        # bytes(iterable_of_ints) -> bytes
+        # bytes(string, encoding[, errors]) -> bytes
+        # bytes(bytes_or_buffer) -> immutable copy of bytes_or_buffer
+        # bytes(int) -> bytes object of size given by the parameter initialized with null
+        # bytes
+        # bytes() -> empty bytes object
+        # "classmethod": None,
+        # classmethod(function) -> method
+        'dict': None,
+        # dict() -> new empty dictionary
+        # dict(mapping) -> new dictionary initialized from a mapping object's
+        # dict(iterable) -> new dictionary initialized as if via:
+        # dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        'dir': None,
+        # dir([object]) -> list of strings
+        'frozenset': None,
+        # frozenset() -> empty frozenset object
+        # frozenset(iterable) -> frozenset object
+        'getattr': None,
+        # getattr(object, name[, default]) -> value
+        # "int": None,
+        # int([x]) -> integer
+        # int(x, base=10) -> integer
+        # "iter": None,
+        # iter(iterable) -> iterator
+        # iter(callable, sentinel) -> iterator
+        'max': None,
+        # max(iterable, *[, default=obj, key=func]) -> value
+        # max(arg1, arg2, *args, *[, key=func]) -> value
+        'min': None,
+        # min(iterable, *[, default=obj, key=func]) -> value
+        # min(arg1, arg2, *args, *[, key=func]) -> value
+        # "next": None,
+        # next(iterator[, default])
+        'range': None,
+        # range(stop) -> range object
+        # range(start, stop[, step]) -> range object
+        'set': None,
+        # set() -> new empty set object
+        # set(iterable) -> new set object
+        'slice': None,
+        # slice(stop)
+        # slice(start, stop[, step])
+        # "staticmethod": None,
+        # staticmethod(function) -> method
+        # "str": None,
+        # str(object='') -> str
+        # str(bytes_or_buffer[, encoding[, errors]]) -> str
+        # "super": None,
+        # super() -> same as super(__class__, <first argument>)
+        # super(type) -> unbound super object
+        # super(type, obj) -> bound super object; requires isinstance(obj, type)
+        # super(type, type2) -> bound super object; requires issubclass(type2, type)
+        # "type": None,
+        # type(object_or_name, bases, dict)
+        # type(object) -> the object's type
+        # type(name, bases, dict) -> a new type
+        'vars': None,
+        # vars([object]) -> dictionary
+    },
+)
+# # Remove the None-valued elements (No, don't, because we distinguish
+# # functions we listed but didn't associate a default signature, with those functions
+# # we don't list at all.
+# sigs_for_builtins = {
+#     k: v for k, v in sigs_for_builtins.items() if v is not None
+# }
+
+# TODO: itemgetter, attrgetter and methodcaller use KT as their first argument, but
+#  in reality both attrgetter and methodcaller are more restrictive: They need to be
+#  valid attributes, therefore valid python identifiers. Any better typing for that?
+@dict_of_attribute_signatures
+class sigs_for_builtin_modules:
+    """
+    Below are the signatures, manually created to match those callables of the python
+    standard library that don't have signatures (through ``inspect.signature``),
+    """
+
+    def itemgetter(
+        key: KT, /, *keys: Iterable[KT]
+    ) -> Callable[[Iterable[VT]], Union[VT, Tuple[VT]]]:
+        """itemgetter(item, ...) --> itemgetter object,"""
+
+    def attrgetter(
+        key: KT, /, *keys: Iterable[KT]
+    ) -> Callable[[Iterable[VT]], Union[VT, Tuple[VT]]]:
+        """attrgetter(item, ...) --> attrgetter object,"""
+
+    def methodcaller(
+        name: KT, /, *args: Iterable[VT], **kwargs: MappingType[str, Any]
+    ) -> Callable[[], Any]:
+        """methodcaller(name, ...) --> methodcaller object"""
+
+    def partial(func: Callable, *args, **keywords) -> Callable:
+        """``partial(func, *args, **keywords)`` - new function with partial application
+        of the given arguments and keywords."""
+
+
+# Merge sigs_for_builtin_modules and sigs_for_builtins
+sigs_for_sigless_builtin_name = dict(sigs_for_builtin_modules, **sigs_for_builtins)
+
+
+@dict_of_attribute_signatures
+class sigs_for_type_name:
+    """
+    Below are the signatures, manually created to match callable objects that are
+    output by builtin functions or are instances of builtin classes, and that have no
+    signatures (through ``inspect.signature``),
+    """
+
+    def itemgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]:
+        ...
+
+    def attrgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]:
+        ...
+
+    @staticmethod  # just to have linter shut up about no arguments.
+    def methodcaller() -> Any:
+        ...
+
 
 ############# Tools for testing #########################################################
 
