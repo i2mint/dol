@@ -255,6 +255,8 @@ class DelegatedAttribute:
 
     def __get__(self, instance, owner):
         if instance is None:
+            # return getattr(getattr(owner, self.delegate_name), self.attr_name)
+            # return getattr(owner, self.attr_name, None)
             return self  # .__wrapped__  # TODO: The __wrapped__ would make it hard to debug
         else:
             # i.e. return instance.delegate.attr
@@ -354,8 +356,8 @@ def delegator_wrap(
     In this case, ``delegator_wrap`` returns a callable (class or function) that has the
     same signature as obj, but that produces instances that are wrapped by ``delegator``
 
-    :param delegator: An instance wrapper. A Callable (type or function -- with only one required input)
-        that will return a wrapped version of it's input instance.
+    :param delegator: An instance wrapper. A Callable (type or function -- with only
+        one required input) that will return a wrapped version of it's input instance.
     :param obj: The object (class or instance) to be wrapped.
     :return: A wrapped object
 

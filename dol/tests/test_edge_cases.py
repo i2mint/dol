@@ -2,14 +2,52 @@ from dol.base import Store
 import pytest
 
 
-@pytest.xfail(reason='edge case that we will try to address later')
-def test_wrap_kvs_vs_class_and_static_methods():
+# @pytest.xfail(reason='edge case that we will try to address later')
+def test_simple_store_wrap_unbound_method_delegation():
+    # What does Store.wrap do? It wraps classes or instances in such a way that
+    # mapping methods (like __iter__, __getitem__, __setitem__, __delitem__, etc.)
+    # are intercepted and transformed, but other methods are not (they stay as they
+    # were).
+
+    # This test is about the "stay as they were" part, so let's start with a simple
+    # class that has a method that we want to keep untouched.
+    class K:
+        def pass_through(self):
+            return 'hi'
+
+    # wrapping an instance
+    instance_of_k = K()
+    assert instance_of_k.pass_through() == 'hi'
+    wrapped_instance_of_k = Store.wrap(instance_of_k)
+    assert wrapped_instance_of_k.pass_through() == 'hi'
+
+    # wrapping a class
+    WrappedK = Store.wrap(K)
+
+    instance_of_wrapped_k = WrappedK()
+    assert instance_of_wrapped_k.pass_through() == 'hi'
+
+    # Everything seems fine, but the problem creeps up when we try to use these methods
+    # through an "unbound call".
+    # This is when you call the method from a class, feeding an instance.
+    # With the original class, this works:
+    assert K.pass_through(K()) == 'hi'
+
+    # But this gives us an error on the wrapped class
+    assert WrappedK.pass_through(WrappedK()) == 'hi'  # error
+    # or even this:
+    assert WrappedK.pass_through(K()) == 'hi'  # error
+
+
+# @pytest.xfail(reason='edge case that we will try to address later')
+def test_store_wrap_unbound_method_delegation():
     """Making sure `dol.base.Store.wrap` doesn't break unbound method calls.
 
     That is, when you call Klass.method() (where method is a normal, class, or static)
 
     https://github.com/i2mint/dol/issues/17
     """
+
 
     @Store.wrap
     class MyFiles:
@@ -25,6 +63,7 @@ def test_wrap_kvs_vs_class_and_static_methods():
         @staticmethod
         def hi():
             print('hi')
+
 
     errors = []
 
@@ -57,3 +96,10 @@ def test_wrap_kvs_vs_class_and_static_methods():
     if errors:
         first_error, *_ = errors
         raise first_error
+
+
+
+
+
+
+
