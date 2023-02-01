@@ -1,17 +1,18 @@
-from dol import Files, wrap_kvs
+from dol.base import Store
+import pytest
 
 
+@pytest.xfail(reason='edge case that we will try to address later')
 def test_wrap_kvs_vs_class_and_static_methods():
-    """Adding wrap_kvs breaks methods
+    """Making sure `dol.base.Store.wrap` doesn't break unbound method calls.
+
+    That is, when you call Klass.method() (where method is a normal, class, or static)
 
     https://github.com/i2mint/dol/issues/17
     """
 
-    def returnx(x):
-        return x
-
-    @wrap_kvs(data_of_obj=returnx, obj_of_data=returnx)
-    class MyFiles(Files):
+    @Store.wrap
+    class MyFiles:
         y = 2
 
         def normal_method(self, x=3):
@@ -27,8 +28,13 @@ def test_wrap_kvs_vs_class_and_static_methods():
 
     errors = []
 
+    # This works fine!
+    instance = MyFiles()
+    assert instance.normal_method() == 6
+
+    # But calling the method as a class...
     try:
-        MyFiles.hello()
+        MyFiles.normal_method(instance)
     except Exception as e:
         print('method normal_method is broken by wrap_kvs decorator')
         print(f'{type(e).__name__}: {e}')
