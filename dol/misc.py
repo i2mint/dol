@@ -1,7 +1,8 @@
 """
 Functions to read from and write to misc sources
 """
-
+# TODO: Completely redo this, using preset and postget and making it into a plugin
+#  architecture. See
 from functools import partial
 import os
 import json

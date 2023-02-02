@@ -2,7 +2,7 @@ from dol.base import Store
 import pytest
 
 
-@pytest.skip(reason='edge case that we will try to address later')
+@pytest.mark.skip(reason='edge case that we will try to address later')
 def test_simple_store_wrap_unbound_method_delegation():
     # What does Store.wrap do? It wraps classes or instances in such a way that
     # mapping methods (like __iter__, __getitem__, __setitem__, __delitem__, etc.)
@@ -39,7 +39,7 @@ def test_simple_store_wrap_unbound_method_delegation():
     assert WrappedK.pass_through(K()) == 'hi'  # error
 
 
-@pytest.skip(reason='edge case that we will try to address later')
+@pytest.mark.skip(reason='edge case that we will try to address later')
 def test_store_wrap_unbound_method_delegation():
     """Making sure `dol.base.Store.wrap` doesn't break unbound method calls.
 
