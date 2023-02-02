@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.111 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.112 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -61,6 +61,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
@@ -488,7 +489,7 @@ Not doing so will lead to a <cite>TypeError</cite>.
 If you want to process your arguments anyway, specify <cite>allow_partial=True</cite>.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;x&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">allow_partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">((4,), {})</span>
@@ -500,7 +501,7 @@ If you want to avoid this (and just take from the input <cite>kwargs</cite> what
 can), specify this with <cite>allow_excess=True</cite>.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s1">&#39;stuff&#39;</span><span class="p">))</span>
 <span class="gt">Traceback (most recent call last):</span>
-    <span class="o">...</span>
+<span class="w">    </span><span class="o">...</span>
 <span class="gr">TypeError</span>: <span class="n">Got unexpected keyword arguments: extra</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s1">&#39;stuff&#39;</span><span class="p">),</span>
 <span class="gp">... </span>    <span class="n">allow_excess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -614,7 +615,7 @@ keyword argument too (by default):</p>
 <p>If you don’t want to allow that, you can say <cite>_ignore_kind=False</cite></p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">extract_args_and_kwargs</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">_ignore_kind</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">&#39;w&#39; parameter is positional only, but was passed as a keyword</span>
 </pre></div>
 </div>
@@ -623,7 +624,7 @@ set to <cite>True</cite>, to underspecify the params of a function (in view of b
 completed later).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">extract_args_and_kwargs</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;w&#39;</span>
 </pre></div>
 </div>
@@ -687,7 +688,7 @@ a keyword argument too (by default):</p>
 <p>If you don’t want to allow that, you can say <cite>_ignore_kind=False</cite></p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">_ignore_kind</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">&#39;w&#39; parameter is positional only, but was passed as a keyword</span>
 </pre></div>
 </div>
@@ -696,7 +697,7 @@ set to <cite>True</cite>, to underspecify the params of a function
 (in view of being completed later).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;w&#39;</span>
 </pre></div>
 </div>
@@ -902,7 +903,7 @@ signature will lead to an exception.</p>
 <span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span> <span class="s2">&quot;not_in_sig&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">}</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-    <span class="o">...</span>
+<span class="w">    </span><span class="o">...</span>
 <span class="gr">TypeError</span>: <span class="n">Got unexpected keyword arguments: not_in_sig</span>
 </pre></div>
 </div>
@@ -1203,7 +1204,7 @@ keyword argument too (by default):</p>
 <span class="gp">... </span>    <span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span> <span class="n">_ignore_kind</span><span class="o">=</span><span class="kc">False</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">&#39;w&#39; parameter is positional only, but was passed as a keyword</span>
 </pre></div>
 </div>
@@ -1212,7 +1213,7 @@ set to <cite>True</cite>, to underspecify the params of a function (in view of b
 completed later).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_args_and_kwargs</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;w&#39;</span>
 </pre></div>
 </div>
@@ -1265,7 +1266,7 @@ keyword argument too (by default):</p>
 <span class="gp">... </span>    <span class="n">w</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span> <span class="n">_ignore_kind</span><span class="o">=</span><span class="kc">False</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">&#39;w&#39; parameter is positional only, but was passed as a keyword</span>
 </pre></div>
 </div>
@@ -1274,7 +1275,7 @@ set to <cite>True</cite>, to underspecify the params of a function (in view of b
 completed later).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_kwargs</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;w&#39;</span>
 </pre></div>
 </div>
@@ -1427,7 +1428,7 @@ misalignment with the wrapped function will lead to unexpected results.</p>
 <span class="go">8</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>  <span class="c1"># error expected!</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">f() takes from 1 to 3 positional arguments but 4 were given</span>
 </pre></div>
 </div>
@@ -1438,11 +1439,11 @@ signature, you’ll fail.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">g</span><span class="p">)</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">f() missing 1 required keyword-only argument: &#39;z&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">f() takes from 0 to 3 positional arguments but 4 were given</span>
 </pre></div>
 </div>
@@ -1622,13 +1623,13 @@ raise a <cite>TypeError</cite>:</p>
 <span class="gp">... </span>    <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;ignored&#39;</span><span class="p">,</span> <span class="s1">&#39;does_not_fit_g_signature_anymore&#39;</span><span class="p">),</span> <span class="p">{},</span> <span class="n">enforce_sig</span><span class="o">=</span><span class="n">g</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-    <span class="o">...</span>
+<span class="w">    </span><span class="o">...</span>
 <span class="gr">TypeError</span>: <span class="n">too many positional arguments</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">call_somewhat_forgivingly</span><span class="p">(</span><span class="n">f</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="p">(</span><span class="mi">2</span><span class="p">,),</span> <span class="p">{</span><span class="s1">&#39;this_argname&#39;</span><span class="p">:</span> <span class="s1">&#39;is not in g&#39;</span><span class="p">},</span> <span class="n">enforce_sig</span><span class="o">=</span><span class="n">g</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-    <span class="o">...</span>
+<span class="w">    </span><span class="o">...</span>
 <span class="gr">TypeError</span>: <span class="n">got an unexpected keyword argument &#39;this_argname&#39;</span>
 </pre></div>
 </div>
@@ -2763,11 +2764,11 @@ in <cite>new_f</cite>:</p>
 or any keyword arguments that <cite>interface</cite> doesn’t recognize…</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_f</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">too many positional arguments</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">new_f</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">got an unexpected keyword argument &#39;c&#39;</span>
 </pre></div>
 </div>

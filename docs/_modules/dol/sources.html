@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.1.111 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.sources &mdash; dol 0.1.112 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -58,6 +58,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/base_test.html">dol.tests.base_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/util.html">dol.util</a></li>
@@ -128,7 +129,7 @@
 
 
 <div class="viewcode-block" id="NotUnique"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.NotUnique">[docs]</a><span class="k">class</span> <span class="nc">NotUnique</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Raised when an iterator was expected to have only one element, but had more&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when an iterator was expected to have only one element, but had more&quot;&quot;&quot;</span></div>
 
 
 <span class="n">NoMoreElements</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;NoMoreElements&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">object</span><span class="p">,),</span> <span class="p">{})()</span>
@@ -166,7 +167,7 @@
 <span class="c1">#   but determined by some rules executed dynamically.</span>
 <span class="c1">#   Related DirStore and kv_walk.</span>
 <div class="viewcode-block" id="FlatReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FlatReader">[docs]</a><span class="k">class</span> <span class="nc">FlatReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get a &#39;flat view&#39; of a store of stores. </span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a &#39;flat view&#39; of a store of stores. </span>
 <span class="sd">    That is, where keys are `(first_level_key, second_level_key)` pairs.</span>
 
 <span class="sd">    &gt;&gt;&gt; readers = {</span>
@@ -197,7 +198,7 @@
 
 
 <div class="viewcode-block" id="SequenceKvReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.SequenceKvReader">[docs]</a><span class="k">class</span> <span class="nc">SequenceKvReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A KvReader that sources itself in an iterable of elements from which keys and values</span>
 <span class="sd">    will be extracted and grouped by key.</span>
 
@@ -304,7 +305,7 @@
         <span class="n">val</span><span class="p">:</span> <span class="n">KvSpec</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">val_postproc</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Make a SequenceKvReader instance,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a SequenceKvReader instance,</span>
 
 <span class="sd">        :param sequence: The iterable to source the keys and values from.</span>
 <span class="sd">        :param key: Specification of how to extract a key from an iterable element.</span>
@@ -348,20 +349,20 @@
 
 <div class="viewcode-block" id="CachedKeysSequenceKvReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.CachedKeysSequenceKvReader">[docs]</a><span class="nd">@cached_keys</span>
 <span class="k">class</span> <span class="nc">CachedKeysSequenceKvReader</span><span class="p">(</span><span class="n">SequenceKvReader</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;SequenceKvReader but with keys cached. Use this one if you will perform multiple</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SequenceKvReader but with keys cached. Use this one if you will perform multiple</span>
 <span class="sd">    accesses to only some of the keys of the store&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="CachedSequenceKvReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.CachedSequenceKvReader">[docs]</a><span class="nd">@mk_cached_store</span>
 <span class="k">class</span> <span class="nc">CachedSequenceKvReader</span><span class="p">(</span><span class="n">SequenceKvReader</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;SequenceKvReader but with the whole mapping cached as a dict. Use this one if</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SequenceKvReader but with the whole mapping cached as a dict. Use this one if</span>
 <span class="sd">    you will perform multiple accesses to the store&quot;&quot;&quot;</span></div>
 
 
 <span class="c1"># TODO: Basically same could be acheived with</span>
 <span class="c1">#  wrap_kvs(obj_of_data=methodcaller(&#39;__call__&#39;))</span>
 <div class="viewcode-block" id="FuncReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FuncReader">[docs]</a><span class="k">class</span> <span class="nc">FuncReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Reader that seeds itself from a data fetching function list</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reader that seeds itself from a data fetching function list</span>
 <span class="sd">    Uses the function list names as the keys, and their returned value as the values.</span>
 
 <span class="sd">    For example: You have a list of urls that contain the data you want to have access</span>
@@ -483,7 +484,7 @@
 <span class="c1"># Note: Moved dev to independent package called &quot;guide&quot;</span>
 <div class="viewcode-block" id="Attrs"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.Attrs">[docs]</a><span class="nd">@cached_keys</span><span class="p">(</span><span class="n">keys_cache</span><span class="o">=</span><span class="nb">set</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Attrs&#39;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Attrs</span><span class="p">(</span><span class="n">ObjReader</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A simple recursive KvReader for the attributes of a python object.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A simple recursive KvReader for the attributes of a python object.</span>
 <span class="sd">    Keys are attr names, values are Attrs(attr_val) instances.</span>
 
 <span class="sd">    Note: A more significant version of Attrs, along with many tools based on it,</span>
@@ -547,7 +548,7 @@
 
 
 <div class="viewcode-block" id="AttrContainer"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.AttrContainer">[docs]</a><span class="k">class</span> <span class="nc">AttrContainer</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Convenience class to hold Key-Val pairs as attribute-val pairs, with all the</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience class to hold Key-Val pairs as attribute-val pairs, with all the</span>
 <span class="sd">    magic methods of mappings.</span>
 
 <span class="sd">    On the other hand, you will not get the usuall non-dunders (non magic methods) of</span>
@@ -616,7 +617,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">,</span> <span class="n">auto_named_objects</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s1">&#39;All names produced by _object_namer should be valid python identifiers:&#39;</span>
-                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">auto_named_objects</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">auto_named_objects</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="n">clashing_names</span> <span class="o">=</span> <span class="n">auto_named_objects</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">named_objects</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">clashing_names</span><span class="p">:</span>
@@ -657,7 +658,7 @@
 
 <span class="c1"># TODO: Make it work with a store, without having to load and store the values explicitly.</span>
 <div class="viewcode-block" id="AttrDict"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.AttrDict">[docs]</a><span class="k">class</span> <span class="nc">AttrDict</span><span class="p">(</span><span class="n">AttrContainer</span><span class="p">,</span> <span class="n">KvPersister</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convenience class to hold Key-Val pairs with both a dict-like and struct-like</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience class to hold Key-Val pairs with both a dict-like and struct-like</span>
 <span class="sd">    interface.</span>
 
 <span class="sd">    The dict-like interface has just the basic get/set/del/iter/len</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.1.111 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.1.112 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -58,6 +58,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/base_test.html">dol.tests.base_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/util.html">dol.util</a></li>
@@ -130,7 +131,7 @@
     <span class="n">get_value</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">getitem</span><span class="p">,</span>
     <span class="n">caught_errors</span><span class="o">=</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">),</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get elements of a mapping through a path to be called recursively.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get elements of a mapping through a path to be called recursively.</span>
 
 <span class="sd">    &gt;&gt;&gt; _path_get({&#39;a&#39;: {&#39;b&#39;: 2}}, &#39;a&#39;)</span>
 <span class="sd">    {&#39;b&#39;: 2}</span>
@@ -197,7 +198,7 @@
 
 
 <div class="viewcode-block" id="get_attr_or_item"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.get_attr_or_item">[docs]</a><span class="k">def</span> <span class="nf">get_attr_or_item</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;If ``k`` is a string, tries to get ``k`` as an attribute of ``obj`` first,</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;If ``k`` is a string, tries to get ``k`` as an attribute of ``obj`` first,</span>
 <span class="sd">    and if that fails, gets it as ``obj[k]``&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
@@ -217,7 +218,7 @@
     <span class="n">get_value</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">get_attr_or_item</span><span class="p">,</span>
     <span class="n">caught_errors</span><span class="o">=</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,),</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get elements of a mapping through a path to be called recursively.</span>
 <span class="sd">    Like ``_path_get``, but with defaults that are more convenient out of the box.</span>
 
@@ -257,7 +258,7 @@
 
 <div class="viewcode-block" id="KeyPath"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyPath">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">KeyPath</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A key mapper that converts from an iterable key (default tuple) to a string</span>
 <span class="sd">    (given a path-separator str)</span>
 
@@ -334,7 +335,7 @@
 
 
 <div class="viewcode-block" id="PrefixRelativizationMixin"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.PrefixRelativizationMixin">[docs]</a><span class="k">class</span> <span class="nc">PrefixRelativizationMixin</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Mixin that adds a intercepts the _id_of_key an _key_of_id methods, transforming absolute keys to relative ones.</span>
 <span class="sd">    Designed to work with string keys, where absolute and relative are relative to a _prefix attribute</span>
 <span class="sd">    (assumed to exist).</span>
@@ -392,7 +393,7 @@
 <span class="k">def</span> <span class="nf">mk_relative_path_store</span><span class="p">(</span>
     <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_key_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;_prefix&#39;</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        store_cls: The base store to wrap (subclass)</span>
@@ -573,7 +574,7 @@
     <span class="n">named_tuple_type_name</span><span class="o">=</span><span class="s1">&#39;NamedTuple&#39;</span><span class="p">,</span>
     <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">path_sep</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Make a key trans object that translates from a string _id to a dict, tuple, or namedtuple key (and back)&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a key trans object that translates from a string _id to a dict, tuple, or namedtuple key (and back)&quot;&quot;&quot;</span>
 
     <span class="k">assert</span> <span class="p">(</span>
         <span class="n">key_type</span> <span class="ow">in</span> <span class="n">PathKeyTypes</span>
@@ -611,7 +612,7 @@
 
 <span class="c1"># TODO: Merge with mk_relative_path_store</span>
 <div class="viewcode-block" id="rel_path_wrap"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.rel_path_wrap">[docs]</a><span class="k">def</span> <span class="nf">rel_path_wrap</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">_prefix</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Args:</span>
 <span class="sd">        o: An object to be wrapped</span>
 <span class="sd">        _prefix: The _prefix to use for key wrapping (will remove it from outcoming keys and add to ingoing keys.</span>

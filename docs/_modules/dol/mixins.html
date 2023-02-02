@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.mixins &mdash; dol 0.1.111 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.mixins &mdash; dol 0.1.112 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -58,6 +58,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/base_test.html">dol.tests.base_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/util.html">dol.util</a></li>
@@ -100,7 +101,7 @@
 
 
 <div class="viewcode-block" id="SimpleJsonMixin"><a class="viewcode-back" href="../../module_docs/dol/mixins.html#dol.mixins.SimpleJsonMixin">[docs]</a><span class="k">class</span> <span class="nc">SimpleJsonMixin</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;simple json serialization.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;simple json serialization.</span>
 <span class="sd">    Useful to store and retrieve</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -114,13 +115,13 @@
 
 
 <div class="viewcode-block" id="IdentityKeysWrapMixin"><a class="viewcode-back" href="../../module_docs/dol/mixins.html#dol.mixins.IdentityKeysWrapMixin">[docs]</a><span class="k">class</span> <span class="nc">IdentityKeysWrapMixin</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Transparent KeysWrapABC. Often placed in the mro to satisfy the KeysWrapABC need in a neutral way.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transparent KeysWrapABC. Often placed in the mro to satisfy the KeysWrapABC need in a neutral way.</span>
 <span class="sd">    This is useful in cases where the keys the persistence functions work with are the same as those you want to work</span>
 <span class="sd">    with.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_id_of_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Maps an interface identifier (key) to an internal identifier (_id) that is actually used to perform operations.</span>
 <span class="sd">        Can also perform validation and permission checks.</span>
 <span class="sd">        :param k: interface identifier of some data</span>
@@ -129,7 +130,7 @@
         <span class="k">return</span> <span class="n">k</span>
 
     <span class="k">def</span> <span class="nf">_key_of_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_id</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The inverse of _id_of_key. Maps an internal identifier (_id) to an interface identifier (key)</span>
 <span class="sd">        :param _id:</span>
 <span class="sd">        :return:</span>
@@ -138,13 +139,13 @@
 
 
 <div class="viewcode-block" id="IdentityValsWrapMixin"><a class="viewcode-back" href="../../module_docs/dol/mixins.html#dol.mixins.IdentityValsWrapMixin">[docs]</a><span class="k">class</span> <span class="nc">IdentityValsWrapMixin</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Transparent ValsWrapABC. Often placed in the mro to satisfy the KeysWrapABC need in a neutral way.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transparent ValsWrapABC. Often placed in the mro to satisfy the KeysWrapABC need in a neutral way.</span>
 <span class="sd">    This is useful in cases where the values can be persisted by __setitem__ as is (or the serialization is</span>
 <span class="sd">    handled somewhere in the __setitem__ method.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_data_of_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Serialization of a python object.</span>
 <span class="sd">        :param v: A python object.</span>
 <span class="sd">        :return: The serialization of this object, in a format that can be stored by __getitem__</span>
@@ -152,7 +153,7 @@
         <span class="k">return</span> <span class="n">v</span>
 
     <span class="k">def</span> <span class="nf">_obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Deserialization. The inverse of _data_of_obj.</span>
 <span class="sd">        :param data: Serialized data.</span>
 <span class="sd">        :return: The python object corresponding to this data.</span>
@@ -161,7 +162,7 @@
 
 
 <div class="viewcode-block" id="IdentityKvWrapMixin"><a class="viewcode-back" href="../../module_docs/dol/mixins.html#dol.mixins.IdentityKvWrapMixin">[docs]</a><span class="k">class</span> <span class="nc">IdentityKvWrapMixin</span><span class="p">(</span><span class="n">IdentityKeysWrapMixin</span><span class="p">,</span> <span class="n">IdentityValsWrapMixin</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Transparent Keys and Vals Wrap&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transparent Keys and Vals Wrap&quot;&quot;&quot;</span>
 
     <span class="k">pass</span></div>
 
@@ -177,7 +178,7 @@
 
 
 <div class="viewcode-block" id="FilteredKeysMixin"><a class="viewcode-back" href="../../module_docs/dol/mixins.html#dol.mixins.FilteredKeysMixin">[docs]</a><span class="k">class</span> <span class="nc">FilteredKeysMixin</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Filters __iter__ and __contains__ with (the boolean filter function attribute) _key_filt.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -185,7 +186,7 @@
         <span class="k">return</span> <span class="nb">filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_filt</span><span class="p">,</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if collection of keys contains k.</span>
 <span class="sd">        Note: This method iterates over all elements of the collection to check if k is present.</span>
 <span class="sd">        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.</span>
@@ -199,7 +200,7 @@
 
 
 <div class="viewcode-block" id="ReadOnlyMixin"><a class="viewcode-back" href="../../module_docs/dol/mixins.html#dol.mixins.ReadOnlyMixin">[docs]</a><span class="k">class</span> <span class="nc">ReadOnlyMixin</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Put this as your first parent class to disallow write/delete operations&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Put this as your first parent class to disallow write/delete operations&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">WritesNotAllowed</span><span class="p">(</span><span class="s2">&quot;You can&#39;t write with that Store&quot;</span><span class="p">)</span>
@@ -222,7 +223,7 @@
 
 
 <div class="viewcode-block" id="OverWritesNotAllowedMixin"><a class="viewcode-back" href="../../module_docs/dol/mixins.html#dol.mixins.OverWritesNotAllowedMixin">[docs]</a><span class="k">class</span> <span class="nc">OverWritesNotAllowedMixin</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Mixin for only allowing a write to a key if they key doesn&#39;t already exist.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixin for only allowing a write to a key if they key doesn&#39;t already exist.</span>
 <span class="sd">    Note: Should be before the persister in the MRO.</span>
 
 <span class="sd">    &gt;&gt;&gt; class TestPersister(OverWritesNotAllowedMixin, dict):</span>
@@ -269,7 +270,7 @@
 
 <span class="k">class</span> <span class="nc">GetBasedContainerMixin</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if collection of keys contains k.</span>
 <span class="sd">        Note: This method actually fetches the contents for k, returning False if there&#39;s a key error trying to do so</span>
 <span class="sd">        Therefore it may not be efficient, and in most cases, a method specific to the case should be used.</span>
@@ -284,7 +285,7 @@
 
 <span class="k">class</span> <span class="nc">IterBasedContainerMixin</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if collection of keys contains k.</span>
 <span class="sd">        Note: This method iterates over all elements of the collection to check if k is present.</span>
 <span class="sd">        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.</span>
@@ -298,7 +299,7 @@
 
 <span class="k">class</span> <span class="nc">IterBasedSizedMixin</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Number of elements in collection of keys.</span>
 <span class="sd">        Note: This method iterates over all elements of the collection and counts them.</span>
 <span class="sd">        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.</span>
@@ -313,7 +314,7 @@
 
 
 <div class="viewcode-block" id="IterBasedSizedContainerMixin"><a class="viewcode-back" href="../../module_docs/dol/mixins.html#dol.mixins.IterBasedSizedContainerMixin">[docs]</a><span class="k">class</span> <span class="nc">IterBasedSizedContainerMixin</span><span class="p">(</span><span class="n">IterBasedSizedMixin</span><span class="p">,</span> <span class="n">IterBasedContainerMixin</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An ABC that defines</span>
 <span class="sd">        (a) how to iterate over a collection of elements (keys) (__iter__)</span>
 <span class="sd">        (b) check that a key is contained in the collection (__contains__), and</span>

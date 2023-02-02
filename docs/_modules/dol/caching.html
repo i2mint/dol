@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.1.111 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.caching &mdash; dol 0.1.112 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -58,6 +58,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/base_test.html">dol.tests.base_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/util.html">dol.util</a></li>
@@ -107,7 +108,7 @@
 
 
 <div class="viewcode-block" id="get_cache"><a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.get_cache">[docs]</a><span class="k">def</span> <span class="nf">get_cache</span><span class="p">(</span><span class="n">cache</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convenience function to get a cache (whether it&#39;s already an instance, or needs to be validated)&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience function to get a cache (whether it&#39;s already an instance, or needs to be validated)&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">is_a_cache</span><span class="p">(</span><span class="n">cache</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">cache</span>
     <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -135,7 +136,7 @@
 
 
 <span class="k">def</span> <span class="nf">_mk_cache_instance</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">assert_attrs</span><span class="o">=</span><span class="p">()):</span>
-    <span class="sd">&quot;&quot;&quot;Make a cache store (if it&#39;s not already) from a type or a callable, or just return dict.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a cache store (if it&#39;s not already) from a type or a callable, or just return dict.</span>
 <span class="sd">    Also assert the presence of given attributes</span>
 
 <span class="sd">    &gt;&gt;&gt; _mk_cache_instance(dict(a=1, b=2))</span>
@@ -177,7 +178,7 @@
 
 <div class="viewcode-block" id="mk_cached_store"><a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.mk_cached_store">[docs]</a><span class="nd">@store_decorator</span>
 <span class="k">def</span> <span class="nf">mk_cached_store</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="nb">dict</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        store: The class of the store you want to cache</span>
@@ -274,7 +275,7 @@
 
 <div class="viewcode-block" id="mk_sourced_store"><a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.mk_sourced_store">[docs]</a><span class="nd">@store_decorator</span>
 <span class="k">def</span> <span class="nf">mk_sourced_store</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_source_data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        store: The class of the store you want to cache</span>
@@ -392,7 +393,7 @@
 
 <span class="c1"># TODO: Didn&#39;t finish this. Finish, doctest, and remove underscore</span>
 <span class="k">def</span> <span class="nf">_pre_condition_containment</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">bool_key_func</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Adds a custom boolean key function `bool_key_func` before the store_cls.__contains__ check is performed.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adds a custom boolean key function `bool_key_func` before the store_cls.__contains__ check is performed.</span>
 
 <span class="sd">    It is meant to be used to create smart read caches.</span>
 
@@ -408,7 +409,7 @@
 
 
 <span class="k">def</span> <span class="nf">_slow_but_somewhat_general_hash</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Attempts to create a hash of the inputs, recursively resolving the most common hurdles (dicts, sets, lists)</span>
 <span class="sd">    Returns: A hash value for the input</span>
 
@@ -435,7 +436,7 @@
 <span class="c1"># TODO: Could add an empty_cache function attribute.</span>
 <span class="c1">#  Wrap the store cache to track new keys, and delete those (and only those!!) when emptying the store.</span>
 <div class="viewcode-block" id="store_cached"><a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.store_cached">[docs]</a><span class="k">def</span> <span class="nf">store_cached</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">key_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Function output memorizer but using a specific (usually persisting) store as it&#39;s memory and a key_func to</span>
 <span class="sd">    compute the key under which to store the output.</span>
 
@@ -497,7 +498,7 @@
 
 
 <div class="viewcode-block" id="store_cached_with_single_key"><a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.store_cached_with_single_key">[docs]</a><span class="k">def</span> <span class="nf">store_cached_with_single_key</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Function output memorizer but using a specific store and key as it&#39;s memory.</span>
 
 <span class="sd">    Use in situations where you have a argument-less function or bound method that computes some data whose dependencies</span>
@@ -609,7 +610,7 @@
 
 <div class="viewcode-block" id="mk_write_cached_store"><a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.mk_write_cached_store">[docs]</a><span class="nd">@store_decorator</span>
 <span class="k">def</span> <span class="nf">mk_write_cached_store</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">w_cache</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="n">flush_cache_condition</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Wrap a write cache around a store.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap a write cache around a store.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        w_cache: The store to (write) cache to</span>
@@ -699,7 +700,7 @@
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">has_enabled_clear_method</span><span class="p">(</span><span class="n">w_cache</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="sd">&#39;&#39;&#39;w_cache needs to have an enabled clear method to be able to act as a write cache.</span>
+<span class="w">            </span><span class="sd">&#39;&#39;&#39;w_cache needs to have an enabled clear method to be able to act as a write cache.</span>
 <span class="sd">        You can wrap w_cache in dol.trans.ensure_clear_method to inject a clear method, </span>
 <span class="sd">        but BE WARNED: mk_write_cached_store will immediately delete all contents of `w_cache`!</span>
 <span class="sd">        So don&#39;t give it your filesystem or important DB to delete!</span>
@@ -751,7 +752,7 @@
 <span class="c1"># that should be &quot;written back&quot; to according to where the key was found, the stores that</span>
 <span class="c1"># should be synced with other stores (possibly even when searched), etc.</span>
 <div class="viewcode-block" id="WriteBackChainMap"><a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.WriteBackChainMap">[docs]</a><span class="k">class</span> <span class="nc">WriteBackChainMap</span><span class="p">(</span><span class="n">ChainMap</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A collections.ChainMap that also &#39;writes back&#39; when a key is found.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A collections.ChainMap that also &#39;writes back&#39; when a key is found.</span>
 
 <span class="sd">    &gt;&gt;&gt; from dol.caching import WriteBackChainMap</span>
 <span class="sd">    &gt;&gt;&gt;</span>
@@ -841,7 +842,7 @@
 <span class="k">def</span> <span class="nf">_mk_cache_method_local_path_key</span><span class="p">(</span>
     <span class="n">method</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s1">&#39;.p&#39;</span><span class="p">,</span> <span class="n">path_sep</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="n">method</span><span class="o">.</span><span class="vm">__module__</span>
         <span class="o">+</span> <span class="n">path_sep</span>
@@ -861,7 +862,7 @@
 
 
 <div class="viewcode-block" id="HashableDict"><a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.HashableDict">[docs]</a><span class="k">class</span> <span class="nc">HashableDict</span><span class="p">(</span><span class="n">HashableMixin</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Just a dict, but hashable&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Just a dict, but hashable&quot;&quot;&quot;</span></div>
 
 
 <span class="c1"># NOTE: cache uses (func, args, kwargs). Don&#39;t want to make more complex with a bind cast to (func, kwargs) only</span>

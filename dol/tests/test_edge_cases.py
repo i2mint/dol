@@ -48,7 +48,6 @@ def test_store_wrap_unbound_method_delegation():
     https://github.com/i2mint/dol/issues/17
     """
 
-
     @Store.wrap
     class MyFiles:
         y = 2
@@ -63,7 +62,6 @@ def test_store_wrap_unbound_method_delegation():
         @staticmethod
         def hi():
             print('hi')
-
 
     errors = []
 
@@ -96,10 +94,3 @@ def test_store_wrap_unbound_method_delegation():
     if errors:
         first_error, *_ = errors
         raise first_error
-
-
-
-
-
-
-

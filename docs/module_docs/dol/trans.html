@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.1.111 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.1.112 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -61,6 +61,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
@@ -138,7 +139,7 @@ Note: Should be before the persister in the MRO.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1">#p[&#39;foo&#39;] = &#39;bar2&#39;  # will raise error</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;this value should not be stored&#39;</span> 
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">dol.errors.OverWritesNotAllowedError</span>: <span class="n">key foo already exists and cannot be overwritten.</span>
 <span class="go">    If you really want to write to that key, delete it before writing</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span>  <span class="c1"># foo is still bar</span>
@@ -278,7 +279,7 @@ You need to involve more tools. Like dol.paths.KeyPath…</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># but</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">KeyError</span>: <span class="n">(&#39;b&#39;, &#39;c&#39;)</span>
 </pre></div>
 </div>
@@ -974,7 +975,7 @@ to acccumulate valid and problematic keys respectively.</p>
 <span class="go">({&#39;friday&#39;}, set())</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;black&#39;</span><span class="p">]</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">KeyError</span>: <span class="n">&quot;Nope, that&#39;s from the black list!&quot;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_keys_cache</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">_error_keys</span>
 <span class="go">({&#39;friday&#39;}, {&#39;black&#39;})</span>
@@ -1057,15 +1058,15 @@ This is validated before making the “double up as factory” decorator.</p>
 to None and be the only argument that is not keyword-only (i.e. all other arguments need to be keyword only).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@double_up_as_factory</span>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">decorator_2</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;Should not be able to be transformed with double_up_as_factory&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="w">    </span><span class="sd">&#39;&#39;&#39;Should not be able to be transformed with double_up_as_factory&#39;&#39;&#39;</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">AssertionError</span>: <span class="n">First argument of the decorator function needs to default to None. Was &lt;class &#39;inspect._empty&#39;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@double_up_as_factory</span>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">decorator_3</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;Should not be able to be transformed with double_up_as_factory&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="w">    </span><span class="sd">&#39;&#39;&#39;Should not be able to be transformed with double_up_as_factory&#39;&#39;&#39;</span>
 <span class="gt">Traceback (most recent call last):</span>
-  <span class="c">...</span>
+<span class="w">  </span><span class="c">...</span>
 <span class="gr">AssertionError</span>: <span class="n">All arguments (besides the first) need to be keyword-only</span>
 </pre></div>
 </div>
