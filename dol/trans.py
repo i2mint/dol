@@ -1603,7 +1603,7 @@ def wrap_kvs(
             For example, you may want to deserialize the bytes of a '.csv', or '.json', or '.pickle' in different ways.
             Forms are `obj = postget(k, data)` or `obj = postget(self, k, data)`
 
-    Returns:
+    Returns: A key and/or value transformed wrapped (or wrapper) class (or instance).
 
     >>> def key_of_id(_id):
     ...     return _id.upper()
