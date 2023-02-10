@@ -689,6 +689,7 @@ def insert_hash_method(
     ...     pass
     >>> hash(F({1: 2, 3: 4}))
     6
+
     """
     return _wrap_store(_insert_hash_method, locals())
 
