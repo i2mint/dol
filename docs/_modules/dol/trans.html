@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.1.114 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.1.115 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -414,7 +414,6 @@
 
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_func_wrapping_store_in_cls_if_not_type</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-
         <span class="n">specials</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">wrapper_assignments</span><span class="p">:</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
@@ -698,8 +697,118 @@
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
 
 
+<span class="c1"># TODO: Should replace wrapper=Store with wrapper=Store.wrap, to depend on a function,</span>
+<span class="c1">#  not a class that has a ``wrap`` method. But need to first</span>
+<span class="c1">#  investigate how wrap_kvs uses that argument to not break anything.</span>
+<span class="c1"># TODO: It seems like at this point, we could merge store_decorator and _wrap_store</span>
+<span class="c1">#  to dispose of the need for a separate class_trans_maker function and the body</span>
+<span class="c1">#  of the decorators to be the smelly _wrap_store(class_trans_maker, locals(), ...)</span>
+<span class="k">def</span> <span class="nf">_wrap_store</span><span class="p">(</span>
+    <span class="n">class_trans_maker</span><span class="p">,</span> <span class="n">class_trans_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="n">Store</span><span class="p">,</span> <span class="n">store_arg_name</span><span class="o">=</span><span class="s1">&#39;store&#39;</span>
+<span class="p">):</span>
+    <span class="n">store</span> <span class="o">=</span> <span class="n">class_trans_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">store_arg_name</span><span class="p">)</span>
+    <span class="n">class_trans</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">class_trans_maker</span><span class="p">,</span> <span class="o">**</span><span class="n">class_trans_kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wrapper</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">class_trans</span><span class="o">=</span><span class="n">class_trans</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="insert_hash_method"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.insert_hash_method">[docs]</a><span class="nd">@store_decorator</span>
+<span class="k">def</span> <span class="nf">insert_hash_method</span><span class="p">(</span>
+    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">hash_method</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">id</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a store hashable using the specified ``hash_method``.</span>
+<span class="sd">    Will add (or overwrite) a ``__hash__`` method to the store that uses the</span>
+<span class="sd">    hash_method to hash the store and an ``__eq__`` method that compares the store to</span>
+<span class="sd">    another based on the hash_method.</span>
+
+<span class="sd">    The ``hash_method``, which will be used as the ``__hash__`` method of a class</span>
+<span class="sd">    should return an integer value that represents the hash of the object.</span>
+<span class="sd">    To remain sane, the hash value must be the same for an object every time the</span>
+<span class="sd">    ``__hash__`` method is called during the lifetime of the object, and objects</span>
+<span class="sd">    that compare equal (using the __eq__ method) must have the same hash value.</span>
+
+<span class="sd">    It&#39;s also important that the hash function has the property of being deterministic</span>
+<span class="sd">    and returning a hash value that is uniformly distributed across the range of</span>
+<span class="sd">    possible integers for the given data. This is important for the hash table</span>
+<span class="sd">    data structure to work efficiently.</span>
+
+<span class="sd">    See `This issue &lt;https://github.com/i2mint/dol/issues/7&gt;`_ for further information.</span>
+
+<span class="sd">    &gt;&gt;&gt; d = {1: 2}  # not hashable!</span>
+<span class="sd">    &gt;&gt;&gt; dd = insert_hash_method(d)</span>
+<span class="sd">    &gt;&gt;&gt; assert isinstance(hash(dd), int)  # now hashable!</span>
+
+<span class="sd">    It looks the same:</span>
+
+<span class="sd">    &gt;&gt;&gt; dd</span>
+<span class="sd">    {1: 2}</span>
+
+<span class="sd">    But don&#39;t be fooled: dd is not equal to the original ``d`` (since</span>
+<span class="sd">    insert_hash_method``overwrote the ``__eq__`` method to compare based on the</span>
+<span class="sd">    hash value):</span>
+
+<span class="sd">    &gt;&gt;&gt; d == dd</span>
+<span class="sd">    False</span>
+
+<span class="sd">    But if you cast both to dicts and then compare, you&#39;ll be using the key and value</span>
+<span class="sd">    based comparison of dicts, which makes these two equal.</span>
+
+<span class="sd">    &gt;&gt;&gt; dict(d) == dict(dd)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    The default ``hash_method`` is ``id``, so two hashable wrappers won&#39;t be equal</span>
+<span class="sd">    to eachother:</span>
+
+<span class="sd">    &gt;&gt;&gt; insert_hash_method(d) == insert_hash_method(d)</span>
+<span class="sd">    False</span>
+
+<span class="sd">    In the following we show two things: That you can specify your own custom</span>
+<span class="sd">    ``hash_method``, and that you can use ``insert_hash_method`` to wrap classes</span>
+
+<span class="sd">    &gt;&gt;&gt; class D(dict):</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; DD = insert_hash_method(D, hash_method=lambda x: 42)</span>
+<span class="sd">    &gt;&gt;&gt; hash(DD(d))</span>
+<span class="sd">    42</span>
+
+<span class="sd">    You can also use it as a decorator, without arguments,</span>
+
+<span class="sd">    &gt;&gt;&gt; @insert_hash_method</span>
+<span class="sd">    ... class E(dict):</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; assert isinstance(hash(E({1: 2})), int)</span>
+
+<span class="sd">    or with arguments (which you must specify as keyword arguments):</span>
+
+<span class="sd">    &gt;&gt;&gt; @insert_hash_method(hash_method=lambda x: sum(x.values()))</span>
+<span class="sd">    ... class F(dict):</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; hash(F({1: 2, 3: 4}))</span>
+<span class="sd">    6</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_wrap_store</span><span class="p">(</span><span class="n">_insert_hash_method</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span></div>
+
+
+<span class="k">def</span> <span class="nf">_is_hashable</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s1">&#39;__hash__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">_insert_hash_method</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">hash_method</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">hashable_cls</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A hashable wrapper to stores&quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">hash_method</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">hash_method</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="n">hash_method</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">hashable_cls</span>
+
+
 <span class="c1">########################################################################################################################</span>
 <span class="c1"># Caching keys</span>
+
 
 <span class="c1"># TODO: If a read-one-by-one (vs the current read all implementation) is necessary one day,</span>
 <span class="c1">#   see https://github.com/zahlman/indexify/blob/master/src/indexify.py for ideas</span>
@@ -934,12 +1043,18 @@
 <span class="sd">    &gt;&gt;&gt; list(s)  # keys will be sorted according to their length</span>
 <span class="sd">    [&#39;c&#39;, &#39;aa&#39;, &#39;bbb&#39;]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;arguments&#39;</span><span class="p">}</span>
-    <span class="n">store</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;store&#39;</span><span class="p">)</span>
-    <span class="n">class_trans</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_cached_keys</span><span class="p">,</span> <span class="o">**</span><span class="n">arguments</span><span class="p">)</span>
-    <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">store</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">+</span> <span class="s1">&#39;Wrapped&#39;</span>
 
-    <span class="k">return</span> <span class="n">Store</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">class_trans</span><span class="o">=</span><span class="n">class_trans</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_wrap_store</span><span class="p">(</span>
+        <span class="n">_cached_keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="n">store</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">+</span> <span class="s1">&#39;Wrapped&#39;</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+    <span class="c1"># TODO: Replaced the following with the above:</span>
+    <span class="c1"># arguments = {k: v for k, v in locals().items() if k != &#39;arguments&#39;}</span>
+    <span class="c1"># store = arguments.pop(&#39;store&#39;)</span>
+    <span class="c1"># class_trans = partial(_cached_keys, **arguments)</span>
+    <span class="c1"># arguments[&#39;name&#39;] = arguments[&#39;name&#39;] or store.__qualname__ + &#39;Wrapped&#39;</span>
+    <span class="c1">#</span>
+    <span class="c1"># return Store.wrap(store, class_trans=class_trans)</span>
 
 
 <span class="k">def</span> <span class="nf">_cached_keys</span><span class="p">(</span>
@@ -1363,12 +1478,7 @@
 <span class="sd">    ...     pass</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;arguments&#39;</span><span class="p">}</span>
-    <span class="n">store</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;store&#39;</span><span class="p">)</span>
-    <span class="n">class_trans</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_filt_iter</span><span class="p">,</span> <span class="o">**</span><span class="n">arguments</span><span class="p">)</span>
-    <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">store</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">+</span> <span class="s1">&#39;Wrapped&#39;</span>
-
-    <span class="k">return</span> <span class="n">Store</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">class_trans</span><span class="o">=</span><span class="n">class_trans</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_wrap_store</span><span class="p">(</span><span class="n">_filt_iter</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="n">store</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">+</span> <span class="s1">&#39;Wrapped&#39;</span><span class="p">))</span></div>
 
 
 <span class="c1"># TODO: Factor out the method injection pattern (e.g. __getitem__, __setitem__</span>
@@ -1795,19 +1905,20 @@
 
 <span class="sd">    # TODO: Add tests for outcoming_key_methods etc.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;arguments&#39;</span><span class="p">}</span>
-    <span class="n">store</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;store&#39;</span><span class="p">)</span>
-    <span class="n">wrapper</span> <span class="o">=</span> <span class="n">wrapper</span> <span class="ow">or</span> <span class="n">Store</span>
-    <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">store</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">+</span> <span class="s1">&#39;Wrapped&#39;</span>
 
-    <span class="c1"># return Store.wrap(store, _wrap_kvs)  &lt;-- make this work</span>
+    <span class="k">return</span> <span class="n">_wrap_store</span><span class="p">(</span>
+        <span class="n">_wrap_kvs</span><span class="p">,</span>
+        <span class="nb">dict</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">wrapper</span><span class="o">=</span><span class="n">wrapper</span> <span class="ow">or</span> <span class="n">Store</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">store</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">+</span> <span class="s1">&#39;Wrapped&#39;</span><span class="p">),</span>
+    <span class="p">)</span></div>
 
-    <span class="n">class_trans</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_wrap_kvs</span><span class="p">,</span> <span class="o">**</span><span class="n">arguments</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">wrapper</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">class_trans</span><span class="o">=</span><span class="n">class_trans</span><span class="p">)</span></div>
-    <span class="c1"># store_cls = Store.wrap(store)</span>
+    <span class="c1"># arguments = {k: v for k, v in locals().items() if k != &quot;arguments&quot;}</span>
+    <span class="c1"># store = arguments.pop(&quot;store&quot;)</span>
+    <span class="c1"># wrapper = wrapper or Store</span>
+    <span class="c1"># arguments[&quot;name&quot;] = arguments[&quot;name&quot;] or store.__qualname__ + &quot;Wrapped&quot;</span>
     <span class="c1">#</span>
-    <span class="c1"># return class_trans(store_cls)</span>
-    <span class="c1"># return _wrap_kvs(store_cls, **arguments)</span>
+    <span class="c1"># class_trans = partial(_wrap_kvs, **arguments)</span>
+    <span class="c1"># return wrapper.wrap(store, class_trans=class_trans)</span>
+    <span class="c1">#</span>
 
 
 <div class="viewcode-block" id="FirstArgIsMapping"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.FirstArgIsMapping">[docs]</a><span class="k">class</span> <span class="nc">FirstArgIsMapping</span><span class="p">(</span><span class="n">Literal</span><span class="p">):</span>
@@ -2564,11 +2675,13 @@
 <span class="sd">    ...         ]</span>
 <span class="sd">    ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;arguments&#39;</span><span class="p">}</span>
-    <span class="n">store</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;store&#39;</span><span class="p">)</span>
-
-    <span class="n">class_trans</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_flatten</span><span class="p">,</span> <span class="o">**</span><span class="n">arguments</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">Store</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">class_trans</span><span class="o">=</span><span class="n">class_trans</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_wrap_store</span><span class="p">(</span><span class="n">_flatten</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span></div>
+    <span class="c1">#</span>
+    <span class="c1"># arguments = {k: v for k, v in locals().items() if k != &quot;arguments&quot;}</span>
+    <span class="c1"># store = arguments.pop(&quot;store&quot;)</span>
+    <span class="c1">#</span>
+    <span class="c1"># class_trans = partial(_flatten, **arguments)</span>
+    <span class="c1"># return Store.wrap(store, class_trans=class_trans)</span>
 
 
 <span class="k">def</span> <span class="nf">_flatten</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">cache_keys</span><span class="p">):</span>

@@ -85,12 +85,12 @@ def double_up_as_factory(decorator_func):
     def validate_decorator_func(decorator_func):
         first_param, *other_params = signature(decorator_func).parameters.values()
         assert first_param.default is None, (
-            f"First argument of the decorator function needs to default to None. "
-            f"Was {first_param.default}"
+            f'First argument of the decorator function needs to default to None. '
+            f'Was {first_param.default}'
         )
         assert all(
             p.kind in {p.KEYWORD_ONLY, p.VAR_KEYWORD} for p in other_params
-        ), f"All arguments (besides the first) need to be keyword-only"
+        ), f'All arguments (besides the first) need to be keyword-only'
         return True
 
     validate_decorator_func(decorator_func)
@@ -306,13 +306,13 @@ def store_decorator(func):
 
     # wrapper_assignments = ('__module__', '__qualname__', '__name__', '__doc__', '__annotations__')
     wrapper_assignments = (
-        "__module__",
-        "__name__",
-        "__qualname__",
-        "__doc__",
-        "__annotations__",
-        "__defaults__",
-        "__kwdefaults__",
+        '__module__',
+        '__name__',
+        '__qualname__',
+        '__doc__',
+        '__annotations__',
+        '__defaults__',
+        '__kwdefaults__',
     )
 
     @wraps(func)
@@ -334,7 +334,7 @@ def store_decorator(func):
         else:
             assert _all_but_first_arg_are_keyword_only(func), (
                 "To use decorating_store_cls, all but the first of your function's arguments need to be all keyword only. "
-                f"The signature was {func.__qualname__}{signature(func)}"
+                f'The signature was {func.__qualname__}{signature(func)}'
             )
             r = func(store, **kwargs)
 
@@ -380,14 +380,14 @@ def ensure_set(x):
 
 
 def get_class_name(cls, dflt_name=None):
-    name = getattr(cls, "__qualname__", None)
+    name = getattr(cls, '__qualname__', None)
     if name is None:
-        name = getattr(getattr(cls, "__class__", object), "__qualname__", None)
+        name = getattr(getattr(cls, '__class__', object), '__qualname__', None)
         if name is None:
             if dflt_name is not None:
                 return dflt_name
             else:
-                raise ValueError(f"{cls} has no name I could extract")
+                raise ValueError(f'{cls} has no name I could extract')
     return name
 
 
@@ -407,7 +407,7 @@ def store_wrap(obj):
 
 
 def _is_bound(method):
-    return hasattr(method, "__self__")
+    return hasattr(method, '__self__')
 
 
 def _first_param_is_an_instance_param(params):
@@ -487,27 +487,27 @@ def mk_kv_reader_from_kv_collection(
     Returns: A KvReader class that subclasses the input kv_collection
     """
 
-    name = name or kv_collection.__qualname__ + "Reader"
-    reader_cls = type(name, (kv_collection, KvReader), {"__getitem__": getitem})
+    name = name or kv_collection.__qualname__ + 'Reader'
+    reader_cls = type(name, (kv_collection, KvReader), {'__getitem__': getitem})
     return reader_cls
 
 
 def raise_disabled_error(functionality):
     def disabled_function(*args, **kwargs):
-        raise ValueError(f"{functionality} is disabled")
+        raise ValueError(f'{functionality} is disabled')
 
     return disabled_function
 
 
 def disable_delitem(o):
-    if hasattr(o, "__delitem__"):
-        o.__delitem__ = raise_disabled_error("deletion")
+    if hasattr(o, '__delitem__'):
+        o.__delitem__ = raise_disabled_error('deletion')
     return o
 
 
 def disable_setitem(o):
-    if hasattr(o, "__setitem__"):
-        o.__setitem__ = raise_disabled_error("writing")
+    if hasattr(o, '__setitem__'):
+        o.__setitem__ = raise_disabled_error('writing')
     return o
 
 
@@ -533,7 +533,7 @@ def add_ipython_key_completions(store):
     else:
         setattr(
             store,
-            "_ipython_key_completions_",
+            '_ipython_key_completions_',
             types.MethodType(_ipython_key_completions_, store),
         )
     return store
@@ -544,14 +544,14 @@ from dol.errors import OverWritesNotAllowedError
 
 
 def disallow_overwrites(store, *, error_msg=None, disable_deletes=True):
-    assert isinstance(store, type), "store needs to be a type"
-    if hasattr(store, "__setitem__"):
+    assert isinstance(store, type), 'store needs to be a type'
+    if hasattr(store, '__setitem__'):
 
         def __setitem__(self, k, v):
             if k in self:
                 raise OverWritesNotAllowedError(
-                    "key {} already exists and cannot be overwritten. "
-                    "If you really want to write to that key, delete it before writing".format(
+                    'key {} already exists and cannot be overwritten. '
+                    'If you really want to write to that key, delete it before writing'.format(
                         k
                     )
                 )
@@ -586,14 +586,14 @@ class OverWritesNotAllowedMixin:
         class NoOverWritesClass(OverWritesNotAllowedMixin, cls):
             ...
 
-        copy_attrs(NoOverWritesClass, cls, ("__name__", "__qualname__", "__module__"))
+        copy_attrs(NoOverWritesClass, cls, ('__name__', '__qualname__', '__module__'))
         return NoOverWritesClass
 
     def __setitem__(self, k, v):
         if self.__contains__(k):
             raise OverWritesNotAllowedError(
-                "key {} already exists and cannot be overwritten. "
-                "If you really want to write to that key, delete it before writing".format(
+                'key {} already exists and cannot be overwritten. '
+                'If you really want to write to that key, delete it before writing'.format(
                     k
                 )
             )
@@ -607,7 +607,7 @@ class OverWritesNotAllowedMixin:
 #  to dispose of the need for a separate class_trans_maker function and the body
 #  of the decorators to be the smelly _wrap_store(class_trans_maker, locals(), ...)
 def _wrap_store(
-    class_trans_maker, class_trans_kwargs: dict, wrapper=Store, store_arg_name="store"
+    class_trans_maker, class_trans_kwargs: dict, wrapper=Store, store_arg_name='store'
 ):
     store = class_trans_kwargs.pop(store_arg_name)
     class_trans = partial(class_trans_maker, **class_trans_kwargs)
@@ -616,9 +616,7 @@ def _wrap_store(
 
 @store_decorator
 def insert_hash_method(
-    store=None,
-    *,
-    hash_method: Callable[[Any], int] = id,
+    store=None, *, hash_method: Callable[[Any], int] = id,
 ):
     """Make a store hashable using the specified ``hash_method``.
     Will add (or overwrite) a ``__hash__`` method to the store that uses the
@@ -695,7 +693,7 @@ def insert_hash_method(
 
 
 def _is_hashable(store):
-    return getattr(store, "__hash__", None) is not None
+    return getattr(store, '__hash__', None) is not None
 
 
 def _insert_hash_method(store, hash_method):
@@ -724,7 +722,7 @@ def cached_keys(
     *,
     keys_cache: Union[callable, Collection] = list,
     iter_to_container=None,  # deprecated: use keys_cache instead
-    cache_update_method="update",
+    cache_update_method='update',
     name: str = None,  # TODO: might be able to be deprecated since included in store_decorator
     __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
 ) -> Union[callable, KvReader]:
@@ -950,7 +948,7 @@ def cached_keys(
     """
 
     return _wrap_store(
-        _cached_keys, dict(locals(), name=store.__qualname__ + "Wrapped")
+        _cached_keys, dict(locals(), name=store.__qualname__ + 'Wrapped')
     )
 
     # TODO: Replaced the following with the above:
@@ -966,7 +964,7 @@ def _cached_keys(
     store,
     keys_cache: Union[callable, Collection] = list,
     iter_to_container=None,  # deprecated: use keys_cache instead
-    cache_update_method="update",
+    cache_update_method='update',
     name: str = None,  # TODO: might be able to be deprecated since included in store_decorator
     __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
 ):
@@ -980,11 +978,11 @@ def _cached_keys(
 
     assert isinstance(
         store, type
-    ), f"store_cls must be a type, was a {type(store)}: {store}"
+    ), f'store_cls must be a type, was a {type(store)}: {store}'
 
     # name = name or 'IterCached' + get_class_name(store_cls)
     name = name or get_class_name(store)
-    __module__ = __module__ or getattr(store, "__module__", None)
+    __module__ = __module__ or getattr(store, '__module__', None)
 
     class cached_cls(store):
         _keys_cache = None
@@ -1021,7 +1019,7 @@ def _cached_keys(
         @property
         def _iter_cache(self):  # for back-compatibility
             warn(
-                "The new name for `_iter_cache` is `_keys_cache`. Start using that!",
+                'The new name for `_iter_cache` is `_keys_cache`. Start using that!',
                 DeprecationWarning,
             )
             return self._keys_cache
@@ -1047,7 +1045,7 @@ def _cached_keys(
                 update_func(self._keys_cache, keys)
 
             update_keys_cache.__doc__ = (
-                "Updates the _keys_cache by calling its {} method"
+                'Updates the _keys_cache by calling its {} method'
             )
         else:
 
@@ -1091,10 +1089,10 @@ def _cached_keys(
     # And this is where we add all the needed methods (for example, no __setitem__ won't be added if the original
     #   class didn't have one in the first place.
     special_attrs = {
-        "update_keys_cache",
-        "_keys_cache",
-        "_explicit_keys",
-        "_updatable_cache",
+        'update_keys_cache',
+        '_keys_cache',
+        '_explicit_keys',
+        '_updatable_cache',
     }
     for attr in special_attrs | (
         AttrNames.KvPersister & attrs_of(cached_cls) & attrs_of(CachedIterMethods)
@@ -1104,7 +1102,7 @@ def _cached_keys(
     if __module__ is not None:
         cached_cls.__module__ = __module__
 
-    if hasattr(store, "__doc__"):
+    if hasattr(store, '__doc__'):
         cached_cls.__doc__ = store.__doc__
 
     return cached_cls
@@ -1212,7 +1210,7 @@ def catch_and_cache_error_keys(
 
     assert isinstance(
         store, type
-    ), f"store_cls must be a type, was a {type(store)}: {store}"
+    ), f'store_cls must be a type, was a {type(store)}: {store}'
 
     # assert isinstance(store, Mapping), f"store_cls must be a Mapping.
     #  Was not. mro is {store.mro()}: {store}"
@@ -1383,18 +1381,18 @@ def filt_iter(
     ...     pass
     """
 
-    return _wrap_store(_filt_iter, dict(locals(), name=store.__qualname__ + "Wrapped"))
+    return _wrap_store(_filt_iter, dict(locals(), name=store.__qualname__ + 'Wrapped'))
 
 
 # TODO: Factor out the method injection pattern (e.g. __getitem__, __setitem__
 #  and __delitem__ are nearly identical)
 def _filt_iter(store_cls: type, filt, name, __module__):
-    assert isinstance(store_cls, type), f"store_cls must be a type: {store_cls}"
+    assert isinstance(store_cls, type), f'store_cls must be a type: {store_cls}'
 
     if not callable(filt):  # if filt is not a callable...
         # ... assume it's the collection of keys you want and make a filter function
         # to filter those "in".
-        assert isinstance(filt, Iterable), "filt should be a callable, or an iterable"
+        assert isinstance(filt, Iterable), 'filt should be a callable, or an iterable'
         keys_that_should_be_filtered_in = set(filt)
 
         def filt(k):
@@ -1420,17 +1418,17 @@ def _filt_iter(store_cls: type, filt, name, __module__):
             return False
 
     store_cls.__contains__ = __contains__
-    if hasattr(store_cls, "__getitem__"):
+    if hasattr(store_cls, '__getitem__'):
 
         def __getitem__(self, k):
             if filt(k):
                 return super(store_cls, self).__getitem__(k)
             else:
-                raise KeyError(f"Key not in store: {k}")
+                raise KeyError(f'Key not in store: {k}')
 
         store_cls.__getitem__ = __getitem__
 
-    if hasattr(store_cls, "get"):
+    if hasattr(store_cls, 'get'):
 
         def get(self, k, default=None):
             if filt(k):
@@ -1439,22 +1437,22 @@ def _filt_iter(store_cls: type, filt, name, __module__):
                 return default
 
         store_cls.get = get
-    if hasattr(store_cls, "__setitem__"):
+    if hasattr(store_cls, '__setitem__'):
 
         def __setitem__(self, k, v):
             if filt(k):
                 return super(store_cls, self).__setitem__(k, v)
             else:
-                raise KeyError(f"Key not in store: {k}")
+                raise KeyError(f'Key not in store: {k}')
 
         store_cls.__setitem__ = __setitem__
-    if hasattr(store_cls, "__delitem__"):
+    if hasattr(store_cls, '__delitem__'):
 
         def __delitem__(self, k):
             if filt(k):
                 return super(store_cls, self).__delitem__(k)
             else:
-                raise KeyError(f"Key not in store: {k}")
+                raise KeyError(f'Key not in store: {k}')
 
         store_cls.__delitem__ = __delitem__
     return store_cls
@@ -1463,7 +1461,7 @@ def _filt_iter(store_cls: type, filt, name, __module__):
 ########################################################################################################################
 # Wrapping keys and values
 
-self_names = frozenset(["self", "store", "mapping"])
+self_names = frozenset(['self', 'store', 'mapping'])
 
 
 # TODO: Consider deprecation. Besides the name arg (whose usefulness is doubtful), this is just Store.wrap
@@ -1542,8 +1540,8 @@ def kv_wrap_persister_cls(persister_cls, name=None):
     cls = Store.wrap(persister_cls)
 
     # TODO: The whole name and qualname thing -- is it really necessary, correct, what we want?
-    name = name or (persister_cls.__name__ + "PWrapped")
-    qname = name or (persister_cls.__qualname__ + "PWrapped")
+    name = name or (persister_cls.__name__ + 'PWrapped')
+    qname = name or (persister_cls.__qualname__ + 'PWrapped')
 
     cls.__qualname__ = qname
     cls.__name__ = name
@@ -1813,7 +1811,7 @@ def wrap_kvs(
 
     return _wrap_store(
         _wrap_kvs,
-        dict(locals(), wrapper=wrapper or Store, name=store.__qualname__ + "Wrapped"),
+        dict(locals(), wrapper=wrapper or Store, name=store.__qualname__ + 'Wrapped'),
     )
 
     # arguments = {k: v for k, v in locals().items() if k != "arguments"}
@@ -1854,16 +1852,16 @@ def _wrap_kvs(
     ingoing_value_methods=(),
     **kwargs,
 ):
-    for method_name in {"_key_of_id"} | ensure_set(outcoming_key_methods):
+    for method_name in {'_key_of_id'} | ensure_set(outcoming_key_methods):
         _wrap_outcoming(store_cls, method_name, key_of_id)
 
-    for method_name in {"_obj_of_data"} | ensure_set(outcoming_value_methods):
+    for method_name in {'_obj_of_data'} | ensure_set(outcoming_value_methods):
         _wrap_outcoming(store_cls, method_name, obj_of_data)
 
-    for method_name in {"_id_of_key"} | ensure_set(ingoing_key_methods):
+    for method_name in {'_id_of_key'} | ensure_set(ingoing_key_methods):
         _wrap_ingoing(store_cls, method_name, id_of_key)
 
-    for method_name in {"_data_of_obj"} | ensure_set(ingoing_value_methods):
+    for method_name in {'_data_of_obj'} | ensure_set(ingoing_value_methods):
         _wrap_ingoing(store_cls, method_name, data_of_obj)
 
     # TODO: postget and preset uses num_of_args. Not robust:
@@ -1872,7 +1870,7 @@ def _wrap_kvs(
     if postget is not None:
         if num_of_args(postget) < 2:
             raise ValueError(
-                "A postget function needs to have (key, value) or (self, key, value) arguments"
+                'A postget function needs to have (key, value) or (self, key, value) arguments'
             )
 
         if not _has_unbound_self(postget):
@@ -1890,7 +1888,7 @@ def _wrap_kvs(
     if preset is not None:
         if num_of_args(preset) < 2:
             raise ValueError(
-                "A preset function needs to have (key, value) or (self, key, value) arguments"
+                'A preset function needs to have (key, value) or (self, key, value) arguments'
             )
 
         if not _has_unbound_self(preset):
@@ -1937,7 +1935,7 @@ def _kv_wrap_outcoming_keys(trans_func):
     def wrapper(o, name=None):
         name = (
             name
-            or getattr(o, "__qualname__", getattr(o.__class__, "__qualname__")) + "_kr"
+            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__')) + '_kr'
         )
         return wrap_kvs(o, name=name, key_of_id=trans_func)
 
@@ -1973,7 +1971,7 @@ def _kv_wrap_ingoing_keys(trans_func):
     def wrapper(o, name=None):
         name = (
             name
-            or getattr(o, "__qualname__", getattr(o.__class__, "__qualname__")) + "_kw"
+            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__')) + '_kw'
         )
         return wrap_kvs(o, name=name, id_of_key=trans_func)
 
@@ -2003,7 +2001,7 @@ def _kv_wrap_outcoming_vals(trans_func):
     def wrapper(o, name=None):
         name = (
             name
-            or getattr(o, "__qualname__", getattr(o.__class__, "__qualname__")) + "_vr"
+            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__')) + '_vr'
         )
         return wrap_kvs(o, name=name, obj_of_data=trans_func)
 
@@ -2033,7 +2031,7 @@ def _kv_wrap_ingoing_vals(trans_func):
     def wrapper(o, name=None):
         name = (
             name
-            or getattr(o, "__qualname__", getattr(o.__class__, "__qualname__")) + "_vw"
+            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__')) + '_vw'
         )
         return wrap_kvs(o, name=name, data_of_obj=trans_func)
 
@@ -2044,7 +2042,7 @@ def _ingoing_vals_wrt_to_keys(trans_func):
     def wrapper(o, name=None):
         name = (
             name
-            or getattr(o, "__qualname__", getattr(o.__class__, "__qualname__")) + "_vwk"
+            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__')) + '_vwk'
         )
         return wrap_kvs(o, name=name, preset=trans_func)
 
@@ -2055,7 +2053,7 @@ def _outcoming_vals_wrt_to_keys(trans_func):
     def wrapper(o, name=None):
         name = (
             name
-            or getattr(o, "__qualname__", getattr(o.__class__, "__qualname__")) + "_vrk"
+            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__')) + '_vrk'
         )
         return wrap_kvs(o, name=name, postget=trans_func)
 
@@ -2065,7 +2063,7 @@ def _outcoming_vals_wrt_to_keys(trans_func):
 def mk_trans_obj(**kwargs):
     """Convenience method to quickly make a trans_obj (just an object holding some trans functions"""
     # TODO: Could make this more flexible (assuming here only staticmethods) and validate inputs...
-    return type("TransObj", (), {k: staticmethod(v) for k, v in kwargs.items()})()
+    return type('TransObj', (), {k: staticmethod(v) for k, v in kwargs.items()})()
 
 
 def kv_wrap(trans_obj):
@@ -2078,17 +2076,17 @@ def kv_wrap(trans_obj):
 
     """
 
-    key_of_id = getattr(trans_obj, "_key_of_id", None)
-    id_of_key = getattr(trans_obj, "_id_of_key", None)
-    obj_of_data = getattr(trans_obj, "_obj_of_data", None)
-    data_of_obj = getattr(trans_obj, "_data_of_obj", None)
-    preset = getattr(trans_obj, "_preset", None)
-    postget = getattr(trans_obj, "_postget", None)
+    key_of_id = getattr(trans_obj, '_key_of_id', None)
+    id_of_key = getattr(trans_obj, '_id_of_key', None)
+    obj_of_data = getattr(trans_obj, '_obj_of_data', None)
+    data_of_obj = getattr(trans_obj, '_data_of_obj', None)
+    preset = getattr(trans_obj, '_preset', None)
+    postget = getattr(trans_obj, '_postget', None)
 
     def wrapper(o, name=None):
         name = (
             name
-            or getattr(o, "__qualname__", getattr(o.__class__, "__qualname__")) + "_kr"
+            or getattr(o, '__qualname__', getattr(o.__class__, '__qualname__')) + '_kr'
         )
         return wrap_kvs(
             o,
@@ -2154,7 +2152,7 @@ def mk_wrapper(wrap_cls):
 
 
 @double_up_as_factory
-def add_wrapper_method(wrap_cls=None, *, method_name="wrapper"):
+def add_wrapper_method(wrap_cls=None, *, method_name='wrapper'):
     """Decorator that adds a wrapper method (itself a decorator) to a wrapping class
     Clear?
     See `mk_wrapper` function and doctest example if not.
@@ -2193,11 +2191,11 @@ def add_wrapper_method(wrap_cls=None, *, method_name="wrapper"):
 # Aliasing
 
 _method_name_for = {
-    "write": "__setitem__",
-    "read": "__getitem__",
-    "delete": "__delitem__",
-    "list": "__iter__",
-    "count": "__len__",
+    'write': '__setitem__',
+    'read': '__getitem__',
+    'delete': '__delitem__',
+    'list': '__iter__',
+    'count': '__len__',
 }
 
 
@@ -2305,12 +2303,12 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
     >>> assert s['a.b'] == s['a']['b'];
     >>> assert s['a.b.c'] == s['a']['b']['c']
     """
-    name = name or store.__qualname__ + "WithPathGet"
+    name = name or store.__qualname__ + 'WithPathGet'
 
     # TODO: This is not the best way to handle this. Investigate another way. ######################
     global_names = set(globals()).union(locals())
     if name in global_names:
-        raise NameError("That name is already in use")
+        raise NameError('That name is already in use')
     # TODO: ########################################################################################
 
     store_cls = kv_wrap_persister_cls(store, name=name)
@@ -2633,7 +2631,7 @@ def mk_level_walk_filt(levels):
     if isinstance(levels, int):
         return lambda p, k, v: len(p) < levels - 1
     else:
-        assert callable(levels), f"levels must be a callable or an integer: {levels=}"
+        assert callable(levels), f'levels must be a callable or an integer: {levels=}'
         return levels
 
 
@@ -2730,7 +2728,7 @@ def insert_load_dump_aliases(store=None, *, delete=None, list=None, count=None):
     >>> s
     {'true': 'love'}
     """
-    store = insert_aliases(store, read="load", delete=delete, list=list, count=count)
+    store = insert_aliases(store, read='load', delete=delete, list=list, count=count)
 
     def dump(self, obj, key):
         return self.__setitem__(key, obj)
@@ -2745,8 +2743,8 @@ def insert_load_dump_aliases(store=None, *, delete=None, list=None, count=None):
 
 from typing import TypeVar, Any, Callable
 
-FuncInput = TypeVar("FuncInput")
-FuncOutput = TypeVar("FuncOutput")
+FuncInput = TypeVar('FuncInput')
+FuncOutput = TypeVar('FuncOutput')
 
 
 def constant_output(return_val=None, *args, **kwargs):
@@ -2808,7 +2806,7 @@ InjectionValidator = Callable[[type, Callable], bool]
 def ensure_clear_method(store=None, *, clear_method=_delete_keys_one_by_one):
     """If obj doesn't have an enabled clear method, will add one (a slow one that runs through keys and deletes them"""
     if not has_enabled_clear_method(store):
-        inject_method(store, clear_method, "clear")
+        inject_method(store, clear_method, 'clear')
     return store
 
 
@@ -2834,7 +2832,7 @@ def add_store_method(
     if validator is not None:
         if not validator(store, method_func):
             raise SetattrNotAllowed(
-                f"Method is not allowed to be set (according to {validator}): {method_func}"
+                f'Method is not allowed to be set (according to {validator}): {method_func}'
             )
 
     @wraps(store, updated=())
@@ -2873,7 +2871,7 @@ class CachedInvertibleTrans:
             self.ingress_map[x] = y
             if y in self.egress_map:
                 raise MapInvertabilityError(
-                    f"egress_map (the inverse map) already had key: {y}"
+                    f'egress_map (the inverse map) already had key: {y}'
                 )
             self.egress_map[y] = x
             return y

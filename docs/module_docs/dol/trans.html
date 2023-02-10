@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.1.114 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.1.115 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -1266,6 +1266,78 @@ using the insert_load_dump_aliases function.</p>
 <span class="go">&#39;love&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">num_of_items</span><span class="p">()</span>
 <span class="go">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.trans.insert_hash_method">
+<code class="sig-prename descclassname">dol.trans.</code><code class="sig-name descname">insert_hash_method</code><span class="sig-paren">(</span><em class="sig-param">store=None, *, hash_method: Callable[[Any], int] = &lt;built-in function id&gt;, __module__=None, __name__=None, __qualname__=None, __doc__=None, __annotations__=None, __defaults__=None, __kwdefaults__=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#insert_hash_method"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.trans.insert_hash_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a store hashable using the specified <code class="docutils literal notranslate"><span class="pre">hash_method</span></code>.
+Will add (or overwrite) a <code class="docutils literal notranslate"><span class="pre">__hash__</span></code> method to the store that uses the
+hash_method to hash the store and an <code class="docutils literal notranslate"><span class="pre">__eq__</span></code> method that compares the store to
+another based on the hash_method.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">hash_method</span></code>, which will be used as the <code class="docutils literal notranslate"><span class="pre">__hash__</span></code> method of a class
+should return an integer value that represents the hash of the object.
+To remain sane, the hash value must be the same for an object every time the
+<code class="docutils literal notranslate"><span class="pre">__hash__</span></code> method is called during the lifetime of the object, and objects
+that compare equal (using the __eq__ method) must have the same hash value.</p>
+<p>It’s also important that the hash function has the property of being deterministic
+and returning a hash value that is uniformly distributed across the range of
+possible integers for the given data. This is important for the hash table
+data structure to work efficiently.</p>
+<p>See <a class="reference external" href="https://github.com/i2mint/dol/issues/7">This issue</a> for further information.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># not hashable!</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">insert_hash_method</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">dd</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>  <span class="c1"># now hashable!</span>
+</pre></div>
+</div>
+<p>It looks the same:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span>
+<span class="go">{1: 2}</span>
+</pre></div>
+</div>
+<p>But don’t be fooled: dd is not equal to the original <code class="docutils literal notranslate"><span class="pre">d</span></code> (since
+insert_hash_method``overwrote the <code class="docutils literal notranslate"><span class="pre">__eq__</span></code> method to compare based on the
+hash value):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">==</span> <span class="n">dd</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>But if you cast both to dicts and then compare, you’ll be using the key and value
+based comparison of dicts, which makes these two equal.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>The default <code class="docutils literal notranslate"><span class="pre">hash_method</span></code> is <code class="docutils literal notranslate"><span class="pre">id</span></code>, so two hashable wrappers won’t be equal
+to eachother:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">insert_hash_method</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="n">insert_hash_method</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>In the following we show two things: That you can specify your own custom
+<code class="docutils literal notranslate"><span class="pre">hash_method</span></code>, and that you can use <code class="docutils literal notranslate"><span class="pre">insert_hash_method</span></code> to wrap classes</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">D</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">DD</span> <span class="o">=</span> <span class="n">insert_hash_method</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">hash_method</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="n">DD</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>You can also use it as a decorator, without arguments,</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@insert_hash_method</span>
+<span class="gp">... </span><span class="k">class</span> <span class="nc">E</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">E</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="mi">2</span><span class="p">})),</span> <span class="nb">int</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or with arguments (which you must specify as keyword arguments):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@insert_hash_method</span><span class="p">(</span><span class="n">hash_method</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+<span class="gp">... </span><span class="k">class</span> <span class="nc">F</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="n">F</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">4</span><span class="p">}))</span>
+<span class="go">6</span>
 </pre></div>
 </div>
 </dd></dl>
