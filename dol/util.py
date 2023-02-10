@@ -1141,10 +1141,12 @@ class ImmutableMixin:
     popitem = _immutable
 
 
-class imdict(dict, HashableMixin, ImmutableMixin):
+# TODO: Lint still considers instances of imdict to be mutable.
+#  Probably because it still sees the mutator methods in the class definition.
+#  Maybe I should just remove them from the class definition?
+# TODO: Generalize to a function that makes any class immutable.
+class imdict(ImmutableMixin, dict, HashableMixin):
     """A frozen hashable dict"""
-
-    pass
 
 
 def move_files_of_folder_to_trash(folder):
