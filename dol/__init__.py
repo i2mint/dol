@@ -51,17 +51,18 @@ from dol.util import (
 
 from dol.trans import (
     wrap_kvs,
-    disable_delitem,
-    disable_setitem,
-    mk_read_only,
-    kv_wrap,
     cached_keys,
     filt_iter,
+    add_ipython_key_completions,
+    insert_hash_method,
     add_path_get,
     add_path_access,
     flatten,
+    kv_wrap,
+    disable_delitem,
+    disable_setitem,
+    mk_read_only,
     insert_aliases,
-    add_ipython_key_completions,
     cache_iter,  # being deprecated
 )
 
