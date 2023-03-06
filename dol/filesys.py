@@ -3,7 +3,7 @@
 import os
 from os import stat as os_stat
 from functools import wraps, partial
-from typing import Union
+from typing import Union, Callable
 
 from dol.base import Collection, KvReader, KvPersister
 from dol.trans import wrap_kvs, store_decorator
@@ -68,13 +68,36 @@ def iter_dirpaths_in_folder_recursively(
                     yield entry
 
 
-def ensure_dir(dirpath, verbose: Union[bool, str] = False):
+def ensure_dir(dirpath, verbose: Union[bool, str, Callable] = False):
+    """Ensure that a directory exists, creating it if necessary.
+
+    :param dirpath: path to the directory to create
+    :param verbose: if True, print a message when creating the directory
+    :return: the path to the directory
+
+    When the path does not exist, if ``verbose`` is:
+
+    - a ``bool``' a standard message will be printed
+
+    - a ''string``; this string will be printed
+
+    - a ``callable``; this argument-less callable will be called (so you can do
+    anything you want)
+
+    Usage note: If you want to string or the (argument-less) callable to be dependent
+    on ``dirpath``, you need make them so when calling ensure_dir.
+
+    """
     if not os.path.exists(dirpath):
         if verbose:
             if isinstance(verbose, bool):
                 print(f'Making the directory: {dirpath}')
+            elif isinstance(verbose, Callable):
+                callaback = verbose
+                callaback()
             else:
-                print(verbose)
+                string_to_print = verbose
+                print(string_to_print)
         os.makedirs(dirpath, exist_ok=True)
     return dirpath
 
