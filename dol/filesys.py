@@ -3,6 +3,7 @@
 import os
 from os import stat as os_stat
 from functools import wraps, partial
+from typing import Union
 
 from dol.base import Collection, KvReader, KvPersister
 from dol.trans import wrap_kvs, store_decorator
@@ -67,10 +68,13 @@ def iter_dirpaths_in_folder_recursively(
                     yield entry
 
 
-def ensure_dir(dirpath, verbose=False):
+def ensure_dir(dirpath, verbose: Union[bool, str] = False):
     if not os.path.exists(dirpath):
         if verbose:
-            print(f'Making the directory: {dirpath}')
+            if isinstance(verbose, bool):
+                print(f'Making the directory: {dirpath}')
+            else:
+                print(verbose)
         os.makedirs(dirpath, exist_ok=True)
     return dirpath
 
