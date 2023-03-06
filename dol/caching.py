@@ -485,6 +485,7 @@ def ensure_clear_to_kv_store(store):
     return store
 
 
+# TODO: Normalize using store_decorator and add control over flush_cache method name
 def flush_on_exit(cls):
     new_cls = type(cls.__name__, (cls,), {})
 

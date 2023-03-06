@@ -27,52 +27,53 @@ def ihead(store, n=1):
 from dol.zipfiledol import *
 
 from dol.filesys import (
-    Files,  # for read-write-delete access to files; relative paths, bytes values
+    Files,  # read-write-delete access to files; relative paths, bytes values
     FilesReader,  # read-only version of LocalFiles,
-    TextFiles,
+    TextFiles,  # read-write-delete access to text files; relative paths, str values
+    ensure_dir,  # function to create a directory, if missing
     mk_dirs_if_missing,  # store deco to create directories on write, when missing
     MakeMissingDirsStoreMixin,  # Mixin to enable auto-dir-making on write
     resolve_path,  # to get a full path (resolve ~ and .),
-    resolve_dir,
-    DirReader,
+    resolve_dir,  # to get a full path (resolve ~ and .) and ensure it is a directory
+    DirReader,  # recursive read-only access to directories
 )
 
 from dol.util import (
-    Pipe,
-    lazyprop,
-    partialclass,
-    groupby,
-    regroupby,
+    Pipe,  # chain functions
+    lazyprop,  # lazy evaluation of properties
+    partialclass,  # partial class instantiation
+    groupby,  # group items according to group keys
+    regroupby,  # recursive version of groupby
     igroupby,
-    not_a_mac_junk_path,
-    instance_checker,
-    chain_get,
+    not_a_mac_junk_path,  # filter function to filter out mac junk paths
+    instance_checker,  # make filter function that checks the type of an object
+    chain_get,  # a function to perform chained get operations (i.e. path keys get)
 )
 
 from dol.trans import (
-    wrap_kvs,
-    cached_keys,
-    filt_iter,
-    add_ipython_key_completions,
-    insert_hash_method,
-    add_path_get,
-    add_path_access,
-    flatten,
-    kv_wrap,
-    disable_delitem,
-    disable_setitem,
-    mk_read_only,
-    insert_aliases,
+    wrap_kvs,  # transform store key and/or value
+    cached_keys,  # cache store keys
+    filt_iter,  # filter store keys
+    add_ipython_key_completions,  # add ipython key completions
+    insert_hash_method,  # add a hash method to store
+    add_path_get,  # add a path_get method to store
+    add_path_access,  # add path_get and path_set methods to store
+    flatten,  # flatten a nested store
+    kv_wrap,  # different interface to wrap_kvs
+    disable_delitem,  # disable ability to delete
+    disable_setitem,  # disable ability to write to a store
+    mk_read_only,  # disable ability to write to a store or delete its keys
+    insert_aliases,  # insert aliases for store methods
     cache_iter,  # being deprecated
 )
 
 from dol.caching import (
-    WriteBackChainMap,
-    mk_cached_store,
+    WriteBackChainMap,  # write-back cache
+    mk_cached_store,  # wrap a store so it uses a cache
     store_cached,
     store_cached_with_single_key,
     ensure_clear_to_kv_store,
-    flush_on_exit,
+    flush_on_exit,  # make a store become a context manager that flushes cache on exit
     mk_write_cached_store,
 )
 

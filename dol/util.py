@@ -632,7 +632,8 @@ def groupby(
     val: Optional[Callable[[Item], Any]] = None,
     group_factory=list,
 ) -> dict:
-    """Groups items according to group keys updated from those items through the given (item_to_)key function.
+    """Groups items according to group keys updated from those items through the given
+    (item_to_)key function.
 
     Args:
         items: iterable of items

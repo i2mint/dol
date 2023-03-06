@@ -422,6 +422,8 @@ class DirReader(DirCollection, KvReader):
 
 
 # TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)
+#   Also, add a verbose option to print the dirs that are being made
+#   (see dol.filesys.ensure_dir)
 @store_decorator
 def mk_dirs_if_missing(
     store_cls=None, *, key_condition=None,
