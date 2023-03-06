@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol &mdash; dol 0.1.118 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>dol &mdash; dol 0.1.119 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -123,75 +123,83 @@
 <span class="kn">from</span> <span class="nn">dol.zipfiledol</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="kn">from</span> <span class="nn">dol.filesys</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Files</span><span class="p">,</span>  <span class="c1"># for read-write-delete access to files; relative paths, bytes values</span>
+    <span class="n">Files</span><span class="p">,</span>  <span class="c1"># read-write-delete access to files; relative paths, bytes values</span>
     <span class="n">FilesReader</span><span class="p">,</span>  <span class="c1"># read-only version of LocalFiles,</span>
-    <span class="n">TextFiles</span><span class="p">,</span>
+    <span class="n">TextFiles</span><span class="p">,</span>  <span class="c1"># read-write-delete access to text files; relative paths, str values</span>
+    <span class="n">ensure_dir</span><span class="p">,</span>  <span class="c1"># function to create a directory, if missing</span>
     <span class="n">mk_dirs_if_missing</span><span class="p">,</span>  <span class="c1"># store deco to create directories on write, when missing</span>
     <span class="n">MakeMissingDirsStoreMixin</span><span class="p">,</span>  <span class="c1"># Mixin to enable auto-dir-making on write</span>
     <span class="n">resolve_path</span><span class="p">,</span>  <span class="c1"># to get a full path (resolve ~ and .),</span>
-    <span class="n">resolve_dir</span><span class="p">,</span>
-    <span class="n">DirReader</span><span class="p">,</span>
+    <span class="n">resolve_dir</span><span class="p">,</span>  <span class="c1"># to get a full path (resolve ~ and .) and ensure it is a directory</span>
+    <span class="n">DirReader</span><span class="p">,</span>  <span class="c1"># recursive read-only access to directories</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Pipe</span><span class="p">,</span>
-    <span class="n">lazyprop</span><span class="p">,</span>
-    <span class="n">partialclass</span><span class="p">,</span>
-    <span class="n">groupby</span><span class="p">,</span>
-    <span class="n">regroupby</span><span class="p">,</span>
+    <span class="n">Pipe</span><span class="p">,</span>  <span class="c1"># chain functions</span>
+    <span class="n">lazyprop</span><span class="p">,</span>  <span class="c1"># lazy evaluation of properties</span>
+    <span class="n">partialclass</span><span class="p">,</span>  <span class="c1"># partial class instantiation</span>
+    <span class="n">groupby</span><span class="p">,</span>  <span class="c1"># group items according to group keys</span>
+    <span class="n">regroupby</span><span class="p">,</span>  <span class="c1"># recursive version of groupby</span>
     <span class="n">igroupby</span><span class="p">,</span>
-    <span class="n">not_a_mac_junk_path</span><span class="p">,</span>
-    <span class="n">instance_checker</span><span class="p">,</span>
-    <span class="n">chain_get</span><span class="p">,</span>
+    <span class="n">not_a_mac_junk_path</span><span class="p">,</span>  <span class="c1"># filter function to filter out mac junk paths</span>
+    <span class="n">instance_checker</span><span class="p">,</span>  <span class="c1"># make filter function that checks the type of an object</span>
+    <span class="n">chain_get</span><span class="p">,</span>  <span class="c1"># a function to perform chained get operations (i.e. path keys get)</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">wrap_kvs</span><span class="p">,</span>
-    <span class="n">cached_keys</span><span class="p">,</span>
-    <span class="n">filt_iter</span><span class="p">,</span>
-    <span class="n">add_ipython_key_completions</span><span class="p">,</span>
-    <span class="n">insert_hash_method</span><span class="p">,</span>
-    <span class="n">add_path_get</span><span class="p">,</span>
-    <span class="n">add_path_access</span><span class="p">,</span>
-    <span class="n">flatten</span><span class="p">,</span>
-    <span class="n">kv_wrap</span><span class="p">,</span>
-    <span class="n">disable_delitem</span><span class="p">,</span>
-    <span class="n">disable_setitem</span><span class="p">,</span>
-    <span class="n">mk_read_only</span><span class="p">,</span>
-    <span class="n">insert_aliases</span><span class="p">,</span>
+    <span class="n">wrap_kvs</span><span class="p">,</span>  <span class="c1"># transform store key and/or value</span>
+    <span class="n">cached_keys</span><span class="p">,</span>  <span class="c1"># cache store keys</span>
+    <span class="n">filt_iter</span><span class="p">,</span>  <span class="c1"># filter store keys</span>
+    <span class="n">add_ipython_key_completions</span><span class="p">,</span>  <span class="c1"># add ipython key completions</span>
+    <span class="n">insert_hash_method</span><span class="p">,</span>  <span class="c1"># add a hash method to store</span>
+    <span class="n">add_path_get</span><span class="p">,</span>  <span class="c1"># add a path_get method to store</span>
+    <span class="n">add_path_access</span><span class="p">,</span>  <span class="c1"># add path_get and path_set methods to store</span>
+    <span class="n">flatten</span><span class="p">,</span>  <span class="c1"># flatten a nested store</span>
+    <span class="n">kv_wrap</span><span class="p">,</span>  <span class="c1"># different interface to wrap_kvs</span>
+    <span class="n">disable_delitem</span><span class="p">,</span>  <span class="c1"># disable ability to delete</span>
+    <span class="n">disable_setitem</span><span class="p">,</span>  <span class="c1"># disable ability to write to a store</span>
+    <span class="n">mk_read_only</span><span class="p">,</span>  <span class="c1"># disable ability to write to a store or delete its keys</span>
+    <span class="n">insert_aliases</span><span class="p">,</span>  <span class="c1"># insert aliases for store methods</span>
     <span class="n">cache_iter</span><span class="p">,</span>  <span class="c1"># being deprecated</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">WriteBackChainMap</span><span class="p">,</span>
-    <span class="n">mk_cached_store</span><span class="p">,</span>
-    <span class="n">store_cached</span><span class="p">,</span>
+    <span class="n">WriteBackChainMap</span><span class="p">,</span>  <span class="c1"># write-back cache</span>
+    <span class="n">mk_cached_store</span><span class="p">,</span>  <span class="c1"># wrap a store so it uses a cache</span>
+    <span class="n">store_cached</span><span class="p">,</span>  <span class="c1"># func memorizer using a specific store as its &quot;memory&quot;</span>
     <span class="n">store_cached_with_single_key</span><span class="p">,</span>
-    <span class="n">ensure_clear_to_kv_store</span><span class="p">,</span>
-    <span class="n">flush_on_exit</span><span class="p">,</span>
+    <span class="n">ensure_clear_to_kv_store</span><span class="p">,</span>  <span class="c1"># add a clear method to a store (removed by default)</span>
+    <span class="n">flush_on_exit</span><span class="p">,</span>  <span class="c1"># make a store become a context manager that flushes cache on exit</span>
     <span class="n">mk_write_cached_store</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">dol.appendable</span> <span class="kn">import</span> <span class="n">appendable</span>
 
-<span class="kn">from</span> <span class="nn">dol.naming</span> <span class="kn">import</span> <span class="n">StrTupleDict</span><span class="p">,</span> <span class="n">mk_store_from_path_format_store_cls</span>
+<span class="kn">from</span> <span class="nn">dol.naming</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">StrTupleDict</span><span class="p">,</span>  <span class="c1"># convert from and to strings, tuples, and dicts.</span>
+    <span class="n">mk_store_from_path_format_store_cls</span><span class="p">,</span>
+<span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="n">mk_relative_path_store</span><span class="p">,</span> <span class="n">KeyPath</span><span class="p">,</span> <span class="n">path_get</span>
+<span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">mk_relative_path_store</span><span class="p">,</span>  <span class="c1"># transform path store into relative path store</span>
+    <span class="n">KeyPath</span><span class="p">,</span>  <span class="c1"># a class to represent a path to a key</span>
+    <span class="n">path_get</span><span class="p">,</span>  <span class="c1"># get a value from a path</span>
+<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">dol.explicit</span> <span class="kn">import</span> <span class="n">ExplicitKeyMap</span><span class="p">,</span> <span class="n">invertible_maps</span>
 
 <span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Collection</span><span class="p">,</span>
+    <span class="n">Collection</span><span class="p">,</span>  <span class="c1"># base class for collections (adds to collections.abc.Collection)</span>
     <span class="n">MappingViewMixin</span><span class="p">,</span>
-    <span class="n">KvReader</span><span class="p">,</span>
-    <span class="n">KvPersister</span><span class="p">,</span>
-    <span class="n">Reader</span><span class="p">,</span>
-    <span class="n">Persister</span><span class="p">,</span>
-    <span class="n">kv_walk</span><span class="p">,</span>
-    <span class="n">Store</span><span class="p">,</span>
-    <span class="n">BaseKeysView</span><span class="p">,</span>
-    <span class="n">BaseValuesView</span><span class="p">,</span>
-    <span class="n">BaseItemsView</span><span class="p">,</span>
+    <span class="n">KvReader</span><span class="p">,</span>  <span class="c1"># base class for kv readers (adds to collections.abc.Mapping)</span>
+    <span class="n">KvPersister</span><span class="p">,</span>  <span class="c1"># base for kv persisters (adds to collections.abc.MutableMapping)</span>
+    <span class="n">Reader</span><span class="p">,</span>  <span class="c1"># TODO: deprecate? (now KvReader)</span>
+    <span class="n">Persister</span><span class="p">,</span>  <span class="c1"># TODO: deprecate? (now KvPersister)</span>
+    <span class="n">kv_walk</span><span class="p">,</span>  <span class="c1"># walk a kv store</span>
+    <span class="n">Store</span><span class="p">,</span>  <span class="c1"># base class for stores (adds hooks for key and value transforms)</span>
+    <span class="n">BaseKeysView</span><span class="p">,</span>  <span class="c1"># base class for keys views</span>
+    <span class="n">BaseValuesView</span><span class="p">,</span>  <span class="c1"># base class for values views</span>
+    <span class="n">BaseItemsView</span><span class="p">,</span>  <span class="c1"># base class for items views</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">dol.sources</span> <span class="kn">import</span> <span class="n">FlatReader</span><span class="p">,</span> <span class="n">SequenceKvReader</span><span class="p">,</span> <span class="n">FuncReader</span><span class="p">,</span> <span class="n">Attrs</span>
