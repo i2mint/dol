@@ -24,6 +24,7 @@ def ihead(store, n=1):
         return [item for i, item in enumerate(store) if i < n]
 
 
+# TODO: Check usage and replace star import with explicit imports
 from dol.zipfiledol import *
 
 from dol.filesys import (
