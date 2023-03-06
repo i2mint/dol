@@ -344,8 +344,8 @@ def _slow_but_somewhat_general_hash(*args, **kwargs):
 #  Wrap the store cache to track new keys, and delete those (and only those!!) when emptying the store.
 def store_cached(store, key_func: Callable):
     """
-    Function output memorizer but using a specific (usually persisting) store as it's memory and a key_func to
-    compute the key under which to store the output.
+    Function output memorizer but using a specific (usually persisting) store as it's
+    memory and a key_func to compute the key under which to store the output.
 
     The key can be
     - a single value under which the output should be stored, regardless of the input.
@@ -406,7 +406,7 @@ def store_cached(store, key_func: Callable):
 
 def store_cached_with_single_key(store, key):
     """
-    Function output memorizer but using a specific store and key as it's memory.
+    Function output memorizer but using a specific store and key as its memory.
 
     Use in situations where you have a argument-less function or bound method that computes some data whose dependencies
     are static enough that there's enough advantage to make the data refresh explicit (by deleting the cache entry)

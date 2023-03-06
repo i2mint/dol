@@ -70,33 +70,40 @@ from dol.trans import (
 from dol.caching import (
     WriteBackChainMap,  # write-back cache
     mk_cached_store,  # wrap a store so it uses a cache
-    store_cached,
+    store_cached,  # func memorizer using a specific store as its "memory"
     store_cached_with_single_key,
-    ensure_clear_to_kv_store,
+    ensure_clear_to_kv_store,  # add a clear method to a store (removed by default)
     flush_on_exit,  # make a store become a context manager that flushes cache on exit
     mk_write_cached_store,
 )
 
 from dol.appendable import appendable
 
-from dol.naming import StrTupleDict, mk_store_from_path_format_store_cls
+from dol.naming import (
+    StrTupleDict,  # convert from and to strings, tuples, and dicts.
+    mk_store_from_path_format_store_cls
+)
 
-from dol.paths import mk_relative_path_store, KeyPath, path_get
+from dol.paths import (
+    mk_relative_path_store,  # transform path store into relative path store
+    KeyPath,  # a class to represent a path to a key
+    path_get  # get a value from a path
+)
 
 from dol.explicit import ExplicitKeyMap, invertible_maps
 
 from dol.base import (
-    Collection,
+    Collection,  # base class for collections (adds to collections.abc.Collection)
     MappingViewMixin,
-    KvReader,
-    KvPersister,
-    Reader,
-    Persister,
-    kv_walk,
-    Store,
-    BaseKeysView,
-    BaseValuesView,
-    BaseItemsView,
+    KvReader,  # base class for kv readers (adds to collections.abc.Mapping)
+    KvPersister,  # base for kv persisters (adds to collections.abc.MutableMapping)
+    Reader,  # TODO: deprecate? (now KvReader)
+    Persister,  # TODO: deprecate? (now KvPersister)
+    kv_walk,  # walk a kv store
+    Store,  # base class for stores (adds hooks for key and value transforms)
+    BaseKeysView,  # base class for keys views
+    BaseValuesView,  # base class for values views
+    BaseItemsView,  # base class for items views
 )
 
 from dol.sources import FlatReader, SequenceKvReader, FuncReader, Attrs

@@ -21,6 +21,9 @@ wraps = partial(_wraps, assigned=wrapper_assignments)
 exhaust = partial(deque, maxlen=0)
 
 
+# TODO: Deprecate? More complete version here: dol.pat.path_get
+#  Could argue to keep chain_get because simple and straightforward
+#  https://github.com/i2mint/dol/blob/7fc78634ef5a6a11ab8417e7fa8a007852699851/dol/paths.py#L118
 def chain_get(d: Mapping, keys, default=None):
     """
     Returns the ``d[key]`` value for the first ``key`` in ``keys`` that is in ``d``, and default if none are found
