@@ -2222,6 +2222,10 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
     make it whatever you want, and/or use `dol.paths.KeyPath` to map to and from
     forms like ``'a.b.c'``, ``'a/b/c'``, etc.
 
+    (Warning: ``path_type`` only effects the first level.
+    That is, it doesn't work recursively.
+    See issue: https://github.com/i2mint/dol/issues/10.)
+
     Say you have some nested stores.
     You know... like a `ZipFileReader` store whose values are `ZipReader`s,
     whose values are bytes of the zipped files
@@ -2334,6 +2338,9 @@ def add_path_access(store=None, *, name=None, path_type: type = tuple):
     Like ``add_path_get``, but with write and delete accessible through key paths.
 
     In a way "flatten the nested keys access".
+    (Warning: ``path_type`` only effects the first level.
+    That is, it doesn't work recursively.
+    See issue: https://github.com/i2mint/dol/issues/10.)
 
     By default, the path object will be a tuple (e.g. ``('a', 'b', 'c')``, but you can
     make it whatever you want, and/or use `dol.paths.KeyPath` to map to and from
