@@ -455,6 +455,11 @@ class DirReader(DirCollection, KvReader):
 def mk_dirs_if_missing(
     store_cls=None, *, key_condition=None,
 ):
-    """Store decorator that will make the store create directories on write as needed"""
+    """Store decorator that will make the store create directories on write as
+    needed.
+
+    Note that it'll only effect paths relative to the rootdir, which needs to be
+    ensured to exist separatedly.
+    """
     name = getattr(store_cls, '__name__', 'WrappedStoreWithConditionalDirMaking')
     return type(name, (MakeMissingDirsStoreMixin, store_cls), {})
