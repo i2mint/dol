@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.1.122 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.1.123 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -171,7 +171,10 @@ Note: ipython already adds local path listing automatically,</p>
 <code class="sig-prename descclassname">dol.trans.</code><code class="sig-name descname">add_path_access</code><span class="sig-paren">(</span><em class="sig-param">store=None</em>, <em class="sig-param">*</em>, <em class="sig-param">name=None</em>, <em class="sig-param">path_type: type = &lt;class 'tuple'&gt;</em>, <em class="sig-param">__module__=None</em>, <em class="sig-param">__name__=None</em>, <em class="sig-param">__qualname__=None</em>, <em class="sig-param">__doc__=None</em>, <em class="sig-param">__annotations__=None</em>, <em class="sig-param">__defaults__=None</em>, <em class="sig-param">__kwdefaults__=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#add_path_access"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.trans.add_path_access" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make nested stores (read/write) accessible through key paths (iterable of keys).</p>
 <p>Like <code class="docutils literal notranslate"><span class="pre">add_path_get</span></code>, but with write and delete accessible through key paths.</p>
-<p>In a way “flatten the nested keys access”.</p>
+<p>In a way “flatten the nested keys access”.
+(Warning: <code class="docutils literal notranslate"><span class="pre">path_type</span></code> only effects the first level.
+That is, it doesn’t work recursively.
+See issue: <a class="reference external" href="https://github.com/i2mint/dol/issues/10">https://github.com/i2mint/dol/issues/10</a>.)</p>
 <p>By default, the path object will be a tuple (e.g. <code class="docutils literal notranslate"><span class="pre">('a',</span> <span class="pre">'b',</span> <span class="pre">'c')</span></code>, but you can
 make it whatever you want, and/or use <cite>dol.paths.KeyPath</cite> to map to and from
 forms like <code class="docutils literal notranslate"><span class="pre">'a.b.c'</span></code>, <code class="docutils literal notranslate"><span class="pre">'a/b/c'</span></code>, etc.</p>
@@ -319,6 +322,9 @@ In a way “flatten the nested keys access”.
 By default, the path object will be a tuple (e.g. <code class="docutils literal notranslate"><span class="pre">('a',</span> <span class="pre">'b',</span> <span class="pre">'c')</span></code>, but you can
 make it whatever you want, and/or use <cite>dol.paths.KeyPath</cite> to map to and from
 forms like <code class="docutils literal notranslate"><span class="pre">'a.b.c'</span></code>, <code class="docutils literal notranslate"><span class="pre">'a/b/c'</span></code>, etc.</p>
+<p>(Warning: <code class="docutils literal notranslate"><span class="pre">path_type</span></code> only effects the first level.
+That is, it doesn’t work recursively.
+See issue: <a class="reference external" href="https://github.com/i2mint/dol/issues/10">https://github.com/i2mint/dol/issues/10</a>.)</p>
 <p>Say you have some nested stores.
 You know… like a <cite>ZipFileReader</cite> store whose values are <a href="#id3"><span class="problematic" id="id4">`</span></a>ZipReader`s,
 whose values are bytes of the zipped files
