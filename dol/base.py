@@ -720,21 +720,21 @@ KvStore = Store  # alias with explict name
 ########################################################################################################################
 # walking in trees
 
-from typing import Callable, Mapping, KT, VT, Any, TypeVar, Iterator
+from typing import Callable, KT, VT, Any, TypeVar, Iterator
 
 PT = TypeVar('PT')  # Path Type
 inf = float('infinity')
 
 
-def val_is_mapping(p : PT, k : KT, v : VT) -> bool:
+def val_is_mapping(p: PT, k: KT, v: VT) -> bool:
     return isinstance(v, Mapping)
 
 
-def asis(p : PT, k : KT, v : VT) -> Any:
+def asis(p: PT, k: KT, v: VT) -> Any:
     return p, k, v
 
 
-def tuple_keypath_and_val(p : PT, k : KT, v : VT) -> Tuple[PT, VT]:
+def tuple_keypath_and_val(p: PT, k: KT, v: VT) -> Tuple[PT, VT]:
     if p == ():  # we're just begining (the root),
         p = (k,)  # so begin the path with the first key.
     else:
@@ -820,14 +820,17 @@ def kv_walk(
 
     >>> mm = {
     ...     'a': {'b': {'c': 42}},
-    ...     'aa': {'bb': {'cc': 'dragon_con'}},
+    ...     'aa': {'bb': {'cc': 'meaning_of_life'}},
     ...     'aaa': {'bbb': 314},
     ... }
     >>> return_path_if_int_leaf = lambda p, k, v: (p, v) if isinstance(v, int) else None
     >>> list(filter(None, kv_walk(mm, yield_func=return_path_if_int_leaf)))
     [(('a', 'b', 'c'), 42), (('aaa', 'bbb'), 314)]
 
-    Inspiration: This function was inspired by `remap` from the `boltons` package.
+    This "path search" functionality is available as a function in the ``recipes``
+    module, as ``search_paths``.
+
+    Inspiration: ``kv_walk`` was inspired by `remap` from the `boltons` package.
     You may consider using that instead, as it has a much more extensive documetation:
     See https://sedimental.org/remap.html for example.
 

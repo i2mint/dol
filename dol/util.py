@@ -21,24 +21,35 @@ wraps = partial(_wraps, assigned=wrapper_assignments)
 exhaust = partial(deque, maxlen=0)
 
 
-def add_as_attribute_of(obj):
-    """Adds a function as an attribute of an object ``obj``.
-    This decorator returns None, so if it's used at definition time,
-    the defined function will not be added to the module, but only to the attribute
-    of ``obj``
+def add_as_attribute_of(obj, name=None):
+    """Decorator that adds a function as an attribute of a container object ``obj``.
+
+    If no ``name`` is given, the ``__name__`` of the function will be used, with a
+    leading underscore removed. This is useful for adding helper functions to main
+    "container" functions without polluting the namespace of the module, at least
+    from the point of view of imports and tab completion.
 
     >>> def foo():
     ...    pass
     >>>
     >>> @add_as_attribute_of(foo)
-    ... def foo_helper():
+    ... def _helper():
     ...    pass
-    >>> callable(foo.foo_helper)
+    >>> hasattr(foo, 'helper')
     True
+    >>> callable(foo.helper)
+    True
+
+    In reality, any object that has a ``__name__`` can be added to the attribute of
+    ``obj``, but the intention is to add helper functions to main "container" functions.
+
     """
     def _decorator(f):
-        setattr(obj, f.__name__, f)
-        return None  # instead of f, so we don't add the function to the module
+        attrname = name or f.__name__
+        if attrname.startswith('_'):
+            attrname = attrname[1:]  # remove leading underscore
+        setattr(obj, attrname, f)
+        return f
     return _decorator
 
 
