@@ -21,6 +21,27 @@ wraps = partial(_wraps, assigned=wrapper_assignments)
 exhaust = partial(deque, maxlen=0)
 
 
+def add_as_attribute_of(obj):
+    """Adds a function as an attribute of an object ``obj``.
+    This decorator returns None, so if it's used at definition time,
+    the defined function will not be added to the module, but only to the attribute
+    of ``obj``
+
+    >>> def foo():
+    ...    pass
+    >>>
+    >>> @add_as_attribute_of(foo)
+    ... def foo_helper():
+    ...    pass
+    >>> callable(foo.foo_helper)
+    True
+    """
+    def _decorator(f):
+        setattr(obj, f.__name__, f)
+        return None  # instead of f, so we don't add the function to the module
+    return _decorator
+
+
 # TODO: Deprecate? More complete version here: dol.pat.path_get
 #  Could argue to keep chain_get because simple and straightforward
 #  https://github.com/i2mint/dol/blob/7fc78634ef5a6a11ab8417e7fa8a007852699851/dol/paths.py#L118
