@@ -720,19 +720,21 @@ KvStore = Store  # alias with explict name
 ########################################################################################################################
 # walking in trees
 
+from typing import Callable, Mapping, KT, VT, Any, TypeVar, Iterator
 
+PT = TypeVar('PT')  # Path Type
 inf = float('infinity')
 
 
-def val_is_mapping(p, k, v):
+def val_is_mapping(p : PT, k : KT, v : VT) -> bool:
     return isinstance(v, Mapping)
 
 
-def asis(p, k, v):
+def asis(p : PT, k : KT, v : VT) -> Any:
     return p, k, v
 
 
-def tuple_keypath_and_val(p, k, v):
+def tuple_keypath_and_val(p : PT, k : KT, v : VT) -> Tuple[PT, VT]:
     if p == ():  # we're just begining (the root),
         p = (k,)  # so begin the path with the first key.
     else:
@@ -740,23 +742,25 @@ def tuple_keypath_and_val(p, k, v):
     return p, v
 
 
-# TODO: More docs and doctests. This one even merits an extensive usage and example tutorial!
+# TODO: More docs and doctests.
+#  This one even merits an extensive usage and example tutorial!
 def kv_walk(
     v: Mapping,
-    yield_func=asis,  # (p, k, v) -> what you want the gen to yield
-    walk_filt=val_is_mapping,  # (p, k, v) -> whether to explore the nested structure v further
-    pkv_to_pv=tuple_keypath_and_val,
-    p=(),
-):
+    yield_func: Callable[[PT, KT, VT], Any] = asis,
+    walk_filt: Callable[[PT, KT, VT], bool] = val_is_mapping,
+    pkv_to_pv: Callable[[PT, KT, VT], Tuple[PT, VT]] = tuple_keypath_and_val,
+    p: PT = (),
+) -> Iterator[Any]:
     """
+    Walks a nested structure of mappings, yielding stuff on the way.
 
-    :param v:
+    :param v: A nested structure of mappings
     :param yield_func: (pp, k, vv) -> what ever you want the gen to yield
     :param walk_filt: (p, k, vv) -> (bool) whether to explore the nested structure v further
     :param pkv_to_pv:  (p, k, v) -> (pp, vv)
         where pp is a form of p + k (update of the path with the new node k)
         and vv is the value that will be used by both walk_filt and yield_func
-    :param p: The path to v
+    :param p: The path to v (used internally, mainly, to keep track of the path)
 
     >>> d = {'a': 1, 'b': {'c': 2, 'd': 3}}
     >>> list(kv_walk(d))
@@ -808,6 +812,25 @@ def kv_walk(
     ...             (('aa',), {'bb': {'cc': 'dragon_con'}})
     ...         ]
     ... )
+
+    Tip: If you want to use ``kv_filt`` to search and extract stuff from a nested
+    mapping, you can have your ``yield_func`` return a sentinel (say, ``None``) to
+    indicate that the value should be skipped, and then filter out the ``None``s from
+    your results.
+
+    >>> mm = {
+    ...     'a': {'b': {'c': 42}},
+    ...     'aa': {'bb': {'cc': 'dragon_con'}},
+    ...     'aaa': {'bbb': 314},
+    ... }
+    >>> return_path_if_int_leaf = lambda p, k, v: (p, v) if isinstance(v, int) else None
+    >>> list(filter(None, kv_walk(mm, yield_func=return_path_if_int_leaf)))
+    [(('a', 'b', 'c'), 42), (('aaa', 'bbb'), 314)]
+
+    Inspiration: This function was inspired by `remap` from the `boltons` package.
+    You may consider using that instead, as it has a much more extensive documetation:
+    See https://sedimental.org/remap.html for example.
+
     """
     # print(f"1: entered with: v={v}, p={p}")
     for k, vv in v.items():
