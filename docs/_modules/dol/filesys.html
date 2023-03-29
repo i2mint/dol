@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.filesys &mdash; dol 0.1.123 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.filesys &mdash; dol 0.1.124 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -552,7 +552,12 @@
 <span class="k">def</span> <span class="nf">mk_dirs_if_missing</span><span class="p">(</span>
     <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">key_condition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Store decorator that will make the store create directories on write as needed&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Store decorator that will make the store create directories on write as</span>
+<span class="sd">    needed.</span>
+
+<span class="sd">    Note that it&#39;ll only effect paths relative to the rootdir, which needs to be</span>
+<span class="sd">    ensured to exist separatedly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;WrappedStoreWithConditionalDirMaking&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">MakeMissingDirsStoreMixin</span><span class="p">,</span> <span class="n">store_cls</span><span class="p">),</span> <span class="p">{})</span></div>
 </pre></div>
