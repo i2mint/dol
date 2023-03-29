@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol &mdash; dol 0.1.124 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>dol &mdash; dol 0.1.125 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -57,6 +57,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/naming.html">dol.naming</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/recipes.html">dol.recipes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/signatures.html">dol.signatures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/sources.html">dol.sources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/base_test.html">dol.tests.base_test</a></li>
@@ -118,6 +119,40 @@
             <span class="k">return</span> <span class="n">item</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">store</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">]</span></div>
+
+
+<span class="c1"># from dol.base import (</span>
+<span class="c1">#     Collection,  # base class for collections (adds to collections.abc.Collection)</span>
+<span class="c1">#     MappingViewMixin,</span>
+<span class="c1">#     KvReader,  # base class for kv readers (adds to collections.abc.Mapping)</span>
+<span class="c1">#     KvPersister,  # base for kv persisters (adds to collections.abc.MutableMapping)</span>
+<span class="c1">#     Reader,  # TODO: deprecate? (now KvReader)</span>
+<span class="c1">#     Persister,  # TODO: deprecate? (now KvPersister)</span>
+<span class="c1">#     kv_walk,  # walk a kv store</span>
+<span class="c1">#     Store,  # base class for stores (adds hooks for key and value transforms)</span>
+<span class="c1">#     BaseKeysView,  # base class for keys views</span>
+<span class="c1">#     BaseValuesView,  # base class for values views</span>
+<span class="c1">#     BaseItemsView,  # base class for items views</span>
+<span class="c1">#     KT,  # Key type,</span>
+<span class="c1">#     VT,  # Value type</span>
+<span class="c1"># )</span>
+
+
+<span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Collection</span><span class="p">,</span>  <span class="c1"># base class for collections (adds to collections.abc.Collection)</span>
+    <span class="n">MappingViewMixin</span><span class="p">,</span>
+    <span class="n">KvReader</span><span class="p">,</span>  <span class="c1"># base class for kv readers (adds to collections.abc.Mapping)</span>
+    <span class="n">KvPersister</span><span class="p">,</span>  <span class="c1"># base for kv persisters (adds to collections.abc.MutableMapping)</span>
+    <span class="n">Reader</span><span class="p">,</span>  <span class="c1"># TODO: deprecate? (now KvReader)</span>
+    <span class="n">Persister</span><span class="p">,</span>  <span class="c1"># TODO: deprecate? (now KvPersister)</span>
+    <span class="n">kv_walk</span><span class="p">,</span>  <span class="c1"># walk a kv store</span>
+    <span class="n">Store</span><span class="p">,</span>  <span class="c1"># base class for stores (adds hooks for key and value transforms)</span>
+<span class="p">)</span>
+
+
+<span class="c1"># TODO: On (my) pycharm IDE, these show up greyed out and grey out all</span>
+<span class="c1">#  of the base objects when included (pycharm bug?), so separating them out.</span>
+<span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">BaseKeysView</span><span class="p">,</span> <span class="n">BaseValuesView</span><span class="p">,</span> <span class="n">BaseItemsView</span>
 
 
 <span class="c1"># TODO: Check usage and replace star import with explicit imports</span>
@@ -189,19 +224,6 @@
 
 <span class="kn">from</span> <span class="nn">dol.explicit</span> <span class="kn">import</span> <span class="n">ExplicitKeyMap</span><span class="p">,</span> <span class="n">invertible_maps</span>
 
-<span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Collection</span><span class="p">,</span>  <span class="c1"># base class for collections (adds to collections.abc.Collection)</span>
-    <span class="n">MappingViewMixin</span><span class="p">,</span>
-    <span class="n">KvReader</span><span class="p">,</span>  <span class="c1"># base class for kv readers (adds to collections.abc.Mapping)</span>
-    <span class="n">KvPersister</span><span class="p">,</span>  <span class="c1"># base for kv persisters (adds to collections.abc.MutableMapping)</span>
-    <span class="n">Reader</span><span class="p">,</span>  <span class="c1"># TODO: deprecate? (now KvReader)</span>
-    <span class="n">Persister</span><span class="p">,</span>  <span class="c1"># TODO: deprecate? (now KvPersister)</span>
-    <span class="n">kv_walk</span><span class="p">,</span>  <span class="c1"># walk a kv store</span>
-    <span class="n">Store</span><span class="p">,</span>  <span class="c1"># base class for stores (adds hooks for key and value transforms)</span>
-    <span class="n">BaseKeysView</span><span class="p">,</span>  <span class="c1"># base class for keys views</span>
-    <span class="n">BaseValuesView</span><span class="p">,</span>  <span class="c1"># base class for values views</span>
-    <span class="n">BaseItemsView</span><span class="p">,</span>  <span class="c1"># base class for items views</span>
-<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">dol.sources</span> <span class="kn">import</span> <span class="n">FlatReader</span><span class="p">,</span> <span class="n">SequenceKvReader</span><span class="p">,</span> <span class="n">FuncReader</span><span class="p">,</span> <span class="n">Attrs</span>
 </pre></div>

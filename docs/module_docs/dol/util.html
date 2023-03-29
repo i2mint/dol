@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.1.124 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.1.125 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -60,6 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
 <li class="toctree-l1"><a class="reference internal" href="paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.html">dol.recipes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
@@ -177,6 +178,30 @@ names <code class="docutils literal notranslate"><span class="pre">__name__</spa
 <span class="go">&#39;Apply func and add&#39;</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.util.add_as_attribute_of">
+<code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">add_as_attribute_of</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#add_as_attribute_of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.add_as_attribute_of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator that adds a function as an attribute of a container object <code class="docutils literal notranslate"><span class="pre">obj</span></code>.</p>
+<p>If no <code class="docutils literal notranslate"><span class="pre">name</span></code> is given, the <code class="docutils literal notranslate"><span class="pre">__name__</span></code> of the function will be used, with a
+leading underscore removed. This is useful for adding helper functions to main
+“container” functions without polluting the namespace of the module, at least
+from the point of view of imports and tab completion.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+<span class="gp">... </span>   <span class="k">pass</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">_helper</span><span class="p">():</span>
+<span class="gp">... </span>   <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="s1">&#39;helper&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">callable</span><span class="p">(</span><span class="n">foo</span><span class="o">.</span><span class="n">helper</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>In reality, any object that has a <code class="docutils literal notranslate"><span class="pre">__name__</span></code> can be added to the attribute of
+<code class="docutils literal notranslate"><span class="pre">obj</span></code>, but the intention is to add helper functions to main “container” functions.</p>
 </dd></dl>
 
 <dl class="py function">

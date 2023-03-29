@@ -44,12 +44,14 @@ def add_as_attribute_of(obj, name=None):
     ``obj``, but the intention is to add helper functions to main "container" functions.
 
     """
+
     def _decorator(f):
         attrname = name or f.__name__
         if attrname.startswith('_'):
             attrname = attrname[1:]  # remove leading underscore
         setattr(obj, attrname, f)
         return f
+
     return _decorator
 
 

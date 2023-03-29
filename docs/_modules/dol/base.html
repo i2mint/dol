@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.base &mdash; dol 0.1.124 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.base &mdash; dol 0.1.125 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -57,6 +57,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/naming.html">dol.naming</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/recipes.html">dol.recipes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/signatures.html">dol.signatures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/sources.html">dol.sources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/base_test.html">dol.tests.base_test</a></li>
@@ -817,19 +818,21 @@
 <span class="c1">########################################################################################################################</span>
 <span class="c1"># walking in trees</span>
 
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Iterator</span>
 
+<span class="n">PT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;PT&#39;</span><span class="p">)</span>  <span class="c1"># Path Type</span>
 <span class="n">inf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;infinity&#39;</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">val_is_mapping</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">val_is_mapping</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">PT</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">asis</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">asis</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">PT</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span>
 
 
-<span class="k">def</span> <span class="nf">tuple_keypath_and_val</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">tuple_keypath_and_val</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">PT</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">PT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]:</span>
     <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="p">():</span>  <span class="c1"># we&#39;re just begining (the root),</span>
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span><span class="p">,)</span>  <span class="c1"># so begin the path with the first key.</span>
     <span class="k">else</span><span class="p">:</span>
@@ -837,23 +840,25 @@
     <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span>
 
 
-<span class="c1"># TODO: More docs and doctests. This one even merits an extensive usage and example tutorial!</span>
+<span class="c1"># TODO: More docs and doctests.</span>
+<span class="c1">#  This one even merits an extensive usage and example tutorial!</span>
 <div class="viewcode-block" id="kv_walk"><a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.kv_walk">[docs]</a><span class="k">def</span> <span class="nf">kv_walk</span><span class="p">(</span>
     <span class="n">v</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
-    <span class="n">yield_func</span><span class="o">=</span><span class="n">asis</span><span class="p">,</span>  <span class="c1"># (p, k, v) -&gt; what you want the gen to yield</span>
-    <span class="n">walk_filt</span><span class="o">=</span><span class="n">val_is_mapping</span><span class="p">,</span>  <span class="c1"># (p, k, v) -&gt; whether to explore the nested structure v further</span>
-    <span class="n">pkv_to_pv</span><span class="o">=</span><span class="n">tuple_keypath_and_val</span><span class="p">,</span>
-    <span class="n">p</span><span class="o">=</span><span class="p">(),</span>
-<span class="p">):</span>
+    <span class="n">yield_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">asis</span><span class="p">,</span>
+    <span class="n">walk_filt</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_is_mapping</span><span class="p">,</span>
+    <span class="n">pkv_to_pv</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">PT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]]</span> <span class="o">=</span> <span class="n">tuple_keypath_and_val</span><span class="p">,</span>
+    <span class="n">p</span><span class="p">:</span> <span class="n">PT</span> <span class="o">=</span> <span class="p">(),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Walks a nested structure of mappings, yielding stuff on the way.</span>
 
-<span class="sd">    :param v:</span>
+<span class="sd">    :param v: A nested structure of mappings</span>
 <span class="sd">    :param yield_func: (pp, k, vv) -&gt; what ever you want the gen to yield</span>
 <span class="sd">    :param walk_filt: (p, k, vv) -&gt; (bool) whether to explore the nested structure v further</span>
 <span class="sd">    :param pkv_to_pv:  (p, k, v) -&gt; (pp, vv)</span>
 <span class="sd">        where pp is a form of p + k (update of the path with the new node k)</span>
 <span class="sd">        and vv is the value that will be used by both walk_filt and yield_func</span>
-<span class="sd">    :param p: The path to v</span>
+<span class="sd">    :param p: The path to v (used internally, mainly, to keep track of the path)</span>
 
 <span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2, &#39;d&#39;: 3}}</span>
 <span class="sd">    &gt;&gt;&gt; list(kv_walk(d))</span>
@@ -905,6 +910,28 @@
 <span class="sd">    ...             ((&#39;aa&#39;,), {&#39;bb&#39;: {&#39;cc&#39;: &#39;dragon_con&#39;}})</span>
 <span class="sd">    ...         ]</span>
 <span class="sd">    ... )</span>
+
+<span class="sd">    Tip: If you want to use ``kv_filt`` to search and extract stuff from a nested</span>
+<span class="sd">    mapping, you can have your ``yield_func`` return a sentinel (say, ``None``) to</span>
+<span class="sd">    indicate that the value should be skipped, and then filter out the ``None``s from</span>
+<span class="sd">    your results.</span>
+
+<span class="sd">    &gt;&gt;&gt; mm = {</span>
+<span class="sd">    ...     &#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 42}},</span>
+<span class="sd">    ...     &#39;aa&#39;: {&#39;bb&#39;: {&#39;cc&#39;: &#39;meaning_of_life&#39;}},</span>
+<span class="sd">    ...     &#39;aaa&#39;: {&#39;bbb&#39;: 314},</span>
+<span class="sd">    ... }</span>
+<span class="sd">    &gt;&gt;&gt; return_path_if_int_leaf = lambda p, k, v: (p, v) if isinstance(v, int) else None</span>
+<span class="sd">    &gt;&gt;&gt; list(filter(None, kv_walk(mm, yield_func=return_path_if_int_leaf)))</span>
+<span class="sd">    [((&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), 42), ((&#39;aaa&#39;, &#39;bbb&#39;), 314)]</span>
+
+<span class="sd">    This &quot;path search&quot; functionality is available as a function in the ``recipes``</span>
+<span class="sd">    module, as ``search_paths``.</span>
+
+<span class="sd">    Inspiration: ``kv_walk`` was inspired by `remap` from the `boltons` package.</span>
+<span class="sd">    You may consider using that instead, as it has a much more extensive documetation:</span>
+<span class="sd">    See https://sedimental.org/remap.html for example.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># print(f&quot;1: entered with: v={v}, p={p}&quot;)</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>

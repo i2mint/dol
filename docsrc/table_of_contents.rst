@@ -15,6 +15,7 @@
    module_docs/dol/mixins
    module_docs/dol/naming
    module_docs/dol/paths
+   module_docs/dol/recipes
    module_docs/dol/signatures
    module_docs/dol/sources
    module_docs/dol/tests/base_test

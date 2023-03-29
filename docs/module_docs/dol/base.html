@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.base &mdash; dol 0.1.124 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.base &mdash; dol 0.1.125 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -60,6 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
 <li class="toctree-l1"><a class="reference internal" href="paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.html">dol.recipes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
@@ -517,17 +518,18 @@ So let’s test this on dictionaries, using the following test function:</p>
 
 <dl class="py function">
 <dt id="dol.base.kv_walk">
-<code class="sig-prename descclassname">dol.base.</code><code class="sig-name descname">kv_walk</code><span class="sig-paren">(</span><em class="sig-param">v: collections.abc.Mapping</em>, <em class="sig-param">yield_func=&lt;function asis&gt;</em>, <em class="sig-param">walk_filt=&lt;function val_is_mapping&gt;</em>, <em class="sig-param">pkv_to_pv=&lt;function tuple_keypath_and_val&gt;</em>, <em class="sig-param">p=()</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/base.html#kv_walk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.base.kv_walk" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<code class="sig-prename descclassname">dol.base.</code><code class="sig-name descname">kv_walk</code><span class="sig-paren">(</span><em class="sig-param">v: collections.abc.Mapping, yield_func: Callable[[PT, KT, VT], Any] = &lt;function asis&gt;, walk_filt: Callable[[PT, KT, VT], bool] = &lt;function val_is_mapping&gt;, pkv_to_pv: Callable[[PT, KT, VT], Tuple[PT, VT]] = &lt;function tuple_keypath_and_val&gt;, p: PT = ()</em><span class="sig-paren">)</span> &#x2192; Iterator<span class="p">[</span>Any<span class="p">]</span><a class="reference internal" href="../../_modules/dol/base.html#kv_walk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.base.kv_walk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Walks a nested structure of mappings, yielding stuff on the way.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>v</strong> – </p></li>
+<li><p><strong>v</strong> – A nested structure of mappings</p></li>
 <li><p><strong>yield_func</strong> – (pp, k, vv) -&gt; what ever you want the gen to yield</p></li>
 <li><p><strong>walk_filt</strong> – (p, k, vv) -&gt; (bool) whether to explore the nested structure v further</p></li>
 <li><p><strong>pkv_to_pv</strong> – (p, k, v) -&gt; (pp, vv)
 where pp is a form of p + k (update of the path with the new node k)
 and vv is the value that will be used by both walk_filt and yield_func</p></li>
-<li><p><strong>p</strong> – The path to v</p></li>
+<li><p><strong>p</strong> – The path to v (used internally, mainly, to keep track of the path)</p></li>
 </ul>
 </dd>
 </dl>
@@ -582,6 +584,25 @@ This can be done as follows:</p>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Tip: If you want to use <code class="docutils literal notranslate"><span class="pre">kv_filt</span></code> to search and extract stuff from a nested
+mapping, you can have your <code class="docutils literal notranslate"><span class="pre">yield_func</span></code> return a sentinel (say, <code class="docutils literal notranslate"><span class="pre">None</span></code>) to
+indicate that the value should be skipped, and then filter out the <a href="#id9"><span class="problematic" id="id10">``</span></a>None``s from
+your results.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mm</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}},</span>
+<span class="gp">... </span>    <span class="s1">&#39;aa&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;bb&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cc&#39;</span><span class="p">:</span> <span class="s1">&#39;meaning_of_life&#39;</span><span class="p">}},</span>
+<span class="gp">... </span>    <span class="s1">&#39;aaa&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;bbb&#39;</span><span class="p">:</span> <span class="mi">314</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">return_path_if_int_leaf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">kv_walk</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span> <span class="n">yield_func</span><span class="o">=</span><span class="n">return_path_if_int_leaf</span><span class="p">)))</span>
+<span class="go">[((&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), 42), ((&#39;aaa&#39;, &#39;bbb&#39;), 314)]</span>
+</pre></div>
+</div>
+<p>This “path search” functionality is available as a function in the <code class="docutils literal notranslate"><span class="pre">recipes</span></code>
+module, as <code class="docutils literal notranslate"><span class="pre">search_paths</span></code>.</p>
+<p>Inspiration: <code class="docutils literal notranslate"><span class="pre">kv_walk</span></code> was inspired by <cite>remap</cite> from the <cite>boltons</cite> package.
+You may consider using that instead, as it has a much more extensive documetation:
+See <a class="reference external" href="https://sedimental.org/remap.html">https://sedimental.org/remap.html</a> for example.</p>
 </dd></dl>
 
 </section>
