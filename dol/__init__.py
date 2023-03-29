@@ -24,6 +24,40 @@ def ihead(store, n=1):
         return [item for i, item in enumerate(store) if i < n]
 
 
+# from dol.base import (
+#     Collection,  # base class for collections (adds to collections.abc.Collection)
+#     MappingViewMixin,
+#     KvReader,  # base class for kv readers (adds to collections.abc.Mapping)
+#     KvPersister,  # base for kv persisters (adds to collections.abc.MutableMapping)
+#     Reader,  # TODO: deprecate? (now KvReader)
+#     Persister,  # TODO: deprecate? (now KvPersister)
+#     kv_walk,  # walk a kv store
+#     Store,  # base class for stores (adds hooks for key and value transforms)
+#     BaseKeysView,  # base class for keys views
+#     BaseValuesView,  # base class for values views
+#     BaseItemsView,  # base class for items views
+#     KT,  # Key type,
+#     VT,  # Value type
+# )
+
+
+from dol.base import (
+    Collection,  # base class for collections (adds to collections.abc.Collection)
+    MappingViewMixin,
+    KvReader,  # base class for kv readers (adds to collections.abc.Mapping)
+    KvPersister,  # base for kv persisters (adds to collections.abc.MutableMapping)
+    Reader,  # TODO: deprecate? (now KvReader)
+    Persister,  # TODO: deprecate? (now KvPersister)
+    kv_walk,  # walk a kv store
+    Store,  # base class for stores (adds hooks for key and value transforms)
+)
+
+
+# TODO: On (my) pycharm IDE, these show up greyed out and grey out all
+#  of the base objects when included (pycharm bug?), so separating them out.
+from dol.base import KT, VT, BaseKeysView, BaseValuesView, BaseItemsView
+
+
 # TODO: Check usage and replace star import with explicit imports
 from dol.zipfiledol import *
 
@@ -93,18 +127,5 @@ from dol.paths import (
 
 from dol.explicit import ExplicitKeyMap, invertible_maps
 
-from dol.base import (
-    Collection,  # base class for collections (adds to collections.abc.Collection)
-    MappingViewMixin,
-    KvReader,  # base class for kv readers (adds to collections.abc.Mapping)
-    KvPersister,  # base for kv persisters (adds to collections.abc.MutableMapping)
-    Reader,  # TODO: deprecate? (now KvReader)
-    Persister,  # TODO: deprecate? (now KvPersister)
-    kv_walk,  # walk a kv store
-    Store,  # base class for stores (adds hooks for key and value transforms)
-    BaseKeysView,  # base class for keys views
-    BaseValuesView,  # base class for values views
-    BaseItemsView,  # base class for items views
-)
 
 from dol.sources import FlatReader, SequenceKvReader, FuncReader, Attrs
