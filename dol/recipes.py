@@ -1,4 +1,12 @@
-"""Recipes using dol"""
+"""Recipes using dol
+
+Examples::
+
+    >>> d = {'a': {'b': {'c': 1, 'd': 2}, 'e': 3}}
+    >>> list(search_paths(d, lambda p, k, v: v == 2))
+    [('a', 'b', 'd')]
+
+"""
 
 from functools import partial
 from typing import Callable, Mapping, KT, VT, TypeVar, Iterator, Union, Literal
@@ -23,7 +31,6 @@ def search_paths(d: Mapping, pkv_filt: Callable[[PT, KT, VT], bool]) -> Iterator
 
     Example::
 
-    >>> from functools import partial
     >>> d = {'a': {'b': {'c': 1, 'd': 2}, 'e': 3}}
     >>> list(search_paths(d, lambda p, k, v: v == 2))
     [('a', 'b', 'd')]
