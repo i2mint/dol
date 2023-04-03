@@ -74,6 +74,8 @@ class AttrNames:
     KvPersister = (MutableMapping | {'head'}) - {'__reversed__'} - {'clear'}
 
 
+# TODO: Consider using ContainmentChecker and Sizer attributes which dunders would
+#  point to.
 class Collection(CollectionABC):
     """The same as collections.abc.Collection, with some modifications:
     - Addition of a ``head``
@@ -86,7 +88,7 @@ class Collection(CollectionABC):
         Therefore it may not be efficient, and in most cases, a method specific to the case should be used.
         :return: True if k is in the collection, and False if not
         """
-        for existing_x in self.__iter__():
+        for existing_x in iter(self):
             if existing_x == x:
                 return True
         return False
@@ -100,7 +102,7 @@ class Collection(CollectionABC):
         """
         # Note: Found that sum(1 for _ in self.__iter__()) was slower for small, slightly faster for big inputs.
         count = 0
-        for _ in self.__iter__():
+        for _ in iter(self):
             count += 1
         return count
 
@@ -179,7 +181,7 @@ class KvReader(MappingViewMixin, Collection, Mapping):
         raise NotImplementedError(__doc__)
 
 
-Reader = KvReader  # alias
+Reader = KvReader  # alias for back-compatibility
 
 
 # TODO: Should we really be using MutableMapping if we're disabling so many of it's methods?
