@@ -167,6 +167,13 @@ def path_get(
 from typing import Iterable, KT, VT, Callable, Mapping
 
 
+# Note: Purposely didn't include any path validation to favor efficiency.
+# Validation such as:
+# if not key_path or not isinstance(key_path, Iterable):
+#     raise ValueError(
+#         f"Not a valid key path (should be an iterable with at least one element:"
+#         f" {key_path}"
+#     )
 # TODO: Add possibility of producing different mappings according to the path/level.
 #  For example, the new_mapping factory could be a list of factories, one for each
 #  level, and/or take a path as an argument.
@@ -181,9 +188,11 @@ def path_set(
     """
     Sets a val to a path of keys.
 
-    :param d:
-    :param key_path:
-    :param val:
+    :param d: The mapping to set the value in
+    :param key_path: The path of keys to set the value to
+    :param val: The value to set
+    :param sep: The separator to use if the path is a string
+    :param new_mapping: callable that returns a new mapping to use when key is not found
     :return:
 
     >>> d = {'a': 1, 'b': {'c': 2}}
@@ -237,15 +246,13 @@ def path_set(
     if isinstance(key_path, str) and sep is not None:
         key_path = key_path.split(sep)
 
-    first_key = key_path[0]
-    if len(key_path) == 1:
+    first_key, *remaining_keys = key_path
+    if len(key_path) == 1:  # base case
         d[first_key] = val
     else:
-        if first_key in d:
-            path_set(d[first_key], key_path[1:], val)
-        else:
+        if first_key not in d:
             d[first_key] = new_mapping()
-            path_set(d[first_key], key_path[1:], val)
+        path_set(d[first_key], remaining_keys, val)
 
 
 @dataclass
