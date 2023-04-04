@@ -123,6 +123,7 @@ from dol.paths import (
     mk_relative_path_store,  # transform path store into relative path store
     KeyPath,  # a class to represent a path to a key
     path_get,  # get a value from a path
+    path_set,  # set a value from a path
 )
 
 from dol.explicit import ExplicitKeyMap, invertible_maps

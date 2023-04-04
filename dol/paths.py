@@ -163,6 +163,91 @@ def path_get(
     )
 
 
+
+from typing import Iterable, KT, VT, Callable, Mapping
+
+
+# TODO: Add possibility of producing different mappings according to the path/level.
+#  For example, the new_mapping factory could be a list of factories, one for each
+#  level, and/or take a path as an argument.
+def path_set(
+        d: Mapping,
+        key_path: Iterable[KT],
+        val: VT,
+        *,
+        sep: str = '.',
+        new_mapping: Callable[[], VT] = dict,
+):
+    """
+    Sets a val to a path of keys.
+
+    :param d:
+    :param key_path:
+    :param val:
+    :return:
+
+    >>> d = {'a': 1, 'b': {'c': 2}}
+    >>> path_set(d, ['b', 'e'], 42)
+    >>> d
+    {'a': 1, 'b': {'c': 2, 'e': 42}}
+
+    >>> input_dict = {
+    ...   "a": {
+    ...     "c": "val of a.c",
+    ...     "b": 1,
+    ...   },
+    ...   "10": 10,
+    ...   "b": {
+    ...     "B": {
+    ...       "AA": 3
+    ...     }
+    ...   }
+    ... }
+    >>>
+    >>> path_set(input_dict, ('new', 'key', 'path'), 7)
+    >>> input_dict  # doctest: +NORMALIZE_WHITESPACE
+    {'a': {'c': 'val of a.c', 'b': 1}, '10': 10, 'b': {'B': {'AA': 3}},
+    'new': {'key': {'path': 7}}}
+
+    You can also use a string as a path, with a separator:
+
+    >>> path_set(input_dict, 'new/key/old/path', 8, sep='/')
+    >>> input_dict  # doctest: +NORMALIZE_WHITESPACE
+    {'a': {'c': 'val of a.c', 'b': 1}, '10': 10, 'b': {'B': {'AA': 3}},
+    'new': {'key': {'path': 7, 'old': {'path': 8}}}}
+
+    If you specify a string path and a non-None separator, the separator will be used
+    to split the string into a list of keys. The default separator is ``sep='.'``.
+
+    >>> path_set(input_dict, 'new.key', 'new val')
+    >>> input_dict  # doctest: +NORMALIZE_WHITESPACE
+    {'a': {'c': 'val of a.c', 'b': 1}, '10': 10, 'b': {'B': {'AA': 3}},
+    'new': {'key': 'new val'}}
+
+    You can also specify a different ``new_mapping`` factory, which will be used to
+    create new mappings when a key is missing. The default is ``dict``.
+
+    >>> from collections import OrderedDict
+    >>> input_dict = {}
+    >>> path_set(input_dict, 'new.key', 42, new_mapping=OrderedDict)
+    >>> input_dict  # doctest: +NORMALIZE_WHITESPACE
+    {'new': OrderedDict([('key', 42)])}
+
+    """
+    if isinstance(key_path, str) and sep is not None:
+        key_path = key_path.split(sep)
+
+    first_key = key_path[0]
+    if len(key_path) == 1:
+        d[first_key] = val
+    else:
+        if first_key in d:
+            path_set(d[first_key], key_path[1:], val)
+        else:
+            d[first_key] = new_mapping()
+            path_set(d[first_key], key_path[1:], val)
+
+
 @dataclass
 class KeyPath:
     """
