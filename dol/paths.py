@@ -163,7 +163,6 @@ def path_get(
     )
 
 
-
 from typing import Iterable, KT, VT, Callable, Mapping
 
 
@@ -178,12 +177,12 @@ from typing import Iterable, KT, VT, Callable, Mapping
 #  For example, the new_mapping factory could be a list of factories, one for each
 #  level, and/or take a path as an argument.
 def path_set(
-        d: Mapping,
-        key_path: Iterable[KT],
-        val: VT,
-        *,
-        sep: str = '.',
-        new_mapping: Callable[[], VT] = dict,
+    d: Mapping,
+    key_path: Iterable[KT],
+    val: VT,
+    *,
+    sep: str = '.',
+    new_mapping: Callable[[], VT] = dict,
 ):
     """
     Sets a val to a path of keys.
