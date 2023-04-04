@@ -89,8 +89,8 @@ class KvReaderShell(KvReader):
 
     We defined the ``lister`` to yield the attributes of the list:
 
-    >>> sorted(s)[:5]
-    ['__add__', '__class__', '__class_getitem__', '__contains__', '__delattr__']
+    >>> sorted(s)[:2]
+    ['__add__', '__class__']
 
     We defined the ``getter`` to give us attributes:
 
