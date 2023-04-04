@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.1.126 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.1.127 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -60,6 +60,8 @@
 <li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">dol.paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes.html">dol.recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap.html">dol.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/store_factories.html">dol.scrap.store_factories</a></li>
 <li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
@@ -304,6 +306,73 @@ Like <code class="docutils literal notranslate"><span class="pre">_path_get</spa
 <span class="gp">... </span>     <span class="n">an_attribute</span> <span class="o">=</span> <span class="mi">42</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">path_get</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">A</span><span class="p">}],</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;1.2.a.an_attribute&#39;</span><span class="p">)</span>
 <span class="go">42</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.path_set">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">path_set</code><span class="sig-paren">(</span><em class="sig-param">d: Mapping</em>, <em class="sig-param">key_path: Iterable</em>, <em class="sig-param">val: VT</em>, <em class="sig-param">*</em>, <em class="sig-param">sep: str = '.'</em>, <em class="sig-param">new_mapping: Callable[[]</em>, <em class="sig-param">VT] = &lt;class 'dict'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#path_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.path_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a val to a path of keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> – </p></li>
+<li><p><strong>key_path</strong> – </p></li>
+<li><p><strong>val</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">],</span> <span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2, &#39;e&#39;: 42}}</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>  <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;val of a.c&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="p">},</span>
+<span class="gp">... </span>  <span class="s2">&quot;10&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>      <span class="s2">&quot;AA&quot;</span><span class="p">:</span> <span class="mi">3</span>
+<span class="gp">... </span>    <span class="p">}</span>
+<span class="gp">... </span>  <span class="p">}</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;new&#39;</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;path&#39;</span><span class="p">),</span> <span class="mi">7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>  
+<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
+<span class="go">&#39;new&#39;: {&#39;key&#39;: {&#39;path&#39;: 7}}}</span>
+</pre></div>
+</div>
+<p>You can also use a string as a path, with a separator:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="s1">&#39;new/key/old/path&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>  
+<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
+<span class="go">&#39;new&#39;: {&#39;key&#39;: {&#39;path&#39;: 7, &#39;old&#39;: {&#39;path&#39;: 8}}}}</span>
+</pre></div>
+</div>
+<p>If you specify a string path and a non-None separator, the separator will be used
+to split the string into a list of keys. The default separator is <code class="docutils literal notranslate"><span class="pre">sep='.'</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="s1">&#39;new.key&#39;</span><span class="p">,</span> <span class="s1">&#39;new val&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>  
+<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
+<span class="go">&#39;new&#39;: {&#39;key&#39;: &#39;new val&#39;}}</span>
+</pre></div>
+</div>
+<p>You can also specify a different <code class="docutils literal notranslate"><span class="pre">new_mapping</span></code> factory, which will be used to
+create new mappings when a key is missing. The default is <code class="docutils literal notranslate"><span class="pre">dict</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="s1">&#39;new.key&#39;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="n">new_mapping</span><span class="o">=</span><span class="n">OrderedDict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>  
+<span class="go">{&#39;new&#39;: OrderedDict([(&#39;key&#39;, 42)])}</span>
 </pre></div>
 </div>
 </dd></dl>

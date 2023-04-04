@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.base &mdash; dol 0.1.126 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.base &mdash; dol 0.1.127 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -57,6 +57,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/naming.html">dol.naming</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/paths.html">dol.paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/recipes.html">dol.recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/scrap.html">dol.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/scrap/store_factories.html">dol.scrap.store_factories</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/signatures.html">dol.signatures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/sources.html">dol.sources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/base_test.html">dol.tests.base_test</a></li>
@@ -171,6 +173,8 @@
     <span class="n">KvPersister</span> <span class="o">=</span> <span class="p">(</span><span class="n">MutableMapping</span> <span class="o">|</span> <span class="p">{</span><span class="s1">&#39;head&#39;</span><span class="p">})</span> <span class="o">-</span> <span class="p">{</span><span class="s1">&#39;__reversed__&#39;</span><span class="p">}</span> <span class="o">-</span> <span class="p">{</span><span class="s1">&#39;clear&#39;</span><span class="p">}</span>
 
 
+<span class="c1"># TODO: Consider using ContainmentChecker and Sizer attributes which dunders would</span>
+<span class="c1">#  point to.</span>
 <div class="viewcode-block" id="Collection"><a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.Collection">[docs]</a><span class="k">class</span> <span class="nc">Collection</span><span class="p">(</span><span class="n">CollectionABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The same as collections.abc.Collection, with some modifications:</span>
 <span class="sd">    - Addition of a ``head``</span>
@@ -183,7 +187,7 @@
 <span class="sd">        Therefore it may not be efficient, and in most cases, a method specific to the case should be used.</span>
 <span class="sd">        :return: True if k is in the collection, and False if not</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">existing_x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">existing_x</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">existing_x</span> <span class="o">==</span> <span class="n">x</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="kc">False</span>
@@ -197,7 +201,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Note: Found that sum(1 for _ in self.__iter__()) was slower for small, slightly faster for big inputs.</span>
         <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="n">count</span>
 
@@ -276,7 +280,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="vm">__doc__</span><span class="p">)</span></div>
 
 
-<span class="n">Reader</span> <span class="o">=</span> <span class="n">KvReader</span>  <span class="c1"># alias</span>
+<span class="n">Reader</span> <span class="o">=</span> <span class="n">KvReader</span>  <span class="c1"># alias for back-compatibility</span>
 
 
 <span class="c1"># TODO: Should we really be using MutableMapping if we&#39;re disabling so many of it&#39;s methods?</span>
