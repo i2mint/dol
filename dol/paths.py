@@ -7,7 +7,7 @@ from operator import getitem
 import os
 
 from dol.base import Store
-from dol.util import lazyprop
+from dol.util import lazyprop, add_as_attribute_of
 from dol.trans import store_decorator, kv_wrap, add_path_access
 from dol.dig import recursive_get_attr
 
@@ -29,6 +29,9 @@ def return_empty_tuple_on_error(d: dict):
 OnErrorType = Union[Callable[[dict], Any], str]
 
 
+# TODO: Could extend OnErrorType to be a dict with error class keys and callables or
+#  strings as values. Then, the error class could be used to determine the error
+#  handling strategy.
 def _path_get(
     obj: Any,
     path,
@@ -77,9 +80,8 @@ def _path_get(
                     dict(obj=obj, path=path, result=result, k=k, error=error,)
                 )
             elif isinstance(on_error, str):
-                raise error.__class__(
-                    on_error
-                )  # use on_error as a message, raising the same error class
+                # use on_error as a message, raising the same error class
+                raise type(error)(on_error)
             else:
                 raise ValueError(
                     f'on_error should be a callable (input is a dict) or a string. '
@@ -115,6 +117,7 @@ def get_attr_or_item(obj, k):
     return obj[k]
 
 
+# TODO: Needs a lot more documentation and tests to show how versatile it is
 def path_get(
     obj: Any,
     path,
@@ -127,7 +130,6 @@ def path_get(
 ):
     """
     Get elements of a mapping through a path to be called recursively.
-    Like ``_path_get``, but with defaults that are more convenient out of the box.
 
     It will
 
@@ -139,11 +141,24 @@ def path_get(
 
     - catch all exceptions (that are subclasses of ``Exception``)
 
-
     >>> class A:
     ...      an_attribute = 42
+    >>> path_get([1, [4, 5, {'a': A}], 3], [1, 2, 'a', 'an_attribute'])
+    42
+
+    By default, if ``path`` is a string, it will be split on ``sep``,
+    which is ``'.'`` by default.
+
     >>> path_get([1, [4, 5, {'a': A}], 3], '1.2.a.an_attribute')
     42
+
+    Note: The underlying function is ``_path_get``, but `path_get` has defaults and
+    flexible input processing for more convenience.
+
+    Note: ``path_get`` contains some ready-made ``OnErrorType``
+    functions in its attributes. For example, ``path_get.raise_on_error``,
+    ``path_get.return_none_on_error``, and ``path_get.return_empty_tuple_on_error``.
+
     """
     if sep is not None:
         path_to_keys = lambda x: x.split(sep)
@@ -161,6 +176,23 @@ def path_get(
         get_value=get_value,
         caught_errors=caught_errors,
     )
+
+
+@add_as_attribute_of(path_get)
+def _raise_on_error(d: Any):
+    """Raise the error that was caught."""
+    raise
+
+@add_as_attribute_of(path_get)
+def _return_none_on_error(d: Any):
+    """Return None if an error was caught."""
+    return None
+
+@add_as_attribute_of(path_get)
+def _return_empty_tuple_on_error(d: Any):
+    """Return an empty tuple if an error was caught."""
+    return ()
+
 
 
 from typing import Iterable, KT, VT, Callable, Mapping
