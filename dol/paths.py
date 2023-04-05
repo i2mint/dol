@@ -2,7 +2,7 @@
 
 from functools import wraps, partial
 from dataclasses import dataclass
-from typing import Union, Callable, Any, Mapping, Iterable
+from typing import Union, Callable, Any, Mapping, Iterable, Tuple
 from operator import getitem
 import os
 
@@ -117,6 +117,15 @@ def get_attr_or_item(obj, k):
     return obj[k]
 
 
+# ------------------------------------------------------------------------------
+# key-path operations
+
+
+from typing import Iterable, KT, VT, Callable, Mapping, Union
+
+Path = Union[Iterable[KT], str]
+
+
 # TODO: Needs a lot more documentation and tests to show how versatile it is
 def path_get(
     obj: Any,
@@ -190,24 +199,23 @@ def _raise_on_error(d: Any):
     """Raise the error that was caught."""
     raise
 
+
 @add_as_attribute_of(path_get)
 def _return_none_on_error(d: Any):
     """Return None if an error was caught."""
     return None
+
 
 @add_as_attribute_of(path_get)
 def _return_empty_tuple_on_error(d: Any):
     """Return an empty tuple if an error was caught."""
     return ()
 
+
 @add_as_attribute_of(path_get)
 def _return_new_dict_on_error(d: Any):
     """Return a new dict if an error was caught."""
     return dict()
-
-
-
-from typing import Iterable, KT, VT, Callable, Mapping
 
 
 # Note: Purposely didn't include any path validation to favor efficiency.
@@ -298,6 +306,44 @@ def path_set(
         path_set(d[first_key], remaining_keys, val)
 
 
+# TODO: Nice to have: Edits can be a nested dict, not necessarily a flat path-value one.
+Edits = Union[Mapping[Path, VT], Iterable[Tuple[Path, VT]]]
+
+
+def path_edit(d: Mapping, edits: Edits = ()) -> Mapping:
+    """Make a series of (in place) edits to a Mapping, specifying `(path, value)` pairs.
+
+
+    Args:
+        d (Mapping): The mapping to edit.
+        edits: An iterable of ``(path, value)`` tuples, or ``path: value`` Mapping.
+
+    Returns:
+        Mapping: The edited mapping.
+
+    >>> d = {'a': 1}
+    >>> path_edit(d, [(['b', 'c'], 2), ('d.e.f', 3)])
+    {'a': 1, 'b': {'c': 2}, 'd': {'e': {'f': 3}}}
+
+    Changes happened also inplace (so if you don't want that, make a deepcopy first):
+
+    >>> d
+    {'a': 1, 'b': {'c': 2}, 'd': {'e': {'f': 3}}}
+
+    You can also pass a dict of edits.
+
+    >>> path_edit(d, {'a': 4, 'd.e.f': 5})
+    {'a': 4, 'b': {'c': 2}, 'd': {'e': {'f': 5}}}
+
+    """
+
+    if isinstance(edits, Mapping):
+        edits = list(edits.items())
+    for path, value in edits:
+        path_set(d, path, value)
+    return d
+
+
 @dataclass
 class KeyPath:
     """
@@ -374,6 +420,9 @@ class KeyPath:
     def __call__(self, store):
         path_accessible_store = add_path_access(store, path_type=self._path_type)
         return kv_wrap(self)(path_accessible_store)
+
+
+# ------------------------------------------------------------------------------
 
 
 class PrefixRelativizationMixin:
