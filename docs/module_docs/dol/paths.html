@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.1.129 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.1.130 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -286,6 +286,41 @@ name you want.</p>
 <span class="gp">&gt;&gt;&gt; </span> <span class="c1"># but under the hood, the dict we wrapped actually contains the &#39;/ROOT/&#39; prefix</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
 <span class="go">{&#39;/ROOT/foo&#39;: &#39;bar&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.path_edit">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">path_edit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span></em>, <em class="sig-param"><span class="n">edits</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Mapping<span class="p">[</span>Union<span class="p">[</span>Iterable<span class="p">, </span>str<span class="p">]</span><span class="p">, </span>VT<span class="p">]</span><span class="p">, </span>Iterable<span class="p">[</span>Tuple<span class="p">[</span>Union<span class="p">[</span>Iterable<span class="p">, </span>str<span class="p">]</span><span class="p">, </span>VT<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">()</span></em><span class="sig-paren">)</span> &#x2192; Mapping<a class="reference internal" href="../../_modules/dol/paths.html#path_edit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.path_edit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a series of (in place) edits to a Mapping, specifying <cite>(path, value)</cite> pairs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> (<em>Mapping</em>) – The mapping to edit.</p></li>
+<li><p><strong>edits</strong> – An iterable of <code class="docutils literal notranslate"><span class="pre">(path,</span> <span class="pre">value)</span></code> tuples, or <code class="docutils literal notranslate"><span class="pre">path:</span> <span class="pre">value</span></code> Mapping.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The edited mapping.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Mapping</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_edit</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[([</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">],</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;d.e.f&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)])</span>
+<span class="go">{&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2}, &#39;d&#39;: {&#39;e&#39;: {&#39;f&#39;: 3}}}</span>
+</pre></div>
+</div>
+<p>Changes happened also inplace (so if you don’t want that, make a deepcopy first):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2}, &#39;d&#39;: {&#39;e&#39;: {&#39;f&#39;: 3}}}</span>
+</pre></div>
+</div>
+<p>You can also pass a dict of edits.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_edit</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;d.e.f&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
+<span class="go">{&#39;a&#39;: 4, &#39;b&#39;: {&#39;c&#39;: 2}, &#39;d&#39;: {&#39;e&#39;: {&#39;f&#39;: 5}}}</span>
 </pre></div>
 </div>
 </dd></dl>

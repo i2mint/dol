@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.1.129 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.1.130 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -101,7 +101,7 @@
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span>
 <span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">getitem</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
@@ -216,6 +216,15 @@
     <span class="k">return</span> <span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span></div>
 
 
+<span class="c1"># ------------------------------------------------------------------------------</span>
+<span class="c1"># key-path operations</span>
+
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="n">Path</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">KT</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
+
+
 <span class="c1"># TODO: Needs a lot more documentation and tests to show how versatile it is</span>
 <div class="viewcode-block" id="path_get"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.path_get">[docs]</a><span class="k">def</span> <span class="nf">path_get</span><span class="p">(</span>
     <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -308,9 +317,6 @@
     <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
 
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span>
-
-
 <span class="c1"># Note: Purposely didn&#39;t include any path validation to favor efficiency.</span>
 <span class="c1"># Validation such as:</span>
 <span class="c1"># if not key_path or not isinstance(key_path, Iterable):</span>
@@ -399,6 +405,44 @@
         <span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">first_key</span><span class="p">],</span> <span class="n">remaining_keys</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span></div>
 
 
+<span class="c1"># TODO: Nice to have: Edits can be a nested dict, not necessarily a flat path-value one.</span>
+<span class="n">Edits</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="n">VT</span><span class="p">]]]</span>
+
+
+<div class="viewcode-block" id="path_edit"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.path_edit">[docs]</a><span class="k">def</span> <span class="nf">path_edit</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">edits</span><span class="p">:</span> <span class="n">Edits</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a series of (in place) edits to a Mapping, specifying `(path, value)` pairs.</span>
+
+
+<span class="sd">    Args:</span>
+<span class="sd">        d (Mapping): The mapping to edit.</span>
+<span class="sd">        edits: An iterable of ``(path, value)`` tuples, or ``path: value`` Mapping.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Mapping: The edited mapping.</span>
+
+<span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: 1}</span>
+<span class="sd">    &gt;&gt;&gt; path_edit(d, [([&#39;b&#39;, &#39;c&#39;], 2), (&#39;d.e.f&#39;, 3)])</span>
+<span class="sd">    {&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2}, &#39;d&#39;: {&#39;e&#39;: {&#39;f&#39;: 3}}}</span>
+
+<span class="sd">    Changes happened also inplace (so if you don&#39;t want that, make a deepcopy first):</span>
+
+<span class="sd">    &gt;&gt;&gt; d</span>
+<span class="sd">    {&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2}, &#39;d&#39;: {&#39;e&#39;: {&#39;f&#39;: 3}}}</span>
+
+<span class="sd">    You can also pass a dict of edits.</span>
+
+<span class="sd">    &gt;&gt;&gt; path_edit(d, {&#39;a&#39;: 4, &#39;d.e.f&#39;: 5})</span>
+<span class="sd">    {&#39;a&#39;: 4, &#39;b&#39;: {&#39;c&#39;: 2}, &#39;d&#39;: {&#39;e&#39;: {&#39;f&#39;: 5}}}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">edits</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+        <span class="n">edits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">edits</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">edits</span><span class="p">:</span>
+        <span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
 <div class="viewcode-block" id="KeyPath"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyPath">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">KeyPath</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -475,6 +519,9 @@
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="p">):</span>
         <span class="n">path_accessible_store</span> <span class="o">=</span> <span class="n">add_path_access</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">path_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_path_type</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">kv_wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">path_accessible_store</span><span class="p">)</span></div>
+
+
+<span class="c1"># ------------------------------------------------------------------------------</span>
 
 
 <div class="viewcode-block" id="PrefixRelativizationMixin"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.PrefixRelativizationMixin">[docs]</a><span class="k">class</span> <span class="nc">PrefixRelativizationMixin</span><span class="p">:</span>
