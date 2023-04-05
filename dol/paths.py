@@ -190,21 +190,23 @@ def _raise_on_error(d: Any):
     """Raise the error that was caught."""
     raise
 
+
 @add_as_attribute_of(path_get)
 def _return_none_on_error(d: Any):
     """Return None if an error was caught."""
     return None
+
 
 @add_as_attribute_of(path_get)
 def _return_empty_tuple_on_error(d: Any):
     """Return an empty tuple if an error was caught."""
     return ()
 
+
 @add_as_attribute_of(path_get)
 def _return_new_dict_on_error(d: Any):
     """Return a new dict if an error was caught."""
     return dict()
-
 
 
 from typing import Iterable, KT, VT, Callable, Mapping

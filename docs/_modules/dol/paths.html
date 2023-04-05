@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.1.128 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.1.129 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -106,7 +106,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
-<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">lazyprop</span>
+<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">lazyprop</span><span class="p">,</span> <span class="n">add_as_attribute_of</span>
 <span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">store_decorator</span><span class="p">,</span> <span class="n">kv_wrap</span><span class="p">,</span> <span class="n">add_path_access</span>
 <span class="kn">from</span> <span class="nn">dol.dig</span> <span class="kn">import</span> <span class="n">recursive_get_attr</span>
 
@@ -128,6 +128,9 @@
 <span class="n">OnErrorType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
 
 
+<span class="c1"># TODO: Could extend OnErrorType to be a dict with error class keys and callables or</span>
+<span class="c1">#  strings as values. Then, the error class could be used to determine the error</span>
+<span class="c1">#  handling strategy.</span>
 <span class="k">def</span> <span class="nf">_path_get</span><span class="p">(</span>
     <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="n">path</span><span class="p">,</span>
@@ -176,9 +179,8 @@
                     <span class="nb">dict</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,)</span>
                 <span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">on_error</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
-                    <span class="n">on_error</span>
-                <span class="p">)</span>  <span class="c1"># use on_error as a message, raising the same error class</span>
+                <span class="c1"># use on_error as a message, raising the same error class</span>
+                <span class="k">raise</span> <span class="nb">type</span><span class="p">(</span><span class="n">error</span><span class="p">)(</span><span class="n">on_error</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s1">&#39;on_error should be a callable (input is a dict) or a string. &#39;</span>
@@ -214,6 +216,7 @@
     <span class="k">return</span> <span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span></div>
 
 
+<span class="c1"># TODO: Needs a lot more documentation and tests to show how versatile it is</span>
 <div class="viewcode-block" id="path_get"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.path_get">[docs]</a><span class="k">def</span> <span class="nf">path_get</span><span class="p">(</span>
     <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="n">path</span><span class="p">,</span>
@@ -226,7 +229,6 @@
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get elements of a mapping through a path to be called recursively.</span>
-<span class="sd">    Like ``_path_get``, but with defaults that are more convenient out of the box.</span>
 
 <span class="sd">    It will</span>
 
@@ -238,13 +240,33 @@
 
 <span class="sd">    - catch all exceptions (that are subclasses of ``Exception``)</span>
 
-
 <span class="sd">    &gt;&gt;&gt; class A:</span>
 <span class="sd">    ...      an_attribute = 42</span>
+<span class="sd">    &gt;&gt;&gt; path_get([1, [4, 5, {&#39;a&#39;: A}], 3], [1, 2, &#39;a&#39;, &#39;an_attribute&#39;])</span>
+<span class="sd">    42</span>
+
+<span class="sd">    By default, if ``path`` is a string, it will be split on ``sep``,</span>
+<span class="sd">    which is ``&#39;.&#39;`` by default.</span>
+
 <span class="sd">    &gt;&gt;&gt; path_get([1, [4, 5, {&#39;a&#39;: A}], 3], &#39;1.2.a.an_attribute&#39;)</span>
 <span class="sd">    42</span>
+
+<span class="sd">    Note: The underlying function is ``_path_get``, but `path_get` has defaults and</span>
+<span class="sd">    flexible input processing for more convenience.</span>
+
+<span class="sd">    Note: ``path_get`` contains some ready-made ``OnErrorType`` functions in its</span>
+<span class="sd">    attributes. For example, see how we can make ``path_get`` have the same behavior</span>
+<span class="sd">    as ``dict.get`` by passing ``path_get.return_none_on_error`` as ``on_error``:</span>
+
+<span class="sd">    &gt;&gt;&gt; dd = path_get({}, &#39;no.keys&#39;, on_error=path_get.return_none_on_error)</span>
+<span class="sd">    &gt;&gt;&gt; dd is None</span>
+<span class="sd">    True</span>
+
+<span class="sd">    For example, ``path_get.raise_on_error``,</span>
+<span class="sd">    ``path_get.return_none_on_error``, and ``path_get.return_empty_tuple_on_error``.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">path_to_keys</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">path_to_keys</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
@@ -260,6 +282,30 @@
         <span class="n">get_value</span><span class="o">=</span><span class="n">get_value</span><span class="p">,</span>
         <span class="n">caught_errors</span><span class="o">=</span><span class="n">caught_errors</span><span class="p">,</span>
     <span class="p">)</span></div>
+
+
+<span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_get</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_raise_on_error</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise the error that was caught.&quot;&quot;&quot;</span>
+    <span class="k">raise</span>
+
+
+<span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_get</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_return_none_on_error</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return None if an error was caught.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_get</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_return_empty_tuple_on_error</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return an empty tuple if an error was caught.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">()</span>
+
+
+<span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_get</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_return_new_dict_on_error</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new dict if an error was caught.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
 
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span>
