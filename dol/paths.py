@@ -155,12 +155,19 @@ def path_get(
     Note: The underlying function is ``_path_get``, but `path_get` has defaults and
     flexible input processing for more convenience.
 
-    Note: ``path_get`` contains some ready-made ``OnErrorType``
-    functions in its attributes. For example, ``path_get.raise_on_error``,
+    Note: ``path_get`` contains some ready-made ``OnErrorType`` functions in its
+    attributes. For example, see how we can make ``path_get`` have the same behavior
+    as ``dict.get`` by passing ``path_get.return_none_on_error`` as ``on_error``:
+
+    >>> dd = path_get({}, 'no.keys', on_error=path_get.return_none_on_error)
+    >>> dd is None
+    True
+
+    For example, ``path_get.raise_on_error``,
     ``path_get.return_none_on_error``, and ``path_get.return_empty_tuple_on_error``.
 
     """
-    if sep is not None:
+    if isinstance(path, str) and sep is not None:
         path_to_keys = lambda x: x.split(sep)
     else:
         path_to_keys = lambda x: x
@@ -192,6 +199,11 @@ def _return_none_on_error(d: Any):
 def _return_empty_tuple_on_error(d: Any):
     """Return an empty tuple if an error was caught."""
     return ()
+
+@add_as_attribute_of(path_get)
+def _return_new_dict_on_error(d: Any):
+    """Return a new dict if an error was caught."""
+    return dict()
 
 
 
