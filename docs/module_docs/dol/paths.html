@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.1.128 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.1.129 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -293,8 +293,7 @@ name you want.</p>
 <dl class="py function">
 <dt id="dol.paths.path_get">
 <code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">path_get</code><span class="sig-paren">(</span><em class="sig-param">obj: Any, path, on_error: Union[Callable[[dict], Any], str] = &lt;function raise_on_error&gt;, *, sep='.', key_transformer=&lt;function cast_to_int_if_numeric_str&gt;, get_value: Callable = &lt;function get_attr_or_item&gt;, caught_errors=(&lt;class 'Exception'&gt;,)</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#path_get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.path_get" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get elements of a mapping through a path to be called recursively.
-Like <code class="docutils literal notranslate"><span class="pre">_path_get</span></code>, but with defaults that are more convenient out of the box.</p>
+<dd><p>Get elements of a mapping through a path to be called recursively.</p>
 <p>It will</p>
 <ul class="simple">
 <li><p>split a path into keys if it is a string, using the specified seperator <code class="docutils literal notranslate"><span class="pre">sep</span></code></p></li>
@@ -304,10 +303,28 @@ Like <code class="docutils literal notranslate"><span class="pre">_path_get</spa
 </ul>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
 <span class="gp">... </span>     <span class="n">an_attribute</span> <span class="o">=</span> <span class="mi">42</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">path_get</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">A</span><span class="p">}],</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;1.2.a.an_attribute&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_get</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">A</span><span class="p">}],</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;an_attribute&#39;</span><span class="p">])</span>
 <span class="go">42</span>
 </pre></div>
 </div>
+<p>By default, if <code class="docutils literal notranslate"><span class="pre">path</span></code> is a string, it will be split on <code class="docutils literal notranslate"><span class="pre">sep</span></code>,
+which is <code class="docutils literal notranslate"><span class="pre">'.'</span></code> by default.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_get</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">A</span><span class="p">}],</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;1.2.a.an_attribute&#39;</span><span class="p">)</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>Note: The underlying function is <code class="docutils literal notranslate"><span class="pre">_path_get</span></code>, but <cite>path_get</cite> has defaults and
+flexible input processing for more convenience.</p>
+<p>Note: <code class="docutils literal notranslate"><span class="pre">path_get</span></code> contains some ready-made <code class="docutils literal notranslate"><span class="pre">OnErrorType</span></code> functions in its
+attributes. For example, see how we can make <code class="docutils literal notranslate"><span class="pre">path_get</span></code> have the same behavior
+as <code class="docutils literal notranslate"><span class="pre">dict.get</span></code> by passing <code class="docutils literal notranslate"><span class="pre">path_get.return_none_on_error</span></code> as <code class="docutils literal notranslate"><span class="pre">on_error</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">path_get</span><span class="p">({},</span> <span class="s1">&#39;no.keys&#39;</span><span class="p">,</span> <span class="n">on_error</span><span class="o">=</span><span class="n">path_get</span><span class="o">.</span><span class="n">return_none_on_error</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>For example, <code class="docutils literal notranslate"><span class="pre">path_get.raise_on_error</span></code>,
+<code class="docutils literal notranslate"><span class="pre">path_get.return_none_on_error</span></code>, and <code class="docutils literal notranslate"><span class="pre">path_get.return_empty_tuple_on_error</span></code>.</p>
 </dd></dl>
 
 <dl class="py function">
