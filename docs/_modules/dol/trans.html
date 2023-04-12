@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.1.130 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.1.131 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -819,12 +819,12 @@
 <span class="k">def</span> <span class="nf">cached_keys</span><span class="p">(</span>
     <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">keys_cache</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">callable</span><span class="p">,</span> <span class="n">Collection</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">,</span>
+    <span class="n">keys_cache</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">callable</span><span class="p">,</span> <span class="n">Collection</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">iter_to_container</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># deprecated: use keys_cache instead</span>
     <span class="n">cache_update_method</span><span class="o">=</span><span class="s1">&#39;update&#39;</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># TODO: might be able to be deprecated since included in store_decorator</span>
     <span class="vm">__module__</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># TODO: might be able to be deprecated since included in store_decorator</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">callable</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">callable</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a class that wraps input class&#39;s __iter__ becomes cached.</span>
 
 <span class="sd">    Quite often we have a lot of keys, that we get from a remote data source, and don&#39;t want to have to ask for</span>
@@ -1061,14 +1061,14 @@
 
 <span class="k">def</span> <span class="nf">_cached_keys</span><span class="p">(</span>
     <span class="n">store</span><span class="p">,</span>
-    <span class="n">keys_cache</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">callable</span><span class="p">,</span> <span class="n">Collection</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">,</span>
+    <span class="n">keys_cache</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">callable</span><span class="p">,</span> <span class="n">Collection</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">iter_to_container</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># deprecated: use keys_cache instead</span>
     <span class="n">cache_update_method</span><span class="o">=</span><span class="s1">&#39;update&#39;</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># TODO: might be able to be deprecated since included in store_decorator</span>
     <span class="vm">__module__</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># TODO: might be able to be deprecated since included in store_decorator</span>
 <span class="p">):</span>
     <span class="k">if</span> <span class="n">iter_to_container</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">callable</span><span class="p">(</span><span class="n">iter_to_container</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">iter_to_container</span><span class="p">)</span>
         <span class="n">warn</span><span class="p">(</span>
             <span class="s2">&quot;The argument name &#39;iter_to_container&#39; is being deprecated in favor &quot;</span>
             <span class="s2">&quot;of the more general &#39;keys_cache&#39;&quot;</span>
@@ -1104,7 +1104,7 @@
         <span class="p">):</span>  <span class="c1"># if keys_cache is iterable, it is the cache instance itself.</span>
             <span class="n">_keys_cache</span> <span class="o">=</span> <span class="n">keys_cache</span>
             <span class="n">_explicit_keys</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">keys_cache</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">keys_cache</span><span class="p">):</span>
             <span class="c1"># if keys_cache is not iterable, but callable, we&#39;ll use it to make the keys_cache from __iter__</span>
             <span class="n">_iter_to_container</span> <span class="o">=</span> <span class="n">keys_cache</span>
 
@@ -1434,7 +1434,7 @@
 <span class="k">def</span> <span class="nf">filt_iter</span><span class="p">(</span>
     <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">filt</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">]</span> <span class="o">=</span> <span class="n">take_everything</span><span class="p">,</span>
+    <span class="n">filt</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">]</span> <span class="o">=</span> <span class="n">take_everything</span><span class="p">,</span>
     <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="vm">__module__</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># TODO: might be able to be deprecated since included in store_decorator</span>
 <span class="p">):</span>
@@ -1488,7 +1488,7 @@
 <span class="k">def</span> <span class="nf">_filt_iter</span><span class="p">(</span><span class="n">store_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">filt</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="vm">__module__</span><span class="p">):</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="nb">type</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;store_cls must be a type: </span><span class="si">{</span><span class="n">store_cls</span><span class="si">}</span><span class="s1">&#39;</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="n">filt</span><span class="p">):</span>  <span class="c1"># if filt is not a callable...</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">filt</span><span class="p">):</span>  <span class="c1"># if filt is not a callable...</span>
         <span class="c1"># ... assume it&#39;s the collection of keys you want and make a filter function</span>
         <span class="c1"># to filter those &quot;in&quot;.</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filt</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="s1">&#39;filt should be a callable, or an iterable&#39;</span>
@@ -1669,7 +1669,7 @@
 
 
 <span class="k">def</span> <span class="nf">_wrap_outcoming</span><span class="p">(</span>
-    <span class="n">store_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">wrapped_method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">trans_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">store_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">wrapped_method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">trans_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Output-transforming wrapping of the wrapped_method of store_cls.</span>
 <span class="sd">    The transformation is given by trans_func, which could be a one (trans_func(x)</span>
@@ -1736,7 +1736,7 @@
 
 
 <span class="k">def</span> <span class="nf">_wrap_ingoing</span><span class="p">(</span>
-    <span class="n">store_cls</span><span class="p">,</span> <span class="n">wrapped_method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">trans_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">store_cls</span><span class="p">,</span> <span class="n">wrapped_method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">trans_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">):</span>
     <span class="k">if</span> <span class="n">trans_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">wrapped_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">wrapped_method</span><span class="p">)</span>
@@ -2737,7 +2737,7 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
         <span class="k">return</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">levels</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">callable</span><span class="p">(</span><span class="n">levels</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;levels must be a callable or an integer: </span><span class="si">{</span><span class="n">levels</span><span class="si">=}</span><span class="s1">&#39;</span>
+        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">levels</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;levels must be a callable or an integer: </span><span class="si">{</span><span class="n">levels</span><span class="si">=}</span><span class="s1">&#39;</span>
         <span class="k">return</span> <span class="n">levels</span></div>
 
 
