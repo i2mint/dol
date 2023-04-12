@@ -93,11 +93,13 @@ from typing import (
     Iterable,
     Tuple,
     Iterator,
+    TypeVar,
     Mapping as MappingType,
 )
 from typing import KT, VT
 from types import FunctionType
 from collections import defaultdict
+from operator import eq
 
 from functools import (
     cached_property,
@@ -994,7 +996,13 @@ class Sig(Signature, Mapping):
     # TODO: Add params for more validation (e.g. arg number/name matching?)
     # TODO: Switch to ignore_incompatible_signatures=False when existing code is
     #   changed accordingly.
-    def wrap(self, func: Callable, ignore_incompatible_signatures=True):
+    def wrap(
+        self,
+        func: Callable,
+        ignore_incompatible_signatures: bool = True,
+        *,
+        copy_function: Union[bool, Callable] = False,
+    ):
         """Gives the input function the signature.
 
         This is similar to the `functools.wraps` function, but parametrized by a
@@ -1074,8 +1082,16 @@ class Sig(Signature, Mapping):
         TODO: Give more explanations why this is.
         """
 
-        # TODO: Should we make a copy/wrap of the function so as to not override
-        #  decorated function itself? Make sure the func remains pickalable!
+        # TODO: Should we make copy_function=False the default,
+        #  so as to not override decorated function itself by default?
+        if copy_function:
+            if isinstance(copy_function, bool):
+                from i2.util import copy_func as copy_function
+            else:
+                assert callable(
+                    copy_function
+                ), f'copy_function must be a callable. This is not: {copy_function}'
+            func = copy_function(func)
 
         # Analyze self and func signature to validate sanity
         _validate_sanity_of_signature_change(func, self, ignore_incompatible_signatures)
@@ -3152,6 +3168,7 @@ def kind_forgiving_func(func):
     return _func
 
 
+# TODO: Should we protect from misuse with signature compatibility check?
 def use_interface(interface_sig):
     """Use interface_sig as (enforced/validated) signature of the decorated function.
     That is, the decorated function will use the original function has the backend,
@@ -4104,9 +4121,144 @@ for kind in param_kinds:
         partial(param_for_kind, kind=kind, with_default=True),
     )
 
-###########################
+########################################################################################
 # Signature Compatibility #
-###########################
+########################################################################################
+
+Compared = TypeVar('Compared')
+
+Comparison = TypeVar('Comparison')
+Comparator = Callable[[Compared, Compared], Comparison]
+Comparison.__doc__ = (
+    'The return type of a Comparator. Typically a bool, or int, but can be anything.'
+    'In that sense it is more of a "collation" than I comparison'
+)
+
+# TODO: Make function that makes Comparator types according for different kinds of
+#  compared types? (e.g. for comparing signatures, for comparing parameters, ...)
+#  See HasAttr in https://github.com/i2mint/i2/blob/feb469acdc0bc8268877b400b9af6dda56de6292/i2/itypes.py#L164
+#  for inspiration.
+SignatureComparator = Callable[[Signature, Signature], Comparison]
+ParamComparator = Callable[[Parameter, Parameter], Comparison]
+CallableComparator = Callable[[Callable, Callable], Comparison]
+
+
+ComparisonAggreg = Callable[[Iterable[Comparison]], Any]
+
+CT = TypeVar('CT')  # some other Compared type (used to define KeyFunction
+KeyFunction = Callable[[CT], Compared]
+KeyFunction.__doc__ = 'Function that transforms one compared type to another'
+
+
+def compare_signatures(func1, func2, signature_comparator: SignatureComparator = eq):
+    return signature_comparator(Sig(func1), Sig(func2))
+
+
+# TODO: Look into typing: Why does lint complain about this line of code?
+def mk_func_comparator_based_on_signature_comparator(
+    signature_comparator: SignatureComparator,
+) -> CallableComparator:
+    return partial(compare_signatures, signature_comparator=signature_comparator)
+
+
+def _keyed_comparator(
+    comparator: Comparator, key: KeyFunction, x: CT, y: CT,
+) -> Comparison:
+    """Apply a comparator after transforming inputs through a key function.
+
+    >>> from operator import eq
+    >>> parity = lambda x: x % 2
+    >>> _keyed_comparator(eq, parity, 1, 3)
+    True
+    >>> _keyed_comparator(eq, parity, 1, 4)
+    False
+    """
+    return comparator(key(x), key(y))
+
+
+def keyed_comparator(comparator: Comparator, key: KeyFunction,) -> Comparator:
+    """Create a key-function enabled binary operator.
+
+    In various places in python functionality is extended by allowing a key function.
+    For example, the ``sorted`` function allows a key function to be passed, which is
+    applied to each element before sorting. The keyed_comparator function allows a
+    comparator to be extended in the same way. The returned comparator will apply the
+    key function toeach input before applying the original comparator.
+
+    >>> from operator import eq
+    >>> parity = lambda x: x % 2
+    >>> comparator = keyed_comparator(eq, parity)
+    >>> list(map(comparator, [1, 1, 2, 2], [3, 4, 5, 6]))
+    [True, False, False, True]
+    """
+    return partial(_keyed_comparator, comparator, key)
+
+
+# For back-compatibility:
+_key_function_enabled_operator = _keyed_comparator
+_key_function_factory = keyed_comparator
+
+# TODO: Show examples of how this can be used to produce precise error messages.
+#  The way to do this is to have the attribute binary functions produce some info dicts
+#  that can then be aggregated in aggreg to produce a final error message (or even
+#  a final error object, which can even be raised) if there is indeed a mismatch at all.
+#  Further more, we might want to make a function that will take a parametrized
+#  param_binary_func and produce such a error raising function from it, using the
+#  specific functions (extracted by Sig) to produce the error message.
+def param_comparator(
+    param1: Parameter,
+    param2: Parameter,
+    *,
+    name: Comparator = eq,
+    kind: Comparator = eq,
+    default: Comparator = eq,
+    annotation: Comparator = eq,
+    aggreg: ComparisonAggreg = all,
+):
+    """Compare two parameters.
+
+    Note that by default, this function is strict, and will return False if
+    any of the parameters are not equal. This is because the default
+    aggregation function is `all` and the default comparison functions of the
+    parameter's attributes are `eq` (meaning equality, not identity).
+
+    But you can change that by passing different comparison functions and/or
+    aggregation functions.
+
+    In fact, the real purpose of this function is to be used as a factory of parameter
+    binary functions, through parametrizing it with `functools.partial`.
+
+    The parameter binary functions themselves are meant to be used to make signature
+    binary functions.
+
+    :param param1: first parameter
+    :param param2: second parameter
+    :param name: function to compare names
+    :param kind: function to compare kinds
+    :param default: function to compare defaults
+    :param annotation: function to compare annotations
+    :param aggreg: function to aggregate results
+
+    >>> from inspect import Parameter
+    >>> param1 = Parameter('x', Parameter.POSITIONAL_OR_KEYWORD)
+    >>> param2 = Parameter('x', Parameter.POSITIONAL_OR_KEYWORD)
+    >>> param_binary_func(param1, param2)
+    True
+
+    See https://github.com/i2mint/i2/issues/50#issuecomment-1381686812 for discussion.
+
+    """
+    return aggreg(
+        (
+            name(param1.name, param2.name),
+            kind(param1.kind, param2.kind),
+            default(param1.default, param2.default),
+            annotation(param1.annotation, param2.annotation),
+        )
+    )
+
+
+param_binary_func = param_comparator  # back compatibility alias
 
 # TODO: Implement annotation compatibility
 def is_annotation_compatible_with(annot1, annot2):
@@ -4120,8 +4272,8 @@ def is_default_value_compatible_with(dflt1, dflt2):
 def is_param_compatible_with(
     p1: Parameter,
     p2: Parameter,
-    annotation_comparator: Callable = None,
-    default_value_comparator: Callable = None,
+    annotation_comparator: Comparator = None,
+    default_value_comparator: Comparator = None,
 ):
     """Return True if ``p1`` is compatible with ``p2``. Meaning that any value valid
     for ``p1`` is valid for ``p2``.
@@ -4147,6 +4299,7 @@ def is_param_compatible_with(
     ... )
     False
     """
+    # TODO: Consider using functions as defaults instead of None
     annotation_comparator = annotation_comparator or is_annotation_compatible_with
     default_value_comparator = (
         default_value_comparator or is_default_value_compatible_with
@@ -4158,7 +4311,7 @@ def is_param_compatible_with(
 
 
 def is_call_compatible_with(
-    sig1: Sig, sig2: Sig, *, param_comparator: Callable = None
+    sig1: Sig, sig2: Sig, *, param_comparator: ParamComparator = None
 ) -> bool:
     """Return True if ``sig1`` is compatible with ``sig2``. Meaning that all valid ways
     to call ``sig1`` are valid for ``sig2``.
@@ -4288,6 +4441,7 @@ def is_call_compatible_with(
                 return False
         return True
 
+    # TODO: Consider putting is_param_compatible_with as default instead
     param_comparator = param_comparator or is_param_compatible_with
 
     pos1, pks1, vp1, kos1, vk1 = sig1.detail_names_by_kind()
