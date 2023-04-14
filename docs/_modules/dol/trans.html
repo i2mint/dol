@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.1.131 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.1.132 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -706,8 +706,12 @@
 <span class="c1">#  to dispose of the need for a separate class_trans_maker function and the body</span>
 <span class="c1">#  of the decorators to be the smelly _wrap_store(class_trans_maker, locals(), ...)</span>
 <span class="k">def</span> <span class="nf">_wrap_store</span><span class="p">(</span>
-    <span class="n">class_trans_maker</span><span class="p">,</span> <span class="n">class_trans_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">=</span><span class="n">Store</span><span class="p">,</span> <span class="n">store_arg_name</span><span class="o">=</span><span class="s1">&#39;store&#39;</span>
+    <span class="n">class_trans_maker</span><span class="p">,</span>
+    <span class="n">class_trans_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">wrapper_arg_name</span><span class="o">=</span><span class="s1">&#39;wrapper&#39;</span><span class="p">,</span>
+    <span class="n">store_arg_name</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">,</span>
 <span class="p">):</span>
+    <span class="n">wrapper</span> <span class="o">=</span> <span class="n">class_trans_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">wrapper_arg_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">Store</span>
     <span class="n">store</span> <span class="o">=</span> <span class="n">class_trans_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">store_arg_name</span><span class="p">)</span>
     <span class="n">class_trans</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">class_trans_maker</span><span class="p">,</span> <span class="o">**</span><span class="n">class_trans_kwargs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">wrapper</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">class_trans</span><span class="o">=</span><span class="n">class_trans</span><span class="p">)</span>
