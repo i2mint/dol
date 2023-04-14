@@ -607,8 +607,9 @@ class OverWritesNotAllowedMixin:
 #  to dispose of the need for a separate class_trans_maker function and the body
 #  of the decorators to be the smelly _wrap_store(class_trans_maker, locals(), ...)
 def _wrap_store(
-    class_trans_maker, class_trans_kwargs: dict, wrapper=Store, store_arg_name='store'
+    class_trans_maker, class_trans_kwargs: dict, wrapper_arg_name='wrapper', store_arg_name='store'
 ):
+    wrapper = class_trans_kwargs.pop(wrapper_arg_name, None) or Store
     store = class_trans_kwargs.pop(store_arg_name)
     class_trans = partial(class_trans_maker, **class_trans_kwargs)
     return wrapper.wrap(store, class_trans=class_trans)
