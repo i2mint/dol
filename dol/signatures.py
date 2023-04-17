@@ -1472,12 +1472,15 @@ class Sig(Signature, Mapping):
     #  and switch to single arg signature return (that's consistent, and convenience
     #  of sig[argname] is weak (given sig.params[argname] does it)!)
     def __getitem__(self, k):
+        if isinstance(k, int) or isinstance(k, slice):
+            # TODO: Could extend slice handing to be able to use names as start and stop
+            k = self.names[k]
         if isinstance(k, str):
             names = k.split()  # to handle 'multiple args in a string'
             if len(names) == 1:
                 return self.parameters[k]
         else:
-            assert isinstance(k, Iterable), 'key should be iterable, was: {k}'
+            assert isinstance(k, Iterable), f'key should be iterable, was: {k}'
             names = k
         params = [self[name] for name in names]
         return Sig.from_params(params)
@@ -1626,7 +1629,7 @@ class Sig(Signature, Mapping):
                 # if name is not in params, just use existing param
                 yield self[name]
 
-    def modified(self, _allow_reordering=False, **changes_for_name):
+    def modified(self, /, _allow_reordering=False, **changes_for_name):
         """Returns a modified (new) signature object.
 
         Note: This function doesn't modify the signature, but creates a modified copy
@@ -1683,7 +1686,7 @@ class Sig(Signature, Mapping):
         return Sig(params, name=self.name, return_annotation=new_return_annotation)
 
     def ch_param_attrs(
-        self, param_attr, *arg_new_vals, _allow_reordering=False, **kwargs_new_vals
+        self, /, param_attr, *arg_new_vals, _allow_reordering=False, **kwargs_new_vals
     ):
         """Change a specific attribute of the params, returning a modified signature.
         This is a convenience method for the modified method when we're targetting
@@ -1769,7 +1772,7 @@ class Sig(Signature, Mapping):
     # )
     # ch_annotations = partialmethod(ch_param_attrs, param_attr="annotation")
 
-    def ch_names(self, **changes_for_name):
+    def ch_names(self, /, **changes_for_name):
         argnames_not_in_sig = changes_for_name.keys() - self.keys()
         if argnames_not_in_sig:
             raise ValueError(
@@ -1777,7 +1780,7 @@ class Sig(Signature, Mapping):
             )
         return self.ch_param_attrs('name', **changes_for_name)
 
-    def ch_kinds(self, _allow_reordering=True, **changes_for_name):
+    def ch_kinds(self, /, _allow_reordering=True, **changes_for_name):
         return self.ch_param_attrs(
             'kind', _allow_reordering=_allow_reordering, **changes_for_name
         )
@@ -1785,12 +1788,12 @@ class Sig(Signature, Mapping):
     def ch_kinds_to_position_or_keyword(self):
         return all_pk_signature(self)
 
-    def ch_defaults(self, _allow_reordering=True, **changes_for_name):
+    def ch_defaults(self, /, _allow_reordering=True, **changes_for_name):
         return self.ch_param_attrs(
             'default', _allow_reordering=_allow_reordering, **changes_for_name
         )
 
-    def ch_annotations(self, **changes_for_name):
+    def ch_annotations(self, /, **changes_for_name):
         return self.ch_param_attrs('annotation', **changes_for_name)
 
     # TODO: Make default_conflict_method be able to be a callable and get rid of string
@@ -2994,7 +2997,9 @@ def _remove_variadics_from_sig(sig, ch_variadic_keyword_to_keyword=True):
 
     return result_sig
 
-
+# TODO: Might want to make func be a positional-only argument, because if kwargs
+#  contains a func key, we have a problem. But call_forgivingly is used broadly,
+#  so must first test all dependents before making this change.
 def call_forgivingly(func, *args, **kwargs):
     """
     Call function on given args and kwargs, but only taking what the function needs
@@ -3639,7 +3644,7 @@ def params_of(obj: HasParams):
 
 ########################################################################################################################
 # TODO: Encorporate in Sig
-def insert_annotations(s: Signature, *, return_annotation=empty, **annotations):
+def insert_annotations(s: Signature, /, *, return_annotation=empty, **annotations):
     """Insert annotations in a signature.
     (Note: not really insert but returns a copy of input signature)
 
@@ -4022,6 +4027,9 @@ class sigs_for_builtin_modules:
     Below are the signatures, manually created to match those callables of the python
     standard library that don't have signatures (through ``inspect.signature``),
     """
+
+    def __getitem__(self, key: KT) -> VT:
+        """self.__getitem__(key) <==> self[key]"""
 
     def itemgetter(
         key: KT, /, *keys: Iterable[KT]
