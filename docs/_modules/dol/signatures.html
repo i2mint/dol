@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.130 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.132 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -192,11 +192,13 @@
     <span class="n">Iterable</span><span class="p">,</span>
     <span class="n">Tuple</span><span class="p">,</span>
     <span class="n">Iterator</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">Mapping</span> <span class="k">as</span> <span class="n">MappingType</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span>
 <span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">FunctionType</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">eq</span>
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">cached_property</span><span class="p">,</span>
@@ -1065,7 +1067,7 @@
                 <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Signature</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="n">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
             <span class="ow">and</span> <span class="n">return_annotation</span> <span class="ow">is</span> <span class="n">empty</span>
         <span class="p">):</span>
             <span class="n">return_annotation</span> <span class="o">=</span> <span class="n">_robust_signature_of_callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
@@ -1093,7 +1095,13 @@
     <span class="c1"># TODO: Add params for more validation (e.g. arg number/name matching?)</span>
     <span class="c1"># TODO: Switch to ignore_incompatible_signatures=False when existing code is</span>
     <span class="c1">#   changed accordingly.</span>
-<div class="viewcode-block" id="Sig.wrap"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.wrap">[docs]</a>    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">ignore_incompatible_signatures</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Sig.wrap"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.wrap">[docs]</a>    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">ignore_incompatible_signatures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">copy_function</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gives the input function the signature.</span>
 
 <span class="sd">        This is similar to the `functools.wraps` function, but parametrized by a</span>
@@ -1173,8 +1181,16 @@
 <span class="sd">        TODO: Give more explanations why this is.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># TODO: Should we make a copy/wrap of the function so as to not override</span>
-        <span class="c1">#  decorated function itself? Make sure the func remains pickalable!</span>
+        <span class="c1"># TODO: Should we make copy_function=False the default,</span>
+        <span class="c1">#  so as to not override decorated function itself by default?</span>
+        <span class="k">if</span> <span class="n">copy_function</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">copy_function</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+                <span class="kn">from</span> <span class="nn">i2.util</span> <span class="kn">import</span> <span class="n">copy_func</span> <span class="k">as</span> <span class="n">copy_function</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span>
+                    <span class="n">copy_function</span>
+                <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;copy_function must be a callable. This is not: </span><span class="si">{</span><span class="n">copy_function</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">copy_function</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
 
         <span class="c1"># Analyze self and func signature to validate sanity</span>
         <span class="n">_validate_sanity_of_signature_change</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">ignore_incompatible_signatures</span><span class="p">)</span>
@@ -1236,7 +1252,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># (try to) return cls(obj) if obj is callable:</span>
-            <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
                 <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Object is not callable: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -3251,6 +3267,7 @@
     <span class="k">return</span> <span class="n">_func</span></div>
 
 
+<span class="c1"># TODO: Should we protect from misuse with signature compatibility check?</span>
 <div class="viewcode-block" id="use_interface"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.use_interface">[docs]</a><span class="k">def</span> <span class="nf">use_interface</span><span class="p">(</span><span class="n">interface_sig</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use interface_sig as (enforced/validated) signature of the decorated function.</span>
 <span class="sd">    That is, the decorated function will use the original function has the backend,</span>
@@ -3340,7 +3357,7 @@
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">Sig</span><span class="o">.</span><span class="n">sig_or_none</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">bool</span><span class="p">((</span><span class="n">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">signature</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+            <span class="k">return</span> <span class="nb">bool</span><span class="p">((</span><span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">signature</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
@@ -3711,7 +3728,7 @@
         <span class="n">obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
         <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">obj</span>
@@ -3750,7 +3767,7 @@
     <span class="k">return</span> <span class="n">Signature</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">return_annotation</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="common_and_diff_argnames"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.common_and_diff_argnames">[docs]</a><span class="k">def</span> <span class="nf">common_and_diff_argnames</span><span class="p">(</span><span class="n">func1</span><span class="p">:</span> <span class="n">callable</span><span class="p">,</span> <span class="n">func2</span><span class="p">:</span> <span class="n">callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="common_and_diff_argnames"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.common_and_diff_argnames">[docs]</a><span class="k">def</span> <span class="nf">common_and_diff_argnames</span><span class="p">(</span><span class="n">func1</span><span class="p">:</span> <span class="nb">callable</span><span class="p">,</span> <span class="n">func2</span><span class="p">:</span> <span class="nb">callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get list of argument names that are common to two functions, as well as the two</span>
 <span class="sd">    lists of names that are different</span>
 
@@ -3952,7 +3969,7 @@
     <span class="k">def</span> <span class="nf">gen</span><span class="p">():</span>
         <span class="n">object_attr_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="nb">object</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr_val</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">attr_val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">attr_val</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">attr_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">object_attr_names</span><span class="p">:</span>
                     <span class="c1"># if the attr is a callable attribute that&#39;s not in all objects...</span>
                     <span class="k">yield</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">signature</span><span class="p">(</span><span class="n">attr_val</span><span class="p">)</span>
@@ -3991,7 +4008,7 @@
     <span class="k">def</span> <span class="nf">int</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
         <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">iter</span><span class="p">(</span><span class="n">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">sentinel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">iter</span><span class="p">(</span><span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">sentinel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
         <span class="o">...</span>
 
     <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
@@ -4203,9 +4220,144 @@
         <span class="n">partial</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">with_default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="p">)</span>
 
-<span class="c1">###########################</span>
+<span class="c1">########################################################################################</span>
 <span class="c1"># Signature Compatibility #</span>
-<span class="c1">###########################</span>
+<span class="c1">########################################################################################</span>
+
+<span class="n">Compared</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;Compared&#39;</span><span class="p">)</span>
+
+<span class="n">Comparison</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;Comparison&#39;</span><span class="p">)</span>
+<span class="n">Comparator</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Compared</span><span class="p">,</span> <span class="n">Compared</span><span class="p">],</span> <span class="n">Comparison</span><span class="p">]</span>
+<span class="n">Comparison</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s1">&#39;The return type of a Comparator. Typically a bool, or int, but can be anything.&#39;</span>
+    <span class="s1">&#39;In that sense it is more of a &quot;collation&quot; than I comparison&#39;</span>
+<span class="p">)</span>
+
+<span class="c1"># TODO: Make function that makes Comparator types according for different kinds of</span>
+<span class="c1">#  compared types? (e.g. for comparing signatures, for comparing parameters, ...)</span>
+<span class="c1">#  See HasAttr in https://github.com/i2mint/i2/blob/feb469acdc0bc8268877b400b9af6dda56de6292/i2/itypes.py#L164</span>
+<span class="c1">#  for inspiration.</span>
+<span class="n">SignatureComparator</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Signature</span><span class="p">,</span> <span class="n">Signature</span><span class="p">],</span> <span class="n">Comparison</span><span class="p">]</span>
+<span class="n">ParamComparator</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">],</span> <span class="n">Comparison</span><span class="p">]</span>
+<span class="n">CallableComparator</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">],</span> <span class="n">Comparison</span><span class="p">]</span>
+
+
+<span class="n">ComparisonAggreg</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Comparison</span><span class="p">]],</span> <span class="n">Any</span><span class="p">]</span>
+
+<span class="n">CT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;CT&#39;</span><span class="p">)</span>  <span class="c1"># some other Compared type (used to define KeyFunction</span>
+<span class="n">KeyFunction</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">CT</span><span class="p">],</span> <span class="n">Compared</span><span class="p">]</span>
+<span class="n">KeyFunction</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Function that transforms one compared type to another&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">compare_signatures</span><span class="p">(</span><span class="n">func1</span><span class="p">,</span> <span class="n">func2</span><span class="p">,</span> <span class="n">signature_comparator</span><span class="p">:</span> <span class="n">SignatureComparator</span> <span class="o">=</span> <span class="n">eq</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">signature_comparator</span><span class="p">(</span><span class="n">Sig</span><span class="p">(</span><span class="n">func1</span><span class="p">),</span> <span class="n">Sig</span><span class="p">(</span><span class="n">func2</span><span class="p">))</span>
+
+
+<span class="c1"># TODO: Look into typing: Why does lint complain about this line of code?</span>
+<span class="k">def</span> <span class="nf">mk_func_comparator_based_on_signature_comparator</span><span class="p">(</span>
+    <span class="n">signature_comparator</span><span class="p">:</span> <span class="n">SignatureComparator</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CallableComparator</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">compare_signatures</span><span class="p">,</span> <span class="n">signature_comparator</span><span class="o">=</span><span class="n">signature_comparator</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_keyed_comparator</span><span class="p">(</span>
+    <span class="n">comparator</span><span class="p">:</span> <span class="n">Comparator</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KeyFunction</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">CT</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">CT</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Comparison</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a comparator after transforming inputs through a key function.</span>
+
+<span class="sd">    &gt;&gt;&gt; from operator import eq</span>
+<span class="sd">    &gt;&gt;&gt; parity = lambda x: x % 2</span>
+<span class="sd">    &gt;&gt;&gt; _keyed_comparator(eq, parity, 1, 3)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; _keyed_comparator(eq, parity, 1, 4)</span>
+<span class="sd">    False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">comparator</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">key</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="keyed_comparator"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.keyed_comparator">[docs]</a><span class="k">def</span> <span class="nf">keyed_comparator</span><span class="p">(</span><span class="n">comparator</span><span class="p">:</span> <span class="n">Comparator</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KeyFunction</span><span class="p">,)</span> <span class="o">-&gt;</span> <span class="n">Comparator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a key-function enabled binary operator.</span>
+
+<span class="sd">    In various places in python functionality is extended by allowing a key function.</span>
+<span class="sd">    For example, the ``sorted`` function allows a key function to be passed, which is</span>
+<span class="sd">    applied to each element before sorting. The keyed_comparator function allows a</span>
+<span class="sd">    comparator to be extended in the same way. The returned comparator will apply the</span>
+<span class="sd">    key function toeach input before applying the original comparator.</span>
+
+<span class="sd">    &gt;&gt;&gt; from operator import eq</span>
+<span class="sd">    &gt;&gt;&gt; parity = lambda x: x % 2</span>
+<span class="sd">    &gt;&gt;&gt; comparator = keyed_comparator(eq, parity)</span>
+<span class="sd">    &gt;&gt;&gt; list(map(comparator, [1, 1, 2, 2], [3, 4, 5, 6]))</span>
+<span class="sd">    [True, False, False, True]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_keyed_comparator</span><span class="p">,</span> <span class="n">comparator</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span></div>
+
+
+<span class="c1"># For back-compatibility:</span>
+<span class="n">_key_function_enabled_operator</span> <span class="o">=</span> <span class="n">_keyed_comparator</span>
+<span class="n">_key_function_factory</span> <span class="o">=</span> <span class="n">keyed_comparator</span>
+
+<span class="c1"># TODO: Show examples of how this can be used to produce precise error messages.</span>
+<span class="c1">#  The way to do this is to have the attribute binary functions produce some info dicts</span>
+<span class="c1">#  that can then be aggregated in aggreg to produce a final error message (or even</span>
+<span class="c1">#  a final error object, which can even be raised) if there is indeed a mismatch at all.</span>
+<span class="c1">#  Further more, we might want to make a function that will take a parametrized</span>
+<span class="c1">#  param_binary_func and produce such a error raising function from it, using the</span>
+<span class="c1">#  specific functions (extracted by Sig) to produce the error message.</span>
+<div class="viewcode-block" id="param_comparator"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.param_comparator">[docs]</a><span class="k">def</span> <span class="nf">param_comparator</span><span class="p">(</span>
+    <span class="n">param1</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">,</span>
+    <span class="n">param2</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">Comparator</span> <span class="o">=</span> <span class="n">eq</span><span class="p">,</span>
+    <span class="n">kind</span><span class="p">:</span> <span class="n">Comparator</span> <span class="o">=</span> <span class="n">eq</span><span class="p">,</span>
+    <span class="n">default</span><span class="p">:</span> <span class="n">Comparator</span> <span class="o">=</span> <span class="n">eq</span><span class="p">,</span>
+    <span class="n">annotation</span><span class="p">:</span> <span class="n">Comparator</span> <span class="o">=</span> <span class="n">eq</span><span class="p">,</span>
+    <span class="n">aggreg</span><span class="p">:</span> <span class="n">ComparisonAggreg</span> <span class="o">=</span> <span class="nb">all</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compare two parameters.</span>
+
+<span class="sd">    Note that by default, this function is strict, and will return False if</span>
+<span class="sd">    any of the parameters are not equal. This is because the default</span>
+<span class="sd">    aggregation function is `all` and the default comparison functions of the</span>
+<span class="sd">    parameter&#39;s attributes are `eq` (meaning equality, not identity).</span>
+
+<span class="sd">    But you can change that by passing different comparison functions and/or</span>
+<span class="sd">    aggregation functions.</span>
+
+<span class="sd">    In fact, the real purpose of this function is to be used as a factory of parameter</span>
+<span class="sd">    binary functions, through parametrizing it with `functools.partial`.</span>
+
+<span class="sd">    The parameter binary functions themselves are meant to be used to make signature</span>
+<span class="sd">    binary functions.</span>
+
+<span class="sd">    :param param1: first parameter</span>
+<span class="sd">    :param param2: second parameter</span>
+<span class="sd">    :param name: function to compare names</span>
+<span class="sd">    :param kind: function to compare kinds</span>
+<span class="sd">    :param default: function to compare defaults</span>
+<span class="sd">    :param annotation: function to compare annotations</span>
+<span class="sd">    :param aggreg: function to aggregate results</span>
+
+<span class="sd">    &gt;&gt;&gt; from inspect import Parameter</span>
+<span class="sd">    &gt;&gt;&gt; param1 = Parameter(&#39;x&#39;, Parameter.POSITIONAL_OR_KEYWORD)</span>
+<span class="sd">    &gt;&gt;&gt; param2 = Parameter(&#39;x&#39;, Parameter.POSITIONAL_OR_KEYWORD)</span>
+<span class="sd">    &gt;&gt;&gt; param_binary_func(param1, param2)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    See https://github.com/i2mint/i2/issues/50#issuecomment-1381686812 for discussion.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">aggreg</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">name</span><span class="p">(</span><span class="n">param1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">param2</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+            <span class="n">kind</span><span class="p">(</span><span class="n">param1</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">param2</span><span class="o">.</span><span class="n">kind</span><span class="p">),</span>
+            <span class="n">default</span><span class="p">(</span><span class="n">param1</span><span class="o">.</span><span class="n">default</span><span class="p">,</span> <span class="n">param2</span><span class="o">.</span><span class="n">default</span><span class="p">),</span>
+            <span class="n">annotation</span><span class="p">(</span><span class="n">param1</span><span class="o">.</span><span class="n">annotation</span><span class="p">,</span> <span class="n">param2</span><span class="o">.</span><span class="n">annotation</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<span class="n">param_binary_func</span> <span class="o">=</span> <span class="n">param_comparator</span>  <span class="c1"># back compatibility alias</span>
 
 <span class="c1"># TODO: Implement annotation compatibility</span>
 <span class="k">def</span> <span class="nf">is_annotation_compatible_with</span><span class="p">(</span><span class="n">annot1</span><span class="p">,</span> <span class="n">annot2</span><span class="p">):</span>
@@ -4219,8 +4371,8 @@
 <div class="viewcode-block" id="is_param_compatible_with"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.is_param_compatible_with">[docs]</a><span class="k">def</span> <span class="nf">is_param_compatible_with</span><span class="p">(</span>
     <span class="n">p1</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">,</span>
     <span class="n">p2</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">,</span>
-    <span class="n">annotation_comparator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">default_value_comparator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">annotation_comparator</span><span class="p">:</span> <span class="n">Comparator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">default_value_comparator</span><span class="p">:</span> <span class="n">Comparator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if ``p1`` is compatible with ``p2``. Meaning that any value valid</span>
 <span class="sd">    for ``p1`` is valid for ``p2``.</span>
@@ -4246,6 +4398,7 @@
 <span class="sd">    ... )</span>
 <span class="sd">    False</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: Consider using functions as defaults instead of None</span>
     <span class="n">annotation_comparator</span> <span class="o">=</span> <span class="n">annotation_comparator</span> <span class="ow">or</span> <span class="n">is_annotation_compatible_with</span>
     <span class="n">default_value_comparator</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">default_value_comparator</span> <span class="ow">or</span> <span class="n">is_default_value_compatible_with</span>
@@ -4257,7 +4410,7 @@
 
 
 <div class="viewcode-block" id="is_call_compatible_with"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.is_call_compatible_with">[docs]</a><span class="k">def</span> <span class="nf">is_call_compatible_with</span><span class="p">(</span>
-    <span class="n">sig1</span><span class="p">:</span> <span class="n">Sig</span><span class="p">,</span> <span class="n">sig2</span><span class="p">:</span> <span class="n">Sig</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">param_comparator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">sig1</span><span class="p">:</span> <span class="n">Sig</span><span class="p">,</span> <span class="n">sig2</span><span class="p">:</span> <span class="n">Sig</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">param_comparator</span><span class="p">:</span> <span class="n">ParamComparator</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if ``sig1`` is compatible with ``sig2``. Meaning that all valid ways</span>
 <span class="sd">    to call ``sig1`` are valid for ``sig2``.</span>
@@ -4387,6 +4540,7 @@
                 <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="kc">True</span>
 
+    <span class="c1"># TODO: Consider putting is_param_compatible_with as default instead</span>
     <span class="n">param_comparator</span> <span class="o">=</span> <span class="n">param_comparator</span> <span class="ow">or</span> <span class="n">is_param_compatible_with</span>
 
     <span class="n">pos1</span><span class="p">,</span> <span class="n">pks1</span><span class="p">,</span> <span class="n">vp1</span><span class="p">,</span> <span class="n">kos1</span><span class="p">,</span> <span class="n">vk1</span> <span class="o">=</span> <span class="n">sig1</span><span class="o">.</span><span class="n">detail_names_by_kind</span><span class="p">()</span>
