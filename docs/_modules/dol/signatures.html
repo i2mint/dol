@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.132 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.133 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -1571,12 +1571,15 @@
     <span class="c1">#  and switch to single arg signature return (that&#39;s consistent, and convenience</span>
     <span class="c1">#  of sig[argname] is weak (given sig.params[argname] does it)!)</span>
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
+            <span class="c1"># TODO: Could extend slice handing to be able to use names as start and stop</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">names</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>  <span class="c1"># to handle &#39;multiple args in a string&#39;</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="s1">&#39;key should be iterable, was: </span><span class="si">{k}</span><span class="s1">&#39;</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;key should be iterable, was: </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">&#39;</span>
             <span class="n">names</span> <span class="o">=</span> <span class="n">k</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">Sig</span><span class="o">.</span><span class="n">from_params</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
@@ -1725,7 +1728,7 @@
                 <span class="c1"># if name is not in params, just use existing param</span>
                 <span class="k">yield</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
-<div class="viewcode-block" id="Sig.modified"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.modified">[docs]</a>    <span class="k">def</span> <span class="nf">modified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
+<div class="viewcode-block" id="Sig.modified"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.modified">[docs]</a>    <span class="k">def</span> <span class="nf">modified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a modified (new) signature object.</span>
 
 <span class="sd">        Note: This function doesn&#39;t modify the signature, but creates a modified copy</span>
@@ -1782,7 +1785,7 @@
         <span class="k">return</span> <span class="n">Sig</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">new_return_annotation</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Sig.ch_param_attrs"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.ch_param_attrs">[docs]</a>    <span class="k">def</span> <span class="nf">ch_param_attrs</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">param_attr</span><span class="p">,</span> <span class="o">*</span><span class="n">arg_new_vals</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs_new_vals</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">param_attr</span><span class="p">,</span> <span class="o">*</span><span class="n">arg_new_vals</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs_new_vals</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Change a specific attribute of the params, returning a modified signature.</span>
 <span class="sd">        This is a convenience method for the modified method when we&#39;re targetting</span>
@@ -1868,7 +1871,7 @@
     <span class="c1"># )</span>
     <span class="c1"># ch_annotations = partialmethod(ch_param_attrs, param_attr=&quot;annotation&quot;)</span>
 
-    <span class="k">def</span> <span class="nf">ch_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">ch_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
         <span class="n">argnames_not_in_sig</span> <span class="o">=</span> <span class="n">changes_for_name</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">argnames_not_in_sig</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -1876,7 +1879,7 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ch_param_attrs</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">ch_kinds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">ch_kinds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ch_param_attrs</span><span class="p">(</span>
             <span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="n">_allow_reordering</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span>
         <span class="p">)</span>
@@ -1884,12 +1887,12 @@
     <span class="k">def</span> <span class="nf">ch_kinds_to_position_or_keyword</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">all_pk_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">ch_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">ch_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ch_param_attrs</span><span class="p">(</span>
             <span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">_allow_reordering</span><span class="o">=</span><span class="n">_allow_reordering</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">ch_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">ch_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ch_param_attrs</span><span class="p">(</span><span class="s1">&#39;annotation&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">changes_for_name</span><span class="p">)</span>
 
     <span class="c1"># TODO: Make default_conflict_method be able to be a callable and get rid of string</span>
@@ -3094,6 +3097,9 @@
     <span class="k">return</span> <span class="n">result_sig</span>
 
 
+<span class="c1"># TODO: Might want to make func be a positional-only argument, because if kwargs</span>
+<span class="c1">#  contains a func key, we have a problem. But call_forgivingly is used broadly,</span>
+<span class="c1">#  so must first test all dependents before making this change.</span>
 <div class="viewcode-block" id="call_forgivingly"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.call_forgivingly">[docs]</a><span class="k">def</span> <span class="nf">call_forgivingly</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Call function on given args and kwargs, but only taking what the function needs</span>
@@ -3738,7 +3744,7 @@
 
 <span class="c1">########################################################################################################################</span>
 <span class="c1"># TODO: Encorporate in Sig</span>
-<div class="viewcode-block" id="insert_annotations"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.insert_annotations">[docs]</a><span class="k">def</span> <span class="nf">insert_annotations</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Signature</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">empty</span><span class="p">,</span> <span class="o">**</span><span class="n">annotations</span><span class="p">):</span>
+<div class="viewcode-block" id="insert_annotations"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.insert_annotations">[docs]</a><span class="k">def</span> <span class="nf">insert_annotations</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Signature</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">empty</span><span class="p">,</span> <span class="o">**</span><span class="n">annotations</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Insert annotations in a signature.</span>
 <span class="sd">    (Note: not really insert but returns a copy of input signature)</span>
 
@@ -4115,12 +4121,45 @@
 <span class="c1"># TODO: itemgetter, attrgetter and methodcaller use KT as their first argument, but</span>
 <span class="c1">#  in reality both attrgetter and methodcaller are more restrictive: They need to be</span>
 <span class="c1">#  valid attributes, therefore valid python identifiers. Any better typing for that?</span>
+<span class="c1"># TODO: We take care of the MutableMapping dunders below, but some of these dunders</span>
+<span class="c1">#  are not specific to MutableMapping. The signature used below is somewhat, but not</span>
+<span class="c1">#  completely, specific to MutableMapping. For example, __contains__ is also defined</span>
+<span class="c1">#  for the `set` type, but it&#39;s input is not called key, nor would the KT annotation</span>
+<span class="c1">#  be completely correct. The signatures were sometimes made to be more general (such</span>
+<span class="c1">#  as __setitem__ and __delitem__ returning an Any instead of None), but could be</span>
+<span class="c1">#  made more (for example, annotating return of __iter__ as Iterator instead of</span>
+<span class="c1">#  Iterator[KT]). We hope that the fact that all the signatures are positional-only</span>
+<span class="c1">#  will at least mitigate the problem as far as name differences go.</span>
 <span class="nd">@dict_of_attribute_signatures</span>
 <span class="k">class</span> <span class="nc">sigs_for_builtin_modules</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Below are the signatures, manually created to match those callables of the python</span>
 <span class="sd">    standard library that don&#39;t have signatures (through ``inspect.signature``),</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;self.__eq__(other) &lt;==&gt; self==other&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;self.__ne__(other) &lt;==&gt; self!=other&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">KT</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;self.__iter__() &lt;==&gt; iter(self)&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VT</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;self.__getitem__(key) &lt;==&gt; self[key]&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;self.__len__() &lt;==&gt; len(self)&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;self.__contains__(key) &lt;==&gt; key in self&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">VT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;self.__setitem__(key, value) &lt;==&gt; self[key] = value&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;self.__delitem__(key) &lt;==&gt; del self[key]&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">itemgetter</span><span class="p">(</span>
         <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">KT</span><span class="p">]</span>
