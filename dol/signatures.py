@@ -2997,6 +2997,7 @@ def _remove_variadics_from_sig(sig, ch_variadic_keyword_to_keyword=True):
 
     return result_sig
 
+
 # TODO: Might want to make func be a positional-only argument, because if kwargs
 #  contains a func key, we have a problem. But call_forgivingly is used broadly,
 #  so must first test all dependents before making this change.
@@ -4021,6 +4022,15 @@ sigs_for_builtins = dict(
 # TODO: itemgetter, attrgetter and methodcaller use KT as their first argument, but
 #  in reality both attrgetter and methodcaller are more restrictive: They need to be
 #  valid attributes, therefore valid python identifiers. Any better typing for that?
+# TODO: We take care of the MutableMapping dunders below, but some of these dunders
+#  are not specific to MutableMapping. The signature used below is somewhat, but not
+#  completely, specific to MutableMapping. For example, __contains__ is also defined
+#  for the `set` type, but it's input is not called key, nor would the KT annotation
+#  be completely correct. The signatures were sometimes made to be more general (such
+#  as __setitem__ and __delitem__ returning an Any instead of None), but could be
+#  made more (for example, annotating return of __iter__ as Iterator instead of
+#  Iterator[KT]). We hope that the fact that all the signatures are positional-only
+#  will at least mitigate the problem as far as name differences go.
 @dict_of_attribute_signatures
 class sigs_for_builtin_modules:
     """
@@ -4028,8 +4038,29 @@ class sigs_for_builtin_modules:
     standard library that don't have signatures (through ``inspect.signature``),
     """
 
-    def __getitem__(self, key: KT) -> VT:
+    def __eq__(self, other, /) -> bool:
+        """self.__eq__(other) <==> self==other"""
+
+    def __ne__(self, other, /) -> bool:
+        """self.__ne__(other) <==> self!=other"""
+
+    def __iter__(self, /) -> Iterator[KT]:
+        """self.__iter__() <==> iter(self)"""
+
+    def __getitem__(self, key: KT, /) -> VT:
         """self.__getitem__(key) <==> self[key]"""
+
+    def __len__(self, /) -> int:
+        """self.__len__() <==> len(self)"""
+
+    def __contains__(self, key: KT, /) -> bool:
+        """self.__contains__(key) <==> key in self"""
+
+    def __setitem__(self, key: KT, value: VT, /) -> Any:
+        """self.__setitem__(key, value) <==> self[key] = value"""
+
+    def __delitem__(self, key: KT, /) -> Any:
+        """self.__delitem__(key) <==> del self[key]"""
 
     def itemgetter(
         key: KT, /, *keys: Iterable[KT]
