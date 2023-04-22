@@ -124,6 +124,7 @@ from dol.paths import (
     KeyPath,  # a class to represent a path to a key
     path_get,  # get a value from a path
     path_set,  # set a value from a path
+    path_filter,  # search through paths of a Mapping
 )
 
 from dol.explicit import ExplicitKeyMap, invertible_maps
