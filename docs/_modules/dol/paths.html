@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.1.133 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.1.134 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -97,7 +97,24 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dol.paths</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Module for path (and path-like) object manipulation&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Module for path (and path-like) object manipulation</span>
+
+
+<span class="sd">Examples::</span>
+
+<span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 1, &#39;d&#39;: 2}, &#39;e&#39;: 3}}</span>
+<span class="sd">    &gt;&gt;&gt; list(path_filter(lambda p, k, v: v == 2, d))</span>
+<span class="sd">    [(&#39;a&#39;, &#39;b&#39;, &#39;d&#39;)]</span>
+<span class="sd">    &gt;&gt;&gt; path_get(d, (&#39;a&#39;, &#39;b&#39;, &#39;d&#39;))</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; path_set(d, (&#39;a&#39;, &#39;b&#39;, &#39;d&#39;), 4)</span>
+<span class="sd">    &gt;&gt;&gt; d</span>
+<span class="sd">    {&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 1, &#39;d&#39;: 4}, &#39;e&#39;: 3}}</span>
+<span class="sd">    &gt;&gt;&gt; path_set(d, (&#39;a&#39;, &#39;b&#39;, &#39;new_ab_key&#39;), 42)</span>
+<span class="sd">    &gt;&gt;&gt; d</span>
+<span class="sd">    {&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 1, &#39;d&#39;: 4, &#39;new_ab_key&#39;: 42}, &#39;e&#39;: 3}}</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
@@ -441,6 +458,114 @@
     <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">edits</span><span class="p">:</span>
         <span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">d</span></div>
+
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Literal</span>
+<span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">kv_walk</span>
+
+
+<span class="n">PT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;PT&#39;</span><span class="p">)</span>  <span class="c1"># Path Type</span>
+<span class="n">PkvFilt</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="path_filter"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.path_filter">[docs]</a><span class="k">def</span> <span class="nf">path_filter</span><span class="p">(</span><span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">PT</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Walk a dict, yielding paths to values that pass the ``pkv_filt``</span>
+
+<span class="sd">    :param pkv_filt: A function that takes a path, key, and value, and returns</span>
+<span class="sd">        ``True`` if the path should be yielded, and ``False`` otherwise</span>
+<span class="sd">    :param d: The ``Mapping`` to walk (scan through)</span>
+
+<span class="sd">    :return: An iterator of paths to values that pass the ``pkv_filt``</span>
+
+
+<span class="sd">    Example::</span>
+
+<span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 1, &#39;d&#39;: 2}, &#39;e&#39;: 3}}</span>
+<span class="sd">    &gt;&gt;&gt; list(path_filter(lambda p, k, v: v == 2, d))</span>
+<span class="sd">    [(&#39;a&#39;, &#39;b&#39;, &#39;d&#39;)]</span>
+
+<span class="sd">    &gt;&gt;&gt; mm = {</span>
+<span class="sd">    ...     &#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 42}},</span>
+<span class="sd">    ...     &#39;aa&#39;: {&#39;bb&#39;: {&#39;cc&#39;: &#39;meaning of life&#39;}},</span>
+<span class="sd">    ...     &#39;aaa&#39;: {&#39;bbb&#39;: 314},</span>
+<span class="sd">    ... }</span>
+<span class="sd">    &gt;&gt;&gt; return_path_if_int_leaf = lambda p, k, v: (p, v) if isinstance(v, int) else None</span>
+<span class="sd">    &gt;&gt;&gt; paths = list(path_filter(return_path_if_int_leaf, mm))</span>
+<span class="sd">    &gt;&gt;&gt; paths  # only the paths to the int leaves are returned</span>
+<span class="sd">    [(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), (&#39;aaa&#39;, &#39;bbb&#39;)]</span>
+
+<span class="sd">    The ``pkv_filt`` argument can use path, key, and/or value to define your search</span>
+<span class="sd">    query. For example, let&#39;s extract all the paths that have depth at least 3.</span>
+
+<span class="sd">    &gt;&gt;&gt; paths = list(path_filter(lambda p, k, v: len(p) &gt;= 3, mm))</span>
+<span class="sd">    &gt;&gt;&gt; paths</span>
+<span class="sd">    [(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), (&#39;aa&#39;, &#39;bb&#39;, &#39;cc&#39;)]</span>
+
+<span class="sd">    The rationale for ``path_filter`` yielding matching paths, and not values or keys,</span>
+<span class="sd">    is that if you have the paths, you can than get the keys and values with them,</span>
+<span class="sd">    using ``path_get``.</span>
+
+<span class="sd">    &gt;&gt;&gt; from functools import partial, reduce</span>
+<span class="sd">    &gt;&gt;&gt; path_get = lambda m, k: reduce(lambda m, k: m[k], k, m)</span>
+<span class="sd">    &gt;&gt;&gt; extract_paths = lambda m, paths: map(partial(path_get, m), paths)</span>
+<span class="sd">    &gt;&gt;&gt; vals = list(extract_paths(mm, paths))</span>
+<span class="sd">    &gt;&gt;&gt; vals</span>
+<span class="sd">    [42, &#39;meaning of life&#39;]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_yield_func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_path_matcher_yield_func</span><span class="p">,</span> <span class="n">pkv_filt</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">walker</span> <span class="o">=</span> <span class="n">kv_walk</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">yield_func</span><span class="o">=</span><span class="n">_yield_func</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">walker</span><span class="p">)</span></div>
+
+
+<span class="c1"># backwards compatibility quasi-alias (arguments are flipped)</span>
+<div class="viewcode-block" id="search_paths"><a class="viewcode-back" href="../../module_docs/dol/recipes.html#dol.paths.search_paths">[docs]</a><span class="k">def</span> <span class="nf">search_paths</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">PT</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;backwards compatibility quasi-alias (arguments are flipped)</span>
+<span class="sd">    Use path_filter instead, since search_paths will be deprecated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">path_filter</span><span class="p">(</span><span class="n">pkv_filt</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_path_matcher_yield_func</span><span class="p">(</span><span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">,</span> <span class="n">sentinel</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">PT</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to make (picklable) yield_funcs for paths_matching (through partial)&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">pkv_filt</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">p</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">sentinel</span>
+
+
+<span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_filter</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_mk_path_matcher</span><span class="p">(</span><span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">,</span> <span class="n">sentinel</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a yield_func that only yields paths that pass the pkv_filt,</span>
+<span class="sd">    and a sentinel (by default, ``None``) otherwise&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_path_matcher_yield_func</span><span class="p">,</span> <span class="n">pkv_filt</span><span class="p">,</span> <span class="n">sentinel</span><span class="p">)</span>
+
+
+<span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_filter</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_mk_pkv_filt</span><span class="p">(</span>
+    <span class="n">filt</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Union</span><span class="p">[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PkvFilt</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;pkv_filt based on a ``filt`` that matches EITHER path, key, or value.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_pkv_filt</span><span class="p">,</span> <span class="n">filt</span><span class="p">,</span> <span class="n">kind</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_pkv_filt</span><span class="p">(</span>
+    <span class="n">filt</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Union</span><span class="p">[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">],</span>
+    <span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">],</span>
+    <span class="n">p</span><span class="p">:</span> <span class="n">PT</span><span class="p">,</span>
+    <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span>
+    <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to make (picklable) pkv_filt based on a ``filt`` that matches EITHER</span>
+<span class="sd">    path, key, or value.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;path&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">filt</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;key&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">filt</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">filt</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid kind: </span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="KeyPath"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyPath">[docs]</a><span class="nd">@dataclass</span>

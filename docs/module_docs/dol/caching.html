@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.1.133 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.caching &mdash; dol 0.1.134 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -112,7 +112,7 @@
 <em class="property">class </em><code class="sig-prename descclassname">dol.caching.</code><code class="sig-name descname">WriteBackChainMap</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">maps</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#WriteBackChainMap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.caching.WriteBackChainMap" title="Permalink to this definition">¶</a></dt>
 <dd><p>A collections.ChainMap that also ‘writes back’ when a key is found.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">WriteBackChainMap</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">WriteBackChainMap</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">33</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="mi">444</span><span class="p">})</span>
 </pre></div>
 </div>
@@ -184,12 +184,12 @@ By default, it will use a dict</p></li>
 <span class="gp">...</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">SlowDict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>  <span class="c1"># Wow! Takes a long time to get &#39;a&#39;</span>
 <span class="go">1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">CachedSlowDict</span> <span class="o">=</span> <span class="n">mk_cached_store</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">SlowDict</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">CachedSlowDict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
@@ -225,7 +225,7 @@ By default, it will use a dict</p></li>
 <span class="go">cache: [&#39;a&#39;, &#39;b&#39;, &#39;d&#39;]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Of course, we could write &#39;d&#39; in the cache as well, to get it quicker,</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># but that&#39;s another story: The story of write caches!</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># And by the way, your &quot;cache wrapped&quot; store hold a pointer to the cache it&#39;s using,</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># so you can take a peep there if needed:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_cache</span>
@@ -263,12 +263,12 @@ By default, it will use a dict</p></li>
 <span class="gp">...</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">SlowDict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>  <span class="c1"># Wow! Takes a long time to get &#39;a&#39;</span>
 <span class="go">1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">CachedSlowDict</span> <span class="o">=</span> <span class="n">mk_cached_store</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">SlowDict</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">CachedSlowDict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
@@ -304,7 +304,7 @@ By default, it will use a dict</p></li>
 <span class="go">cache: [&#39;a&#39;, &#39;b&#39;, &#39;d&#39;]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Of course, we could write &#39;d&#39; in the cache as well, to get it quicker,</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># but that&#39;s another story: The story of write caches!</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># And by the way, your &quot;cache wrapped&quot; store hold a pointer to the cache it&#39;s using,</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># so you can take a peep there if needed:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_cache</span>
@@ -345,12 +345,12 @@ transforms the data in some way.</p></li>
 </dl>
 <p>Here are two stores pretending to be local and remote data stores respectively.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">mk_sourced_store</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Local</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;looking for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> in Local&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Remote</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;looking for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> in Remote&quot;</span><span class="p">)</span>
@@ -418,7 +418,7 @@ to remove all the contents of the store.
 You don’t want to do this unwittingly and delete a bunch of precious data!!</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">mk_write_cached_store</span><span class="p">,</span> <span class="n">ensure_clear_to_kv_store</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">print_state</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="n">store</span><span class="si">}</span><span class="s2"> ----- store._w_cache: </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">_w_cache</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="gp">...</span>
@@ -436,14 +436,14 @@ You don’t want to do this unwittingly and delete a bunch of precious data!!</p
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">flush_cache</span><span class="p">()</span>  <span class="c1"># manually flush the cache</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># note that store._w_cache is empty, but store has the data now</span>
 <span class="go">store: {&#39;hello&#39;: &#39;world&#39;, &#39;ding&#39;: &#39;dong&#39;} ----- store._w_cache: {}</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># But you usually want to use the store as a context manager</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">MyCachedStore</span> <span class="o">=</span> <span class="n">mk_write_cached_store</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">MyStore</span><span class="p">,</span> <span class="n">w_cache</span><span class="o">=</span><span class="p">{},</span>
 <span class="gp">... </span>    <span class="n">flush_cache_condition</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">the_persistent_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyCachedStore</span><span class="p">(</span><span class="n">the_persistent_dict</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">s</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;===&gt; Before writing data:&quot;</span><span class="p">)</span>
@@ -456,18 +456,18 @@ You don’t want to do this unwittingly and delete a bunch of precious data!!</p
 <span class="go">store: {} ----- store._w_cache: {}</span>
 <span class="go">===&gt; Before exiting the with block:</span>
 <span class="go">store: {} ----- store._w_cache: {&#39;hello&#39;: &#39;world&#39;}</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;===&gt; After exiting the with block:&quot;</span><span class="p">);</span> <span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># Note that the cache store flushed!</span>
 <span class="go">===&gt; After exiting the with block:</span>
 <span class="go">store: {&#39;hello&#39;: &#39;world&#39;} ----- store._w_cache: {}</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example of auto-flushing when there&#39;s at least two elements</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyStore</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span> <span class="o">...</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">MyCachedStore</span> <span class="o">=</span> <span class="n">mk_write_cached_store</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">MyStore</span><span class="p">,</span> <span class="n">w_cache</span><span class="o">=</span><span class="p">{},</span>
 <span class="gp">... </span>    <span class="n">flush_cache_condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">w_cache</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">w_cache</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyCachedStore</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">s</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
