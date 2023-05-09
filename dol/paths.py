@@ -369,7 +369,7 @@ PT = TypeVar('PT')  # Path Type
 PkvFilt = Callable[[PT, KT, VT], bool]
 
 
-def path_filter(pkv_filt: PkvFilt, d: Mapping, ) -> Iterator[PT]:
+def path_filter(pkv_filt: PkvFilt, d: Mapping,) -> Iterator[PT]:
     """Walk a dict, yielding paths to values that pass the ``pkv_filt``
 
     :param pkv_filt: A function that takes a path, key, and value, and returns
