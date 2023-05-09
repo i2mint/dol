@@ -1,7 +1,7 @@
 """
 This module contains key-value views of disparate sources.
 """
-from typing import Mapping, Iterable, Callable, Union, Any
+from typing import Iterator, Mapping, Iterable, Callable, Union, Any
 from operator import itemgetter
 from itertools import groupby as itertools_groupby
 
@@ -39,13 +39,13 @@ class NotUnique(ValueError):
     """Raised when an iterator was expected to have only one element, but had more"""
 
 
-NoMoreElements = type('NoMoreElements', (object,), {})()
+NoMoreElements = type("NoMoreElements", (object,), {})()
 
 
 def unique_element(iterator):
     element = next(iterator)
     if next(iterator, NoMoreElements) is not NoMoreElements:
-        raise NotUnique('iterator had more than one element')
+        raise NotUnique("iterator had more than one element")
     return element
 
 
@@ -66,6 +66,7 @@ def _kv_spec_to_func(kv_spec: KvSpec) -> Callable:
 # KvSpec.from = _kv_spec_to_func  # I'd like to be able to couple KvSpec and it's
 # conversion function (even more: __call__ instead of from)
 
+
 # TODO: Generalize to several layers
 #   Need a general tool for flattening views.
 #   What we're doing here is giving access to a nested/tree structure through a key-value
@@ -74,7 +75,7 @@ def _kv_spec_to_func(kv_spec: KvSpec) -> Callable:
 #   but determined by some rules executed dynamically.
 #   Related DirStore and kv_walk.
 class FlatReader(KvReader):
-    """Get a 'flat view' of a store of stores. 
+    """Get a 'flat view' of a store of stores.
     That is, where keys are `(first_level_key, second_level_key)` pairs.
 
     >>> readers = {
@@ -102,6 +103,51 @@ class FlatReader(KvReader):
     def __getitem__(self, k):
         first_level_path, second_level_path = k
         return self._readers[first_level_path][second_level_path]
+
+
+from collections import ChainMap
+
+
+class FanoutReader(KvReader):
+    """Get a 'fanout view' of a store of stores.
+    That is, when a key is requested, the key is passed to all the stores, and results
+    accumulated in a dict that is then returned.
+    """
+
+    def __init__(
+        self,
+        stores: Mapping,
+        default=None,
+        # *,
+        keys: Iterable = None,
+        # assert_all_have_key: bool=False,
+    ):
+        self._stores = stores
+        # TODO: More control on what to do with missing keys
+        self._default = default
+        # self._assert_all_have_key = assert_all_have_key
+        # TODO: Include more control over iteration mechanism. could be:
+        #   - iter over all keys of all stores (using ChainMap)
+        #   - iter over a specific store or stores
+        #   - iter over a given iterable of keys
+        if keys is None:
+            keys = ChainMap(*self._stores.values())
+        self._keys = keys
+
+    def __getitem__(self, k):
+        return {
+            store_key: store.get(k, self._default)
+            for store_key, store in self._stores.items()
+        }
+
+    def __iter__(self) -> Iterator:
+        return iter(self._keys)
+
+    def __len__(self) -> int:
+        return len(self._keys)
+
+    def __contains__(self, k) -> int:
+        return k in self._keys
 
 
 class SequenceKvReader(KvReader):
@@ -248,7 +294,7 @@ class SequenceKvReader(KvReader):
         for kk, vv in self.kv_items():
             if kk == k:
                 return vv
-        raise KeyError(f'Key not found: {k}')
+        raise KeyError(f"Key not found: {k}")
 
     def __iter__(self):
         yield from map(itemgetter(0), self.kv_items())
@@ -291,8 +337,8 @@ class FuncReader(KvReader):
     >>> s['pi']
     3.14159
 
-    You might want to give your own names to the functions. 
-    You might even have to (because the callable you're using doesn't have a `__name__`). 
+    You might want to give your own names to the functions.
+    You might even have to (because the callable you're using doesn't have a `__name__`).
     In that case, you can specify a ``{name: func, ...}`` dict instead of a simple
     iterable.
 
@@ -339,24 +385,24 @@ import os
 
 psep = os.path.sep
 
-ddir = lambda o: [x for x in dir(o) if not x.startswith('_')]
+ddir = lambda o: [x for x in dir(o) if not x.startswith("_")]
 
 
 def not_underscore_prefixed(x):
-    return not x.startswith('_')
+    return not x.startswith("_")
 
 
 def _path_to_module_str(path, root_path):
-    assert path.endswith('.py')
+    assert path.endswith(".py")
     path = path[:-3]
     if root_path.endswith(psep):
         root_path = root_path[:-1]
     root_path = os.path.dirname(root_path)
     len_root = len(root_path) + 1
     path_parts = path[len_root:].split(psep)
-    if path_parts[-1] == '__init__.py':
+    if path_parts[-1] == "__init__.py":
         path_parts = path_parts[:-1]
-    return '.'.join(path_parts)
+    return ".".join(path_parts)
 
 
 class ObjReader(KvReader):
@@ -365,18 +411,18 @@ class ObjReader(KvReader):
         copy_attrs(
             target=self,
             source=self.src,
-            attrs=('__name__', '__qualname__', '__module__'),
+            attrs=("__name__", "__qualname__", "__module__"),
             raise_error_if_an_attr_is_missing=False,
         )
 
     def __repr__(self):
-        return f'{self.__class__.__qualname__}({self.src})'
+        return f"{self.__class__.__qualname__}({self.src})"
 
     @property
     def _source(self):
         from warnings import warn
 
-        warn('Deprecated: Use .src instead of ._source', DeprecationWarning, 2)
+        warn("Deprecated: Use .src instead of ._source", DeprecationWarning, 2)
         return self.src
 
 
@@ -387,9 +433,10 @@ class ObjReader(KvReader):
 # class NestedObjReader(ObjReader):
 #     def __init__(self, obj, src_to_key, key_filt=None, ):
 
+
 # Pattern: Recursive navigation
 # Note: Moved dev to independent package called "guide"
-@cached_keys(keys_cache=set, name='Attrs')
+@cached_keys(keys_cache=set, name="Attrs")
 class Attrs(ObjReader):
     """A simple recursive KvReader for the attributes of a python object.
     Keys are attr names, values are Attrs(attr_val) instances.
@@ -417,7 +464,7 @@ class Attrs(ObjReader):
                 try:
                     name = _path_to_module_str(path, root_path)
                 except Exception:
-                    name = 'fake.module.name'
+                    name = "fake.module.name"
         spec = importlib.util.spec_from_file_location(name, path)
         foo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(foo)
@@ -430,7 +477,7 @@ class Attrs(ObjReader):
         return self.__class__(getattr(self.src, k), self._key_filt, self.getattrs)
 
     def __repr__(self):
-        return f'{self.__class__.__qualname__}({self.src}, {self._key_filt})'
+        return f"{self.__class__.__qualname__}({self.src}, {self._key_filt})"
 
 
 Ddir = Attrs  # for back-compatibility, temporarily
@@ -439,17 +486,17 @@ import re
 
 
 def _extract_first_identifier(string: str) -> str:
-    m = re.match(r'\w+', string)
+    m = re.match(r"\w+", string)
     if m:
         return m.group(0)
     else:
-        return ''
+        return ""
 
 
-def _dflt_object_namer(obj, dflt_name: str = 'name_not_found'):
+def _dflt_object_namer(obj, dflt_name: str = "name_not_found"):
     return (
-        getattr(obj, '__name__', None)
-        or _extract_first_identifier(getattr(obj, '__doc__'))
+        getattr(obj, "__name__", None)
+        or _extract_first_identifier(getattr(obj, "__doc__"))
         or dflt_name
     )
 
@@ -515,7 +562,7 @@ class AttrContainer:
             self._validate_named_objects(auto_named_objects, named_objects)
             named_objects = dict(auto_named_objects, **named_objects)
 
-        super().__setattr__('_source', {})
+        super().__setattr__("_source", {})
         for k, v in named_objects.items():
             setattr(self, k, v)
 
@@ -523,13 +570,13 @@ class AttrContainer:
     def _validate_named_objects(auto_named_objects, named_objects):
         if not all(map(str.isidentifier, auto_named_objects)):
             raise ValueError(
-                'All names produced by _object_namer should be valid python identifiers:'
+                "All names produced by _object_namer should be valid python identifiers:"
                 f" {', '.join(x for x in auto_named_objects if not x.isidentifier())}"
             )
         clashing_names = auto_named_objects.keys() & named_objects.keys()
         if clashing_names:
             raise ValueError(
-                'Some auto named objects clashed with named ones: '
+                "Some auto named objects clashed with named ones: "
                 f"{', '.join(clashing_names)}"
             )
 
