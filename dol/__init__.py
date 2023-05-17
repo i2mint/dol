@@ -98,7 +98,8 @@ from dol.trans import (
     disable_delitem,  # disable ability to delete
     disable_setitem,  # disable ability to write to a store
     mk_read_only,  # disable ability to write to a store or delete its keys
-    insert_aliases,  # insert aliases for store methods
+    add_aliases,  # delegation-wrap any object and add aliases for its methods
+    insert_aliases,  # insert aliases for special (dunder) store methods
     cache_iter,  # being deprecated
 )
 
