@@ -337,6 +337,19 @@ class FileBytesReader(FileCollection, KvReader):
         with open(k, **self._read_open_kwargs) as fp:
             return fp.read()
 
+    @validate_key_and_raise_key_error_on_exception
+    def iter_thru_item(self, k, chunk_size=1):
+        '''
+        Generator to read the item chunk by chunk
+        Last chunk is given as such (no padding, no truncation)
+        '''
+        with open(k, **self._read_open_kwargs) as fp:
+            while True:
+                data = fp.read(chunk_size)
+                if not data:
+                    break
+                yield data
+
 
 class LocalFileDeleteMixin:
     @validate_key_and_raise_key_error_on_exception
