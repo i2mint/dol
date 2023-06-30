@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.1.135 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.1.136 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -100,6 +100,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;Transformation/wrapping tools&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">reduce</span>
 <span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">SimpleNamespace</span>
 <span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span><span class="p">,</span> <span class="n">Parameter</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
@@ -2169,13 +2170,86 @@
     <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;TransObj&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()})()</span></div>
 
 
+<span class="n">_kv_wrap_trans_names</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;_key_of_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;_id_of_key&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;_obj_of_data&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;_data_of_obj&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;_preset&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;_postget&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">SimpleDelegator</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span> <span class="o">=</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="si">=}</span><span class="s1"> is not callable&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="add_aliases"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.add_aliases">[docs]</a><span class="k">def</span> <span class="nf">add_aliases</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="o">**</span><span class="n">aliases</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A function that wraps the object instance and adds aliases.</span>
+
+<span class="sd">    See also, and not to be confused with ``insert_aliases``, which adds aliases to</span>
+<span class="sd">    dunder mapping methods (like ``__iter__``, ``__getitem__``) etc.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">aliases</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_obj</span> <span class="o">=</span> <span class="n">SimpleDelegator</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">aliases</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">new_obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">new_obj</span><span class="p">,</span> <span class="n">alias</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">new_obj</span></div>
+
+
 <div class="viewcode-block" id="kv_wrap"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.kv_wrap">[docs]</a><span class="k">def</span> <span class="nf">kv_wrap</span><span class="p">(</span><span class="n">trans_obj</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    kv_wrap: A function that makes a wrapper (a decorator) that will get the wrappers from methods of the input object.</span>
+<span class="sd">    A function that makes a wrapper (a decorator) that will get the wrappers from</span>
+<span class="sd">    methods of the input object.</span>
 
-<span class="sd">    kv_wrap also has attributes:</span>
-<span class="sd">        outcoming_keys, ingoing_keys, outcoming_vals, ingoing_vals, and val_reads_wrt_to_keys</span>
-<span class="sd">    which will only add a single specific wrapper (specified as a function), when that&#39;s what you need.</span>
+<span class="sd">    :param trans_obj: An object that contains (as attributes) the collection of</span>
+<span class="sd">        transformation functions. The attribute names that are used, natively, to make</span>
+<span class="sd">        the wrapper are ``_key_of_id``, ``_id_of_key``, ``_obj_of_data``,</span>
+<span class="sd">        ``_data_of_obj``, ``_preset``, and ``_postget``.</span>
+
+<span class="sd">    If your ``trans_obj`` uses different names for these functions, you can use the</span>
+<span class="sd">    ``add_aliases`` function. We&#39;ll demo the use of ``add_aliases`` here:</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol import kv_wrap, add_aliases, Pipe</span>
+<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; class SeparatorTrans:</span>
+<span class="sd">    ...     def __init__(self, sep: str):</span>
+<span class="sd">    ...         self.sep = sep</span>
+<span class="sd">    ...     def string_to_tuple(self, string: str):</span>
+<span class="sd">    ...         return tuple(string.split(self.sep))</span>
+<span class="sd">    ...     def tuple_to_string(self, tup: tuple):</span>
+<span class="sd">    ...         return self.sep.join(tup)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; _add_aliases = partial(</span>
+<span class="sd">    ...     add_aliases, _key_of_id=&#39;string_to_tuple&#39;, _id_of_key=&#39;tuple_to_string&#39;</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; mk_sep_trans = Pipe(SeparatorTrans, _add_aliases, kv_wrap)</span>
+<span class="sd">    &gt;&gt;&gt; sep_trans = mk_sep_trans(&#39;/&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; d = sep_trans({&#39;a/b/c&#39;: 1, &#39;d/e&#39;: 2})</span>
+<span class="sd">    &gt;&gt;&gt; list(d)</span>
+<span class="sd">    [(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), (&#39;d&#39;, &#39;e&#39;)]</span>
+<span class="sd">    &gt;&gt;&gt; d[&#39;d&#39;, &#39;e&#39;]</span>
+<span class="sd">    2</span>
+
+<span class="sd">    ``kv_wrap`` also has convenience attributes:</span>
+<span class="sd">        ``outcoming_keys``, ``ingoing_keys``, ``outcoming_vals``, ``ingoing_vals``, </span>
+<span class="sd">        and ``val_reads_wrt_to_keys``</span>
+<span class="sd">    which will only add a single specific wrapper (specified as a function), </span>
+<span class="sd">    when that&#39;s what you need.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -2772,6 +2846,8 @@
 <span class="sd">    `store.dump(key, val)`, not `store.dump(val, key)`, which is the signature you&#39;re probably used to</span>
 <span class="sd">    (it&#39;s the one used by json.dump or pickle.dump for example). If you want that familiar interface,</span>
 <span class="sd">    using the insert_load_dump_aliases function.</span>
+
+<span class="sd">    See also (and not to be confused with): ``add_aliases``</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        store: The store to extend with aliases.</span>
