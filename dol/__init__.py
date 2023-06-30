@@ -129,6 +129,8 @@ from dol.paths import (
     path_filter,  # search through paths of a Mapping
 )
 
+from dol.dig import trace_getitem  # trace getitem calls, stepping through the layers
+
 from dol.explicit import ExplicitKeyMap, invertible_maps
 
 
