@@ -16,6 +16,7 @@ from dol.util import exhaust
 
 utc_now = time.time
 
+
 def define_extend_as_seq_of_appends(obj):
     """Inject an extend method in obj that will used append method.
 
@@ -202,14 +203,17 @@ class mk_item2kv_for:
 
         """
         if time_postproc is None:
+
             def item2kv(item):
                 # Note: If real time accuracy is needed, you should use your own optimized
-                # item2kv function. 
+                # item2kv function.
                 return factor * utc_now() + offset_s, item
+
         else:
+
             def item2kv(item):
                 # Note: If real time accuracy is needed, you should use your own optimized
-                # item2kv function. 
+                # item2kv function.
                 return time_postproc(factor * utc_now() + offset_s), item
 
         return item2kv

@@ -110,6 +110,7 @@ def temp_dir(dirname='', make_it_if_necessary=True, verbose=False):
         ensure_dir(tmpdir, verbose)
     return tmpdir
 
+
 mk_tmp_dol_dir = temp_dir  # for backward compatibility
 
 
