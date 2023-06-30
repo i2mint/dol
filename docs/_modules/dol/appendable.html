@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.appendable &mdash; dol 0.1.136 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.appendable &mdash; dol 0.1.137 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -108,9 +108,12 @@
 
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">store_decorator</span>
 <span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">exhaust</span>
+
+<span class="n">utc_now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span>
 
 
 <div class="viewcode-block" id="define_extend_as_seq_of_appends"><a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.define_extend_as_seq_of_appends">[docs]</a><span class="k">def</span> <span class="nf">define_extend_as_seq_of_appends</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
@@ -272,7 +275,7 @@
         <span class="k">return</span> <span class="n">item2kv</span></div>
 
 <div class="viewcode-block" id="mk_item2kv_for.utc_key"><a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for.utc_key">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">utc_key</span><span class="p">(</span><span class="n">offset_s</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">utc_key</span><span class="p">(</span><span class="n">offset_s</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">time_postproc</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make an item2kv function that uses the current time as the key, and the unchanged item as a value.</span>
 <span class="sd">        The offset_s, which is added to the output key, can be used, for example, to align to another system&#39;s clock,</span>
 <span class="sd">        or to get a more accurate timestamp of an event.</span>
@@ -298,15 +301,19 @@
 <span class="sd">        &gt;&gt;&gt; assert v == &#39;some data&#39;  # just the item itself</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">offset_s</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># splitting for extra speed (important in real time apps)</span>
+        <span class="k">if</span> <span class="n">time_postproc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 
             <span class="k">def</span> <span class="nf">item2kv</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="n">item</span>
+                <span class="c1"># Note: If real time accuracy is needed, you should use your own optimized</span>
+                <span class="c1"># item2kv function.</span>
+                <span class="k">return</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">utc_now</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset_s</span><span class="p">,</span> <span class="n">item</span>
 
         <span class="k">else</span><span class="p">:</span>
 
             <span class="k">def</span> <span class="nf">item2kv</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset_s</span><span class="p">,</span> <span class="n">item</span>
+                <span class="c1"># Note: If real time accuracy is needed, you should use your own optimized</span>
+                <span class="c1"># item2kv function.</span>
+                <span class="k">return</span> <span class="n">time_postproc</span><span class="p">(</span><span class="n">factor</span> <span class="o">*</span> <span class="n">utc_now</span><span class="p">()</span> <span class="o">+</span> <span class="n">offset_s</span><span class="p">),</span> <span class="n">item</span>
 
         <span class="k">return</span> <span class="n">item2kv</span></div>
 
