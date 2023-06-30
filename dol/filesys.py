@@ -102,13 +102,15 @@ def ensure_dir(dirpath, verbose: Union[bool, str, Callable] = False):
     return dirpath
 
 
-def mk_tmp_dol_dir(dirname='', make_it_if_necessary=True, verbose=False):
+def temp_dir(dirname='', make_it_if_necessary=True, verbose=False):
     from tempfile import gettempdir
 
     tmpdir = os.path.join(gettempdir(), dirname)
     if make_it_if_necessary:
         ensure_dir(tmpdir, verbose)
     return tmpdir
+
+mk_tmp_dol_dir = temp_dir  # for backward compatibility
 
 
 def mk_absolute_path(path_format):

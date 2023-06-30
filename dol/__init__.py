@@ -70,7 +70,8 @@ from dol.filesys import (
     MakeMissingDirsStoreMixin,  # Mixin to enable auto-dir-making on write
     resolve_path,  # to get a full path (resolve ~ and .),
     resolve_dir,  # to get a full path (resolve ~ and .) and ensure it is a directory
-    DirReader,  # recursive read-only access to directories
+    DirReader,  # recursive read-only access to directories,
+    temp_dir,  # make a temporary directory
 )
 
 from dol.util import (

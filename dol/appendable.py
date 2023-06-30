@@ -9,10 +9,12 @@ See add_append_functionality_to_store_cls docs for examples.
 
 import time
 import types
+from typing import Callable, Optional
 
 from dol.trans import store_decorator
 from dol.util import exhaust
 
+utc_now = time.time
 
 def define_extend_as_seq_of_appends(obj):
     """Inject an extend method in obj that will used append method.
@@ -173,7 +175,7 @@ class mk_item2kv_for:
         return item2kv
 
     @staticmethod
-    def utc_key(offset_s=0.0):
+    def utc_key(offset_s=0, factor=1, *, time_postproc: Optional[Callable] = None):
         """Make an item2kv function that uses the current time as the key, and the unchanged item as a value.
         The offset_s, which is added to the output key, can be used, for example, to align to another system's clock,
         or to get a more accurate timestamp of an event.
@@ -199,15 +201,16 @@ class mk_item2kv_for:
         >>> assert v == 'some data'  # just the item itself
 
         """
-        if offset_s == 0.0:  # splitting for extra speed (important in real time apps)
-
+        if time_postproc is None:
             def item2kv(item):
-                return time.time(), item
-
+                # Note: If real time accuracy is needed, you should use your own optimized
+                # item2kv function. 
+                return factor * utc_now() + offset_s, item
         else:
-
             def item2kv(item):
-                return time.time() + offset_s, item
+                # Note: If real time accuracy is needed, you should use your own optimized
+                # item2kv function. 
+                return time_postproc(factor * utc_now() + offset_s), item
 
         return item2kv
 
