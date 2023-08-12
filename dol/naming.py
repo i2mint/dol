@@ -569,7 +569,7 @@ class StrTupleDict(object):
         return self.sep.join(self.str_to_tuple(s))
 
     def simple_str_to_str(self, ss: str):
-        return self.tuple_to_str(ss.split(self.sep))
+        return self.tuple_to_str(ss)
 
     def super_dict_to_str(self, d: dict):
         """Like dict_to_str, but the input dict can have extra keys that are not used by dict_to_str"""
