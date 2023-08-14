@@ -94,20 +94,26 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
                 raise type(error)(on_error)
             else:
                 raise ValueError(
-                    f'on_error should be a callable (input is a dict) or a string. '
-                    f'Was: {on_error}'
+                    f"on_error should be a callable (input is a dict) or a string. "
+                    f"Was: {on_error}"
                 )
     return result
 
 
-def split_if_str(obj, sep='.'):
+def split_if_str(obj, sep="."):
     if isinstance(obj, str):
         return obj.split(sep)
     return obj
@@ -119,7 +125,7 @@ def cast_to_int_if_numeric_str(k):
     return k
 
 
-def separate_keys_with_separator(obj, sep='.'):
+def separate_keys_with_separator(obj, sep="."):
     return map(cast_to_int_if_numeric_str, split_if_str(obj, sep))
 
 
@@ -149,7 +155,7 @@ def path_get(
     path,
     on_error: OnErrorType = raise_on_error,
     *,
-    sep='.',
+    sep=".",
     key_transformer=cast_to_int_if_numeric_str,
     get_value: Callable = get_attr_or_item,
     caught_errors=(Exception,),
@@ -250,7 +256,7 @@ def path_set(
     key_path: Iterable[KT],
     val: VT,
     *,
-    sep: str = '.',
+    sep: str = ".",
     new_mapping: Callable[[], VT] = dict,
 ):
     """
@@ -365,11 +371,14 @@ from typing import Callable, Mapping, KT, VT, TypeVar, Iterator, Union, Literal
 from dol.base import kv_walk
 
 
-PT = TypeVar('PT')  # Path Type
+PT = TypeVar("PT")  # Path Type
 PkvFilt = Callable[[PT, KT, VT], bool]
 
 
-def path_filter(pkv_filt: PkvFilt, d: Mapping,) -> Iterator[PT]:
+def path_filter(
+    pkv_filt: PkvFilt,
+    d: Mapping,
+) -> Iterator[PT]:
     """Walk a dict, yielding paths to values that pass the ``pkv_filt``
 
     :param pkv_filt: A function that takes a path, key, and value, and returns
@@ -444,7 +453,7 @@ def _mk_path_matcher(pkv_filt: PkvFilt, sentinel=None):
 
 @add_as_attribute_of(path_filter)
 def _mk_pkv_filt(
-    filt: Callable[[Union[PT, KT, VT]], bool], kind: Literal['path', 'key', 'value']
+    filt: Callable[[Union[PT, KT, VT]], bool], kind: Literal["path", "key", "value"]
 ) -> PkvFilt:
     """pkv_filt based on a ``filt`` that matches EITHER path, key, or value."""
     return partial(_pkv_filt, filt, kind)
@@ -452,21 +461,21 @@ def _mk_pkv_filt(
 
 def _pkv_filt(
     filt: Callable[[Union[PT, KT, VT]], bool],
-    kind: Literal['path', 'key', 'value'],
+    kind: Literal["path", "key", "value"],
     p: PT,
     k: KT,
     v: VT,
 ):
     """Helper to make (picklable) pkv_filt based on a ``filt`` that matches EITHER
     path, key, or value."""
-    if kind == 'path':
+    if kind == "path":
         return filt(p)
-    elif kind == 'key':
+    elif kind == "key":
         return filt(k)
-    elif kind == 'value':
+    elif kind == "value":
         return filt(v)
     else:
-        raise ValueError(f'Invalid kind: {kind}')
+        raise ValueError(f"Invalid kind: {kind}")
 
 
 @dataclass
@@ -592,7 +601,7 @@ class PrefixRelativizationMixin:
     dict_items([('/root/of/data/foo', 'bar'), ('/root/of/data/too', 'much')])
     """
 
-    _prefix_attr_name = '_prefix'
+    _prefix_attr_name = "_prefix"
 
     @lazyprop
     def _prefix_length(self):
@@ -619,13 +628,17 @@ class PrefixRelativization(PrefixRelativizationMixin):
     In fact, not only strings, but any key object that has a __len__, __add__, and subscripting.
     """
 
-    def __init__(self, _prefix=''):
+    def __init__(self, _prefix=""):
         self._prefix = _prefix
 
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr="_prefix",
 ):
     """
 
@@ -677,7 +690,7 @@ def mk_relative_path_store(
         from warnings import warn
 
         warn(
-            f'The use of name argumment is deprecated. Use __name__ instead',
+            f"The use of name argumment is deprecated. Use __name__ instead",
             DeprecationWarning,
         )
 
@@ -686,17 +699,17 @@ def mk_relative_path_store(
     @wraps(store_cls.__init__)
     def __init__(self, *args, **kwargs):
         Store.__init__(self, store=store_cls(*args, **kwargs))
-        prefix = recursive_get_attr(self.store, prefix_attr, '')
+        prefix = recursive_get_attr(self.store, prefix_attr, "")
         setattr(
             self, prefix_attr, prefix
         )  # TODO: Might need descriptor to enable assignment
 
     cls.__init__ = __init__
 
-    if prefix_attr != '_prefix':
-        assert not hasattr(store_cls, '_prefix'), (
-            f'You already have a _prefix attribute, '
-            f'but want the prefix name to be {prefix_attr}. '
+    if prefix_attr != "_prefix":
+        assert not hasattr(store_cls, "_prefix"), (
+            f"You already have a _prefix attribute, "
+            f"but want the prefix name to be {prefix_attr}. "
             f"That's not going to be easy for me."
         )
 
@@ -712,8 +725,8 @@ def mk_relative_path_store(
         cls._prefix = _prefix
 
     if with_key_validation:
-        assert hasattr(store_cls, 'is_valid_key'), (
-            'If you want with_key_validation=True, '
+        assert hasattr(store_cls, "is_valid_key"), (
+            "If you want with_key_validation=True, "
             "you'll need a method called is_valid_key to do the validation job"
         )
 
@@ -723,7 +736,7 @@ def mk_relative_path_store(
                 return _id
             else:
                 raise KeyError(
-                    f'Key not valid (usually because does not exist or access not permitted): {k}'
+                    f"Key not valid (usually because does not exist or access not permitted): {k}"
                 )
 
         cls._id_of_key = _id_of_key
@@ -758,10 +771,10 @@ from enum import Enum
 
 
 class PathKeyTypes(Enum):
-    str = 'str'
-    dict = 'dict'
-    tuple = 'tuple'
-    namedtuple = 'namedtuple'
+    str = "str"
+    dict = "dict"
+    tuple = "tuple"
+    namedtuple = "namedtuple"
 
 
 path_key_type_for_type = {
@@ -772,20 +785,20 @@ path_key_type_for_type = {
 
 _method_names_for_path_type = {
     PathKeyTypes.str: {
-        '_id_of_key': StrTupleDict.simple_str_to_str,
-        '_key_of_id': StrTupleDict.str_to_simple_str,
+        "_id_of_key": StrTupleDict.simple_str_to_str,
+        "_key_of_id": StrTupleDict.str_to_simple_str,
     },
     PathKeyTypes.dict: {
-        '_id_of_key': StrTupleDict.dict_to_str,
-        '_key_of_id': StrTupleDict.str_to_dict,
+        "_id_of_key": StrTupleDict.dict_to_str,
+        "_key_of_id": StrTupleDict.str_to_dict,
     },
     PathKeyTypes.tuple: {
-        '_id_of_key': StrTupleDict.tuple_to_str,
-        '_key_of_id': StrTupleDict.str_to_tuple,
+        "_id_of_key": StrTupleDict.tuple_to_str,
+        "_key_of_id": StrTupleDict.str_to_tuple,
     },
     PathKeyTypes.namedtuple: {
-        '_id_of_key': StrTupleDict.namedtuple_to_str,
-        '_key_of_id': StrTupleDict.str_to_namedtuple,
+        "_id_of_key": StrTupleDict.namedtuple_to_str,
+        "_key_of_id": StrTupleDict.str_to_namedtuple,
     },
 }
 
@@ -798,6 +811,7 @@ _method_names_for_path_type = {
 # def simple_str_to_str(self, ss: str):
 #     self.tuple_to_str(self.si)
 
+
 # TODO: Add key and id type validation
 def str_template_key_trans(
     template: str,
@@ -805,7 +819,7 @@ def str_template_key_trans(
     format_dict=None,
     process_kwargs=None,
     process_info_dict=None,
-    named_tuple_type_name='NamedTuple',
+    named_tuple_type_name="NamedTuple",
     sep: str = path_sep,
 ):
     """Make a key trans object that translates from a string _id to a dict, tuple, or namedtuple key (and back)"""
@@ -819,13 +833,13 @@ def str_template_key_trans(
 
     setattr(
         PathKeyMapper,
-        '_id_of_key',
-        _method_names_for_path_type[key_type]['_id_of_key'],
+        "_id_of_key",
+        _method_names_for_path_type[key_type]["_id_of_key"],
     )
     setattr(
         PathKeyMapper,
-        '_key_of_id',
-        _method_names_for_path_type[key_type]['_key_of_id'],
+        "_key_of_id",
+        _method_names_for_path_type[key_type]["_key_of_id"],
     )
 
     key_trans = PathKeyMapper(
@@ -890,3 +904,139 @@ def rel_path_wrap(o, _prefix):
 #     MyStore.__name__ = name
 #
 #     return MyStore
+
+
+## Alternative to StrTupleDict (staging here for now, but should replace when ready)
+
+import re
+import string
+from collections import namedtuple
+
+
+# TODO: Do we really want to allow field_patterns to be included in the template (the `{name:pattern}` options)?
+#  Normally, this is used for string GENERATION as `{name:format}`, which is still useful for us here too.
+class StringTemplate:
+    def __init__(self, template: str, field_patterns: dict = None):
+        self.template = template
+        self.field_patterns = field_patterns or {}
+        self._construct_regex()
+
+    def _construct_regex(self):
+        formatter = string.Formatter()
+        pattern = self.template
+        self.field_names = []
+        for literal_text, field_name, format_spec, conversion in formatter.parse(self.template):
+            # Check if the field_name has either a format_spec (regex) in the template 
+            # or a matching regex in the field_patterns dictionary before adding it 
+            # to the field_names list.
+            if field_name and (format_spec or field_name in self.field_patterns):
+                self.field_names.append(field_name)
+                regex = format_spec or self.field_patterns.get(field_name, ".*?")
+                to_replace = (
+                    "{" + field_name + (":" + format_spec if format_spec else "") + "}"
+                )
+                pattern = pattern.replace(to_replace, f"(?P<{field_name}>{regex})")
+        self.regex = re.compile(pattern)
+
+
+    def str_to_dict(self, s: str) -> dict:
+        """Parses the input string and returns a dictionary of extracted values.
+
+        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+
+        >>> st.str_to_dict("Alice is 30 years old.")
+        {'name': 'Alice', 'age': '30'}
+        """
+        match = self.regex.match(s)
+        if match:
+            return match.groupdict()
+        else:
+            raise ValueError(f"String '{s}' does not match the template.")
+
+    def dict_to_str(self, params: dict) -> str:
+        """Generates a string from the dictionary values based on the template.
+
+        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st.dict_to_str({'name': 'Alice', 'age': '30'})
+        'Alice is 30 years old.'
+
+        """
+        return self.template.format(**params)
+
+    def dict_to_tuple(self, params: dict) -> tuple:
+        """Generates a tuple from the dictionary values based on the template.
+
+        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st.dict_to_tuple({'name': 'Alice', 'age': '30'})
+        ('Alice', '30')
+        """
+        return tuple(params.get(field_name) for field_name in self.field_names)
+
+    def tuple_to_dict(self, params: tuple) -> dict:
+        """Generates a dictionary from the tuple values based on the template.
+
+        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st.tuple_to_dict(('Alice', '30'))
+        {'name': 'Alice', 'age': '30'}
+        """
+        return {
+            field_name: value for field_name, value in zip(self.field_names, params)
+        }
+
+    def str_to_tuple(self, s: str) -> tuple:
+        """Parses the input string and returns a tuple of extracted values.
+
+        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st.str_to_tuple("Alice is 30 years old.")
+        ('Alice', '30')
+        """
+        return self.dict_to_tuple(self.str_to_dict(s))
+
+    def tuple_to_str(self, params: tuple) -> str:
+        """Generates a string from the tuple values based on the template.
+
+        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st.tuple_to_str(('Alice', '30'))
+        'Alice is 30 years old.'
+        """
+        return self.dict_to_str(self.tuple_to_dict(params))
+
+    def dict_to_namedtuple(
+        self, params: dict, namedtuple_type_name: str = "NamedTuple"
+    ):
+        """Generates a namedtuple from the dictionary values based on the template.
+
+        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> Person = st.dict_to_namedtuple({'name': 'Alice', 'age': '30'})
+        >>> Person
+        NamedTuple(name='Alice', age='30')
+        """
+        return namedtuple(namedtuple_type_name, params.keys())(**params)
+
+    def namedtuple_to_dict(self, nt):
+        """Converts a namedtuple to a dictionary.
+
+        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> Person = st.dict_to_namedtuple({'name': 'Alice', 'age': '30'})
+        >>> st.namedtuple_to_dict(Person)
+        {'name': 'Alice', 'age': '30'}
+        """
+        return dict(nt._asdict())
+
+    def str_to_simple_str(self, s: str, sep: str):
+        """Converts a string to a simple string (i.e. a simple character-delimited string).
+
+        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st.str_to_simple_str("Alice is 30 years old.", '-')
+        'Alice-30'
+        """
+        return sep.join(self.str_to_tuple(s))
+
+    def simple_str_to_str(self, ss: str, sep: str):
+        """Converts a simple character-delimited string to a string.
+
+        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st.simple_str_to_str('Alice-30', '-')
+        'Alice is 30 years old.'
+        """
+        return self.tuple_to_str(tuple(ss.split(sep)))
