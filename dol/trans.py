@@ -556,7 +556,7 @@ def disallow_overwrites(store, *, error_msg=None, disable_deletes=True):
                         k
                     )
                 )
-            return super().__setitem__(k, v)
+            return super(type(self), self).__setitem__(k, v)
 
 
 class OverWritesNotAllowedMixin:
