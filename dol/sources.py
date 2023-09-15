@@ -108,37 +108,114 @@ class FlatReader(KvReader):
 from collections import ChainMap
 
 
+from collections import ChainMap
+from typing import Callable, Iterable, Iterator, Mapping, TypedDict, Union
+
+from dol.base import KvPersister, KvReader
+from dol.trans import wrap_kvs
+
+
 class FanoutReader(KvReader):
     """Get a 'fanout view' of a store of stores.
     That is, when a key is requested, the key is passed to all the stores, and results
     accumulated in a dict that is then returned.
+
+    Args:
+        `*args`: sub-stores used to fan-out the data. These stores will be represented by 
+            their index in the tuple.
+        `default`: default value to return by a store if the requested key is not in the 
+            store. Note that a KeyError is raised if the key is not in any of the stores.
+        `get_existing_values_only`: if True, only return values for stores that contain 
+            the key.
+        `**kwargs`: sub-stores used to fan-out the data, with their own user-defined keys
+
+    Let's define the following sub-stores:
+
+    >>> bytes_store = dict(
+    ...     a=b'a',
+    ...     b=b'b',
+    ...     c=b'c',
+    ... )
+    >>> metadata_store = dict(
+    ...     b=dict(x=2),
+    ...     c=dict(x=3),
+    ...     d=dict(x=4),
+    ... )
+
+    We can create a fan-out reader from these stores:
+
+    >>> reader = FanoutReader(bytes_store, metadata_store)
+    >>> reader['b']
+    {0: b'b', 1: {'x': 2}}
+
+    The reader returns a dict with the values from each store, keyed by the index of the
+    store in the `args` tuple.
+
+    We can also create a fan-out reader passing the stores in kwargs:
+
+    >>> reader = FanoutReader(bytes_store=bytes_store, metadata_store=metadata_store)
+    >>> reader['b']
+    {'bytes_store': b'b', 'metadata_store': {'x': 2}}
+
+    This way, the returned value is keyed by the name of the store.
+
+    We can also mix args and kwargs:
+
+    >>> reader = FanoutReader(bytes_store, metadata_store=metadata_store)
+    >>> reader['b']
+    {0: b'b', 'metadata_store': {'x': 2}}
+
+    Note that the order of the stores is determined by the order of the args and kwargs.
+
+    We can also pass a default value to return if the key is not in the store:
+
+    >>> reader = FanoutReader(
+    ...     bytes_store=bytes_store,
+    ...     metadata_store=metadata_store,
+    ...     default='no value in this store for this key', 
+    ... )
+    >>> reader['a']
+    {'bytes_store': b'a', 'metadata_store': 'no value in this store for this key'}
+
+    If the key is not in any of the stores, a KeyError is raised:
+
+    >>> reader['z']
+    Traceback (most recent call last):
+        ...
+    KeyError: 'z'
+
+    We can also pass `get_existing_values_only=True` to only return values for stores
+    that contain the key:
+
+    >>> reader = FanoutReader(
+    ...     bytes_store=bytes_store,
+    ...     metadata_store=metadata_store,
+    ...     get_existing_values_only=True,
+    ... )
+    >>> reader['a']
+    {'bytes_store': b'a'}
     """
 
-    def __init__(
-        self,
-        stores: Mapping,
-        default=None,
-        # *,
-        keys: Iterable = None,
-        # assert_all_have_key: bool=False,
-    ):
-        self._stores = stores
-        # TODO: More control on what to do with missing keys
+    def __init__(self, *args, default=None, get_existing_values_only=False, **kwargs):
+        # Merge stores passed in args and kwargs into a single dict
+        self._stores = dict({i: store for i, store in enumerate(args)}, **kwargs)
         self._default = default
-        # self._assert_all_have_key = assert_all_have_key
-        # TODO: Include more control over iteration mechanism. could be:
-        #   - iter over all keys of all stores (using ChainMap)
-        #   - iter over a specific store or stores
-        #   - iter over a given iterable of keys
-        if keys is None:
-            keys = ChainMap(*self._stores.values())
-        self._keys = keys
+        self._get_existing_values_only = get_existing_values_only
+
+    @property
+    def _keys(self):
+        return ChainMap(*self._stores.values())
 
     def __getitem__(self, k):
-        return {
+        v = {
             store_key: store.get(k, self._default)
             for store_key, store in self._stores.items()
         }
+        if all(v == self._default for v in v.values()):
+            raise KeyError(k)
+        if self._get_existing_values_only:
+            v = {k: v for k, v in v.items() if v != self._default}
+        return v
 
     def __iter__(self) -> Iterator:
         return iter(self._keys)
@@ -148,6 +225,177 @@ class FanoutReader(KvReader):
 
     def __contains__(self, k) -> int:
         return k in self._keys
+
+
+class FanoutPersister(FanoutReader, KvPersister):
+    '''
+    A fanout persister is a fanout reader that can also set and delete items.
+
+    Args:
+        `*args`: sub-stores used to fan-out the data. These stores will be represented by 
+            their index in the tuple.
+        `default`: default value to return by a store if the requested key is not in the 
+            store. Note that a KeyError is raised if the key is not in any of the stores.
+        `get_existing_values_only`: if True, only return values for stores that contain 
+            the key.
+        `**kwargs`: sub-stores used to fan-out the data, with their own user-defined keys
+
+    Let's create a persister from in-memory stores:
+
+    >>> bytes_store = dict()
+    >>> metadata_store = dict()
+    >>> persister = FanoutPersister(
+    ...     bytes_store=bytes_store,
+    ...     metadata_store=metadata_store,
+    ... )
+
+    The persister sets the values in each store, based on the store key in the value dict.
+
+    >>> persister['a'] = dict(bytes_store=b'a', metadata_store=dict(x=1))
+    >>> persister['a']
+    {'bytes_store': b'a', 'metadata_store': {'x': 1}}
+
+    By default, not all stores must be set when setting a value:
+
+    >>> persister['b'] = dict(bytes_store=b'b')
+    >>> persister['b']
+    {'bytes_store': b'b', 'metadata_store': None}
+
+    This allow to update a subset of the stores whithout having to set all the stores.
+
+    >>> persister['a'] = dict(bytes_store=b'A')
+    >>> persister['a']
+    {'bytes_store': b'A', 'metadata_store': {'x': 1}}
+
+    This behavior can be changed by passing `need_to_set_all_stores=True`:
+
+    >>> persister_all_stores = FanoutPersister(
+    ...     bytes_store=dict(),
+    ...     metadata_store=dict(),
+    ...     need_to_set_all_stores=True,
+    ... )
+    >>> persister_all_stores['a'] = dict(bytes_store=b'a')
+    Traceback (most recent call last):
+        ...
+    ValueError: All stores must be set when setting a value. Missing stores: {'metadata_store'}
+    
+    By default, if a store key from the value is not in the persister, a ValueError is 
+    raised:
+
+    >>> persister['a'] = dict(
+    ...     bytes_store=b'a', metadata_store=dict(y=1), other_store='some value'
+    ... )
+    Traceback (most recent call last):
+        ...
+    ValueError: The value contains some invalid store keys: {'other_store'}
+
+    This behavior can be changed by passing `ignore_non_existing_store_keys=True`:
+
+    >>> persister_ignore_non_existing_store_keys = FanoutPersister(
+    ...     bytes_store=dict(),
+    ...     metadata_store=dict(),
+    ...     ignore_non_existing_store_keys=True,
+    ... )
+    >>> persister_ignore_non_existing_store_keys['a'] = dict(
+    ...     bytes_store=b'a', metadata_store=dict(y=1), other_store='some value'
+    ... )
+    >>> persister_ignore_non_existing_store_keys['a']
+    {'bytes_store': b'a', 'metadata_store': {'y': 1}}
+
+    Note that the value of the non-existing store key is ignored! So, be careful when
+    using this option, to avoid losing data.
+
+    Let's delete items now:
+
+    >>> del persister['a']
+    >>> 'a' in persister
+    False
+
+    The key as been deleted from all the stores:
+
+    >>> 'a' in bytes_store
+    False
+    >>> 'a' in metadata_store
+    False
+
+    As expected, if the key is not in any of the stores, a KeyError is raised:
+
+    >>> del persister['z']
+    Traceback (most recent call last):
+        ...
+    KeyError: 'z'
+
+    However, if the key is in some of the stores, but not in others, a KeyError is raised
+    only if `need_to_set_all_stores=True`:
+
+    >>> persister = FanoutPersister(
+    ...     bytes_store=dict(a=b'a'),
+    ...     metadata_store=dict(),
+    ...     need_to_set_all_stores=True,
+    ... )
+    >>> del persister['a']
+    Traceback (most recent call last):
+        ...
+    KeyError: "The key 'a' is not present in the following stores: {'metadata_store'}"
+
+    Otherwise, the key is deleted from the stores where it is present:
+
+    >>> bytes_store=dict(a=b'a')
+    >>> persister = FanoutPersister(
+    ...     bytes_store=bytes_store,
+    ...     metadata_store=dict(),
+    ... )
+    >>> del persister['a']
+    >>> 'a' in persister
+    False
+    >>> 'a' in bytes_store
+    False
+    '''
+    def __init__(
+            self,
+            *args,
+            default=None,
+            get_existing_values_only=False,
+            need_to_set_all_stores=False,
+            ignore_non_existing_store_keys=False,
+            **kwargs
+        ):
+        super().__init__(
+            *args,
+            default=default,
+            get_existing_values_only=get_existing_values_only,
+            **kwargs,
+        )
+        self._need_to_set_all_stores = need_to_set_all_stores
+        self._ignore_non_existing_store_keys = ignore_non_existing_store_keys
+
+    def __setitem__(self, k, v: Mapping):
+        if self._need_to_set_all_stores and not set(self._stores).issubset(set(v)):
+            missing_stores = set(self._stores) - set(v)
+            raise ValueError(
+                f'All stores must be set when setting a value. Missing stores: {missing_stores}'
+            )
+        if not self._ignore_non_existing_store_keys and not set(v).issubset(set(self._stores)):
+            invalid_store_keys = set(v) - set(self._stores)
+            raise ValueError(f'The value contains some invalid store keys: {invalid_store_keys}')
+        for store_key, vv in v.items():
+            if store_key in self._stores:
+                self._stores[store_key][k] = vv
+
+    def __delitem__(self, k):
+        stores_to_delete_from = {
+            store_key: store for store_key, store in self._stores.items() if k in store
+        }
+        if not stores_to_delete_from:
+            raise KeyError(k)
+        if self._need_to_set_all_stores and len(stores_to_delete_from) < len(self._stores):
+            missing_stores = set(self._stores) - set(stores_to_delete_from)
+            raise KeyError(
+                f"The key '{k}' is not present in the following stores: {missing_stores}"
+            )
+        for store in stores_to_delete_from.values():
+            del store[k]
+    
 
 
 class SequenceKvReader(KvReader):
