@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.1.140 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.1.141 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -62,6 +62,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/signatures.html">dol.signatures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/sources.html">dol.sources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/base_test.html">dol.tests.base_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/paths.html">dol.tests.paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
@@ -897,6 +898,7 @@
 <span class="c1"># def simple_str_to_str(self, ss: str):</span>
 <span class="c1">#     self.tuple_to_str(self.si)</span>
 
+
 <span class="c1"># TODO: Add key and id type validation</span>
 <div class="viewcode-block" id="str_template_key_trans"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.str_template_key_trans">[docs]</a><span class="k">def</span> <span class="nf">str_template_key_trans</span><span class="p">(</span>
     <span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -989,6 +991,143 @@
 <span class="c1">#     MyStore.__name__ = name</span>
 <span class="c1">#</span>
 <span class="c1">#     return MyStore</span>
+
+
+<span class="c1">## Alternative to StrTupleDict (staging here for now, but should replace when ready)</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+
+
+<span class="c1"># TODO: Do we really want to allow field_patterns to be included in the template (the `{name:pattern}` options)?</span>
+<span class="c1">#  Normally, this is used for string GENERATION as `{name:format}`, which is still useful for us here too.</span>
+<span class="k">class</span> <span class="nc">StringTemplate</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">field_patterns</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_patterns</span> <span class="o">=</span> <span class="n">field_patterns</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_construct_regex</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_construct_regex</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">formatter</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">Formatter</span><span class="p">()</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">literal_text</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">format_spec</span><span class="p">,</span> <span class="n">conversion</span> <span class="ow">in</span> <span class="n">formatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template</span>
+        <span class="p">):</span>
+            <span class="c1"># Check if the field_name has either a format_spec (regex) in the template</span>
+            <span class="c1"># or a matching regex in the field_patterns dictionary before adding it</span>
+            <span class="c1"># to the field_names list.</span>
+            <span class="k">if</span> <span class="n">field_name</span> <span class="ow">and</span> <span class="p">(</span><span class="n">format_spec</span> <span class="ow">or</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_patterns</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">field_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+                <span class="n">regex</span> <span class="o">=</span> <span class="n">format_spec</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_patterns</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="s1">&#39;.*?&#39;</span><span class="p">)</span>
+                <span class="n">to_replace</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s1">&#39;{&#39;</span> <span class="o">+</span> <span class="n">field_name</span> <span class="o">+</span> <span class="p">(</span><span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">format_spec</span> <span class="k">if</span> <span class="n">format_spec</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;}&#39;</span>
+                <span class="p">)</span>
+                <span class="n">pattern</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;(?P&lt;</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s1">&gt;</span><span class="si">{</span><span class="n">regex</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">str_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parses the input string and returns a dictionary of extracted values.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = StringTemplate(&quot;{name} is {age} years old.&quot;, {&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;})</span>
+
+<span class="sd">        &gt;&gt;&gt; st.str_to_dict(&quot;Alice is 30 years old.&quot;)</span>
+<span class="sd">        {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;String &#39;</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&#39; does not match the template.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dict_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a string from the dictionary values based on the template.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = StringTemplate(&quot;{name} is {age} years old.&quot;, {&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;})</span>
+<span class="sd">        &gt;&gt;&gt; st.dict_to_str({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
+<span class="sd">        &#39;Alice is 30 years old.&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dict_to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a tuple from the dictionary values based on the template.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = StringTemplate(&quot;{name} is {age} years old.&quot;, {&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;})</span>
+<span class="sd">        &gt;&gt;&gt; st.dict_to_tuple({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
+<span class="sd">        (&#39;Alice&#39;, &#39;30&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span> <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_names</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">tuple_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a dictionary from the tuple values based on the template.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = StringTemplate(&quot;{name} is {age} years old.&quot;, {&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;})</span>
+<span class="sd">        &gt;&gt;&gt; st.tuple_to_dict((&#39;Alice&#39;, &#39;30&#39;))</span>
+<span class="sd">        {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">field_name</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">field_names</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">str_to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parses the input string and returns a tuple of extracted values.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = StringTemplate(&quot;{name} is {age} years old.&quot;, {&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;})</span>
+<span class="sd">        &gt;&gt;&gt; st.str_to_tuple(&quot;Alice is 30 years old.&quot;)</span>
+<span class="sd">        (&#39;Alice&#39;, &#39;30&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict_to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">str_to_dict</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">tuple_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a string from the tuple values based on the template.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = StringTemplate(&quot;{name} is {age} years old.&quot;, {&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;})</span>
+<span class="sd">        &gt;&gt;&gt; st.tuple_to_str((&#39;Alice&#39;, &#39;30&#39;))</span>
+<span class="sd">        &#39;Alice is 30 years old.&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict_to_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tuple_to_dict</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">dict_to_namedtuple</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">namedtuple_type_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;NamedTuple&#39;</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a namedtuple from the dictionary values based on the template.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = StringTemplate(&quot;{name} is {age} years old.&quot;, {&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;})</span>
+<span class="sd">        &gt;&gt;&gt; Person = st.dict_to_namedtuple({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
+<span class="sd">        &gt;&gt;&gt; Person</span>
+<span class="sd">        NamedTuple(name=&#39;Alice&#39;, age=&#39;30&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">namedtuple</span><span class="p">(</span><span class="n">namedtuple_type_name</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">keys</span><span class="p">())(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">namedtuple_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a namedtuple to a dictionary.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = StringTemplate(&quot;{name} is {age} years old.&quot;, {&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;})</span>
+<span class="sd">        &gt;&gt;&gt; Person = st.dict_to_namedtuple({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
+<span class="sd">        &gt;&gt;&gt; st.namedtuple_to_dict(Person)</span>
+<span class="sd">        {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">nt</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">str_to_simple_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a string to a simple string (i.e. a simple character-delimited string).</span>
+
+<span class="sd">        &gt;&gt;&gt; st = StringTemplate(&quot;{name} is {age} years old.&quot;, {&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;})</span>
+<span class="sd">        &gt;&gt;&gt; st.str_to_simple_str(&quot;Alice is 30 years old.&quot;, &#39;-&#39;)</span>
+<span class="sd">        &#39;Alice-30&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">str_to_tuple</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">simple_str_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ss</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a simple character-delimited string to a string.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = StringTemplate(&quot;{name} is {age} years old.&quot;, {&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;})</span>
+<span class="sd">        &gt;&gt;&gt; st.simple_str_to_str(&#39;Alice-30&#39;, &#39;-&#39;)</span>
+<span class="sd">        &#39;Alice is 30 years old.&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tuple_to_str</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)))</span>
 </pre></div>
 
            </div>

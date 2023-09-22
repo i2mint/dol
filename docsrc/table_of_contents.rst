@@ -20,6 +20,7 @@
    module_docs/dol/signatures
    module_docs/dol/sources
    module_docs/dol/tests/base_test
+   module_docs/dol/tests/paths
    module_docs/dol/tests/pickability_test
    module_docs/dol/tests/scrap
    module_docs/dol/tests/test_edge_cases
