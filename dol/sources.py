@@ -120,14 +120,10 @@ class FanoutReader(KvReader):
     That is, when a key is requested, the key is passed to all the stores, and results
     accumulated in a dict that is then returned.
 
-    Args:
-        `*args`: sub-stores used to fan-out the data. These stores will be represented by 
-            their index in the tuple.
-        `default`: default value to return by a store if the requested key is not in the 
-            store. Note that a KeyError is raised if the key is not in any of the stores.
-        `get_existing_values_only`: if True, only return values for stores that contain 
-            the key.
-        `**kwargs`: sub-stores used to fan-out the data, with their own user-defined keys
+    param stores: A mapping of store keys to stores.
+    param default: The value to return if the key is not in any of the stores.
+    param get_existing_values_only: If True, only return values for stores that contain
+        the key.
 
     Let's define the following sub-stores:
 
@@ -144,34 +140,18 @@ class FanoutReader(KvReader):
 
     We can create a fan-out reader from these stores:
 
-    >>> reader = FanoutReader(bytes_store, metadata_store)
-    >>> reader['b']
-    {0: b'b', 1: {'x': 2}}
-
-    The reader returns a dict with the values from each store, keyed by the index of the
-    store in the `args` tuple.
-
-    We can also create a fan-out reader passing the stores in kwargs:
-
-    >>> reader = FanoutReader(bytes_store=bytes_store, metadata_store=metadata_store)
+    >>> stores = dict(bytes_store=bytes_store, metadata_store=metadata_store)
+    >>> reader = FanoutReader(stores)
     >>> reader['b']
     {'bytes_store': b'b', 'metadata_store': {'x': 2}}
 
-    This way, the returned value is keyed by the name of the store.
-
-    We can also mix args and kwargs:
-
-    >>> reader = FanoutReader(bytes_store, metadata_store=metadata_store)
-    >>> reader['b']
-    {0: b'b', 'metadata_store': {'x': 2}}
-
-    Note that the order of the stores is determined by the order of the args and kwargs.
+    The reader returns a dict with the values from each store, keyed by the name of the 
+    store.
 
     We can also pass a default value to return if the key is not in the store:
 
     >>> reader = FanoutReader(
-    ...     bytes_store=bytes_store,
-    ...     metadata_store=metadata_store,
+    ...     stores=stores,
     ...     default='no value in this store for this key', 
     ... )
     >>> reader['a']
@@ -188,19 +168,92 @@ class FanoutReader(KvReader):
     that contain the key:
 
     >>> reader = FanoutReader(
-    ...     bytes_store=bytes_store,
-    ...     metadata_store=metadata_store,
+    ...     stores=stores,
     ...     get_existing_values_only=True,
     ... )
     >>> reader['a']
     {'bytes_store': b'a'}
     """
-
-    def __init__(self, *args, default=None, get_existing_values_only=False, **kwargs):
-        # Merge stores passed in args and kwargs into a single dict
-        self._stores = dict({i: store for i, store in enumerate(args)}, **kwargs)
+    def __init__(
+        self,
+        stores: Mapping[Any, Mapping],
+        default: Any = None,
+        get_existing_values_only: bool = False,
+    ):
+        self._stores = stores
         self._default = default
         self._get_existing_values_only = get_existing_values_only
+
+    @classmethod
+    def from_variadics(
+        cls,
+        *args,
+        **kwargs
+    ):
+        '''A way to create a fan-out store from a mix of args and kwargs, instead of a
+        single dict.
+
+        param args: sub-stores used to fan-out the data. These stores will be 
+            represented by their index in the tuple.
+        param kwargs: sub-stores used to fan-out the data. These stores will be
+            represented by their name in the dict. __init__ arguments can also be passed
+            as kwargs (i.e. `default`, `get_existing_values_only`, and any other subclass
+            specific arguments).
+
+        Let's use the same sub-stores:
+
+        >>> bytes_store = dict(
+        ...     a=b'a',
+        ...     b=b'b',
+        ...     c=b'c',
+        ... )
+        >>> metadata_store = dict(
+        ...     b=dict(x=2),
+        ...     c=dict(x=3),
+        ...     d=dict(x=4),
+        ... )
+
+        We can create a fan-out reader from these stores, using args:
+
+        >>> reader = FanoutReader.from_variadics(bytes_store, metadata_store)
+        >>> reader['b']
+        {0: b'b', 1: {'x': 2}}
+
+        The reader returns a dict with the values from each store, keyed by the index of 
+        the store in the `args` tuple.
+
+        We can also create a fan-out reader passing the stores in kwargs:
+
+        >>> reader = FanoutReader.from_variadics(
+        ...     bytes_store=bytes_store,
+        ...     metadata_store=metadata_store
+        ... )
+        >>> reader['b']
+        {'bytes_store': b'b', 'metadata_store': {'x': 2}}
+
+        This way, the returned value is keyed by the name of the store.
+
+        We can also mix args and kwargs:
+
+        >>> reader = FanoutReader.from_variadics(bytes_store, metadata_store=metadata_store)
+        >>> reader['b']
+        {0: b'b', 'metadata_store': {'x': 2}}
+
+        Note that the order of the stores is determined by the order of the args and 
+        kwargs.     
+        '''
+        def extract_init_kwargs():
+            for p in cls_sig.parameters:
+                if p in kwargs:
+                    yield p, kwargs.pop(p)
+
+        cls_sig = Sig(cls)
+        cls_kwargs = dict(extract_init_kwargs())
+        stores = dict({i: store for i, store in enumerate(args)}, **kwargs)
+        return cls(
+            stores=stores,
+            **cls_kwargs
+        )
 
     @property
     def _keys(self):
@@ -231,22 +284,21 @@ class FanoutPersister(FanoutReader, KvPersister):
     '''
     A fanout persister is a fanout reader that can also set and delete items.
 
-    Args:
-        `*args`: sub-stores used to fan-out the data. These stores will be represented by 
-            their index in the tuple.
-        `default`: default value to return by a store if the requested key is not in the 
-            store. Note that a KeyError is raised if the key is not in any of the stores.
-        `get_existing_values_only`: if True, only return values for stores that contain 
-            the key.
-        `**kwargs`: sub-stores used to fan-out the data, with their own user-defined keys
-
+    param stores: A mapping of store keys to stores.
+    param default: The value to return if the key is not in any of the stores.
+    param get_existing_values_only: If True, only return values for stores that contain
+        the key.
+    param need_to_set_all_stores: If True, all stores must be set when setting a value.
+        If False, only the stores that are set will be updated.
+    param ignore_non_existing_store_keys: If True, ignore store keys from the value that
+        are not in the persister. If False, a ValueError is raised.
+    
     Let's create a persister from in-memory stores:
 
     >>> bytes_store = dict()
     >>> metadata_store = dict()
     >>> persister = FanoutPersister(
-    ...     bytes_store=bytes_store,
-    ...     metadata_store=metadata_store,
+    ...     stores = dict(bytes_store=bytes_store, metadata_store=metadata_store)
     ... )
 
     The persister sets the values in each store, based on the store key in the value dict.
@@ -270,8 +322,7 @@ class FanoutPersister(FanoutReader, KvPersister):
     This behavior can be changed by passing `need_to_set_all_stores=True`:
 
     >>> persister_all_stores = FanoutPersister(
-    ...     bytes_store=dict(),
-    ...     metadata_store=dict(),
+    ...     stores=dict(bytes_store=dict(), metadata_store=dict()),
     ...     need_to_set_all_stores=True,
     ... )
     >>> persister_all_stores['a'] = dict(bytes_store=b'a')
@@ -292,8 +343,7 @@ class FanoutPersister(FanoutReader, KvPersister):
     This behavior can be changed by passing `ignore_non_existing_store_keys=True`:
 
     >>> persister_ignore_non_existing_store_keys = FanoutPersister(
-    ...     bytes_store=dict(),
-    ...     metadata_store=dict(),
+    ...     stores=dict(bytes_store=dict(), metadata_store=dict()),
     ...     ignore_non_existing_store_keys=True,
     ... )
     >>> persister_ignore_non_existing_store_keys['a'] = dict(
@@ -325,25 +375,12 @@ class FanoutPersister(FanoutReader, KvPersister):
         ...
     KeyError: 'z'
 
-    However, if the key is in some of the stores, but not in others, a KeyError is raised
-    only if `need_to_set_all_stores=True`:
-
-    >>> persister = FanoutPersister(
-    ...     bytes_store=dict(a=b'a'),
-    ...     metadata_store=dict(),
-    ...     need_to_set_all_stores=True,
-    ... )
-    >>> del persister['a']
-    Traceback (most recent call last):
-        ...
-    KeyError: "The key 'a' is not present in the following stores: {'metadata_store'}"
-
-    Otherwise, the key is deleted from the stores where it is present:
+    However, if the key is in some of the stores, but not in others, the key is deleted 
+    from the stores where it is present:
 
     >>> bytes_store=dict(a=b'a')
     >>> persister = FanoutPersister(
-    ...     bytes_store=bytes_store,
-    ...     metadata_store=dict(),
+    ...     stores=dict(bytes_store=bytes_store, metadata_store=dict()),
     ... )
     >>> del persister['a']
     >>> 'a' in persister
@@ -353,18 +390,17 @@ class FanoutPersister(FanoutReader, KvPersister):
     '''
     def __init__(
             self,
-            *args,
-            default=None,
-            get_existing_values_only=False,
-            need_to_set_all_stores=False,
-            ignore_non_existing_store_keys=False,
+            stores: Mapping[Any, Mapping],
+            default: Any = None,
+            get_existing_values_only: bool = False,
+            need_to_set_all_stores: bool = False,
+            ignore_non_existing_store_keys: bool = False,
             **kwargs
         ):
         super().__init__(
-            *args,
+            stores=stores,
             default=default,
             get_existing_values_only=get_existing_values_only,
-            **kwargs,
         )
         self._need_to_set_all_stores = need_to_set_all_stores
         self._ignore_non_existing_store_keys = ignore_non_existing_store_keys
@@ -388,11 +424,6 @@ class FanoutPersister(FanoutReader, KvPersister):
         }
         if not stores_to_delete_from:
             raise KeyError(k)
-        if self._need_to_set_all_stores and len(stores_to_delete_from) < len(self._stores):
-            missing_stores = set(self._stores) - set(stores_to_delete_from)
-            raise KeyError(
-                f"The key '{k}' is not present in the following stores: {missing_stores}"
-            )
         for store in stores_to_delete_from.values():
             del store[k]
     

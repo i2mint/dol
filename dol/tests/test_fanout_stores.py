@@ -33,14 +33,13 @@ from dol.trans import wrap_kvs
     ]
 )
 def test_mk_custom_fanout_store(value_encoder, value_decoder, persister_args, persister_kwargs, data):
-    cls_ = wrap_kvs(
-        FanoutPersister,
+    store = wrap_kvs(
+        FanoutPersister.from_variadics(
+            *persister_args,
+            **persister_kwargs,
+        ),
         data_of_obj=value_encoder,
         obj_of_data=value_decoder,
-    )
-    store = cls_(
-        *persister_args,
-        **persister_kwargs,
     )
     for k, v, error in data:
         def test_data():
