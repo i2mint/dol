@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.1.141 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.sources &mdash; dol 0.1.142 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -69,6 +69,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
@@ -242,11 +243,231 @@ you will perform multiple accesses to the store</p>
 </dd></dl>
 
 <dl class="py class">
+<dt id="dol.sources.FanoutPersister">
+<em class="property">class </em><code class="sig-prename descclassname">dol.sources.</code><code class="sig-name descname">FanoutPersister</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stores</span><span class="p">:</span> <span class="n">Mapping<span class="p">[</span>Any<span class="p">, </span>Mapping<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">get_existing_values_only</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">need_to_set_all_stores</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_non_existing_store_keys</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#FanoutPersister"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.sources.FanoutPersister" title="Permalink to this definition">¶</a></dt>
+<dd><p>A fanout persister is a fanout reader that can also set and delete items.</p>
+<p>param stores: A mapping of store keys to stores.
+param default: The value to return if the key is not in any of the stores.
+param get_existing_values_only: If True, only return values for stores that contain</p>
+<blockquote>
+<div><p>the key.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>param need_to_set_all_stores: If True, all stores must be set when setting a value.</dt><dd><p>If False, only the stores that are set will be updated.</p>
+</dd>
+<dt>param ignore_non_existing_store_keys: If True, ignore store keys from the value that</dt><dd><p>are not in the persister. If False, a ValueError is raised.</p>
+</dd>
+</dl>
+<p>Let’s create a persister from in-memory stores:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bytes_store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">metadata_store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">persister</span> <span class="o">=</span> <span class="n">FanoutPersister</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">bytes_store</span><span class="o">=</span><span class="n">bytes_store</span><span class="p">,</span> <span class="n">metadata_store</span><span class="o">=</span><span class="n">metadata_store</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The persister sets the values in each store, based on the store key in the value dict.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">persister</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">bytes_store</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">metadata_store</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">persister</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">{&#39;bytes_store&#39;: b&#39;a&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 1}}</span>
+</pre></div>
+</div>
+<p>By default, not all stores must be set when setting a value:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">persister</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">bytes_store</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">persister</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="go">{&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: None}</span>
+</pre></div>
+</div>
+<p>This allow to update a subset of the stores whithout having to set all the stores.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">persister</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">bytes_store</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">persister</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">{&#39;bytes_store&#39;: b&#39;A&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 1}}</span>
+</pre></div>
+</div>
+<p>This behavior can be changed by passing <cite>need_to_set_all_stores=True</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">persister_all_stores</span> <span class="o">=</span> <span class="n">FanoutPersister</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stores</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">bytes_store</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">metadata_store</span><span class="o">=</span><span class="nb">dict</span><span class="p">()),</span>
+<span class="gp">... </span>    <span class="n">need_to_set_all_stores</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">persister_all_stores</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">bytes_store</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">ValueError</span>: <span class="n">All stores must be set when setting a value. Missing stores: {&#39;metadata_store&#39;}</span>
+</pre></div>
+</div>
+<p>By default, if a store key from the value is not in the persister, a ValueError is
+raised:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">persister</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">bytes_store</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">metadata_store</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">other_store</span><span class="o">=</span><span class="s1">&#39;some value&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">ValueError</span>: <span class="n">The value contains some invalid store keys: {&#39;other_store&#39;}</span>
+</pre></div>
+</div>
+<p>This behavior can be changed by passing <cite>ignore_non_existing_store_keys=True</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">persister_ignore_non_existing_store_keys</span> <span class="o">=</span> <span class="n">FanoutPersister</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stores</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">bytes_store</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">metadata_store</span><span class="o">=</span><span class="nb">dict</span><span class="p">()),</span>
+<span class="gp">... </span>    <span class="n">ignore_non_existing_store_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">persister_ignore_non_existing_store_keys</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">bytes_store</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">metadata_store</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">other_store</span><span class="o">=</span><span class="s1">&#39;some value&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">persister_ignore_non_existing_store_keys</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">{&#39;bytes_store&#39;: b&#39;a&#39;, &#39;metadata_store&#39;: {&#39;y&#39;: 1}}</span>
+</pre></div>
+</div>
+<p>Note that the value of the non-existing store key is ignored! So, be careful when
+using this option, to avoid losing data.</p>
+<p>Let’s delete items now:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">persister</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;a&#39;</span> <span class="ow">in</span> <span class="n">persister</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>The key as been deleted from all the stores:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;a&#39;</span> <span class="ow">in</span> <span class="n">bytes_store</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;a&#39;</span> <span class="ow">in</span> <span class="n">metadata_store</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>As expected, if the key is not in any of the stores, a KeyError is raised:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">persister</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">KeyError</span>: <span class="n">&#39;z&#39;</span>
+</pre></div>
+</div>
+<p>However, if the key is in some of the stores, but not in others, the key is deleted
+from the stores where it is present:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bytes_store</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">persister</span> <span class="o">=</span> <span class="n">FanoutPersister</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stores</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">bytes_store</span><span class="o">=</span><span class="n">bytes_store</span><span class="p">,</span> <span class="n">metadata_store</span><span class="o">=</span><span class="nb">dict</span><span class="p">()),</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">persister</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;a&#39;</span> <span class="ow">in</span> <span class="n">persister</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;a&#39;</span> <span class="ow">in</span> <span class="n">bytes_store</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
 <dt id="dol.sources.FanoutReader">
-<em class="property">class </em><code class="sig-prename descclassname">dol.sources.</code><code class="sig-name descname">FanoutReader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stores</span><span class="p">:</span> <span class="n">Mapping</span></em>, <em class="sig-param"><span class="n">default</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">keys</span><span class="p">:</span> <span class="n">Iterable</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#FanoutReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.sources.FanoutReader" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">dol.sources.</code><code class="sig-name descname">FanoutReader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stores</span><span class="p">:</span> <span class="n">Mapping<span class="p">[</span>Any<span class="p">, </span>Mapping<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">get_existing_values_only</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#FanoutReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.sources.FanoutReader" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a ‘fanout view’ of a store of stores.
 That is, when a key is requested, the key is passed to all the stores, and results
 accumulated in a dict that is then returned.</p>
+<p>param stores: A mapping of store keys to stores.
+param default: The value to return if the key is not in any of the stores.
+param get_existing_values_only: If True, only return values for stores that contain</p>
+<blockquote>
+<div><p>the key.</p>
+</div></blockquote>
+<p>Let’s define the following sub-stores:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bytes_store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">a</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;a&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">b</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;b&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;c&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">metadata_store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">b</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">d</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can create a fan-out reader from these stores:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">bytes_store</span><span class="o">=</span><span class="n">bytes_store</span><span class="p">,</span> <span class="n">metadata_store</span><span class="o">=</span><span class="n">metadata_store</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="p">(</span><span class="n">stores</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="go">{&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
+</pre></div>
+</div>
+<p>The reader returns a dict with the values from each store, keyed by the name of the
+store.</p>
+<p>We can also pass a default value to return if the key is not in the store:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stores</span><span class="o">=</span><span class="n">stores</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">default</span><span class="o">=</span><span class="s1">&#39;no value in this store for this key&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">{&#39;bytes_store&#39;: b&#39;a&#39;, &#39;metadata_store&#39;: &#39;no value in this store for this key&#39;}</span>
+</pre></div>
+</div>
+<p>If the key is not in any of the stores, a KeyError is raised:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">KeyError</span>: <span class="n">&#39;z&#39;</span>
+</pre></div>
+</div>
+<p>We can also pass <cite>get_existing_values_only=True</cite> to only return values for stores
+that contain the key:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stores</span><span class="o">=</span><span class="n">stores</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">get_existing_values_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">{&#39;bytes_store&#39;: b&#39;a&#39;}</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="dol.sources.FanoutReader.from_variadics">
+<em class="property">classmethod </em><code class="sig-name descname">from_variadics</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#FanoutReader.from_variadics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.sources.FanoutReader.from_variadics" title="Permalink to this definition">¶</a></dt>
+<dd><p>A way to create a fan-out store from a mix of args and kwargs, instead of a
+single dict.</p>
+<dl class="simple">
+<dt>param args: sub-stores used to fan-out the data. These stores will be</dt><dd><p>represented by their index in the tuple.</p>
+</dd>
+<dt>param kwargs: sub-stores used to fan-out the data. These stores will be</dt><dd><p>represented by their name in the dict. __init__ arguments can also be passed
+as kwargs (i.e. <cite>default</cite>, <cite>get_existing_values_only</cite>, and any other subclass
+specific arguments).</p>
+</dd>
+</dl>
+<p>Let’s use the same sub-stores:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bytes_store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">a</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;a&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">b</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;b&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;c&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">metadata_store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">b</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">d</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can create a fan-out reader from these stores, using args:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="o">.</span><span class="n">from_variadics</span><span class="p">(</span><span class="n">bytes_store</span><span class="p">,</span> <span class="n">metadata_store</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="go">{0: b&#39;b&#39;, 1: {&#39;x&#39;: 2}}</span>
+</pre></div>
+</div>
+<p>The reader returns a dict with the values from each store, keyed by the index of
+the store in the <cite>args</cite> tuple.</p>
+<p>We can also create a fan-out reader passing the stores in kwargs:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="o">.</span><span class="n">from_variadics</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">bytes_store</span><span class="o">=</span><span class="n">bytes_store</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">metadata_store</span><span class="o">=</span><span class="n">metadata_store</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="go">{&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
+</pre></div>
+</div>
+<p>This way, the returned value is keyed by the name of the store.</p>
+<p>We can also mix args and kwargs:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="o">.</span><span class="n">from_variadics</span><span class="p">(</span><span class="n">bytes_store</span><span class="p">,</span> <span class="n">metadata_store</span><span class="o">=</span><span class="n">metadata_store</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="go">{0: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
+</pre></div>
+</div>
+<p>Note that the order of the stores is determined by the order of the args and
+kwargs.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">

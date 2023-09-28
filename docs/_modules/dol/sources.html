@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.1.141 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.sources &mdash; dol 0.1.142 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -66,6 +66,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/util.html">dol.util</a></li>
@@ -208,37 +209,162 @@
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">ChainMap</span>
 
 
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">ChainMap</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">TypedDict</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">KvPersister</span><span class="p">,</span> <span class="n">KvReader</span>
+<span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">wrap_kvs</span>
+
+
 <div class="viewcode-block" id="FanoutReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FanoutReader">[docs]</a><span class="k">class</span> <span class="nc">FanoutReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a &#39;fanout view&#39; of a store of stores.</span>
 <span class="sd">    That is, when a key is requested, the key is passed to all the stores, and results</span>
 <span class="sd">    accumulated in a dict that is then returned.</span>
+
+<span class="sd">    param stores: A mapping of store keys to stores.</span>
+<span class="sd">    param default: The value to return if the key is not in any of the stores.</span>
+<span class="sd">    param get_existing_values_only: If True, only return values for stores that contain</span>
+<span class="sd">        the key.</span>
+
+<span class="sd">    Let&#39;s define the following sub-stores:</span>
+
+<span class="sd">    &gt;&gt;&gt; bytes_store = dict(</span>
+<span class="sd">    ...     a=b&#39;a&#39;,</span>
+<span class="sd">    ...     b=b&#39;b&#39;,</span>
+<span class="sd">    ...     c=b&#39;c&#39;,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; metadata_store = dict(</span>
+<span class="sd">    ...     b=dict(x=2),</span>
+<span class="sd">    ...     c=dict(x=3),</span>
+<span class="sd">    ...     d=dict(x=4),</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    We can create a fan-out reader from these stores:</span>
+
+<span class="sd">    &gt;&gt;&gt; stores = dict(bytes_store=bytes_store, metadata_store=metadata_store)</span>
+<span class="sd">    &gt;&gt;&gt; reader = FanoutReader(stores)</span>
+<span class="sd">    &gt;&gt;&gt; reader[&#39;b&#39;]</span>
+<span class="sd">    {&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
+
+<span class="sd">    The reader returns a dict with the values from each store, keyed by the name of the </span>
+<span class="sd">    store.</span>
+
+<span class="sd">    We can also pass a default value to return if the key is not in the store:</span>
+
+<span class="sd">    &gt;&gt;&gt; reader = FanoutReader(</span>
+<span class="sd">    ...     stores=stores,</span>
+<span class="sd">    ...     default=&#39;no value in this store for this key&#39;, </span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; reader[&#39;a&#39;]</span>
+<span class="sd">    {&#39;bytes_store&#39;: b&#39;a&#39;, &#39;metadata_store&#39;: &#39;no value in this store for this key&#39;}</span>
+
+<span class="sd">    If the key is not in any of the stores, a KeyError is raised:</span>
+
+<span class="sd">    &gt;&gt;&gt; reader[&#39;z&#39;]</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">        ...</span>
+<span class="sd">    KeyError: &#39;z&#39;</span>
+
+<span class="sd">    We can also pass `get_existing_values_only=True` to only return values for stores</span>
+<span class="sd">    that contain the key:</span>
+
+<span class="sd">    &gt;&gt;&gt; reader = FanoutReader(</span>
+<span class="sd">    ...     stores=stores,</span>
+<span class="sd">    ...     get_existing_values_only=True,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; reader[&#39;a&#39;]</span>
+<span class="sd">    {&#39;bytes_store&#39;: b&#39;a&#39;}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">stores</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="c1"># *,</span>
-        <span class="n">keys</span><span class="p">:</span> <span class="n">Iterable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="c1"># assert_all_have_key: bool=False,</span>
+        <span class="n">stores</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">],</span>
+        <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">get_existing_values_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span> <span class="o">=</span> <span class="n">stores</span>
-        <span class="c1"># TODO: More control on what to do with missing keys</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_default</span> <span class="o">=</span> <span class="n">default</span>
-        <span class="c1"># self._assert_all_have_key = assert_all_have_key</span>
-        <span class="c1"># TODO: Include more control over iteration mechanism. could be:</span>
-        <span class="c1">#   - iter over all keys of all stores (using ChainMap)</span>
-        <span class="c1">#   - iter over a specific store or stores</span>
-        <span class="c1">#   - iter over a given iterable of keys</span>
-        <span class="k">if</span> <span class="n">keys</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">keys</span> <span class="o">=</span> <span class="n">ChainMap</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="n">keys</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_existing_values_only</span> <span class="o">=</span> <span class="n">get_existing_values_only</span>
+
+<div class="viewcode-block" id="FanoutReader.from_variadics"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FanoutReader.from_variadics">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_variadics</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A way to create a fan-out store from a mix of args and kwargs, instead of a</span>
+<span class="sd">        single dict.</span>
+
+<span class="sd">        param args: sub-stores used to fan-out the data. These stores will be </span>
+<span class="sd">            represented by their index in the tuple.</span>
+<span class="sd">        param kwargs: sub-stores used to fan-out the data. These stores will be</span>
+<span class="sd">            represented by their name in the dict. __init__ arguments can also be passed</span>
+<span class="sd">            as kwargs (i.e. `default`, `get_existing_values_only`, and any other subclass</span>
+<span class="sd">            specific arguments).</span>
+
+<span class="sd">        Let&#39;s use the same sub-stores:</span>
+
+<span class="sd">        &gt;&gt;&gt; bytes_store = dict(</span>
+<span class="sd">        ...     a=b&#39;a&#39;,</span>
+<span class="sd">        ...     b=b&#39;b&#39;,</span>
+<span class="sd">        ...     c=b&#39;c&#39;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; metadata_store = dict(</span>
+<span class="sd">        ...     b=dict(x=2),</span>
+<span class="sd">        ...     c=dict(x=3),</span>
+<span class="sd">        ...     d=dict(x=4),</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        We can create a fan-out reader from these stores, using args:</span>
+
+<span class="sd">        &gt;&gt;&gt; reader = FanoutReader.from_variadics(bytes_store, metadata_store)</span>
+<span class="sd">        &gt;&gt;&gt; reader[&#39;b&#39;]</span>
+<span class="sd">        {0: b&#39;b&#39;, 1: {&#39;x&#39;: 2}}</span>
+
+<span class="sd">        The reader returns a dict with the values from each store, keyed by the index of </span>
+<span class="sd">        the store in the `args` tuple.</span>
+
+<span class="sd">        We can also create a fan-out reader passing the stores in kwargs:</span>
+
+<span class="sd">        &gt;&gt;&gt; reader = FanoutReader.from_variadics(</span>
+<span class="sd">        ...     bytes_store=bytes_store,</span>
+<span class="sd">        ...     metadata_store=metadata_store</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; reader[&#39;b&#39;]</span>
+<span class="sd">        {&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
+
+<span class="sd">        This way, the returned value is keyed by the name of the store.</span>
+
+<span class="sd">        We can also mix args and kwargs:</span>
+
+<span class="sd">        &gt;&gt;&gt; reader = FanoutReader.from_variadics(bytes_store, metadata_store=metadata_store)</span>
+<span class="sd">        &gt;&gt;&gt; reader[&#39;b&#39;]</span>
+<span class="sd">        {0: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
+
+<span class="sd">        Note that the order of the stores is determined by the order of the args and </span>
+<span class="sd">        kwargs.     </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">extract_init_kwargs</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">cls_sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">p</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="n">cls_sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">cls_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">extract_init_kwargs</span><span class="p">())</span>
+        <span class="n">stores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="n">i</span><span class="p">:</span> <span class="n">store</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">store</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">args</span><span class="p">)},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">stores</span><span class="o">=</span><span class="n">stores</span><span class="p">,</span> <span class="o">**</span><span class="n">cls_kwargs</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ChainMap</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">store_key</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">store_key</span><span class="p">,</span> <span class="n">store</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">v</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_existing_values_only</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">v</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="p">)</span>
@@ -248,6 +374,159 @@
 
     <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span></div>
+
+
+<div class="viewcode-block" id="FanoutPersister"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FanoutPersister">[docs]</a><span class="k">class</span> <span class="nc">FanoutPersister</span><span class="p">(</span><span class="n">FanoutReader</span><span class="p">,</span> <span class="n">KvPersister</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A fanout persister is a fanout reader that can also set and delete items.</span>
+
+<span class="sd">    param stores: A mapping of store keys to stores.</span>
+<span class="sd">    param default: The value to return if the key is not in any of the stores.</span>
+<span class="sd">    param get_existing_values_only: If True, only return values for stores that contain</span>
+<span class="sd">        the key.</span>
+<span class="sd">    param need_to_set_all_stores: If True, all stores must be set when setting a value.</span>
+<span class="sd">        If False, only the stores that are set will be updated.</span>
+<span class="sd">    param ignore_non_existing_store_keys: If True, ignore store keys from the value that</span>
+<span class="sd">        are not in the persister. If False, a ValueError is raised.</span>
+<span class="sd">    </span>
+<span class="sd">    Let&#39;s create a persister from in-memory stores:</span>
+
+<span class="sd">    &gt;&gt;&gt; bytes_store = dict()</span>
+<span class="sd">    &gt;&gt;&gt; metadata_store = dict()</span>
+<span class="sd">    &gt;&gt;&gt; persister = FanoutPersister(</span>
+<span class="sd">    ...     stores = dict(bytes_store=bytes_store, metadata_store=metadata_store)</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    The persister sets the values in each store, based on the store key in the value dict.</span>
+
+<span class="sd">    &gt;&gt;&gt; persister[&#39;a&#39;] = dict(bytes_store=b&#39;a&#39;, metadata_store=dict(x=1))</span>
+<span class="sd">    &gt;&gt;&gt; persister[&#39;a&#39;]</span>
+<span class="sd">    {&#39;bytes_store&#39;: b&#39;a&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 1}}</span>
+
+<span class="sd">    By default, not all stores must be set when setting a value:</span>
+
+<span class="sd">    &gt;&gt;&gt; persister[&#39;b&#39;] = dict(bytes_store=b&#39;b&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; persister[&#39;b&#39;]</span>
+<span class="sd">    {&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: None}</span>
+
+<span class="sd">    This allow to update a subset of the stores whithout having to set all the stores.</span>
+
+<span class="sd">    &gt;&gt;&gt; persister[&#39;a&#39;] = dict(bytes_store=b&#39;A&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; persister[&#39;a&#39;]</span>
+<span class="sd">    {&#39;bytes_store&#39;: b&#39;A&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 1}}</span>
+
+<span class="sd">    This behavior can be changed by passing `need_to_set_all_stores=True`:</span>
+
+<span class="sd">    &gt;&gt;&gt; persister_all_stores = FanoutPersister(</span>
+<span class="sd">    ...     stores=dict(bytes_store=dict(), metadata_store=dict()),</span>
+<span class="sd">    ...     need_to_set_all_stores=True,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; persister_all_stores[&#39;a&#39;] = dict(bytes_store=b&#39;a&#39;)</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">        ...</span>
+<span class="sd">    ValueError: All stores must be set when setting a value. Missing stores: {&#39;metadata_store&#39;}</span>
+<span class="sd">    </span>
+<span class="sd">    By default, if a store key from the value is not in the persister, a ValueError is </span>
+<span class="sd">    raised:</span>
+
+<span class="sd">    &gt;&gt;&gt; persister[&#39;a&#39;] = dict(</span>
+<span class="sd">    ...     bytes_store=b&#39;a&#39;, metadata_store=dict(y=1), other_store=&#39;some value&#39;</span>
+<span class="sd">    ... )</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">        ...</span>
+<span class="sd">    ValueError: The value contains some invalid store keys: {&#39;other_store&#39;}</span>
+
+<span class="sd">    This behavior can be changed by passing `ignore_non_existing_store_keys=True`:</span>
+
+<span class="sd">    &gt;&gt;&gt; persister_ignore_non_existing_store_keys = FanoutPersister(</span>
+<span class="sd">    ...     stores=dict(bytes_store=dict(), metadata_store=dict()),</span>
+<span class="sd">    ...     ignore_non_existing_store_keys=True,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; persister_ignore_non_existing_store_keys[&#39;a&#39;] = dict(</span>
+<span class="sd">    ...     bytes_store=b&#39;a&#39;, metadata_store=dict(y=1), other_store=&#39;some value&#39;</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; persister_ignore_non_existing_store_keys[&#39;a&#39;]</span>
+<span class="sd">    {&#39;bytes_store&#39;: b&#39;a&#39;, &#39;metadata_store&#39;: {&#39;y&#39;: 1}}</span>
+
+<span class="sd">    Note that the value of the non-existing store key is ignored! So, be careful when</span>
+<span class="sd">    using this option, to avoid losing data.</span>
+
+<span class="sd">    Let&#39;s delete items now:</span>
+
+<span class="sd">    &gt;&gt;&gt; del persister[&#39;a&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; &#39;a&#39; in persister</span>
+<span class="sd">    False</span>
+
+<span class="sd">    The key as been deleted from all the stores:</span>
+
+<span class="sd">    &gt;&gt;&gt; &#39;a&#39; in bytes_store</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; &#39;a&#39; in metadata_store</span>
+<span class="sd">    False</span>
+
+<span class="sd">    As expected, if the key is not in any of the stores, a KeyError is raised:</span>
+
+<span class="sd">    &gt;&gt;&gt; del persister[&#39;z&#39;]</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">        ...</span>
+<span class="sd">    KeyError: &#39;z&#39;</span>
+
+<span class="sd">    However, if the key is in some of the stores, but not in others, the key is deleted </span>
+<span class="sd">    from the stores where it is present:</span>
+
+<span class="sd">    &gt;&gt;&gt; bytes_store=dict(a=b&#39;a&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; persister = FanoutPersister(</span>
+<span class="sd">    ...     stores=dict(bytes_store=bytes_store, metadata_store=dict()),</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; del persister[&#39;a&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; &#39;a&#39; in persister</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; &#39;a&#39; in bytes_store</span>
+<span class="sd">    False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">stores</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">],</span>
+        <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">get_existing_values_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">need_to_set_all_stores</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">ignore_non_existing_store_keys</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">stores</span><span class="o">=</span><span class="n">stores</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span>
+            <span class="n">get_existing_values_only</span><span class="o">=</span><span class="n">get_existing_values_only</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_need_to_set_all_stores</span> <span class="o">=</span> <span class="n">need_to_set_all_stores</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_non_existing_store_keys</span> <span class="o">=</span> <span class="n">ignore_non_existing_store_keys</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_need_to_set_all_stores</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)):</span>
+            <span class="n">missing_stores</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;All stores must be set when setting a value. Missing stores: </span><span class="si">{</span><span class="n">missing_stores</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_non_existing_store_keys</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">invalid_store_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;The value contains some invalid store keys: </span><span class="si">{</span><span class="n">invalid_store_keys</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">store_key</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">store_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="p">[</span><span class="n">store_key</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vv</span>
+
+    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="n">stores_to_delete_from</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">store_key</span><span class="p">:</span> <span class="n">store</span> <span class="k">for</span> <span class="n">store_key</span><span class="p">,</span> <span class="n">store</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">store</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">stores_to_delete_from</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">store</span> <span class="ow">in</span> <span class="n">stores_to_delete_from</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">del</span> <span class="n">store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="SequenceKvReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.SequenceKvReader">[docs]</a><span class="k">class</span> <span class="nc">SequenceKvReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>

@@ -174,6 +174,7 @@ class FanoutReader(KvReader):
     >>> reader['a']
     {'bytes_store': b'a'}
     """
+
     def __init__(
         self,
         stores: Mapping[Any, Mapping],
@@ -185,12 +186,8 @@ class FanoutReader(KvReader):
         self._get_existing_values_only = get_existing_values_only
 
     @classmethod
-    def from_variadics(
-        cls,
-        *args,
-        **kwargs
-    ):
-        '''A way to create a fan-out store from a mix of args and kwargs, instead of a
+    def from_variadics(cls, *args, **kwargs):
+        """A way to create a fan-out store from a mix of args and kwargs, instead of a
         single dict.
 
         param args: sub-stores used to fan-out the data. These stores will be 
@@ -241,7 +238,8 @@ class FanoutReader(KvReader):
 
         Note that the order of the stores is determined by the order of the args and 
         kwargs.     
-        '''
+        """
+
         def extract_init_kwargs():
             for p in cls_sig.parameters:
                 if p in kwargs:
@@ -250,10 +248,7 @@ class FanoutReader(KvReader):
         cls_sig = Sig(cls)
         cls_kwargs = dict(extract_init_kwargs())
         stores = dict({i: store for i, store in enumerate(args)}, **kwargs)
-        return cls(
-            stores=stores,
-            **cls_kwargs
-        )
+        return cls(stores=stores, **cls_kwargs)
 
     @property
     def _keys(self):
@@ -281,7 +276,7 @@ class FanoutReader(KvReader):
 
 
 class FanoutPersister(FanoutReader, KvPersister):
-    '''
+    """
     A fanout persister is a fanout reader that can also set and delete items.
 
     param stores: A mapping of store keys to stores.
@@ -387,16 +382,17 @@ class FanoutPersister(FanoutReader, KvPersister):
     False
     >>> 'a' in bytes_store
     False
-    '''
+    """
+
     def __init__(
-            self,
-            stores: Mapping[Any, Mapping],
-            default: Any = None,
-            get_existing_values_only: bool = False,
-            need_to_set_all_stores: bool = False,
-            ignore_non_existing_store_keys: bool = False,
-            **kwargs
-        ):
+        self,
+        stores: Mapping[Any, Mapping],
+        default: Any = None,
+        get_existing_values_only: bool = False,
+        need_to_set_all_stores: bool = False,
+        ignore_non_existing_store_keys: bool = False,
+        **kwargs,
+    ):
         super().__init__(
             stores=stores,
             default=default,
@@ -411,9 +407,13 @@ class FanoutPersister(FanoutReader, KvPersister):
             raise ValueError(
                 f'All stores must be set when setting a value. Missing stores: {missing_stores}'
             )
-        if not self._ignore_non_existing_store_keys and not set(v).issubset(set(self._stores)):
+        if not self._ignore_non_existing_store_keys and not set(v).issubset(
+            set(self._stores)
+        ):
             invalid_store_keys = set(v) - set(self._stores)
-            raise ValueError(f'The value contains some invalid store keys: {invalid_store_keys}')
+            raise ValueError(
+                f'The value contains some invalid store keys: {invalid_store_keys}'
+            )
         for store_key, vv in v.items():
             if store_key in self._stores:
                 self._stores[store_key][k] = vv
@@ -426,7 +426,6 @@ class FanoutPersister(FanoutReader, KvPersister):
             raise KeyError(k)
         for store in stores_to_delete_from.values():
             del store[k]
-    
 
 
 class SequenceKvReader(KvReader):
