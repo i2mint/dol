@@ -94,26 +94,20 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(
-                        obj=obj,
-                        path=path,
-                        result=result,
-                        k=k,
-                        error=error,
-                    )
+                    dict(obj=obj, path=path, result=result, k=k, error=error,)
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
                 raise type(error)(on_error)
             else:
                 raise ValueError(
-                    f"on_error should be a callable (input is a dict) or a string. "
-                    f"Was: {on_error}"
+                    f'on_error should be a callable (input is a dict) or a string. '
+                    f'Was: {on_error}'
                 )
     return result
 
 
-def split_if_str(obj, sep="."):
+def split_if_str(obj, sep='.'):
     if isinstance(obj, str):
         return obj.split(sep)
     return obj
@@ -125,7 +119,7 @@ def cast_to_int_if_numeric_str(k):
     return k
 
 
-def separate_keys_with_separator(obj, sep="."):
+def separate_keys_with_separator(obj, sep='.'):
     return map(cast_to_int_if_numeric_str, split_if_str(obj, sep))
 
 
@@ -155,7 +149,7 @@ def path_get(
     path,
     on_error: OnErrorType = raise_on_error,
     *,
-    sep=".",
+    sep='.',
     key_transformer=cast_to_int_if_numeric_str,
     get_value: Callable = get_attr_or_item,
     caught_errors=(Exception,),
@@ -256,7 +250,7 @@ def path_set(
     key_path: Iterable[KT],
     val: VT,
     *,
-    sep: str = ".",
+    sep: str = '.',
     new_mapping: Callable[[], VT] = dict,
 ):
     """
@@ -371,14 +365,11 @@ from typing import Callable, Mapping, KT, VT, TypeVar, Iterator, Union, Literal
 from dol.base import kv_walk
 
 
-PT = TypeVar("PT")  # Path Type
+PT = TypeVar('PT')  # Path Type
 PkvFilt = Callable[[PT, KT, VT], bool]
 
 
-def path_filter(
-    pkv_filt: PkvFilt,
-    d: Mapping,
-) -> Iterator[PT]:
+def path_filter(pkv_filt: PkvFilt, d: Mapping,) -> Iterator[PT]:
     """Walk a dict, yielding paths to values that pass the ``pkv_filt``
 
     :param pkv_filt: A function that takes a path, key, and value, and returns
@@ -453,7 +444,7 @@ def _mk_path_matcher(pkv_filt: PkvFilt, sentinel=None):
 
 @add_as_attribute_of(path_filter)
 def _mk_pkv_filt(
-    filt: Callable[[Union[PT, KT, VT]], bool], kind: Literal["path", "key", "value"]
+    filt: Callable[[Union[PT, KT, VT]], bool], kind: Literal['path', 'key', 'value']
 ) -> PkvFilt:
     """pkv_filt based on a ``filt`` that matches EITHER path, key, or value."""
     return partial(_pkv_filt, filt, kind)
@@ -461,21 +452,21 @@ def _mk_pkv_filt(
 
 def _pkv_filt(
     filt: Callable[[Union[PT, KT, VT]], bool],
-    kind: Literal["path", "key", "value"],
+    kind: Literal['path', 'key', 'value'],
     p: PT,
     k: KT,
     v: VT,
 ):
     """Helper to make (picklable) pkv_filt based on a ``filt`` that matches EITHER
     path, key, or value."""
-    if kind == "path":
+    if kind == 'path':
         return filt(p)
-    elif kind == "key":
+    elif kind == 'key':
         return filt(k)
-    elif kind == "value":
+    elif kind == 'value':
         return filt(v)
     else:
-        raise ValueError(f"Invalid kind: {kind}")
+        raise ValueError(f'Invalid kind: {kind}')
 
 
 @dataclass
@@ -601,7 +592,7 @@ class PrefixRelativizationMixin:
     dict_items([('/root/of/data/foo', 'bar'), ('/root/of/data/too', 'much')])
     """
 
-    _prefix_attr_name = "_prefix"
+    _prefix_attr_name = '_prefix'
 
     @lazyprop
     def _prefix_length(self):
@@ -628,17 +619,13 @@ class PrefixRelativization(PrefixRelativizationMixin):
     In fact, not only strings, but any key object that has a __len__, __add__, and subscripting.
     """
 
-    def __init__(self, _prefix=""):
+    def __init__(self, _prefix=''):
         self._prefix = _prefix
 
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None,
-    *,
-    name=None,
-    with_key_validation=False,
-    prefix_attr="_prefix",
+    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
 ):
     """
 
@@ -690,7 +677,7 @@ def mk_relative_path_store(
         from warnings import warn
 
         warn(
-            f"The use of name argumment is deprecated. Use __name__ instead",
+            f'The use of name argumment is deprecated. Use __name__ instead',
             DeprecationWarning,
         )
 
@@ -699,17 +686,17 @@ def mk_relative_path_store(
     @wraps(store_cls.__init__)
     def __init__(self, *args, **kwargs):
         Store.__init__(self, store=store_cls(*args, **kwargs))
-        prefix = recursive_get_attr(self.store, prefix_attr, "")
+        prefix = recursive_get_attr(self.store, prefix_attr, '')
         setattr(
             self, prefix_attr, prefix
         )  # TODO: Might need descriptor to enable assignment
 
     cls.__init__ = __init__
 
-    if prefix_attr != "_prefix":
-        assert not hasattr(store_cls, "_prefix"), (
-            f"You already have a _prefix attribute, "
-            f"but want the prefix name to be {prefix_attr}. "
+    if prefix_attr != '_prefix':
+        assert not hasattr(store_cls, '_prefix'), (
+            f'You already have a _prefix attribute, '
+            f'but want the prefix name to be {prefix_attr}. '
             f"That's not going to be easy for me."
         )
 
@@ -725,8 +712,8 @@ def mk_relative_path_store(
         cls._prefix = _prefix
 
     if with_key_validation:
-        assert hasattr(store_cls, "is_valid_key"), (
-            "If you want with_key_validation=True, "
+        assert hasattr(store_cls, 'is_valid_key'), (
+            'If you want with_key_validation=True, '
             "you'll need a method called is_valid_key to do the validation job"
         )
 
@@ -736,7 +723,7 @@ def mk_relative_path_store(
                 return _id
             else:
                 raise KeyError(
-                    f"Key not valid (usually because does not exist or access not permitted): {k}"
+                    f'Key not valid (usually because does not exist or access not permitted): {k}'
                 )
 
         cls._id_of_key = _id_of_key
@@ -771,10 +758,10 @@ from enum import Enum
 
 
 class PathKeyTypes(Enum):
-    str = "str"
-    dict = "dict"
-    tuple = "tuple"
-    namedtuple = "namedtuple"
+    str = 'str'
+    dict = 'dict'
+    tuple = 'tuple'
+    namedtuple = 'namedtuple'
 
 
 path_key_type_for_type = {
@@ -785,20 +772,20 @@ path_key_type_for_type = {
 
 _method_names_for_path_type = {
     PathKeyTypes.str: {
-        "_id_of_key": StrTupleDict.simple_str_to_str,
-        "_key_of_id": StrTupleDict.str_to_simple_str,
+        '_id_of_key': StrTupleDict.simple_str_to_str,
+        '_key_of_id': StrTupleDict.str_to_simple_str,
     },
     PathKeyTypes.dict: {
-        "_id_of_key": StrTupleDict.dict_to_str,
-        "_key_of_id": StrTupleDict.str_to_dict,
+        '_id_of_key': StrTupleDict.dict_to_str,
+        '_key_of_id': StrTupleDict.str_to_dict,
     },
     PathKeyTypes.tuple: {
-        "_id_of_key": StrTupleDict.tuple_to_str,
-        "_key_of_id": StrTupleDict.str_to_tuple,
+        '_id_of_key': StrTupleDict.tuple_to_str,
+        '_key_of_id': StrTupleDict.str_to_tuple,
     },
     PathKeyTypes.namedtuple: {
-        "_id_of_key": StrTupleDict.namedtuple_to_str,
-        "_key_of_id": StrTupleDict.str_to_namedtuple,
+        '_id_of_key': StrTupleDict.namedtuple_to_str,
+        '_key_of_id': StrTupleDict.str_to_namedtuple,
     },
 }
 
@@ -819,7 +806,7 @@ def str_template_key_trans(
     format_dict=None,
     process_kwargs=None,
     process_info_dict=None,
-    named_tuple_type_name="NamedTuple",
+    named_tuple_type_name='NamedTuple',
     sep: str = path_sep,
 ):
     """Make a key trans object that translates from a string _id to a dict, tuple, or namedtuple key (and back)"""
@@ -833,13 +820,13 @@ def str_template_key_trans(
 
     setattr(
         PathKeyMapper,
-        "_id_of_key",
-        _method_names_for_path_type[key_type]["_id_of_key"],
+        '_id_of_key',
+        _method_names_for_path_type[key_type]['_id_of_key'],
     )
     setattr(
         PathKeyMapper,
-        "_key_of_id",
-        _method_names_for_path_type[key_type]["_key_of_id"],
+        '_key_of_id',
+        _method_names_for_path_type[key_type]['_key_of_id'],
     )
 
     key_trans = PathKeyMapper(
@@ -947,8 +934,8 @@ def _return_none_if_none_input(func):
     return _func
 
 
-Codec = namedtuple("Codec", "encoder decoder")
-FieldTypeNames = Literal["str", "dict", "tuple", "namedtuple", "simple_str"]
+Codec = namedtuple('Codec', 'encoder decoder')
+FieldTypeNames = Literal['str', 'dict', 'tuple', 'namedtuple', 'simple_str']
 
 
 # TODO: Make and use _return_none_if_none_input or not?
@@ -1003,7 +990,7 @@ class StringTemplate:
         *,
         field_patterns: dict = None,
         simple_str_sep: str = None,
-        namedtuple_type_name: str = "NamedTuple",
+        namedtuple_type_name: str = 'NamedTuple',
     ):
         self.template = template
         self.field_patterns = field_patterns or {}
@@ -1030,11 +1017,11 @@ class StringTemplate:
             # to the field_names list.
             if field_name and (format_spec or field_name in self.field_patterns):
                 self.field_names.append(field_name)
-                regex = format_spec or self.field_patterns.get(field_name, ".*?")
+                regex = format_spec or self.field_patterns.get(field_name, '.*?')
                 to_replace = (
-                    "{" + field_name + (":" + format_spec if format_spec else "") + "}"
+                    '{' + field_name + (':' + format_spec if format_spec else '') + '}'
                 )
-                pattern = pattern.replace(to_replace, f"(?P<{field_name}>{regex})")
+                pattern = pattern.replace(to_replace, f'(?P<{field_name}>{regex})')
         self.regex = re.compile(pattern)
 
     def codec(self, source: FieldTypeNames, target: FieldTypeNames):
@@ -1050,8 +1037,8 @@ class StringTemplate:
         >>> encoder({'name': 'Alice', 'age': '30'})
         ('Alice', '30')
         """
-        coder = getattr(self, f"{source}_to_{target}")
-        decoder = getattr(self, f"{target}_to_{source}")
+        coder = getattr(self, f'{source}_to_{target}')
+        decoder = getattr(self, f'{target}_to_{source}')
         return Codec(coder, decoder)
 
     # @_return_none_if_none_input
@@ -1154,8 +1141,7 @@ class StringTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self,
-        params: dict,
+        self, params: dict,
     ):
         """Generates a namedtuple from the dictionary values based on the template.
 
@@ -1203,8 +1189,8 @@ class StringTemplate:
         elif sep is None:
             if self.simple_str_sep is None:
                 raise ValueError(
-                    "Need to specify a sep (at method call time), or a simple_str_sep "
-                    "(at instiantiation time) to use str_to_simple_str"
+                    'Need to specify a sep (at method call time), or a simple_str_sep '
+                    '(at instiantiation time) to use str_to_simple_str'
                 )
         return sep.join(self.str_to_tuple(s))
 

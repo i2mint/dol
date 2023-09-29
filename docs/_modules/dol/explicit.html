@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.explicit &mdash; dol 0.1.143 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.explicit &mdash; dol 0.1.144 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -109,65 +109,7 @@
 <span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">kv_wrap</span>
 <span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="n">PrefixRelativizationMixin</span>
 <span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">max_common_prefix</span>
-
-
-<span class="k">class</span> <span class="nc">ObjLoader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_of_key</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_of_key</span> <span class="o">=</span> <span class="n">data_of_key</span>
-        <span class="k">if</span> <span class="n">obj_of_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj_of_data</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;serializer must be None or a callable&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">obj_of_data</span> <span class="o">=</span> <span class="n">obj_of_data</span>
-
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj_of_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="ObjReader"><a class="viewcode-back" href="../../module_docs/dol/explicit.html#dol.explicit.ObjReader">[docs]</a><span class="k">class</span> <span class="nc">ObjReader</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A reader that uses a specified function to get the contents for a given key.</span>
-
-<span class="sd">    &gt;&gt;&gt; # define a contents_of_key that reads stuff from a dict</span>
-<span class="sd">    &gt;&gt;&gt; data = {&#39;foo&#39;: &#39;bar&#39;, 42: &quot;everything&quot;}</span>
-<span class="sd">    &gt;&gt;&gt; def read_dict(k):</span>
-<span class="sd">    ...     return data[k]</span>
-<span class="sd">    &gt;&gt;&gt; pr = ObjReader(_obj_of_key=read_dict)</span>
-<span class="sd">    &gt;&gt;&gt; pr[&#39;foo&#39;]</span>
-<span class="sd">    &#39;bar&#39;</span>
-<span class="sd">    &gt;&gt;&gt; pr[42]</span>
-<span class="sd">    &#39;everything&#39;</span>
-<span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; # define contents_of_key that reads stuff from a file given it&#39;s path</span>
-<span class="sd">    &gt;&gt;&gt; def read_file(path):</span>
-<span class="sd">    ...     with open(path) as fp:</span>
-<span class="sd">    ...         return fp.read()</span>
-<span class="sd">    &gt;&gt;&gt; pr = ObjReader(_obj_of_key=read_file)</span>
-<span class="sd">    &gt;&gt;&gt; file_where_this_code_is = __file__  # it should be THIS file you&#39;re reading right now!</span>
-<span class="sd">    &gt;&gt;&gt; print(pr[file_where_this_code_is][62:155])  # print some characters of this file</span>
-<span class="sd">    from collections.abc import Mapping</span>
-<span class="sd">    from typing import Callable, Collection as CollectionType</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_obj_of_key</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_obj_of_key</span> <span class="o">=</span> <span class="n">_obj_of_key</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_composition</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data_of_key</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-            <span class="n">_obj_of_key</span><span class="o">=</span><span class="n">ObjLoader</span><span class="p">(</span><span class="n">data_of_key</span><span class="o">=</span><span class="n">data_of_key</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">obj_of_data</span><span class="p">)</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                <span class="s1">&#39;KeyError in </span><span class="si">{}</span><span class="s1"> when trying to __getitem__(</span><span class="si">{}</span><span class="s1">): </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">e</span>
-                <span class="p">)</span>
-            <span class="p">)</span></div>
+<span class="kn">from</span> <span class="nn">dol.sources</span> <span class="kn">import</span> <span class="n">ObjReader</span>  <span class="c1"># because it used to be here</span>
 
 
 <span class="c1"># TODO: Revisit ExplicitKeys and ExplicitKeysWithPrefixRelativization. Not extendible to full store!</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.1.143 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.sources &mdash; dol 0.1.144 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -246,14 +246,14 @@
 <span class="sd">    &gt;&gt;&gt; reader[&#39;b&#39;]</span>
 <span class="sd">    {&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
 
-<span class="sd">    The reader returns a dict with the values from each store, keyed by the name of the </span>
+<span class="sd">    The reader returns a dict with the values from each store, keyed by the name of the</span>
 <span class="sd">    store.</span>
 
 <span class="sd">    We can also pass a default value to return if the key is not in the store:</span>
 
 <span class="sd">    &gt;&gt;&gt; reader = FanoutReader(</span>
 <span class="sd">    ...     stores=stores,</span>
-<span class="sd">    ...     default=&#39;no value in this store for this key&#39;, </span>
+<span class="sd">    ...     default=&#39;no value in this store for this key&#39;,</span>
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; reader[&#39;a&#39;]</span>
 <span class="sd">    {&#39;bytes_store&#39;: b&#39;a&#39;, &#39;metadata_store&#39;: &#39;no value in this store for this key&#39;}</span>
@@ -291,7 +291,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A way to create a fan-out store from a mix of args and kwargs, instead of a</span>
 <span class="sd">        single dict.</span>
 
-<span class="sd">        param args: sub-stores used to fan-out the data. These stores will be </span>
+<span class="sd">        param args: sub-stores used to fan-out the data. These stores will be</span>
 <span class="sd">            represented by their index in the tuple.</span>
 <span class="sd">        param kwargs: sub-stores used to fan-out the data. These stores will be</span>
 <span class="sd">            represented by their name in the dict. __init__ arguments can also be passed</span>
@@ -317,7 +317,7 @@
 <span class="sd">        &gt;&gt;&gt; reader[&#39;b&#39;]</span>
 <span class="sd">        {0: b&#39;b&#39;, 1: {&#39;x&#39;: 2}}</span>
 
-<span class="sd">        The reader returns a dict with the values from each store, keyed by the index of </span>
+<span class="sd">        The reader returns a dict with the values from each store, keyed by the index of</span>
 <span class="sd">        the store in the `args` tuple.</span>
 
 <span class="sd">        We can also create a fan-out reader passing the stores in kwargs:</span>
@@ -337,8 +337,8 @@
 <span class="sd">        &gt;&gt;&gt; reader[&#39;b&#39;]</span>
 <span class="sd">        {0: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
 
-<span class="sd">        Note that the order of the stores is determined by the order of the args and </span>
-<span class="sd">        kwargs.     </span>
+<span class="sd">        Note that the order of the stores is determined by the order of the args and</span>
+<span class="sd">        kwargs.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">extract_init_kwargs</span><span class="p">():</span>
@@ -388,7 +388,7 @@
 <span class="sd">        If False, only the stores that are set will be updated.</span>
 <span class="sd">    param ignore_non_existing_store_keys: If True, ignore store keys from the value that</span>
 <span class="sd">        are not in the persister. If False, a ValueError is raised.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Let&#39;s create a persister from in-memory stores:</span>
 
 <span class="sd">    &gt;&gt;&gt; bytes_store = dict()</span>
@@ -425,8 +425,8 @@
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
 <span class="sd">    ValueError: All stores must be set when setting a value. Missing stores: {&#39;metadata_store&#39;}</span>
-<span class="sd">    </span>
-<span class="sd">    By default, if a store key from the value is not in the persister, a ValueError is </span>
+
+<span class="sd">    By default, if a store key from the value is not in the persister, a ValueError is</span>
 <span class="sd">    raised:</span>
 
 <span class="sd">    &gt;&gt;&gt; persister[&#39;a&#39;] = dict(</span>
@@ -471,7 +471,7 @@
 <span class="sd">        ...</span>
 <span class="sd">    KeyError: &#39;z&#39;</span>
 
-<span class="sd">    However, if the key is in some of the stores, but not in others, the key is deleted </span>
+<span class="sd">    However, if the key is in some of the stores, but not in others, the key is deleted</span>
 <span class="sd">    from the stores where it is present:</span>
 
 <span class="sd">    &gt;&gt;&gt; bytes_store=dict(a=b&#39;a&#39;)</span>
@@ -784,33 +784,76 @@
     <span class="k">return</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_parts</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ObjReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.ObjReader">[docs]</a><span class="k">class</span> <span class="nc">ObjReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">obj</span>
-        <span class="n">copy_attrs</span><span class="p">(</span>
-            <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
-            <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
-            <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">),</span>
-            <span class="n">raise_error_if_an_attr_is_missing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="si">}</span><span class="s1">)&#39;</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
-
-        <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Deprecated: Use .src instead of ._source&#39;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span></div>
-
-
 <span class="c1"># class SourceReader(KvReader):</span>
 <span class="c1">#     def __getitem__(self, k):</span>
 <span class="c1">#         return getsource(k)</span>
 
 <span class="c1"># class NestedObjReader(ObjReader):</span>
 <span class="c1">#     def __init__(self, obj, src_to_key, key_filt=None, ):</span>
+
+
+<span class="k">class</span> <span class="nc">ObjLoader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_of_key</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_of_key</span> <span class="o">=</span> <span class="n">data_of_key</span>
+        <span class="k">if</span> <span class="n">obj_of_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj_of_data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;serializer must be None or a callable&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obj_of_data</span> <span class="o">=</span> <span class="n">obj_of_data</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj_of_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+
+<span class="c1"># Note: Older version commmented below</span>
+<div class="viewcode-block" id="ObjReader"><a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.ObjReader">[docs]</a><span class="k">class</span> <span class="nc">ObjReader</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A reader that uses a specified function to get the contents for a given key.</span>
+
+<span class="sd">    &gt;&gt;&gt; # define a contents_of_key that reads stuff from a dict</span>
+<span class="sd">    &gt;&gt;&gt; data = {&#39;foo&#39;: &#39;bar&#39;, 42: &quot;everything&quot;}</span>
+<span class="sd">    &gt;&gt;&gt; def read_dict(k):</span>
+<span class="sd">    ...     return data[k]</span>
+<span class="sd">    &gt;&gt;&gt; pr = ObjReader(_obj_of_key=read_dict)</span>
+<span class="sd">    &gt;&gt;&gt; pr[&#39;foo&#39;]</span>
+<span class="sd">    &#39;bar&#39;</span>
+<span class="sd">    &gt;&gt;&gt; pr[42]</span>
+<span class="sd">    &#39;everything&#39;</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; # define contents_of_key that reads stuff from a file given it&#39;s path</span>
+<span class="sd">    &gt;&gt;&gt; def read_file(path):</span>
+<span class="sd">    ...     with open(path) as fp:</span>
+<span class="sd">    ...         return fp.read()</span>
+<span class="sd">    &gt;&gt;&gt; pr = ObjReader(_obj_of_key=read_file)</span>
+<span class="sd">    &gt;&gt;&gt; file_where_this_code_is = __file__</span>
+
+<span class="sd">    ``file_where_this_code_is`` should be the file where this doctest is written,</span>
+<span class="sd">    therefore should contain what I just said:</span>
+
+<span class="sd">    &gt;&gt;&gt; &#39;therefore should contain what I just said&#39; in pr[file_where_this_code_is]</span>
+<span class="sd">    True</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_obj_of_key</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_obj_of_key</span> <span class="o">=</span> <span class="n">_obj_of_key</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_composition</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data_of_key</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">_obj_of_key</span><span class="o">=</span><span class="n">ObjLoader</span><span class="p">(</span><span class="n">data_of_key</span><span class="o">=</span><span class="n">data_of_key</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">obj_of_data</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="s1">&#39;KeyError in </span><span class="si">{}</span><span class="s1"> when trying to __getitem__(</span><span class="si">{}</span><span class="s1">): </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">e</span>
+                <span class="p">)</span>
+            <span class="p">)</span></div>
 
 
 <span class="c1"># Pattern: Recursive navigation</span>
@@ -1029,6 +1072,27 @@
 
 <span class="sd">    .. seealso:: Objects in ``py2store.utils.attr_dict`` module</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<span class="c1"># class ObjReader(KvReader):</span>
+<span class="c1">#     def __init__(self, obj):</span>
+<span class="c1">#         self.src = obj</span>
+<span class="c1">#         copy_attrs(</span>
+<span class="c1">#             target=self,</span>
+<span class="c1">#             source=self.src,</span>
+<span class="c1">#             attrs=(&#39;__name__&#39;, &#39;__qualname__&#39;, &#39;__module__&#39;),</span>
+<span class="c1">#             raise_error_if_an_attr_is_missing=False,</span>
+<span class="c1">#         )</span>
+
+<span class="c1">#     def __repr__(self):</span>
+<span class="c1">#         return f&#39;{self.__class__.__qualname__}({self.src})&#39;</span>
+
+<span class="c1">#     @property</span>
+<span class="c1">#     def _source(self):</span>
+<span class="c1">#         from warnings import warn</span>
+
+<span class="c1">#         warn(&#39;Deprecated: Use .src instead of ._source&#39;, DeprecationWarning, 2)</span>
+<span class="c1">#         return self.src</span>
 </pre></div>
 
            </div>

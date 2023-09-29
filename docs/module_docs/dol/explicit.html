@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.explicit &mdash; dol 0.1.143 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.explicit &mdash; dol 0.1.144 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -197,33 +197,6 @@ The key_collection must be a collections.abc.Collection (such as list, tuple, se
 <span class="go">False</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
 <span class="go">[&#39;of/foo&#39;, &#39;of/bar&#39;, &#39;for/alice&#39;]</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py class">
-<dt id="dol.explicit.ObjReader">
-<em class="property">class </em><code class="sig-prename descclassname">dol.explicit.</code><code class="sig-name descname">ObjReader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_obj_of_key</span><span class="p">:</span> <span class="n">Callable</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/explicit.html#ObjReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.explicit.ObjReader" title="Permalink to this definition">¶</a></dt>
-<dd><p>A reader that uses a specified function to get the contents for a given key.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># define a contents_of_key that reads stuff from a dict</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;foo&#39;</span><span class="p">:</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="mi">42</span><span class="p">:</span> <span class="s2">&quot;everything&quot;</span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">read_dict</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pr</span> <span class="o">=</span> <span class="n">ObjReader</span><span class="p">(</span><span class="n">_obj_of_key</span><span class="o">=</span><span class="n">read_dict</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pr</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span>
-<span class="go">&#39;bar&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pr</span><span class="p">[</span><span class="mi">42</span><span class="p">]</span>
-<span class="go">&#39;everything&#39;</span>
-<span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># define contents_of_key that reads stuff from a file given it&#39;s path</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pr</span> <span class="o">=</span> <span class="n">ObjReader</span><span class="p">(</span><span class="n">_obj_of_key</span><span class="o">=</span><span class="n">read_file</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">file_where_this_code_is</span> <span class="o">=</span> <span class="vm">__file__</span>  <span class="c1"># it should be THIS file you&#39;re reading right now!</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">pr</span><span class="p">[</span><span class="n">file_where_this_code_is</span><span class="p">][</span><span class="mi">62</span><span class="p">:</span><span class="mi">155</span><span class="p">])</span>  <span class="c1"># print some characters of this file</span>
-<span class="go">from collections.abc import Mapping</span>
-<span class="go">from typing import Callable, Collection as CollectionType</span>
 </pre></div>
 </div>
 </dd></dl>

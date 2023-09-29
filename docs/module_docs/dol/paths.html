@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.1.143 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.1.144 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -117,6 +117,23 @@
 <span class="go">{&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 1, &#39;d&#39;: 4, &#39;new_ab_key&#39;: 42}, &#39;e&#39;: 3}}</span>
 </pre></div>
 </div>
+<dl class="py class">
+<dt id="dol.paths.Codec">
+<em class="property">class </em><code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">Codec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">encoder</span></em>, <em class="sig-param"><span class="n">decoder</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.paths.Codec" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt id="dol.paths.Codec.decoder">
+<code class="sig-name descname">decoder</code><a class="headerlink" href="#dol.paths.Codec.decoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.paths.Codec.encoder">
+<code class="sig-name descname">encoder</code><a class="headerlink" href="#dol.paths.Codec.encoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt id="dol.paths.KeyPath">
 <em class="property">class </em><code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">KeyPath</code><span class="sig-paren">(</span><em class="sig-param">path_sep: str = '/'</em>, <em class="sig-param">_path_type: Union[type</em>, <em class="sig-param">callable] = &lt;class 'tuple'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#KeyPath"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.KeyPath" title="Permalink to this definition">¶</a></dt>
@@ -245,6 +262,206 @@ Also, assumes that a (string) _prefix attribute will be available.</p>
 <span class="go">dict_items([(&#39;/root/of/data/foo&#39;, &#39;bar&#39;), (&#39;/root/of/data/too&#39;, &#39;much&#39;)])</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.paths.StringTemplate">
+<em class="property">class </em><code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">StringTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">field_patterns</span><span class="p">:</span> <span class="n">dict</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">simple_str_sep</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">namedtuple_type_name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'NamedTuple'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for parsing and generating strings based on a template.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template</strong> – A template string with fields to be extracted or filled in.</p></li>
+<li><p><strong>field_patterns</strong> – A dictionary of field names and their regex patterns.</p></li>
+<li><p><strong>simple_str_sep</strong> – A separator string for simple strings (i.e. strings without
+fields). If <cite>None</cite>, the template string will be used as the separator.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">str_to_dict</span><span class="p">(</span><span class="s2">&quot;Alice is 30 years old.&quot;</span><span class="p">)</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">dict_to_str</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="go">&#39;Alice is 30 years old.&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">dict_to_tuple</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="go">(&#39;Alice&#39;, &#39;30&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">tuple_to_dict</span><span class="p">((</span><span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;30&#39;</span><span class="p">))</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">str_to_tuple</span><span class="p">(</span><span class="s2">&quot;Alice is 30 years old.&quot;</span><span class="p">)</span>
+<span class="go">(&#39;Alice&#39;, &#39;30&#39;)</span>
+</pre></div>
+</div>
+<p>You can also ask any (handled) combination of field types:
+&gt;&gt;&gt; coder, encoder = st.codec(‘tuple’, ‘dict’)
+&gt;&gt;&gt; coder((‘Alice’, ‘30’))
+{‘name’: ‘Alice’, ‘age’: ‘30’}
+&gt;&gt;&gt; encoder({‘name’: ‘Alice’, ‘age’: ‘30’})
+(‘Alice’, ‘30’)</p>
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.codec">
+<code class="sig-name descname">codec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">source</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>str<span class="p">, </span>dict<span class="p">, </span>tuple<span class="p">, </span>namedtuple<span class="p">, </span>simple_str<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">target</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>str<span class="p">, </span>dict<span class="p">, </span>tuple<span class="p">, </span>namedtuple<span class="p">, </span>simple_str<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.codec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.codec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a <code class="docutils literal notranslate"><span class="pre">(coder,</span> <span class="pre">decoder)</span></code> pair for the given source and target types.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coder</span><span class="p">,</span> <span class="n">encoder</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">codec</span><span class="p">(</span><span class="s1">&#39;tuple&#39;</span><span class="p">,</span> <span class="s1">&#39;dict&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coder</span><span class="p">((</span><span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;30&#39;</span><span class="p">))</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encoder</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="go">(&#39;Alice&#39;, &#39;30&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.dict_to_namedtuple">
+<code class="sig-name descname">dict_to_namedtuple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.dict_to_namedtuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.dict_to_namedtuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a namedtuple from the dictionary values based on the template.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Person</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">dict_to_namedtuple</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Person</span>
+<span class="go">NamedTuple(name=&#39;Alice&#39;, age=&#39;30&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.dict_to_str">
+<code class="sig-name descname">dict_to_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.dict_to_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.dict_to_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a string from the dictionary values based on the template.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">dict_to_str</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="go">&#39;Alice is 30 years old.&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.dict_to_tuple">
+<code class="sig-name descname">dict_to_tuple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.dict_to_tuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.dict_to_tuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a tuple from the dictionary values based on the template.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">dict_to_tuple</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="go">(&#39;Alice&#39;, &#39;30&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.namedtuple_to_dict">
+<code class="sig-name descname">namedtuple_to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nt</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.namedtuple_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.namedtuple_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a namedtuple to a dictionary.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Person</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">dict_to_namedtuple</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">namedtuple_to_dict</span><span class="p">(</span><span class="n">Person</span><span class="p">)</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.simple_str_to_str">
+<code class="sig-name descname">simple_str_to_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ss</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">sep</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.simple_str_to_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.simple_str_to_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a simple character-delimited string to a string.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">simple_str_to_str</span><span class="p">(</span><span class="s1">&#39;Alice-30&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+<span class="go">&#39;Alice is 30 years old.&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.str_to_dict">
+<code class="sig-name descname">str_to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.str_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.str_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the input string and returns a dictionary of extracted values.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">str_to_dict</span><span class="p">(</span><span class="s2">&quot;Alice is 30 years old.&quot;</span><span class="p">)</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.str_to_simple_str">
+<code class="sig-name descname">str_to_simple_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">sep</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.str_to_simple_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.str_to_simple_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a string to a simple string (i.e. a simple character-delimited string).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">str_to_simple_str</span><span class="p">(</span><span class="s2">&quot;Alice is 30 years old.&quot;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+<span class="go">&#39;Alice-30&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.str_to_tuple">
+<code class="sig-name descname">str_to_tuple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.str_to_tuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.str_to_tuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the input string and returns a tuple of extracted values.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">str_to_tuple</span><span class="p">(</span><span class="s2">&quot;Alice is 30 years old.&quot;</span><span class="p">)</span>
+<span class="go">(&#39;Alice&#39;, &#39;30&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.tuple_to_dict">
+<code class="sig-name descname">tuple_to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param_vals</span><span class="p">:</span> <span class="n">tuple</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.tuple_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.tuple_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a dictionary from the tuple values based on the template.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">tuple_to_dict</span><span class="p">((</span><span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;30&#39;</span><span class="p">))</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.tuple_to_str">
+<code class="sig-name descname">tuple_to_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">tuple</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.tuple_to_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.tuple_to_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a string from the tuple values based on the template.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">tuple_to_str</span><span class="p">((</span><span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;30&#39;</span><span class="p">))</span>
+<span class="go">&#39;Alice is 30 years old.&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py function">
