@@ -8,65 +8,7 @@ from dol.base import Collection, KvReader, Store
 from dol.trans import kv_wrap
 from dol.paths import PrefixRelativizationMixin
 from dol.util import max_common_prefix
-
-
-class ObjLoader(object):
-    def __init__(self, data_of_key, obj_of_data=None):
-        self.data_of_key = data_of_key
-        if obj_of_data is not None or not callable(obj_of_data):
-            raise TypeError('serializer must be None or a callable')
-        self.obj_of_data = obj_of_data
-
-    def __call__(self, k):
-        if self.obj_of_data is not None:
-            return self.obj_of_data(self.data_of_key(k))
-        else:
-            return self.data_of_key(k)
-
-
-class ObjReader:
-    """
-    A reader that uses a specified function to get the contents for a given key.
-
-    >>> # define a contents_of_key that reads stuff from a dict
-    >>> data = {'foo': 'bar', 42: "everything"}
-    >>> def read_dict(k):
-    ...     return data[k]
-    >>> pr = ObjReader(_obj_of_key=read_dict)
-    >>> pr['foo']
-    'bar'
-    >>> pr[42]
-    'everything'
-    >>>
-    >>> # define contents_of_key that reads stuff from a file given it's path
-    >>> def read_file(path):
-    ...     with open(path) as fp:
-    ...         return fp.read()
-    >>> pr = ObjReader(_obj_of_key=read_file)
-    >>> file_where_this_code_is = __file__  # it should be THIS file you're reading right now!
-    >>> print(pr[file_where_this_code_is][62:155])  # print some characters of this file
-    from collections.abc import Mapping
-    from typing import Callable, Collection as CollectionType
-    """
-
-    def __init__(self, _obj_of_key: Callable):
-        self._obj_of_key = _obj_of_key
-
-    @classmethod
-    def from_composition(cls, data_of_key, obj_of_data=None):
-        return cls(
-            _obj_of_key=ObjLoader(data_of_key=data_of_key, obj_of_data=obj_of_data)
-        )
-
-    def __getitem__(self, k):
-        try:
-            return self._obj_of_key(k)
-        except Exception as e:
-            raise KeyError(
-                'KeyError in {} when trying to __getitem__({}): {}'.format(
-                    e.__class__.__name__, k, e
-                )
-            )
+from dol.sources import ObjReader  # because it used to be here
 
 
 # TODO: Revisit ExplicitKeys and ExplicitKeysWithPrefixRelativization. Not extendible to full store!

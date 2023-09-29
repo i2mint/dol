@@ -19,7 +19,7 @@ Examples::
 
 from functools import wraps, partial
 from dataclasses import dataclass
-from typing import Union, Callable, Any, Mapping, Iterable, Tuple
+from typing import Union, Callable, Any, Mapping, Iterable, Tuple, Literal
 from operator import getitem
 import os
 
@@ -94,20 +94,26 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
                 raise type(error)(on_error)
             else:
                 raise ValueError(
-                    f'on_error should be a callable (input is a dict) or a string. '
-                    f'Was: {on_error}'
+                    f"on_error should be a callable (input is a dict) or a string. "
+                    f"Was: {on_error}"
                 )
     return result
 
 
-def split_if_str(obj, sep='.'):
+def split_if_str(obj, sep="."):
     if isinstance(obj, str):
         return obj.split(sep)
     return obj
@@ -119,7 +125,7 @@ def cast_to_int_if_numeric_str(k):
     return k
 
 
-def separate_keys_with_separator(obj, sep='.'):
+def separate_keys_with_separator(obj, sep="."):
     return map(cast_to_int_if_numeric_str, split_if_str(obj, sep))
 
 
@@ -149,7 +155,7 @@ def path_get(
     path,
     on_error: OnErrorType = raise_on_error,
     *,
-    sep='.',
+    sep=".",
     key_transformer=cast_to_int_if_numeric_str,
     get_value: Callable = get_attr_or_item,
     caught_errors=(Exception,),
@@ -250,7 +256,7 @@ def path_set(
     key_path: Iterable[KT],
     val: VT,
     *,
-    sep: str = '.',
+    sep: str = ".",
     new_mapping: Callable[[], VT] = dict,
 ):
     """
@@ -365,11 +371,14 @@ from typing import Callable, Mapping, KT, VT, TypeVar, Iterator, Union, Literal
 from dol.base import kv_walk
 
 
-PT = TypeVar('PT')  # Path Type
+PT = TypeVar("PT")  # Path Type
 PkvFilt = Callable[[PT, KT, VT], bool]
 
 
-def path_filter(pkv_filt: PkvFilt, d: Mapping,) -> Iterator[PT]:
+def path_filter(
+    pkv_filt: PkvFilt,
+    d: Mapping,
+) -> Iterator[PT]:
     """Walk a dict, yielding paths to values that pass the ``pkv_filt``
 
     :param pkv_filt: A function that takes a path, key, and value, and returns
@@ -444,7 +453,7 @@ def _mk_path_matcher(pkv_filt: PkvFilt, sentinel=None):
 
 @add_as_attribute_of(path_filter)
 def _mk_pkv_filt(
-    filt: Callable[[Union[PT, KT, VT]], bool], kind: Literal['path', 'key', 'value']
+    filt: Callable[[Union[PT, KT, VT]], bool], kind: Literal["path", "key", "value"]
 ) -> PkvFilt:
     """pkv_filt based on a ``filt`` that matches EITHER path, key, or value."""
     return partial(_pkv_filt, filt, kind)
@@ -452,21 +461,21 @@ def _mk_pkv_filt(
 
 def _pkv_filt(
     filt: Callable[[Union[PT, KT, VT]], bool],
-    kind: Literal['path', 'key', 'value'],
+    kind: Literal["path", "key", "value"],
     p: PT,
     k: KT,
     v: VT,
 ):
     """Helper to make (picklable) pkv_filt based on a ``filt`` that matches EITHER
     path, key, or value."""
-    if kind == 'path':
+    if kind == "path":
         return filt(p)
-    elif kind == 'key':
+    elif kind == "key":
         return filt(k)
-    elif kind == 'value':
+    elif kind == "value":
         return filt(v)
     else:
-        raise ValueError(f'Invalid kind: {kind}')
+        raise ValueError(f"Invalid kind: {kind}")
 
 
 @dataclass
@@ -592,7 +601,7 @@ class PrefixRelativizationMixin:
     dict_items([('/root/of/data/foo', 'bar'), ('/root/of/data/too', 'much')])
     """
 
-    _prefix_attr_name = '_prefix'
+    _prefix_attr_name = "_prefix"
 
     @lazyprop
     def _prefix_length(self):
@@ -619,13 +628,17 @@ class PrefixRelativization(PrefixRelativizationMixin):
     In fact, not only strings, but any key object that has a __len__, __add__, and subscripting.
     """
 
-    def __init__(self, _prefix=''):
+    def __init__(self, _prefix=""):
         self._prefix = _prefix
 
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr="_prefix",
 ):
     """
 
@@ -677,7 +690,7 @@ def mk_relative_path_store(
         from warnings import warn
 
         warn(
-            f'The use of name argumment is deprecated. Use __name__ instead',
+            f"The use of name argumment is deprecated. Use __name__ instead",
             DeprecationWarning,
         )
 
@@ -686,17 +699,17 @@ def mk_relative_path_store(
     @wraps(store_cls.__init__)
     def __init__(self, *args, **kwargs):
         Store.__init__(self, store=store_cls(*args, **kwargs))
-        prefix = recursive_get_attr(self.store, prefix_attr, '')
+        prefix = recursive_get_attr(self.store, prefix_attr, "")
         setattr(
             self, prefix_attr, prefix
         )  # TODO: Might need descriptor to enable assignment
 
     cls.__init__ = __init__
 
-    if prefix_attr != '_prefix':
-        assert not hasattr(store_cls, '_prefix'), (
-            f'You already have a _prefix attribute, '
-            f'but want the prefix name to be {prefix_attr}. '
+    if prefix_attr != "_prefix":
+        assert not hasattr(store_cls, "_prefix"), (
+            f"You already have a _prefix attribute, "
+            f"but want the prefix name to be {prefix_attr}. "
             f"That's not going to be easy for me."
         )
 
@@ -712,8 +725,8 @@ def mk_relative_path_store(
         cls._prefix = _prefix
 
     if with_key_validation:
-        assert hasattr(store_cls, 'is_valid_key'), (
-            'If you want with_key_validation=True, '
+        assert hasattr(store_cls, "is_valid_key"), (
+            "If you want with_key_validation=True, "
             "you'll need a method called is_valid_key to do the validation job"
         )
 
@@ -723,7 +736,7 @@ def mk_relative_path_store(
                 return _id
             else:
                 raise KeyError(
-                    f'Key not valid (usually because does not exist or access not permitted): {k}'
+                    f"Key not valid (usually because does not exist or access not permitted): {k}"
                 )
 
         cls._id_of_key = _id_of_key
@@ -758,10 +771,10 @@ from enum import Enum
 
 
 class PathKeyTypes(Enum):
-    str = 'str'
-    dict = 'dict'
-    tuple = 'tuple'
-    namedtuple = 'namedtuple'
+    str = "str"
+    dict = "dict"
+    tuple = "tuple"
+    namedtuple = "namedtuple"
 
 
 path_key_type_for_type = {
@@ -772,20 +785,20 @@ path_key_type_for_type = {
 
 _method_names_for_path_type = {
     PathKeyTypes.str: {
-        '_id_of_key': StrTupleDict.simple_str_to_str,
-        '_key_of_id': StrTupleDict.str_to_simple_str,
+        "_id_of_key": StrTupleDict.simple_str_to_str,
+        "_key_of_id": StrTupleDict.str_to_simple_str,
     },
     PathKeyTypes.dict: {
-        '_id_of_key': StrTupleDict.dict_to_str,
-        '_key_of_id': StrTupleDict.str_to_dict,
+        "_id_of_key": StrTupleDict.dict_to_str,
+        "_key_of_id": StrTupleDict.str_to_dict,
     },
     PathKeyTypes.tuple: {
-        '_id_of_key': StrTupleDict.tuple_to_str,
-        '_key_of_id': StrTupleDict.str_to_tuple,
+        "_id_of_key": StrTupleDict.tuple_to_str,
+        "_key_of_id": StrTupleDict.str_to_tuple,
     },
     PathKeyTypes.namedtuple: {
-        '_id_of_key': StrTupleDict.namedtuple_to_str,
-        '_key_of_id': StrTupleDict.str_to_namedtuple,
+        "_id_of_key": StrTupleDict.namedtuple_to_str,
+        "_key_of_id": StrTupleDict.str_to_namedtuple,
     },
 }
 
@@ -806,7 +819,7 @@ def str_template_key_trans(
     format_dict=None,
     process_kwargs=None,
     process_info_dict=None,
-    named_tuple_type_name='NamedTuple',
+    named_tuple_type_name="NamedTuple",
     sep: str = path_sep,
 ):
     """Make a key trans object that translates from a string _id to a dict, tuple, or namedtuple key (and back)"""
@@ -820,13 +833,13 @@ def str_template_key_trans(
 
     setattr(
         PathKeyMapper,
-        '_id_of_key',
-        _method_names_for_path_type[key_type]['_id_of_key'],
+        "_id_of_key",
+        _method_names_for_path_type[key_type]["_id_of_key"],
     )
     setattr(
         PathKeyMapper,
-        '_key_of_id',
-        _method_names_for_path_type[key_type]['_key_of_id'],
+        "_key_of_id",
+        _method_names_for_path_type[key_type]["_key_of_id"],
     )
 
     key_trans = PathKeyMapper(
@@ -898,16 +911,113 @@ def rel_path_wrap(o, _prefix):
 import re
 import string
 from collections import namedtuple
+from functools import wraps
 
 
+def _return_none_if_none_input(func):
+    """Wraps a method function, making it return `None` if the input is `None`.
+
+    (More precisely, it will return `None` if the first (non-instance) input is `None`.
+
+    >>> class Foo:
+    ...     @_return_none_if_none_input
+    ...     def bar(self, x, y=1):
+    ...         return x + y
+    >>> foo = Foo()
+    >>> foo.bar(2)
+    3
+    >>> assert foo.bar(None) is None
+    >>> assert foo.bar(x=None) is None
+
+    Note: On the other hand, this will not return `None`, but should:
+    ``foo.bar(y=3, x=None)``. To achieve this, we'd need to look into the signature,
+    which seems like overkill and I might not want that systematic overhead in my
+    methods.
+    """
+
+    @wraps(func)
+    def _func(self, *args, **kwargs):
+        if args and args[0] is None:
+            return None
+        elif kwargs and next(iter(kwargs.values())) is None:
+            return None
+        else:
+            return func(self, *args, **kwargs)
+
+    return _func
+
+
+Codec = namedtuple("Codec", "encoder decoder")
+FieldTypeNames = Literal["str", "dict", "tuple", "namedtuple", "simple_str"]
+
+
+# TODO: Make and use _return_none_if_none_input or not?
+# TODO: Change to dataclass with 3.10+ (to be able to do KW_ONLY)
+# TODO: Should be refactored and generalized to be able to automatically handle
+#   all combinations of FieldTypeNames (and possibly open-close these as well?)
+#   It's a "path finder" meshed pattern.
 # TODO: Do we really want to allow field_patterns to be included in the template (the `{name:pattern}` options)?
 #  Normally, this is used for string GENERATION as `{name:format}`, which is still useful for us here too.
+#  The counter argument is that the main usage of StringTemplate is not actually
+#  generation, but extraction. Further, the format language is not as general as simply
+#  using a format_field = {field: cast_function, ...} argument.
+#  My decision would be to remove any use of the `{name:X}` form in the base class,
+#  and have classmethods specialized for short-hand versions that use `name:regex` or
+#  `name:format`, ...
 class StringTemplate:
-    def __init__(self, template: str, field_patterns: dict = None):
+    """A class for parsing and generating strings based on a template.
+
+    Args:
+        template: A template string with fields to be extracted or filled in.
+        field_patterns: A dictionary of field names and their regex patterns.
+        simple_str_sep: A separator string for simple strings (i.e. strings without
+            fields). If `None`, the template string will be used as the separator.
+
+    Examples:
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
+        >>> st.str_to_dict("Alice is 30 years old.")
+        {'name': 'Alice', 'age': '30'}
+        >>> st.dict_to_str({'name': 'Alice', 'age': '30'})
+        'Alice is 30 years old.'
+        >>> st.dict_to_tuple({'name': 'Alice', 'age': '30'})
+        ('Alice', '30')
+        >>> st.tuple_to_dict(('Alice', '30'))
+        {'name': 'Alice', 'age': '30'}
+        >>> st.str_to_tuple("Alice is 30 years old.")
+        ('Alice', '30')
+
+        You can also ask any (handled) combination of field types:
+        >>> coder, encoder = st.codec('tuple', 'dict')
+        >>> coder(('Alice', '30'))
+        {'name': 'Alice', 'age': '30'}
+        >>> encoder({'name': 'Alice', 'age': '30'})
+        ('Alice', '30')
+    """
+
+    def __init__(
+        self,
+        template: str,
+        *,
+        field_patterns: dict = None,
+        simple_str_sep: str = None,
+        namedtuple_type_name: str = "NamedTuple",
+    ):
         self.template = template
         self.field_patterns = field_patterns or {}
+        self.simple_str_sep = simple_str_sep
+        self.namedtuple_type_name = namedtuple_type_name
+        self.regex = None
         self._construct_regex()
 
+    # TODO: For now we harded coded the "interpret format_specs as field patterns",
+    #   but we could make this more general and allow for other types of
+    #   "interpretations" (e.g. "interpret format_specs as cast functions").
+    #   Note: We removed the cast functions (that existed in legacy StrTupleDict class)
+    #   to keep it simple, for now. The idea being that if you want to cast, you can
+    #   do it yourself by adding egress/ingress to codecs.
     def _construct_regex(self):
         formatter = string.Formatter()
         pattern = self.template
@@ -920,111 +1030,195 @@ class StringTemplate:
             # to the field_names list.
             if field_name and (format_spec or field_name in self.field_patterns):
                 self.field_names.append(field_name)
-                regex = format_spec or self.field_patterns.get(field_name, '.*?')
+                regex = format_spec or self.field_patterns.get(field_name, ".*?")
                 to_replace = (
-                    '{' + field_name + (':' + format_spec if format_spec else '') + '}'
+                    "{" + field_name + (":" + format_spec if format_spec else "") + "}"
                 )
-                pattern = pattern.replace(to_replace, f'(?P<{field_name}>{regex})')
+                pattern = pattern.replace(to_replace, f"(?P<{field_name}>{regex})")
         self.regex = re.compile(pattern)
 
+    def codec(self, source: FieldTypeNames, target: FieldTypeNames):
+        """Makes a ``(coder, decoder)`` pair for the given source and target types.
+
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
+        >>> coder, encoder = st.codec('tuple', 'dict')
+        >>> coder(('Alice', '30'))
+        {'name': 'Alice', 'age': '30'}
+        >>> encoder({'name': 'Alice', 'age': '30'})
+        ('Alice', '30')
+        """
+        coder = getattr(self, f"{source}_to_{target}")
+        decoder = getattr(self, f"{target}_to_{source}")
+        return Codec(coder, decoder)
+
+    # @_return_none_if_none_input
     def str_to_dict(self, s: str) -> dict:
         """Parses the input string and returns a dictionary of extracted values.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
 
         >>> st.str_to_dict("Alice is 30 years old.")
         {'name': 'Alice', 'age': '30'}
         """
+        if s is None:
+            return None
         match = self.regex.match(s)
         if match:
             return match.groupdict()
         else:
             raise ValueError(f"String '{s}' does not match the template.")
 
+    # @_return_none_if_none_input
     def dict_to_str(self, params: dict) -> str:
         """Generates a string from the dictionary values based on the template.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.dict_to_str({'name': 'Alice', 'age': '30'})
         'Alice is 30 years old.'
 
         """
+        if params is None:
+            return None
         return self.template.format(**params)
 
+    # @_return_none_if_none_input
     def dict_to_tuple(self, params: dict) -> tuple:
         """Generates a tuple from the dictionary values based on the template.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.dict_to_tuple({'name': 'Alice', 'age': '30'})
         ('Alice', '30')
         """
+        if params is None:
+            return None
         return tuple(params.get(field_name) for field_name in self.field_names)
 
-    def tuple_to_dict(self, params: tuple) -> dict:
+    # @_return_none_if_none_input
+    def tuple_to_dict(self, param_vals: tuple) -> dict:
         """Generates a dictionary from the tuple values based on the template.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.tuple_to_dict(('Alice', '30'))
         {'name': 'Alice', 'age': '30'}
         """
+        if param_vals is None:
+            return None
         return {
-            field_name: value for field_name, value in zip(self.field_names, params)
+            field_name: value for field_name, value in zip(self.field_names, param_vals)
         }
 
+    # @_return_none_if_none_input
     def str_to_tuple(self, s: str) -> tuple:
         """Parses the input string and returns a tuple of extracted values.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.str_to_tuple("Alice is 30 years old.")
         ('Alice', '30')
         """
+        if s is None:
+            return None
         return self.dict_to_tuple(self.str_to_dict(s))
 
+    # @_return_none_if_none_input
     def tuple_to_str(self, params: tuple) -> str:
         """Generates a string from the tuple values based on the template.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.tuple_to_str(('Alice', '30'))
         'Alice is 30 years old.'
         """
+        if params is None:
+            return None
         return self.dict_to_str(self.tuple_to_dict(params))
 
+    # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self, params: dict, namedtuple_type_name: str = 'NamedTuple'
+        self,
+        params: dict,
     ):
         """Generates a namedtuple from the dictionary values based on the template.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> Person = st.dict_to_namedtuple({'name': 'Alice', 'age': '30'})
         >>> Person
         NamedTuple(name='Alice', age='30')
         """
-        return namedtuple(namedtuple_type_name, params.keys())(**params)
+        if params is None:
+            return None
+        return namedtuple(self.namedtuple_type_name, params.keys())(**params)
 
+    # @_return_none_if_none_input
     def namedtuple_to_dict(self, nt):
         """Converts a namedtuple to a dictionary.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> Person = st.dict_to_namedtuple({'name': 'Alice', 'age': '30'})
         >>> st.namedtuple_to_dict(Person)
         {'name': 'Alice', 'age': '30'}
         """
-        return dict(nt._asdict())
+        if nt is None:
+            return None
+        return dict(nt._asdict())  # TODO: Find way that doesn't involve private method
 
+    # @_return_none_if_none_input
     def str_to_simple_str(self, s: str, sep: str):
         """Converts a string to a simple string (i.e. a simple character-delimited string).
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.str_to_simple_str("Alice is 30 years old.", '-')
         'Alice-30'
         """
+        if s is None:
+            return None
+        elif sep is None:
+            if self.simple_str_sep is None:
+                raise ValueError(
+                    "Need to specify a sep (at method call time), or a simple_str_sep "
+                    "(at instiantiation time) to use str_to_simple_str"
+                )
         return sep.join(self.str_to_tuple(s))
 
+    # @_return_none_if_none_input
     def simple_str_to_str(self, ss: str, sep: str):
         """Converts a simple character-delimited string to a string.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.simple_str_to_str('Alice-30', '-')
         'Alice is 30 years old.'
         """
+        if ss is None:
+            return None
         return self.tuple_to_str(tuple(ss.split(sep)))
