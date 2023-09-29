@@ -24,6 +24,7 @@
    module_docs/dol/tests/pickability_test
    module_docs/dol/tests/scrap
    module_docs/dol/tests/test_edge_cases
+   module_docs/dol/tests/test_fanout_stores
    module_docs/dol/tools
    module_docs/dol/trans
    module_docs/dol/util
