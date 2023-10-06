@@ -705,6 +705,7 @@ class ObjLoader(object):
             return self.data_of_key(k)
 
 
+# TODO: Add an obj_of_key argument to wrap_kvs? (Or should it be data_of_key?)
 # Note: Older version commmented below
 class ObjReader:
     """
