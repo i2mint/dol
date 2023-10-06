@@ -2,7 +2,7 @@
 Tests for appendable.py
 """
 
-from dol.appendable import Extender
+from dol.appendable import Extender, read_add_write
 
 
 def test_extender():
