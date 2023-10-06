@@ -45,31 +45,34 @@ def test_extender():
     # `extend_store_value` function. 
     # O ye numpy users, beware! The sum of numpy arrays is an elementwise sum, 
     # not a concatenation (you'd have to use `np.concatenate` for that).
-    import numpy as np
-    store = {'e': np.array([1,2,3])}
-    e_extender = Extender(store, 'e')
-    e_extender.extend(np.array([4,5,6]))
-    assert all(store['e'] == np.array([5,7,9]))
-    # This is what the `extend_store_value` function is for: you can pass it a function
-    # that does what you want.
-    store = {'f': np.array([1,2,3])}
-    def extend_store_value_for_numpy(store, key, iterable):
-        store[key] = np.concatenate([store[key], iterable])
-    f_extender = Extender(store, 'f', extend_store_value=extend_store_value_for_numpy)
-    f_extender.extend(np.array([4,5,6]))
-    assert all(store['f'] == np.array([1,2,3,4,5,6]))
-    # WARNING: See that the `extend_store_value`` defined here doesn't accomodate for 
-    # the case where the key is not in the store. It is the user's responsibility to
-    # handle that aspect in the `extend_store_value` they provide. 
-    # For your convenience, the `read_add_write` that is used as a default has 
-    # (and which **does** handle the non-existing key case by simply writing the value in 
-    # the store) has an `add_iterables` argument that can be set to whatever 
-    # makes sense for your use case.
-    from functools import partial
-    store = {'g': np.array([1,2,3])}
-    extend_store_value_for_numpy = partial(
-        read_add_write, add_iterables=lambda x, y: np.concatenate([x, y])
-    )
-    g_extender = Extender(store, 'g', extend_store_value=extend_store_value_for_numpy)
-    g_extender.extend(np.array([4,5,6]))
-    assert all(store['g'] == np.array([1,2,3,4,5,6]))
+    try:
+        import numpy as np
+        store = {'e': np.array([1,2,3])}
+        e_extender = Extender(store, 'e')
+        e_extender.extend(np.array([4,5,6]))
+        assert all(store['e'] == np.array([5,7,9]))
+        # This is what the `extend_store_value` function is for: you can pass it a function
+        # that does what you want.
+        store = {'f': np.array([1,2,3])}
+        def extend_store_value_for_numpy(store, key, iterable):
+            store[key] = np.concatenate([store[key], iterable])
+        f_extender = Extender(store, 'f', extend_store_value=extend_store_value_for_numpy)
+        f_extender.extend(np.array([4,5,6]))
+        assert all(store['f'] == np.array([1,2,3,4,5,6]))
+        # WARNING: See that the `extend_store_value`` defined here doesn't accomodate for 
+        # the case where the key is not in the store. It is the user's responsibility to
+        # handle that aspect in the `extend_store_value` they provide. 
+        # For your convenience, the `read_add_write` that is used as a default has 
+        # (and which **does** handle the non-existing key case by simply writing the value in 
+        # the store) has an `add_iterables` argument that can be set to whatever 
+        # makes sense for your use case.
+        from functools import partial
+        store = {'g': np.array([1,2,3])}
+        extend_store_value_for_numpy = partial(
+            read_add_write, add_iterables=lambda x, y: np.concatenate([x, y])
+        )
+        g_extender = Extender(store, 'g', extend_store_value=extend_store_value_for_numpy)
+        g_extender.extend(np.array([4,5,6]))
+        assert all(store['g'] == np.array([1,2,3,4,5,6]))
+    except (ImportError, ModuleNotFoundError):
+        pass
