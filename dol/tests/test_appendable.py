@@ -2,6 +2,8 @@
 Tests for appendable.py
 """
 
+from dol.appendable import Extender
+
 
 def test_extender():
     store = {'a': 'pple'}
