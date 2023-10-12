@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.appendable &mdash; dol 0.1.147 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.appendable &mdash; dol 0.1.148 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/paths.html">dol.tests.paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_appendable.html">dol.tests.test_appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
@@ -495,6 +496,85 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="n">NotAVal</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;NotAVal&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>  <span class="c1"># singleton instance to distinguish from None</span>
+
+
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">MutableMapping</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">add</span>
+
+
+<div class="viewcode-block" id="read_add_write"><a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.read_add_write">[docs]</a><span class="k">def</span> <span class="nf">read_add_write</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">add_iterables</span><span class="o">=</span><span class="n">add</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">store</span><span class="p">:</span>
+        <span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">add_iterables</span><span class="p">(</span><span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">iterable</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">iterable</span></div>
+
+
+<div class="viewcode-block" id="Extender"><a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.Extender">[docs]</a><span class="k">class</span> <span class="nc">Extender</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extends a value in a store.</span>
+
+<span class="sd">    The value in the store (if it exists) must be an iterable.</span>
+<span class="sd">    The value to extend must also be an iterable.</span>
+
+<span class="sd">    Unless a different ``extend_store_value`` function is given,</span>
+<span class="sd">    the sum of the two iterables must be an iterable.</span>
+
+<span class="sd">    The default ``extend_store_value`` is such that if the key is not in the store, </span>
+<span class="sd">    the value is simply written in the store.</span>
+
+<span class="sd">    The default ``append_method`` is ``None``, which means that the ``append`` method</span>
+<span class="sd">    is not defined. If you want to define it, you can pass a function that takes</span>
+<span class="sd">    the ``Extender`` instance as first argument, and the object to append as second</span>
+<span class="sd">    argument. The ``append`` method will then be defined as a partial of this function</span>
+<span class="sd">    with the ``Extender`` instance as first argument.</span>
+
+<span class="sd">    &gt;&gt;&gt; store = {&#39;a&#39;: &#39;pple&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; # test normal extend</span>
+<span class="sd">    &gt;&gt;&gt; a_extender = Extender(store, &#39;a&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; a_extender.extend(&#39;sauce&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; store</span>
+<span class="sd">    {&#39;a&#39;: &#39;pplesauce&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; # test creation (when key is not in store)</span>
+<span class="sd">    &gt;&gt;&gt; b_extender = Extender(store, &#39;b&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; b_extender.extend(&#39;anana&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; store</span>
+<span class="sd">    {&#39;a&#39;: &#39;pplesauce&#39;, &#39;b&#39;: &#39;anana&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; # you can use the += operator too</span>
+<span class="sd">    &gt;&gt;&gt; b_extender += &#39; split&#39;</span>
+<span class="sd">    &gt;&gt;&gt; store</span>
+<span class="sd">    {&#39;a&#39;: &#39;pplesauce&#39;, &#39;b&#39;: &#39;anana split&#39;}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">store</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">extend_store_value</span><span class="o">=</span><span class="n">read_add_write</span><span class="p">,</span>
+        <span class="n">append_method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span> <span class="o">=</span> <span class="n">store</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extend_store_value</span> <span class="o">=</span> <span class="n">extend_store_value</span>
+
+        <span class="c1"># Note: Not sure this is a good idea.</span>
+        <span class="c1"># Note:   I&#39;m not documenting it or testing it until I let class mature.</span>
+        <span class="c1"># Note: Yes, I tried making this a method of the class, but it became ugly.</span>
+        <span class="k">if</span> <span class="n">append_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">append_method</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Extender.extend"><a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.Extender.extend">[docs]</a>    <span class="k">def</span> <span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterable</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extend the iterable stored in &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend_store_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">iterable</span><span class="p">)</span></div>
+
+    <span class="fm">__iadd__</span> <span class="o">=</span> <span class="n">extend</span>  <span class="c1"># Note: Better to forward dunders to non-dunder-methods</span>
+
+    <span class="c1"># TODO: Should we even have this? Is it violating the purity of the class?</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">]</span></div>
 
 
 <span class="c1">#</span>

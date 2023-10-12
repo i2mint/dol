@@ -444,19 +444,20 @@ class Extender:
     {'a': 'pplesauce', 'b': 'anana split'}
 
     """
+
     def __init__(
-            self, 
-            store: MutableMapping, 
-            key, 
-            *,
-            extend_store_value=read_add_write,
-            append_method=None,
-        ):
+        self,
+        store: MutableMapping,
+        key,
+        *,
+        extend_store_value=read_add_write,
+        append_method=None,
+    ):
         self.store = store
         self.key = key
         self.extend_store_value = extend_store_value
 
-        # Note: Not sure this is a good idea. 
+        # Note: Not sure this is a good idea.
         # Note:   I'm not documenting it or testing it until I let class mature.
         # Note: Yes, I tried making this a method of the class, but it became ugly.
         if append_method is not None:
@@ -467,12 +468,12 @@ class Extender:
         return self.extend_store_value(self.store, self.key, iterable)
 
     __iadd__ = extend  # Note: Better to forward dunders to non-dunder-methods
-    
+
     # TODO: Should we even have this? Is it violating the purity of the class?
     @property
     def value(self):
         return self.store[self.key]
-        
+
 
 #
 # class FixedSizeStack(Sequence):
