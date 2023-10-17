@@ -396,6 +396,85 @@ from typing import Iterable, Optional
 NotAVal = type('NotAVal', (), {})()  # singleton instance to distinguish from None
 
 
+from collections.abc import MutableMapping
+from functools import partial
+from operator import add
+
+
+def read_add_write(store, key, iterable, add_iterables=add):
+    """Retrieves """
+    if key in store:
+        store[key] = add_iterables(store[key], iterable)
+    else:
+        store[key] = iterable
+
+
+class Extender:
+    """Extends a value in a store.
+
+    The value in the store (if it exists) must be an iterable.
+    The value to extend must also be an iterable.
+
+    Unless a different ``extend_store_value`` function is given,
+    the sum of the two iterables must be an iterable.
+
+    The default ``extend_store_value`` is such that if the key is not in the store, 
+    the value is simply written in the store.
+
+    The default ``append_method`` is ``None``, which means that the ``append`` method
+    is not defined. If you want to define it, you can pass a function that takes
+    the ``Extender`` instance as first argument, and the object to append as second
+    argument. The ``append`` method will then be defined as a partial of this function
+    with the ``Extender`` instance as first argument.
+
+    >>> store = {'a': 'pple'}
+    >>> # test normal extend
+    >>> a_extender = Extender(store, 'a')
+    >>> a_extender.extend('sauce')
+    >>> store
+    {'a': 'pplesauce'}
+    >>> # test creation (when key is not in store)
+    >>> b_extender = Extender(store, 'b')
+    >>> b_extender.extend('anana')
+    >>> store
+    {'a': 'pplesauce', 'b': 'anana'}
+    >>> # you can use the += operator too
+    >>> b_extender += ' split'
+    >>> store
+    {'a': 'pplesauce', 'b': 'anana split'}
+
+    """
+
+    def __init__(
+        self,
+        store: MutableMapping,
+        key,
+        *,
+        extend_store_value=read_add_write,
+        append_method=None,
+    ):
+        self.store = store
+        self.key = key
+        self.extend_store_value = extend_store_value
+
+        # Note: Not sure this is a good idea.
+        # Note:   I'm not documenting it or testing it until I let class mature.
+        # Note: Yes, I tried making this a method of the class, but it became ugly.
+        if append_method is not None:
+            self.append = partial(append_method, self)
+
+    def extend(self, iterable):
+        """Extend the iterable stored in """
+        return self.extend_store_value(self.store, self.key, iterable)
+
+    __iadd__ = extend  # Note: Better to forward dunders to non-dunder-methods
+
+    # TODO: Should we even have this? Is it violating the purity of the class?
+    @property
+    def value(self):
+        return self.store[self.key]
+
+
 #
 # class FixedSizeStack(Sequence):
 #     """A finite Sequence that can have no more than one element.
