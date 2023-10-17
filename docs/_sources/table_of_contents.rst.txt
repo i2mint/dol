@@ -16,6 +16,7 @@
    module_docs/dol/paths
    module_docs/dol/recipes
    module_docs/dol/scrap
+   module_docs/dol/scrap/new_store_wrap
    module_docs/dol/scrap/store_factories
    module_docs/dol/signatures
    module_docs/dol/sources
