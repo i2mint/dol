@@ -11,7 +11,7 @@ from dol.naming import mk_pattern_from_template_and_format_dict
 from dol.paths import mk_relative_path_store
 
 file_sep = os.path.sep
-inf = float('infinity')
+inf = float("infinity")
 
 
 def ensure_slash_suffix(path: str):
@@ -25,7 +25,7 @@ def ensure_slash_suffix(path: str):
 def paths_in_dir(rootdir, include_hidden=False):
     for name in os.listdir(rootdir):
         if include_hidden or not name.startswith(
-            '.'
+            "."
         ):  # TODO: is dot a platform independent marker for hidden file?
             filepath = os.path.join(rootdir, name)
             if os.path.isdir(filepath):
@@ -72,17 +72,18 @@ def ensure_dir(dirpath, verbose: Union[bool, str, Callable] = False):
     """Ensure that a directory exists, creating it if necessary.
 
     :param dirpath: path to the directory to create
-    :param verbose: if True, print a message when creating the directory
+    :param verbose: controls verbosity (the noise ensure_dir makes if it make folder)
     :return: the path to the directory
 
     When the path does not exist, if ``verbose`` is:
 
     - a ``bool``' a standard message will be printed
 
+    - a ``callable``; will be called on dirpath before directory is created -- you
+    can use this to ask the user for confirmation for example
+
     - a ''string``; this string will be printed
 
-    - a ``callable``; this argument-less callable will be called (so you can do
-    anything you want)
 
     Usage note: If you want to string or the (argument-less) callable to be dependent
     on ``dirpath``, you need make them so when calling ensure_dir.
@@ -91,10 +92,10 @@ def ensure_dir(dirpath, verbose: Union[bool, str, Callable] = False):
     if not os.path.exists(dirpath):
         if verbose:
             if isinstance(verbose, bool):
-                print(f'Making the directory: {dirpath}')
+                print(f"Making the directory: {dirpath}")
             elif isinstance(verbose, Callable):
                 callaback = verbose
-                callaback()
+                callaback(dirpath)
             else:
                 string_to_print = verbose
                 print(string_to_print)
@@ -102,7 +103,7 @@ def ensure_dir(dirpath, verbose: Union[bool, str, Callable] = False):
     return dirpath
 
 
-def temp_dir(dirname='', make_it_if_necessary=True, verbose=False):
+def temp_dir(dirname="", make_it_if_necessary=True, verbose=False):
     from tempfile import gettempdir
 
     tmpdir = os.path.join(gettempdir(), dirname)
@@ -115,9 +116,9 @@ mk_tmp_dol_dir = temp_dir  # for backward compatibility
 
 
 def mk_absolute_path(path_format):
-    if path_format.startswith('~'):
+    if path_format.startswith("~"):
         path_format = os.path.expanduser(path_format)
-    elif path_format.startswith('.'):
+    elif path_format.startswith("."):
         path_format = os.path.abspath(path_format)
     return path_format
 
@@ -125,9 +126,9 @@ def mk_absolute_path(path_format):
 # TODO: subpath: Need to be able to allow named and unnamed file format markers (i.e {} and {named})
 
 _dflt_not_valid_error_msg = (
-    'Key not valid (usually because does not exist or access not permitted): {}'
+    "Key not valid (usually because does not exist or access not permitted): {}"
 )
-_dflt_not_found_error_msg = 'Key not found: {}'
+_dflt_not_found_error_msg = "Key not found: {}"
 
 
 class KeyValidationError(KeyError):
@@ -151,9 +152,9 @@ def resolve_path(path, assert_existence: bool = False):
     """Resolve a path to a full, real, (file or folder) path (opt assert existence).
     That is, resolve situations where ~ and . prefix the paths.
     """
-    if path.startswith('.'):
+    if path.startswith("."):
         path = os.path.abspath(path)
-    elif path.startswith('~'):
+    elif path.startswith("~"):
         path = os.path.expanduser(path)
     if assert_existence:
         assert os.path.exists(path), f"This path (file or folder) wasn't found: {path}"
@@ -182,9 +183,9 @@ def _for_repr(obj, quote="'"):
     'None'
     """
     if isinstance(obj, str):
-        obj = f'{quote}{obj}{quote}'
+        obj = f"{quote}{obj}{quote}"
     elif obj is None:
-        obj = 'None'
+        obj = "None"
     return obj
 
 
@@ -194,21 +195,21 @@ class FileSysCollection(Collection):
     def __init__(
         self,
         rootdir,
-        subpath='',
+        subpath="",
         pattern_for_field=None,
         max_levels=None,
         *,
         include_hidden=False,
         assert_rootdir_existence=False,
     ):
-        self._init_kwargs = {k: v for k, v in locals().items() if k != 'self'}
+        self._init_kwargs = {k: v for k, v in locals().items() if k != "self"}
         rootdir = resolve_dir(rootdir, assert_existence=assert_rootdir_existence)
         if max_levels is None:
             max_levels = inf
         subpath_implied_min_levels = len(subpath.split(os.path.sep)) - 1
         assert (
             max_levels >= subpath_implied_min_levels
-        ), f'max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}'
+        ), f"max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}"
         pattern_for_field = pattern_for_field or {}
         self.rootdir = ensure_slash_suffix(rootdir)
         self.subpath = subpath
@@ -222,16 +223,19 @@ class FileSysCollection(Collection):
         return bool(self._key_pattern.match(k))
 
     def validate_key(
-        self, k, err_msg_format=_dflt_not_valid_error_msg, err_type=KeyValidationError,
+        self,
+        k,
+        err_msg_format=_dflt_not_valid_error_msg,
+        err_type=KeyValidationError,
     ):
         if not self.is_valid_key(k):
             raise err_type(err_msg_format.format(k))
 
     def __repr__(self):
-        input_str = ', '.join(
-            f'{k}={_for_repr(v)}' for k, v in self._init_kwargs.items()
+        input_str = ", ".join(
+            f"{k}={_for_repr(v)}" for k, v in self._init_kwargs.items()
         )
-        return f'{type(self).__name__}({input_str})'
+        return f"{type(self).__name__}({input_str})"
 
 
 class DirCollection(FileSysCollection):
@@ -297,7 +301,7 @@ class FileInfoReader(FileCollection, KvReader):
 
 class FileBytesReader(FileCollection, KvReader):
     _read_open_kwargs = dict(
-        mode='rb',
+        mode="rb",
         buffering=-1,
         encoding=None,
         errors=None,
@@ -349,7 +353,7 @@ class LocalFileDeleteMixin:
 
 class FileBytesPersister(FileBytesReader, KvPersister):
     _write_open_kwargs = dict(
-        mode='wb',
+        mode="wb",
         buffering=-1,
         encoding=None,
         errors=None,
@@ -376,7 +380,7 @@ class FileBytesPersister(FileBytesReader, KvPersister):
 # ---------------------------------------------------------------------------------------
 # TODO: Once test coverage sufficient, apply this pattern to all other convenience stores
 
-with_relative_paths = partial(mk_relative_path_store, prefix_attr='rootdir')
+with_relative_paths = partial(mk_relative_path_store, prefix_attr="rootdir")
 
 
 @with_relative_paths
@@ -396,20 +400,20 @@ RelPathFileBytesPersister = Files  # back-compatibility alias
 
 
 class FileStringReader(FileBytesReader):
-    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode='rt')
+    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
 
 
 class FileStringPersister(FileBytesPersister):
-    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode='rt')
-    _write_open_kwargs = dict(FileBytesPersister._write_open_kwargs, mode='wt')
+    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
+    _write_open_kwargs = dict(FileBytesPersister._write_open_kwargs, mode="wt")
 
 
-@with_relative_paths(prefix_attr='rootdir')
+@with_relative_paths(prefix_attr="rootdir")
 class TextFilesReader(FileStringReader):
     """FileStringReader with relative paths"""
 
 
-@with_relative_paths(prefix_attr='rootdir')
+@with_relative_paths(prefix_attr="rootdir")
 class TextFiles(FileStringPersister):
     """FileStringPersister with relative paths"""
 
@@ -430,7 +434,7 @@ class PickleStore(RelPathFileBytesPersister):
 
 
 # @wrap_kvs(key_of_id=lambda x: x[:-1], id_of_key=lambda x: x + path_sep)
-@mk_relative_path_store(prefix_attr='rootdir')
+@mk_relative_path_store(prefix_attr="rootdir")
 class PickleStores(DirCollection):
     def __getitem__(self, k):
         return PickleStore(k)
@@ -439,19 +443,34 @@ class PickleStores(DirCollection):
         return f"{type(self).__name__}('{self.rootdir}', ...)"
 
 
+# This one really smells.
 class MakeMissingDirsStoreMixin:
     """Will make a local file store automatically create the directories needed to create a file.
     Should be placed before the concrete perisister in the mro but in such a manner so that it receives full paths.
     """
 
-    def __setitem__(self, k, v):
-        # TODO: not a fantastic way to do this; find alternatives
-        from dol.dig import inner_most_key
+    _verbose: Union[bool, str, Callable] = False  # eek! Can't set in init.
 
-        _id = inner_most_key(self, k)
-        dirname = os.path.dirname(_id)
-        os.makedirs(dirname, exist_ok=True)
-        super().__setitem__(k, v)
+    def __setitem__(self, k, v):
+        # TODO: I'm not thrilled in the way I'm doing this; find alternatives
+        try:
+            super().__setitem__(k, v)
+        except Exception:  # general on purpose...
+            # TODO: ... But perhaps a more precise (but sufficient) exception list better?
+            from dol.dig import inner_most_key
+
+            # get the inner most key, which should be a full path
+            _id = inner_most_key(self, k)
+            # get the full path of directory needed for this file
+            dirname = os.path.dirname(_id)
+            # make all the directories needed
+            ensure_dir(dirname, self._verbose)
+            os.makedirs(dirname, exist_ok=True)
+            # try writing again
+            super().__setitem__(k, v)
+            # TODO: Undesirable here: If the setitem still fails, we created dirs
+            #  already, for nothing, and are not cleaning up (if clean up need to make
+            #  sure to not delete dirs that already existed!)
 
 
 class DirReader(DirCollection, KvReader):
@@ -464,7 +483,10 @@ class DirReader(DirCollection, KvReader):
 #   (see dol.filesys.ensure_dir)
 @store_decorator
 def mk_dirs_if_missing(
-    store_cls=None, *, key_condition=None,
+    store_cls=None,
+    *,
+    verbose: Union[bool, str, Callable] = False,
+    key_condition=None,  # TODO: not used! Should use! Add to ensure_dir
 ):
     """Store decorator that will make the store create directories on write as
     needed.
@@ -472,5 +494,12 @@ def mk_dirs_if_missing(
     Note that it'll only effect paths relative to the rootdir, which needs to be
     ensured to exist separatedly.
     """
-    name = getattr(store_cls, '__name__', 'WrappedStoreWithConditionalDirMaking')
-    return type(name, (MakeMissingDirsStoreMixin, store_cls), {})
+    name = getattr(store_cls, "__name__", "WrappedStoreWithConditionalDirMaking")
+
+    # Make a copy, to be able to set the _verbose attribute
+    _MakeMissingDirsStoreMixin = type(
+        "_MakeMissingDirsStoreMixin",
+        (MakeMissingDirsStoreMixin,),
+        dict(_verbose=verbose),
+    )
+    return type(name, (_MakeMissingDirsStoreMixin, store_cls), {})
