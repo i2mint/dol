@@ -96,10 +96,10 @@ from typing import (
     TypeVar,
     Mapping as MappingType,
 )
-from typing import KT, VT
+from typing import KT, VT, T
 from types import FunctionType
 from collections import defaultdict
-from operator import eq
+from operator import eq, attrgetter
 
 from functools import (
     cached_property,
@@ -113,7 +113,7 @@ from functools import (
 # monkey patching WRAPPER_ASSIGNMENTS to get "proper" wrapping (adding defaults and
 # kwdefaults
 
-wrapper_assignments = (*WRAPPER_ASSIGNMENTS, '__defaults__', '__kwdefaults__')
+wrapper_assignments = (*WRAPPER_ASSIGNMENTS, "__defaults__", "__kwdefaults__")
 
 update_wrapper = partial(_update_wrapper, assigned=wrapper_assignments)
 wraps = partial(_wraps, assigned=wrapper_assignments)
@@ -122,7 +122,7 @@ _empty = Parameter.empty
 empty = _empty
 
 _ParameterKind = type(
-    Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD)
+    Parameter(name="param_kind", kind=Parameter.POSITIONAL_OR_KEYWORD)
 )
 ParamsType = Iterable[Parameter]
 ParamsAble = Union[ParamsType, Signature, MappingType[str, Parameter], Callable, str]
@@ -136,8 +136,8 @@ PO, KO = Parameter.POSITIONAL_ONLY, Parameter.KEYWORD_ONLY
 var_param_kinds = frozenset({VP, VK})
 var_param_types = var_param_kinds  # Deprecate: for back-compatibility. Delete in 2021
 
-DFLT_DEFAULT_CONFLICT_METHOD = 'strict'
-param_attributes = {'name', 'kind', 'default', 'annotation'}
+DFLT_DEFAULT_CONFLICT_METHOD = "strict"
+param_attributes = {"name", "kind", "default", "annotation"}
 
 
 class FuncCallNotMatchingSignature(TypeError):
@@ -192,7 +192,17 @@ def sort_params(params):
     return sorted(params, key=_param_sort_key)
 
 
-def name_of_obj(o: object) -> Union[str, None]:
+def _return_none(o: object) -> None:
+    return None
+
+
+def name_of_obj(
+    o: object,
+    *,
+    base_name_of_obj: Callable = attrgetter("__name__"),
+    caught_exceptions: Tuple = (AttributeError,),
+    default_factory: Callable = _return_none,
+) -> Union[str, None]:
     """
     Tries to find the (or "a") name for an object, even if `__name__` doesn't exist.
 
@@ -207,17 +217,46 @@ def name_of_obj(o: object) -> Union[str, None]:
     >>> from functools import partial
     >>> name_of_obj(partial(print, sep=","))
     'print'
+    >>> from functools import cached_property
+    >>> class A:
+    ...     @property
+    ...     def prop(self):
+    ...         return 1.0
+    ...     @cached_property
+    ...     def cached_prop(self):
+    ...         return 2.0
+    >>> name_of_obj(A.prop)
+    'prop'
+    >>> name_of_obj(A.cached_prop)
+    'cached_prop'
+
+    Note that ``name_of_obj`` uses the ``__name__`` attribute as its base way to get
+    a name. You can customize this behavior though.
+    For example, see that:
+
+    >>> from inspect import Signature
+    >>> name_of_obj(Signature.replace)
+    'replace'
+
+    If you want to get the fully qualified name of an object, you can do:
+
+    >>> alt = partial(name_of_obj, base_name_of_obj=attrgetter('__qualname__'))
+    >>> alt(Signature.replace)
+    'Signature.replace'
+
     """
-    if hasattr(o, '__name__'):
-        return o.__name__
-    elif hasattr(o, '__class__'):
-        name = name_of_obj(o.__class__)
-        if name == 'partial':
-            if hasattr(o, 'func'):
-                return name_of_obj(o.func)
-        return name
-    else:
-        return None
+    try:
+        return base_name_of_obj(o)
+    except caught_exceptions:
+        if isinstance(o, (cached_property, partial)) and hasattr(o, "func"):
+            return name_of_obj(o.func, base_name_of_obj=base_name_of_obj)
+        elif isinstance(o, property) and hasattr(o, "fget"):
+            return name_of_obj(o.fget, base_name_of_obj=base_name_of_obj)
+        elif hasattr(o, "__class__"):
+            return name_of_obj(type(o), base_name_of_obj=base_name_of_obj)
+        elif hasattr(o, "fset"):
+            return name_of_obj(o.fset, base_name_of_obj=base_name_of_obj)
+        return default_factory(o)
 
 
 def ensure_callable(obj: SignatureAble):
@@ -268,7 +307,7 @@ def ensure_param(p):
         return Param(name=p)
     elif isinstance(p, Iterable):
         name, *r = p
-        dflt_and_annotation = dict(zip(['default', 'annotation'], r))
+        dflt_and_annotation = dict(zip(["default", "annotation"], r))
         return Param(name, PK, **dflt_and_annotation)
     else:
         raise TypeError(f"Don't know how to make {p} into a Parameter object")
@@ -278,12 +317,12 @@ def _params_from_mapping(mapping: MappingType):
     def gen():
         for k, v in mapping.items():
             if isinstance(v, MappingType):
-                if 'name' in v:
-                    assert v['name'] == k, (
-                        f'In a mapping specification of a params, '
+                if "name" in v:
+                    assert v["name"] == k, (
+                        f"In a mapping specification of a params, "
                         f"either the 'name' of the val shouldn't be specified, "
-                        f'or it should be the same as the key ({k}): '
-                        f'{dict(mapping)}'
+                        f"or it should be the same as the key ({k}): "
+                        f"{dict(mapping)}"
                     )
                     yield v
                 else:
@@ -370,14 +409,14 @@ def ensure_params(obj: ParamsAble = None):
                 return list(obj.parameters.values())
         # if nothing above worked, perhaps you have a wrapped object? Try unwrapping until
         # you find a signature...
-        if hasattr(obj, '__wrapped__'):
-            obj = unwrap(obj, stop=(lambda f: hasattr(f, '__signature__')))
+        if hasattr(obj, "__wrapped__"):
+            obj = unwrap(obj, stop=(lambda f: hasattr(f, "__signature__")))
             return ensure_params(obj)
         else:  # if function didn't return at this point, it didn't find a match, so raise
             # a TypeError
             raise TypeError(
                 f"Don't know how to make that object into an iterable of inspect.Parameter "
-                f'objects: {obj}'
+                f"objects: {obj}"
             )
 
 
@@ -403,7 +442,7 @@ class MissingArgValFor(object):
 def extract_arguments(
     params: ParamsAble,
     *,
-    what_to_do_with_remainding='return',
+    what_to_do_with_remainding="return",
     include_all_when_var_keywords_in_params=False,
     assert_no_missing_position_only_args=False,
     **kwargs,
@@ -571,7 +610,7 @@ def extract_arguments(
     :return: A (param_args, param_kwargs, remaining_kwargs) tuple.
     """
 
-    assert what_to_do_with_remainding in {'return', 'ignore', 'assert_empty'}
+    assert what_to_do_with_remainding in {"return", "ignore", "assert_empty"}
     assert isinstance(include_all_when_var_keywords_in_params, bool)
     assert isinstance(assert_no_missing_position_only_args, bool)
 
@@ -590,7 +629,10 @@ def extract_arguments(
 
     if include_all_when_var_keywords_in_params:
         if (
-            next((p.name for p in params if p.kind == Parameter.VAR_KEYWORD), None,)
+            next(
+                (p.name for p in params if p.kind == Parameter.VAR_KEYWORD),
+                None,
+            )
             is not None
         ):
             param_kwargs.update(remaining_kwargs)
@@ -602,24 +644,24 @@ def extract_arguments(
         )
         assert (
             not missing_argnames
-        ), f'There were some missing positional only argnames: {missing_argnames}'
+        ), f"There were some missing positional only argnames: {missing_argnames}"
 
-    if what_to_do_with_remainding == 'return':
+    if what_to_do_with_remainding == "return":
         return param_args, param_kwargs, remaining_kwargs
-    elif what_to_do_with_remainding == 'ignore':
+    elif what_to_do_with_remainding == "ignore":
         return param_args, param_kwargs
-    elif what_to_do_with_remainding == 'assert_empty':
+    elif what_to_do_with_remainding == "assert_empty":
         assert (
             len(remaining_kwargs) == 0
-        ), f'remaining_kwargs not empty: remaining_kwargs={remaining_kwargs}'
+        ), f"remaining_kwargs not empty: remaining_kwargs={remaining_kwargs}"
         return param_args, param_kwargs
 
 
 extract_arguments_ignoring_remainder = partial(
-    extract_arguments, what_to_do_with_remainding='ignore'
+    extract_arguments, what_to_do_with_remainding="ignore"
 )
 extract_arguments_asserting_no_remainder = partial(
-    extract_arguments, what_to_do_with_remainding='assert_empty'
+    extract_arguments, what_to_do_with_remainding="assert_empty"
 )
 
 from collections.abc import Mapping
@@ -696,7 +738,7 @@ def parameter_to_dict(p: Parameter) -> dict:
     return dict(name=p.name, kind=p.kind, default=p.default, annotation=p.annotation)
 
 
-WRAPPER_UPDATES = ('__dict__',)
+WRAPPER_UPDATES = ("__dict__",)
 
 # A default signature of (*no_sig_args, **no_sig_kwargs)
 DFLT_SIGNATURE = signature(lambda *no_sig_args, **no_sig_kwargs: ...)
@@ -956,14 +998,14 @@ class Sig(Signature, Mapping):
         <Sig ()>
         """
         if isinstance(obj, str):
-            if re.match(r'^\(.*\)', obj):
+            if re.match(r"^\(.*\)", obj):
                 # This is a string representation of a signature
                 # Dynamically create a function with the given signature then generate
                 # the Sig object from this function.
                 exec_env = dict()
-                f_def = f'def f{obj}: pass'
+                f_def = f"def f{obj}: pass"
                 exec(f_def, exec_env)
-                obj = exec_env['f']
+                obj = exec_env["f"]
             else:
                 obj = obj.split()
         if (
@@ -1090,7 +1132,7 @@ class Sig(Signature, Mapping):
             else:
                 assert callable(
                     copy_function
-                ), f'copy_function must be a callable. This is not: {copy_function}'
+                ), f"copy_function must be a callable. This is not: {copy_function}"
             func = copy_function(func)
 
         # Analyze self and func signature to validate sanity
@@ -1156,7 +1198,7 @@ class Sig(Signature, Mapping):
             if callable(obj):
                 return cls(obj)
             else:
-                raise TypeError(f'Object is not callable: {obj}')
+                raise TypeError(f"Object is not callable: {obj}")
         except ValueError:
             # if a ValueError is raised, return the default_signature
             return Sig(default_signature)
@@ -1257,8 +1299,8 @@ class Sig(Signature, Mapping):
 
         """
         return {
-            'parameters': list(self.parameters.values()),
-            'return_annotation': self.return_annotation,
+            "parameters": list(self.parameters.values()),
+            "return_annotation": self.return_annotation,
         }
 
     def to_simple_signature(self):
@@ -1306,7 +1348,7 @@ class Sig(Signature, Mapping):
     ):
         objs = list(objs)
         for name, default in name_and_dflts.items():
-            objs.append([{'name': name, 'kind': PK, 'default': default}])
+            objs.append([{"name": name, "kind": PK, "default": default}])
         if len(objs) > 0:
             first_obj, *objs = objs
             sig = cls(ensure_params(first_obj))
@@ -1438,15 +1480,15 @@ class Sig(Signature, Mapping):
                             yield names[item]
                         elif not allow_excess:
                             raise IndexError(
-                                f'There are only {len(names)} names in the signatures,'
-                                f'but you asked for the index: {item}'
+                                f"There are only {len(names)} names in the signatures,"
+                                f"but you asked for the index: {item}"
                             )
                     else:
                         if item in names:
                             yield item
                         elif not allow_excess:
                             raise ValueError(
-                                f'No such param name in signatures: {item}'
+                                f"No such param name in signatures: {item}"
                             )
 
             matched_names = tuple(find_names())
@@ -1457,7 +1499,7 @@ class Sig(Signature, Mapping):
                 )
             return matched_names
         else:
-            raise TypeError(f'Unknown spec type: {spec}')
+            raise TypeError(f"Unknown spec type: {spec}")
 
     def __iter__(self):
         return iter(self.parameters)
@@ -1480,7 +1522,7 @@ class Sig(Signature, Mapping):
             if len(names) == 1:
                 return self.parameters[k]
         else:
-            assert isinstance(k, Iterable), f'key should be iterable, was: {k}'
+            assert isinstance(k, Iterable), f"key should be iterable, was: {k}"
             names = k
         params = [self[name] for name in names]
         return Sig.from_params(params)
@@ -1494,7 +1536,7 @@ class Sig(Signature, Mapping):
         """
         from warnings import warn
 
-        warn('Deprecated', DeprecationWarning)
+        warn("Deprecated", DeprecationWarning)
         return self.names_of_kind[kind]
 
     # TODO: Consider using names_of_kind in other methods/properties
@@ -1675,7 +1717,7 @@ class Sig(Signature, Mapping):
 
         """
         new_return_annotation = changes_for_name.pop(
-            'return_annotation', self.return_annotation
+            "return_annotation", self.return_annotation
         )
 
         if _allow_reordering:
@@ -1750,11 +1792,11 @@ class Sig(Signature, Mapping):
 
         if not param_attr in param_attributes:
             raise ValueError(
-                f'param_attr needs to be one of: {param_attributes}.',
-                f' Was: {param_attr}',
+                f"param_attr needs to be one of: {param_attributes}.",
+                f" Was: {param_attr}",
             )
         all_pk_self = self.modified(
-            _allow_reordering=True, **{name: {'kind': PK} for name in self.names}
+            _allow_reordering=True, **{name: {"kind": PK} for name in self.names}
         )
         new_attr_vals = all_pk_self.bind_partial(
             *arg_new_vals, **kwargs_new_vals
@@ -1778,11 +1820,11 @@ class Sig(Signature, Mapping):
             raise ValueError(
                 f"argument names not in signature: {', '.join(argnames_not_in_sig)}"
             )
-        return self.ch_param_attrs('name', **changes_for_name)
+        return self.ch_param_attrs("name", **changes_for_name)
 
     def ch_kinds(self, /, _allow_reordering=True, **changes_for_name):
         return self.ch_param_attrs(
-            'kind', _allow_reordering=_allow_reordering, **changes_for_name
+            "kind", _allow_reordering=_allow_reordering, **changes_for_name
         )
 
     def ch_kinds_to_position_or_keyword(self):
@@ -1790,11 +1832,11 @@ class Sig(Signature, Mapping):
 
     def ch_defaults(self, /, _allow_reordering=True, **changes_for_name):
         return self.ch_param_attrs(
-            'default', _allow_reordering=_allow_reordering, **changes_for_name
+            "default", _allow_reordering=_allow_reordering, **changes_for_name
         )
 
     def ch_annotations(self, /, **changes_for_name):
-        return self.ch_param_attrs('annotation', **changes_for_name)
+        return self.ch_param_attrs("annotation", **changes_for_name)
 
     # TODO: Make default_conflict_method be able to be a callable and get rid of string
     #  mapping complexity in merge_with_sig code
@@ -1852,11 +1894,11 @@ class Sig(Signature, Mapping):
             _self = self
             _sig = Sig(sig)
 
-        _msg = f'\nHappened during an attempt to merge {self} and {sig}'
+        _msg = f"\nHappened during an attempt to merge {self} and {sig}"
 
         assert not _self.has_var_keyword or not _sig.has_var_keyword, (
             f"Can't merge two signatures if they both have a VAR_POSITIONAL parameter:"
-            f'{_msg}'
+            f"{_msg}"
         )
         assert (
             not _self.has_var_keyword or not _sig.has_var_keyword
@@ -1865,25 +1907,25 @@ class Sig(Signature, Mapping):
         assert all(
             _self[name].kind == _sig[name].kind for name in _self.keys() & _sig.keys()
         ), (
-            'During a signature merge, if two names are the same, they must have the '
-            f'**same kind**:\n\t{_msg}\n'
+            "During a signature merge, if two names are the same, they must have the "
+            f"**same kind**:\n\t{_msg}\n"
             "Tip: If you're trying to merge functions in some way, consider decorating "
-            'them with a signature mapping that avoids the argument name clashing'
+            "them with a signature mapping that avoids the argument name clashing"
         )
 
         assert default_conflict_method in {
             None,
-            'strict',
-            'take_first',
-            'fill_defaults_and_annotations',
+            "strict",
+            "take_first",
+            "fill_defaults_and_annotations",
         }, (
-            'default_conflict_method should be in '
+            "default_conflict_method should be in "
             "{None, 'strict', 'take_first', 'fill_defaults_and_annotations'}"
         )
 
-        if default_conflict_method == 'take_first':
+        if default_conflict_method == "take_first":
             _sig = _sig - set(_self.keys() & _sig.keys())
-        elif default_conflict_method == 'fill_defaults_and_annotations':
+        elif default_conflict_method == "fill_defaults_and_annotations":
             _self = _fill_defaults_and_annotations(_self, _sig)
             _sig = _fill_defaults_and_annotations(_sig, _self)
 
@@ -1895,12 +1937,12 @@ class Sig(Signature, Mapping):
             #     _sig = _sig - set(_self.keys() & _sig.keys())
             # else:
             raise ValueError(
-                'During a signature merge, if two names are the same, they must have '
-                'the '
-                f'**same default**:\n\t{_msg}\n'
+                "During a signature merge, if two names are the same, they must have "
+                "the "
+                f"**same default**:\n\t{_msg}\n"
                 "Tip: If you're trying to merge functions in some way, consider "
-                'decorating '
-                'them with a signature mapping that avoids the argument name clashing'
+                "decorating "
+                "them with a signature mapping that avoids the argument name clashing"
             )
 
         # assert all(
@@ -2356,8 +2398,8 @@ class Sig(Signature, Mapping):
         if not vk_name and not allow_excess:  # don't ignore excess kwargs
             excess = kwargs.keys() - b.arguments
             if excess:
-                excess_str = ', '.join(excess)
-                raise TypeError(f'Got unexpected keyword arguments: {excess_str}')
+                excess_str = ", ".join(excess)
+                raise TypeError(f"Got unexpected keyword arguments: {excess_str}")
 
         var_kw_name = name_of_var_kw_argument(self)
 
@@ -2892,7 +2934,6 @@ def _fill_defaults_and_annotations(sig1: Sig, sig2: Sig):
 def _validate_sanity_of_signature_change(
     func: Callable, new_sig: Sig, ignore_incompatible_signatures: bool = True
 ):
-
     func_pos, func_kw = Sig(func)._positional_and_keyword_defaults()
     self_pos, self_kw = new_sig._positional_and_keyword_defaults()
     # print(func_pos, func_kw )
@@ -2907,14 +2948,14 @@ def _validate_sanity_of_signature_change(
         pos_default_switching_to_kw or kw_default_switching_to_pos
     ):
         raise IncompatibleSignatures(
-            f'Changing both the kind and the default of a param will result to '
-            f'unexpected behaviors if the function is not properly wrapped to do so.'
-            f'If you really want to do this, inject signature using the '
-            f'`ignore_incompatible_signatures=True`'
-            f'argument in `Sig.wrap(...)`. '
-            f'Alternatively, you can use `i2.wrapper` tools to have more control '
-            f'over function defaults and signatures.'
-            f'The function you were wrapping had signature: '
+            f"Changing both the kind and the default of a param will result to "
+            f"unexpected behaviors if the function is not properly wrapped to do so."
+            f"If you really want to do this, inject signature using the "
+            f"`ignore_incompatible_signatures=True`"
+            f"argument in `Sig.wrap(...)`. "
+            f"Alternatively, you can use `i2.wrapper` tools to have more control "
+            f"over function defaults and signatures."
+            f"The function you were wrapping had signature: "
             f"{name_of_obj(func) or ''}{Sig(func)} and "
             f"the signature you wanted to inject was {new_sig.name or ''}{new_sig}"
         )
@@ -2933,7 +2974,7 @@ def mk_sig_from_args(*args_without_default, **args_with_defaults):
     """
     assert all(
         isinstance(x, str) for x in args_without_default
-    ), 'all default-less arguments must be strings'
+    ), "all default-less arguments must be strings"
     return Sig.from_objs(
         *args_without_default, **args_with_defaults
     ).to_simple_signature()
@@ -3323,7 +3364,7 @@ def all_pk_signature(callable_or_signature: Union[Callable, Signature]):
         new_sig = type(sig)(
             list(changed_params()), return_annotation=sig.return_annotation
         )
-        for attrname, attrval in getattr(sig, '__dict__', {}).items():
+        for attrname, attrval in getattr(sig, "__dict__", {}).items():
             setattr(new_sig, attrname, attrval)
         return new_sig
     elif isinstance(callable_or_signature, Callable):
@@ -3489,10 +3530,10 @@ def ch_variadics_to_non_variadic_kind(func, *, ch_variadic_keyword_to_keyword=Tr
                 )
                 if args_after_vp:
                     raise FuncCallNotMatchingSignature(
-                        'There should be only keyword arguments after the Variadic '
-                        'args. '
-                        f'Function was called with (positional={args}, keywords='
-                        f'{_kwargs})'
+                        "There should be only keyword arguments after the Variadic "
+                        "args. "
+                        f"Function was called with (positional={args}, keywords="
+                        f"{_kwargs})"
                     )
             else:
                 a, _vp_args_ = args, ()
@@ -3524,13 +3565,13 @@ def ch_variadics_to_non_variadic_kind(func, *, ch_variadic_keyword_to_keyword=Tr
                 # Note: Changed signature(func) to Sig(func) but don't know if the first
                 #  was on purpose.
                 params,
-                return_annotation=signature(func).return_annotation,
+                return_annotation=Sig(func).return_annotation,
             )
         except ValueError:
             if idx_of_vp is not None:
                 params[idx_of_vp] = params[idx_of_vp].replace(kind=PK)
             variadic_less_func.__signature__ = Sig(
-                params, return_annotation=signature(func).return_annotation
+                params, return_annotation=Sig(func).return_annotation
             )
 
         return variadic_less_func
@@ -3541,11 +3582,11 @@ def ch_variadics_to_non_variadic_kind(func, *, ch_variadic_keyword_to_keyword=Tr
 tuple_the_args = partial(
     ch_variadics_to_non_variadic_kind, ch_variadic_keyword_to_keyword=False
 )
-tuple_the_args.__name__ = 'tuple_the_args'
-tuple_the_args.__doc__ = '''
+tuple_the_args.__name__ = "tuple_the_args"
+tuple_the_args.__doc__ = """
 A decorator that will change a VAR_POSITIONAL (*args) argument to a tuple (args)
 argument of the same name.
-'''
+"""
 
 
 def ch_func_to_all_pk(func):
@@ -3624,7 +3665,7 @@ def copy_func(f):
     )
     g = update_wrapper(g, f)
     g.__kwdefaults__ = f.__kwdefaults__
-    if hasattr(f, '__signature__'):
+    if hasattr(f, "__signature__"):
         g.__signature__ = f.__signature__
     return g
 
@@ -3639,7 +3680,7 @@ def params_of(obj: HasParams):
         obj = list(signature(obj).parameters.values())
     assert all(
         isinstance(p, Parameter) for p in obj
-    ), 'obj needs to be a Iterable[Parameter] at this point'
+    ), "obj needs to be a Iterable[Parameter] at this point"
     return obj  # as is
 
 
@@ -3663,7 +3704,7 @@ def insert_annotations(s: Signature, /, *, return_annotation=empty, **annotation
     """
     assert set(annotations) <= set(s.parameters), (
         f"These argument names weren't found in the signature: "
-        f'{set(annotations) - set(s.parameters)}'
+        f"{set(annotations) - set(s.parameters)}"
     )
     params = dict(s.parameters)
     for name, annotation in annotations.items():
@@ -3698,18 +3739,18 @@ def common_and_diff_argnames(func1: callable, func2: callable) -> dict:
     p1 = signature(func1).parameters
     p2 = signature(func2).parameters
     return {
-        'common': [x for x in p1 if x in p2],
-        'func1_not_func2': [x for x in p1 if x not in p2],
-        'func2_not_func1': [x for x in p2 if x not in p1],
+        "common": [x for x in p1 if x in p2],
+        "func1_not_func2": [x for x in p1 if x not in p2],
+        "func2_not_func1": [x for x in p2 if x not in p1],
     }
 
 
 dflt_name_for_kind = {
-    Parameter.VAR_POSITIONAL: 'args',
-    Parameter.VAR_KEYWORD: 'kwargs',
+    Parameter.VAR_POSITIONAL: "args",
+    Parameter.VAR_KEYWORD: "kwargs",
 }
 
-arg_order_for_param_tuple = ('name', 'default', 'annotation', 'kind')
+arg_order_for_param_tuple = ("name", "default", "annotation", "kind")
 
 
 def set_signature_of_func(
@@ -3807,7 +3848,7 @@ def sig_to_dataclass(
     from dataclasses import make_dataclass
 
     sig = ensure_signature(sig)
-    cls_name = cls_name or getattr(sig, 'name', '_made_by_sig_to_dataclass')
+    cls_name = cls_name or getattr(sig, "name", "_made_by_sig_to_dataclass")
     params = ensure_params(sig)
     fields = [(p.name, p.annotation, p.default) for p in params]
     cls = make_dataclass(cls_name, fields, bases=bases, **kwargs)
@@ -3819,6 +3860,7 @@ def sig_to_dataclass(
 #########################################################################################
 # Manual construction of missing signatures
 # ############################################################################
+
 
 # TODO: Might want to monkey-patch inspect._signature_from_callable to use
 #  sigs_for_sigless_builtin_name
@@ -3845,14 +3887,75 @@ def _robust_signature_of_callable(callable_obj: Callable) -> Signature:
     except ValueError:
         # if isinstance(callable_obj, partial):
         #     callable_obj = callable_obj.func
-        obj_name = getattr(callable_obj, '__name__', None)
+        obj_name = getattr(callable_obj, "__name__", None)
         if obj_name in sigs_for_sigless_builtin_name:
             return sigs_for_sigless_builtin_name[obj_name] or DFLT_SIGNATURE
-        type_name = getattr(type(callable_obj), '__name__', None)
+        type_name = getattr(type(callable_obj), "__name__", None)
         if type_name in sigs_for_type_name:
             return sigs_for_type_name[type_name] or DFLT_SIGNATURE
         # if all attempts fail, raise the original error
         raise
+
+
+def underlying_function(obj: T) -> Union[T, Callable]:
+    """Get the underlying function of a property or cached_property
+
+    Note that if all conditions fail, the object itself is returned.
+
+    The problem this function solves is that sometimes there's a function behind an
+    object, but it's not always easy to get to it. For example, in a class, you might
+    want to get the source of the code decorated with ``@property``, a
+    ``@cached_property``, or a ``partial`` function.
+
+    Consider the following example:
+
+    >>> from functools import cached_property, partial
+    >>> class C:
+    ...     @property
+    ...     def prop(self):
+    ...         pass
+    ...     @cached_property
+    ...     def cached_prop(self):
+    ...         pass
+    ...     partial_func = partial(partial)
+
+    Note that ``prop`` is not callable, and you can't get its source.
+
+    >>> import inspect
+    >>> callable(C.prop)
+    False
+    >>> inspect.getsource(C.prop)  # doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+    ...
+    TypeError: <property object at 0x...> is not a module, class, method, function, traceback, frame, or code object
+
+    But if you grab the underlying function, you can get the source:
+
+    >>> func = underlying_function(C.prop)
+    >>> callable(func)
+    True
+    >>> isinstance(inspect.getsource(func), str)
+    True
+
+    Same goes with ``cached_property`` and ``partial``:
+
+    >>> isinstance(inspect.getsource(underlying_function(C.cached_prop)), str)
+    True
+    >>> isinstance(inspect.getsource(underlying_function(C.partial_func)), str)
+    True
+
+    """
+    if isinstance(obj, cached_property):
+        return obj.func
+    elif isinstance(obj, property):
+        return obj.fget
+    elif isinstance(obj, partial):
+        return obj.func
+    elif not callable(obj) and callable(wrapped := getattr(obj, "__wrapped__", None)):
+        # If obj is not callable, but has a __wrapped__ attribute that is, return that
+        return wrapped
+    else:  # if not just return obj
+        return obj
 
 
 def dict_of_attribute_signatures(cls: type) -> Dict[str, Signature]:
@@ -3895,7 +3998,7 @@ class sigs_for_builtins:
     def map(func, iterable, /, *iterables):
         """map(func, *iterables) --> map object"""
 
-    def print(*value, sep=' ', end='\n', file=sys.stdout, flush=False):
+    def print(*value, sep=" ", end="\n", file=sys.stdout, flush=False):
         """print(value, ..., sep=' ', end='\n', file=sys.stdout, flush=False)"""
 
     def zip(*iterables):
@@ -3937,11 +4040,11 @@ class sigs_for_builtins:
 sigs_for_builtins = dict(
     sigs_for_builtins,
     **{
-        '__build_class__': None,
+        "__build_class__": None,
         # __build_class__(func, name, /, *bases, [metaclass], **kwds) -> class
         # "bool": None,
         # bool(x) -> bool
-        'breakpoint': None,
+        "breakpoint": None,
         # breakpoint(*args, **kws)
         # "bytearray": None,
         # bytearray(iterable_of_ints) -> bytearray
@@ -3950,7 +4053,7 @@ sigs_for_builtins = dict(
         # bytearray(int) -> bytes array of size given by the parameter initialized with
         # null bytes
         # bytearray() -> empty bytes array
-        'bytes': None,
+        "bytes": None,
         # bytes(iterable_of_ints) -> bytes
         # bytes(string, encoding[, errors]) -> bytes
         # bytes(bytes_or_buffer) -> immutable copy of bytes_or_buffer
@@ -3959,17 +4062,17 @@ sigs_for_builtins = dict(
         # bytes() -> empty bytes object
         # "classmethod": None,
         # classmethod(function) -> method
-        'dict': None,
+        "dict": None,
         # dict() -> new empty dictionary
         # dict(mapping) -> new dictionary initialized from a mapping object's
         # dict(iterable) -> new dictionary initialized as if via:
         # dict(**kwargs) -> new dictionary initialized with the name=value pairs
-        'dir': None,
+        "dir": None,
         # dir([object]) -> list of strings
-        'frozenset': None,
+        "frozenset": None,
         # frozenset() -> empty frozenset object
         # frozenset(iterable) -> frozenset object
-        'getattr': None,
+        "getattr": None,
         # getattr(object, name[, default]) -> value
         # "int": None,
         # int([x]) -> integer
@@ -3977,21 +4080,21 @@ sigs_for_builtins = dict(
         # "iter": None,
         # iter(iterable) -> iterator
         # iter(callable, sentinel) -> iterator
-        'max': None,
+        "max": None,
         # max(iterable, *[, default=obj, key=func]) -> value
         # max(arg1, arg2, *args, *[, key=func]) -> value
-        'min': None,
+        "min": None,
         # min(iterable, *[, default=obj, key=func]) -> value
         # min(arg1, arg2, *args, *[, key=func]) -> value
         # "next": None,
         # next(iterator[, default])
-        'range': None,
+        "range": None,
         # range(stop) -> range object
         # range(start, stop[, step]) -> range object
-        'set': None,
+        "set": None,
         # set() -> new empty set object
         # set(iterable) -> new set object
-        'slice': None,
+        "slice": None,
         # slice(stop)
         # slice(start, stop[, step])
         # "staticmethod": None,
@@ -4008,7 +4111,7 @@ sigs_for_builtins = dict(
         # type(object_or_name, bases, dict)
         # type(object) -> the object's type
         # type(name, bases, dict) -> a new type
-        'vars': None,
+        "vars": None,
         # vars([object]) -> dictionary
     },
 )
@@ -4018,6 +4121,7 @@ sigs_for_builtins = dict(
 # sigs_for_builtins = {
 #     k: v for k, v in sigs_for_builtins.items() if v is not None
 # }
+
 
 # TODO: itemgetter, attrgetter and methodcaller use KT as their first argument, but
 #  in reality both attrgetter and methodcaller are more restrictive: They need to be
@@ -4110,7 +4214,7 @@ class sigs_for_type_name:
 
 def param_for_kind(
     name=None,
-    kind='positional_or_keyword',
+    kind="positional_or_keyword",
     with_default=False,
     annotation=Parameter.empty,
 ):
@@ -4130,12 +4234,12 @@ def param_for_kind(
     >>> param_for_kind.keyword_only("baz", with_default=True)
     <Parameter "baz='dflt_keyword_only'">
     """
-    name = name or f'{kind}'
+    name = name or f"{kind}"
     kind_obj = getattr(Parameter, str(kind).upper())
     kind = str(kind_obj).lower()
     default = (
-        f'dflt_{kind}'
-        if with_default and kind not in {'var_positional', 'var_keyword'}
+        f"dflt_{kind}"
+        if with_default and kind not in {"var_positional", "var_keyword"}
         else Parameter.empty
     )
     return Parameter(name=name, kind=kind_obj, default=default, annotation=annotation)
@@ -4147,15 +4251,17 @@ for kind in param_kinds:
     lower_kind = kind.lower()
     setattr(param_for_kind, lower_kind, partial(param_for_kind, kind=kind))
     setattr(
-        param_for_kind, 'with_default', partial(param_for_kind, with_default=True),
+        param_for_kind,
+        "with_default",
+        partial(param_for_kind, with_default=True),
     )
     setattr(
         getattr(param_for_kind, lower_kind),
-        'with_default',
+        "with_default",
         partial(param_for_kind, kind=kind, with_default=True),
     )
     setattr(
-        getattr(param_for_kind, 'with_default'),
+        getattr(param_for_kind, "with_default"),
         lower_kind,
         partial(param_for_kind, kind=kind, with_default=True),
     )
@@ -4164,12 +4270,12 @@ for kind in param_kinds:
 # Signature Compatibility #
 ########################################################################################
 
-Compared = TypeVar('Compared')
+Compared = TypeVar("Compared")
 
-Comparison = TypeVar('Comparison')
+Comparison = TypeVar("Comparison")
 Comparator = Callable[[Compared, Compared], Comparison]
 Comparison.__doc__ = (
-    'The return type of a Comparator. Typically a bool, or int, but can be anything.'
+    "The return type of a Comparator. Typically a bool, or int, but can be anything."
     'In that sense it is more of a "collation" than I comparison'
 )
 
@@ -4184,9 +4290,9 @@ CallableComparator = Callable[[Callable, Callable], Comparison]
 
 ComparisonAggreg = Callable[[Iterable[Comparison]], Any]
 
-CT = TypeVar('CT')  # some other Compared type (used to define KeyFunction
+CT = TypeVar("CT")  # some other Compared type (used to define KeyFunction
 KeyFunction = Callable[[CT], Compared]
-KeyFunction.__doc__ = 'Function that transforms one compared type to another'
+KeyFunction.__doc__ = "Function that transforms one compared type to another"
 
 
 def compare_signatures(func1, func2, signature_comparator: SignatureComparator = eq):
@@ -4201,7 +4307,10 @@ def mk_func_comparator_based_on_signature_comparator(
 
 
 def _keyed_comparator(
-    comparator: Comparator, key: KeyFunction, x: CT, y: CT,
+    comparator: Comparator,
+    key: KeyFunction,
+    x: CT,
+    y: CT,
 ) -> Comparison:
     """Apply a comparator after transforming inputs through a key function.
 
@@ -4215,7 +4324,10 @@ def _keyed_comparator(
     return comparator(key(x), key(y))
 
 
-def keyed_comparator(comparator: Comparator, key: KeyFunction,) -> Comparator:
+def keyed_comparator(
+    comparator: Comparator,
+    key: KeyFunction,
+) -> Comparator:
     """Create a key-function enabled binary operator.
 
     In various places in python functionality is extended by allowing a key function.
@@ -4236,6 +4348,7 @@ def keyed_comparator(comparator: Comparator, key: KeyFunction,) -> Comparator:
 # For back-compatibility:
 _key_function_enabled_operator = _keyed_comparator
 _key_function_factory = keyed_comparator
+
 
 # TODO: Show examples of how this can be used to produce precise error messages.
 #  The way to do this is to have the attribute binary functions produce some info dicts
@@ -4298,6 +4411,7 @@ def param_comparator(
 
 
 param_binary_func = param_comparator  # back compatibility alias
+
 
 # TODO: Implement annotation compatibility
 def is_annotation_compatible_with(annot1, annot2):
