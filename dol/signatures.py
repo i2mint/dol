@@ -3897,7 +3897,7 @@ def _robust_signature_of_callable(callable_obj: Callable) -> Signature:
         raise
 
 
-def underlying_function(obj: T) -> Union[T, Callable]:
+def resolve_function(obj: T) -> Union[T, Callable]:
     """Get the underlying function of a property or cached_property
 
     Note that if all conditions fail, the object itself is returned.
@@ -3931,7 +3931,7 @@ def underlying_function(obj: T) -> Union[T, Callable]:
 
     But if you grab the underlying function, you can get the source:
 
-    >>> func = underlying_function(C.prop)
+    >>> func = resolve_function(C.prop)
     >>> callable(func)
     True
     >>> isinstance(inspect.getsource(func), str)
@@ -3939,9 +3939,9 @@ def underlying_function(obj: T) -> Union[T, Callable]:
 
     Same goes with ``cached_property`` and ``partial``:
 
-    >>> isinstance(inspect.getsource(underlying_function(C.cached_prop)), str)
+    >>> isinstance(inspect.getsource(resolve_function(C.cached_prop)), str)
     True
-    >>> isinstance(inspect.getsource(underlying_function(C.partial_func)), str)
+    >>> isinstance(inspect.getsource(resolve_function(C.partial_func)), str)
     True
 
     """
