@@ -443,6 +443,58 @@ class PickleStores(DirCollection):
         return f"{type(self).__name__}('{self.rootdir}', ...)"
 
 
+class DirReader(DirCollection, KvReader):
+    def __getitem__(self, k):
+        return DirReader(k)
+
+
+
+def mk_dirs_if_missing_preset(self, k, v, verbose=False):
+    # TODO: I'm not thrilled in the way I'm doing this; find alternatives
+    try:
+        super(type(self), self).__setitem__(k, v)
+    except Exception:  # general on purpose...
+        # TODO: ... But perhaps a more precise (but sufficient) exception list better?
+        from dol.dig import inner_most_key
+
+        # get the inner most key, which should be a full path
+        _id = inner_most_key(self, k)
+        # get the full path of directory needed for this file
+        dirname = os.path.dirname(_id)
+        # make all the directories needed
+        ensure_dir(dirname, verbose=verbose)
+        os.makedirs(dirname, exist_ok=True)
+        # try writing again
+        super(type(self), self).__setitem__(k, v)
+        # TODO: Undesirable here: If the setitem still fails, we created dirs
+        #  already, for nothing, and are not cleaning up (if clean up need to make
+        #  sure to not delete dirs that already existed!)
+    finally:
+        return v
+
+
+
+# TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)
+#   Also, add a verbose option to print the dirs that are being made
+#   (see dol.filesys.ensure_dir)
+@store_decorator
+def mk_dirs_if_missing(
+    store_cls=None,
+    *,
+    verbose: Union[bool, str, Callable] = False,
+    key_condition=None,  # TODO: not used! Should use! Add to ensure_dir
+):
+    """Store decorator that will make the store create directories on write as
+    needed.
+
+    Note that it'll only effect paths relative to the rootdir, which needs to be
+    ensured to exist separatedly.
+    """
+    _mk_dirs_if_missing_preset = partial(mk_dirs_if_missing_preset, verbose=verbose)
+    return wrap_kvs(store_cls, preset=_mk_dirs_if_missing_preset)
+
+
+# DEPRECATED!!
 # This one really smells.
 class MakeMissingDirsStoreMixin:
     """Will make a local file store automatically create the directories needed to create a file.
@@ -452,6 +504,9 @@ class MakeMissingDirsStoreMixin:
     _verbose: Union[bool, str, Callable] = False  # eek! Can't set in init.
 
     def __setitem__(self, k, v):
+        print(
+            f"Deprecating message: Consider using the mk_dirs_if_missing decorator instead."
+        )
         # TODO: I'm not thrilled in the way I'm doing this; find alternatives
         try:
             super().__setitem__(k, v)
@@ -471,35 +526,3 @@ class MakeMissingDirsStoreMixin:
             # TODO: Undesirable here: If the setitem still fails, we created dirs
             #  already, for nothing, and are not cleaning up (if clean up need to make
             #  sure to not delete dirs that already existed!)
-
-
-class DirReader(DirCollection, KvReader):
-    def __getitem__(self, k):
-        return DirReader(k)
-
-
-# TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)
-#   Also, add a verbose option to print the dirs that are being made
-#   (see dol.filesys.ensure_dir)
-@store_decorator
-def mk_dirs_if_missing(
-    store_cls=None,
-    *,
-    verbose: Union[bool, str, Callable] = False,
-    key_condition=None,  # TODO: not used! Should use! Add to ensure_dir
-):
-    """Store decorator that will make the store create directories on write as
-    needed.
-
-    Note that it'll only effect paths relative to the rootdir, which needs to be
-    ensured to exist separatedly.
-    """
-    name = getattr(store_cls, "__name__", "WrappedStoreWithConditionalDirMaking")
-
-    # Make a copy, to be able to set the _verbose attribute
-    _MakeMissingDirsStoreMixin = type(
-        "_MakeMissingDirsStoreMixin",
-        (MakeMissingDirsStoreMixin,),
-        dict(_verbose=verbose),
-    )
-    return type(name, (_MakeMissingDirsStoreMixin, store_cls), {})
