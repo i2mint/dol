@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.150 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.151 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -68,6 +68,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_appendable.html">dol.tests.test_appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/util.html">dol.util</a></li>
@@ -198,10 +201,10 @@
     <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">Mapping</span> <span class="k">as</span> <span class="n">MappingType</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">T</span>
 <span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">FunctionType</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">eq</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">eq</span><span class="p">,</span> <span class="n">attrgetter</span>
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">cached_property</span><span class="p">,</span>
@@ -294,7 +297,17 @@
     <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">_param_sort_key</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="name_of_obj"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.name_of_obj">[docs]</a><span class="k">def</span> <span class="nf">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">_return_none</span><span class="p">(</span><span class="n">o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="name_of_obj"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.name_of_obj">[docs]</a><span class="k">def</span> <span class="nf">name_of_obj</span><span class="p">(</span>
+    <span class="n">o</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">base_name_of_obj</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">attrgetter</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">),</span>
+    <span class="n">caught_exceptions</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,),</span>
+    <span class="n">default_factory</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">_return_none</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Tries to find the (or &quot;a&quot;) name for an object, even if `__name__` doesn&#39;t exist.</span>
 
@@ -309,17 +322,46 @@
 <span class="sd">    &gt;&gt;&gt; from functools import partial</span>
 <span class="sd">    &gt;&gt;&gt; name_of_obj(partial(print, sep=&quot;,&quot;))</span>
 <span class="sd">    &#39;print&#39;</span>
+<span class="sd">    &gt;&gt;&gt; from functools import cached_property</span>
+<span class="sd">    &gt;&gt;&gt; class A:</span>
+<span class="sd">    ...     @property</span>
+<span class="sd">    ...     def prop(self):</span>
+<span class="sd">    ...         return 1.0</span>
+<span class="sd">    ...     @cached_property</span>
+<span class="sd">    ...     def cached_prop(self):</span>
+<span class="sd">    ...         return 2.0</span>
+<span class="sd">    &gt;&gt;&gt; name_of_obj(A.prop)</span>
+<span class="sd">    &#39;prop&#39;</span>
+<span class="sd">    &gt;&gt;&gt; name_of_obj(A.cached_prop)</span>
+<span class="sd">    &#39;cached_prop&#39;</span>
+
+<span class="sd">    Note that ``name_of_obj`` uses the ``__name__`` attribute as its base way to get</span>
+<span class="sd">    a name. You can customize this behavior though.</span>
+<span class="sd">    For example, see that:</span>
+
+<span class="sd">    &gt;&gt;&gt; from inspect import Signature</span>
+<span class="sd">    &gt;&gt;&gt; name_of_obj(Signature.replace)</span>
+<span class="sd">    &#39;replace&#39;</span>
+
+<span class="sd">    If you want to get the fully qualified name of an object, you can do:</span>
+
+<span class="sd">    &gt;&gt;&gt; alt = partial(name_of_obj, base_name_of_obj=attrgetter(&#39;__qualname__&#39;))</span>
+<span class="sd">    &gt;&gt;&gt; alt(Signature.replace)</span>
+<span class="sd">    &#39;Signature.replace&#39;</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">o</span><span class="o">.</span><span class="vm">__name__</span>
-    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__class__&#39;</span><span class="p">):</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;partial&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;func&#39;</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">name</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">base_name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">caught_exceptions</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="p">(</span><span class="n">cached_property</span><span class="p">,</span> <span class="n">partial</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;func&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">base_name_of_obj</span><span class="o">=</span><span class="n">base_name_of_obj</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="nb">property</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;fget&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">fget</span><span class="p">,</span> <span class="n">base_name_of_obj</span><span class="o">=</span><span class="n">base_name_of_obj</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;__class__&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">),</span> <span class="n">base_name_of_obj</span><span class="o">=</span><span class="n">base_name_of_obj</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;fset&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">fset</span><span class="p">,</span> <span class="n">base_name_of_obj</span><span class="o">=</span><span class="n">base_name_of_obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">default_factory</span><span class="p">(</span><span class="n">o</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">ensure_callable</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">SignatureAble</span><span class="p">):</span>
@@ -2994,7 +3036,6 @@
 <span class="k">def</span> <span class="nf">_validate_sanity_of_signature_change</span><span class="p">(</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">new_sig</span><span class="p">:</span> <span class="n">Sig</span><span class="p">,</span> <span class="n">ignore_incompatible_signatures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">):</span>
-
     <span class="n">func_pos</span><span class="p">,</span> <span class="n">func_kw</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">_positional_and_keyword_defaults</span><span class="p">()</span>
     <span class="n">self_pos</span><span class="p">,</span> <span class="n">self_kw</span> <span class="o">=</span> <span class="n">new_sig</span><span class="o">.</span><span class="n">_positional_and_keyword_defaults</span><span class="p">()</span>
     <span class="c1"># print(func_pos, func_kw )</span>
@@ -3626,13 +3667,13 @@
                 <span class="c1"># Note: Changed signature(func) to Sig(func) but don&#39;t know if the first</span>
                 <span class="c1">#  was on purpose.</span>
                 <span class="n">params</span><span class="p">,</span>
-                <span class="n">return_annotation</span><span class="o">=</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">,</span>
+                <span class="n">return_annotation</span><span class="o">=</span><span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">idx_of_vp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">idx_of_vp</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">PK</span><span class="p">)</span>
             <span class="n">variadic_less_func</span><span class="o">.</span><span class="n">__signature__</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span>
-                <span class="n">params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
+                <span class="n">params</span><span class="p">,</span> <span class="n">return_annotation</span><span class="o">=</span><span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">return_annotation</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">variadic_less_func</span>
@@ -3922,6 +3963,7 @@
 <span class="c1"># Manual construction of missing signatures</span>
 <span class="c1"># ############################################################################</span>
 
+
 <span class="c1"># TODO: Might want to monkey-patch inspect._signature_from_callable to use</span>
 <span class="c1">#  sigs_for_sigless_builtin_name</span>
 <span class="k">def</span> <span class="nf">_robust_signature_of_callable</span><span class="p">(</span><span class="n">callable_obj</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Signature</span><span class="p">:</span>
@@ -3955,6 +3997,67 @@
             <span class="k">return</span> <span class="n">sigs_for_type_name</span><span class="p">[</span><span class="n">type_name</span><span class="p">]</span> <span class="ow">or</span> <span class="n">DFLT_SIGNATURE</span>
         <span class="c1"># if all attempts fail, raise the original error</span>
         <span class="k">raise</span>
+
+
+<div class="viewcode-block" id="resolve_function"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.resolve_function">[docs]</a><span class="k">def</span> <span class="nf">resolve_function</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the underlying function of a property or cached_property</span>
+
+<span class="sd">    Note that if all conditions fail, the object itself is returned.</span>
+
+<span class="sd">    The problem this function solves is that sometimes there&#39;s a function behind an</span>
+<span class="sd">    object, but it&#39;s not always easy to get to it. For example, in a class, you might</span>
+<span class="sd">    want to get the source of the code decorated with ``@property``, a</span>
+<span class="sd">    ``@cached_property``, or a ``partial`` function.</span>
+
+<span class="sd">    Consider the following example:</span>
+
+<span class="sd">    &gt;&gt;&gt; from functools import cached_property, partial</span>
+<span class="sd">    &gt;&gt;&gt; class C:</span>
+<span class="sd">    ...     @property</span>
+<span class="sd">    ...     def prop(self):</span>
+<span class="sd">    ...         pass</span>
+<span class="sd">    ...     @cached_property</span>
+<span class="sd">    ...     def cached_prop(self):</span>
+<span class="sd">    ...         pass</span>
+<span class="sd">    ...     partial_func = partial(partial)</span>
+
+<span class="sd">    Note that ``prop`` is not callable, and you can&#39;t get its source.</span>
+
+<span class="sd">    &gt;&gt;&gt; import inspect</span>
+<span class="sd">    &gt;&gt;&gt; callable(C.prop)</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; inspect.getsource(C.prop)  # doctest: +IGNORE_EXCEPTION_DETAIL</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">    ...</span>
+<span class="sd">    TypeError: &lt;property object at 0x...&gt; is not a module, class, method, function, traceback, frame, or code object</span>
+
+<span class="sd">    But if you grab the underlying function, you can get the source:</span>
+
+<span class="sd">    &gt;&gt;&gt; func = resolve_function(C.prop)</span>
+<span class="sd">    &gt;&gt;&gt; callable(func)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; isinstance(inspect.getsource(func), str)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Same goes with ``cached_property`` and ``partial``:</span>
+
+<span class="sd">    &gt;&gt;&gt; isinstance(inspect.getsource(resolve_function(C.cached_prop)), str)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; isinstance(inspect.getsource(resolve_function(C.partial_func)), str)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">cached_property</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">func</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">property</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">fget</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">partial</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">func</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">wrapped</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;__wrapped__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
+        <span class="c1"># If obj is not callable, but has a __wrapped__ attribute that is, return that</span>
+        <span class="k">return</span> <span class="n">wrapped</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># if not just return obj</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
 
 
 <div class="viewcode-block" id="dict_of_attribute_signatures"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.dict_of_attribute_signatures">[docs]</a><span class="k">def</span> <span class="nf">dict_of_attribute_signatures</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Signature</span><span class="p">]:</span>
@@ -4120,6 +4223,7 @@
 <span class="c1"># sigs_for_builtins = {</span>
 <span class="c1">#     k: v for k, v in sigs_for_builtins.items() if v is not None</span>
 <span class="c1"># }</span>
+
 
 <span class="c1"># TODO: itemgetter, attrgetter and methodcaller use KT as their first argument, but</span>
 <span class="c1">#  in reality both attrgetter and methodcaller are more restrictive: They need to be</span>
@@ -4339,6 +4443,7 @@
 <span class="n">_key_function_enabled_operator</span> <span class="o">=</span> <span class="n">_keyed_comparator</span>
 <span class="n">_key_function_factory</span> <span class="o">=</span> <span class="n">keyed_comparator</span>
 
+
 <span class="c1"># TODO: Show examples of how this can be used to produce precise error messages.</span>
 <span class="c1">#  The way to do this is to have the attribute binary functions produce some info dicts</span>
 <span class="c1">#  that can then be aggregated in aggreg to produce a final error message (or even</span>
@@ -4400,6 +4505,7 @@
 
 
 <span class="n">param_binary_func</span> <span class="o">=</span> <span class="n">param_comparator</span>  <span class="c1"># back compatibility alias</span>
+
 
 <span class="c1"># TODO: Implement annotation compatibility</span>
 <span class="k">def</span> <span class="nf">is_annotation_compatible_with</span><span class="p">(</span><span class="n">annot1</span><span class="p">,</span> <span class="n">annot2</span><span class="p">):</span>

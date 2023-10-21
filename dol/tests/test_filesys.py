@@ -18,7 +18,7 @@ def all_folder_paths_under_folder(rootpath: str, include_rootpath=False):
     from pathlib import Path
 
     rootpath = Path(rootpath)
-    folderpaths = (str(p) for p in rootpath.glob("**/") if p.is_dir())
+    folderpaths = (str(p) for p in rootpath.glob('**/') if p.is_dir())
     if not include_rootpath:
         folderpaths = filter(lambda x: x != str(rootpath), folderpaths)
     return folderpaths
@@ -30,7 +30,9 @@ def delete_all_folders_under_folder(rootpath: str, include_rootpath=False):
 
     rootpath = Path(rootpath)
     if Path(rootpath).is_dir():
-        for p in all_folder_paths_under_folder(rootpath, include_rootpath=include_rootpath):
+        for p in all_folder_paths_under_folder(
+            rootpath, include_rootpath=include_rootpath
+        ):
             p = Path(p)
             if p.is_dir():
                 shutil.rmtree(p)
@@ -46,8 +48,8 @@ def empty_directory(
     time.sleep(0.4)
     if delete_folders:
         rootdir = getattr(  # I hate this as much as you do, but s.rootdir didn't work!!
-            s, "rootdir", None
-        ) or getattr(s, "_prefix", None)
+            s, 'rootdir', None
+        ) or getattr(s, '_prefix', None)
         delete_all_folders_under_folder(rootdir, include_rootpath=delete_rootpath)
 
 
@@ -56,13 +58,13 @@ def empty_directory(
 
 
 def test_mk_dirs_if_missing():
-    s = mk_tmp_local_store("test_mk_dirs_if_missing", make_dirs_if_missing=False)
+    s = mk_tmp_local_store('test_mk_dirs_if_missing', make_dirs_if_missing=False)
     empty_directory(s)
     with pytest.raises(KeyError):
-        s["this/path/does/not/exist"] = "hello"
+        s['this/path/does/not/exist'] = 'hello'
     ss = mk_dirs_if_missing(s)
-    ss["this/path/does/not/exist"] = "hello"  # this should work now
-    assert ss["this/path/does/not/exist"] == "hello"
+    ss['this/path/does/not/exist'] = 'hello'  # this should work now
+    assert ss['this/path/does/not/exist'] == 'hello'
 
     # # It works on classes too:
     # TextFilesWithAutoMkdir = mk_tmp_local_store(TextFiles)

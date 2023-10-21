@@ -7,14 +7,14 @@ from functools import partial
 
 
 _dflt_keys = (
-    "pluto",
-    "planets/mercury",
-    "planets/venus",
-    "planets/earth",
-    "planets/mars",
-    "fruit/apple",
-    "fruit/banana",
-    "fruit/cherry",
+    'pluto',
+    'planets/mercury',
+    'planets/venus',
+    'planets/earth',
+    'planets/mars',
+    'fruit/apple',
+    'fruit/banana',
+    'fruit/cherry',
 )
 
 
@@ -22,7 +22,7 @@ def mk_test_store_from_keys(
     keys=_dflt_keys,
     *,
     mk_store=dict,
-    obj_of_key=lambda k: f"Content of {k}",
+    obj_of_key=lambda k: f'Content of {k}',
     empty_store_before_writing=False,
 ):
     """Make some test data for a store from a list of keys.
@@ -46,7 +46,7 @@ def mk_test_store_from_keys(
 
 
 def mk_tmp_local_store(
-    tmp_name="temp_local_store", mk_store=TextFiles, make_dirs_if_missing=True
+    tmp_name='temp_local_store', mk_store=TextFiles, make_dirs_if_missing=True
 ):
     from dol import temp_dir, mk_dirs_if_missing
 

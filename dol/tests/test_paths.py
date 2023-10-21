@@ -5,7 +5,9 @@ def test_string_template():
     from dol.paths import StringTemplate
     from collections import namedtuple
 
-    st = StringTemplate('{name} is {age} years old.', field_patterns={'name': r'\w+', 'age': r'\d+'})
+    st = StringTemplate(
+        '{name} is {age} years old.', field_patterns={'name': r'\w+', 'age': r'\d+'}
+    )
 
     assert st.str_to_dict('Alice is 30 years old.') == {'name': 'Alice', 'age': '30'}
     assert st.dict_to_str({'name': 'Alice', 'age': '30'}) == 'Alice is 30 years old.'

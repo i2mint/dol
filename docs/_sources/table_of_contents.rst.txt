@@ -26,6 +26,9 @@
    module_docs/dol/tests/test_appendable
    module_docs/dol/tests/test_edge_cases
    module_docs/dol/tests/test_fanout_stores
+   module_docs/dol/tests/test_filesys
+   module_docs/dol/tests/test_paths
+   module_docs/dol/tests/utils_for_tests
    module_docs/dol/tools
    module_docs/dol/trans
    module_docs/dol/util

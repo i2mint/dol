@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.1.150 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.1.151 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -71,6 +71,9 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/test_appendable.html">dol.tests.test_appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
@@ -2591,7 +2594,7 @@ args_with_defaults.</p>
 
 <dl class="py function">
 <dt id="dol.signatures.name_of_obj">
-<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">name_of_obj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">o</span><span class="p">:</span> <span class="n">object</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>str<span class="p">]</span><a class="reference internal" href="../../_modules/dol/signatures.html#name_of_obj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.name_of_obj" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">name_of_obj</code><span class="sig-paren">(</span><em class="sig-param">o: object</em>, <em class="sig-param">*</em>, <em class="sig-param">base_name_of_obj: Callable = operator.attrgetter('__name__')</em>, <em class="sig-param">caught_exceptions: Tuple = (&lt;class 'AttributeError'&gt;</em>, <em class="sig-param">)</em>, <em class="sig-param">default_factory: Callable = &lt;function _return_none&gt;</em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>str<span class="p">]</span><a class="reference internal" href="../../_modules/dol/signatures.html#name_of_obj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.name_of_obj" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tries to find the (or “a”) name for an object, even if <cite>__name__</cite> doesn’t exist.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">name_of_obj</span><span class="p">(</span><span class="nb">map</span><span class="p">)</span>
 <span class="go">&#39;map&#39;</span>
@@ -2604,6 +2607,32 @@ args_with_defaults.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">name_of_obj</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="nb">print</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
 <span class="go">&#39;print&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@property</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">prop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mf">1.0</span>
+<span class="gp">... </span>    <span class="nd">@cached_property</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">cached_prop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mf">2.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">name_of_obj</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">prop</span><span class="p">)</span>
+<span class="go">&#39;prop&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">name_of_obj</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">cached_prop</span><span class="p">)</span>
+<span class="go">&#39;cached_prop&#39;</span>
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">name_of_obj</span></code> uses the <code class="docutils literal notranslate"><span class="pre">__name__</span></code> attribute as its base way to get
+a name. You can customize this behavior though.
+For example, see that:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">Signature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">name_of_obj</span><span class="p">(</span><span class="n">Signature</span><span class="o">.</span><span class="n">replace</span><span class="p">)</span>
+<span class="go">&#39;replace&#39;</span>
+</pre></div>
+</div>
+<p>If you want to get the fully qualified name of an object, you can do:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">alt</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">name_of_obj</span><span class="p">,</span> <span class="n">base_name_of_obj</span><span class="o">=</span><span class="n">attrgetter</span><span class="p">(</span><span class="s1">&#39;__qualname__&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">alt</span><span class="p">(</span><span class="n">Signature</span><span class="o">.</span><span class="n">replace</span><span class="p">)</span>
+<span class="go">&#39;Signature.replace&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2698,6 +2727,54 @@ This tool should help making it less annoying.</p>
 <span class="go">&lt;Parameter &quot;KEYWORD_ONLY&quot;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">param_for_kind</span><span class="o">.</span><span class="n">keyword_only</span><span class="p">(</span><span class="s2">&quot;baz&quot;</span><span class="p">,</span> <span class="n">with_default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">&lt;Parameter &quot;baz=&#39;dflt_keyword_only&#39;&quot;&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.signatures.resolve_function">
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">resolve_function</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span><span class="p">:</span> <span class="n">T</span></em><span class="sig-paren">)</span> &#x2192; Union<span class="p">[</span>T<span class="p">, </span>Callable<span class="p">]</span><a class="reference internal" href="../../_modules/dol/signatures.html#resolve_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.resolve_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the underlying function of a property or cached_property</p>
+<p>Note that if all conditions fail, the object itself is returned.</p>
+<p>The problem this function solves is that sometimes there’s a function behind an
+object, but it’s not always easy to get to it. For example, in a class, you might
+want to get the source of the code decorated with <code class="docutils literal notranslate"><span class="pre">&#64;property</span></code>, a
+<code class="docutils literal notranslate"><span class="pre">&#64;cached_property</span></code>, or a <code class="docutils literal notranslate"><span class="pre">partial</span></code> function.</p>
+<p>Consider the following example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span><span class="p">,</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">C</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@property</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">prop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">... </span>    <span class="nd">@cached_property</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">cached_prop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">... </span>    <span class="n">partial_func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">prop</span></code> is not callable, and you can’t get its source.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">inspect</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">callable</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">prop</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">prop</span><span class="p">)</span>  
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">&lt;property object at 0x...&gt; is not a module, class, method, function, traceback, frame, or code object</span>
+</pre></div>
+</div>
+<p>But if you grab the underlying function, you can get the source:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">func</span> <span class="o">=</span> <span class="n">resolve_function</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">prop</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">callable</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">func</span><span class="p">),</span> <span class="nb">str</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Same goes with <code class="docutils literal notranslate"><span class="pre">cached_property</span></code> and <code class="docutils literal notranslate"><span class="pre">partial</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">resolve_function</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">cached_prop</span><span class="p">)),</span> <span class="nb">str</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">resolve_function</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">partial_func</span><span class="p">)),</span> <span class="nb">str</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>
