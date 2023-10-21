@@ -77,32 +77,32 @@ def test_mapping_wrap():
 
     s = mk_test_store_from_keys()
     assert dict(s) == {
-        "pluto": "Content of pluto",
-        "planets/mercury": "Content of planets/mercury",
-        "planets/venus": "Content of planets/venus",
-        "planets/earth": "Content of planets/earth",
-        "planets/mars": "Content of planets/mars",
-        "fruit/apple": "Content of fruit/apple",
-        "fruit/banana": "Content of fruit/banana",
-        "fruit/cherry": "Content of fruit/cherry",
+        'pluto': 'Content of pluto',
+        'planets/mercury': 'Content of planets/mercury',
+        'planets/venus': 'Content of planets/venus',
+        'planets/earth': 'Content of planets/earth',
+        'planets/mars': 'Content of planets/mars',
+        'fruit/apple': 'Content of fruit/apple',
+        'fruit/banana': 'Content of fruit/banana',
+        'fruit/cherry': 'Content of fruit/cherry',
     }
 
     ss = SlashTriggersFilter(s)
     assert list(ss) == [
-        "pluto",
-        "planets/mercury",
-        "planets/venus",
-        "planets/earth",
-        "planets/mars",
-        "fruit/apple",
-        "fruit/banana",
-        "fruit/cherry",
+        'pluto',
+        'planets/mercury',
+        'planets/venus',
+        'planets/earth',
+        'planets/mars',
+        'fruit/apple',
+        'fruit/banana',
+        'fruit/cherry',
     ]
 
-    sss = ss["planets/"]
+    sss = ss['planets/']
     assert dict(sss) == {
-        "planets/mercury": "Content of planets/mercury",
-        "planets/venus": "Content of planets/venus",
-        "planets/earth": "Content of planets/earth",
-        "planets/mars": "Content of planets/mars",
+        'planets/mercury': 'Content of planets/mercury',
+        'planets/venus': 'Content of planets/venus',
+        'planets/earth': 'Content of planets/earth',
+        'planets/mars': 'Content of planets/mars',
     }
