@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dol.errors &mdash; dol 0.2.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/toggleprompt.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="dol.explicit" href="explicit.html" />
+    <link rel="prev" title="dol.dig" href="dig.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dol.html">dol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appendable.html">dol.appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">dol.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">dol.caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dig.html">dol.dig</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dol.errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explicit.html">dol.explicit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">dol.misc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.html">dol.recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap.html">dol.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/new_store_wrap.html">dol.scrap.new_store_wrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/store_factories.html">dol.scrap.store_factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_appendable.html">dol.tests.test_appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zipfiledol.html">dol.zipfiledol</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">dol.errors</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/dol/errors.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dol.errors">
+<span id="dol-errors"></span><h1>dol.errors<a class="headerlink" href="#module-dol.errors" title="Permalink to this headline">¶</a></h1>
+<p>Error objects and utils</p>
+<dl class="py exception">
+<dt id="dol.errors.AlreadyExists">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">AlreadyExists</code><a class="reference internal" href="../../_modules/dol/errors.html#AlreadyExists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.AlreadyExists" title="Permalink to this definition">¶</a></dt>
+<dd><p>To use if an object already exists (and shouldn’t; for example, to protect overwrites)</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.DeletionsNotAllowed">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">DeletionsNotAllowed</code><a class="reference internal" href="../../_modules/dol/errors.html#DeletionsNotAllowed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.DeletionsNotAllowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete OperationNotAllowed</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.IterationNotAllowed">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">IterationNotAllowed</code><a class="reference internal" href="../../_modules/dol/errors.html#IterationNotAllowed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.IterationNotAllowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iteration OperationNotAllowed</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.KeyValidationError">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">KeyValidationError</code><a class="reference internal" href="../../_modules/dol/errors.html#KeyValidationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.KeyValidationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error to raise when a key is not valid</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.MethodFuncNotValid">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">MethodFuncNotValid</code><a class="reference internal" href="../../_modules/dol/errors.html#MethodFuncNotValid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.MethodFuncNotValid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use when method function is not valid</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.MethodNameAlreadyExists">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">MethodNameAlreadyExists</code><a class="reference internal" href="../../_modules/dol/errors.html#MethodNameAlreadyExists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.MethodNameAlreadyExists" title="Permalink to this definition">¶</a></dt>
+<dd><p>To use when a method name already exists (and shouldn’t)</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.NoSuchKeyError">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">NoSuchKeyError</code><a class="reference internal" href="../../_modules/dol/errors.html#NoSuchKeyError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.NoSuchKeyError" title="Permalink to this definition">¶</a></dt>
+<dd><p>When a requested key doesn’t exist</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.NotAllowed">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">NotAllowed</code><a class="reference internal" href="../../_modules/dol/errors.html#NotAllowed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.NotAllowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>To use to indicate that something is not allowed</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.NotValid">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">NotValid</code><a class="reference internal" href="../../_modules/dol/errors.html#NotValid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.NotValid" title="Permalink to this definition">¶</a></dt>
+<dd><p>To use to indicate when an object doesn’t fit expected properties</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.OperationNotAllowed">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">OperationNotAllowed</code><a class="reference internal" href="../../_modules/dol/errors.html#OperationNotAllowed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.OperationNotAllowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>When a given operation is not allowed (through being disabled, conditioned, or just implemented)</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.OverWritesNotAllowedError">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">OverWritesNotAllowedError</code><a class="reference internal" href="../../_modules/dol/errors.html#OverWritesNotAllowedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.OverWritesNotAllowedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error to raise when a writes to existing keys are not allowed</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.ReadsNotAllowed">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">ReadsNotAllowed</code><a class="reference internal" href="../../_modules/dol/errors.html#ReadsNotAllowed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.ReadsNotAllowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read OperationNotAllowed</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.SetattrNotAllowed">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">SetattrNotAllowed</code><a class="reference internal" href="../../_modules/dol/errors.html#SetattrNotAllowed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.SetattrNotAllowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>An attribute was requested to be set, but some conditions didn’t apply</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dol.errors.WritesNotAllowed">
+<em class="property">exception </em><code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">WritesNotAllowed</code><a class="reference internal" href="../../_modules/dol/errors.html#WritesNotAllowed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.WritesNotAllowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write OperationNotAllowed</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.errors.items_with_caught_exceptions">
+<code class="sig-prename descclassname">dol.errors.</code><code class="sig-name descname">items_with_caught_exceptions</code><span class="sig-paren">(</span><em class="sig-param">d: collections.abc.Mapping</em>, <em class="sig-param">callback=None</em>, <em class="sig-param">catch_exceptions=(&lt;class 'Exception'&gt;</em>, <em class="sig-param">)</em>, <em class="sig-param">yield_callback_output=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/errors.html#items_with_caught_exceptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.errors.items_with_caught_exceptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do what Mapping.items() does, but catching exceptions when getting the values for a key.</p>
+<p>Some time your <cite>store.items()</cite> is annoying because of some exceptions that happen
+when you’re retrieving some value for some of the keys.</p>
+<p>Yes, if that happens, it’s that something is wrong with your store, and yes,
+if it’s a store that’s going to be used a lot, you really should build the right store
+that doesn’t have that problem.</p>
+<p>But now that we appeased the paranoid naysayers with that warning, let’s get to business:
+Sometimes you just want to get through the hurdle to get the job done. Sometimes your store is good enough,
+except for a few exceptions. Sometimes your store gets it’s keys from a large pool of possible keys
+(e.g. github stores or kaggle stores, or any store created by a free-form search seed),
+so you can’t really depend on the fact that all the keys given by your key iterator
+will give you a value without exception
+– especially if you slapped on a bunch of post-processing on the out-coming values.</p>
+<p>So you can right a for loop to iterate over your keys, catch the exceptions, do something with it…</p>
+<p>Or, in many cases, you can just use <cite>items_with_caught_exceptions</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> – Any Mapping</p></li>
+<li><p><strong>catch_exceptions</strong> – A tuple of exceptions that should be caught</p></li>
+<li><p><strong>callback</strong> – <p>A function that will be called every time an exception is caught.
+The signature of the callback function is required to be:</p>
+<blockquote>
+<div><p>k (key), e (error obj), d (mapping), i (index)</p>
+</div></blockquote>
+<p>but</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An (key, val) generator with exceptions caught</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Test</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>  <span class="c1"># a Mapping class that has keys 0..9, but raises of KeyError if the key is not even</span>
+<span class="gp">... </span>    <span class="n">n</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">yield from</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">k</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="k">return</span> <span class="n">k</span>
+<span class="gp">... </span>        <span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Not even&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">items_with_caught_exceptions</span><span class="p">(</span><span class="n">Test</span><span class="p">()))</span>
+<span class="go">[(2, 2), (4, 4), (6, 6), (8, 8)]</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">my_log</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">items_with_caught_exceptions</span><span class="p">(</span><span class="n">Test</span><span class="p">(),</span> <span class="n">callback</span><span class="o">=</span><span class="n">my_log</span><span class="p">))</span>
+<span class="go">3 &#39;Not even&#39;</span>
+<span class="go">5 &#39;Not even&#39;</span>
+<span class="go">7 &#39;Not even&#39;</span>
+<span class="go">9 &#39;Not even&#39;</span>
+<span class="go">[(2, 2), (4, 4), (6, 6), (8, 8)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">my_other_log</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">items_with_caught_exceptions</span><span class="p">(</span><span class="n">Test</span><span class="p">(),</span> <span class="n">callback</span><span class="o">=</span><span class="n">my_other_log</span><span class="p">))</span>
+<span class="go">1</span>
+<span class="go">3</span>
+<span class="go">5</span>
+<span class="go">7</span>
+<span class="go">[(2, 2), (4, 4), (6, 6), (8, 8)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dig.html" class="btn btn-neutral float-left" title="dol.dig" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="explicit.html" class="btn btn-neutral float-right" title="dol.explicit" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

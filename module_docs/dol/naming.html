@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dol.naming &mdash; dol 0.2.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/toggleprompt.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="dol.paths" href="paths.html" />
+    <link rel="prev" title="dol.mixins" href="mixins.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dol.html">dol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appendable.html">dol.appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">dol.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">dol.caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dig.html">dol.dig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">dol.errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explicit.html">dol.explicit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">dol.misc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dol.naming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.html">dol.recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap.html">dol.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/new_store_wrap.html">dol.scrap.new_store_wrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/store_factories.html">dol.scrap.store_factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_appendable.html">dol.tests.test_appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zipfiledol.html">dol.zipfiledol</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">dol.naming</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/dol/naming.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dol.naming">
+<span id="dol-naming"></span><h1>dol.naming<a class="headerlink" href="#module-dol.naming" title="Permalink to this headline">¶</a></h1>
+<p>This module is about generating, validating, and operating on (parametrized) fields (i.e. stings, e.g. paths).</p>
+<dl class="py class">
+<dt id="dol.naming.BigDocTest">
+<em class="property">class </em><code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">BigDocTest</code><a class="reference internal" href="../../_modules/dol/naming.html#BigDocTest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.BigDocTest" title="Permalink to this definition">¶</a></dt>
+<dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span> <span class="o">=</span> <span class="n">BigDocTest</span><span class="o">.</span><span class="n">mk_e_naming</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u_name</span> <span class="o">=</span> <span class="n">BigDocTest</span><span class="o">.</span><span class="n">mk_u_naming</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_sref</span> <span class="o">=</span> <span class="s1">&#39;s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u_sref</span> <span class="o">=</span> <span class="s2">&quot;s3://uploads/GROUP/upload/files/USER/2017-01-24/SUBUSER/a_file.wav&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u_name_2</span> <span class="o">=</span> <span class="s2">&quot;s3://uploads/ANOTHER_GROUP/upload/files/ANOTHER_USER/2017-01-24/SUBUSER/a_file.wav&quot;</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">####### is_valid(self, name): ######</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">e_sref</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">u_sref</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u_name</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">u_sref</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">####### is_valid_prefix(self, name): ######</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;s3://bucket-&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;s3://bucket-GROUP&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;s3://bucket-GROUP/example/&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;s3://bucket-GROUP/example/files&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;s3://bucket-GROUP/example/files/&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/0_0&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">####### info_dict(self, name): ######</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">info_dict</span><span class="p">(</span><span class="n">e_sref</span><span class="p">)</span>  <span class="c1"># see that utc_ms args were cast to ints</span>
+<span class="go">{&#39;group&#39;: &#39;GROUP&#39;, &#39;user&#39;: &#39;USER&#39;, &#39;subuser&#39;: &#39;SUBUSER&#39;, &#39;day&#39;: &#39;2017-01-24&#39;, &#39;s_ums&#39;: 1485272231982, &#39;e_ums&#39;: 1485261448469}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u_name</span><span class="o">.</span><span class="n">info_dict</span><span class="p">(</span><span class="n">u_sref</span><span class="p">)</span>  <span class="c1"># returns None (because self was made for example!</span>
+<span class="go">{&#39;group&#39;: &#39;GROUP&#39;, &#39;user&#39;: &#39;USER&#39;, &#39;day&#39;: &#39;2017-01-24&#39;, &#39;subuser&#39;: &#39;SUBUSER&#39;, &#39;filename&#39;: &#39;a_file.wav&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># but with a u_name, it will work</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u_name</span><span class="o">.</span><span class="n">info_dict</span><span class="p">(</span><span class="n">u_sref</span><span class="p">)</span>
+<span class="go">{&#39;group&#39;: &#39;GROUP&#39;, &#39;user&#39;: &#39;USER&#39;, &#39;day&#39;: &#39;2017-01-24&#39;, &#39;subuser&#39;: &#39;SUBUSER&#39;, &#39;filename&#39;: &#39;a_file.wav&#39;}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">####### extract(self, item, name): ######</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="n">e_sref</span><span class="p">)</span>
+<span class="go">&#39;GROUP&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_name</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="n">e_sref</span><span class="p">)</span>
+<span class="go">&#39;USER&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u_name</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="n">u_name_2</span><span class="p">)</span>
+<span class="go">&#39;ANOTHER_GROUP&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u_name</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="n">u_name_2</span><span class="p">)</span>
+<span class="go">&#39;ANOTHER_USER&#39;</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="go">#</span>
+<span class="go"># &gt;&gt;&gt; ####### mk_prefix(self, *args, **kwargs): ######</span>
+<span class="go"># &gt;&gt;&gt; e_name.mk_prefix()</span>
+<span class="go"># &#39;s3://bucket-&#39;</span>
+<span class="go"># &gt;&gt;&gt; e_name.mk_prefix(group=&#39;GROUP&#39;)</span>
+<span class="go"># &#39;s3://bucket-GROUP/example/files/&#39;</span>
+<span class="go"># &gt;&gt;&gt; e_name.mk_prefix(group=&#39;GROUP&#39;, user=&#39;USER&#39;)</span>
+<span class="go"># &#39;s3://bucket-GROUP/example/files/USER/&#39;</span>
+<span class="go"># &gt;&gt;&gt; e_name.mk_prefix(group=&#39;GROUP&#39;, user=&#39;USER&#39;, subuser=&#39;SUBUSER&#39;)</span>
+<span class="go"># &#39;s3://bucket-GROUP/example/files/USER/SUBUSER/&#39;</span>
+<span class="go"># &gt;&gt;&gt; e_name.mk_prefix(group=&#39;GROUP&#39;, user=&#39;USER&#39;, subuser=&#39;SUBUSER&#39;, day=&#39;0000-00-00&#39;)</span>
+<span class="go"># &#39;s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/&#39;</span>
+<span class="go"># &gt;&gt;&gt; e_name.mk_prefix(group=&#39;GROUP&#39;, user=&#39;USER&#39;, subuser=&#39;SUBUSER&#39;, day=&#39;0000-00-00&#39;,</span>
+<span class="go"># ... s_ums=1485272231982)</span>
+<span class="go"># &#39;s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_&#39;</span>
+<span class="go"># &gt;&gt;&gt; e_name.mk_prefix(group=&#39;GROUP&#39;, user=&#39;USER&#39;, subuser=&#39;SUBUSER&#39;, day=&#39;0000-00-00&#39;,</span>
+<span class="go"># ... s_ums=1485272231982, e_ums=1485261448469)</span>
+<span class="go"># &#39;s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469&#39;</span>
+<span class="go"># &gt;&gt;&gt;</span>
+<span class="go"># &gt;&gt;&gt; u_name.mk_prefix()</span>
+<span class="go"># &#39;s3://uploads/&#39;</span>
+<span class="go"># &gt;&gt;&gt; u_name.mk_prefix(group=&#39;GROUP&#39;)</span>
+<span class="go"># &#39;s3://uploads/GROUP/upload/files/&#39;</span>
+<span class="go"># &gt;&gt;&gt; u_name.mk_prefix(group=&#39;GROUP&#39;, user=&#39;USER&#39;)</span>
+<span class="go"># &#39;s3://uploads/GROUP/upload/files/USER/&#39;</span>
+<span class="go"># &gt;&gt;&gt; u_name.mk_prefix(group=&#39;GROUP&#39;, user=&#39;USER&#39;, day=&#39;DAY&#39;)</span>
+<span class="go"># &#39;s3://uploads/GROUP/upload/files/USER/DAY/&#39;</span>
+<span class="go"># &gt;&gt;&gt; u_name.mk_prefix(group=&#39;GROUP&#39;, user=&#39;USER&#39;, day=&#39;DAY&#39;)</span>
+<span class="go"># &#39;s3://uploads/GROUP/upload/files/USER/DAY/&#39;</span>
+<span class="go"># &gt;&gt;&gt; u_name.mk_prefix(group=&#39;GROUP&#39;, user=&#39;USER&#39;, day=&#39;DAY&#39;, subuser=&#39;SUBUSER&#39;)</span>
+<span class="go"># &#39;s3://uploads/GROUP/upload/files/USER/DAY/SUBUSER/&#39;</span>
+<span class="go"># &gt;&gt;&gt;</span>
+<span class="go"># &gt;&gt;&gt; ####### mk(self, *args, **kwargs): ######</span>
+<span class="go"># &gt;&gt;&gt; e_name.mk(group=&#39;GROUP&#39;, user=&#39;USER&#39;, subuser=&#39;SUBUSER&#39;, day=&#39;0000-00-00&#39;,</span>
+<span class="go"># ...             s_ums=1485272231982, e_ums=1485261448469)</span>
+<span class="go"># &#39;s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469&#39;</span>
+<span class="go"># &gt;&gt;&gt; e_name.mk(group=&#39;GROUP&#39;, user=&#39;USER&#39;, subuser=&#39;SUBUSER&#39;, day=&#39;from_s_ums&#39;,</span>
+<span class="go"># ...             s_ums=1485272231982, e_ums=1485261448469)</span>
+<span class="go"># &#39;s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469&#39;</span>
+<span class="go"># &gt;&gt;&gt;</span>
+<span class="go"># &gt;&gt;&gt; ####### replace_name_elements(self, *args, **kwargs): ######</span>
+<span class="go"># &gt;&gt;&gt; name = &#39;s3://bucket-redrum/example/files/oopsy@domain.com/ozeip/2008-11-04/1225779243969_1225779246969&#39;</span>
+<span class="go"># &gt;&gt;&gt; e_name.replace_name_elements(name, user=&#39;NEW_USER&#39;, group=&#39;NEW_GROUP&#39;)</span>
+<span class="go"># &#39;s3://bucket-NEW_GROUP/example/files/NEW_USER/ozeip/2008-11-04/1225779243969_1225779246969&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.naming.KeyMapNames">
+<code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">KeyMapNames</code><a class="headerlink" href="#dol.naming.KeyMapNames" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#dol.naming.KeyMaps" title="dol.naming.KeyMaps"><code class="xref py py-class docutils literal notranslate"><span class="pre">dol.naming.KeyMaps</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.naming.KeyMaps">
+<em class="property">class </em><code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">KeyMaps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key_of_id</span></em>, <em class="sig-param"><span class="n">id_of_key</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.naming.KeyMaps" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt id="dol.naming.KeyMaps.id_of_key">
+<code class="sig-name descname">id_of_key</code><a class="headerlink" href="#dol.naming.KeyMaps.id_of_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.naming.KeyMaps.key_of_id">
+<code class="sig-name descname">key_of_id</code><a class="headerlink" href="#dol.naming.KeyMaps.key_of_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.naming.LinearNaming">
+<code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">LinearNaming</code><a class="headerlink" href="#dol.naming.LinearNaming" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#dol.naming.StrTupleDictWithPrefix" title="dol.naming.StrTupleDictWithPrefix"><code class="xref py py-class docutils literal notranslate"><span class="pre">dol.naming.StrTupleDictWithPrefix</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.naming.ParametricKeyStore">
+<em class="property">class </em><code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">ParametricKeyStore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">keymap</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#ParametricKeyStore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.ParametricKeyStore" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.naming.PartialFormatter">
+<em class="property">class </em><code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">PartialFormatter</code><a class="reference internal" href="../../_modules/dol/naming.html#PartialFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.PartialFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string formatter that won’t complain if the fields are only partially formatted.
+But note that you will lose the spec part of your template (e.g. in {foo:1.2f}, you’ll loose the 1.2f
+if not foo is given – but {foo} will remain).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">partial_formatter</span> <span class="o">=</span> <span class="n">PartialFormatter</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">str_template</span> <span class="o">=</span> <span class="s1">&#39;foo:</span><span class="si">{foo}</span><span class="s1"> bar=</span><span class="si">{bar}</span><span class="s1"> a=</span><span class="si">{a}</span><span class="s1"> b=</span><span class="si">{b:0.02f}</span><span class="s1"> c=</span><span class="si">{c}</span><span class="s1">&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">partial_formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">str_template</span><span class="p">,</span> <span class="n">bar</span><span class="o">=</span><span class="s2">&quot;BAR&quot;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">34</span><span class="p">)</span>
+<span class="go">&#39;foo:{foo} bar=BAR a={a} b=34.00 c={c}&#39;</span>
+</pre></div>
+</div>
+<p>Note: If you only need a formatting function (not the transformed formatting string), a simpler solution may be:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">import</span> <span class="pre">functools</span>
+<span class="pre">format_str</span> <span class="pre">=</span> <span class="pre">functools.partial(str_template.format,</span> <span class="pre">bar=&quot;BAR&quot;,</span> <span class="pre">b=34)</span>
+<span class="pre">`</span></code>
+See <a class="reference external" href="https://stackoverflow.com/questions/11283961/partial-string-formatting">https://stackoverflow.com/questions/11283961/partial-string-formatting</a> for more options and discussions.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.naming.StoreWithDictKeys">
+<em class="property">class </em><code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">StoreWithDictKeys</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">keymap</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#StoreWithDictKeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.StoreWithDictKeys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.naming.StoreWithNamedTupleKeys">
+<em class="property">class </em><code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">StoreWithNamedTupleKeys</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">keymap</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#StoreWithNamedTupleKeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.StoreWithNamedTupleKeys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.naming.StoreWithTupleKeys">
+<em class="property">class </em><code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">StoreWithTupleKeys</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">keymap</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#StoreWithTupleKeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.StoreWithTupleKeys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.naming.StrTupleDictWithPrefix">
+<em class="property">class </em><code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">StrTupleDictWithPrefix</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#StrTupleDictWithPrefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.StrTupleDictWithPrefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converting from and to strings, tuples, and dicts, but with partial “prefix” specs allowed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template</strong> – The string format template</p></li>
+<li><p><strong>format_dict</strong> – A {field_name: field_value_format_regex, …} dict</p></li>
+<li><p><strong>process_kwargs</strong> – A function taking the field=value pairs and producing a dict of processed
+{field: value,…} dict (where both fields and values could have been processed.
+This is useful when we need to process (format, default, etc.) fields, or their values,
+according to the other fields of values in the collection.
+A specification of {field: function_to_process_this_value,…} wouldn’t allow the full powers
+we are allowing here.</p></li>
+<li><p><strong>process_info_dict</strong> – A sort of converse of format_dict.
+This is a {field_name: field_conversion_func, …} dict that is used to convert info_dict values
+before returning them.</p></li>
+<li><p><strong>name_separator</strong> – Used</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span> <span class="o">=</span> <span class="n">StrTupleDictWithPrefix</span><span class="p">(</span><span class="s1">&#39;/home/</span><span class="si">{user}</span><span class="s1">/fav/</span><span class="si">{num}</span><span class="s1">.txt&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                  <span class="n">format_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;[^/]+&#39;</span><span class="p">,</span> <span class="s1">&#39;num&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">},</span>
+<span class="gp">... </span>                  <span class="n">process_info_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;num&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">},</span>
+<span class="gp">... </span>                  <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;/&#39;</span>
+<span class="gp">... </span>                 <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk</span><span class="p">(</span><span class="s1">&#39;USER&#39;</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>  <span class="c1"># making a string (with args or kwargs)</span>
+<span class="go">&#39;/home/USER/fav/123.txt&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">####### prefix methods #######</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;/home/USER/fav/&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;/home/USER/fav/12&#39;</span><span class="p">)</span>  <span class="c1"># False because too long</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;/home/USER/fav&#39;</span><span class="p">)</span>  <span class="c1"># False because too short</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;/home/&#39;</span><span class="p">)</span>  <span class="c1"># True because just right</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;/home/USER/fav/123.txt&#39;</span><span class="p">)</span>  <span class="c1"># full path, so output same as is_valid() method</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk_prefix</span><span class="p">(</span><span class="s1">&#39;ME&#39;</span><span class="p">)</span>
+<span class="go">&#39;/home/ME/fav/&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk_prefix</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="s1">&#39;YOU&#39;</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">456</span><span class="p">)</span>  <span class="c1"># full specification, so output same as same as mk() method</span>
+<span class="go">&#39;/home/YOU/fav/456.txt&#39;</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="dol.naming.StrTupleDictWithPrefix.is_valid_prefix">
+<code class="sig-name descname">is_valid_prefix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#StrTupleDictWithPrefix.is_valid_prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.StrTupleDictWithPrefix.is_valid_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if name is a valid prefix.
+:param s: a string (that might or might not be a valid prefix)
+:return: True iff name is a valid prefix</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.naming.dict_to_namedtuple">
+<code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">dict_to_namedtuple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span></em>, <em class="sig-param"><span class="n">namedtuple_obj</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#dict_to_namedtuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.dict_to_namedtuple" title="Permalink to this definition">¶</a></dt>
+<dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;MyTuple&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span> <span class="o">=</span> <span class="n">NT</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span>
+<span class="go">MyTuple(foo=1, hello=42)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">namedtuple_to_dict</span><span class="p">(</span><span class="n">nt</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{&#39;foo&#39;: 1, &#39;hello&#39;: 42}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dict_to_namedtuple</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">NamedTupleFromDict(foo=1, hello=42)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dict_to_namedtuple</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">nt</span><span class="p">)</span>
+<span class="go">MyTuple(foo=1, hello=42)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.naming.get_fields_from_template">
+<code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">get_fields_from_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#get_fields_from_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.get_fields_from_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list from {item} items of template string
+:param template: a “template” string (a string with {item} items
+– the kind that is used to mark token for str.format)
+:return: a list of the token items of the string, in the order they appear</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_fields_from_template</span><span class="p">(</span><span class="s1">&#39;this</span><span class="si">{is}</span><span class="s1">an</span><span class="si">{example}</span><span class="s1">of</span><span class="si">{a}</span><span class="s1">template&#39;</span><span class="p">)</span>
+<span class="go">[&#39;is&#39;, &#39;example&#39;, &#39;a&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.naming.mk_kwargs_trans">
+<code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">mk_kwargs_trans</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">trans_func_for_key</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#mk_kwargs_trans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.mk_kwargs_trans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a dict transformer from functions that depends solely on keys (of the dict to be transformed)
+Used to easily make process_kwargs and process_info_dict arguments for LinearNaming.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.naming.mk_pattern_from_template_and_format_dict">
+<code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">mk_pattern_from_template_and_format_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span></em>, <em class="sig-param"><span class="n">format_dict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sep</span><span class="o">=</span><span class="default_value">'/'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#mk_pattern_from_template_and_format_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.mk_pattern_from_template_and_format_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a compiled regex to match template
+:param template: A format string
+:param format_dict: A dict whose keys are template fields and values are regex strings to capture them</p>
+<p>Returns: a compiled regex</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;nt&#39;</span><span class="p">:</span>  <span class="c1"># for windows</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;here&gt;[^</span><span class="se">\\\\</span><span class="s1">]+)/and/(?P&lt;there&gt;[^</span><span class="se">\\\\</span><span class="s1">]+)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;here&gt;[^/]+)/and/(?P&lt;there&gt;[^/]+)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;there&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;nt&#39;</span><span class="p">:</span>  <span class="c1"># for windows</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;here&gt;[^</span><span class="se">\\\\</span><span class="s1">]+)/and/(?P&lt;there&gt;\d+)&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;here&gt;[^/]+)/and/(?P&lt;there&gt;\d+)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="go">&lt;class &#39;re.Pattern&#39;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;HERE/and/1234&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+<span class="go">{&#39;here&#39;: &#39;HERE&#39;, &#39;there&#39;: &#39;1234&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.naming.mk_store_from_path_format_store_cls">
+<code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">mk_store_from_path_format_store_cls</code><span class="sig-paren">(</span><em class="sig-param">store=None</em>, <em class="sig-param">*</em>, <em class="sig-param">subpath=''</em>, <em class="sig-param">store_cls_kwargs=None</em>, <em class="sig-param">key_type=&lt;function namedtuple&gt;</em>, <em class="sig-param">keymap=&lt;class 'dol.naming.StrTupleDict'&gt;</em>, <em class="sig-param">keymap_kwargs=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">__module__=None</em>, <em class="sig-param">__name__=None</em>, <em class="sig-param">__qualname__=None</em>, <em class="sig-param">__doc__=None</em>, <em class="sig-param">__annotations__=None</em>, <em class="sig-param">__defaults__=None</em>, <em class="sig-param">__kwdefaults__=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#mk_store_from_path_format_store_cls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.mk_store_from_path_format_store_cls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap a store (instance or class) that uses string keys to make it into a store that uses a specific key format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>store</strong> – The instance or class to wrap</p></li>
+<li><p><strong>subpath</strong> – The subpath (defining the subset of the data pointed at by the URI</p></li>
+<li><p><strong>store_cls_kwargs</strong> – # if store is a class, the kwargs that you would have given the store_cls to make itself</p></li>
+<li><p><strong>key_type</strong> – The key type you want to interface with:
+dict, tuple, namedtuple, str or ‘dict’, ‘tuple’, ‘namedtuple’, ‘str’</p></li>
+<li><p><strong>keymap</strong> – # the keymap instance or class you want to use to map keys</p></li>
+<li><p><strong>keymap_kwargs</strong> – # if keymap is a cls, the kwargs to give it (besides the subpath)</p></li>
+<li><p><strong>name</strong> – The name to give the class the function will make here</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: An instance of a wrapped class</p>
+<p>Example:
+<a href="#id1"><span class="problematic" id="id2">``</span></a>`
+# Get a (session, bt) indexed LocalJsonStore
+s = mk_store_from_path_format_store_cls(LocalJsonStore,</p>
+<blockquote>
+<div><p>os.path.join(root_dir, ‘d’),
+subpath=’{session}/d/{bt}’,
+keymap_kwargs=dict(process_info_dict={‘session’: int, ‘bt’: int}))</p>
+</div></blockquote>
+<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.naming.mk_tupled_store_from_path_format_store_cls">
+<code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">mk_tupled_store_from_path_format_store_cls</code><span class="sig-paren">(</span><em class="sig-param">store=None</em>, <em class="sig-param">*</em>, <em class="sig-param">subpath=''</em>, <em class="sig-param">store_cls_kwargs=None</em>, <em class="sig-param">key_type=&lt;function namedtuple&gt;</em>, <em class="sig-param">keymap=&lt;class 'dol.naming.StrTupleDict'&gt;</em>, <em class="sig-param">keymap_kwargs=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">__module__=None</em>, <em class="sig-param">__name__=None</em>, <em class="sig-param">__qualname__=None</em>, <em class="sig-param">__doc__=None</em>, <em class="sig-param">__annotations__=None</em>, <em class="sig-param">__defaults__=None</em>, <em class="sig-param">__kwdefaults__=None</em><span class="sig-paren">)</span><a class="headerlink" href="#dol.naming.mk_tupled_store_from_path_format_store_cls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap a store (instance or class) that uses string keys to make it into a store that uses a specific key format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>store</strong> – The instance or class to wrap</p></li>
+<li><p><strong>subpath</strong> – The subpath (defining the subset of the data pointed at by the URI</p></li>
+<li><p><strong>store_cls_kwargs</strong> – # if store is a class, the kwargs that you would have given the store_cls to make itself</p></li>
+<li><p><strong>key_type</strong> – The key type you want to interface with:
+dict, tuple, namedtuple, str or ‘dict’, ‘tuple’, ‘namedtuple’, ‘str’</p></li>
+<li><p><strong>keymap</strong> – # the keymap instance or class you want to use to map keys</p></li>
+<li><p><strong>keymap_kwargs</strong> – # if keymap is a cls, the kwargs to give it (besides the subpath)</p></li>
+<li><p><strong>name</strong> – The name to give the class the function will make here</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: An instance of a wrapped class</p>
+<p>Example:
+<a href="#id7"><span class="problematic" id="id8">``</span></a>`
+# Get a (session, bt) indexed LocalJsonStore
+s = mk_store_from_path_format_store_cls(LocalJsonStore,</p>
+<blockquote>
+<div><p>os.path.join(root_dir, ‘d’),
+subpath=’{session}/d/{bt}’,
+keymap_kwargs=dict(process_info_dict={‘session’: int, ‘bt’: int}))</p>
+</div></blockquote>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.naming.namedtuple_to_dict">
+<code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">namedtuple_to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nt</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#namedtuple_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.namedtuple_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;MyTuple&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span> <span class="o">=</span> <span class="n">NT</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span>
+<span class="go">MyTuple(foo=1, hello=42)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">namedtuple_to_dict</span><span class="p">(</span><span class="n">nt</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{&#39;foo&#39;: 1, &#39;hello&#39;: 42}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.naming.update_fields_of_namedtuple">
+<code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">update_fields_of_namedtuple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nt</span><span class="p">:</span> <span class="n">tuple</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">name_of_output_type</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">remove_fields</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#update_fields_of_namedtuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.update_fields_of_namedtuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace fields of namedtuple</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;NT&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span> <span class="o">=</span> <span class="n">NT</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span>
+<span class="go">NT(a=1, b=2, c=3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span>  <span class="c1"># replacing a single field</span>
+<span class="go">NT(a=1, b=2, c=3000)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># replacing two fields</span>
+<span class="go">NT(a=1000, b=2, c=3000)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span>  <span class="c1"># see that the original order doesn&#39;t change</span>
+<span class="go">NT(a=1000, b=2, c=3000)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span>  <span class="c1"># replacing one field and adding a new one</span>
+<span class="go">UpdatedNT(a=1, b=2000, c=3, d=&#39;hello&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Now let&#39;s try controlling the name of the output type, remove fields, and add new ones</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">name_of_output_type</span><span class="o">=</span><span class="s1">&#39;NewGuy&#39;</span><span class="p">,</span> <span class="n">remove_fields</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">),</span> <span class="n">hello</span><span class="o">=</span><span class="s1">&#39;world&#39;</span><span class="p">)</span>
+<span class="go">NewGuy(b=2, hello=&#39;world&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.naming.validate_kwargs">
+<code class="sig-prename descclassname">dol.naming.</code><code class="sig-name descname">validate_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwargs_to_validate</span></em>, <em class="sig-param"><span class="n">validation_dict</span></em>, <em class="sig-param"><span class="n">validation_funs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">all_kwargs_should_be_in_validation_dict</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_misunderstood_validation_instructions</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#validate_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.naming.validate_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility to validate a dict. It’s main use is to validate function arguments (expressing the validation checks
+in validation_dict) by doing validate_kwargs(locals()), usually in the beginning of the function
+(to avoid having more accumulated variables than we need in locals())
+:param kwargs_to_validate: as the name implies…
+:param validation_dict: A dict specifying what to validate. Keys are usually name of variables (when feeding</p>
+<blockquote>
+<div><p>locals()) and values are dicts, themselves specifying check:check_val pairs where check is a string that
+points to a function (see validation_funs argument) and check_val is an object that the kwargs_to_validate
+value will be checked against.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>validation_funs</strong> – A dict of check:check_function(val, check_val) where check_function is a function returning
+True if val is valid (with respect to check_val).</p></li>
+<li><p><strong>all_kwargs_should_be_in_validation_dict</strong> – If True, will raise an error if kwargs_to_validate contains
+keys that are not in validation_dict.</p></li>
+<li><p><strong>ignore_misunderstood_validation_instructions</strong> – If True, will raise an error if validation_dict contains
+a key that is not in validation_funs (safer, since if you mistype a key in validation_dict, the function will
+tell you so!</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if all the validations passed.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">validation_dict</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;system&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>        <span class="s1">&#39;be in&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;darwin&#39;</span><span class="p">,</span> <span class="s1">&#39;linux&#39;</span><span class="p">}</span>
+<span class="gp">... </span>    <span class="p">},</span>
+<span class="gp">... </span>    <span class="s1">&#39;fv_version&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>        <span class="s1">&#39;be a&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;be at least&#39;</span><span class="p">:</span> <span class="mi">5</span>
+<span class="gp">... </span>    <span class="p">}</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">&#39;system&#39;</span><span class="p">:</span> <span class="s1">&#39;darwin&#39;</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">&#39;system&#39;</span><span class="p">:</span> <span class="s1">&#39;windows&#39;</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;system must be in&#39;</span><span class="p">)</span>  <span class="c1"># omitting the set because inconsistent order</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">&#39;fv_version&#39;</span><span class="p">:</span> <span class="mf">9.9</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+<span class="go">fv_version must be a &lt;class &#39;int&#39;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">&#39;fv_version&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+<span class="go">fv_version must be at least 5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">&#39;fv_version&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mixins.html" class="btn btn-neutral float-left" title="dol.mixins" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="paths.html" class="btn btn-neutral float-right" title="dol.paths" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

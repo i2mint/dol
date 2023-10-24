@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dol.paths &mdash; dol 0.2.0 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/toggleprompt.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="dol.recipes" href="recipes.html" />
+    <link rel="prev" title="dol.naming" href="naming.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dol.html">dol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appendable.html">dol.appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">dol.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">dol.caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dig.html">dol.dig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">dol.errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explicit.html">dol.explicit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">dol.misc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.html">dol.recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap.html">dol.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/new_store_wrap.html">dol.scrap.new_store_wrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/store_factories.html">dol.scrap.store_factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_appendable.html">dol.tests.test_appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zipfiledol.html">dol.zipfiledol</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">dol.paths</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/dol/paths.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dol.paths">
+<span id="dol-paths"></span><h1>dol.paths<a class="headerlink" href="#module-dol.paths" title="Permalink to this headline">¶</a></h1>
+<p>Module for path (and path-like) object manipulation</p>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">path_filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+<span class="go">[(&#39;a&#39;, &#39;b&#39;, &#39;d&#39;)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_get</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">))</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 1, &#39;d&#39;: 4}, &#39;e&#39;: 3}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;new_ab_key&#39;</span><span class="p">),</span> <span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 1, &#39;d&#39;: 4, &#39;new_ab_key&#39;: 42}, &#39;e&#39;: 3}}</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt id="dol.paths.Codec">
+<em class="property">class </em><code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">Codec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">encoder</span></em>, <em class="sig-param"><span class="n">decoder</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.paths.Codec" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt id="dol.paths.Codec.decoder">
+<code class="sig-name descname">decoder</code><a class="headerlink" href="#dol.paths.Codec.decoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.paths.Codec.encoder">
+<code class="sig-name descname">encoder</code><a class="headerlink" href="#dol.paths.Codec.encoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.paths.KeyPath">
+<em class="property">class </em><code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">KeyPath</code><span class="sig-paren">(</span><em class="sig-param">path_sep: str = '/'</em>, <em class="sig-param">_path_type: Union[type</em>, <em class="sig-param">callable] = &lt;class 'tuple'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#KeyPath"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.KeyPath" title="Permalink to this definition">¶</a></dt>
+<dd><p>A key mapper that converts from an iterable key (default tuple) to a string
+(given a path-separator str)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_sep</strong> – The path separator (used to make string paths from iterable paths and
+visa versa</p></li>
+<li><p><strong>_path_type</strong> – The type of the outcoming (inner) path. But really, any function to</p></li>
+<li><p><strong>from a list to</strong> (<em>convert</em>) – the outer path type we want.</p></li>
+</ul>
+</dd>
+</dl>
+<p>With <code class="docutils literal notranslate"><span class="pre">'/'</span></code> as a separator:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kp</span> <span class="o">=</span> <span class="n">KeyPath</span><span class="p">(</span><span class="n">path_sep</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kp</span><span class="o">.</span><span class="n">_key_of_id</span><span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">))</span>
+<span class="go">&#39;a/b/c&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kp</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">(</span><span class="s1">&#39;a/b/c&#39;</span><span class="p">)</span>
+<span class="go">(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;)</span>
+</pre></div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">'.'</span></code> as a separator:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kp</span> <span class="o">=</span> <span class="n">KeyPath</span><span class="p">(</span><span class="n">path_sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kp</span><span class="o">.</span><span class="n">_key_of_id</span><span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">))</span>
+<span class="go">&#39;a.b.c&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kp</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">(</span><span class="s1">&#39;a.b.c&#39;</span><span class="p">)</span>
+<span class="go">(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kp</span> <span class="o">=</span> <span class="n">KeyPath</span><span class="p">(</span><span class="n">path_sep</span><span class="o">=</span><span class="s1">&#39;:::&#39;</span><span class="p">,</span> <span class="n">_path_type</span><span class="o">=</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_id</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="s1">&#39;abc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_id</span>
+<span class="go">{&#39;a&#39;: None, &#39;b&#39;: None, &#39;c&#39;: None}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kp</span><span class="o">.</span><span class="n">_key_of_id</span><span class="p">(</span><span class="n">_id</span><span class="p">)</span>
+<span class="go">&#39;a:::b:::c&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kp</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">(</span><span class="s1">&#39;a:::b:::c&#39;</span><span class="p">)</span>
+<span class="go">{&#39;a&#39;: None, &#39;b&#39;: None, &#39;c&#39;: None}</span>
+</pre></div>
+</div>
+<p>Calling a <code class="docutils literal notranslate"><span class="pre">KeyPath</span></code> instance on a store wraps it so we can have path access to
+it.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">][</span><span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Now let&#39;s wrap the store</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">KeyPath</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)(</span><span class="n">s</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a.b.c&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a.b.c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.14</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a.b.c&#39;</span><span class="p">]</span>
+<span class="go">3.14</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a.b.c&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
+<span class="go">{&#39;a&#39;: {&#39;b&#39;: {}}}</span>
+</pre></div>
+</div>
+<p>Note: <code class="docutils literal notranslate"><span class="pre">KeyPath</span></code> enables you to read with paths when all the keys of the paths
+are valid (i.e. have a value), but just as with a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, it will not create
+intermediate nested values for you (as for example, you could make for yourself
+using  <code class="docutils literal notranslate"><span class="pre">collections.defaultdict</span></code>).</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.paths.PathKeyTypes">
+<em class="property">class </em><code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">PathKeyTypes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#PathKeyTypes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.PathKeyTypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enumeration.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.paths.PrefixRelativization">
+<em class="property">class </em><code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">PrefixRelativization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_prefix</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#PrefixRelativization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.PrefixRelativization" title="Permalink to this definition">¶</a></dt>
+<dd><p>A key wrap that allows one to interface with absolute paths through relative paths.
+The original intent was for local files. Instead of referencing files through an absolute path such as:</p>
+<blockquote>
+<div><p><em>/A/VERY/LONG/ROOT/FOLDER/the/file/we.want</em></p>
+</div></blockquote>
+<p>we can instead reference the file as:</p>
+<blockquote>
+<div><p><em>the/file/we.want</em></p>
+</div></blockquote>
+<p>But PrefixRelativization can be used, not only for local paths, but when ever a string reference is involved.
+In fact, not only strings, but any key object that has a __len__, __add__, and subscripting.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.paths.PrefixRelativizationMixin">
+<em class="property">class </em><code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">PrefixRelativizationMixin</code><a class="reference internal" href="../../_modules/dol/paths.html#PrefixRelativizationMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.PrefixRelativizationMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mixin that adds a intercepts the _id_of_key an _key_of_id methods, transforming absolute keys to relative ones.
+Designed to work with string keys, where absolute and relative are relative to a _prefix attribute
+(assumed to exist).
+The cannonical use case is when keys are absolute file paths, but we want to identify data through relative paths.
+Instead of referencing files through an absolute path such as</p>
+<blockquote>
+<div><p>/A/VERY/LONG/ROOT/FOLDER/the/file/we.want</p>
+</div></blockquote>
+<dl class="simple">
+<dt>we can instead reference the file as</dt><dd><p>the/file/we.want</p>
+</dd>
+</dl>
+<p>Note though, that PrefixRelativizationMixin can be used, not only for local paths,
+but when ever a string reference is involved.
+In fact, not only strings, but any key object that has a __len__, __add__, and subscripting.</p>
+<p>When subclassed, should be placed before the class defining _id_of_key an _key_of_id.
+Also, assumes that a (string) _prefix attribute will be available.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">UserDict</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyStore</span><span class="p">(</span><span class="n">PrefixRelativizationMixin</span><span class="p">,</span> <span class="n">Store</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="p">,</span> <span class="n">_prefix</span><span class="o">=</span><span class="s1">&#39;/root/of/data/&#39;</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">_prefix</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="nb">dict</span><span class="p">())</span>  <span class="c1"># using a dict as our store</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;too&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;much&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;too&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Everything looks normal, but are the actual keys behind the hood?</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+<span class="go">&#39;/root/of/data/foo&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># see when iterating over s.items(), we get the interface view:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;foo&#39;, &#39;bar&#39;), (&#39;too&#39;, &#39;much&#39;)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># but if we ask the store we&#39;re actually delegating the storing to, we see what the keys actually are.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="go">dict_items([(&#39;/root/of/data/foo&#39;, &#39;bar&#39;), (&#39;/root/of/data/too&#39;, &#39;much&#39;)])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.paths.StringTemplate">
+<em class="property">class </em><code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">StringTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">field_patterns</span><span class="p">:</span> <span class="n">dict</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">simple_str_sep</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">namedtuple_type_name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'NamedTuple'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for parsing and generating strings based on a template.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template</strong> – A template string with fields to be extracted or filled in.</p></li>
+<li><p><strong>field_patterns</strong> – A dictionary of field names and their regex patterns.</p></li>
+<li><p><strong>simple_str_sep</strong> – A separator string for simple strings (i.e. strings without
+fields). If <cite>None</cite>, the template string will be used as the separator.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">str_to_dict</span><span class="p">(</span><span class="s2">&quot;Alice is 30 years old.&quot;</span><span class="p">)</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">dict_to_str</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="go">&#39;Alice is 30 years old.&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">dict_to_tuple</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="go">(&#39;Alice&#39;, &#39;30&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">tuple_to_dict</span><span class="p">((</span><span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;30&#39;</span><span class="p">))</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">str_to_tuple</span><span class="p">(</span><span class="s2">&quot;Alice is 30 years old.&quot;</span><span class="p">)</span>
+<span class="go">(&#39;Alice&#39;, &#39;30&#39;)</span>
+</pre></div>
+</div>
+<p>You can also ask any (handled) combination of field types:
+&gt;&gt;&gt; coder, encoder = st.codec(‘tuple’, ‘dict’)
+&gt;&gt;&gt; coder((‘Alice’, ‘30’))
+{‘name’: ‘Alice’, ‘age’: ‘30’}
+&gt;&gt;&gt; encoder({‘name’: ‘Alice’, ‘age’: ‘30’})
+(‘Alice’, ‘30’)</p>
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.codec">
+<code class="sig-name descname">codec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">source</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>str<span class="p">, </span>dict<span class="p">, </span>tuple<span class="p">, </span>namedtuple<span class="p">, </span>simple_str<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">target</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>str<span class="p">, </span>dict<span class="p">, </span>tuple<span class="p">, </span>namedtuple<span class="p">, </span>simple_str<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.codec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.codec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a <code class="docutils literal notranslate"><span class="pre">(coder,</span> <span class="pre">decoder)</span></code> pair for the given source and target types.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coder</span><span class="p">,</span> <span class="n">encoder</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">codec</span><span class="p">(</span><span class="s1">&#39;tuple&#39;</span><span class="p">,</span> <span class="s1">&#39;dict&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coder</span><span class="p">((</span><span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;30&#39;</span><span class="p">))</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encoder</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="go">(&#39;Alice&#39;, &#39;30&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.dict_to_namedtuple">
+<code class="sig-name descname">dict_to_namedtuple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.dict_to_namedtuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.dict_to_namedtuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a namedtuple from the dictionary values based on the template.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Person</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">dict_to_namedtuple</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Person</span>
+<span class="go">NamedTuple(name=&#39;Alice&#39;, age=&#39;30&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.dict_to_str">
+<code class="sig-name descname">dict_to_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.dict_to_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.dict_to_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a string from the dictionary values based on the template.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">dict_to_str</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="go">&#39;Alice is 30 years old.&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.dict_to_tuple">
+<code class="sig-name descname">dict_to_tuple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.dict_to_tuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.dict_to_tuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a tuple from the dictionary values based on the template.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">dict_to_tuple</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="go">(&#39;Alice&#39;, &#39;30&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.namedtuple_to_dict">
+<code class="sig-name descname">namedtuple_to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nt</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.namedtuple_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.namedtuple_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a namedtuple to a dictionary.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Person</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">dict_to_namedtuple</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="s1">&#39;30&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">namedtuple_to_dict</span><span class="p">(</span><span class="n">Person</span><span class="p">)</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.simple_str_to_str">
+<code class="sig-name descname">simple_str_to_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ss</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">sep</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.simple_str_to_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.simple_str_to_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a simple character-delimited string to a string.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">simple_str_to_str</span><span class="p">(</span><span class="s1">&#39;Alice-30&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+<span class="go">&#39;Alice is 30 years old.&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.str_to_dict">
+<code class="sig-name descname">str_to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.str_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.str_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the input string and returns a dictionary of extracted values.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">str_to_dict</span><span class="p">(</span><span class="s2">&quot;Alice is 30 years old.&quot;</span><span class="p">)</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.str_to_simple_str">
+<code class="sig-name descname">str_to_simple_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">sep</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.str_to_simple_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.str_to_simple_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a string to a simple string (i.e. a simple character-delimited string).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">str_to_simple_str</span><span class="p">(</span><span class="s2">&quot;Alice is 30 years old.&quot;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+<span class="go">&#39;Alice-30&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.str_to_tuple">
+<code class="sig-name descname">str_to_tuple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.str_to_tuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.str_to_tuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the input string and returns a tuple of extracted values.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">str_to_tuple</span><span class="p">(</span><span class="s2">&quot;Alice is 30 years old.&quot;</span><span class="p">)</span>
+<span class="go">(&#39;Alice&#39;, &#39;30&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.tuple_to_dict">
+<code class="sig-name descname">tuple_to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param_vals</span><span class="p">:</span> <span class="n">tuple</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.tuple_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.tuple_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a dictionary from the tuple values based on the template.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">tuple_to_dict</span><span class="p">((</span><span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;30&#39;</span><span class="p">))</span>
+<span class="go">{&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.StringTemplate.tuple_to_str">
+<code class="sig-name descname">tuple_to_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">tuple</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../../_modules/dol/paths.html#StringTemplate.tuple_to_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.StringTemplate.tuple_to_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a string from the tuple values based on the template.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">StringTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;</span><span class="si">{name}</span><span class="s2"> is </span><span class="si">{age}</span><span class="s2"> years old.&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">field_patterns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">tuple_to_str</span><span class="p">((</span><span class="s1">&#39;Alice&#39;</span><span class="p">,</span> <span class="s1">&#39;30&#39;</span><span class="p">))</span>
+<span class="go">&#39;Alice is 30 years old.&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.get_attr_or_item">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">get_attr_or_item</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#get_attr_or_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.get_attr_or_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <code class="docutils literal notranslate"><span class="pre">k</span></code> is a string, tries to get <code class="docutils literal notranslate"><span class="pre">k</span></code> as an attribute of <code class="docutils literal notranslate"><span class="pre">obj</span></code> first,
+and if that fails, gets it as <code class="docutils literal notranslate"><span class="pre">obj[k]</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.mk_relative_path_store">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">mk_relative_path_store</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">store_cls</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">with_key_validation</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">prefix_attr</span><span class="o">=</span><span class="default_value">'_prefix'</span></em>, <em class="sig-param"><span class="n">__module__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__name__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__qualname__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__doc__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__annotations__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__defaults__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__kwdefaults__</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#mk_relative_path_store"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.mk_relative_path_store" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>store_cls</strong> – The base store to wrap (subclass)</p></li>
+<li><p><strong>name</strong> – The name of the new store (by default ‘RelPath’ + store_cls.__name__)</p></li>
+<li><p><strong>with_key_validation</strong> – Whether keys should be validated upon access (store_cls must have an is_valid_key method</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns: A new class that uses relative paths (i.e. where _prefix is automatically added to incoming keys,</dt><dd><p>and the len(_prefix) first characters are removed from outgoing keys.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># The dynamic way (if you try this at home, be aware of the pitfalls of the dynamic way</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># -- but don&#39;t just believe the static dogmas).</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyStore</span> <span class="o">=</span> <span class="n">mk_relative_path_store</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># wrap our favorite store: A dict.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">()</span>  <span class="c1"># make such a store</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="s1">&#39;/ROOT/&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># gives us what you would expect</span>
+<span class="go">{&#39;foo&#39;: &#39;bar&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="c1"># but under the hood, the dict we wrapped actually contains the &#39;/ROOT/&#39; prefix</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
+<span class="go">{&#39;/ROOT/foo&#39;: &#39;bar&#39;}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># The static way: Make a class that will integrate the _prefix at construction time.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyStore</span><span class="p">(</span><span class="n">mk_relative_path_store</span><span class="p">(</span><span class="nb">dict</span><span class="p">)):</span>  <span class="c1"># Indeed, mk_relative_path_store(dict) is a class you can subclass</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_prefix</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">_prefix</span>
+</pre></div>
+</div>
+<p>You can choose the name you want that prefix to have as an attribute (we’ll still make
+a hidden ‘_prefix’ attribute for internal use, but at least you can have an attribute with the
+name you want.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">MyRelStore</span> <span class="o">=</span> <span class="n">mk_relative_path_store</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyRelStore</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">rootdir</span> <span class="o">=</span> <span class="s1">&#39;/ROOT/&#39;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># gives us what you would expect</span>
+<span class="go">{&#39;foo&#39;: &#39;bar&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="c1"># but under the hood, the dict we wrapped actually contains the &#39;/ROOT/&#39; prefix</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
+<span class="go">{&#39;/ROOT/foo&#39;: &#39;bar&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.path_edit">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">path_edit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span></em>, <em class="sig-param"><span class="n">edits</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Mapping<span class="p">[</span>Union<span class="p">[</span>Iterable<span class="p">, </span>str<span class="p">]</span><span class="p">, </span>VT<span class="p">]</span><span class="p">, </span>Iterable<span class="p">[</span>Tuple<span class="p">[</span>Union<span class="p">[</span>Iterable<span class="p">, </span>str<span class="p">]</span><span class="p">, </span>VT<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">()</span></em><span class="sig-paren">)</span> &#x2192; Mapping<a class="reference internal" href="../../_modules/dol/paths.html#path_edit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.path_edit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a series of (in place) edits to a Mapping, specifying <cite>(path, value)</cite> pairs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> (<em>Mapping</em>) – The mapping to edit.</p></li>
+<li><p><strong>edits</strong> – An iterable of <code class="docutils literal notranslate"><span class="pre">(path,</span> <span class="pre">value)</span></code> tuples, or <code class="docutils literal notranslate"><span class="pre">path:</span> <span class="pre">value</span></code> Mapping.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The edited mapping.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Mapping</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_edit</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[([</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">],</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;d.e.f&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)])</span>
+<span class="go">{&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2}, &#39;d&#39;: {&#39;e&#39;: {&#39;f&#39;: 3}}}</span>
+</pre></div>
+</div>
+<p>Changes happened also inplace (so if you don’t want that, make a deepcopy first):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2}, &#39;d&#39;: {&#39;e&#39;: {&#39;f&#39;: 3}}}</span>
+</pre></div>
+</div>
+<p>You can also pass a dict of edits.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_edit</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;d.e.f&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
+<span class="go">{&#39;a&#39;: 4, &#39;b&#39;: {&#39;c&#39;: 2}, &#39;d&#39;: {&#39;e&#39;: {&#39;f&#39;: 5}}}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.path_filter">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">path_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pkv_filt</span><span class="p">:</span> <span class="n">Callable<span class="p">[</span><span class="p">[</span>PT<span class="p">, </span>KT<span class="p">, </span>VT<span class="p">]</span><span class="p">, </span>bool<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span></em><span class="sig-paren">)</span> &#x2192; Iterator<span class="p">[</span>PT<span class="p">]</span><a class="reference internal" href="../../_modules/dol/paths.html#path_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.path_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Walk a dict, yielding paths to values that pass the <code class="docutils literal notranslate"><span class="pre">pkv_filt</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pkv_filt</strong> – A function that takes a path, key, and value, and returns
+<code class="docutils literal notranslate"><span class="pre">True</span></code> if the path should be yielded, and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</p></li>
+<li><p><strong>d</strong> – The <code class="docutils literal notranslate"><span class="pre">Mapping</span></code> to walk (scan through)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An iterator of paths to values that pass the <code class="docutils literal notranslate"><span class="pre">pkv_filt</span></code></p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">path_filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>[(‘a’, ‘b’, ‘d’)]</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mm</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}},</span>
+<span class="gp">... </span>    <span class="s1">&#39;aa&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;bb&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cc&#39;</span><span class="p">:</span> <span class="s1">&#39;meaning of life&#39;</span><span class="p">}},</span>
+<span class="gp">... </span>    <span class="s1">&#39;aaa&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;bbb&#39;</span><span class="p">:</span> <span class="mi">314</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">return_path_if_int_leaf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">path_filter</span><span class="p">(</span><span class="n">return_path_if_int_leaf</span><span class="p">,</span> <span class="n">mm</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">paths</span>  <span class="c1"># only the paths to the int leaves are returned</span>
+<span class="go">[(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), (&#39;aaa&#39;, &#39;bbb&#39;)]</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">pkv_filt</span></code> argument can use path, key, and/or value to define your search
+query. For example, let’s extract all the paths that have depth at least 3.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">path_filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">mm</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">paths</span>
+<span class="go">[(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), (&#39;aa&#39;, &#39;bb&#39;, &#39;cc&#39;)]</span>
+</pre></div>
+</div>
+<p>The rationale for <code class="docutils literal notranslate"><span class="pre">path_filter</span></code> yielding matching paths, and not values or keys,
+is that if you have the paths, you can than get the keys and values with them,
+using <code class="docutils literal notranslate"><span class="pre">path_get</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">reduce</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_get</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">m</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">m</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">k</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">extract_paths</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">m</span><span class="p">,</span> <span class="n">paths</span><span class="p">:</span> <span class="nb">map</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">path_get</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">paths</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">extract_paths</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span> <span class="n">paths</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vals</span>
+<span class="go">[42, &#39;meaning of life&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.path_get">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">path_get</code><span class="sig-paren">(</span><em class="sig-param">obj: Any, path, on_error: Union[Callable[[dict], Any], str] = &lt;function raise_on_error&gt;, *, sep='.', key_transformer=&lt;function cast_to_int_if_numeric_str&gt;, get_value: Callable = &lt;function get_attr_or_item&gt;, caught_errors=(&lt;class 'Exception'&gt;,)</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#path_get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.path_get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get elements of a mapping through a path to be called recursively.</p>
+<p>It will</p>
+<ul class="simple">
+<li><p>split a path into keys if it is a string, using the specified seperator <code class="docutils literal notranslate"><span class="pre">sep</span></code></p></li>
+<li><p>consider string keys that are numeric as ints (convenient for lists)</p></li>
+<li><p>get items also as attributes (attributes are checked for first for string keys)</p></li>
+<li><p>catch all exceptions (that are subclasses of <code class="docutils literal notranslate"><span class="pre">Exception</span></code>)</p></li>
+</ul>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
+<span class="gp">... </span>     <span class="n">an_attribute</span> <span class="o">=</span> <span class="mi">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_get</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">A</span><span class="p">}],</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;an_attribute&#39;</span><span class="p">])</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>By default, if <code class="docutils literal notranslate"><span class="pre">path</span></code> is a string, it will be split on <code class="docutils literal notranslate"><span class="pre">sep</span></code>,
+which is <code class="docutils literal notranslate"><span class="pre">'.'</span></code> by default.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_get</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">A</span><span class="p">}],</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;1.2.a.an_attribute&#39;</span><span class="p">)</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>Note: The underlying function is <code class="docutils literal notranslate"><span class="pre">_path_get</span></code>, but <cite>path_get</cite> has defaults and
+flexible input processing for more convenience.</p>
+<p>Note: <code class="docutils literal notranslate"><span class="pre">path_get</span></code> contains some ready-made <code class="docutils literal notranslate"><span class="pre">OnErrorType</span></code> functions in its
+attributes. For example, see how we can make <code class="docutils literal notranslate"><span class="pre">path_get</span></code> have the same behavior
+as <code class="docutils literal notranslate"><span class="pre">dict.get</span></code> by passing <code class="docutils literal notranslate"><span class="pre">path_get.return_none_on_error</span></code> as <code class="docutils literal notranslate"><span class="pre">on_error</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">path_get</span><span class="p">({},</span> <span class="s1">&#39;no.keys&#39;</span><span class="p">,</span> <span class="n">on_error</span><span class="o">=</span><span class="n">path_get</span><span class="o">.</span><span class="n">return_none_on_error</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>For example, <code class="docutils literal notranslate"><span class="pre">path_get.raise_on_error</span></code>,
+<code class="docutils literal notranslate"><span class="pre">path_get.return_none_on_error</span></code>, and <code class="docutils literal notranslate"><span class="pre">path_get.return_empty_tuple_on_error</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.path_set">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">path_set</code><span class="sig-paren">(</span><em class="sig-param">d: Mapping</em>, <em class="sig-param">key_path: Iterable</em>, <em class="sig-param">val: VT</em>, <em class="sig-param">*</em>, <em class="sig-param">sep: str = '.'</em>, <em class="sig-param">new_mapping: Callable[[]</em>, <em class="sig-param">VT] = &lt;class 'dict'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#path_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.path_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a val to a path of keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> – The mapping to set the value in</p></li>
+<li><p><strong>key_path</strong> – The path of keys to set the value to</p></li>
+<li><p><strong>val</strong> – The value to set</p></li>
+<li><p><strong>sep</strong> – The separator to use if the path is a string</p></li>
+<li><p><strong>new_mapping</strong> – callable that returns a new mapping to use when key is not found</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">],</span> <span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2, &#39;e&#39;: 42}}</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>  <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;val of a.c&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="p">},</span>
+<span class="gp">... </span>  <span class="s2">&quot;10&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>      <span class="s2">&quot;AA&quot;</span><span class="p">:</span> <span class="mi">3</span>
+<span class="gp">... </span>    <span class="p">}</span>
+<span class="gp">... </span>  <span class="p">}</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;new&#39;</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;path&#39;</span><span class="p">),</span> <span class="mi">7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>  
+<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
+<span class="go">&#39;new&#39;: {&#39;key&#39;: {&#39;path&#39;: 7}}}</span>
+</pre></div>
+</div>
+<p>You can also use a string as a path, with a separator:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="s1">&#39;new/key/old/path&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>  
+<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
+<span class="go">&#39;new&#39;: {&#39;key&#39;: {&#39;path&#39;: 7, &#39;old&#39;: {&#39;path&#39;: 8}}}}</span>
+</pre></div>
+</div>
+<p>If you specify a string path and a non-None separator, the separator will be used
+to split the string into a list of keys. The default separator is <code class="docutils literal notranslate"><span class="pre">sep='.'</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="s1">&#39;new.key&#39;</span><span class="p">,</span> <span class="s1">&#39;new val&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>  
+<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
+<span class="go">&#39;new&#39;: {&#39;key&#39;: &#39;new val&#39;}}</span>
+</pre></div>
+</div>
+<p>You can also specify a different <code class="docutils literal notranslate"><span class="pre">new_mapping</span></code> factory, which will be used to
+create new mappings when a key is missing. The default is <code class="docutils literal notranslate"><span class="pre">dict</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="s1">&#39;new.key&#39;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="n">new_mapping</span><span class="o">=</span><span class="n">OrderedDict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>  
+<span class="go">{&#39;new&#39;: OrderedDict([(&#39;key&#39;, 42)])}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.rel_path_wrap">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">rel_path_wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">o</span></em>, <em class="sig-param"><span class="n">_prefix</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#rel_path_wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.rel_path_wrap" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>o</strong> – An object to be wrapped</p></li>
+<li><p><strong>_prefix</strong> – The _prefix to use for key wrapping (will remove it from outcoming keys and add to ingoing keys.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># The dynamic way (if you try this at home, be aware of the pitfalls of the dynamic way</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># -- but don&#39;t just believe the static dogmas).</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;/ROOT/of/every/thing&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span> <span class="s1">&#39;/ROOT/of/this/too&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">rel_path_wrap</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s1">&#39;/ROOT/of/&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">dd</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># gives us what you would expect</span>
+<span class="go">{&#39;every/thing&#39;: 42, &#39;this/too&#39;: 0, &#39;foo&#39;: &#39;bar&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="c1"># but under the hood, the dict we wrapped actually contains the &#39;/ROOT/&#39; prefix</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">dd</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
+<span class="go">{&#39;/ROOT/of/every/thing&#39;: 42, &#39;/ROOT/of/this/too&#39;: 0, &#39;/ROOT/of/foo&#39;: &#39;bar&#39;}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># The static way: Make a class that will integrate the _prefix at construction time.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyStore</span><span class="p">(</span><span class="n">mk_relative_path_store</span><span class="p">(</span><span class="nb">dict</span><span class="p">)):</span>  <span class="c1"># Indeed, mk_relative_path_store(dict) is a class you can subclass</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_prefix</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">_prefix</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.search_paths">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">search_paths</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span></em>, <em class="sig-param"><span class="n">pkv_filt</span><span class="p">:</span> <span class="n">Callable<span class="p">[</span><span class="p">[</span>PT<span class="p">, </span>KT<span class="p">, </span>VT<span class="p">]</span><span class="p">, </span>bool<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; Iterator<span class="p">[</span>PT<span class="p">]</span><a class="reference internal" href="../../_modules/dol/paths.html#search_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.search_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>backwards compatibility quasi-alias (arguments are flipped)
+Use path_filter instead, since search_paths will be deprecated.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.str_template_key_trans">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">str_template_key_trans</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">key_type</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference internal" href="#dol.paths.PathKeyTypes" title="dol.paths.PathKeyTypes">dol.paths.PathKeyTypes</a><span class="p">, </span>type<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">format_dict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">process_kwargs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">process_info_dict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">named_tuple_type_name</span><span class="o">=</span><span class="default_value">'NamedTuple'</span></em>, <em class="sig-param"><span class="n">sep</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'/'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#str_template_key_trans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.str_template_key_trans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a key trans object that translates from a string _id to a dict, tuple, or namedtuple key (and back)</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="naming.html" class="btn btn-neutral float-left" title="dol.naming" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="recipes.html" class="btn btn-neutral float-right" title="dol.recipes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
