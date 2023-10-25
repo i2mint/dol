@@ -102,6 +102,7 @@ from dol.trans import (
     add_aliases,  # delegation-wrap any object and add aliases for its methods
     insert_aliases,  # insert aliases for special (dunder) store methods,
     add_missing_key_handling,  # add a missing key handler to a store
+    add_prefix_filtering,  # add a prefix filtering method to a store
     cache_iter,  # being deprecated
 )
 

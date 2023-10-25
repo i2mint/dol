@@ -3001,3 +3001,50 @@ def add_missing_key_handling(store=None, *, missing_key_callback: Callable):
     """
     store.__missing__ = missing_key_callback
     return store
+
+
+# def __startswith(comparison_func, iterable, prefix):
+#     return comparison_func(iterable, prefix)
+
+
+# def _fallback_startswith(iterable, prefix):
+#     """A fall back 'iterable starts with prefix' function that works for all iterables.
+#     It can be terribly inefficient though, so it's best to use it only when you have to.
+
+#     """
+#     # Iterate through both iterables simultaneously
+#     iterable = list(iterable)
+#     for item, prefix_item in zip(iterable, prefix):
+#         if item != prefix_item:
+#             # If any pair of items are unequal, return False
+#             return False
+
+#     # If we've checked every item in prefix without returning,
+#     # return True iff the prefix is not longer than the iterable
+#     return len(prefix) <= len(iterable)
+
+
+def _startswith(string, prefix):
+    return string.startswith(prefix)
+
+
+def _prefix_filter(store, prefix: str):
+    """Filter the store to have only keys that start with prefix"""
+    return filt_iter(store, filt=partial(_startswith, prefix=prefix))
+
+
+def add_prefix_filtering(store):
+    """Add prefix filtering to a store.
+
+    >>> d = {'a/b': 1, 'a/c': 2, 'd/e': 3, 'f': 4}
+    >>> s = add_prefix_filtering(d)
+    >>> assert dict(s['a/']) == {'a/b': 1, 'a/c': 2}
+
+    Demo usage on a `Mapping` class:
+
+    >>> from collections import UserDict
+    >>> D = add_prefix_filtering(UserDict)
+    >>> s = D(d)
+    >>> assert dict(s['a/']) == {'a/b': 1, 'a/c': 2}
+    """
+    return add_missing_key_handling(store, missing_key_callback=_prefix_filter)
