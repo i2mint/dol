@@ -100,7 +100,8 @@ from dol.trans import (
     disable_setitem,  # disable ability to write to a store
     mk_read_only,  # disable ability to write to a store or delete its keys
     add_aliases,  # delegation-wrap any object and add aliases for its methods
-    insert_aliases,  # insert aliases for special (dunder) store methods
+    insert_aliases,  # insert aliases for special (dunder) store methods,
+    add_missing_key_handling,  # add a missing key handler to a store
     cache_iter,  # being deprecated
 )
 

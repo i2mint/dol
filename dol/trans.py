@@ -621,7 +621,9 @@ def _wrap_store(
 
 @store_decorator
 def insert_hash_method(
-    store=None, *, hash_method: Callable[[Any], int] = id,
+    store=None,
+    *,
+    hash_method: Callable[[Any], int] = id,
 ):
     """Make a store hashable using the specified ``hash_method``.
     Will add (or overwrite) a ``__hash__`` method to the store that uses the
@@ -2147,9 +2149,9 @@ def kv_wrap(trans_obj):
     2
 
     ``kv_wrap`` also has convenience attributes:
-        ``outcoming_keys``, ``ingoing_keys``, ``outcoming_vals``, ``ingoing_vals``, 
+        ``outcoming_keys``, ``ingoing_keys``, ``outcoming_vals``, ``ingoing_vals``,
         and ``val_reads_wrt_to_keys``
-    which will only add a single specific wrapper (specified as a function), 
+    which will only add a single specific wrapper (specified as a function),
     when that's what you need.
 
     """
@@ -2967,3 +2969,35 @@ class CachedInvertibleTrans:
 
     def egress(self, y):
         return self.egress_map[y]
+
+
+@store_decorator
+def add_missing_key_handling(store=None, *, missing_key_callback: Callable):
+    """Overrides the ``__missing__`` method of a store with a custom callback.
+
+    The callback must have two arguments: the store and the key.
+
+    In the following example, we endow a store to return a sub-store when a key is
+    missing. This substore will contain only keys that start with that missing key.
+    This is useful, for example, to get "subfolder filtering" on a store.
+
+    >>> def prefix_filter(store, prefix: str):
+    ...     '''Filter the store to have only keys that start with prefix'''
+    ...     from dol import filt_iter
+    ...     return filt_iter(store, filt=lambda x: x.startswith(prefix))
+    ...
+    >>> @add_missing_key_handling(missing_key_callback=prefix_filter)
+    ... class D(dict):
+    ...     pass
+    >>>
+    >>> s = D({'a/b': 1, 'a/c': 2, 'd/e': 3, 'f': 4})
+    >>> sorted(s)
+    ['a/b', 'a/c', 'd/e', 'f']
+    >>> 'a/' not in s
+    True
+    >>> # yet
+    >>> v = s['a/']
+    >>> assert dict(v) == {'a/b': 1, 'a/c': 2}
+    """
+    store.__missing__ = missing_key_callback
+    return store
