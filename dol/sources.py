@@ -628,7 +628,7 @@ class FuncReader(KvReader):
 
     """
 
-    def __init__(self, funcs):
+    def __init__(self, funcs: Union[Mapping[str, Callable], Iterable[Callable]]):
         # TODO: assert no free arguments (arguments are allowed but must all have
         #  defaults)
         if isinstance(funcs, Mapping):
@@ -705,6 +705,7 @@ class ObjLoader(object):
             return self.data_of_key(k)
 
 
+# TODO: See explicit.py module and FuncReader above for near duplicates!
 # TODO: Add an obj_of_key argument to wrap_kvs? (Or should it be data_of_key?)
 # Note: Older version commmented below
 class ObjReader:
