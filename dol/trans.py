@@ -2997,75 +2997,10 @@ def add_missing_key_handling(store=None, *, missing_key_callback: Callable):
     >>> v = s['a/']
     >>> assert dict(v) == {'a/b': 1, 'a/c': 2}
     """
-    store.__missing__ = missing_key_callback
-    return store
+    @wraps(store, updated=())
+    class StoreWithMissingKeyCallaback(store):
+        pass
 
+    StoreWithMissingKeyCallaback.__missing__ = missing_key_callback
+    return StoreWithMissingKeyCallaback
 
-def _fallback_startswith(iterable, prefix):
-    """Returns True iff iterable starts with prefix.
-    Compares the first items of iterable and prefix iteratively.
-    It can be terribly inefficient though, so it's best to use it only when you have to.
-    """
-    iter_iterable = iter(iterable)
-    iter_prefix = iter(prefix)
-
-    for prefix_item in iter_prefix:
-        try:
-            # Get the next item from iterable
-            item = next(iter_iterable)
-        except StopIteration:
-            # If we've reached the end of iterable, return False
-            return False
-
-        if item != prefix_item:
-            # If any pair of items are unequal, return False
-            return False
-
-    # If we've checked every item in prefix without returning, return True
-    return True
-
-
-# TODO: Routing pattern. Make plugin architecture.
-# TODO: Add faster option for lists and tuples that are sizable and sliceable
-def _startswith(iterable, prefix):
-    """Returns True iff iterable starts with prefix.
-    If prefix is a string, `str.startswith` is used, otherwise, the function
-    will compare the first items of iterable and prefix iteratively.
-
-    >>> _startswith('apple', 'app')
-    True
-    >>> _startswith('crapple', 'app')
-    False
-    >>> _startswith([1,2,3,4], [1,2])
-    True
-    >>> _startswith([0, 1,2,3,4], [1,2])
-    False
-    >>> _startswith([1,2,3,4], [])
-    True
-    """
-    if isinstance(prefix, str):
-        return iterable.startswith(prefix)
-    else:
-        return _fallback_startswith(iterable, prefix)
-
-
-def _prefix_filter(store, prefix: str):
-    """Filter the store to have only keys that start with prefix"""
-    return filt_iter(store, filt=partial(_startswith, prefix=prefix))
-
-
-def add_prefix_filtering(store):
-    """Add prefix filtering to a store.
-
-    >>> d = {'a/b': 1, 'a/c': 2, 'd/e': 3, 'f': 4}
-    >>> s = add_prefix_filtering(d)
-    >>> assert dict(s['a/']) == {'a/b': 1, 'a/c': 2}
-
-    Demo usage on a `Mapping` class:
-
-    >>> from collections import UserDict
-    >>> D = add_prefix_filtering(UserDict)
-    >>> s = D(d)
-    >>> assert dict(s['a/']) == {'a/b': 1, 'a/c': 2}
-    """
-    return add_missing_key_handling(store, missing_key_callback=_prefix_filter)

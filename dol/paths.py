@@ -24,8 +24,15 @@ from operator import getitem
 import os
 
 from dol.base import Store
-from dol.util import lazyprop, add_as_attribute_of
-from dol.trans import store_decorator, kv_wrap, add_path_access
+from dol.util import lazyprop, add_as_attribute_of, max_common_prefix
+from dol.trans import (
+    store_decorator,
+    kv_wrap,
+    add_path_access,
+    filt_iter,
+    wrap_kvs,
+    add_missing_key_handling,
+)
 from dol.dig import recursive_get_attr
 
 path_sep = os.path.sep
@@ -94,7 +101,13 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -369,7 +382,10 @@ PT = TypeVar('PT')  # Path Type
 PkvFilt = Callable[[PT, KT, VT], bool]
 
 
-def path_filter(pkv_filt: PkvFilt, d: Mapping,) -> Iterator[PT]:
+def path_filter(
+    pkv_filt: PkvFilt,
+    d: Mapping,
+) -> Iterator[PT]:
     """Walk a dict, yielding paths to values that pass the ``pkv_filt``
 
     :param pkv_filt: A function that takes a path, key, and value, and returns
@@ -625,7 +641,11 @@ class PrefixRelativization(PrefixRelativizationMixin):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr='_prefix',
 ):
     """
 
@@ -748,6 +768,142 @@ class RelativePathKeyMapper:
 
     def _key_of_id(self, _id):
         return _id[self._prefix_length :]
+
+
+@store_decorator
+def prefixless_view(store=None, *, prefix=None):
+    key_mapper = RelativePathKeyMapper(prefix)
+    return wrap_kvs(
+        store, id_of_key=key_mapper._id_of_key, key_of_id=key_mapper._key_of_id
+    )
+
+
+def _fallback_startswith(iterable, prefix):
+    """Returns True iff iterable starts with prefix.
+    Compares the first items of iterable and prefix iteratively.
+    It can be terribly inefficient though, so it's best to use it only when you have to.
+    """
+    iter_iterable = iter(iterable)
+    iter_prefix = iter(prefix)
+
+    for prefix_item in iter_prefix:
+        try:
+            # Get the next item from iterable
+            item = next(iter_iterable)
+        except StopIteration:
+            # If we've reached the end of iterable, return False
+            return False
+
+        if item != prefix_item:
+            # If any pair of items are unequal, return False
+            return False
+
+    # If we've checked every item in prefix without returning, return True
+    return True
+
+
+# TODO: Routing pattern. Make plugin architecture.
+# TODO: Add faster option for lists and tuples that are sizable and sliceable
+def _startswith(iterable, prefix):
+    """Returns True iff iterable starts with prefix.
+    If prefix is a string, `str.startswith` is used, otherwise, the function
+    will compare the first items of iterable and prefix iteratively.
+
+    >>> _startswith('apple', 'app')
+    True
+    >>> _startswith('crapple', 'app')
+    False
+    >>> _startswith([1,2,3,4], [1,2])
+    True
+    >>> _startswith([0, 1,2,3,4], [1,2])
+    False
+    >>> _startswith([1,2,3,4], [])
+    True
+    """
+    if isinstance(prefix, str):
+        return iterable.startswith(prefix)
+    else:
+        return _fallback_startswith(iterable, prefix)
+
+
+def _prefix_filter(store, prefix: str):
+    """Filter the store to have only keys that start with prefix"""
+    return filt_iter(store, filt=partial(_startswith, prefix=prefix))
+
+
+def _prefix_filter_with_relativization(store, prefix: str):
+    """Filter the store to have only keys that start with prefix"""
+    return prefixless_view(_prefix_filter(store, prefix), prefix=prefix)
+
+
+@store_decorator
+def add_prefix_filtering(store=None, *, relativize_prefix: bool = False):
+    """Add prefix filtering to a store.
+
+    >>> d = {'a/b': 1, 'a/c': 2, 'd/e': 3, 'f': 4}
+    >>> s = add_prefix_filtering(d)
+    >>> assert s['a/'] == {'a/b': 1, 'a/c': 2}
+
+    Demo usage on a `Mapping` type:
+
+    >>> from collections import UserDict
+    >>> D = add_prefix_filtering(UserDict)
+    >>> s = D(d)
+    >>> assert s['a/'] == {'a/b': 1, 'a/c': 2}
+
+    """
+    __prefix_filter = _prefix_filter
+    if relativize_prefix:
+        __prefix_filter = _prefix_filter_with_relativization
+    return add_missing_key_handling(store, missing_key_callback=__prefix_filter)
+
+
+@store_decorator
+def handle_prefixes(
+    store=None,
+    *,
+    prefix=None,
+    filter_prefix: bool = True,
+    relativize_prefix: bool = True,
+    default_prefix='',
+):
+    """A store decorator that handles prefixes.
+
+    If aggregates several prefix-related functionalities. It will (by default)
+
+    - Filter the store so that only the keys starting with given prefix are accessible.
+
+    - Relativize the keys (provide a view where the prefix is removed from the keys)
+
+    Args:
+        store: The store to wrap
+        prefix: The prefix to use. If None and the store is an instance (not type),
+                will take the longest common prefix as the prefix.
+        filter_prefix: Whether to filter out keys that don't start with the prefix
+        relativize_prefix: Whether to relativize the prefix
+        default_prefix: The default prefix to use if no prefix is given and the store
+                        is a type (not instance)
+
+    >>> d = {'/ROOT/of/every/thing': 42, '/ROOT/of/this/too': 0}
+    >>> dd = handle_prefixes(d, prefix='/ROOT/of/')
+    >>> dd['foo'] = 'bar'
+    >>> dict(dd.items())  # gives us what you would expect
+    {'every/thing': 42, 'this/too': 0, 'foo': 'bar'}
+    >>> dict(dd.store)  # but see where the underlying store actually wrote 'bar':
+    {'/ROOT/of/every/thing': 42, '/ROOT/of/this/too': 0, '/ROOT/of/foo': 'bar'}
+
+    """
+    if prefix is None:
+        if isinstance(store, type):
+            raise TypeError(
+                f"I can only infer prefix from a store instance, not a type: {store}"
+            )
+        prefix = max_common_prefix(store, default=default_prefix)
+    if filter_prefix:
+        store = filt_iter(store, filt=lambda k: k.startswith(prefix))
+    if relativize_prefix:
+        store = prefixless_view(store, prefix=prefix)
+    return store
 
 
 # TODO: Enums introduce a ridiculous level of complexity here.
@@ -1141,7 +1297,8 @@ class StringTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self, params: dict,
+        self,
+        params: dict,
     ):
         """Generates a namedtuple from the dictionary values based on the template.
 

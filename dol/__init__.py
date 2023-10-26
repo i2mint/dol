@@ -102,7 +102,6 @@ from dol.trans import (
     add_aliases,  # delegation-wrap any object and add aliases for its methods
     insert_aliases,  # insert aliases for special (dunder) store methods,
     add_missing_key_handling,  # add a missing key handler to a store
-    add_prefix_filtering,  # add a prefix filtering method to a store
     cache_iter,  # being deprecated
 )
 
@@ -130,6 +129,7 @@ from dol.paths import (
     path_get,  # get a value from a path
     path_set,  # set a value from a path
     path_filter,  # search through paths of a Mapping
+    add_prefix_filtering,  # add a prefix filtering method to a store
 )
 
 from dol.dig import trace_getitem  # trace getitem calls, stepping through the layers

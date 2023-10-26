@@ -4,7 +4,7 @@ import shutil
 import re
 from collections import deque, namedtuple, defaultdict
 from warnings import warn
-from typing import Any, Hashable, Callable, Iterable, Optional, Union, Mapping
+from typing import Any, Hashable, Callable, Iterable, Optional, Union, Mapping, Sequence
 from functools import update_wrapper as _update_wrapper
 from functools import wraps as _wraps
 from functools import partialmethod, partial, WRAPPER_ASSIGNMENTS
@@ -188,7 +188,7 @@ def _disabled_clear_method(self):
 
         for k in self:
             del self[k]
-        
+
 
     or (in some cases)
 
@@ -199,7 +199,7 @@ def _disabled_clear_method(self):
                 del self[k]
             except KeyError:
                 pass
-        
+
     """
     raise NotImplementedError(f'Instance of {type(self)}: {self.clear.__doc__}')
 
@@ -438,7 +438,7 @@ def partialclass(cls, *args, **kwargs):
     >>> assert str(signature(AA)) == '(b=1)'
     >>> assert str(AA(3)) == 'A(a=22, b=3)'
 
-    
+
     """
     assert isinstance(cls, type), f'cls should be a type, was a {type(cls)}: {cls}'
 
@@ -446,7 +446,9 @@ def partialclass(cls, *args, **kwargs):
         __init__ = partialmethod(cls.__init__, *args, **kwargs)
 
     copy_attrs(
-        PartialClass, cls, attrs=('__name__', '__qualname__', '__module__', '__doc__'),
+        PartialClass,
+        cls,
+        attrs=('__name__', '__qualname__', '__module__', '__doc__'),
     )
 
     return PartialClass
@@ -524,7 +526,7 @@ def norm_kv_filt(kv_filt: Callable[[Any], bool]):
     .. code-block:: python
 
         new_filt_func = lambda k, v: your_filt_func(..., key=k, ..., value=v, ...)
-    
+
     and all will be fine.
 
     :param kv_filt: callable (starting with signature (k), (v), or (k, v)), and returning  a boolean
@@ -854,7 +856,10 @@ def igroupby(
     if val is None:
         _append_to_group_items = append_to_group_items
     else:
-        _append_to_group_items = lambda group_items, item: (group_items, val(item),)
+        _append_to_group_items = lambda group_items, item: (
+            group_items,
+            val(item),
+        )
 
     for item in items:
         group_key = key(item)
@@ -1082,18 +1087,41 @@ class MutableStruct(Struct):
             setattr(self, attr, val)
 
 
-def max_common_prefix(a):
+def max_common_prefix(a: Sequence, *, default=''):
     """
-    Given a list of strings (or other sliceable sequences), returns the longest common prefix
-    
+    Given a list of strings (or other sliceable seq), returns the longest common prefix
+
     :param a: list-like of strings
     :return: the smallest common prefix of all strings in a
+
+    >>> max_common_prefix(['absolutely', 'abc', 'abba'])
+    'ab'
+    >>> max_common_prefix(['absolutely', 'not', 'abc', 'abba'])
+    ''
+    >>> max_common_prefix([[3,2,1], [3,2,0]])
+    [3, 2]
+    >>> max_common_prefix([[3,2,1], [3,2,0], [1,2,3]])
+    []
+
+    If the input is empty, will return default (which defaults to ''). 
+
+    >>> max_common_prefix([])
+    ''
+
+    If you want a different default, you can specify it with the default 
+    keyword argument.
+
+    >>> from functools import partial
+    >>> my_max_common_prefix = partial(max_common_prefix, default=[])
+    >>> my_max_common_prefix([])
+    []
     """
     if not a:
-        return ''
-    # Note: Try to optimize by using a min_max function to give me both in one pass. The current version is still faster
-    s1 = min(a)
-    s2 = max(a)
+        return default
+    # Note: Try to optimize by using a min_max function to give me both in one pass.
+    # The current version is still faster
+    s1 = min(a)  # lexicographically minimal
+    s2 = max(a)  # lexicographically maximal
     for i, c in enumerate(s1):
         if c != s2[i]:
             return s1[:i]
