@@ -621,7 +621,9 @@ def _wrap_store(
 
 @store_decorator
 def insert_hash_method(
-    store=None, *, hash_method: Callable[[Any], int] = id,
+    store=None,
+    *,
+    hash_method: Callable[[Any], int] = id,
 ):
     """Make a store hashable using the specified ``hash_method``.
     Will add (or overwrite) a ``__hash__`` method to the store that uses the
@@ -3001,29 +3003,52 @@ def add_missing_key_handling(store=None, *, missing_key_callback: Callable):
     return store
 
 
-# def __startswith(comparison_func, iterable, prefix):
-#     return comparison_func(iterable, prefix)
+def _fallback_startswith(iterable, prefix):
+    """Returns True iff iterable starts with prefix.
+    Compares the first items of iterable and prefix iteratively.
+    It can be terribly inefficient though, so it's best to use it only when you have to.
+    """
+    iter_iterable = iter(iterable)
+    iter_prefix = iter(prefix)
+
+    for prefix_item in iter_prefix:
+        try:
+            # Get the next item from iterable
+            item = next(iter_iterable)
+        except StopIteration:
+            # If we've reached the end of iterable, return False
+            return False
+
+        if item != prefix_item:
+            # If any pair of items are unequal, return False
+            return False
+
+    # If we've checked every item in prefix without returning, return True
+    return True
 
 
-# def _fallback_startswith(iterable, prefix):
-#     """A fall back 'iterable starts with prefix' function that works for all iterables.
-#     It can be terribly inefficient though, so it's best to use it only when you have to.
+# TODO: Routing pattern. Make pluging.
+# TODO: Add faster option for lists and tuples that are sizable and sliceable
+def _startswith(iterable, prefix):
+    """Returns True iff iterable starts with prefix.
+    If prefix is a string, `str.startswith` is used, otherwise, the function
+    will compare the first items of iterable and prefix iteratively.
 
-#     """
-#     # Iterate through both iterables simultaneously
-#     iterable = list(iterable)
-#     for item, prefix_item in zip(iterable, prefix):
-#         if item != prefix_item:
-#             # If any pair of items are unequal, return False
-#             return False
-
-#     # If we've checked every item in prefix without returning,
-#     # return True iff the prefix is not longer than the iterable
-#     return len(prefix) <= len(iterable)
-
-
-def _startswith(string, prefix):
-    return string.startswith(prefix)
+    >>> _fallback_startswith('apple', 'app')
+    True
+    >>> _fallback_startswith('crapple', 'app')
+    False
+    >>> _fallback_startswith([1,2,3,4], [1,2])
+    True
+    >>> _fallback_startswith([0, 1,2,3,4], [1,2])
+    False
+    >>> _fallback_startswith([1,2,3,4], [])
+    True
+    """
+    if isinstance(prefix, str):
+        return iterable.startswith(prefix)
+    else:
+        return _fallback_startswith(iterable, prefix)
 
 
 def _prefix_filter(store, prefix: str):
