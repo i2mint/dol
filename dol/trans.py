@@ -2997,10 +2997,10 @@ def add_missing_key_handling(store=None, *, missing_key_callback: Callable):
     >>> v = s['a/']
     >>> assert dict(v) == {'a/b': 1, 'a/c': 2}
     """
+
     @wraps(store, updated=())
     class StoreWithMissingKeyCallaback(store):
         pass
 
     StoreWithMissingKeyCallaback.__missing__ = missing_key_callback
     return StoreWithMissingKeyCallaback
-

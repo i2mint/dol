@@ -101,13 +101,7 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(
-                        obj=obj,
-                        path=path,
-                        result=result,
-                        k=k,
-                        error=error,
-                    )
+                    dict(obj=obj, path=path, result=result, k=k, error=error,)
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -382,10 +376,7 @@ PT = TypeVar('PT')  # Path Type
 PkvFilt = Callable[[PT, KT, VT], bool]
 
 
-def path_filter(
-    pkv_filt: PkvFilt,
-    d: Mapping,
-) -> Iterator[PT]:
+def path_filter(pkv_filt: PkvFilt, d: Mapping,) -> Iterator[PT]:
     """Walk a dict, yielding paths to values that pass the ``pkv_filt``
 
     :param pkv_filt: A function that takes a path, key, and value, and returns
@@ -641,11 +632,7 @@ class PrefixRelativization(PrefixRelativizationMixin):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None,
-    *,
-    name=None,
-    with_key_validation=False,
-    prefix_attr='_prefix',
+    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
 ):
     """
 
@@ -896,7 +883,7 @@ def handle_prefixes(
     if prefix is None:
         if isinstance(store, type):
             raise TypeError(
-                f"I can only infer prefix from a store instance, not a type: {store}"
+                f'I can only infer prefix from a store instance, not a type: {store}'
             )
         prefix = max_common_prefix(store, default=default_prefix)
     if filter_prefix:
@@ -1297,8 +1284,7 @@ class StringTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self,
-        params: dict,
+        self, params: dict,
     ):
         """Generates a namedtuple from the dictionary values based on the template.
 
