@@ -3027,22 +3027,22 @@ def _fallback_startswith(iterable, prefix):
     return True
 
 
-# TODO: Routing pattern. Make pluging.
+# TODO: Routing pattern. Make plugin architecture.
 # TODO: Add faster option for lists and tuples that are sizable and sliceable
 def _startswith(iterable, prefix):
     """Returns True iff iterable starts with prefix.
     If prefix is a string, `str.startswith` is used, otherwise, the function
     will compare the first items of iterable and prefix iteratively.
 
-    >>> _fallback_startswith('apple', 'app')
+    >>> _startswith('apple', 'app')
     True
-    >>> _fallback_startswith('crapple', 'app')
+    >>> _startswith('crapple', 'app')
     False
-    >>> _fallback_startswith([1,2,3,4], [1,2])
+    >>> _startswith([1,2,3,4], [1,2])
     True
-    >>> _fallback_startswith([0, 1,2,3,4], [1,2])
+    >>> _startswith([0, 1,2,3,4], [1,2])
     False
-    >>> _fallback_startswith([1,2,3,4], [])
+    >>> _startswith([1,2,3,4], [])
     True
     """
     if isinstance(prefix, str):
