@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.5 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.2.6 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -109,7 +109,7 @@
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span><span class="p">,</span> <span class="n">namedtuple</span><span class="p">,</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Hashable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Hashable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">update_wrapper</span> <span class="k">as</span> <span class="n">_update_wrapper</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span> <span class="k">as</span> <span class="n">_wraps</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partialmethod</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">WRAPPER_ASSIGNMENTS</span>
@@ -293,7 +293,7 @@
 
 <span class="sd">        for k in self:</span>
 <span class="sd">            del self[k]</span>
-<span class="sd">        </span>
+
 
 <span class="sd">    or (in some cases)</span>
 
@@ -304,7 +304,7 @@
 <span class="sd">                del self[k]</span>
 <span class="sd">            except KeyError:</span>
 <span class="sd">                pass</span>
-<span class="sd">        </span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Instance of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="o">.</span><span class="vm">__doc__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
@@ -543,7 +543,7 @@
 <span class="sd">    &gt;&gt;&gt; assert str(signature(AA)) == &#39;(b=1)&#39;</span>
 <span class="sd">    &gt;&gt;&gt; assert str(AA(3)) == &#39;A(a=22, b=3)&#39;</span>
 
-<span class="sd">    </span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="nb">type</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;cls should be a type, was a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s1">&#39;</span>
 
@@ -551,7 +551,9 @@
         <span class="fm">__init__</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">copy_attrs</span><span class="p">(</span>
-        <span class="n">PartialClass</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
+        <span class="n">PartialClass</span><span class="p">,</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PartialClass</span></div>
@@ -629,7 +631,7 @@
 <span class="sd">    .. code-block:: python</span>
 
 <span class="sd">        new_filt_func = lambda k, v: your_filt_func(..., key=k, ..., value=v, ...)</span>
-<span class="sd">    </span>
+
 <span class="sd">    and all will be fine.</span>
 
 <span class="sd">    :param kv_filt: callable (starting with signature (k), (v), or (k, v)), and returning  a boolean</span>
@@ -959,7 +961,10 @@
     <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="n">append_to_group_items</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span><span class="n">group_items</span><span class="p">,</span> <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),)</span>
+        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">group_items</span><span class="p">,</span>
+            <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),</span>
+        <span class="p">)</span>
 
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
         <span class="n">group_key</span> <span class="o">=</span> <span class="n">key</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
@@ -1187,18 +1192,41 @@
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="max_common_prefix"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.max_common_prefix">[docs]</a><span class="k">def</span> <span class="nf">max_common_prefix</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+<div class="viewcode-block" id="max_common_prefix"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.max_common_prefix">[docs]</a><span class="k">def</span> <span class="nf">max_common_prefix</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Given a list of strings (or other sliceable sequences), returns the longest common prefix</span>
-<span class="sd">    </span>
+<span class="sd">    Given a list of strings (or other sliceable seq), returns the longest common prefix</span>
+
 <span class="sd">    :param a: list-like of strings</span>
 <span class="sd">    :return: the smallest common prefix of all strings in a</span>
+
+<span class="sd">    &gt;&gt;&gt; max_common_prefix([&#39;absolutely&#39;, &#39;abc&#39;, &#39;abba&#39;])</span>
+<span class="sd">    &#39;ab&#39;</span>
+<span class="sd">    &gt;&gt;&gt; max_common_prefix([&#39;absolutely&#39;, &#39;not&#39;, &#39;abc&#39;, &#39;abba&#39;])</span>
+<span class="sd">    &#39;&#39;</span>
+<span class="sd">    &gt;&gt;&gt; max_common_prefix([[3,2,1], [3,2,0]])</span>
+<span class="sd">    [3, 2]</span>
+<span class="sd">    &gt;&gt;&gt; max_common_prefix([[3,2,1], [3,2,0], [1,2,3]])</span>
+<span class="sd">    []</span>
+
+<span class="sd">    If the input is empty, will return default (which defaults to &#39;&#39;). </span>
+
+<span class="sd">    &gt;&gt;&gt; max_common_prefix([])</span>
+<span class="sd">    &#39;&#39;</span>
+
+<span class="sd">    If you want a different default, you can specify it with the default </span>
+<span class="sd">    keyword argument.</span>
+
+<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">    &gt;&gt;&gt; my_max_common_prefix = partial(max_common_prefix, default=[])</span>
+<span class="sd">    &gt;&gt;&gt; my_max_common_prefix([])</span>
+<span class="sd">    []</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">a</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s1">&#39;&#39;</span>
-    <span class="c1"># Note: Try to optimize by using a min_max function to give me both in one pass. The current version is still faster</span>
-    <span class="n">s1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-    <span class="n">s2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">default</span>
+    <span class="c1"># Note: Try to optimize by using a min_max function to give me both in one pass.</span>
+    <span class="c1"># The current version is still faster</span>
+    <span class="n">s1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>  <span class="c1"># lexicographically minimal</span>
+    <span class="n">s2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>  <span class="c1"># lexicographically maximal</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s1</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">s2</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
             <span class="k">return</span> <span class="n">s1</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>

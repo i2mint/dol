@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.5 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.2.6 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -469,10 +469,61 @@ fields). If <cite>None</cite>, the template string will be used as the separator
 </dd></dl>
 
 <dl class="py function">
+<dt id="dol.paths.add_prefix_filtering">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">add_prefix_filtering</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">store</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">relativize_prefix</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">__module__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__name__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__qualname__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__doc__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__annotations__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__defaults__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__kwdefaults__</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#add_prefix_filtering"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.add_prefix_filtering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add prefix filtering to a store.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a/b&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;a/c&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;d/e&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;f&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add_prefix_filtering</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a/&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;a/b&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;a/c&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Demo usage on a <cite>Mapping</cite> type:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">UserDict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">D</span> <span class="o">=</span> <span class="n">add_prefix_filtering</span><span class="p">(</span><span class="n">UserDict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">D</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a/&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;a/b&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;a/c&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt id="dol.paths.get_attr_or_item">
 <code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">get_attr_or_item</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#get_attr_or_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.get_attr_or_item" title="Permalink to this definition">¶</a></dt>
 <dd><p>If <code class="docutils literal notranslate"><span class="pre">k</span></code> is a string, tries to get <code class="docutils literal notranslate"><span class="pre">k</span></code> as an attribute of <code class="docutils literal notranslate"><span class="pre">obj</span></code> first,
 and if that fails, gets it as <code class="docutils literal notranslate"><span class="pre">obj[k]</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.paths.handle_prefixes">
+<code class="sig-prename descclassname">dol.paths.</code><code class="sig-name descname">handle_prefixes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">store</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">prefix</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">filter_prefix</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">relativize_prefix</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">default_prefix</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">__module__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__name__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__qualname__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__doc__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__annotations__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__defaults__</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">__kwdefaults__</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#handle_prefixes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.handle_prefixes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A store decorator that handles prefixes.</p>
+<p>If aggregates several prefix-related functionalities. It will (by default)</p>
+<ul class="simple">
+<li><p>Filter the store so that only the keys starting with given prefix are accessible.</p></li>
+<li><p>Relativize the keys (provide a view where the prefix is removed from the keys)</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>store</strong> – The store to wrap</p></li>
+<li><p><strong>prefix</strong> – The prefix to use. If None and the store is an instance (not type),
+will take the longest common prefix as the prefix.</p></li>
+<li><p><strong>filter_prefix</strong> – Whether to filter out keys that don’t start with the prefix</p></li>
+<li><p><strong>relativize_prefix</strong> – Whether to relativize the prefix</p></li>
+<li><p><strong>default_prefix</strong> – The default prefix to use if no prefix is given and the store
+is a type (not instance)</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;/ROOT/of/every/thing&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span> <span class="s1">&#39;/ROOT/of/this/too&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">handle_prefixes</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;/ROOT/of/&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">dd</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># gives us what you would expect</span>
+<span class="go">{&#39;every/thing&#39;: 42, &#39;this/too&#39;: 0, &#39;foo&#39;: &#39;bar&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">dd</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>  <span class="c1"># but see where the underlying store actually wrote &#39;bar&#39;:</span>
+<span class="go">{&#39;/ROOT/of/every/thing&#39;: 42, &#39;/ROOT/of/this/too&#39;: 0, &#39;/ROOT/of/foo&#39;: &#39;bar&#39;}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">

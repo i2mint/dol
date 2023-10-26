@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.5 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.2.6 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -129,8 +129,15 @@
 <span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
-<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">lazyprop</span><span class="p">,</span> <span class="n">add_as_attribute_of</span>
-<span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">store_decorator</span><span class="p">,</span> <span class="n">kv_wrap</span><span class="p">,</span> <span class="n">add_path_access</span>
+<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">lazyprop</span><span class="p">,</span> <span class="n">add_as_attribute_of</span><span class="p">,</span> <span class="n">max_common_prefix</span>
+<span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">store_decorator</span><span class="p">,</span>
+    <span class="n">kv_wrap</span><span class="p">,</span>
+    <span class="n">add_path_access</span><span class="p">,</span>
+    <span class="n">filt_iter</span><span class="p">,</span>
+    <span class="n">wrap_kvs</span><span class="p">,</span>
+    <span class="n">add_missing_key_handling</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">dol.dig</span> <span class="kn">import</span> <span class="n">recursive_get_attr</span>
 
 <span class="n">path_sep</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
@@ -199,7 +206,13 @@
         <span class="k">except</span> <span class="n">caught_errors</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">on_error</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">on_error</span><span class="p">(</span>
-                    <span class="nb">dict</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,)</span>
+                    <span class="nb">dict</span><span class="p">(</span>
+                        <span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+                        <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
+                        <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+                        <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">on_error</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="c1"># use on_error as a message, raising the same error class</span>
@@ -474,7 +487,10 @@
 <span class="n">PkvFilt</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="path_filter"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.path_filter">[docs]</a><span class="k">def</span> <span class="nf">path_filter</span><span class="p">(</span><span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">PT</span><span class="p">]:</span>
+<div class="viewcode-block" id="path_filter"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.path_filter">[docs]</a><span class="k">def</span> <span class="nf">path_filter</span><span class="p">(</span>
+    <span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">,</span>
+    <span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">PT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Walk a dict, yielding paths to values that pass the ``pkv_filt``</span>
 
 <span class="sd">    :param pkv_filt: A function that takes a path, key, and value, and returns</span>
@@ -730,7 +746,11 @@
 
 <div class="viewcode-block" id="mk_relative_path_store"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.mk_relative_path_store">[docs]</a><span class="nd">@store_decorator</span>
 <span class="k">def</span> <span class="nf">mk_relative_path_store</span><span class="p">(</span>
-    <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_key_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;_prefix&#39;</span><span class="p">,</span>
+    <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">with_key_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;_prefix&#39;</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 
@@ -853,6 +873,142 @@
 
     <span class="k">def</span> <span class="nf">_key_of_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_id</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix_length</span> <span class="p">:]</span>
+
+
+<span class="nd">@store_decorator</span>
+<span class="k">def</span> <span class="nf">prefixless_view</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">key_mapper</span> <span class="o">=</span> <span class="n">RelativePathKeyMapper</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span>
+        <span class="n">store</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="n">key_mapper</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">,</span> <span class="n">key_of_id</span><span class="o">=</span><span class="n">key_mapper</span><span class="o">.</span><span class="n">_key_of_id</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_fallback_startswith</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns True iff iterable starts with prefix.</span>
+<span class="sd">    Compares the first items of iterable and prefix iteratively.</span>
+<span class="sd">    It can be terribly inefficient though, so it&#39;s best to use it only when you have to.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">iter_iterable</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="n">iter_prefix</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">prefix_item</span> <span class="ow">in</span> <span class="n">iter_prefix</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Get the next item from iterable</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">iter_iterable</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="c1"># If we&#39;ve reached the end of iterable, return False</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">item</span> <span class="o">!=</span> <span class="n">prefix_item</span><span class="p">:</span>
+            <span class="c1"># If any pair of items are unequal, return False</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># If we&#39;ve checked every item in prefix without returning, return True</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="c1"># TODO: Routing pattern. Make plugin architecture.</span>
+<span class="c1"># TODO: Add faster option for lists and tuples that are sizable and sliceable</span>
+<span class="k">def</span> <span class="nf">_startswith</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns True iff iterable starts with prefix.</span>
+<span class="sd">    If prefix is a string, `str.startswith` is used, otherwise, the function</span>
+<span class="sd">    will compare the first items of iterable and prefix iteratively.</span>
+
+<span class="sd">    &gt;&gt;&gt; _startswith(&#39;apple&#39;, &#39;app&#39;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; _startswith(&#39;crapple&#39;, &#39;app&#39;)</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; _startswith([1,2,3,4], [1,2])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; _startswith([0, 1,2,3,4], [1,2])</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; _startswith([1,2,3,4], [])</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">iterable</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_fallback_startswith</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_prefix_filter</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter the store to have only keys that start with prefix&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">filt</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">_startswith</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_prefix_filter_with_relativization</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter the store to have only keys that start with prefix&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">prefixless_view</span><span class="p">(</span><span class="n">_prefix_filter</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">prefix</span><span class="p">),</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="add_prefix_filtering"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.add_prefix_filtering">[docs]</a><span class="nd">@store_decorator</span>
+<span class="k">def</span> <span class="nf">add_prefix_filtering</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">relativize_prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add prefix filtering to a store.</span>
+
+<span class="sd">    &gt;&gt;&gt; d = {&#39;a/b&#39;: 1, &#39;a/c&#39;: 2, &#39;d/e&#39;: 3, &#39;f&#39;: 4}</span>
+<span class="sd">    &gt;&gt;&gt; s = add_prefix_filtering(d)</span>
+<span class="sd">    &gt;&gt;&gt; assert s[&#39;a/&#39;] == {&#39;a/b&#39;: 1, &#39;a/c&#39;: 2}</span>
+
+<span class="sd">    Demo usage on a `Mapping` type:</span>
+
+<span class="sd">    &gt;&gt;&gt; from collections import UserDict</span>
+<span class="sd">    &gt;&gt;&gt; D = add_prefix_filtering(UserDict)</span>
+<span class="sd">    &gt;&gt;&gt; s = D(d)</span>
+<span class="sd">    &gt;&gt;&gt; assert s[&#39;a/&#39;] == {&#39;a/b&#39;: 1, &#39;a/c&#39;: 2}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__prefix_filter</span> <span class="o">=</span> <span class="n">_prefix_filter</span>
+    <span class="k">if</span> <span class="n">relativize_prefix</span><span class="p">:</span>
+        <span class="n">__prefix_filter</span> <span class="o">=</span> <span class="n">_prefix_filter_with_relativization</span>
+    <span class="k">return</span> <span class="n">add_missing_key_handling</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">missing_key_callback</span><span class="o">=</span><span class="n">__prefix_filter</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="handle_prefixes"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.handle_prefixes">[docs]</a><span class="nd">@store_decorator</span>
+<span class="k">def</span> <span class="nf">handle_prefixes</span><span class="p">(</span>
+    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">relativize_prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">default_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A store decorator that handles prefixes.</span>
+
+<span class="sd">    If aggregates several prefix-related functionalities. It will (by default)</span>
+
+<span class="sd">    - Filter the store so that only the keys starting with given prefix are accessible.</span>
+
+<span class="sd">    - Relativize the keys (provide a view where the prefix is removed from the keys)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        store: The store to wrap</span>
+<span class="sd">        prefix: The prefix to use. If None and the store is an instance (not type),</span>
+<span class="sd">                will take the longest common prefix as the prefix.</span>
+<span class="sd">        filter_prefix: Whether to filter out keys that don&#39;t start with the prefix</span>
+<span class="sd">        relativize_prefix: Whether to relativize the prefix</span>
+<span class="sd">        default_prefix: The default prefix to use if no prefix is given and the store</span>
+<span class="sd">                        is a type (not instance)</span>
+
+<span class="sd">    &gt;&gt;&gt; d = {&#39;/ROOT/of/every/thing&#39;: 42, &#39;/ROOT/of/this/too&#39;: 0}</span>
+<span class="sd">    &gt;&gt;&gt; dd = handle_prefixes(d, prefix=&#39;/ROOT/of/&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; dd[&#39;foo&#39;] = &#39;bar&#39;</span>
+<span class="sd">    &gt;&gt;&gt; dict(dd.items())  # gives us what you would expect</span>
+<span class="sd">    {&#39;every/thing&#39;: 42, &#39;this/too&#39;: 0, &#39;foo&#39;: &#39;bar&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; dict(dd.store)  # but see where the underlying store actually wrote &#39;bar&#39;:</span>
+<span class="sd">    {&#39;/ROOT/of/every/thing&#39;: 42, &#39;/ROOT/of/this/too&#39;: 0, &#39;/ROOT/of/foo&#39;: &#39;bar&#39;}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;I can only infer prefix from a store instance, not a type: </span><span class="si">{</span><span class="n">store</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">max_common_prefix</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default_prefix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">filter_prefix</span><span class="p">:</span>
+        <span class="n">store</span> <span class="o">=</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">filt</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">relativize_prefix</span><span class="p">:</span>
+        <span class="n">store</span> <span class="o">=</span> <span class="n">prefixless_view</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">store</span></div>
 
 
 <span class="c1"># TODO: Enums introduce a ridiculous level of complexity here.</span>
@@ -1246,7 +1402,8 @@
 
     <span class="c1"># @_return_none_if_none_input</span>
 <div class="viewcode-block" id="StringTemplate.dict_to_namedtuple"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.dict_to_namedtuple">[docs]</a>    <span class="k">def</span> <span class="nf">dict_to_namedtuple</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a namedtuple from the dictionary values based on the template.</span>
 
