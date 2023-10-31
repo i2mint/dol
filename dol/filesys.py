@@ -223,7 +223,10 @@ class FileSysCollection(Collection):
         return bool(self._key_pattern.match(k))
 
     def validate_key(
-        self, k, err_msg_format=_dflt_not_valid_error_msg, err_type=KeyValidationError,
+        self,
+        k,
+        err_msg_format=_dflt_not_valid_error_msg,
+        err_type=KeyValidationError,
     ):
         if not self.is_valid_key(k):
             raise err_type(err_msg_format.format(k))
@@ -233,6 +236,10 @@ class FileSysCollection(Collection):
             f'{k}={_for_repr(v)}' for k, v in self._init_kwargs.items()
         )
         return f'{type(self).__name__}({input_str})'
+
+    def with_relative_paths(self):
+        """Return a copy of self with relative paths"""
+        return with_relative_paths(self)
 
 
 class DirCollection(FileSysCollection):
