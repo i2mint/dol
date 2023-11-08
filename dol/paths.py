@@ -101,13 +101,7 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(
-                        obj=obj,
-                        path=path,
-                        result=result,
-                        k=k,
-                        error=error,
-                    )
+                    dict(obj=obj, path=path, result=result, k=k, error=error,)
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -382,18 +376,24 @@ PT = TypeVar('PT')  # Path Type
 PkvFilt = Callable[[PT, KT, VT], bool]
 
 
+#
 def path_filter(
     pkv_filt: PkvFilt,
     d: Mapping,
+    *,
+    leafs_only: bool = True,
+    breadth_first: bool = False,
 ) -> Iterator[PT]:
     """Walk a dict, yielding paths to values that pass the ``pkv_filt``
 
     :param pkv_filt: A function that takes a path, key, and value, and returns
         ``True`` if the path should be yielded, and ``False`` otherwise
     :param d: The ``Mapping`` to walk (scan through)
-
+    :param leafs_only: Whether to yield only paths to leafs (default), or to yield
+        paths to all values that pass the ``pkv_filt``.
+    :param breadth_first: Whether to perform breadth-first traversal
+        (instead of the default depth-first traversal).
     :return: An iterator of paths to values that pass the ``pkv_filt``
-
 
     Example::
 
@@ -429,18 +429,29 @@ def path_filter(
     >>> vals
     [42, 'meaning of life']
 
+    Note: pkv_filt is first to match the order of the arguments of the 
+    builtin filter function. 
     """
     _leaf_yield = partial(_path_matcher_leaf_yield, pkv_filt, None)
-    walker = kv_walk(d, leaf_yield=_leaf_yield)
+    kwargs = dict(leaf_yield=_leaf_yield, breadth_first=breadth_first)
+    if not leafs_only:
+        kwargs['branch_yield'] = _leaf_yield
+    walker = kv_walk(d, **kwargs)
     yield from filter(None, walker)
 
 
 # backwards compatibility quasi-alias (arguments are flipped)
-def search_paths(d: Mapping, pkv_filt: PkvFilt) -> Iterator[PT]:
+def search_paths(
+    d: Mapping,
+    pkv_filt: PkvFilt,
+    *,
+    leafs_only: bool = True,
+    breadth_first: bool = False,
+) -> Iterator[PT]:
     """backwards compatibility quasi-alias (arguments are flipped)
     Use path_filter instead, since search_paths will be deprecated.
     """
-    return path_filter(pkv_filt, d)
+    return path_filter(pkv_filt, d, leafs_only=leafs_only, breadth_first=breadth_first)
 
 
 def _path_matcher_leaf_yield(pkv_filt: PkvFilt, sentinel, p: PT, k: KT, v: VT):
@@ -641,11 +652,7 @@ class PrefixRelativization(PrefixRelativizationMixin):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None,
-    *,
-    name=None,
-    with_key_validation=False,
-    prefix_attr='_prefix',
+    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
 ):
     """
 
@@ -1297,8 +1304,7 @@ class StringTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self,
-        params: dict,
+        self, params: dict,
     ):
         """Generates a namedtuple from the dictionary values based on the template.
 

@@ -325,8 +325,7 @@ def delegate_to(
         for attr in attrs:
             wrapped_attr = getattr(wrapped, attr)
             delegated_attribute = update_wrapper(
-                wrapper=DelegatedAttribute(delegation_attr, attr),
-                wrapped=wrapped_attr,
+                wrapper=DelegatedAttribute(delegation_attr, attr), wrapped=wrapped_attr,
             )
             setattr(Wrap, attr, delegated_attribute)
 
@@ -760,7 +759,7 @@ def kv_walk(
     Walks a nested structure of mappings, yielding stuff on the way.
 
     :param v: A nested structure of mappings
-    :param leaf_yield: (pp, k, vv) -> Any, what you want to yield when you encounter 
+    :param leaf_yield: (pp, k, vv) -> Any, what you want to yield when you encounter
         a leaf node (as define by walk_filt resolving to False)
     :param walk_filt: (p, k, vv) -> (bool) whether to explore the nested structure v further
     :param pkv_to_pv:  (p, k, v) -> (pp, vv)
@@ -769,8 +768,9 @@ def kv_walk(
     :param p: The path to v (used internally, mainly, to keep track of the path)
     :param breadth_first: Whether to perform breadth-first traversal
         (instead of the default depth-first traversal).
-    :param branch_yield: (pp, k, vv) -> Any, optional yield function 
-
+    :param branch_yield: (pp, k, vv) -> Any, optional yield function to yield before
+        the recursive walk of a branch. This is useful if you want to yield something
+        for every branch, not just the leaves.
 
     >>> d = {'a': 1, 'b': {'c': 2, 'd': 3}}
     >>> list(kv_walk(d))
@@ -840,9 +840,40 @@ def kv_walk(
     This "path search" functionality is available as a function in the ``recipes``
     module, as ``search_paths``.
 
-    Inspiration: ``kv_walk`` was inspired by `remap` from the `boltons` package.
-    You may consider using that instead, as it has a much more extensive documetation:
-    See https://sedimental.org/remap.html for example.
+    One last thing. Let's demonstrate the use of `branch_yield` and `breadth_first`.
+    Consider the following dictionary:
+
+    >>> d = {'big': {'apple': 1}, 'deal': 3, 'apple': {'pie': 1, 'crumble': 2}}
+
+    Say you wanted to find all the paths that end with 'apple'. You could do:
+
+    >>> from functools import partial
+    >>> yield_path_if_ends_with_apple = lambda p, k, v: p if k == 'apple' else None
+    >>> walker1 = partial(kv_walk, leaf_yield=yield_path_if_ends_with_apple)
+    >>> list(filter(None, walker1(d)))
+    [('big', 'apple')]
+
+    It only got `('big', 'apple')` because the `leaf_yield` is only triggered
+    for leaf nodes (as defined by the `walk_filt` argument, which defaults to
+    `val_is_mapping`). So let's try again, but this time, we'll use `branch_yield`
+    to yield the path for every branch (not just the leaves):
+
+    >>> walker2 = partial(walker1, branch_yield=yield_path_if_ends_with_apple)
+    >>> list(filter(None, walker2(d)))
+    [('big', 'apple'), ('apple',)]
+
+    But this isn't convenient if you'd like your search to finish as soon as you
+    find a path ending with `'apple'`. The order here comes from the fact that
+    `kv_walk` does a depth-first traversal. If you want to do a breadth-first
+    traversal, just say it:
+
+    >>> walker3 = partial(walker2, breadth_first=True)
+    >>> list(filter(None, walker3(d)))
+    [('apple',), ('big', 'apple')]
+
+    So now, you can get the first apple path by doing:
+    >>> next(filter(None, walker3(d)))
+    ('apple',)
 
     """
     if not breadth_first:
