@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.7 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.2.8 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -481,15 +481,24 @@
 <span class="n">PkvFilt</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="path_filter"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.path_filter">[docs]</a><span class="k">def</span> <span class="nf">path_filter</span><span class="p">(</span><span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">PT</span><span class="p">]:</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="path_filter"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.path_filter">[docs]</a><span class="k">def</span> <span class="nf">path_filter</span><span class="p">(</span>
+    <span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">,</span>
+    <span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">leafs_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">breadth_first</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">PT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Walk a dict, yielding paths to values that pass the ``pkv_filt``</span>
 
 <span class="sd">    :param pkv_filt: A function that takes a path, key, and value, and returns</span>
 <span class="sd">        ``True`` if the path should be yielded, and ``False`` otherwise</span>
 <span class="sd">    :param d: The ``Mapping`` to walk (scan through)</span>
-
+<span class="sd">    :param leafs_only: Whether to yield only paths to leafs (default), or to yield</span>
+<span class="sd">        paths to all values that pass the ``pkv_filt``.</span>
+<span class="sd">    :param breadth_first: Whether to perform breadth-first traversal</span>
+<span class="sd">        (instead of the default depth-first traversal).</span>
 <span class="sd">    :return: An iterator of paths to values that pass the ``pkv_filt``</span>
-
 
 <span class="sd">    Example::</span>
 
@@ -525,22 +534,33 @@
 <span class="sd">    &gt;&gt;&gt; vals</span>
 <span class="sd">    [42, &#39;meaning of life&#39;]</span>
 
+<span class="sd">    Note: pkv_filt is first to match the order of the arguments of the </span>
+<span class="sd">    builtin filter function. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_yield_func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_path_matcher_yield_func</span><span class="p">,</span> <span class="n">pkv_filt</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">walker</span> <span class="o">=</span> <span class="n">kv_walk</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">yield_func</span><span class="o">=</span><span class="n">_yield_func</span><span class="p">)</span>
+    <span class="n">_leaf_yield</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_path_matcher_leaf_yield</span><span class="p">,</span> <span class="n">pkv_filt</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">leaf_yield</span><span class="o">=</span><span class="n">_leaf_yield</span><span class="p">,</span> <span class="n">breadth_first</span><span class="o">=</span><span class="n">breadth_first</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">leafs_only</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;branch_yield&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_leaf_yield</span>
+    <span class="n">walker</span> <span class="o">=</span> <span class="n">kv_walk</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">yield from</span> <span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">walker</span><span class="p">)</span></div>
 
 
 <span class="c1"># backwards compatibility quasi-alias (arguments are flipped)</span>
-<div class="viewcode-block" id="search_paths"><a class="viewcode-back" href="../../module_docs/dol/recipes.html#dol.paths.search_paths">[docs]</a><span class="k">def</span> <span class="nf">search_paths</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">PT</span><span class="p">]:</span>
+<div class="viewcode-block" id="search_paths"><a class="viewcode-back" href="../../module_docs/dol/recipes.html#dol.paths.search_paths">[docs]</a><span class="k">def</span> <span class="nf">search_paths</span><span class="p">(</span>
+    <span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
+    <span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">leafs_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">breadth_first</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">PT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;backwards compatibility quasi-alias (arguments are flipped)</span>
 <span class="sd">    Use path_filter instead, since search_paths will be deprecated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">path_filter</span><span class="p">(</span><span class="n">pkv_filt</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">path_filter</span><span class="p">(</span><span class="n">pkv_filt</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">leafs_only</span><span class="o">=</span><span class="n">leafs_only</span><span class="p">,</span> <span class="n">breadth_first</span><span class="o">=</span><span class="n">breadth_first</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_path_matcher_yield_func</span><span class="p">(</span><span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">,</span> <span class="n">sentinel</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">PT</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to make (picklable) yield_funcs for paths_matching (through partial)&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">_path_matcher_leaf_yield</span><span class="p">(</span><span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">,</span> <span class="n">sentinel</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">PT</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to make (picklable) leaf_yields for paths_matching (through partial)&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">pkv_filt</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">p</span>
     <span class="k">else</span><span class="p">:</span>
@@ -549,9 +569,9 @@
 
 <span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_filter</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_mk_path_matcher</span><span class="p">(</span><span class="n">pkv_filt</span><span class="p">:</span> <span class="n">PkvFilt</span><span class="p">,</span> <span class="n">sentinel</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a yield_func that only yields paths that pass the pkv_filt,</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a leaf_yield that only yields paths that pass the pkv_filt,</span>
 <span class="sd">    and a sentinel (by default, ``None``) otherwise&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_path_matcher_yield_func</span><span class="p">,</span> <span class="n">pkv_filt</span><span class="p">,</span> <span class="n">sentinel</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_path_matcher_leaf_yield</span><span class="p">,</span> <span class="n">pkv_filt</span><span class="p">,</span> <span class="n">sentinel</span><span class="p">)</span>
 
 
 <span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_filter</span><span class="p">)</span>

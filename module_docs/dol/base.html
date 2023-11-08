@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.base &mdash; dol 0.2.7 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.base &mdash; dol 0.2.8 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -525,18 +525,24 @@ So let’s test this on dictionaries, using the following test function:</p>
 
 <dl class="py function">
 <dt id="dol.base.kv_walk">
-<code class="sig-prename descclassname">dol.base.</code><code class="sig-name descname">kv_walk</code><span class="sig-paren">(</span><em class="sig-param">v: collections.abc.Mapping, yield_func: Callable[[PT, KT, VT], Any] = &lt;function asis&gt;, walk_filt: Callable[[PT, KT, VT], bool] = &lt;function val_is_mapping&gt;, pkv_to_pv: Callable[[PT, KT, VT], Tuple[PT, VT]] = &lt;function tuple_keypath_and_val&gt;, p: PT = ()</em><span class="sig-paren">)</span> &#x2192; Iterator<span class="p">[</span>Any<span class="p">]</span><a class="reference internal" href="../../_modules/dol/base.html#kv_walk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.base.kv_walk" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dol.base.</code><code class="sig-name descname">kv_walk</code><span class="sig-paren">(</span><em class="sig-param">v: collections.abc.Mapping, leaf_yield: Callable[[PT, KT, VT], Any] = &lt;function asis&gt;, walk_filt: Callable[[PT, KT, VT], bool] = &lt;function val_is_mapping&gt;, pkv_to_pv: Callable[[PT, KT, VT], Tuple[PT, VT]] = &lt;function tuple_keypath_and_val&gt;, *, branch_yield: Callable[[PT, KT, VT], Any] = None, breadth_first: bool = False, p: PT = ()</em><span class="sig-paren">)</span> &#x2192; Iterator<span class="p">[</span>Any<span class="p">]</span><a class="reference internal" href="../../_modules/dol/base.html#kv_walk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.base.kv_walk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Walks a nested structure of mappings, yielding stuff on the way.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>v</strong> – A nested structure of mappings</p></li>
-<li><p><strong>yield_func</strong> – (pp, k, vv) -&gt; what ever you want the gen to yield</p></li>
+<li><p><strong>leaf_yield</strong> – (pp, k, vv) -&gt; Any, what you want to yield when you encounter
+a leaf node (as define by walk_filt resolving to False)</p></li>
 <li><p><strong>walk_filt</strong> – (p, k, vv) -&gt; (bool) whether to explore the nested structure v further</p></li>
 <li><p><strong>pkv_to_pv</strong> – (p, k, v) -&gt; (pp, vv)
 where pp is a form of p + k (update of the path with the new node k)
-and vv is the value that will be used by both walk_filt and yield_func</p></li>
+and vv is the value that will be used by both walk_filt and leaf_yield</p></li>
 <li><p><strong>p</strong> – The path to v (used internally, mainly, to keep track of the path)</p></li>
+<li><p><strong>breadth_first</strong> – Whether to perform breadth-first traversal
+(instead of the default depth-first traversal).</p></li>
+<li><p><strong>branch_yield</strong> – (pp, k, vv) -&gt; Any, optional yield function to yield before
+the recursive walk of a branch. This is useful if you want to yield something
+for every branch, not just the leaves.</p></li>
 </ul>
 </dd>
 </dl>
@@ -559,7 +565,7 @@ This can be done as follows:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">leveled_map_walk</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">yield from</span> <span class="n">kv_walk</span><span class="p">(</span>
 <span class="gp">... </span>        <span class="n">m</span><span class="p">,</span>
-<span class="gp">... </span>        <span class="n">yield_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span>
+<span class="gp">... </span>        <span class="n">leaf_yield</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span>
 <span class="gp">... </span>        <span class="n">walk_filt</span><span class="o">=</span><span class="n">mk_level_walk_filt</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="p">{</span>
@@ -592,7 +598,7 @@ This can be done as follows:</p>
 </pre></div>
 </div>
 <p>Tip: If you want to use <code class="docutils literal notranslate"><span class="pre">kv_filt</span></code> to search and extract stuff from a nested
-mapping, you can have your <code class="docutils literal notranslate"><span class="pre">yield_func</span></code> return a sentinel (say, <code class="docutils literal notranslate"><span class="pre">None</span></code>) to
+mapping, you can have your <code class="docutils literal notranslate"><span class="pre">leaf_yield</span></code> return a sentinel (say, <code class="docutils literal notranslate"><span class="pre">None</span></code>) to
 indicate that the value should be skipped, and then filter out the <a href="#id9"><span class="problematic" id="id10">``</span></a>None``s from
 your results.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mm</span> <span class="o">=</span> <span class="p">{</span>
@@ -601,15 +607,46 @@ your results.</p>
 <span class="gp">... </span>    <span class="s1">&#39;aaa&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;bbb&#39;</span><span class="p">:</span> <span class="mi">314</span><span class="p">},</span>
 <span class="gp">... </span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">return_path_if_int_leaf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">kv_walk</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span> <span class="n">yield_func</span><span class="o">=</span><span class="n">return_path_if_int_leaf</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">kv_walk</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span> <span class="n">leaf_yield</span><span class="o">=</span><span class="n">return_path_if_int_leaf</span><span class="p">)))</span>
 <span class="go">[((&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), 42), ((&#39;aaa&#39;, &#39;bbb&#39;), 314)]</span>
 </pre></div>
 </div>
 <p>This “path search” functionality is available as a function in the <code class="docutils literal notranslate"><span class="pre">recipes</span></code>
 module, as <code class="docutils literal notranslate"><span class="pre">search_paths</span></code>.</p>
-<p>Inspiration: <code class="docutils literal notranslate"><span class="pre">kv_walk</span></code> was inspired by <cite>remap</cite> from the <cite>boltons</cite> package.
-You may consider using that instead, as it has a much more extensive documetation:
-See <a class="reference external" href="https://sedimental.org/remap.html">https://sedimental.org/remap.html</a> for example.</p>
+<p>One last thing. Let’s demonstrate the use of <cite>branch_yield</cite> and <cite>breadth_first</cite>.
+Consider the following dictionary:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;big&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;apple&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s1">&#39;deal&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pie&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;crumble&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}}</span>
+</pre></div>
+</div>
+<p>Say you wanted to find all the paths that end with ‘apple’. You could do:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">yield_path_if_ends_with_apple</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">p</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;apple&#39;</span> <span class="k">else</span> <span class="kc">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">walker1</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">kv_walk</span><span class="p">,</span> <span class="n">leaf_yield</span><span class="o">=</span><span class="n">yield_path_if_ends_with_apple</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">walker1</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
+<span class="go">[(&#39;big&#39;, &#39;apple&#39;)]</span>
+</pre></div>
+</div>
+<p>It only got <cite>(‘big’, ‘apple’)</cite> because the <cite>leaf_yield</cite> is only triggered
+for leaf nodes (as defined by the <cite>walk_filt</cite> argument, which defaults to
+<cite>val_is_mapping</cite>). So let’s try again, but this time, we’ll use <cite>branch_yield</cite>
+to yield the path for every branch (not just the leaves):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">walker2</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">walker1</span><span class="p">,</span> <span class="n">branch_yield</span><span class="o">=</span><span class="n">yield_path_if_ends_with_apple</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">walker2</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
+<span class="go">[(&#39;big&#39;, &#39;apple&#39;), (&#39;apple&#39;,)]</span>
+</pre></div>
+</div>
+<p>But this isn’t convenient if you’d like your search to finish as soon as you
+find a path ending with <cite>‘apple’</cite>. The order here comes from the fact that
+<cite>kv_walk</cite> does a depth-first traversal. If you want to do a breadth-first
+traversal, just say it:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">walker3</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">walker2</span><span class="p">,</span> <span class="n">breadth_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">walker3</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
+<span class="go">[(&#39;apple&#39;,), (&#39;big&#39;, &#39;apple&#39;)]</span>
+</pre></div>
+</div>
+<p>So now, you can get the first apple path by doing:
+&gt;&gt;&gt; next(filter(None, walker3(d)))
+(‘apple’,)</p>
 </dd></dl>
 
 </section>
