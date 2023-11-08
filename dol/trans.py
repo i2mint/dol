@@ -621,7 +621,9 @@ def _wrap_store(
 
 @store_decorator
 def insert_hash_method(
-    store=None, *, hash_method: Callable[[Any], int] = id,
+    store=None,
+    *,
+    hash_method: Callable[[Any], int] = id,
 ):
     """Make a store hashable using the specified ``hash_method``.
     Will add (or overwrite) a ``__hash__`` method to the store that uses the
@@ -2722,7 +2724,7 @@ def mk_level_walk_filt(levels):
 
 def leveled_paths_walk(m, levels):
     yield from kv_walk(
-        m, yield_func=lambda p, k, v: p, walk_filt=mk_level_walk_filt(levels)
+        m, leaf_yield=lambda p, k, v: p, walk_filt=mk_level_walk_filt(levels)
     )
 
 

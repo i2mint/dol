@@ -169,14 +169,14 @@ class KvReader(MappingViewMixin, Collection, Mapping):
         .. code-block:: python
 
             reversed = list(self)[::-1]
-        
+
 
         If the keys are comparable, therefore sortable, another natural option would be:
-        
+
         .. code-block:: python
 
             reversed = sorted(self)[::-1]
-        
+
         """
         raise NotImplementedError(__doc__)
 
@@ -199,7 +199,7 @@ class KvPersister(KvReader, MutableMapping):
 
         s = SomeKvPersister()
         s['a']['b'] = 3
-    
+
     If `s` is a dict, this would have the effect of adding a ('b', 3) item under 'a'.
     But in the general case, this might
     - fail, because the `s['a']` doesn't support sub-scripting (doesn't have a `__getitem__`)
@@ -325,7 +325,8 @@ def delegate_to(
         for attr in attrs:
             wrapped_attr = getattr(wrapped, attr)
             delegated_attribute = update_wrapper(
-                wrapper=DelegatedAttribute(delegation_attr, attr), wrapped=wrapped_attr,
+                wrapper=DelegatedAttribute(delegation_attr, attr),
+                wrapped=wrapped_attr,
             )
             setattr(Wrap, attr, delegated_attribute)
 
@@ -424,7 +425,6 @@ def delegator_wrap(
     """
     if isinstance(obj, type):
         if isinstance(delegator, type):
-
             type_decorator = delegate_to(
                 obj, class_trans=class_trans, delegation_attr=delegation_attr
             )
@@ -645,7 +645,6 @@ class Store(KvPersister):
             for k in self:
                 return k, self[k]
         except Exception as e:
-
             from warnings import warn
 
             if k is None:
@@ -723,6 +722,7 @@ KvStore = Store  # alias with explict name
 # walking in trees
 
 from typing import Callable, KT, VT, Any, TypeVar, Iterator
+from collections import deque
 
 PT = TypeVar('PT')  # Path Type
 inf = float('infinity')
@@ -748,21 +748,29 @@ def tuple_keypath_and_val(p: PT, k: KT, v: VT) -> Tuple[PT, VT]:
 #  This one even merits an extensive usage and example tutorial!
 def kv_walk(
     v: Mapping,
-    yield_func: Callable[[PT, KT, VT], Any] = asis,
+    leaf_yield: Callable[[PT, KT, VT], Any] = asis,
     walk_filt: Callable[[PT, KT, VT], bool] = val_is_mapping,
     pkv_to_pv: Callable[[PT, KT, VT], Tuple[PT, VT]] = tuple_keypath_and_val,
+    *,
+    branch_yield: Callable[[PT, KT, VT], Any] = None,
+    breadth_first: bool = False,
     p: PT = (),
 ) -> Iterator[Any]:
     """
     Walks a nested structure of mappings, yielding stuff on the way.
 
     :param v: A nested structure of mappings
-    :param yield_func: (pp, k, vv) -> what ever you want the gen to yield
+    :param leaf_yield: (pp, k, vv) -> Any, what you want to yield when you encounter 
+        a leaf node (as define by walk_filt resolving to False)
     :param walk_filt: (p, k, vv) -> (bool) whether to explore the nested structure v further
     :param pkv_to_pv:  (p, k, v) -> (pp, vv)
         where pp is a form of p + k (update of the path with the new node k)
-        and vv is the value that will be used by both walk_filt and yield_func
+        and vv is the value that will be used by both walk_filt and leaf_yield
     :param p: The path to v (used internally, mainly, to keep track of the path)
+    :param breadth_first: Whether to perform breadth-first traversal
+        (instead of the default depth-first traversal).
+    :param branch_yield: (pp, k, vv) -> Any, optional yield function 
+
 
     >>> d = {'a': 1, 'b': {'c': 2, 'd': 3}}
     >>> list(kv_walk(d))
@@ -784,7 +792,7 @@ def kv_walk(
     >>> def leveled_map_walk(m, levels):
     ...     yield from kv_walk(
     ...         m,
-    ...         yield_func=lambda p, k, v: (p, v),
+    ...         leaf_yield=lambda p, k, v: (p, v),
     ...         walk_filt=mk_level_walk_filt(levels)
     ...     )
     >>> m = {
@@ -816,7 +824,7 @@ def kv_walk(
     ... )
 
     Tip: If you want to use ``kv_filt`` to search and extract stuff from a nested
-    mapping, you can have your ``yield_func`` return a sentinel (say, ``None``) to
+    mapping, you can have your ``leaf_yield`` return a sentinel (say, ``None``) to
     indicate that the value should be skipped, and then filter out the ``None``s from
     your results.
 
@@ -826,7 +834,7 @@ def kv_walk(
     ...     'aaa': {'bbb': 314},
     ... }
     >>> return_path_if_int_leaf = lambda p, k, v: (p, v) if isinstance(v, int) else None
-    >>> list(filter(None, kv_walk(mm, yield_func=return_path_if_int_leaf)))
+    >>> list(filter(None, kv_walk(mm, leaf_yield=return_path_if_int_leaf)))
     [(('a', 'b', 'c'), 42), (('aaa', 'bbb'), 314)]
 
     This "path search" functionality is available as a function in the ``recipes``
@@ -837,20 +845,44 @@ def kv_walk(
     See https://sedimental.org/remap.html for example.
 
     """
-    # print(f"1: entered with: v={v}, p={p}")
-    for k, vv in v.items():
-        # print(f"2: item: k={k}, vv={vv}")
-        pp, vv = pkv_to_pv(
-            p, k, vv
-        )  # update the path with k (and preprocess v if necessary)
-        if walk_filt(
-            p, k, vv
-        ):  # should we recurse? (based on some function of p, k, v)
-            # print(f"3: recurse with: pp={pp}, vv={vv}\n")
-            yield from kv_walk(vv, yield_func, walk_filt, pkv_to_pv, pp)  # recurse
-        else:
-            # print(f"4: yield_func(pp={pp}, k={k}, vv={vv})\n --> {yield_func(pp, k, vv)}")
-            yield yield_func(pp, k, vv)  # yield something computed from p, k, vv
+    if not breadth_first:
+        # print(f"1: entered with: v={v}, p={p}")
+        for k, vv in v.items():
+            # print(f"2: item: k={k}, vv={vv}")
+            pp, vv = pkv_to_pv(
+                p, k, vv
+            )  # update the path with k (and preprocess v if necessary)
+            if walk_filt(
+                p, k, vv
+            ):  # should we recurse? (based on some function of p, k, v)
+                # print(f"3: recurse with: pp={pp}, vv={vv}\n")
+                if branch_yield:
+                    yield branch_yield(pp, k, vv)
+                yield from kv_walk(
+                    vv,
+                    leaf_yield,
+                    walk_filt,
+                    pkv_to_pv,
+                    breadth_first=breadth_first,
+                    branch_yield=branch_yield,
+                    p=pp,
+                )  # recurse
+            else:
+                # print(f"4: leaf_yield(pp={pp}, k={k}, vv={vv})\n --> {leaf_yield(pp, k, vv)}")
+                yield leaf_yield(pp, k, vv)  # yield something computed from p, k, vv
+    else:
+        queue = deque([(p, v)])
+
+        while queue:
+            p, v = queue.popleft()
+            for k, vv in v.items():
+                pp, vv = pkv_to_pv(p, k, vv)
+                if walk_filt(p, k, vv):
+                    if branch_yield:
+                        yield branch_yield(pp, k, vv)
+                    queue.append((pp, vv))
+                else:
+                    yield leaf_yield(pp, k, vv)
 
 
 def has_kv_store_interface(o):

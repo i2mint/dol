@@ -101,7 +101,13 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -376,7 +382,10 @@ PT = TypeVar('PT')  # Path Type
 PkvFilt = Callable[[PT, KT, VT], bool]
 
 
-def path_filter(pkv_filt: PkvFilt, d: Mapping,) -> Iterator[PT]:
+def path_filter(
+    pkv_filt: PkvFilt,
+    d: Mapping,
+) -> Iterator[PT]:
     """Walk a dict, yielding paths to values that pass the ``pkv_filt``
 
     :param pkv_filt: A function that takes a path, key, and value, and returns
@@ -421,8 +430,8 @@ def path_filter(pkv_filt: PkvFilt, d: Mapping,) -> Iterator[PT]:
     [42, 'meaning of life']
 
     """
-    _yield_func = partial(_path_matcher_yield_func, pkv_filt, None)
-    walker = kv_walk(d, yield_func=_yield_func)
+    _leaf_yield = partial(_path_matcher_leaf_yield, pkv_filt, None)
+    walker = kv_walk(d, leaf_yield=_leaf_yield)
     yield from filter(None, walker)
 
 
@@ -434,8 +443,8 @@ def search_paths(d: Mapping, pkv_filt: PkvFilt) -> Iterator[PT]:
     return path_filter(pkv_filt, d)
 
 
-def _path_matcher_yield_func(pkv_filt: PkvFilt, sentinel, p: PT, k: KT, v: VT):
-    """Helper to make (picklable) yield_funcs for paths_matching (through partial)"""
+def _path_matcher_leaf_yield(pkv_filt: PkvFilt, sentinel, p: PT, k: KT, v: VT):
+    """Helper to make (picklable) leaf_yields for paths_matching (through partial)"""
     if pkv_filt(p, k, v):
         return p
     else:
@@ -444,9 +453,9 @@ def _path_matcher_yield_func(pkv_filt: PkvFilt, sentinel, p: PT, k: KT, v: VT):
 
 @add_as_attribute_of(path_filter)
 def _mk_path_matcher(pkv_filt: PkvFilt, sentinel=None):
-    """Make a yield_func that only yields paths that pass the pkv_filt,
+    """Make a leaf_yield that only yields paths that pass the pkv_filt,
     and a sentinel (by default, ``None``) otherwise"""
-    return partial(_path_matcher_yield_func, pkv_filt, sentinel)
+    return partial(_path_matcher_leaf_yield, pkv_filt, sentinel)
 
 
 @add_as_attribute_of(path_filter)
@@ -632,7 +641,11 @@ class PrefixRelativization(PrefixRelativizationMixin):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr='_prefix',
 ):
     """
 
@@ -1284,7 +1297,8 @@ class StringTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self, params: dict,
+        self,
+        params: dict,
     ):
         """Generates a namedtuple from the dictionary values based on the template.
 
