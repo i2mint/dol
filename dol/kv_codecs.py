@@ -63,7 +63,7 @@ def csv_decode(string, *args, **kwargs):
 
 @__csv_dict_sig
 def csv_dict_encode(string, *args, **kwargs):
-    """Encode a list of dicts into a csv string.
+    r"""Encode a list of dicts into a csv string.
 
     >>> data = [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]
     >>> encoded = csv_dict_encode(data, fieldnames=['a', 'b'])
@@ -308,11 +308,12 @@ class ValueCodecs:
     import quopri, plistlib
 
     quopri: Codec[bytes, bytes] = value_wrap(quopri.encodestring, quopri.decodestring)
-    # plistlib: Codec[bytes, bytes] = value_wrap(plistlib.dumps, plistlib.loads)
-
-    xml_etree: Codec['xml.etree.ElementTree', bytes] = value_wrap(
-        _xml_tree_encode, _xml_tree_decode
+    plistlib: Codec[bytes, bytes] = value_wrap(
+        plistlib.dumps, plistlib.loads, exclude=('fmt',)
     )
+
+    # Any is really xml.etree.ElementTree.Element, but didn't want to import
+    xml_etree: Codec[Any, bytes] = value_wrap(_xml_tree_encode, _xml_tree_decode)
 
 
 class KeyCodecs:

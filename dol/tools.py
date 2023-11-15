@@ -8,7 +8,9 @@ from collections.abc import Mapping
 from dol.base import Store
 from dol.trans import store_decorator
 
+
 NoSuchKey = type('NoSuchKey', (), {})
+
 
 # ------------ useful trans functions to be used with wrap_kvs etc. ---------------------
 # TODO: Consider typing or decorating functions to indicate their role (e.g. id_of_key,

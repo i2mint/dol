@@ -43,6 +43,11 @@ def ihead(store, n=1):
 
 from dol.kv_codecs import ValueCodecs, KeyCodecs
 
+from dol.filesys import (
+    PickleFiles,  # CRUD access to pickled files
+    JsonFiles,  # CRUD access to jsob files
+)
+
 from dol.base import (
     Collection,  # base class for collections (adds to collections.abc.Collection)
     MappingViewMixin,
@@ -74,8 +79,6 @@ from dol.filesys import (
     resolve_dir,  # to get a full path (resolve ~ and .) and ensure it is a directory
     DirReader,  # recursive read-only access to directories,
     temp_dir,  # make a temporary directory
-    PickleFiles,  # CRUD access to pickled files
-    JsonFiles,  # CRUD access to jsob files
 )
 
 from dol.util import (

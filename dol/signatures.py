@@ -105,6 +105,7 @@ from functools import (
     cached_property,
     update_wrapper,
     partial,
+    partialmethod,
     WRAPPER_ASSIGNMENTS,
     wraps as _wraps,
     update_wrapper as _update_wrapper,
@@ -253,7 +254,9 @@ def name_of_obj(
             caught_exceptions=caught_exceptions,
             default_factory=default_factory,
         )
-        if isinstance(o, (cached_property, partial)) and hasattr(o, 'func'):
+        if isinstance(o, (cached_property, partial, partialmethod)) and hasattr(
+            o, 'func'
+        ):
             return name_of_obj(o.func, **kwargs)
         elif isinstance(o, property) and hasattr(o, 'fget'):
             return name_of_obj(o.fget, **kwargs)
@@ -634,7 +637,10 @@ def extract_arguments(
 
     if include_all_when_var_keywords_in_params:
         if (
-            next((p.name for p in params if p.kind == Parameter.VAR_KEYWORD), None,)
+            next(
+                (p.name for p in params if p.kind == Parameter.VAR_KEYWORD),
+                None,
+            )
             is not None
         ):
             param_kwargs.update(remaining_kwargs)
@@ -3951,7 +3957,7 @@ def resolve_function(obj: T) -> Union[T, Callable]:
         return obj.func
     elif isinstance(obj, property):
         return obj.fget
-    elif isinstance(obj, partial):
+    elif isinstance(obj, (partial, partialmethod)):
         return obj.func
     elif not callable(obj) and callable(wrapped := getattr(obj, '__wrapped__', None)):
         # If obj is not callable, but has a __wrapped__ attribute that is, return that
@@ -4187,6 +4193,9 @@ class sigs_for_builtin_modules:
         """``partial(func, *args, **keywords)`` - new function with partial application
         of the given arguments and keywords."""
 
+    def partialmethod(func: Callable, *args, **keywords) -> Callable:
+        """``functools.partialmethod(func, *args, **keywords)``"""
+
 
 # Merge sigs_for_builtin_modules and sigs_for_builtins
 sigs_for_sigless_builtin_name = dict(sigs_for_builtin_modules, **sigs_for_builtins)
@@ -4253,7 +4262,9 @@ for kind in param_kinds:
     lower_kind = kind.lower()
     setattr(param_for_kind, lower_kind, partial(param_for_kind, kind=kind))
     setattr(
-        param_for_kind, 'with_default', partial(param_for_kind, with_default=True),
+        param_for_kind,
+        'with_default',
+        partial(param_for_kind, with_default=True),
     )
     setattr(
         getattr(param_for_kind, lower_kind),
@@ -4307,7 +4318,10 @@ def mk_func_comparator_based_on_signature_comparator(
 
 
 def _keyed_comparator(
-    comparator: Comparator, key: KeyFunction, x: CT, y: CT,
+    comparator: Comparator,
+    key: KeyFunction,
+    x: CT,
+    y: CT,
 ) -> Comparison:
     """Apply a comparator after transforming inputs through a key function.
 
@@ -4321,7 +4335,10 @@ def _keyed_comparator(
     return comparator(key(x), key(y))
 
 
-def keyed_comparator(comparator: Comparator, key: KeyFunction,) -> Comparator:
+def keyed_comparator(
+    comparator: Comparator,
+    key: KeyFunction,
+) -> Comparator:
     """Create a key-function enabled binary operator.
 
     In various places in python functionality is extended by allowing a key function.
