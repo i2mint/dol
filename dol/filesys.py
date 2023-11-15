@@ -223,7 +223,10 @@ class FileSysCollection(Collection):
         return bool(self._key_pattern.match(k))
 
     def validate_key(
-        self, k, err_msg_format=_dflt_not_valid_error_msg, err_type=KeyValidationError,
+        self,
+        k,
+        err_msg_format=_dflt_not_valid_error_msg,
+        err_type=KeyValidationError,
     ):
         if not self.is_valid_key(k):
             raise err_type(err_msg_format.format(k))
@@ -423,22 +426,28 @@ RelPathFileStringReader = TextFilesReader
 RelPathFileStringPersister = TextFiles
 
 
-# ------------------------------------ misc ---------------------------------------------
-import pickle
-
-pickle_bytes_wrap = wrap_kvs(obj_of_data=pickle.loads, data_of_obj=pickle.dumps)
+# ------------------------------------ misc --------------------------------------------
+from dol.kv_codecs import ValueCodecs
 
 
-@pickle_bytes_wrap
-class PickleStore(RelPathFileBytesPersister):
+@ValueCodecs.pickle
+class PickleFiles(Files):
     """A store of pickles"""
+
+
+@ValueCodecs.json
+class JsonFiles(Files):
+    """A store of json"""
+
+
+PickleStore = PickleFiles  # backcompatibility alias
 
 
 # @wrap_kvs(key_of_id=lambda x: x[:-1], id_of_key=lambda x: x + path_sep)
 @mk_relative_path_store(prefix_attr='rootdir')
 class PickleStores(DirCollection):
     def __getitem__(self, k):
-        return PickleStore(k)
+        return PickleFiles(k)
 
     def __repr__(self):
         return f"{type(self).__name__}('{self.rootdir}', ...)"

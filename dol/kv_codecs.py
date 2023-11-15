@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TypeVar, Generic, Callable, Iterable, Any, Optional
 
 from dol.trans import wrap_kvs
-from dol.util import Pipe, decorate_callables
+from dol.util import Pipe
 from dol.signatures import Sig
 
 # For the codecs:

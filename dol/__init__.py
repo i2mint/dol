@@ -74,6 +74,8 @@ from dol.filesys import (
     resolve_dir,  # to get a full path (resolve ~ and .) and ensure it is a directory
     DirReader,  # recursive read-only access to directories,
     temp_dir,  # make a temporary directory
+    PickleFiles,  # CRUD access to pickled files
+    JsonFiles,  # CRUD access to jsob files
 )
 
 from dol.util import (
