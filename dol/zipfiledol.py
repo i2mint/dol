@@ -24,8 +24,8 @@ __all__ = [
     'COMPRESSION',
     'DFLT_COMPRESSION',
     'compression_methods',
-    'to_zipped_bytes',
-    'zipped_bytes_to_bytes',
+    'zip_compress',
+    'zip_decompress',
     'to_zip_file',
     'file_or_folder_to_zip_file',
     'if_i_zipped_stats',
@@ -74,7 +74,7 @@ def take_everything(fileinfo):
     return True
 
 
-def to_zipped_bytes(
+def zip_compress(
     b: Union[bytes, str],
     filename='some_bytes',
     *,
@@ -90,21 +90,21 @@ def to_zipped_bytes(
     >>> len(b)
     2000
     >>>
-    >>> zipped_bytes = to_zipped_bytes(b)
+    >>> zipped_bytes = zip_compress(b)
     >>> # Note: Compression details will be system dependent
     >>> len(zipped_bytes)  # doctest: +SKIP
     137
-    >>> unzipped_bytes = zipped_bytes_to_bytes(zipped_bytes)
+    >>> unzipped_bytes = zip_decompress(zipped_bytes)
     >>> unzipped_bytes == b  # verify that unzipped bytes are the same as the original
     True
     >>>
     >>> from dol.zipfiledol import compression_methods
     >>>
-    >>> zipped_bytes = to_zipped_bytes(b, compression=compression_methods['bzip2'])
+    >>> zipped_bytes = zip_compress(b, compression=compression_methods['bzip2'])
     >>> # Note: Compression details will be system dependent
     >>> len(zipped_bytes)  # doctest: +SKIP
     221
-    >>> unzipped_bytes = zipped_bytes_to_bytes(zipped_bytes)
+    >>> unzipped_bytes = zip_decompress(zipped_bytes)
     >>> unzipped_bytes == b  # verify that unzipped bytes are the same as the original
     True
     """
@@ -122,12 +122,16 @@ def to_zipped_bytes(
     return bytes_buffer.getvalue()
 
 
-def zipped_bytes_to_bytes(
-    b: bytes, *, allowZip64=True, compresslevel=None, strict_timestamps=True,
+def zip_decompress(
+    b: bytes,
+    *,
+    allowZip64=True,
+    compresslevel=None,
+    strict_timestamps=True,
 ) -> bytes:
     """Decompress input bytes of a single file zip, returning the uncompressed bytes
 
-    See ``to_zipped_bytes`` for usage examples.
+    See ``zip_compress`` for usage examples.
     """
     kwargs = dict(
         allowZip64=allowZip64,
@@ -138,7 +142,7 @@ def zipped_bytes_to_bytes(
     with ZipFile(bytes_buffer, 'r', **kwargs) as zip_file:
         file_list = zip_file.namelist()
         if len(file_list) != 1:
-            raise RuntimeError('zipped_bytes_to_bytes only works with single file zips')
+            raise RuntimeError('zip_decompress only works with single file zips')
         filename = file_list[0]
         with zip_file.open(filename, 'r') as fp:
             file_bytes = fp.read()
@@ -243,12 +247,12 @@ def if_i_zipped_stats(b: bytes):
             try:
                 stats[name] = dict.fromkeys(stats['uncompressed'])
                 tic = time.time()
-                compressed = to_zipped_bytes(b, compression=compression)
+                compressed = zip_compress(b, compression=compression)
                 elapsed = time.time() - tic
                 stats[name]['bytes'] = len(compressed)
                 stats[name]['comp_time'] = elapsed
                 tic = time.time()
-                uncompressed = zipped_bytes_to_bytes(compressed)
+                uncompressed = zip_decompress(compressed)
                 elapsed = time.time() - tic
                 assert (
                     uncompressed == b
@@ -488,7 +492,11 @@ class ZipFilesReader(FileCollection, KvReader):
         self.zip_reader_kwargs = zip_reader_kwargs
         if self.zip_reader is ZipReader:
             self.zip_reader_kwargs = dict(
-                dict(prefix='', open_kws=None, file_info_filt=ZipReader.FILES_ONLY,),
+                dict(
+                    prefix='',
+                    open_kws=None,
+                    file_info_filt=ZipReader.FILES_ONLY,
+                ),
                 **self.zip_reader_kwargs,
             )
 
@@ -612,7 +620,8 @@ from dol.paths import mk_relative_path_store
 from dol.util import partialclass
 
 ZipFileStreamsReader = mk_relative_path_store(
-    partialclass(ZipFilesReader, zip_reader=FileStreamsOfZip), prefix_attr='rootdir',
+    partialclass(ZipFilesReader, zip_reader=FileStreamsOfZip),
+    prefix_attr='rootdir',
 )
 ZipFileStreamsReader.__name__ = 'ZipFileStreamsReader'
 ZipFileStreamsReader.__qualname__ = 'ZipFileStreamsReader'
@@ -774,7 +783,10 @@ class ZipStore(KvPersister):
 
     def __repr__(self):
         args_str = ', '.join(
-            (f"'{self.zip_filepath}'", f"'allow_overwrites={self.allow_overwrites}'",)
+            (
+                f"'{self.zip_filepath}'",
+                f"'allow_overwrites={self.allow_overwrites}'",
+            )
         )
         return f'{self.__class__.__name__}({args_str})'
 
@@ -930,8 +942,31 @@ remove_mac_junk_from_zip.__doc__ = 'Removes mac junk keys from zip'
 #                          name='ZipFileReader',
 #                          obj_of_data=ZipReader)
 
-#
-# if __name__ == '__main__':
-#     from dol.test.simple import test_local_file_ops
-#
-#     test_local_file_ops()
+
+# ----------------------------- Extras -------------------------------------------------
+
+
+def tar_compress(data_bytes, file_name="data.bin"):
+    import tarfile
+    import io
+
+    with io.BytesIO() as tar_buffer:
+        with tarfile.open(fileobj=tar_buffer, mode="w") as tar:
+            data_file = io.BytesIO(data_bytes)
+            tarinfo = tarfile.TarInfo(name=file_name)
+            tarinfo.size = len(data_bytes)
+            tar.addfile(tarinfo, fileobj=data_file)
+        return tar_buffer.getvalue()
+
+
+def tar_decompress(tar_bytes):
+    import tarfile
+    import io
+
+    with io.BytesIO(tar_bytes) as tar_buffer:
+        with tarfile.open(fileobj=tar_buffer, mode="r:") as tar:
+            for member in tar.getmembers():
+                extracted_file = tar.extractfile(member)
+                if extracted_file:
+                    return extracted_file.read()
+    return None

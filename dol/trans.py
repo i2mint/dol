@@ -19,7 +19,7 @@ from dol.util import (
     attrs_of,
     wraps,
     Pipe,
-    Literal,
+    LiteralVal,
     num_of_args,
 )
 from dol.signatures import Sig, KO
@@ -1829,7 +1829,7 @@ def wrap_kvs(
     #
 
 
-class FirstArgIsMapping(Literal):
+class FirstArgIsMapping(LiteralVal):
     """A Literal class to mark a function as being one where the first argument is
     a mapping (store). This is intended to be used in wrappers such as ``wrap_kvs``
     to indicate when the first argument of a transformer function ``trans`` like

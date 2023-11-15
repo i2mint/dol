@@ -41,6 +41,8 @@ def ihead(store, n=1):
 # )
 
 
+from dol.kv_codecs import ValueCodecs, KeyCodecs
+
 from dol.base import (
     Collection,  # base class for collections (adds to collections.abc.Collection)
     MappingViewMixin,

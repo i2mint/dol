@@ -21,6 +21,54 @@ wraps = partial(_wraps, assigned=wrapper_assignments)
 exhaust = partial(deque, maxlen=0)
 
 
+class staticproperty:
+    """A decorator for defining static properties in classes.
+
+    >>> class A:
+    ...     @staticproperty
+    ...     def foo():
+    ...         return 2
+    >>> A.foo
+    2
+    >>> A().foo
+    2
+    """
+
+    def __init__(self, function):
+        self.function = function
+
+    def __get__(self, obj, owner=None):
+        return self.function()
+
+
+def decorate_callables(decorator, cls=None):
+    """Decorate all (non-underscored) callables in a class with a decorator.
+
+    >>> from dol.util import LiteralVal
+    >>> @decorate_callables(property)
+    ... class A:
+    ...     def wet(self):
+    ...         return 'dry'
+    ...     @LiteralVal
+    ...     def big(self):
+    ...         return 'small'
+    >>> a = A()
+    >>> a.wet
+    'dry'
+    >>> a.big()
+    'small'
+
+    """
+    if cls is None:
+        return partial(decorate_callables, decorator)
+    for name, attr in vars(cls).items():
+        if isinstance(attr, LiteralVal):
+            setattr(cls, name, attr.get_val())
+        elif not name.startswith('_') and callable(attr):
+            setattr(cls, name, decorator(attr))
+    return cls
+
+
 def add_as_attribute_of(obj, name=None):
     """Decorator that adds a function as an attribute of a container object ``obj``.
 
@@ -87,10 +135,10 @@ def chain_get(d: Mapping, keys, default=None):
     return default
 
 
-class Literal:
+class LiteralVal:
     """An object to indicate that the value should be considered literally.
 
-    >>> t = Literal(42)
+    >>> t = LiteralVal(42)
     >>> t.get_val()
     42
     >>> t()
@@ -102,10 +150,10 @@ class Literal:
         self.val = val
 
     def get_val(self):
-        """Get the value wrapped by Literal instance.
+        """Get the value wrapped by LiteralVal instance.
 
         One might want to use ``literal.get_val()`` instead ``literal()`` to get the
-        value a ``Literal`` is wrapping because ``.get_val`` is more explicit.
+        value a ``LiteralVal`` is wrapping because ``.get_val`` is more explicit.
 
         That said, with a bit of hesitation, we allow the ``literal()`` form as well
         since it is useful in situations where we need to use a callback function to
@@ -446,7 +494,9 @@ def partialclass(cls, *args, **kwargs):
         __init__ = partialmethod(cls.__init__, *args, **kwargs)
 
     copy_attrs(
-        PartialClass, cls, attrs=('__name__', '__qualname__', '__module__', '__doc__'),
+        PartialClass,
+        cls,
+        attrs=('__name__', '__qualname__', '__module__', '__doc__'),
     )
 
     return PartialClass
@@ -854,7 +904,10 @@ def igroupby(
     if val is None:
         _append_to_group_items = append_to_group_items
     else:
-        _append_to_group_items = lambda group_items, item: (group_items, val(item),)
+        _append_to_group_items = lambda group_items, item: (
+            group_items,
+            val(item),
+        )
 
     for item in items:
         group_key = key(item)
@@ -1098,12 +1151,12 @@ def max_common_prefix(a: Sequence, *, default=''):
     >>> max_common_prefix([[3,2,1], [3,2,0], [1,2,3]])
     []
 
-    If the input is empty, will return default (which defaults to ''). 
+    If the input is empty, will return default (which defaults to '').
 
     >>> max_common_prefix([])
     ''
 
-    If you want a different default, you can specify it with the default 
+    If you want a different default, you can specify it with the default
     keyword argument.
 
     >>> from functools import partial
