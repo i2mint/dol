@@ -14,10 +14,10 @@ def _test_codec(codec, obj, encoded=None, decoded=None):
             decoded = obj
         assert (
             codec.encoder(obj) == encoded
-        ), f"Expected {codec.encoder(obj)=} to equal {encoded=}"
+        ), f'Expected {codec.encoder(obj)=} to equal {encoded=}'
         assert (
             codec.decoder(encoded) == decoded
-        ), f"Expected {codec.decoder(encoded)=} to equal {decoded=}"
+        ), f'Expected {codec.decoder(encoded)=} to equal {decoded=}'
 
 
 def _test_codec_part(codec, obj, encoded, slice_):
@@ -88,7 +88,7 @@ def test_value_codecs():
     )
 
     assert str(inspect.signature(ValueCodecs.pickle)) == (
-        "(obj, data, protocol=None, fix_imports=True, buffer_callback=None, "
+        '(obj, data, protocol=None, fix_imports=True, buffer_callback=None, '
         "encoding='ASCII', errors='strict', buffers=())"
     )  # NOTE: May change according to python version. This is 3.8
 
@@ -125,10 +125,7 @@ def test_value_codecs():
     _test_codec_part(ValueCodecs.tarfile(), b'hello', b'data.bin', slice(0, 8))
 
     _test_codec_part(
-        ValueCodecs.lzma(),
-        b'hello',
-        b'\xfd7zXZ',
-        slice(0, 4),
+        ValueCodecs.lzma(), b'hello', b'\xfd7zXZ', slice(0, 4),
     )
 
     _test_codec_part(

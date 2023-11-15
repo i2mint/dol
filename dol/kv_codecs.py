@@ -20,14 +20,14 @@ def _string(string: str):
 
 @Sig
 def _csv_rw_sig(
-    dialect: str = "excel",
+    dialect: str = 'excel',
     *,
-    delimiter: str = ",",
+    delimiter: str = ',',
     quotechar: Optional[str] = '"',
     escapechar: Optional[str] = None,
     doublequote: bool = True,
     skipinitialspace: bool = False,
-    lineterminator: str = "\r\n",
+    lineterminator: str = '\r\n',
     quoting=0,
     strict: bool = False,
 ):
@@ -36,12 +36,17 @@ def _csv_rw_sig(
 
 @Sig
 def _csv_dict_extra_sig(
-    fieldnames, restkey=None, restval="", extrasaction="raise", fieldcasts=None
+    fieldnames, restkey=None, restval='', extrasaction='raise', fieldcasts=None
 ):
     ...
 
 
-@(_string + _csv_rw_sig)
+__csv_rw_sig = _string + _csv_rw_sig
+__csv_dict_sig = _string + _csv_rw_sig + _csv_dict_extra_sig
+
+
+# Note: @(_string + _csv_rw_sig) made (ax)black choke
+@__csv_rw_sig
 def csv_encode(string, *args, **kwargs):
     with io.StringIO() as buffer:
         writer = csv.writer(buffer, *args, **kwargs)
@@ -49,14 +54,14 @@ def csv_encode(string, *args, **kwargs):
         return buffer.getvalue()
 
 
-@(_string + _csv_rw_sig)
+@__csv_rw_sig
 def csv_decode(string, *args, **kwargs):
     with io.StringIO(string) as buffer:
         reader = csv.reader(buffer, *args, **kwargs)
         return list(reader)
 
 
-@(_string + _csv_rw_sig + _csv_dict_extra_sig)
+@__csv_dict_sig
 def csv_dict_encode(string, *args, **kwargs):
     """Encode a list of dicts into a csv string.
 
@@ -66,7 +71,7 @@ def csv_dict_encode(string, *args, **kwargs):
     'a,b\r\n1,2\r\n3,4\r\n'
 
     """
-    _ = kwargs.pop("fieldcasts", None)  # this one is for decoder only
+    _ = kwargs.pop('fieldcasts', None)  # this one is for decoder only
     with io.StringIO() as buffer:
         writer = csv.DictWriter(buffer, *args, **kwargs)
         writer.writeheader()
@@ -74,7 +79,7 @@ def csv_dict_encode(string, *args, **kwargs):
         return buffer.getvalue()
 
 
-@(_string + _csv_rw_sig + _csv_dict_extra_sig)
+@__csv_dict_sig
 def csv_dict_decode(string, *args, **kwargs):
     r"""Decode a csv string into a list of dicts.
 
@@ -107,7 +112,7 @@ def csv_dict_decode(string, *args, **kwargs):
     [{'a': '1', 'b': 2.0}, {'a': '3', 'b': 4.0}]
 
     """
-    fieldcasts = kwargs.pop("fieldcasts", lambda row: row)
+    fieldcasts = kwargs.pop('fieldcasts', lambda row: row)
     if isinstance(fieldcasts, Iterable):
         if isinstance(fieldcasts, dict):
             cast_dict = dict(fieldcasts)
