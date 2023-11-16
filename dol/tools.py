@@ -125,7 +125,7 @@ def ask_user_for_value_when_missing(
                 user_value = value_preprocessor(user_value)
             self[k] = user_value
         else:
-            super().__missing__(k)
+            super(type(self), self).__missing__(k)
 
     store.__missing__ = __missing__
     return store
