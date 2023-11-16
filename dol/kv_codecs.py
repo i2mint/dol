@@ -1,3 +1,6 @@
+"""
+Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.
+"""
 # ------------------------------------ Codecs ------------------------------------------
 
 from functools import partial
