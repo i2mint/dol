@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.2.8 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.2.9 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -55,6 +55,7 @@
 <li class="toctree-l1"><a class="reference internal" href="errors.html">dol.errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="explicit.html">dol.explicit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kv_codecs.html">dol.kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="misc.html">dol.misc</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
@@ -72,6 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
@@ -124,6 +126,11 @@
 </dd></dl>
 
 <dl class="py class">
+<dt id="dol.trans.Codec">
+<em class="property">class </em><code class="sig-prename descclassname">dol.trans.</code><code class="sig-name descname">Codec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">encoder</span><span class="p">:</span> <span class="n">Callable[[~ DecodedType], ~ EncodedType]</span></em>, <em class="sig-param"><span class="n">decoder</span><span class="p">:</span> <span class="n">Callable[[~ EncodedType], ~ DecodedType]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#Codec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.trans.Codec" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
 <dt id="dol.trans.FirstArgIsMapping">
 <em class="property">class </em><code class="sig-prename descclassname">dol.trans.</code><code class="sig-name descname">FirstArgIsMapping</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">val</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#FirstArgIsMapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.trans.FirstArgIsMapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Literal class to mark a function as being one where the first argument is
@@ -132,6 +139,11 @@ to indicate when the first argument of a transformer function <code class="docut
 <code class="docutils literal notranslate"><span class="pre">key_of_id</span></code>, <code class="docutils literal notranslate"><span class="pre">preset</span></code>, etc. is the store itself, therefore should be applied as
 <code class="docutils literal notranslate"><span class="pre">trans(store,</span> <span class="pre">...)</span></code> instead of <code class="docutils literal notranslate"><span class="pre">trans(...)</span></code>.</p>
 </dd></dl>
+
+<dl class="py class">
+<dt id="dol.trans.KeyCodec">
+<em class="property">class </em><code class="sig-prename descclassname">dol.trans.</code><code class="sig-name descname">KeyCodec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">encoder</span><span class="p">:</span> <span class="n">Callable<span class="p">[</span><span class="p">[</span>DecodedType<span class="p">]</span><span class="p">, </span>EncodedType<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">decoder</span><span class="p">:</span> <span class="n">Callable<span class="p">[</span><span class="p">[</span>EncodedType<span class="p">]</span><span class="p">, </span>DecodedType<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#KeyCodec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.trans.KeyCodec" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py exception">
 <dt id="dol.trans.MapInvertabilityError">
@@ -163,6 +175,11 @@ Note: Should be before the persister in the MRO.</p>
 </pre></div>
 </div>
 </dd></dl>
+
+<dl class="py class">
+<dt id="dol.trans.ValueCodec">
+<em class="property">class </em><code class="sig-prename descclassname">dol.trans.</code><code class="sig-name descname">ValueCodec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">encoder</span><span class="p">:</span> <span class="n">Callable<span class="p">[</span><span class="p">[</span>DecodedType<span class="p">]</span><span class="p">, </span>EncodedType<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">decoder</span><span class="p">:</span> <span class="n">Callable<span class="p">[</span><span class="p">[</span>EncodedType<span class="p">]</span><span class="p">, </span>DecodedType<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#ValueCodec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.trans.ValueCodec" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt id="dol.trans.add_aliases">

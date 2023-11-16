@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.8 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.2.9 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -55,6 +55,7 @@
 <li class="toctree-l1"><a class="reference internal" href="errors.html">dol.errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="explicit.html">dol.explicit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kv_codecs.html">dol.kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="misc.html">dol.misc</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
@@ -72,6 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
@@ -108,10 +110,10 @@
 <span id="dol-util"></span><h1>dol.util<a class="headerlink" href="#module-dol.util" title="Permalink to this headline">¶</a></h1>
 <p>General util objects</p>
 <dl class="py class">
-<dt id="dol.util.Literal">
-<em class="property">class </em><code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">Literal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">val</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#Literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.Literal" title="Permalink to this definition">¶</a></dt>
+<dt id="dol.util.LiteralVal">
+<em class="property">class </em><code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">LiteralVal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">val</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#LiteralVal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.LiteralVal" title="Permalink to this definition">¶</a></dt>
 <dd><p>An object to indicate that the value should be considered literally.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">LiteralVal</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">get_val</span><span class="p">()</span>
 <span class="go">42</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">()</span>
@@ -119,11 +121,11 @@
 </pre></div>
 </div>
 <dl class="py method">
-<dt id="dol.util.Literal.get_val">
-<code class="sig-name descname">get_val</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#Literal.get_val"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.Literal.get_val" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the value wrapped by Literal instance.</p>
+<dt id="dol.util.LiteralVal.get_val">
+<code class="sig-name descname">get_val</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#LiteralVal.get_val"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.LiteralVal.get_val" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value wrapped by LiteralVal instance.</p>
 <p>One might want to use <code class="docutils literal notranslate"><span class="pre">literal.get_val()</span></code> instead <code class="docutils literal notranslate"><span class="pre">literal()</span></code> to get the
-value a <code class="docutils literal notranslate"><span class="pre">Literal</span></code> is wrapping because <code class="docutils literal notranslate"><span class="pre">.get_val</span></code> is more explicit.</p>
+value a <code class="docutils literal notranslate"><span class="pre">LiteralVal</span></code> is wrapping because <code class="docutils literal notranslate"><span class="pre">.get_val</span></code> is more explicit.</p>
 <p>That said, with a bit of hesitation, we allow the <code class="docutils literal notranslate"><span class="pre">literal()</span></code> form as well
 since it is useful in situations where we need to use a callback function to
 get a value.</p>
@@ -288,6 +290,27 @@ If non of the keys are found, <code class="docutils literal notranslate"><span c
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">copy_attrs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;nothing&#39;</span><span class="p">,</span> <span class="s1">&#39;here&#39;</span><span class="p">,</span> <span class="s1">&#39;exists&#39;</span><span class="p">],</span> <span class="n">raise_error_if_an_attr_is_missing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dict_of</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
 <span class="go">{&#39;x&#39;: 1, &#39;yy&#39;: 2, &#39;zzz&#39;: 3}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.util.decorate_callables">
+<code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">decorate_callables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">decorator</span></em>, <em class="sig-param"><span class="n">cls</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#decorate_callables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.decorate_callables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorate all (non-underscored) callables in a class with a decorator.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">LiteralVal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@decorate_callables</span><span class="p">(</span><span class="nb">property</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">wet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="s1">&#39;dry&#39;</span>
+<span class="gp">... </span>    <span class="nd">@LiteralVal</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">big</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="s1">&#39;small&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">A</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">wet</span>
+<span class="go">&#39;dry&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">big</span><span class="p">()</span>
+<span class="go">&#39;small&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -815,6 +838,22 @@ a useless class.</p>
 <span class="go">{&#39;stopwords&#39;: {3: [&#39;the&#39;], 2: [&#39;in&#39;], 1: [&#39;a&#39;]}, &#39;words&#39;: {3: [&#39;fox&#39;, &#39;box&#39;], 2: [&#39;is&#39;]}}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">regroupby</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="nb">len</span><span class="p">,</span> <span class="n">word_category</span><span class="p">)</span>
 <span class="go">{3: {&#39;stopwords&#39;: [&#39;the&#39;], &#39;words&#39;: [&#39;fox&#39;, &#39;box&#39;]}, 2: {&#39;words&#39;: [&#39;is&#39;], &#39;stopwords&#39;: [&#39;in&#39;]}, 1: {&#39;stopwords&#39;: [&#39;a&#39;]}}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dol.util.staticproperty">
+<em class="property">class </em><code class="sig-prename descclassname">dol.util.</code><code class="sig-name descname">staticproperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">function</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#staticproperty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.util.staticproperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator for defining static properties in classes.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@staticproperty</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">()</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">2</span>
 </pre></div>
 </div>
 </dd></dl>

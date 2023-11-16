@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.zipfiledol &mdash; dol 0.2.8 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.zipfiledol &mdash; dol 0.2.9 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -52,6 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/errors.html">dol.errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/explicit.html">dol.explicit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/kv_codecs.html">dol.kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/misc.html">dol.misc</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/naming.html">dol.naming</a></li>
@@ -69,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
@@ -129,8 +131,8 @@
     <span class="s1">&#39;COMPRESSION&#39;</span><span class="p">,</span>
     <span class="s1">&#39;DFLT_COMPRESSION&#39;</span><span class="p">,</span>
     <span class="s1">&#39;compression_methods&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;to_zipped_bytes&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;zipped_bytes_to_bytes&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;zip_compress&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;zip_decompress&#39;</span><span class="p">,</span>
     <span class="s1">&#39;to_zip_file&#39;</span><span class="p">,</span>
     <span class="s1">&#39;file_or_folder_to_zip_file&#39;</span><span class="p">,</span>
     <span class="s1">&#39;if_i_zipped_stats&#39;</span><span class="p">,</span>
@@ -179,7 +181,7 @@
     <span class="k">return</span> <span class="kc">True</span>
 
 
-<div class="viewcode-block" id="to_zipped_bytes"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.to_zipped_bytes">[docs]</a><span class="k">def</span> <span class="nf">to_zipped_bytes</span><span class="p">(</span>
+<div class="viewcode-block" id="zip_compress"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.zip_compress">[docs]</a><span class="k">def</span> <span class="nf">zip_compress</span><span class="p">(</span>
     <span class="n">b</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;some_bytes&#39;</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -195,21 +197,21 @@
 <span class="sd">    &gt;&gt;&gt; len(b)</span>
 <span class="sd">    2000</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; zipped_bytes = to_zipped_bytes(b)</span>
+<span class="sd">    &gt;&gt;&gt; zipped_bytes = zip_compress(b)</span>
 <span class="sd">    &gt;&gt;&gt; # Note: Compression details will be system dependent</span>
 <span class="sd">    &gt;&gt;&gt; len(zipped_bytes)  # doctest: +SKIP</span>
 <span class="sd">    137</span>
-<span class="sd">    &gt;&gt;&gt; unzipped_bytes = zipped_bytes_to_bytes(zipped_bytes)</span>
+<span class="sd">    &gt;&gt;&gt; unzipped_bytes = zip_decompress(zipped_bytes)</span>
 <span class="sd">    &gt;&gt;&gt; unzipped_bytes == b  # verify that unzipped bytes are the same as the original</span>
 <span class="sd">    True</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; from dol.zipfiledol import compression_methods</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; zipped_bytes = to_zipped_bytes(b, compression=compression_methods[&#39;bzip2&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; zipped_bytes = zip_compress(b, compression=compression_methods[&#39;bzip2&#39;])</span>
 <span class="sd">    &gt;&gt;&gt; # Note: Compression details will be system dependent</span>
 <span class="sd">    &gt;&gt;&gt; len(zipped_bytes)  # doctest: +SKIP</span>
 <span class="sd">    221</span>
-<span class="sd">    &gt;&gt;&gt; unzipped_bytes = zipped_bytes_to_bytes(zipped_bytes)</span>
+<span class="sd">    &gt;&gt;&gt; unzipped_bytes = zip_decompress(zipped_bytes)</span>
 <span class="sd">    &gt;&gt;&gt; unzipped_bytes == b  # verify that unzipped bytes are the same as the original</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -227,12 +229,12 @@
     <span class="k">return</span> <span class="n">bytes_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="zipped_bytes_to_bytes"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.zipped_bytes_to_bytes">[docs]</a><span class="k">def</span> <span class="nf">zipped_bytes_to_bytes</span><span class="p">(</span>
+<div class="viewcode-block" id="zip_decompress"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.zip_decompress">[docs]</a><span class="k">def</span> <span class="nf">zip_decompress</span><span class="p">(</span>
     <span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">allowZip64</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">compresslevel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">strict_timestamps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Decompress input bytes of a single file zip, returning the uncompressed bytes</span>
 
-<span class="sd">    See ``to_zipped_bytes`` for usage examples.</span>
+<span class="sd">    See ``zip_compress`` for usage examples.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
         <span class="n">allowZip64</span><span class="o">=</span><span class="n">allowZip64</span><span class="p">,</span>
@@ -243,7 +245,7 @@
     <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">bytes_buffer</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_file</span><span class="p">:</span>
         <span class="n">file_list</span> <span class="o">=</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">file_list</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;zipped_bytes_to_bytes only works with single file zips&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;zip_decompress only works with single file zips&#39;</span><span class="p">)</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">file_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">with</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
             <span class="n">file_bytes</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -258,7 +260,7 @@
 
 
 <span class="c1"># TODO: Look into pwd: Should we use it for setting pwd when pwd doesn&#39;t exist?</span>
-<div class="viewcode-block" id="to_zip_file"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.to_zip_file">[docs]</a><span class="k">def</span> <span class="nf">to_zip_file</span><span class="p">(</span>
+<div class="viewcode-block" id="to_zip_file"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.to_zip_file">[docs]</a><span class="k">def</span> <span class="nf">to_zip_file</span><span class="p">(</span>
     <span class="n">b</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">zip_filepath</span><span class="p">,</span>
     <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -288,7 +290,7 @@
     <span class="n">z</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span></div>
 
 
-<div class="viewcode-block" id="file_or_folder_to_zip_file"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.file_or_folder_to_zip_file">[docs]</a><span class="k">def</span> <span class="nf">file_or_folder_to_zip_file</span><span class="p">(</span>
+<div class="viewcode-block" id="file_or_folder_to_zip_file"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.file_or_folder_to_zip_file">[docs]</a><span class="k">def</span> <span class="nf">file_or_folder_to_zip_file</span><span class="p">(</span>
     <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">zip_filepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -320,7 +322,7 @@
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="if_i_zipped_stats"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.if_i_zipped_stats">[docs]</a><span class="k">def</span> <span class="nf">if_i_zipped_stats</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+<div class="viewcode-block" id="if_i_zipped_stats"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.if_i_zipped_stats">[docs]</a><span class="k">def</span> <span class="nf">if_i_zipped_stats</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compress and decompress bytes with four different methods and return a dictionary</span>
 <span class="sd">    of (size and time) stats.</span>
 
@@ -348,12 +350,12 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">stats</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;uncompressed&#39;</span><span class="p">])</span>
                 <span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-                <span class="n">compressed</span> <span class="o">=</span> <span class="n">to_zipped_bytes</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span>
+                <span class="n">compressed</span> <span class="o">=</span> <span class="n">zip_compress</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span>
                 <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">tic</span>
                 <span class="n">stats</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;bytes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
                 <span class="n">stats</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;comp_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elapsed</span>
                 <span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-                <span class="n">uncompressed</span> <span class="o">=</span> <span class="n">zipped_bytes_to_bytes</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
+                <span class="n">uncompressed</span> <span class="o">=</span> <span class="n">zip_decompress</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
                 <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">tic</span>
                 <span class="k">assert</span> <span class="p">(</span>
                     <span class="n">uncompressed</span> <span class="o">==</span> <span class="n">b</span>
@@ -365,7 +367,7 @@
     <span class="k">return</span> <span class="n">stats</span></div>
 
 
-<div class="viewcode-block" id="ZipReader"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.ZipReader">[docs]</a><span class="k">class</span> <span class="nc">ZipReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
+<div class="viewcode-block" id="ZipReader"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.ZipReader">[docs]</a><span class="k">class</span> <span class="nc">ZipReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;A KvReader to read the contents of a zip file.</span>
 <span class="sd">    Provides a KV perspective of https://docs.python.org/3/library/zipfile.html</span>
 
@@ -541,12 +543,12 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ZipInfoReader"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.ZipInfoReader">[docs]</a><span class="k">class</span> <span class="nc">ZipInfoReader</span><span class="p">(</span><span class="n">ZipReader</span><span class="p">):</span>
+<div class="viewcode-block" id="ZipInfoReader"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.ZipInfoReader">[docs]</a><span class="k">class</span> <span class="nc">ZipInfoReader</span><span class="p">(</span><span class="n">ZipReader</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_file</span><span class="o">.</span><span class="n">getinfo</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="FilesOfZip"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.FilesOfZip">[docs]</a><span class="k">class</span> <span class="nc">FilesOfZip</span><span class="p">(</span><span class="n">ZipReader</span><span class="p">):</span>
+<div class="viewcode-block" id="FilesOfZip"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.FilesOfZip">[docs]</a><span class="k">class</span> <span class="nc">FilesOfZip</span><span class="p">(</span><span class="n">ZipReader</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zip_file</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">open_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">zip_file</span><span class="p">,</span>
@@ -558,7 +560,7 @@
 
 <span class="c1"># TODO: This file object item is more fundemental than file contents.</span>
 <span class="c1">#  Should it be at the base?</span>
-<div class="viewcode-block" id="FileStreamsOfZip"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.FileStreamsOfZip">[docs]</a><span class="k">class</span> <span class="nc">FileStreamsOfZip</span><span class="p">(</span><span class="n">FilesOfZip</span><span class="p">):</span>
+<div class="viewcode-block" id="FileStreamsOfZip"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.FileStreamsOfZip">[docs]</a><span class="k">class</span> <span class="nc">FileStreamsOfZip</span><span class="p">(</span><span class="n">FilesOfZip</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Like FilesOfZip, but object returns are file streams instead.</span>
 <span class="sd">    So you use it like this:</span>
 
@@ -574,7 +576,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">open_kws</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ZipFilesReader"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.ZipFilesReader">[docs]</a><span class="k">class</span> <span class="nc">ZipFilesReader</span><span class="p">(</span><span class="n">FileCollection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">):</span>
+<div class="viewcode-block" id="ZipFilesReader"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.ZipFilesReader">[docs]</a><span class="k">class</span> <span class="nc">ZipFilesReader</span><span class="p">(</span><span class="n">FileCollection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A local file reader whose keys are the zip filepaths of the rootdir and values are</span>
 <span class="sd">    corresponding ZipReaders.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -604,7 +606,7 @@
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;FileNotFoundError: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ZipFilesReaderAndBytesWriter"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.ZipFilesReaderAndBytesWriter">[docs]</a><span class="k">class</span> <span class="nc">ZipFilesReaderAndBytesWriter</span><span class="p">(</span><span class="n">ZipFilesReader</span><span class="p">):</span>
+<div class="viewcode-block" id="ZipFilesReaderAndBytesWriter"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.ZipFilesReaderAndBytesWriter">[docs]</a><span class="k">class</span> <span class="nc">ZipFilesReaderAndBytesWriter</span><span class="p">(</span><span class="n">ZipFilesReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Like ZipFilesReader, but the ability to write bytes (assumed to be valid bytes of</span>
 <span class="sd">    the zip format) to a key</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -620,7 +622,7 @@
 <span class="c1"># TODO: Add easy connection to ExplicitKeymapReader and other path trans and cache useful</span>
 <span class="c1">#  for the folder of zips context</span>
 <span class="c1"># TODO: The &quot;injection&quot; of _readers to be able to use FlatReader stinks.</span>
-<div class="viewcode-block" id="FlatZipFilesReader"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.FlatZipFilesReader">[docs]</a><span class="k">class</span> <span class="nc">FlatZipFilesReader</span><span class="p">(</span><span class="n">FlatReader</span><span class="p">,</span> <span class="n">ZipFilesReader</span><span class="p">):</span>
+<div class="viewcode-block" id="FlatZipFilesReader"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.FlatZipFilesReader">[docs]</a><span class="k">class</span> <span class="nc">FlatZipFilesReader</span><span class="p">(</span><span class="n">FlatReader</span><span class="p">,</span> <span class="n">ZipFilesReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the union of the contents of multiple zip files.</span>
 <span class="sd">    A local file reader whose keys are the zip filepaths of the rootdir and values are</span>
 <span class="sd">    corresponding ZipReaders.</span>
@@ -693,7 +695,7 @@
         <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">FilesOfZip</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">zips</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
 
-<div class="viewcode-block" id="mk_flatzips_store"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.mk_flatzips_store">[docs]</a><span class="k">def</span> <span class="nf">mk_flatzips_store</span><span class="p">(</span>
+<div class="viewcode-block" id="mk_flatzips_store"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.mk_flatzips_store">[docs]</a><span class="k">def</span> <span class="nf">mk_flatzips_store</span><span class="p">(</span>
     <span class="n">dir_of_zips</span><span class="p">,</span>
     <span class="n">zip_pair_path_preproc</span><span class="o">=</span><span class="nb">sorted</span><span class="p">,</span>
     <span class="n">mk_store</span><span class="o">=</span><span class="n">FlatZipFilesReader</span><span class="p">,</span>
@@ -728,11 +730,11 @@
 <span class="kn">from</span> <span class="nn">dol.errors</span> <span class="kn">import</span> <span class="n">OverWritesNotAllowedError</span>
 
 
-<div class="viewcode-block" id="OverwriteNotAllowed"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.OverwriteNotAllowed">[docs]</a><span class="k">class</span> <span class="nc">OverwriteNotAllowed</span><span class="p">(</span><span class="ne">FileExistsError</span><span class="p">,</span> <span class="n">OverWritesNotAllowedError</span><span class="p">):</span>
+<div class="viewcode-block" id="OverwriteNotAllowed"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.OverwriteNotAllowed">[docs]</a><span class="k">class</span> <span class="nc">OverwriteNotAllowed</span><span class="p">(</span><span class="ne">FileExistsError</span><span class="p">,</span> <span class="n">OverWritesNotAllowedError</span><span class="p">):</span>
     <span class="o">...</span></div>
 
 
-<div class="viewcode-block" id="EmptyZipError"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.EmptyZipError">[docs]</a><span class="k">class</span> <span class="nc">EmptyZipError</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">):</span>
+<div class="viewcode-block" id="EmptyZipError"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.EmptyZipError">[docs]</a><span class="k">class</span> <span class="nc">EmptyZipError</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">):</span>
     <span class="o">...</span></div>
 
 
@@ -778,7 +780,7 @@
 <span class="c1"># TODO: What if I just want to zip a (single) file. What does dol offer for that?</span>
 <span class="c1"># TODO: How about set_obj (in misc.py)? Make it recognize the .zip extension and subextension (</span>
 <span class="c1">#  e.g. .txt.zip) serialize</span>
-<div class="viewcode-block" id="ZipStore"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.ZipStore">[docs]</a><span class="k">class</span> <span class="nc">ZipStore</span><span class="p">(</span><span class="n">KvPersister</span><span class="p">):</span>
+<div class="viewcode-block" id="ZipStore"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.ZipStore">[docs]</a><span class="k">class</span> <span class="nc">ZipStore</span><span class="p">(</span><span class="n">KvPersister</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Zip read and writing.</span>
 <span class="sd">    When you want to read zips, there&#39;s the `FilesOfZip`, `ZipReader`, or `ZipFilesReader` we</span>
 <span class="sd">    know and love.</span>
@@ -964,7 +966,7 @@
 <span class="n">PathFilterFunc</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PathString</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="remove_some_entries_from_zip"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.remove_some_entries_from_zip">[docs]</a><span class="k">def</span> <span class="nf">remove_some_entries_from_zip</span><span class="p">(</span>
+<div class="viewcode-block" id="remove_some_entries_from_zip"><a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.kv_codecs.remove_some_entries_from_zip">[docs]</a><span class="k">def</span> <span class="nf">remove_some_entries_from_zip</span><span class="p">(</span>
     <span class="n">zip_source</span><span class="p">,</span>
     <span class="n">keys_to_be_removed</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PathFilterFunc</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">PathString</span><span class="p">]],</span>
     <span class="n">ask_before_before_deleting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -1035,11 +1037,34 @@
 <span class="c1">#                          name=&#39;ZipFileReader&#39;,</span>
 <span class="c1">#                          obj_of_data=ZipReader)</span>
 
-<span class="c1">#</span>
-<span class="c1"># if __name__ == &#39;__main__&#39;:</span>
-<span class="c1">#     from dol.test.simple import test_local_file_ops</span>
-<span class="c1">#</span>
-<span class="c1">#     test_local_file_ops()</span>
+
+<span class="c1"># ----------------------------- Extras -------------------------------------------------</span>
+
+
+<span class="k">def</span> <span class="nf">tar_compress</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;data.bin&#39;</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">tarfile</span>
+    <span class="kn">import</span> <span class="nn">io</span>
+
+    <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">tar_buffer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fileobj</span><span class="o">=</span><span class="n">tar_buffer</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
+            <span class="n">data_file</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">)</span>
+            <span class="n">tarinfo</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">TarInfo</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">file_name</span><span class="p">)</span>
+            <span class="n">tarinfo</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">)</span>
+            <span class="n">tar</span><span class="o">.</span><span class="n">addfile</span><span class="p">(</span><span class="n">tarinfo</span><span class="p">,</span> <span class="n">fileobj</span><span class="o">=</span><span class="n">data_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tar_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">tar_decompress</span><span class="p">(</span><span class="n">tar_bytes</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">tarfile</span>
+    <span class="kn">import</span> <span class="nn">io</span>
+
+    <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">tar_bytes</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar_buffer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fileobj</span><span class="o">=</span><span class="n">tar_buffer</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r:&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">tar</span><span class="o">.</span><span class="n">getmembers</span><span class="p">():</span>
+                <span class="n">extracted_file</span> <span class="o">=</span> <span class="n">tar</span><span class="o">.</span><span class="n">extractfile</span><span class="p">(</span><span class="n">member</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">extracted_file</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">extracted_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">None</span>
 </pre></div>
 
            </div>

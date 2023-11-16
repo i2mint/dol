@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.8 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.2.9 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -52,6 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/errors.html">dol.errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/explicit.html">dol.explicit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/kv_codecs.html">dol.kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/misc.html">dol.misc</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/naming.html">dol.naming</a></li>
@@ -69,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
@@ -206,7 +208,13 @@
         <span class="k">except</span> <span class="n">caught_errors</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">on_error</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">on_error</span><span class="p">(</span>
-                    <span class="nb">dict</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,)</span>
+                    <span class="nb">dict</span><span class="p">(</span>
+                        <span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+                        <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
+                        <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+                        <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">on_error</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="c1"># use on_error as a message, raising the same error class</span>
@@ -534,8 +542,8 @@
 <span class="sd">    &gt;&gt;&gt; vals</span>
 <span class="sd">    [42, &#39;meaning of life&#39;]</span>
 
-<span class="sd">    Note: pkv_filt is first to match the order of the arguments of the </span>
-<span class="sd">    builtin filter function. </span>
+<span class="sd">    Note: pkv_filt is first to match the order of the arguments of the</span>
+<span class="sd">    builtin filter function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_leaf_yield</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_path_matcher_leaf_yield</span><span class="p">,</span> <span class="n">pkv_filt</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">leaf_yield</span><span class="o">=</span><span class="n">_leaf_yield</span><span class="p">,</span> <span class="n">breadth_first</span><span class="o">=</span><span class="n">breadth_first</span><span class="p">)</span>
@@ -757,7 +765,11 @@
 
 <div class="viewcode-block" id="mk_relative_path_store"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.mk_relative_path_store">[docs]</a><span class="nd">@store_decorator</span>
 <span class="k">def</span> <span class="nf">mk_relative_path_store</span><span class="p">(</span>
-    <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_key_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;_prefix&#39;</span><span class="p">,</span>
+    <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">with_key_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;_prefix&#39;</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 
@@ -1202,7 +1214,58 @@
     <span class="k">return</span> <span class="n">_func</span>
 
 
-<span class="n">Codec</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Codec&#39;</span><span class="p">,</span> <span class="s1">&#39;encoder decoder&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="n">string_formatter</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">Formatter</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="string_unparse"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.string_unparse">[docs]</a><span class="k">def</span> <span class="nf">string_unparse</span><span class="p">(</span><span class="n">parsing_result</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The inverse of string.Formatter.parse</span>
+
+<span class="sd">    Will ravel</span>
+
+<span class="sd">    &gt;&gt;&gt; import string</span>
+<span class="sd">    &gt;&gt;&gt; formatter = string.Formatter()</span>
+<span class="sd">    &gt;&gt;&gt; string_unparse(formatter.parse(&#39;literal{name!c:spec}&#39;))</span>
+<span class="sd">    &#39;literal{name!c:spec}&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">reconstructed</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">literal_text</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">format_spec</span><span class="p">,</span> <span class="n">conversion</span> <span class="ow">in</span> <span class="n">parsing_result</span><span class="p">:</span>
+        <span class="n">reconstructed</span> <span class="o">+=</span> <span class="n">literal_text</span>
+        <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">{{</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="k">if</span> <span class="n">conversion</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">conversion</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+                <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;conversion can only be a single character: </span><span class="si">{</span><span class="n">conversion</span><span class="si">=}</span><span class="s2">&quot;</span>
+                <span class="n">field</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;!</span><span class="si">{</span><span class="n">conversion</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="k">if</span> <span class="n">format_spec</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;:</span><span class="si">{</span><span class="n">format_spec</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">field</span> <span class="o">+=</span> <span class="s1">&#39;}&#39;</span>
+            <span class="n">reconstructed</span> <span class="o">+=</span> <span class="n">field</span>
+    <span class="k">return</span> <span class="n">reconstructed</span></div>
+
+
+<span class="k">def</span> <span class="nf">_field_names</span><span class="p">(</span><span class="n">string_template</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the field names in a string template.</span>
+
+<span class="sd">    &gt;&gt;&gt; _field_names(&quot;{name} is {age} years old.&quot;)</span>
+<span class="sd">    (&#39;name&#39;, &#39;age&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parsing_result</span> <span class="o">=</span> <span class="n">string_formatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">string_template</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="n">field_name</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">parsing_result</span> <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">identity</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">KeyCodec</span><span class="p">,</span> <span class="n">filt_iter</span>
+
+<span class="c1"># Codec = namedtuple(&#39;Codec&#39;, &#39;encoder decoder&#39;)</span>
 <span class="n">FieldTypeNames</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;dict&#39;</span><span class="p">,</span> <span class="s1">&#39;tuple&#39;</span><span class="p">,</span> <span class="s1">&#39;namedtuple&#39;</span><span class="p">,</span> <span class="s1">&#39;simple_str&#39;</span><span class="p">]</span>
 
 
@@ -1213,163 +1276,279 @@
 <span class="c1">#   It&#39;s a &quot;path finder&quot; meshed pattern.</span>
 <span class="c1"># TODO: Do we really want to allow field_patterns to be included in the template (the `{name:pattern}` options)?</span>
 <span class="c1">#  Normally, this is used for string GENERATION as `{name:format}`, which is still useful for us here too.</span>
-<span class="c1">#  The counter argument is that the main usage of StringTemplate is not actually</span>
+<span class="c1">#  The counter argument is that the main usage of KeyTemplate is not actually</span>
 <span class="c1">#  generation, but extraction. Further, the format language is not as general as simply</span>
 <span class="c1">#  using a format_field = {field: cast_function, ...} argument.</span>
 <span class="c1">#  My decision would be to remove any use of the `{name:X}` form in the base class,</span>
 <span class="c1">#  and have classmethods specialized for short-hand versions that use `name:regex` or</span>
 <span class="c1">#  `name:format`, ...</span>
-<div class="viewcode-block" id="StringTemplate"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate">[docs]</a><span class="k">class</span> <span class="nc">StringTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for parsing and generating strings based on a template.</span>
+<div class="viewcode-block" id="KeyTemplate"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate">[docs]</a><span class="k">class</span> <span class="nc">KeyTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for parsing and generating keys based on a template.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        template: A template string with fields to be extracted or filled in.</span>
 <span class="sd">        field_patterns: A dictionary of field names and their regex patterns.</span>
 <span class="sd">        simple_str_sep: A separator string for simple strings (i.e. strings without</span>
-<span class="sd">            fields). If `None`, the template string will be used as the separator.</span>
+<span class="sd">            fields).</span>
+<span class="sd">        namedtuple_type_name: The name of the namedtuple type to use for namedtuple</span>
+<span class="sd">            fields.</span>
+<span class="sd">        dflt_pattern: The default pattern to use for fields that don&#39;t have a pattern</span>
+<span class="sd">            specified.</span>
+<span class="sd">        to_str_funcs: A dictionary of field names and their functions to convert them</span>
+<span class="sd">            to strings.</span>
+<span class="sd">        from_str_funcs: A dictionary of field names and their functions to convert</span>
+<span class="sd">            them from strings.</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
-<span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; st.str_to_dict(&quot;Alice is 30 years old.&quot;)</span>
-<span class="sd">        {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
-<span class="sd">        &gt;&gt;&gt; st.dict_to_str({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
-<span class="sd">        &#39;Alice is 30 years old.&#39;</span>
-<span class="sd">        &gt;&gt;&gt; st.dict_to_tuple({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
-<span class="sd">        (&#39;Alice&#39;, &#39;30&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; st.tuple_to_dict((&#39;Alice&#39;, &#39;30&#39;))</span>
-<span class="sd">        {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
-<span class="sd">        &gt;&gt;&gt; st.str_to_tuple(&quot;Alice is 30 years old.&quot;)</span>
-<span class="sd">        (&#39;Alice&#39;, &#39;30&#39;)</span>
 
-<span class="sd">        You can also ask any (handled) combination of field types:</span>
-<span class="sd">        &gt;&gt;&gt; coder, encoder = st.codec(&#39;tuple&#39;, &#39;dict&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; coder((&#39;Alice&#39;, &#39;30&#39;))</span>
-<span class="sd">        {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
-<span class="sd">        &gt;&gt;&gt; encoder({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
-<span class="sd">        (&#39;Alice&#39;, &#39;30&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">    ...     &#39;root/{name}/v_{version}.json&#39;,</span>
+<span class="sd">    ...     field_patterns={&#39;version&#39;: r&#39;\d+&#39;},</span>
+<span class="sd">    ...     from_str_funcs={&#39;version&#39;: int},</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    And now you have a template that can be used to convert between various</span>
+<span class="sd">    representations of the template: You can extract fields from strings, generate</span>
+<span class="sd">    strings from fields, etc.</span>
+
+<span class="sd">    &gt;&gt;&gt; st.str_to_dict(&quot;root/dol/v_9.json&quot;)</span>
+<span class="sd">    {&#39;name&#39;: &#39;dol&#39;, &#39;version&#39;: 9}</span>
+<span class="sd">    &gt;&gt;&gt; st.dict_to_str({&#39;name&#39;: &#39;meshed&#39;, &#39;version&#39;: 42})</span>
+<span class="sd">    &#39;root/meshed/v_42.json&#39;</span>
+<span class="sd">    &gt;&gt;&gt; st.dict_to_tuple({&#39;name&#39;: &#39;meshed&#39;, &#39;version&#39;: 42})</span>
+<span class="sd">    (&#39;meshed&#39;, 42)</span>
+<span class="sd">    &gt;&gt;&gt; st.tuple_to_dict((&#39;i2&#39;, 96))</span>
+<span class="sd">    {&#39;name&#39;: &#39;i2&#39;, &#39;version&#39;: 96}</span>
+<span class="sd">    &gt;&gt;&gt; st.str_to_tuple(&quot;root/dol/v_9.json&quot;)</span>
+<span class="sd">    (&#39;dol&#39;, 9)</span>
+<span class="sd">    &gt;&gt;&gt; st.tuple_to_str((&#39;front&#39;, 11))</span>
+<span class="sd">    &#39;root/front/v_11.json&#39;</span>
+<span class="sd">    &gt;&gt;&gt; st.str_to_namedtuple(&quot;root/dol/v_9.json&quot;)</span>
+<span class="sd">    NamedTuple(name=&#39;dol&#39;, version=9)</span>
+<span class="sd">    &gt;&gt;&gt; st.str_to_simple_str(&quot;root/dol/v_9.json&quot;)</span>
+<span class="sd">    &#39;dol,9&#39;</span>
+<span class="sd">    &gt;&gt;&gt; st.str_to_simple_str(&quot;root/dol/v_9.json&quot;, sep=&#39;/&#39;)</span>
+<span class="sd">    &#39;dol/9&#39;</span>
+
+
+<span class="sd">    With ``st.key_codec``, you can make a ``KeyCodec`` for the given source and target</span>
+<span class="sd">    types. A `key_codec` is a codec; it has an encoder and a decoder.</span>
+
+<span class="sd">    &gt;&gt;&gt; key_codec = st.key_codec(&#39;tuple&#39;, &#39;str&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; encoder, decoder = key_codec</span>
+<span class="sd">    &gt;&gt;&gt; decoder(&#39;root/dol/v_9.json&#39;)</span>
+<span class="sd">    (&#39;dol&#39;, 9)</span>
+<span class="sd">    &gt;&gt;&gt; encoder((&#39;dol&#39;, 9))</span>
+<span class="sd">    &#39;root/dol/v_9.json&#39;</span>
+
+<span class="sd">    If you have a ``Mapping``, you can use ``key_codec`` as a decorator to wrap</span>
+<span class="sd">    the mapping with a key mappings.</span>
+
+<span class="sd">    &gt;&gt;&gt; store = {</span>
+<span class="sd">    ...     &#39;root/meshed/v_151.json&#39;: &#39;{&quot;downloads&quot;: 41, &quot;type&quot;: &quot;productivity&quot;}&#39;,</span>
+<span class="sd">    ...     &#39;root/dol/v_9.json&#39;: &#39;{&quot;downloads&quot;: 132, &quot;type&quot;: &quot;utility&quot;}&#39;,</span>
+<span class="sd">    ... }</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; accessor = key_codec(store)</span>
+<span class="sd">    &gt;&gt;&gt; list(accessor)</span>
+<span class="sd">    [(&#39;meshed&#39;, 151), (&#39;dol&#39;, 9)]</span>
+<span class="sd">    &gt;&gt;&gt; accessor[&#39;i2&#39;, 4] = &#39;{&quot;downloads&quot;: 274, &quot;type&quot;: &quot;utility&quot;}&#39;</span>
+<span class="sd">    &gt;&gt;&gt; list(store)</span>
+<span class="sd">    [&#39;root/meshed/v_151.json&#39;, &#39;root/dol/v_9.json&#39;, &#39;root/i2/v_4.json&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; store[&#39;root/i2/v_4.json&#39;]</span>
+<span class="sd">    &#39;{&quot;downloads&quot;: 274, &quot;type&quot;: &quot;utility&quot;}&#39;</span>
+
+<span class="sd">    Note: If your store contains keys that don&#39;t fit the format, key_codec will</span>
+<span class="sd">    raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to</span>
+<span class="sd">    filter out keys that don&#39;t fit the format, before you wrap the store with</span>
+<span class="sd">    ``st.key_codec``.</span>
+
+<span class="sd">    &gt;&gt;&gt; store = {</span>
+<span class="sd">    ...     &#39;root/meshed/v_151.json&#39;: &#39;{&quot;downloads&quot;: 41, &quot;type&quot;: &quot;productivity&quot;}&#39;,</span>
+<span class="sd">    ...     &#39;root/dol/v_9.json&#39;: &#39;{&quot;downloads&quot;: 132, &quot;type&quot;: &quot;utility&quot;}&#39;,</span>
+<span class="sd">    ...     &#39;root/not/the/right/format&#39;: &quot;something else&quot;</span>
+<span class="sd">    ... }</span>
+<span class="sd">    &gt;&gt;&gt; accessor = st.filt_iter(&#39;str&#39;)(store)</span>
+<span class="sd">    &gt;&gt;&gt; list(accessor)</span>
+<span class="sd">    [&#39;root/meshed/v_151.json&#39;, &#39;root/dol/v_9.json&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; accessor = st.key_codec(&#39;tuple&#39;, &#39;str&#39;)(st.filt_iter(&#39;str&#39;)(store))</span>
+<span class="sd">    &gt;&gt;&gt; list(accessor)</span>
+<span class="sd">    [(&#39;meshed&#39;, 151), (&#39;dol&#39;, 9)]</span>
+<span class="sd">    &gt;&gt;&gt; accessor[&#39;dol&#39;, 9]</span>
+<span class="sd">    &#39;{&quot;downloads&quot;: 132, &quot;type&quot;: &quot;utility&quot;}&#39;</span>
+
+<span class="sd">    You can also ask any (handled) combination of field types:</span>
+
+<span class="sd">    &gt;&gt;&gt; key_codec = st.key_codec(&#39;tuple&#39;, &#39;dict&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; key_codec.encoder((&#39;i2&#39;, 96))</span>
+<span class="sd">    {&#39;name&#39;: &#39;i2&#39;, &#39;version&#39;: 96}</span>
+<span class="sd">    &gt;&gt;&gt; key_codec.decoder({&#39;name&#39;: &#39;fantastic&#39;, &#39;version&#39;: 4})</span>
+<span class="sd">    (&#39;fantastic&#39;, 4)</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_formatter</span> <span class="o">=</span> <span class="n">string_formatter</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">field_patterns</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">simple_str_sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">to_str_funcs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">from_str_funcs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">simple_str_sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span>
         <span class="n">namedtuple_type_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;NamedTuple&#39;</span><span class="p">,</span>
+        <span class="n">dflt_pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;.*&#39;</span><span class="p">,</span>
+        <span class="n">dflt_field_name</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;i</span><span class="si">{:02.0f}</span><span class="s1">_&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">template</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">field_patterns</span> <span class="o">=</span> <span class="n">field_patterns</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_template</span> <span class="o">=</span> <span class="n">template</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simple_str_sep</span> <span class="o">=</span> <span class="n">simple_str_sep</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">namedtuple_type_name</span> <span class="o">=</span> <span class="n">namedtuple_type_name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">regex</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_construct_regex</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dflt_pattern</span> <span class="o">=</span> <span class="n">dflt_pattern</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dflt_field_name</span> <span class="o">=</span> <span class="n">dflt_field_name</span>
 
-    <span class="c1"># TODO: For now we harded coded the &quot;interpret format_specs as field patterns&quot;,</span>
-    <span class="c1">#   but we could make this more general and allow for other types of</span>
-    <span class="c1">#   &quot;interpretations&quot; (e.g. &quot;interpret format_specs as cast functions&quot;).</span>
-    <span class="c1">#   Note: We removed the cast functions (that existed in legacy StrTupleDict class)</span>
-    <span class="c1">#   to keep it simple, for now. The idea being that if you want to cast, you can</span>
-    <span class="c1">#   do it yourself by adding egress/ingress to codecs.</span>
-    <span class="k">def</span> <span class="nf">_construct_regex</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">formatter</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">Formatter</span><span class="p">()</span>
-        <span class="n">pattern</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">field_names</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">literal_text</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">format_spec</span><span class="p">,</span> <span class="n">conversion</span> <span class="ow">in</span> <span class="n">formatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">template</span>
-        <span class="p">):</span>
-            <span class="c1"># Check if the field_name has either a format_spec (regex) in the template</span>
-            <span class="c1"># or a matching regex in the field_patterns dictionary before adding it</span>
-            <span class="c1"># to the field_names list.</span>
-            <span class="k">if</span> <span class="n">field_name</span> <span class="ow">and</span> <span class="p">(</span><span class="n">format_spec</span> <span class="ow">or</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_patterns</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">field_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
-                <span class="n">regex</span> <span class="o">=</span> <span class="n">format_spec</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_patterns</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="s1">&#39;.*?&#39;</span><span class="p">)</span>
-                <span class="n">to_replace</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="s1">&#39;{&#39;</span> <span class="o">+</span> <span class="n">field_name</span> <span class="o">+</span> <span class="p">(</span><span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">format_spec</span> <span class="k">if</span> <span class="n">format_spec</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;}&#39;</span>
-                <span class="p">)</span>
-                <span class="n">pattern</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">to_replace</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;(?P&lt;</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s1">&gt;</span><span class="si">{</span><span class="n">regex</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+        <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">field_names</span><span class="p">,</span>
+            <span class="n">to_str_funcs</span><span class="p">,</span>
+            <span class="n">field_patterns_</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_template_info</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
 
-<div class="viewcode-block" id="StringTemplate.codec"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.codec">[docs]</a>    <span class="k">def</span> <span class="nf">codec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n">FieldTypeNames</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">FieldTypeNames</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Makes a ``(coder, decoder)`` pair for the given source and target types.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_patterns</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dflt_pattern</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_names</span><span class="p">},</span>
+            <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">field_patterns_</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">field_patterns</span> <span class="ow">or</span> <span class="p">{})),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_str_funcs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="nb">str</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_names</span><span class="p">},</span>
+            <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">to_str_funcs</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">to_str_funcs</span> <span class="ow">or</span> <span class="p">{})),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">from_str_funcs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="n">identity</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_names</span><span class="p">},</span> <span class="o">**</span><span class="p">(</span><span class="n">from_str_funcs</span> <span class="ow">or</span> <span class="p">{})</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_regex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">)</span>
 
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
+<div class="viewcode-block" id="KeyTemplate.key_codec"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.key_codec">[docs]</a>    <span class="k">def</span> <span class="nf">key_codec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n">FieldTypeNames</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">FieldTypeNames</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Makes a ``KeyCodec`` for the given source and target types.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{name}/v_{version}.json&#39;,</span>
+<span class="sd">        ...     field_patterns={&#39;version&#39;: r&#39;\d+&#39;},</span>
+<span class="sd">        ...     from_str_funcs={&#39;version&#39;: int},</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; coder, encoder = st.codec(&#39;tuple&#39;, &#39;dict&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; coder((&#39;Alice&#39;, &#39;30&#39;))</span>
-<span class="sd">        {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
-<span class="sd">        &gt;&gt;&gt; encoder({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
-<span class="sd">        (&#39;Alice&#39;, &#39;30&#39;)</span>
+
+<span class="sd">        A `key_codec` is a codec; it has an encoder and a decoder.</span>
+
+<span class="sd">        &gt;&gt;&gt; key_codec = st.key_codec(&#39;tuple&#39;, &#39;str&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; encoder, decoder = key_codec</span>
+<span class="sd">        &gt;&gt;&gt; decoder(&#39;root/dol/v_9.json&#39;)</span>
+<span class="sd">        (&#39;dol&#39;, 9)</span>
+<span class="sd">        &gt;&gt;&gt; encoder((&#39;dol&#39;, 9))</span>
+<span class="sd">        &#39;root/dol/v_9.json&#39;</span>
+
+<span class="sd">        If you have a ``Mapping``, you can use ``key_codec`` as a decorator to wrap</span>
+<span class="sd">        the mapping with a key mappings.</span>
+
+<span class="sd">        &gt;&gt;&gt; store = {</span>
+<span class="sd">        ...     &#39;root/meshed/v_151.json&#39;: &#39;{&quot;downloads&quot;: 41, &quot;type&quot;: &quot;productivity&quot;}&#39;,</span>
+<span class="sd">        ...     &#39;root/dol/v_9.json&#39;: &#39;{&quot;downloads&quot;: 132, &quot;type&quot;: &quot;utility&quot;}&#39;,</span>
+<span class="sd">        ... }</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; accessor = key_codec(store)</span>
+<span class="sd">        &gt;&gt;&gt; list(accessor)</span>
+<span class="sd">        [(&#39;meshed&#39;, 151), (&#39;dol&#39;, 9)]</span>
+<span class="sd">        &gt;&gt;&gt; accessor[&#39;i2&#39;, 4] = &#39;{&quot;downloads&quot;: 274, &quot;type&quot;: &quot;utility&quot;}&#39;</span>
+<span class="sd">        &gt;&gt;&gt; list(store)</span>
+<span class="sd">        [&#39;root/meshed/v_151.json&#39;, &#39;root/dol/v_9.json&#39;, &#39;root/i2/v_4.json&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; store[&#39;root/i2/v_4.json&#39;]</span>
+<span class="sd">        &#39;{&quot;downloads&quot;: 274, &quot;type&quot;: &quot;utility&quot;}&#39;</span>
+
+<span class="sd">        Note: If your store contains keys that don&#39;t fit the format, key_codec will</span>
+<span class="sd">        raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to</span>
+<span class="sd">        filter out keys that don&#39;t fit the format, before you wrap the store with</span>
+<span class="sd">        ``st.key_codec``.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_field_type</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;target&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_field_type</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">)</span>
         <span class="n">coder</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s1">_to_</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">decoder</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s1">_to_</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">Codec</span><span class="p">(</span><span class="n">coder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">KeyCodec</span><span class="p">(</span><span class="n">coder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KeyTemplate.filt_iter"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.filt_iter">[docs]</a>    <span class="k">def</span> <span class="nf">filt_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_type</span><span class="p">:</span> <span class="n">FieldTypeNames</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Makes a store decorator that filters out keys that don&#39;t match the template</span>
+<span class="sd">        given field type.</span>
+
+<span class="sd">        &gt;&gt;&gt; store = {</span>
+<span class="sd">        ...     &#39;root/meshed/v_151.json&#39;: &#39;{&quot;downloads&quot;: 41, &quot;type&quot;: &quot;productivity&quot;}&#39;,</span>
+<span class="sd">        ...     &#39;root/dol/v_9.json&#39;: &#39;{&quot;downloads&quot;: 132, &quot;type&quot;: &quot;utility&quot;}&#39;,</span>
+<span class="sd">        ...     &#39;root/not/the/right/format&#39;: &quot;something else&quot;</span>
+<span class="sd">        ... }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_field_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">,</span> <span class="s1">&#39;field_type&#39;</span><span class="p">)</span>
+        <span class="n">filt_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;match_</span><span class="si">{</span><span class="n">field_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="n">filt_func</span><span class="p">)</span></div>
 
     <span class="c1"># @_return_none_if_none_input</span>
-<div class="viewcode-block" id="StringTemplate.str_to_dict"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.str_to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">str_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parses the input string and returns a dictionary of extracted values.</span>
+<div class="viewcode-block" id="KeyTemplate.str_to_dict"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.str_to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">str_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Parses the input string and returns a dictionary of extracted values.</span>
 
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;,</span>
+<span class="sd">        ...     from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; st.str_to_dict(&#39;root/life/v_30.json&#39;)</span>
+<span class="sd">        {&#39;i01_&#39;: &#39;life&#39;, &#39;ver&#39;: 30}</span>
 
-<span class="sd">        &gt;&gt;&gt; st.str_to_dict(&quot;Alice is 30 years old.&quot;)</span>
-<span class="sd">        {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_str_funcs</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;String &#39;</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&#39; does not match the template.&quot;</span><span class="p">)</span></div>
 
     <span class="c1"># @_return_none_if_none_input</span>
-<div class="viewcode-block" id="StringTemplate.dict_to_str"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.dict_to_str">[docs]</a>    <span class="k">def</span> <span class="nf">dict_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a string from the dictionary values based on the template.</span>
+<div class="viewcode-block" id="KeyTemplate.dict_to_str"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.dict_to_str">[docs]</a>    <span class="k">def</span> <span class="nf">dict_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a string from the dictionary values based on the template.</span>
 
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; st.dict_to_str({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
-<span class="sd">        &#39;Alice is 30 years old.&#39;</span>
+<span class="sd">        &gt;&gt;&gt; st.dict_to_str({&#39;i01_&#39;: &#39;life&#39;, &#39;ver&#39;: 42})</span>
+<span class="sd">        &#39;root/life/v_042.json&#39;</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_str_funcs</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span></div>
 
     <span class="c1"># @_return_none_if_none_input</span>
-<div class="viewcode-block" id="StringTemplate.dict_to_tuple"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.dict_to_tuple">[docs]</a>    <span class="k">def</span> <span class="nf">dict_to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a tuple from the dictionary values based on the template.</span>
+<div class="viewcode-block" id="KeyTemplate.dict_to_tuple"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.dict_to_tuple">[docs]</a>    <span class="k">def</span> <span class="nf">dict_to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a tuple from the dictionary values based on the template.</span>
 
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; st.dict_to_tuple({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
-<span class="sd">        (&#39;Alice&#39;, &#39;30&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; st.str_to_tuple(&#39;root/life/v_42.json&#39;)</span>
+<span class="sd">        (&#39;life&#39;, 42)</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span> <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_names</span><span class="p">)</span></div>
 
     <span class="c1"># @_return_none_if_none_input</span>
-<div class="viewcode-block" id="StringTemplate.tuple_to_dict"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.tuple_to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">tuple_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_vals</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a dictionary from the tuple values based on the template.</span>
+<div class="viewcode-block" id="KeyTemplate.tuple_to_dict"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.tuple_to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">tuple_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_vals</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a dictionary from the tuple values based on the template.</span>
 
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; st.tuple_to_dict((&#39;Alice&#39;, &#39;30&#39;))</span>
-<span class="sd">        {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+<span class="sd">        &gt;&gt;&gt; st.tuple_to_dict((&#39;life&#39;, 42))</span>
+<span class="sd">        {&#39;i01_&#39;: &#39;life&#39;, &#39;ver&#39;: 42}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">param_vals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -1378,104 +1557,268 @@
         <span class="p">}</span></div>
 
     <span class="c1"># @_return_none_if_none_input</span>
-<div class="viewcode-block" id="StringTemplate.str_to_tuple"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.str_to_tuple">[docs]</a>    <span class="k">def</span> <span class="nf">str_to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parses the input string and returns a tuple of extracted values.</span>
+<div class="viewcode-block" id="KeyTemplate.str_to_tuple"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.str_to_tuple">[docs]</a>    <span class="k">def</span> <span class="nf">str_to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Parses the input string and returns a tuple of extracted values.</span>
 
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; st.str_to_tuple(&quot;Alice is 30 years old.&quot;)</span>
-<span class="sd">        (&#39;Alice&#39;, &#39;30&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; st.str_to_tuple(&#39;root/life/v_42.json&#39;)</span>
+<span class="sd">        (&#39;life&#39;, 42)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict_to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">str_to_dict</span><span class="p">(</span><span class="n">s</span><span class="p">))</span></div>
 
     <span class="c1"># @_return_none_if_none_input</span>
-<div class="viewcode-block" id="StringTemplate.tuple_to_str"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.tuple_to_str">[docs]</a>    <span class="k">def</span> <span class="nf">tuple_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a string from the tuple values based on the template.</span>
+<div class="viewcode-block" id="KeyTemplate.tuple_to_str"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.tuple_to_str">[docs]</a>    <span class="k">def</span> <span class="nf">tuple_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_vals</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a string from the tuple values based on the template.</span>
 
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; st.tuple_to_str((&#39;Alice&#39;, &#39;30&#39;))</span>
-<span class="sd">        &#39;Alice is 30 years old.&#39;</span>
+<span class="sd">        &gt;&gt;&gt; st.tuple_to_str((&#39;life&#39;, 42))</span>
+<span class="sd">        &#39;root/life/v_042.json&#39;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">param_vals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict_to_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tuple_to_dict</span><span class="p">(</span><span class="n">params</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict_to_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tuple_to_dict</span><span class="p">(</span><span class="n">param_vals</span><span class="p">))</span></div>
 
     <span class="c1"># @_return_none_if_none_input</span>
-<div class="viewcode-block" id="StringTemplate.dict_to_namedtuple"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.dict_to_namedtuple">[docs]</a>    <span class="k">def</span> <span class="nf">dict_to_namedtuple</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+<div class="viewcode-block" id="KeyTemplate.dict_to_namedtuple"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.dict_to_namedtuple">[docs]</a>    <span class="k">def</span> <span class="nf">dict_to_namedtuple</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a namedtuple from the dictionary values based on the template.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a namedtuple from the dictionary values based on the template.</span>
 
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; Person = st.dict_to_namedtuple({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
-<span class="sd">        &gt;&gt;&gt; Person</span>
-<span class="sd">        NamedTuple(name=&#39;Alice&#39;, age=&#39;30&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; App = st.dict_to_namedtuple({&#39;i01_&#39;: &#39;life&#39;, &#39;ver&#39;: 42})</span>
+<span class="sd">        &gt;&gt;&gt; App</span>
+<span class="sd">        NamedTuple(i01_=&#39;life&#39;, ver=42)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">namedtuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">namedtuple_type_name</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">keys</span><span class="p">())(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span></div>
 
     <span class="c1"># @_return_none_if_none_input</span>
-<div class="viewcode-block" id="StringTemplate.namedtuple_to_dict"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.namedtuple_to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">namedtuple_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a namedtuple to a dictionary.</span>
+<div class="viewcode-block" id="KeyTemplate.namedtuple_to_dict"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.namedtuple_to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">namedtuple_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts a namedtuple to a dictionary.</span>
 
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; Person = st.dict_to_namedtuple({&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;})</span>
-<span class="sd">        &gt;&gt;&gt; st.namedtuple_to_dict(Person)</span>
-<span class="sd">        {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: &#39;30&#39;}</span>
+<span class="sd">        &gt;&gt;&gt; App = st.dict_to_namedtuple({&#39;i01_&#39;: &#39;life&#39;, &#39;ver&#39;: 42})</span>
+<span class="sd">        &gt;&gt;&gt; st.namedtuple_to_dict(App)</span>
+<span class="sd">        {&#39;i01_&#39;: &#39;life&#39;, &#39;ver&#39;: 42}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">nt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">nt</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>  <span class="c1"># TODO: Find way that doesn&#39;t involve private method</span></div>
 
-    <span class="c1"># @_return_none_if_none_input</span>
-<div class="viewcode-block" id="StringTemplate.str_to_simple_str"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.str_to_simple_str">[docs]</a>    <span class="k">def</span> <span class="nf">str_to_simple_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a string to a simple string (i.e. a simple character-delimited string).</span>
+<div class="viewcode-block" id="KeyTemplate.str_to_namedtuple"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.str_to_namedtuple">[docs]</a>    <span class="k">def</span> <span class="nf">str_to_namedtuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts a string to a namedtuple.</span>
 
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; st.str_to_simple_str(&quot;Alice is 30 years old.&quot;, &#39;-&#39;)</span>
-<span class="sd">        &#39;Alice-30&#39;</span>
+<span class="sd">        &gt;&gt;&gt; App = st.str_to_namedtuple(&#39;root/life/v_042.json&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; App</span>
+<span class="sd">        NamedTuple(i01_=&#39;life&#39;, ver=42)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">elif</span> <span class="n">sep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simple_str_sep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s1">&#39;Need to specify a sep (at method call time), or a simple_str_sep &#39;</span>
-                    <span class="s1">&#39;(at instiantiation time) to use str_to_simple_str&#39;</span>
-                <span class="p">)</span>
-        <span class="k">return</span> <span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">str_to_tuple</span><span class="p">(</span><span class="n">s</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict_to_namedtuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">str_to_dict</span><span class="p">(</span><span class="n">s</span><span class="p">))</span></div>
 
     <span class="c1"># @_return_none_if_none_input</span>
-<div class="viewcode-block" id="StringTemplate.simple_str_to_str"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.StringTemplate.simple_str_to_str">[docs]</a>    <span class="k">def</span> <span class="nf">simple_str_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ss</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a simple character-delimited string to a string.</span>
+<div class="viewcode-block" id="KeyTemplate.str_to_simple_str"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.str_to_simple_str">[docs]</a>    <span class="k">def</span> <span class="nf">str_to_simple_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts a string to a simple string (i.e. a simple character-delimited string).</span>
 
-<span class="sd">        &gt;&gt;&gt; st = StringTemplate(</span>
-<span class="sd">        ...     &quot;{name} is {age} years old.&quot;,</span>
-<span class="sd">        ...     field_patterns={&quot;name&quot;: r&quot;\w+&quot;, &quot;age&quot;: r&quot;\d+&quot;}</span>
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; st.simple_str_to_str(&#39;Alice-30&#39;, &#39;-&#39;)</span>
-<span class="sd">        &#39;Alice is 30 years old.&#39;</span>
+<span class="sd">        &gt;&gt;&gt; st.str_to_simple_str(&#39;root/life/v_042.json&#39;)</span>
+<span class="sd">        &#39;life,042&#39;</span>
+<span class="sd">        &gt;&gt;&gt; st.str_to_simple_str(&#39;root/life/v_042.json&#39;, &#39;-&#39;)</span>
+<span class="sd">        &#39;life-042&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sep</span> <span class="o">=</span> <span class="n">sep</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">simple_str_sep</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_str_funcs</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">str_to_dict</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">())</span></div>
+
+    <span class="c1"># @_return_none_if_none_input</span>
+<div class="viewcode-block" id="KeyTemplate.simple_str_to_tuple"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.simple_str_to_tuple">[docs]</a>    <span class="k">def</span> <span class="nf">simple_str_to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ss</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts a simple character-delimited string to a dict.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; st.simple_str_to_tuple(&#39;life-042&#39;, &#39;-&#39;)</span>
+<span class="sd">        (&#39;life&#39;, 42)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">ss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tuple_to_str</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)))</span></div></div>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">from_str_funcs</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">ss</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)))</span></div>
+
+    <span class="c1"># @_return_none_if_none_input</span>
+<div class="viewcode-block" id="KeyTemplate.simple_str_to_str"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.simple_str_to_str">[docs]</a>    <span class="k">def</span> <span class="nf">simple_str_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ss</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts a simple character-delimited string to a string.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; st.simple_str_to_str(&#39;life-042&#39;, &#39;-&#39;)</span>
+<span class="sd">        &#39;root/life/v_042.json&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tuple_to_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">simple_str_to_tuple</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="KeyTemplate.match_str"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.match_str">[docs]</a>    <span class="k">def</span> <span class="nf">match_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns True iff the string matches the template.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
+<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; st.match_str(&#39;root/life/v_042.json&#39;)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; st.match_str(&#39;this/does/not_match&#39;)</span>
+<span class="sd">        False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">match_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dict_to_str</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+        <span class="c1"># Note: Could do:</span>
+        <span class="c1">#  return all(self.field_patterns[k].match(v) for k, v in params.items())</span>
+        <span class="c1"># but not sure that&#39;s even quicker (given regex is compiled)</span>
+
+    <span class="k">def</span> <span class="nf">match_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_vals</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tuple_to_str</span><span class="p">(</span><span class="n">param_vals</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">match_namedtuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">namedtuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">namedtuple_to_str</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">match_simple_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">simple_str_to_str</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_extract_template_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Extracts information from the template. Namely:</span>
+
+<span class="sd">        - normalized_template: A template where each placeholder has a field name</span>
+<span class="sd">        (if not given, dflt_field_name will be used, which by default is</span>
+<span class="sd">        &#39;i{:02.0f}_&#39;.format)</span>
+
+<span class="sd">        - field_names: The tuple of field names in the order they appear in template</span>
+
+<span class="sd">        - to_str_funcs: A dict of field names and their corresponding to_str functions,</span>
+<span class="sd">        which will be used to convert the field values to strings when generating a</span>
+<span class="sd">        string.</span>
+
+<span class="sd">        - field_patterns_: A dict of field names and their corresponding regex patterns,</span>
+<span class="sd">        which will be used to extract the field values from a string.</span>
+
+<span class="sd">        These four values are used in the init to compute the parameters of the</span>
+<span class="sd">        instance.</span>
+
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(&#39;{:03.0f}/{name::\w+}&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; st.template</span>
+<span class="sd">        &#39;{i01_}/{name}&#39;</span>
+<span class="sd">        &gt;&gt;&gt; st.field_names</span>
+<span class="sd">        (&#39;i01_&#39;, &#39;name&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; st.field_patterns</span>
+<span class="sd">        {&#39;i01_&#39;: &#39;.*&#39;, &#39;name&#39;: &#39;\\w+&#39;}</span>
+<span class="sd">        &gt;&gt;&gt; st.regex.pattern</span>
+<span class="sd">        &#39;(?P&lt;i01_&gt;.*)/(?P&lt;name&gt;\\w+)&#39;</span>
+<span class="sd">        &gt;&gt;&gt; to_str_funcs = st.to_str_funcs</span>
+<span class="sd">        &gt;&gt;&gt; to_str_funcs[&#39;i01_&#39;](3)</span>
+<span class="sd">        &#39;003&#39;</span>
+<span class="sd">        &gt;&gt;&gt; to_str_funcs[&#39;name&#39;](&#39;life&#39;)</span>
+<span class="sd">        &#39;life&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">field_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">field_patterns_</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">to_str_funcs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">def</span> <span class="nf">parse_and_transform</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">literal_text</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">format_spec</span><span class="p">,</span> <span class="n">conversion</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_formatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">template</span><span class="p">),</span> <span class="mi">1</span>
+            <span class="p">):</span>
+                <span class="n">field_name</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dflt_field_name</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="k">if</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="k">else</span> <span class="n">field_name</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">field_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>  <span class="c1"># remember the field name</span>
+                    <span class="c1"># extract format and pattern information:</span>
+                    <span class="k">if</span> <span class="s1">&#39;:&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">format_spec</span><span class="p">:</span>
+                        <span class="n">format_spec</span> <span class="o">+=</span> <span class="s1">&#39;:&#39;</span>
+                    <span class="n">to_str_func_format</span><span class="p">,</span> <span class="n">pattern</span> <span class="o">=</span> <span class="n">format_spec</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">to_str_func_format</span><span class="p">:</span>
+                        <span class="n">to_str_funcs</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="s1">&#39;{&#39;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{</span><span class="n">to_str_func_format</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s1">&#39;}&#39;</span>
+                        <span class="p">)</span><span class="o">.</span><span class="n">format</span>
+                    <span class="n">field_patterns_</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">pattern</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dflt_pattern</span>
+                <span class="c1"># At this point you should have a valid field_name and empty format_spec</span>
+                <span class="k">yield</span> <span class="p">(</span>
+                    <span class="n">literal_text</span><span class="p">,</span>
+                    <span class="n">field_name</span><span class="p">,</span>
+                    <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                    <span class="n">conversion</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="n">normalized_template</span> <span class="o">=</span> <span class="n">string_unparse</span><span class="p">(</span><span class="n">parse_and_transform</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">normalized_template</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">field_names</span><span class="p">),</span> <span class="n">to_str_funcs</span><span class="p">,</span> <span class="n">field_patterns_</span>
+
+    <span class="k">def</span> <span class="nf">_compile_regex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Parses the template, generating regex for matching the template.</span>
+<span class="sd">        Essentially, it weaves together the literal text parts and the format_specs</span>
+<span class="sd">        parts, transformed into name-caputuring regex patterns.</span>
+
+<span class="sd">        Note that the literal text parts are regex-escaped so that they are not</span>
+<span class="sd">        interpreted as regex. For example, if the template is &quot;{name}.txt&quot;, the</span>
+<span class="sd">        literal text part is replaced with &quot;\\.txt&quot;, to avoid that the &quot;.&quot; is</span>
+<span class="sd">        interpreted as a regex wildcard. This would otherwise match any character.</span>
+<span class="sd">        Instead, the escaped dot is matched literally.</span>
+<span class="sd">        See https://docs.python.org/3/library/re.html#re.escape for more information.</span>
+
+<span class="sd">        &gt;&gt;&gt; KeyTemplate(&#39;{}.ext&#39;).regex.pattern</span>
+<span class="sd">        &#39;(?P&lt;i01_&gt;.*)\\.ext&#39;</span>
+<span class="sd">        &gt;&gt;&gt; KeyTemplate(&#39;{name}.ext&#39;).regex.pattern</span>
+<span class="sd">        &#39;(?P&lt;name&gt;.*)\\.ext&#39;</span>
+<span class="sd">        &gt;&gt;&gt; KeyTemplate(&#39;{::\w+}.ext&#39;).regex.pattern</span>
+<span class="sd">        &#39;(?P&lt;i01_&gt;\\w+)\\.ext&#39;</span>
+<span class="sd">        &gt;&gt;&gt; KeyTemplate(&#39;{name::\w+}.ext&#39;).regex.pattern</span>
+<span class="sd">        &#39;(?P&lt;name&gt;\\w+)\\.ext&#39;</span>
+<span class="sd">        &gt;&gt;&gt; KeyTemplate(&#39;{:0.02f:\w+}.ext&#39;).regex.pattern</span>
+<span class="sd">        &#39;(?P&lt;i01_&gt;\\w+)\\.ext&#39;</span>
+<span class="sd">        &gt;&gt;&gt; KeyTemplate(&#39;{name:0.02f:\w+}.ext&#39;).regex.pattern</span>
+<span class="sd">        &#39;(?P&lt;name&gt;\\w+)\\.ext&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">mk_named_capture_group</span><span class="p">(</span><span class="n">field_name</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">field_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(?P&lt;</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">field_patterns</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">generate_pattern_parts</span><span class="p">(</span><span class="n">template</span><span class="p">):</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_formatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">literal_text</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">literal_text</span><span class="p">)</span> <span class="o">+</span> <span class="n">mk_named_capture_group</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">generate_pattern_parts</span><span class="p">(</span><span class="n">template</span><span class="p">)))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_assert_field_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">:</span> <span class="n">FieldTypeNames</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;field_type&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">field_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">FieldTypeNames</span><span class="o">.</span><span class="n">__args__</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be one of </span><span class="si">{</span><span class="n">FieldTypeNames</span><span class="si">}</span><span class="s2">. Was: </span><span class="si">{</span><span class="n">field_type</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span></div>
 </pre></div>
 
            </div>

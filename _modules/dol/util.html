@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.8 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.util &mdash; dol 0.2.9 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -52,6 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/errors.html">dol.errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/explicit.html">dol.explicit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/kv_codecs.html">dol.kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/misc.html">dol.misc</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/naming.html">dol.naming</a></li>
@@ -69,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
@@ -124,6 +126,54 @@
 <span class="n">wraps</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_wraps</span><span class="p">,</span> <span class="n">assigned</span><span class="o">=</span><span class="n">wrapper_assignments</span><span class="p">)</span>
 
 <span class="n">exhaust</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">deque</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="staticproperty"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.staticproperty">[docs]</a><span class="k">class</span> <span class="nc">staticproperty</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A decorator for defining static properties in classes.</span>
+
+<span class="sd">    &gt;&gt;&gt; class A:</span>
+<span class="sd">    ...     @staticproperty</span>
+<span class="sd">    ...     def foo():</span>
+<span class="sd">    ...         return 2</span>
+<span class="sd">    &gt;&gt;&gt; A.foo</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; A().foo</span>
+<span class="sd">    2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="n">function</span>
+
+    <span class="k">def</span> <span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="decorate_callables"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.decorate_callables">[docs]</a><span class="k">def</span> <span class="nf">decorate_callables</span><span class="p">(</span><span class="n">decorator</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorate all (non-underscored) callables in a class with a decorator.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.util import LiteralVal</span>
+<span class="sd">    &gt;&gt;&gt; @decorate_callables(property)</span>
+<span class="sd">    ... class A:</span>
+<span class="sd">    ...     def wet(self):</span>
+<span class="sd">    ...         return &#39;dry&#39;</span>
+<span class="sd">    ...     @LiteralVal</span>
+<span class="sd">    ...     def big(self):</span>
+<span class="sd">    ...         return &#39;small&#39;</span>
+<span class="sd">    &gt;&gt;&gt; a = A()</span>
+<span class="sd">    &gt;&gt;&gt; a.wet</span>
+<span class="sd">    &#39;dry&#39;</span>
+<span class="sd">    &gt;&gt;&gt; a.big()</span>
+<span class="sd">    &#39;small&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">decorate_callables</span><span class="p">,</span> <span class="n">decorator</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">LiteralVal</span><span class="p">):</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attr</span><span class="o">.</span><span class="n">get_val</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">decorator</span><span class="p">(</span><span class="n">attr</span><span class="p">))</span>
+    <span class="k">return</span> <span class="bp">cls</span></div>
 
 
 <div class="viewcode-block" id="add_as_attribute_of"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.add_as_attribute_of">[docs]</a><span class="k">def</span> <span class="nf">add_as_attribute_of</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -192,10 +242,10 @@
     <span class="k">return</span> <span class="n">default</span></div>
 
 
-<div class="viewcode-block" id="Literal"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.Literal">[docs]</a><span class="k">class</span> <span class="nc">Literal</span><span class="p">:</span>
+<div class="viewcode-block" id="LiteralVal"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.LiteralVal">[docs]</a><span class="k">class</span> <span class="nc">LiteralVal</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An object to indicate that the value should be considered literally.</span>
 
-<span class="sd">    &gt;&gt;&gt; t = Literal(42)</span>
+<span class="sd">    &gt;&gt;&gt; t = LiteralVal(42)</span>
 <span class="sd">    &gt;&gt;&gt; t.get_val()</span>
 <span class="sd">    42</span>
 <span class="sd">    &gt;&gt;&gt; t()</span>
@@ -206,11 +256,11 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">val</span>
 
-<div class="viewcode-block" id="Literal.get_val"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.Literal.get_val">[docs]</a>    <span class="k">def</span> <span class="nf">get_val</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the value wrapped by Literal instance.</span>
+<div class="viewcode-block" id="LiteralVal.get_val"><a class="viewcode-back" href="../../module_docs/dol/util.html#dol.base.LiteralVal.get_val">[docs]</a>    <span class="k">def</span> <span class="nf">get_val</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the value wrapped by LiteralVal instance.</span>
 
 <span class="sd">        One might want to use ``literal.get_val()`` instead ``literal()`` to get the</span>
-<span class="sd">        value a ``Literal`` is wrapping because ``.get_val`` is more explicit.</span>
+<span class="sd">        value a ``LiteralVal`` is wrapping because ``.get_val`` is more explicit.</span>
 
 <span class="sd">        That said, with a bit of hesitation, we allow the ``literal()`` form as well</span>
 <span class="sd">        since it is useful in situations where we need to use a callback function to</span>
@@ -1203,12 +1253,12 @@
 <span class="sd">    &gt;&gt;&gt; max_common_prefix([[3,2,1], [3,2,0], [1,2,3]])</span>
 <span class="sd">    []</span>
 
-<span class="sd">    If the input is empty, will return default (which defaults to &#39;&#39;). </span>
+<span class="sd">    If the input is empty, will return default (which defaults to &#39;&#39;).</span>
 
 <span class="sd">    &gt;&gt;&gt; max_common_prefix([])</span>
 <span class="sd">    &#39;&#39;</span>
 
-<span class="sd">    If you want a different default, you can specify it with the default </span>
+<span class="sd">    If you want a different default, you can specify it with the default</span>
 <span class="sd">    keyword argument.</span>
 
 <span class="sd">    &gt;&gt;&gt; from functools import partial</span>

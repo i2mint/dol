@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.8 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.2.9 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -52,6 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/errors.html">dol.errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/explicit.html">dol.explicit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/kv_codecs.html">dol.kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/misc.html">dol.misc</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/naming.html">dol.naming</a></li>
@@ -69,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
@@ -210,6 +212,7 @@
     <span class="n">cached_property</span><span class="p">,</span>
     <span class="n">update_wrapper</span><span class="p">,</span>
     <span class="n">partial</span><span class="p">,</span>
+    <span class="n">partialmethod</span><span class="p">,</span>
     <span class="n">WRAPPER_ASSIGNMENTS</span><span class="p">,</span>
     <span class="n">wraps</span> <span class="k">as</span> <span class="n">_wraps</span><span class="p">,</span>
     <span class="n">update_wrapper</span> <span class="k">as</span> <span class="n">_update_wrapper</span><span class="p">,</span>
@@ -358,7 +361,9 @@
             <span class="n">caught_exceptions</span><span class="o">=</span><span class="n">caught_exceptions</span><span class="p">,</span>
             <span class="n">default_factory</span><span class="o">=</span><span class="n">default_factory</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="p">(</span><span class="n">cached_property</span><span class="p">,</span> <span class="n">partial</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;func&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="p">(</span><span class="n">cached_property</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">partialmethod</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span>
+            <span class="n">o</span><span class="p">,</span> <span class="s1">&#39;func&#39;</span>
+        <span class="p">):</span>
             <span class="k">return</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="nb">property</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;fget&#39;</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">name_of_obj</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">fget</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -739,7 +744,10 @@
 
     <span class="k">if</span> <span class="n">include_all_when_var_keywords_in_params</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span>
-            <span class="nb">next</span><span class="p">((</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">),</span> <span class="kc">None</span><span class="p">,)</span>
+            <span class="nb">next</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">),</span>
+                <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="p">):</span>
             <span class="n">param_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">remaining_kwargs</span><span class="p">)</span>
@@ -4056,7 +4064,7 @@
         <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">func</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">property</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">fget</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">partial</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="n">partial</span><span class="p">,</span> <span class="n">partialmethod</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">func</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">wrapped</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;__wrapped__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
         <span class="c1"># If obj is not callable, but has a __wrapped__ attribute that is, return that</span>
@@ -4292,6 +4300,9 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;``partial(func, *args, **keywords)`` - new function with partial application</span>
 <span class="sd">        of the given arguments and keywords.&quot;&quot;&quot;</span>
 
+    <span class="k">def</span> <span class="nf">partialmethod</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;``functools.partialmethod(func, *args, **keywords)``&quot;&quot;&quot;</span>
+
 
 <span class="c1"># Merge sigs_for_builtin_modules and sigs_for_builtins</span>
 <span class="n">sigs_for_sigless_builtin_name</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sigs_for_builtin_modules</span><span class="p">,</span> <span class="o">**</span><span class="n">sigs_for_builtins</span><span class="p">)</span>
@@ -4358,7 +4369,9 @@
     <span class="n">lower_kind</span> <span class="o">=</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="nb">setattr</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">lower_kind</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">))</span>
     <span class="nb">setattr</span><span class="p">(</span>
-        <span class="n">param_for_kind</span><span class="p">,</span> <span class="s1">&#39;with_default&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">with_default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">param_for_kind</span><span class="p">,</span>
+        <span class="s1">&#39;with_default&#39;</span><span class="p">,</span>
+        <span class="n">partial</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">with_default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="nb">setattr</span><span class="p">(</span>
         <span class="nb">getattr</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">lower_kind</span><span class="p">),</span>
@@ -4412,7 +4425,10 @@
 
 
 <span class="k">def</span> <span class="nf">_keyed_comparator</span><span class="p">(</span>
-    <span class="n">comparator</span><span class="p">:</span> <span class="n">Comparator</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KeyFunction</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">CT</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">CT</span><span class="p">,</span>
+    <span class="n">comparator</span><span class="p">:</span> <span class="n">Comparator</span><span class="p">,</span>
+    <span class="n">key</span><span class="p">:</span> <span class="n">KeyFunction</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">CT</span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">CT</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Comparison</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a comparator after transforming inputs through a key function.</span>
 
@@ -4426,7 +4442,10 @@
     <span class="k">return</span> <span class="n">comparator</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">key</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
 
 
-<div class="viewcode-block" id="keyed_comparator"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.keyed_comparator">[docs]</a><span class="k">def</span> <span class="nf">keyed_comparator</span><span class="p">(</span><span class="n">comparator</span><span class="p">:</span> <span class="n">Comparator</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KeyFunction</span><span class="p">,)</span> <span class="o">-&gt;</span> <span class="n">Comparator</span><span class="p">:</span>
+<div class="viewcode-block" id="keyed_comparator"><a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.keyed_comparator">[docs]</a><span class="k">def</span> <span class="nf">keyed_comparator</span><span class="p">(</span>
+    <span class="n">comparator</span><span class="p">:</span> <span class="n">Comparator</span><span class="p">,</span>
+    <span class="n">key</span><span class="p">:</span> <span class="n">KeyFunction</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Comparator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a key-function enabled binary operator.</span>
 
 <span class="sd">    In various places in python functionality is extended by allowing a key function.</span>

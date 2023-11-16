@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.2.8 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.2.9 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -52,6 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/errors.html">dol.errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/explicit.html">dol.explicit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/kv_codecs.html">dol.kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/misc.html">dol.misc</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/naming.html">dol.naming</a></li>
@@ -69,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
@@ -108,7 +110,8 @@
 <span class="kn">import</span> <span class="nn">types</span>
 <span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">SimpleNamespace</span>
 <span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span><span class="p">,</span> <span class="n">Parameter</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="p">(</span>
@@ -124,7 +127,7 @@
     <span class="n">attrs_of</span><span class="p">,</span>
     <span class="n">wraps</span><span class="p">,</span>
     <span class="n">Pipe</span><span class="p">,</span>
-    <span class="n">Literal</span><span class="p">,</span>
+    <span class="n">LiteralVal</span><span class="p">,</span>
     <span class="n">num_of_args</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">dol.signatures</span> <span class="kn">import</span> <span class="n">Sig</span><span class="p">,</span> <span class="n">KO</span>
@@ -726,7 +729,9 @@
 
 <div class="viewcode-block" id="insert_hash_method"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.insert_hash_method">[docs]</a><span class="nd">@store_decorator</span>
 <span class="k">def</span> <span class="nf">insert_hash_method</span><span class="p">(</span>
-    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">hash_method</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">id</span><span class="p">,</span>
+    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">hash_method</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">id</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a store hashable using the specified ``hash_method``.</span>
 <span class="sd">    Will add (or overwrite) a ``__hash__`` method to the store that uses the</span>
@@ -1934,7 +1939,7 @@
     <span class="c1">#</span>
 
 
-<div class="viewcode-block" id="FirstArgIsMapping"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.FirstArgIsMapping">[docs]</a><span class="k">class</span> <span class="nc">FirstArgIsMapping</span><span class="p">(</span><span class="n">Literal</span><span class="p">):</span>
+<div class="viewcode-block" id="FirstArgIsMapping"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.FirstArgIsMapping">[docs]</a><span class="k">class</span> <span class="nc">FirstArgIsMapping</span><span class="p">(</span><span class="n">LiteralVal</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A Literal class to mark a function as being one where the first argument is</span>
 <span class="sd">    a mapping (store). This is intended to be used in wrappers such as ``wrap_kvs``</span>
 <span class="sd">    to indicate when the first argument of a transformer function ``trans`` like</span>
@@ -3109,6 +3114,36 @@
 
     <span class="n">StoreWithMissingKeyCallaback</span><span class="o">.</span><span class="fm">__missing__</span> <span class="o">=</span> <span class="n">missing_key_callback</span>
     <span class="k">return</span> <span class="n">StoreWithMissingKeyCallaback</span></div>
+
+
+<span class="n">EncodedType</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;EncodedType&#39;</span><span class="p">)</span>
+<span class="n">DecodedType</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;DecodedType&#39;</span><span class="p">)</span>
+
+
+<span class="c1"># TODO: Want a way to specify Encoded type and Decoded type</span>
+<div class="viewcode-block" id="Codec"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.Codec">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Codec</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">DecodedType</span><span class="p">,</span> <span class="n">EncodedType</span><span class="p">]):</span>
+    <span class="n">encoder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">DecodedType</span><span class="p">],</span> <span class="n">EncodedType</span><span class="p">]</span>
+    <span class="n">decoder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">EncodedType</span><span class="p">],</span> <span class="n">DecodedType</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Codec</span><span class="p">(</span>
+            <span class="n">encoder</span><span class="o">=</span><span class="n">Pipe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">encoder</span><span class="p">),</span>
+            <span class="n">decoder</span><span class="o">=</span><span class="n">Pipe</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">decoder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ValueCodec"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.ValueCodec">[docs]</a><span class="k">class</span> <span class="nc">ValueCodec</span><span class="p">(</span><span class="n">Codec</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="KeyCodec"><a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.sources.KeyCodec">[docs]</a><span class="k">class</span> <span class="nc">KeyCodec</span><span class="p">(</span><span class="n">Codec</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span> <span class="n">key_of_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
