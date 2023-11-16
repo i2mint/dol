@@ -3,7 +3,8 @@ from functools import wraps, partial, reduce
 import types
 from types import SimpleNamespace
 from inspect import signature, Parameter
-from typing import Union, Iterable, Optional, Collection, Callable, Any
+from typing import Union, Iterable, Optional, Collection, Callable, Any, Generic
+from dataclasses import dataclass
 from warnings import warn
 from collections.abc import Iterable
 from collections.abc import (
@@ -621,7 +622,9 @@ def _wrap_store(
 
 @store_decorator
 def insert_hash_method(
-    store=None, *, hash_method: Callable[[Any], int] = id,
+    store=None,
+    *,
+    hash_method: Callable[[Any], int] = id,
 ):
     """Make a store hashable using the specified ``hash_method``.
     Will add (or overwrite) a ``__hash__`` method to the store that uses the
@@ -3004,3 +3007,33 @@ def add_missing_key_handling(store=None, *, missing_key_callback: Callable):
 
     StoreWithMissingKeyCallaback.__missing__ = missing_key_callback
     return StoreWithMissingKeyCallaback
+
+
+EncodedType = TypeVar('EncodedType')
+DecodedType = TypeVar('DecodedType')
+
+
+# TODO: Want a way to specify Encoded type and Decoded type
+@dataclass
+class Codec(Generic[DecodedType, EncodedType]):
+    encoder: Callable[[DecodedType], EncodedType]
+    decoder: Callable[[EncodedType], DecodedType]
+
+    def __iter__(self):
+        return iter((self.encoder, self.decoder))
+
+    def __add__(self, other):
+        return Codec(
+            encoder=Pipe(self.encoder, other.encoder),
+            decoder=Pipe(other.decoder, self.decoder),
+        )
+
+
+class ValueCodec(Codec):
+    def __call__(self, obj):
+        return wrap_kvs(obj, data_of_obj=self.encoder, obj_of_data=self.decoder)
+
+
+class KeyCodec(Codec):
+    def __call__(self, obj):
+        return wrap_kvs(obj, id_of_key=self.encoder, key_of_id=self.decoder)

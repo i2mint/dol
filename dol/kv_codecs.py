@@ -1,11 +1,9 @@
 # ------------------------------------ Codecs ------------------------------------------
 
 from functools import partial
-from dataclasses import dataclass
-from typing import TypeVar, Generic, Callable, Iterable, Any, Optional
+from typing import Callable, Iterable, Any, Optional
 
-from dol.trans import wrap_kvs
-from dol.util import Pipe
+from dol.trans import Codec, ValueCodec, KeyCodec
 from dol.signatures import Sig
 
 # For the codecs:
@@ -166,36 +164,6 @@ def _xml_tree_decode(
     )
 
 
-EncodedType = TypeVar('EncodedType')
-DecodedType = TypeVar('DecodedType')
-
-
-# TODO: Want a way to specify Encoded type and Decoded type
-@dataclass
-class Codec(Generic[DecodedType, EncodedType]):
-    encoder: Callable[[DecodedType], EncodedType]
-    decoder: Callable[[EncodedType], DecodedType]
-
-    def __iter__(self):
-        return iter((self.encoder, self.decoder))
-
-    def __add__(self, other):
-        return Codec(
-            encoder=Pipe(self.encoder, other.encoder),
-            decoder=Pipe(other.decoder, self.decoder),
-        )
-
-
-class ValueCodec(Codec):
-    def __call__(self, obj):
-        return wrap_kvs(obj, data_of_obj=self.encoder, obj_of_data=self.decoder)
-
-
-class KeyCodec(Codec):
-    def __call__(self, obj):
-        return wrap_kvs(obj, id_of_key=self.encoder, key_of_id=self.decoder)
-
-
 def extract_arguments(func, args, kwargs):
     return Sig(func).kwargs_from_args_and_kwargs(
         args, kwargs, allow_partial=True, allow_excess=True, ignore_kind=True
@@ -316,7 +284,18 @@ class ValueCodecs:
     xml_etree: Codec[Any, bytes] = value_wrap(_xml_tree_encode, _xml_tree_decode)
 
 
+from dol.paths import KeyTemplate
+
+
 class KeyCodecs:
     """
     A collection of key codecs
     """
+
+    def without_suffix(suffix: str):
+        st = KeyTemplate('{}' + f"{suffix}")
+        return KeyCodec(st.simple_str_to_str, st.str_to_simple_str)
+
+    # def suffixed(suffix: str, field_type: FieldTypeNames = 'simple_str'):
+    #     st = StringTemplate('{}' + f"{suffix}")
+    #     return KeyCodec(st.

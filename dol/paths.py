@@ -1156,7 +1156,9 @@ def identity(x):
     return x
 
 
-Codec = namedtuple('Codec', 'encoder decoder')
+from dol.trans import KeyCodec, filt_iter
+
+# Codec = namedtuple('Codec', 'encoder decoder')
 FieldTypeNames = Literal['str', 'dict', 'tuple', 'namedtuple', 'simple_str']
 
 
@@ -1167,43 +1169,115 @@ FieldTypeNames = Literal['str', 'dict', 'tuple', 'namedtuple', 'simple_str']
 #   It's a "path finder" meshed pattern.
 # TODO: Do we really want to allow field_patterns to be included in the template (the `{name:pattern}` options)?
 #  Normally, this is used for string GENERATION as `{name:format}`, which is still useful for us here too.
-#  The counter argument is that the main usage of StringTemplate is not actually
+#  The counter argument is that the main usage of KeyTemplate is not actually
 #  generation, but extraction. Further, the format language is not as general as simply
 #  using a format_field = {field: cast_function, ...} argument.
 #  My decision would be to remove any use of the `{name:X}` form in the base class,
 #  and have classmethods specialized for short-hand versions that use `name:regex` or
 #  `name:format`, ...
-class StringTemplate:
-    """A class for parsing and generating strings based on a template.
+class KeyTemplate:
+    """A class for parsing and generating keys based on a template.
 
     Args:
         template: A template string with fields to be extracted or filled in.
         field_patterns: A dictionary of field names and their regex patterns.
         simple_str_sep: A separator string for simple strings (i.e. strings without
             fields).
+        namedtuple_type_name: The name of the namedtuple type to use for namedtuple
+            fields.
+        dflt_pattern: The default pattern to use for fields that don't have a pattern
+            specified.
+        to_str_funcs: A dictionary of field names and their functions to convert them
+            to strings.
+        from_str_funcs: A dictionary of field names and their functions to convert
+            them from strings.
 
     Examples:
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-        >>> st.str_to_dict("Alice is 30 years old.")
-        {'name': 'Alice', 'age': '30'}
-        >>> st.dict_to_str({'name': 'Alice', 'age': '30'})
-        'Alice is 30 years old.'
-        >>> st.dict_to_tuple({'name': 'Alice', 'age': '30'})
-        ('Alice', '30')
-        >>> st.tuple_to_dict(('Alice', '30'))
-        {'name': 'Alice', 'age': '30'}
-        >>> st.str_to_tuple("Alice is 30 years old.")
-        ('Alice', '30')
 
-        You can also ask any (handled) combination of field types:
-        >>> coder, encoder = st.codec('tuple', 'dict')
-        >>> coder(('Alice', '30'))
-        {'name': 'Alice', 'age': '30'}
-        >>> encoder({'name': 'Alice', 'age': '30'})
-        ('Alice', '30')
+    >>> st = KeyTemplate(
+    ...     'root/{name}/v_{version}.json',
+    ...     field_patterns={'version': r'\d+'},
+    ...     from_str_funcs={'version': int},
+    ... )
+
+    And now you have a template that can be used to convert between various
+    representations of the template: You can extract fields from strings, generate
+    strings from fields, etc.
+
+    >>> st.str_to_dict("root/dol/v_9.json")
+    {'name': 'dol', 'version': 9}
+    >>> st.dict_to_str({'name': 'meshed', 'version': 42})
+    'root/meshed/v_42.json'
+    >>> st.dict_to_tuple({'name': 'meshed', 'version': 42})
+    ('meshed', 42)
+    >>> st.tuple_to_dict(('i2', 96))
+    {'name': 'i2', 'version': 96}
+    >>> st.str_to_tuple("root/dol/v_9.json")
+    ('dol', 9)
+    >>> st.tuple_to_str(('front', 11))
+    'root/front/v_11.json'
+    >>> st.str_to_namedtuple("root/dol/v_9.json")
+    NamedTuple(name='dol', version=9)
+    >>> st.str_to_simple_str("root/dol/v_9.json")
+    'dol,9'
+    >>> st.str_to_simple_str("root/dol/v_9.json", sep='/')
+    'dol/9'
+
+
+    With ``st.key_codec``, you can make a ``KeyCodec`` for the given source and target
+    types. A `key_codec` is a codec; it has an encoder and a decoder.
+
+    >>> key_codec = st.key_codec('tuple', 'str')
+    >>> encoder, decoder = key_codec
+    >>> decoder('root/dol/v_9.json')
+    ('dol', 9)
+    >>> encoder(('dol', 9))
+    'root/dol/v_9.json'
+
+    If you have a ``Mapping``, you can use ``key_codec`` as a decorator to wrap
+    the mapping with a key mappings.
+
+    >>> store = {
+    ...     'root/meshed/v_151.json': '{"downloads": 41, "type": "productivity"}',
+    ...     'root/dol/v_9.json': '{"downloads": 132, "type": "utility"}',
+    ... }
+    >>>
+    >>> accessor = key_codec(store)
+    >>> list(accessor)
+    [('meshed', 151), ('dol', 9)]
+    >>> accessor['i2', 4] = '{"downloads": 274, "type": "utility"}'
+    >>> list(store)
+    ['root/meshed/v_151.json', 'root/dol/v_9.json', 'root/i2/v_4.json']
+    >>> store['root/i2/v_4.json']
+    '{"downloads": 274, "type": "utility"}'
+
+    Note: If your store contains keys that don't fit the format, key_codec will
+    raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to
+    filter out keys that don't fit the format, before you wrap the store with
+    ``st.key_codec``.
+
+    >>> store = {
+    ...     'root/meshed/v_151.json': '{"downloads": 41, "type": "productivity"}',
+    ...     'root/dol/v_9.json': '{"downloads": 132, "type": "utility"}',
+    ...     'root/not/the/right/format': "something else"
+    ... }
+    >>> accessor = st.filt_iter('str')(store)
+    >>> list(accessor)
+    ['root/meshed/v_151.json', 'root/dol/v_9.json']
+    >>> accessor = st.key_codec('tuple', 'str')(st.filt_iter('str')(store))
+    >>> list(accessor)
+    [('meshed', 151), ('dol', 9)]
+    >>> accessor['dol', 9]
+    '{"downloads": 132, "type": "utility"}'
+
+    You can also ask any (handled) combination of field types:
+
+    >>> key_codec = st.key_codec('tuple', 'dict')
+    >>> key_codec.encoder(('i2', 96))
+    {'name': 'i2', 'version': 96}
+    >>> key_codec.decoder({'name': 'fantastic', 'version': 4})
+    ('fantastic', 4)
+
     """
 
     _formatter = string_formatter
@@ -1218,11 +1292,13 @@ class StringTemplate:
         simple_str_sep: str = ',',
         namedtuple_type_name: str = 'NamedTuple',
         dflt_pattern: str = '.*',
+        dflt_field_name: Callable[[str], str] = 'i{:02.0f}_'.format,
     ):
         self._original_template = template
         self.simple_str_sep = simple_str_sep
         self.namedtuple_type_name = namedtuple_type_name
         self.dflt_pattern = dflt_pattern
+        self.dflt_field_name = dflt_field_name
 
         (
             self.template,
@@ -1244,11 +1320,290 @@ class StringTemplate:
         )
         self.regex = self._compile_regex(self.template)
 
+    def key_codec(self, source: FieldTypeNames, target: FieldTypeNames):
+        r"""Makes a ``KeyCodec`` for the given source and target types.
+
+        >>> st = KeyTemplate(
+        ...     'root/{name}/v_{version}.json',
+        ...     field_patterns={'version': r'\d+'},
+        ...     from_str_funcs={'version': int},
+        ... )
+
+        A `key_codec` is a codec; it has an encoder and a decoder.
+
+        >>> key_codec = st.key_codec('tuple', 'str')
+        >>> encoder, decoder = key_codec
+        >>> decoder('root/dol/v_9.json')
+        ('dol', 9)
+        >>> encoder(('dol', 9))
+        'root/dol/v_9.json'
+
+        If you have a ``Mapping``, you can use ``key_codec`` as a decorator to wrap
+        the mapping with a key mappings.
+
+        >>> store = {
+        ...     'root/meshed/v_151.json': '{"downloads": 41, "type": "productivity"}',
+        ...     'root/dol/v_9.json': '{"downloads": 132, "type": "utility"}',
+        ... }
+        >>>
+        >>> accessor = key_codec(store)
+        >>> list(accessor)
+        [('meshed', 151), ('dol', 9)]
+        >>> accessor['i2', 4] = '{"downloads": 274, "type": "utility"}'
+        >>> list(store)
+        ['root/meshed/v_151.json', 'root/dol/v_9.json', 'root/i2/v_4.json']
+        >>> store['root/i2/v_4.json']
+        '{"downloads": 274, "type": "utility"}'
+
+        Note: If your store contains keys that don't fit the format, key_codec will
+        raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to
+        filter out keys that don't fit the format, before you wrap the store with
+        ``st.key_codec``.
+
+        """
+        self._assert_field_type(target, 'target')
+        self._assert_field_type(source, 'source')
+        coder = getattr(self, f'{source}_to_{target}')
+        decoder = getattr(self, f'{target}_to_{source}')
+        return KeyCodec(coder, decoder)
+
+    def filt_iter(self, field_type: FieldTypeNames):
+        r"""
+        Makes a store decorator that filters out keys that don't match the template
+        given field type.
+
+        >>> store = {
+        ...     'root/meshed/v_151.json': '{"downloads": 41, "type": "productivity"}',
+        ...     'root/dol/v_9.json': '{"downloads": 132, "type": "utility"}',
+        ...     'root/not/the/right/format': "something else"
+        ... }
+        """
+        self._assert_field_type(field_type, 'field_type')
+        filt_func = getattr(self, f'match_{field_type}')
+        return filt_iter(filt=filt_func)
+
+    # @_return_none_if_none_input
+    def str_to_dict(self, s: str) -> dict:
+        r"""Parses the input string and returns a dictionary of extracted values.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json',
+        ...     from_str_funcs={'ver': int},
+        ... )
+        >>> st.str_to_dict('root/life/v_30.json')
+        {'i01_': 'life', 'ver': 30}
+
+        """
+        if s is None:
+            return None
+        match = self.regex.match(s)
+        if match:
+            return {k: self.from_str_funcs[k](v) for k, v in match.groupdict().items()}
+        else:
+            raise ValueError(f"String '{s}' does not match the template.")
+
+    # @_return_none_if_none_input
+    def dict_to_str(self, params: dict) -> str:
+        r"""Generates a string from the dictionary values based on the template.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> st.dict_to_str({'i01_': 'life', 'ver': 42})
+        'root/life/v_042.json'
+
+        """
+        if params is None:
+            return None
+        params = {k: self.to_str_funcs[k](v) for k, v in params.items()}
+        return self.template.format(**params)
+
+    # @_return_none_if_none_input
+    def dict_to_tuple(self, params: dict) -> tuple:
+        r"""Generates a tuple from the dictionary values based on the template.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> st.str_to_tuple('root/life/v_42.json')
+        ('life', 42)
+
+        """
+        if params is None:
+            return None
+        return tuple(params.get(field_name) for field_name in self.field_names)
+
+    # @_return_none_if_none_input
+    def tuple_to_dict(self, param_vals: tuple) -> dict:
+        r"""Generates a dictionary from the tuple values based on the template.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> st.tuple_to_dict(('life', 42))
+        {'i01_': 'life', 'ver': 42}
+        """
+        if param_vals is None:
+            return None
+        return {
+            field_name: value for field_name, value in zip(self.field_names, param_vals)
+        }
+
+    # @_return_none_if_none_input
+    def str_to_tuple(self, s: str) -> tuple:
+        r"""Parses the input string and returns a tuple of extracted values.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> st.str_to_tuple('root/life/v_42.json')
+        ('life', 42)
+        """
+        if s is None:
+            return None
+        return self.dict_to_tuple(self.str_to_dict(s))
+
+    # @_return_none_if_none_input
+    def tuple_to_str(self, param_vals: tuple) -> str:
+        r"""Generates a string from the tuple values based on the template.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> st.tuple_to_str(('life', 42))
+        'root/life/v_042.json'
+        """
+        if param_vals is None:
+            return None
+        return self.dict_to_str(self.tuple_to_dict(param_vals))
+
+    # @_return_none_if_none_input
+    def dict_to_namedtuple(
+        self,
+        params: dict,
+    ):
+        r"""Generates a namedtuple from the dictionary values based on the template.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> App = st.dict_to_namedtuple({'i01_': 'life', 'ver': 42})
+        >>> App
+        NamedTuple(i01_='life', ver=42)
+        """
+        if params is None:
+            return None
+        return namedtuple(self.namedtuple_type_name, params.keys())(**params)
+
+    # @_return_none_if_none_input
+    def namedtuple_to_dict(self, nt):
+        r"""Converts a namedtuple to a dictionary.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> App = st.dict_to_namedtuple({'i01_': 'life', 'ver': 42})
+        >>> st.namedtuple_to_dict(App)
+        {'i01_': 'life', 'ver': 42}
+        """
+        if nt is None:
+            return None
+        return dict(nt._asdict())  # TODO: Find way that doesn't involve private method
+
+    def str_to_namedtuple(self, s: str):
+        r"""Converts a string to a namedtuple.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> App = st.str_to_namedtuple('root/life/v_042.json')
+        >>> App
+        NamedTuple(i01_='life', ver=42)
+        """
+        if s is None:
+            return None
+        return self.dict_to_namedtuple(self.str_to_dict(s))
+
+    # @_return_none_if_none_input
+    def str_to_simple_str(self, s: str, sep: str = None):
+        r"""Converts a string to a simple string (i.e. a simple character-delimited string).
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> st.str_to_simple_str('root/life/v_042.json')
+        'life,042'
+        >>> st.str_to_simple_str('root/life/v_042.json', '-')
+        'life-042'
+        """
+        sep = sep or self.simple_str_sep
+        if s is None:
+            return None
+        return sep.join(self.to_str_funcs[k](v) for k, v in self.str_to_dict(s).items())
+
+    # @_return_none_if_none_input
+    def simple_str_to_tuple(self, ss: str, sep: str):
+        r"""Converts a simple character-delimited string to a dict.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> st.simple_str_to_tuple('life-042', '-')
+        ('life', 42)
+        """
+        if ss is None:
+            return None
+        return tuple(f(x) for f, x in zip(self.from_str_funcs.values(), ss.split(sep)))
+
+    # @_return_none_if_none_input
+    def simple_str_to_str(self, ss: str, sep: str):
+        r"""Converts a simple character-delimited string to a string.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> st.simple_str_to_str('life-042', '-')
+        'root/life/v_042.json'
+        """
+        if ss is None:
+            return None
+        return self.tuple_to_str(self.simple_str_to_tuple(ss, sep=sep))
+
+    def match_str(self, s: str) -> bool:
+        r"""
+        Returns True iff the string matches the template.
+
+        >>> st = KeyTemplate(
+        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> st.match_str('root/life/v_042.json')
+        True
+        >>> st.match_str('this/does/not_match')
+        False
+        """
+        return self.regex.match(s) is not None
+
+    def match_dict(self, params: dict) -> bool:
+        return self.match_str(self.dict_to_str(params))
+        # Note: Could do:
+        #  return all(self.field_patterns[k].match(v) for k, v in params.items())
+        # but not sure that's even quicker (given regex is compiled)
+
+    def match_tuple(self, param_vals: tuple) -> bool:
+        return self.match_str(self.tuple_to_str(param_vals))
+
+    def match_namedtuple(self, params: namedtuple) -> bool:
+        return self.match_str(self.namedtuple_to_str(params))
+
+    def match_simple_str(self, params: str) -> bool:
+        return self.match_str(self.simple_str_to_str(params))
+
     def _extract_template_info(self, template):
         r"""Extracts information from the template. Namely:
 
         - normalized_template: A template where each placeholder has a field name
-        (if not given, "_{index}" will be used)
+        (if not given, dflt_field_name will be used, which by default is
+        'i{:02.0f}_'.format)
 
         - field_names: The tuple of field names in the order they appear in template
 
@@ -1262,20 +1617,20 @@ class StringTemplate:
         These four values are used in the init to compute the parameters of the
         instance.
 
-        >>> st = StringTemplate('{:02.0f}/{name::\w+}')
+        >>> st = KeyTemplate('{:03.0f}/{name::\w+}')
         >>> st.template
-        '{_1}/{name}'
+        '{i01_}/{name}'
         >>> st.field_names
-        ('_1', 'name')
+        ('i01_', 'name')
         >>> st.field_patterns
-        {'_1': '.*', 'name': '\\w+'}
+        {'i01_': '.*', 'name': '\\w+'}
         >>> st.regex.pattern
-        '(?P<_1>.*)/(?P<name>\\w+)'
+        '(?P<i01_>.*)/(?P<name>\\w+)'
         >>> to_str_funcs = st.to_str_funcs
-        >>> to_str_funcs['_1'](3)
-        '03'
-        >>> to_str_funcs['name']('Alice')
-        'Alice'
+        >>> to_str_funcs['i01_'](3)
+        '003'
+        >>> to_str_funcs['name']('life')
+        'life'
 
         """
 
@@ -1287,7 +1642,9 @@ class StringTemplate:
             for index, (literal_text, field_name, format_spec, conversion) in enumerate(
                 self._formatter.parse(template), 1
             ):
-                field_name = f"_{index}" if field_name == '' else field_name
+                field_name = (
+                    self.dflt_field_name(index) if field_name == '' else field_name
+                )
                 if field_name is not None:
                     field_names.append(field_name)  # remember the field name
                     # extract format and pattern information:
@@ -1322,17 +1679,17 @@ class StringTemplate:
         Instead, the escaped dot is matched literally.
         See https://docs.python.org/3/library/re.html#re.escape for more information.
 
-        >>> StringTemplate('{}.ext').regex.pattern
-        '(?P<_1>.*)\\.ext'
-        >>> StringTemplate('{name}.ext').regex.pattern
+        >>> KeyTemplate('{}.ext').regex.pattern
+        '(?P<i01_>.*)\\.ext'
+        >>> KeyTemplate('{name}.ext').regex.pattern
         '(?P<name>.*)\\.ext'
-        >>> StringTemplate('{::\w+}.ext').regex.pattern
-        '(?P<_1>\\w+)\\.ext'
-        >>> StringTemplate('{name::\w+}.ext').regex.pattern
+        >>> KeyTemplate('{::\w+}.ext').regex.pattern
+        '(?P<i01_>\\w+)\\.ext'
+        >>> KeyTemplate('{name::\w+}.ext').regex.pattern
         '(?P<name>\\w+)\\.ext'
-        >>> StringTemplate('{:0.02f:\w+}.ext').regex.pattern
-        '(?P<_1>\\w+)\\.ext'
-        >>> StringTemplate('{name:0.02f:\w+}.ext').regex.pattern
+        >>> KeyTemplate('{:0.02f:\w+}.ext').regex.pattern
+        '(?P<i01_>\\w+)\\.ext'
+        >>> KeyTemplate('{name:0.02f:\w+}.ext').regex.pattern
         '(?P<name>\\w+)\\.ext'
         """
 
@@ -1355,214 +1712,3 @@ class StringTemplate:
             raise ValueError(
                 f"{name} must be one of {FieldTypeNames}. Was: {field_type}"
             )
-
-    def codec(self, source: FieldTypeNames, target: FieldTypeNames):
-        """Makes a ``(coder, decoder)`` pair for the given source and target types.
-
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-        >>> coder, encoder = st.codec('tuple', 'dict')
-        >>> coder(('Alice', '30'))
-        {'name': 'Alice', 'age': '30'}
-        >>> encoder({'name': 'Alice', 'age': '30'})
-        ('Alice', '30')
-        """
-        self._assert_field_type(target, 'target')
-        self._assert_field_type(source, 'source')
-        coder = getattr(self, f'{source}_to_{target}')
-        decoder = getattr(self, f'{target}_to_{source}')
-        return Codec(coder, decoder)
-
-    def filt_iter(self, field_type: FieldTypeNames):
-        from dol.trans import filt_iter
-
-        self._assert_field_type(field_type, 'field_type')
-        filt_func = getattr(self, f'match_{field_type}')
-        return filt_iter(filt=filt_func)
-
-    # @_return_none_if_none_input
-    def str_to_dict(self, s: str) -> dict:
-        """Parses the input string and returns a dictionary of extracted values.
-
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-
-        >>> st.str_to_dict("Alice is 30 years old.")
-        {'name': 'Alice', 'age': '30'}
-        """
-        if s is None:
-            return None
-        match = self.regex.match(s)
-        if match:
-            return {k: self.from_str_funcs[k](v) for k, v in match.groupdict().items()}
-        else:
-            raise ValueError(f"String '{s}' does not match the template.")
-
-    # @_return_none_if_none_input
-    def dict_to_str(self, params: dict) -> str:
-        """Generates a string from the dictionary values based on the template.
-
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-        >>> st.dict_to_str({'name': 'Alice', 'age': '30'})
-        'Alice is 30 years old.'
-
-        """
-        if params is None:
-            return None
-        params = {k: self.to_str_funcs[k](v) for k, v in params.items()}
-        return self.template.format(**params)
-
-    # @_return_none_if_none_input
-    def dict_to_tuple(self, params: dict) -> tuple:
-        """Generates a tuple from the dictionary values based on the template.
-
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-        >>> st.dict_to_tuple({'name': 'Alice', 'age': '30'})
-        ('Alice', '30')
-        """
-        if params is None:
-            return None
-        return tuple(params.get(field_name) for field_name in self.field_names)
-
-    # @_return_none_if_none_input
-    def tuple_to_dict(self, param_vals: tuple) -> dict:
-        """Generates a dictionary from the tuple values based on the template.
-
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-        >>> st.tuple_to_dict(('Alice', '30'))
-        {'name': 'Alice', 'age': '30'}
-        """
-        if param_vals is None:
-            return None
-        return {
-            field_name: value for field_name, value in zip(self.field_names, param_vals)
-        }
-
-    # @_return_none_if_none_input
-    def str_to_tuple(self, s: str) -> tuple:
-        """Parses the input string and returns a tuple of extracted values.
-
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-        >>> st.str_to_tuple("Alice is 30 years old.")
-        ('Alice', '30')
-        """
-        if s is None:
-            return None
-        return self.dict_to_tuple(self.str_to_dict(s))
-
-    # @_return_none_if_none_input
-    def tuple_to_str(self, param_vals: tuple) -> str:
-        """Generates a string from the tuple values based on the template.
-
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-        >>> st.tuple_to_str(('Alice', '30'))
-        'Alice is 30 years old.'
-        """
-        if param_vals is None:
-            return None
-        return self.dict_to_str(self.tuple_to_dict(param_vals))
-
-    # @_return_none_if_none_input
-    def dict_to_namedtuple(
-        self,
-        params: dict,
-    ):
-        """Generates a namedtuple from the dictionary values based on the template.
-
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-        >>> Person = st.dict_to_namedtuple({'name': 'Alice', 'age': '30'})
-        >>> Person
-        NamedTuple(name='Alice', age='30')
-        """
-        if params is None:
-            return None
-        return namedtuple(self.namedtuple_type_name, params.keys())(**params)
-
-    # @_return_none_if_none_input
-    def namedtuple_to_dict(self, nt):
-        """Converts a namedtuple to a dictionary.
-
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-        >>> Person = st.dict_to_namedtuple({'name': 'Alice', 'age': '30'})
-        >>> st.namedtuple_to_dict(Person)
-        {'name': 'Alice', 'age': '30'}
-        """
-        if nt is None:
-            return None
-        return dict(nt._asdict())  # TODO: Find way that doesn't involve private method
-
-    # @_return_none_if_none_input
-    def str_to_simple_str(self, s: str, sep: str = None):
-        """Converts a string to a simple string (i.e. a simple character-delimited string).
-
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-        >>> st.str_to_simple_str("Alice is 30 years old.")
-        'Alice,30'
-        >>> st.str_to_simple_str("Alice is 30 years old.", '-')
-        'Alice-30'
-        """
-        sep = sep or self.simple_str_sep
-        if s is None:
-            return None
-        return sep.join(self.to_str_funcs[k](v) for k, v in self.str_to_dict(s).items())
-
-    # @_return_none_if_none_input
-    def simple_str_to_str(self, ss: str, sep: str):
-        """Converts a simple character-delimited string to a string.
-
-        >>> st = StringTemplate(
-        ...     "{name} is {age} years old.",
-        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
-        ... )
-        >>> st.simple_str_to_str('Alice-30', '-')
-        'Alice is 30 years old.'
-        """
-        if ss is None:
-            return None
-        return self.tuple_to_str(tuple(ss.split(sep)))
-
-    def match_str(self, s: str) -> bool:
-        return self.regex.match(s) is not None
-
-    def match_dict(self, params: dict) -> bool:
-        return self.match_str(self.dict_to_str(params))
-        # Note: Could do:
-        #  return all(self.field_patterns[k].match(v) for k, v in params.items())
-        # but not sure that's even quicker (given regex is compiled)
-
-    def match_tuple(self, param_vals: tuple) -> bool:
-        return self.match_str(self.tuple_to_str(param_vals))
-
-    def match_namedtuple(self, params: namedtuple) -> bool:
-        return self.match_str(self.namedtuple_to_str(params))
-
-    def match_simple_str(self, params: str) -> bool:
-        return self.match_str(self.simple_str_to_str(params))
