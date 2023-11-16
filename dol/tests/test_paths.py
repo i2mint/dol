@@ -28,8 +28,7 @@ def test_string_template_simple():
     from collections import namedtuple
 
     st = KeyTemplate(
-        'root/{}/v_{version:03.0f:\d+}.json',
-        from_str_funcs={'version': int},
+        'root/{}/v_{version:03.0f:\d+}.json', from_str_funcs={'version': int},
     )
 
     assert st.str_to_dict('root/life/v_42.json') == {'i01_': 'life', 'version': 42}

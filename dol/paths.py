@@ -101,13 +101,7 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(
-                        obj=obj,
-                        path=path,
-                        result=result,
-                        k=k,
-                        error=error,
-                    )
+                    dict(obj=obj, path=path, result=result, k=k, error=error,)
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -658,11 +652,7 @@ class PrefixRelativization(PrefixRelativizationMixin):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None,
-    *,
-    name=None,
-    with_key_validation=False,
-    prefix_attr='_prefix',
+    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
 ):
     """
 
@@ -1130,7 +1120,7 @@ def string_unparse(parsing_result: Iterable[Tuple[str, str, str, str]]):
             if conversion:
                 assert (
                     len(conversion) == 1
-                ), f"conversion can only be a single character: {conversion=}"
+                ), f'conversion can only be a single character: {conversion=}'
                 field += f'!{conversion}'
             if format_spec:
                 field += f':{format_spec}'
@@ -1479,8 +1469,7 @@ class KeyTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self,
-        params: dict,
+        self, params: dict,
     ):
         r"""Generates a namedtuple from the dictionary values based on the template.
 
@@ -1653,7 +1642,7 @@ class KeyTemplate:
                     to_str_func_format, pattern = format_spec.split(':')
                     if to_str_func_format:
                         to_str_funcs[field_name] = (
-                            '{' + f":{to_str_func_format}" + '}'
+                            '{' + f':{to_str_func_format}' + '}'
                         ).format
                     field_patterns_[field_name] = pattern or self.dflt_pattern
                 # At this point you should have a valid field_name and empty format_spec
@@ -1695,9 +1684,9 @@ class KeyTemplate:
 
         def mk_named_capture_group(field_name):
             if field_name:
-                return f"(?P<{field_name}>{self.field_patterns[field_name]})"
+                return f'(?P<{field_name}>{self.field_patterns[field_name]})'
             else:
-                return ""
+                return ''
 
         def generate_pattern_parts(template):
             parts = self._formatter.parse(template)
@@ -1710,5 +1699,5 @@ class KeyTemplate:
     def _assert_field_type(field_type: FieldTypeNames, name='field_type'):
         if field_type not in FieldTypeNames.__args__:
             raise ValueError(
-                f"{name} must be one of {FieldTypeNames}. Was: {field_type}"
+                f'{name} must be one of {FieldTypeNames}. Was: {field_type}'
             )

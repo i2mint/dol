@@ -296,7 +296,7 @@ class KeyCodecs:
     """
 
     def without_suffix(suffix: str):
-        st = KeyTemplate('{}' + f"{suffix}")
+        st = KeyTemplate('{}' + f'{suffix}')
         return KeyCodec(st.simple_str_to_str, st.str_to_simple_str)
 
     # def suffixed(suffix: str, field_type: FieldTypeNames = 'simple_str'):

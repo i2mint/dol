@@ -138,7 +138,6 @@ def test_value_codecs():
     _test_codec(ValueCodecs.codecs(), 'hello', b'hello')
     # _test_codec(ValueCodecs.plistlib, {'a': 1, 'b': 2}, b'<?xml version="1.0" ...')
 
-
     _test_codec(
         ValueCodecs.csv(), [['a', 'b', 'c'], ['1', '2', '3']], 'a,b,c\r\n1,2,3\r\n'
     )
