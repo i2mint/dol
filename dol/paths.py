@@ -101,7 +101,13 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -652,7 +658,11 @@ class PrefixRelativization(PrefixRelativizationMixin):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr='_prefix',
 ):
     """
 
@@ -1216,8 +1226,9 @@ class KeyTemplate:
     'dol/9'
 
 
-    With ``st.key_codec``, you can make a ``KeyCodec`` for the given source and target
-    types. A `key_codec` is a codec; it has an encoder and a decoder.
+    With ``st.key_codec``, you can make a ``KeyCodec`` for the given source (decoded) 
+    and target (encoded) types. 
+    A `key_codec` is a codec; it has an encoder and a decoder.
 
     >>> key_codec = st.key_codec('tuple', 'str')
     >>> encoder, decoder = key_codec
@@ -1327,7 +1338,9 @@ class KeyTemplate:
 
     clone.__signature__ = signature(__init__)
 
-    def key_codec(self, source: FieldTypeNames, target: FieldTypeNames):
+    def key_codec(
+        self, decoded: FieldTypeNames = 'tuple', encoded: FieldTypeNames = 'str'
+    ):
         r"""Makes a ``KeyCodec`` for the given source and target types.
 
         >>> st = KeyTemplate(
@@ -1368,10 +1381,10 @@ class KeyTemplate:
         ``st.key_codec``.
 
         """
-        self._assert_field_type(target, 'target')
-        self._assert_field_type(source, 'source')
-        coder = getattr(self, f'{source}_to_{target}')
-        decoder = getattr(self, f'{target}_to_{source}')
+        self._assert_field_type(decoded, 'decoded')
+        self._assert_field_type(encoded, 'encoded')
+        coder = getattr(self, f'{decoded}_to_{encoded}')
+        decoder = getattr(self, f'{encoded}_to_{decoded}')
         return KeyCodec(coder, decoder)
 
     def filt_iter(self, field_type: FieldTypeNames):
@@ -1486,7 +1499,8 @@ class KeyTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self, params: dict,
+        self,
+        params: dict,
     ):
         r"""Generates a namedtuple from the dictionary values based on the template.
 
