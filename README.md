@@ -15,6 +15,96 @@ To install:	```pip install dol```
 
 [Documentation here](https://i2mint.github.io/dol/)
 
+## Example use
+
+Say you have a source backend that has pickles of some lists-of-lists-of-strings, 
+using the `.pkl` extension, and you want to copy this data to a target backend, 
+but saving them as gzipped csvs with the `csv.gz` extension. 
+
+We'll first work with dictionaries instead of files here, so we can test more easily, 
+and safely.
+
+```python
+import pickle
+
+src_backend = {
+    'file_1.pkl': pickle.dumps([['A', 'B', 'C'], ['one', 'two', 'three']]),
+    'file_2.pkl': pickle.dumps([['apple', 'pie'], ['one', 'two'], ['hot', 'cold']]),
+}
+targ_backend = dict()
+```
+
+Here's how you can do it with `dol` tools
+
+```python
+from dol import ValueCodecs, KeyCodecs, Pipe
+
+# decoder here will unpickle data and remove remove the .pkl extension from the key
+src_wrap = Pipe(KeyCodecs.suffixed('.pkl'), ValueCodecs.pickle())
+
+# encoder here will convert the lists to csv string, the string into bytes, 
+# and the bytes will be gzipped. 
+# ... also, we'll add .csv.gz on write.
+targ_wrap = Pipe(
+    KeyCodecs.suffixed('.csv.gz'), 
+    ValueCodecs.csv() + ValueCodecs.str_to_bytes() + ValueCodecs.gzip()
+)
+
+# Let's wrap our backends:
+src = src_wrap(src_backend)
+targ = targ_wrap(targ_backend)
+
+# and copy src over to targ
+print(f"Before: {list(targ_backend)=}")
+targ.update(src)
+print(f"After: {list(targ_backend)=}")
+```
+
+From the point of view of src and targ, you see the same thing.
+
+```python
+assert list(src) == list(targ) == ['file_1', 'file_2']
+assert (
+    src['file_1'] 
+    == targ['file_1']
+    == [['A', 'B', 'C'], ['one', 'two', 'three']]
+)
+```
+
+But the backend of targ is different:
+
+```python
+src_backend['file_1.pkl']
+# b'\x80\x04\x95\x19\x00\x00\x00\x00\x00\x00\x00]\x94(]\x94(K\x01K\x02K\x03e]\x94(K\x04K\x05K\x06ee.'
+targ_backend['file_1.csv.gz']
+# b'\x1f\x8b\x08\x00*YWe\x02\xff3\xd41\xd21\xe6\xe52\xd11\xd51\xe3\xe5\x02\x00)4\x83\x83\x0e\x00\x00\x00'
+```
+
+Now that you've tested your setup with dictionaries, you're ready to move on to real, 
+persisted storage. If you wanted to do this with local files, you'd:
+
+```python
+from dol import Files
+src = Files('PATH_TO_LOCAL_SOURCE_FOLDER')
+targ = Files('PATH_TO_LOCAL_TARGET_FOLDER)
+```
+
+But you could do this with AWS S3 using tools from 
+[s3dol](https://github.com/i2mint/s3dol), or Azure using tools from 
+[azuredol](https://github.com/i2mint/azuredol), or mongoDB with 
+[mongodol](https://github.com/i2mint/mongodol), 
+github with [hubcap](https://github.com/thorwhalen/hubcap), and so on...
+
+All of these extensions provide adapters from various data sources/targets to the 
+dict-like interface (called "Mapping" in python typing).
+What `dol` provides are base tools to make a path from these to the interface 
+that makes sense for the domain, or business logic in front of you, 
+so that you can purify your code from implementation details, and therefore be
+create more robust and flexible code as far as data operations are concerned. 
+
+
+## Historical note
+
 Note: This project started as [`py2store`](https://github.com/i2mint/py2store). 
 `dol` is the core of py2store has now been factored out 
 and many of the specialized data object layers moved to separate packages. 
