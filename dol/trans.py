@@ -3028,11 +3028,11 @@ class Codec(Generic[DecodedType, EncodedType]):
         )
 
 
-class ValueCodec(Codec):
+class ValueCodec(Generic[DecodedType, EncodedType], Codec[DecodedType, EncodedType]):
     def __call__(self, obj):
         return wrap_kvs(obj, data_of_obj=self.encoder, obj_of_data=self.decoder)
 
 
-class KeyCodec(Codec):
+class KeyCodec(Generic[DecodedType, EncodedType], Codec[DecodedType, EncodedType]):
     def __call__(self, obj):
         return wrap_kvs(obj, id_of_key=self.encoder, key_of_id=self.decoder)

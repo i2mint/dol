@@ -265,7 +265,7 @@ class ValueCodecs:
 
     # Note: Note clear if escaping or unescaping is the encoder or decoder here
     # I have never had the need for stores using it, so will omit for now
-    # html: Codec[str, str] = value_wrap(html.unescape, html.escape)
+    # html: ValueCodec[str, str] = value_wrap(html.unescape, html.escape)
 
     # Compression
     zipfile: ValueCodec[bytes, bytes] = value_wrap(zip_compress, zip_decompress)
@@ -284,7 +284,7 @@ class ValueCodecs:
     )
 
     # Any is really xml.etree.ElementTree.Element, but didn't want to import
-    xml_etree: ValueCodec[Any, bytes] = value_wrap(_xml_tree_encode, _xml_tree_decode)
+    xml_etree: Codec[Any, bytes] = value_wrap(_xml_tree_encode, _xml_tree_decode)
 
 
 from dol.paths import KeyTemplate
