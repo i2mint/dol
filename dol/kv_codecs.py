@@ -252,39 +252,39 @@ class ValueCodecs:
         tar_decompress,
     )
 
-    pickle: Codec[Any, bytes] = value_wrap(pickle.dumps, pickle.loads)
-    json: Codec[dict, str] = value_wrap(json.dumps, json.loads)
-    csv: Codec[list, str] = value_wrap(csv_encode, csv_decode)
-    csv_dict: Codec[list, str] = value_wrap(csv_dict_encode, csv_dict_decode)
+    pickle: ValueCodec[Any, bytes] = value_wrap(pickle.dumps, pickle.loads)
+    json: ValueCodec[dict, str] = value_wrap(json.dumps, json.loads)
+    csv: ValueCodec[list, str] = value_wrap(csv_encode, csv_decode)
+    csv_dict: ValueCodec[list, str] = value_wrap(csv_dict_encode, csv_dict_decode)
 
-    base64: Codec[bytes, bytes] = value_wrap(b64.b64encode, b64.b64decode)
-    urlsafe_b64: Codec[bytes, bytes] = value_wrap(
+    base64: ValueCodec[bytes, bytes] = value_wrap(b64.b64encode, b64.b64decode)
+    urlsafe_b64: ValueCodec[bytes, bytes] = value_wrap(
         b64.urlsafe_b64encode, b64.urlsafe_b64decode
     )
-    codecs: Codec[str, bytes] = value_wrap(codecs.encode, codecs.decode)
+    codecs: ValueCodec[str, bytes] = value_wrap(codecs.encode, codecs.decode)
 
     # Note: Note clear if escaping or unescaping is the encoder or decoder here
     # I have never had the need for stores using it, so will omit for now
     # html: Codec[str, str] = value_wrap(html.unescape, html.escape)
 
     # Compression
-    zipfile: Codec[bytes, bytes] = value_wrap(zip_compress, zip_decompress)
-    gzip: Codec[bytes, bytes] = value_wrap(gzip.compress, gzip.decompress)
-    bz2: Codec[bytes, bytes] = value_wrap(bz2.compress, bz2.decompress)
-    tarfile: Codec[bytes, bytes] = value_wrap(tar_compress, tar_decompress)
-    lzma: Codec[bytes, bytes] = value_wrap(
+    zipfile: ValueCodec[bytes, bytes] = value_wrap(zip_compress, zip_decompress)
+    gzip: ValueCodec[bytes, bytes] = value_wrap(gzip.compress, gzip.decompress)
+    bz2: ValueCodec[bytes, bytes] = value_wrap(bz2.compress, bz2.decompress)
+    tarfile: ValueCodec[bytes, bytes] = value_wrap(tar_compress, tar_decompress)
+    lzma: ValueCodec[bytes, bytes] = value_wrap(
         lzma.compress, lzma.decompress, exclude=('format',)
     )
 
     import quopri, plistlib
 
-    quopri: Codec[bytes, bytes] = value_wrap(quopri.encodestring, quopri.decodestring)
-    plistlib: Codec[bytes, bytes] = value_wrap(
+    quopri: ValueCodec[bytes, bytes] = value_wrap(quopri.encodestring, quopri.decodestring)
+    plistlib: ValueCodec[bytes, bytes] = value_wrap(
         plistlib.dumps, plistlib.loads, exclude=('fmt',)
     )
 
     # Any is really xml.etree.ElementTree.Element, but didn't want to import
-    xml_etree: Codec[Any, bytes] = value_wrap(_xml_tree_encode, _xml_tree_decode)
+    xml_etree: ValueCodec[Any, bytes] = value_wrap(_xml_tree_encode, _xml_tree_decode)
 
 
 from dol.paths import KeyTemplate

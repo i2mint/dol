@@ -3021,7 +3021,8 @@ class Codec(Generic[DecodedType, EncodedType]):
         return iter((self.encoder, self.decoder))
 
     def __add__(self, other):
-        return Codec(
+        cls = type(self)
+        return cls(
             encoder=Pipe(self.encoder, other.encoder),
             decoder=Pipe(other.decoder, self.decoder),
         )
