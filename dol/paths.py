@@ -1147,6 +1147,7 @@ def identity(x):
 
 
 from dol.trans import KeyCodec, filt_iter
+from inspect import signature
 
 # Codec = namedtuple('Codec', 'encoder decoder')
 FieldTypeNames = Literal['str', 'dict', 'tuple', 'namedtuple', 'simple_str']
@@ -1210,7 +1211,8 @@ class KeyTemplate:
     NamedTuple(name='dol', version=9)
     >>> st.str_to_simple_str("root/dol/v_9.json")
     'dol,9'
-    >>> st.str_to_simple_str("root/dol/v_9.json", sep='/')
+    >>> st_clone = st.clone(simple_str_sep='/')
+    >>> st_clone.str_to_simple_str("root/dol/v_9.json")
     'dol/9'
 
 
@@ -1284,6 +1286,16 @@ class KeyTemplate:
         dflt_pattern: str = '.*',
         dflt_field_name: Callable[[str], str] = 'i{:02.0f}_'.format,
     ):
+        self._init_kwargs = dict(
+            template=template,
+            field_patterns=field_patterns,
+            to_str_funcs=to_str_funcs,
+            from_str_funcs=from_str_funcs,
+            simple_str_sep=simple_str_sep,
+            namedtuple_type_name=namedtuple_type_name,
+            dflt_pattern=dflt_pattern,
+            dflt_field_name=dflt_field_name,
+        )
         self._original_template = template
         self.simple_str_sep = simple_str_sep
         self.namedtuple_type_name = namedtuple_type_name
@@ -1309,6 +1321,11 @@ class KeyTemplate:
             {field: identity for field in self.field_names}, **(from_str_funcs or {})
         )
         self.regex = self._compile_regex(self.template)
+
+    def clone(self, **kwargs):
+        return type(self)(**{**self._init_kwargs, **kwargs})
+    
+    clone.__signature__ = signature(__init__)
 
     def key_codec(self, source: FieldTypeNames, target: FieldTypeNames):
         r"""Makes a ``KeyCodec`` for the given source and target types.
@@ -1514,7 +1531,7 @@ class KeyTemplate:
         return self.dict_to_namedtuple(self.str_to_dict(s))
 
     # @_return_none_if_none_input
-    def str_to_simple_str(self, s: str, sep: str = None):
+    def str_to_simple_str(self, s: str):
         r"""Converts a string to a simple string (i.e. a simple character-delimited string).
 
         >>> st = KeyTemplate(
@@ -1522,41 +1539,49 @@ class KeyTemplate:
         ... )
         >>> st.str_to_simple_str('root/life/v_042.json')
         'life,042'
-        >>> st.str_to_simple_str('root/life/v_042.json', '-')
+        >>> st_clone = st.clone(simple_str_sep='-')
+        >>> st_clone.str_to_simple_str('root/life/v_042.json')
         'life-042'
         """
-        sep = sep or self.simple_str_sep
         if s is None:
             return None
-        return sep.join(self.to_str_funcs[k](v) for k, v in self.str_to_dict(s).items())
+        return self.simple_str_sep.join(
+            self.to_str_funcs[k](v) for k, v in self.str_to_dict(s).items()
+        )
 
     # @_return_none_if_none_input
-    def simple_str_to_tuple(self, ss: str, sep: str):
+    def simple_str_to_tuple(self, ss: str):
         r"""Converts a simple character-delimited string to a dict.
 
         >>> st = KeyTemplate(
         ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     simple_str_sep='-',
         ... )
-        >>> st.simple_str_to_tuple('life-042', '-')
+        >>> st.simple_str_to_tuple('life-042')
         ('life', 42)
         """
         if ss is None:
             return None
-        return tuple(f(x) for f, x in zip(self.from_str_funcs.values(), ss.split(sep)))
+        return tuple(
+            f(x) for f, x in zip(
+                self.from_str_funcs.values(), ss.split(self.simple_str_sep)
+            )
+        )
 
     # @_return_none_if_none_input
-    def simple_str_to_str(self, ss: str, sep: str):
+    def simple_str_to_str(self, ss: str):
         r"""Converts a simple character-delimited string to a string.
 
         >>> st = KeyTemplate(
         ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     simple_str_sep='-',
         ... )
-        >>> st.simple_str_to_str('life-042', '-')
+        >>> st.simple_str_to_str('life-042')
         'root/life/v_042.json'
         """
         if ss is None:
             return None
-        return self.tuple_to_str(self.simple_str_to_tuple(ss, sep=sep))
+        return self.tuple_to_str(self.simple_str_to_tuple(ss))
 
     def match_str(self, s: str) -> bool:
         r"""

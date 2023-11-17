@@ -38,19 +38,26 @@ def delete_all_folders_under_folder(rootpath: str, include_rootpath=False):
                 shutil.rmtree(p)
 
 
-def empty_directory(
-    s: MutableMapping, delete_folders: bool = True, delete_rootpath: bool = False
-):
-    for k in s:
-        del s[k]
-    import time
+def empty_directory(s, path_must_include=('test_mk_dirs_if_missing',)):
+    if isinstance(path_must_include, str):
+        path_must_include = (path_must_include,)
 
-    time.sleep(0.4)
-    if delete_folders:
-        rootdir = getattr(  # I hate this as much as you do, but s.rootdir didn't work!!
-            s, 'rootdir', None
-        ) or getattr(s, '_prefix', None)
-        delete_all_folders_under_folder(rootdir, include_rootpath=delete_rootpath)
+    if not all(substr in s for substr in path_must_include):
+        raise ValueError(
+            f"Path '{s}' does not include any of the substrings: {path_must_include}.\n"
+            "This is a safeguard. For your safety, I will delete nothing!"
+        )
+
+    import os, shutil
+
+    try:
+        for item in os.scandir(s):
+            if item.is_dir():
+                shutil.rmtree(item.path)
+            else:
+                os.remove(item.path)
+    except FileNotFoundError:
+        pass
 
 
 # --------------------------------------------------------------------------------------
@@ -59,7 +66,7 @@ def empty_directory(
 
 def test_mk_dirs_if_missing():
     s = mk_tmp_local_store('test_mk_dirs_if_missing', make_dirs_if_missing=False)
-    empty_directory(s)
+    empty_directory(s.rootdir, path_must_include='test_mk_dirs_if_missing')
     with pytest.raises(KeyError):
         s['this/path/does/not/exist'] = 'hello'
     ss = mk_dirs_if_missing(s)

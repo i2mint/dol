@@ -39,8 +39,9 @@ def test_string_template_simple():
     assert st.tuple_to_str(('life', 42)) == 'root/life/v_042.json'
 
     assert st.str_to_simple_str('root/life/v_42.json') == 'life,042'
-    assert st.str_to_simple_str('root/life/v_42.json', '-') == 'life-042'
-    assert st.simple_str_to_str('life-42', '-') == 'root/life/v_042.json'
+    st_clone = st.clone(simple_str_sep='-')
+    assert st_clone.str_to_simple_str('root/life/v_42.json') == 'life-042'
+    assert st_clone.simple_str_to_str('life-42') == 'root/life/v_042.json'
 
     from collections import namedtuple
 
