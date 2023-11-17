@@ -297,7 +297,7 @@ class KeyCodecs:
     A collection of key codecs
     """
 
-    def without_suffix(suffix: str):
+    def suffixed(suffix: str):
         st = KeyTemplate('{}' + f'{suffix}')
         return KeyCodec(st.simple_str_to_str, st.str_to_simple_str)
 

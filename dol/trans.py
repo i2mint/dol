@@ -622,7 +622,9 @@ def _wrap_store(
 
 @store_decorator
 def insert_hash_method(
-    store=None, *, hash_method: Callable[[Any], int] = id,
+    store=None,
+    *,
+    hash_method: Callable[[Any], int] = id,
 ):
     """Make a store hashable using the specified ``hash_method``.
     Will add (or overwrite) a ``__hash__`` method to the store that uses the
@@ -3020,12 +3022,24 @@ class Codec(Generic[DecodedType, EncodedType]):
     def __iter__(self):
         return iter((self.encoder, self.decoder))
 
-    def __add__(self, other):
+    def compose_with(self, other):
         cls = type(self)
         return cls(
             encoder=Pipe(self.encoder, other.encoder),
             decoder=Pipe(other.decoder, self.decoder),
         )
+    
+    def invert(self):
+        """Return a codec that is the inverse of this one.
+        That is, encoder and decoder will be swapped."""
+        cls = type(self)
+        return cls(encoder=self.decoder, decoder=self.encoder)
+    
+    # operators
+    __add__ = compose_with
+    __invert__ = invert
+    
+
 
 
 class ValueCodec(Generic[DecodedType, EncodedType], Codec[DecodedType, EncodedType]):
