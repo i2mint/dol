@@ -45,7 +45,7 @@ def empty_directory(s, path_must_include=('test_mk_dirs_if_missing',)):
     if not all(substr in s for substr in path_must_include):
         raise ValueError(
             f"Path '{s}' does not include any of the substrings: {path_must_include}.\n"
-            "This is a safeguard. For your safety, I will delete nothing!"
+            'This is a safeguard. For your safety, I will delete nothing!'
         )
 
     import os, shutil

@@ -1324,7 +1324,7 @@ class KeyTemplate:
 
     def clone(self, **kwargs):
         return type(self)(**{**self._init_kwargs, **kwargs})
-    
+
     clone.__signature__ = signature(__init__)
 
     def key_codec(self, source: FieldTypeNames, target: FieldTypeNames):
@@ -1563,9 +1563,8 @@ class KeyTemplate:
         if ss is None:
             return None
         return tuple(
-            f(x) for f, x in zip(
-                self.from_str_funcs.values(), ss.split(self.simple_str_sep)
-            )
+            f(x)
+            for f, x in zip(self.from_str_funcs.values(), ss.split(self.simple_str_sep))
         )
 
     # @_return_none_if_none_input
