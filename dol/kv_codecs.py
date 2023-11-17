@@ -244,12 +244,21 @@ class ValueCodecs:
                 if is_value_codec(attr_val):
                     yield attr
 
-    import pickle, json, gzip, bz2, base64 as b64, lzma, codecs
+    import pickle, json, gzip, bz2, base64 as b64, lzma, codecs, io
+    from operator import methodcaller
     from dol.zipfiledol import (
         zip_compress,
         zip_decompress,
         tar_compress,
         tar_decompress,
+    )
+
+    str_to_bytes: ValueCodec[bytes, bytes] = value_wrap(str.encode, bytes.decode)
+    stringio: ValueCodec[str, io.StringIO] = value_wrap(
+        io.StringIO, methodcaller('read')
+    )
+    bytesio: ValueCodec[bytes, io.BytesIO] = value_wrap(
+        io.BytesIO, methodcaller('read')
     )
 
     pickle: ValueCodec[Any, bytes] = value_wrap(pickle.dumps, pickle.loads)

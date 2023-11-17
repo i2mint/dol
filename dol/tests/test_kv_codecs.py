@@ -4,6 +4,47 @@ from dol.kv_codecs import ValueCodecs
 import inspect
 
 
+def test_kvcodec_user_story_01():
+    # See https://github.com/i2mint/dol/discussions/44#discussioncomment-7598805
+
+    # Say you have a source backend that has pickles of some lists-of-lists-of-strings,
+    # using the .pkl extension,
+    # and you want to copy this data to a target backend, but saving them as gzipped
+    # csvs with the csv.gz extension.
+
+    import pickle
+
+    src_backend = {
+        'file_1.pkl': pickle.dumps([['A', 'B', 'C'], ['one', 'two', 'three']]),
+        'file_2.pkl': pickle.dumps([['apple', 'pie'], ['one', 'two'], ['hot', 'cold']]),
+    }
+    targ_backend = dict()
+
+    from dol import ValueCodecs, KeyCodecs, Pipe
+
+    src_wrap = Pipe(KeyCodecs.suffixed('.pkl'), ValueCodecs.pickle())
+    targ_wrap = Pipe(
+        KeyCodecs.suffixed('.csv.gz'),
+        ValueCodecs.csv() + ValueCodecs.str_to_bytes() + ValueCodecs.gzip(),
+    )
+    src = src_wrap(src_backend)
+    targ = targ_wrap(targ_backend)
+
+    targ.update(src)
+
+    # From the point of view of src and targ, you see the same thing:
+
+    assert list(src) == list(targ) == ['file_1', 'file_2']
+    assert src['file_1'] == targ['file_1'] == [['A', 'B', 'C'], ['one', 'two', 'three']]
+
+    # But the backend of targ is different:
+
+    src_backend['file_1.pkl']
+    # b'\x80\x04\x95\x19\x00\x00\x00\x00\x00\x00\x00]\x94(]\x94(K\x01K\x02K\x03e]\x94(K\x04K\x05K\x06ee.'
+    targ_backend['file_1.csv.gz']
+    # b'\x1f\x8b\x08\x00*YWe\x02\xff3\xd41\xd21\xe6\xe52\xd11\xd51\xe3\xe5\x02\x00)4\x83\x83\x0e\x00\x00\xtarg_backend['file_1.csv.gz']00'
+
+
 def _test_codec(codec, obj, encoded=None, decoded=None):
     """Test codec by encoding and decoding obj and comparing to encoded and decoded."""
     if encoded is None:
@@ -125,7 +166,10 @@ def test_value_codecs():
     _test_codec_part(ValueCodecs.tarfile(), b'hello', b'data.bin', slice(0, 8))
 
     _test_codec_part(
-        ValueCodecs.lzma(), b'hello', b'\xfd7zXZ', slice(0, 4),
+        ValueCodecs.lzma(),
+        b'hello',
+        b'\xfd7zXZ',
+        slice(0, 4),
     )
 
     _test_codec_part(
