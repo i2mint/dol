@@ -166,10 +166,7 @@ def test_value_codecs():
     _test_codec_part(ValueCodecs.tarfile(), b'hello', b'data.bin', slice(0, 8))
 
     _test_codec_part(
-        ValueCodecs.lzma(),
-        b'hello',
-        b'\xfd7zXZ',
-        slice(0, 4),
+        ValueCodecs.lzma(), b'hello', b'\xfd7zXZ', slice(0, 4),
     )
 
     _test_codec_part(
