@@ -278,7 +278,9 @@ class ValueCodecs:
 
     import quopri, plistlib
 
-    quopri: ValueCodec[bytes, bytes] = value_wrap(quopri.encodestring, quopri.decodestring)
+    quopri: ValueCodec[bytes, bytes] = value_wrap(
+        quopri.encodestring, quopri.decodestring
+    )
     plistlib: ValueCodec[bytes, bytes] = value_wrap(
         plistlib.dumps, plistlib.loads, exclude=('fmt',)
     )
