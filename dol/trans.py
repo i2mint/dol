@@ -3028,18 +3028,16 @@ class Codec(Generic[DecodedType, EncodedType]):
             encoder=Pipe(self.encoder, other.encoder),
             decoder=Pipe(other.decoder, self.decoder),
         )
-    
+
     def invert(self):
         """Return a codec that is the inverse of this one.
         That is, encoder and decoder will be swapped."""
         cls = type(self)
         return cls(encoder=self.decoder, decoder=self.encoder)
-    
+
     # operators
     __add__ = compose_with
     __invert__ = invert
-    
-
 
 
 class ValueCodec(Generic[DecodedType, EncodedType], Codec[DecodedType, EncodedType]):
