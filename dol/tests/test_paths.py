@@ -1,6 +1,43 @@
 """Tests for paths.py"""
 
-from dol.paths import KeyTemplate
+from dol.paths import KeyTemplate, path_get
+import pytest
+
+
+def test_path_get():
+    # NOTE: The following examples test the current default behavior, but that doesn't
+    # mean that this default behavior is the best behavior. I've made the choice of
+    # aligning (though not completely) with the behavior of glom, which is a great
+    # library for getting values from nested data structures (and I recommend to use
+    # glom instead of path_get if you need more features than path_get provides).
+    # On the other hand, I'm not sure glom's default choices are the best either.
+    # I would vote for a more restrictive, but explicit, so predictable behavior by
+    # default. That said, it makes path_get more annoying to use out of the box.
+
+    path_get({'a': {'1': {'4': 'c'}}}, 'a.1.4') == 'c'
+    # When a path is given as a string, it is split on '.' and each element is used
+    # as a key. So 'a.1.4' is equivalent to ['a', '1', '4']
+    # Here, each key of the path acts as a key into a Mapping
+    path_get({'a': {'1': {'4': 'c'}}}, 'a.1.4') == 'c'
+    # But see next, how '1' is actually interpreted as an integer, not a string, since
+    # it's indexing into a list, and '4' is interpreted as a string, since it's
+    # key-ing into a dict (a Mapping).
+    path_get({'a': [7, {'4': 'c'}]}, 'a.1.4') == 'c'
+    # 4 would take on the role of an integer index if we replace the {'4': 'c'} Mapping
+    # with a list.
+    path_get({'a': [7, [0, 1, 2, 3, 'c']]}, 'a.1.4') == 'c'
+
+    # Now, if we happen to use an integer key in a mapping, they'll be a problem though:
+    with pytest.raises(KeyError):
+        path_get({'a': [7, {4: 'c'}]}, 'a.1.4')
+    # If you want to allow for integer keys in mappings as well as in lists, and still
+    # maintain the "first try a key as attribute" behavior, you can use the
+    # path_get.chain_of_getters function to create a getter that tries a sequence of
+    # getters, in order, until one succeeds.
+    getter = path_get.chain_of_getters(
+        [getattr, lambda obj, k: obj[k], lambda obj, k: obj[int(k)]]
+    )
+    path_get({'a': [7, {4: 'c'}]}, 'a.1.4', get_value=getter)
 
 
 def test_string_template_template_construction():
@@ -28,7 +65,8 @@ def test_string_template_simple():
     from collections import namedtuple
 
     st = KeyTemplate(
-        'root/{}/v_{version:03.0f:\d+}.json', from_str_funcs={'version': int},
+        'root/{}/v_{version:03.0f:\d+}.json',
+        from_str_funcs={'version': int},
     )
 
     assert st.str_to_dict('root/life/v_42.json') == {'i01_': 'life', 'version': 42}

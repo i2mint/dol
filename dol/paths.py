@@ -126,12 +126,6 @@ def split_if_str(obj, sep='.'):
     return obj
 
 
-def cast_to_int_if_numeric_str(k):
-    if isinstance(k, str) and str.isnumeric(k):
-        return int(k)
-    return k
-
-
 def separate_keys_with_separator(obj, sep='.'):
     return map(cast_to_int_if_numeric_str, split_if_str(obj, sep))
 
@@ -144,6 +138,9 @@ def get_attr_or_item(obj, k):
             return getattr(obj, k)
         except AttributeError:
             pass
+        if str.isnumeric(k) and not isinstance(obj, Mapping):
+            # if obj is not a mapping, and k is numeric, consider it to be int index
+            k = int(k)
     return obj[k]
 
 
@@ -163,7 +160,7 @@ def path_get(
     on_error: OnErrorType = raise_on_error,
     *,
     sep='.',
-    key_transformer=cast_to_int_if_numeric_str,
+    key_transformer=None,
     get_value: Callable = get_attr_or_item,
     caught_errors=(Exception,),
 ):
@@ -222,6 +219,30 @@ def path_get(
         get_value=get_value,
         caught_errors=caught_errors,
     )
+
+path_get.split_if_str = split_if_str
+path_get.separate_keys_with_separator = separate_keys_with_separator
+path_get.get_attr_or_item = get_attr_or_item
+
+@add_as_attribute_of(path_get)
+def chain_of_getters(
+    getters: Iterable[Callable], obj=None, k=None, *, caught_errors=(Exception,)
+):
+    """If ``k`` is a string, tries to get ``k`` as an attribute of ``obj`` first,
+    and if that fails, gets it as ``obj[k]``"""
+    if obj is None and k is None:
+        return partial(chain_of_getters, getters, caught_errors=caught_errors)
+    for getter in getters:
+        try:
+            return getter(obj, k)
+        except caught_errors:
+            pass
+
+@add_as_attribute_of(path_get)
+def cast_to_int_if_numeric_str(k):
+    if isinstance(k, str) and str.isnumeric(k):
+        return int(k)
+    return k
 
 
 @add_as_attribute_of(path_get)
@@ -1226,8 +1247,8 @@ class KeyTemplate:
     'dol/9'
 
 
-    With ``st.key_codec``, you can make a ``KeyCodec`` for the given source (decoded) 
-    and target (encoded) types. 
+    With ``st.key_codec``, you can make a ``KeyCodec`` for the given source (decoded)
+    and target (encoded) types.
     A `key_codec` is a codec; it has an encoder and a decoder.
 
     >>> key_codec = st.key_codec('tuple', 'str')
