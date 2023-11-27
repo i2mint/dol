@@ -340,10 +340,10 @@ def _params_from_mapping(mapping: MappingType):
                     yield dict(name=k, **v)
             else:
                 assert isinstance(v, Parameter) and v.name == k, (
-                    f"In a mapping specification of a params, "
-                    f"either the val should be a Parameter with the same name as the "
+                    f'In a mapping specification of a params, '
+                    f'either the val should be a Parameter with the same name as the '
                     f"key ({k}), or it should be a mapping with a 'name' key "
-                    f"with the same value as the key: {dict(mapping)}"
+                    f'with the same value as the key: {dict(mapping)}'
                 )
                 yield v
 
@@ -383,8 +383,8 @@ def _add_optional_keywords(sig, kwarg_and_defaults, kwarg_annotations=None):
 
         kwarg_annotations = kwarg_annotations or {}
         assert all(name in kwarg_and_defaults for name in kwarg_annotations), (
-            "Some annotations were given for arguments that were not in kwarg_and_defaults:"
-            f"\n{kwarg_and_defaults=}\n{kwarg_annotations=}"
+            'Some annotations were given for arguments that were not in kwarg_and_defaults:'
+            f'\n{kwarg_and_defaults=}\n{kwarg_annotations=}'
         )
         sig = sig.ch_annotations(**kwarg_annotations)
         return sig
@@ -1790,6 +1790,13 @@ class Sig(Signature, Mapping):
 
         return Sig(params, name=self.name, return_annotation=new_return_annotation)
 
+    def sort_params(self):
+        """Returns a signature with the parameters sorted by kind and default presence."""
+        sorted_params = sort_params(self.params)
+        return type(self)(
+            sorted_params, name=self.name, return_annotation=self.return_annotation
+        )
+
     def ch_param_attrs(
         self, /, param_attr, *arg_new_vals, _allow_reordering=False, **kwargs_new_vals
     ):
@@ -2332,9 +2339,7 @@ class Sig(Signature, Mapping):
             return type(self)(params, return_annotation=self.return_annotation)
         except ValueError as e:
             if allow_reordering:
-                return type(self)(
-                    sort_params(params), return_annotation=self.return_annotation
-                )
+                return self.sort_params()
             else:
                 raise
 
