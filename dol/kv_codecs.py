@@ -229,8 +229,8 @@ class ValueCodecs:
 
     def __init__(self, *args, **kwargs):
         raise ValueError(
-            "This class is not meant to be instantiated, but only act as a collection "
-            "of vakye codec functions"
+            'This class is not meant to be instantiated, but only act as a collection '
+            'of vakye codec functions'
         )
 
     # TODO: Clean up module import polution?
@@ -314,8 +314,8 @@ class KeyCodecs:
 
     def __init__(self, *args, **kwargs):
         raise ValueError(
-            "This class is not meant to be instantiated, but only act as a collection "
-            "of key codec functions"
+            'This class is not meant to be instantiated, but only act as a collection '
+            'of key codec functions'
         )
 
     def suffixed(suffix: str):

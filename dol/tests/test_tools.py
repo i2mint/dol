@@ -16,7 +16,7 @@ def test_filt_iter():
 
     # With this regex filt_iter, we made two specialized versions:
     # One filtering prefixes, and one filtering suffixes
-    is_test = filt_iter.prefixes('test') # Note, you can also pass a list of prefixes
+    is_test = filt_iter.prefixes('test')  # Note, you can also pass a list of prefixes
     d = {'test.txt': 1, 'report.doc': 2, 'test_image.jpg': 3}
     dd = is_test(d)
     assert dict(dd) == {'test.txt': 1, 'test_image.jpg': 3}

@@ -485,8 +485,8 @@ def filter_prefixes(prefixes):
 class FiltIter:
     def __init__(self, *args, **kwargs):
         raise ValueError(
-            "This class is not meant to be instantiated, but only act as a collection "
-            "of functions to make mapping filtering decorators."
+            'This class is not meant to be instantiated, but only act as a collection '
+            'of functions to make mapping filtering decorators.'
         )
 
     def regex(regex):
@@ -533,5 +533,5 @@ class FiltIter:
 for filt_name, filt_func in FiltIter.__dict__.items():
     if not filt_name.startswith('_'):
         # filt_func.__name__ = filt_name
-        filt_func.__doc__ = (filt_func.__doc__ or "").replace('FiltIter', 'filt_iter')
+        filt_func.__doc__ = (filt_func.__doc__ or '').replace('FiltIter', 'filt_iter')
         setattr(filt_iter, filt_name, filt_func)
