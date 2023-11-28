@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.15 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.2.16 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -72,6 +72,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_tools.html">dol.tests.test_tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
@@ -208,13 +209,7 @@
         <span class="k">except</span> <span class="n">caught_errors</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">on_error</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">on_error</span><span class="p">(</span>
-                    <span class="nb">dict</span><span class="p">(</span>
-                        <span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span>
-                        <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
-                        <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
-                        <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
-                        <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,</span>
-                    <span class="p">)</span>
+                    <span class="nb">dict</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,)</span>
                 <span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">on_error</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="c1"># use on_error as a message, raising the same error class</span>
@@ -327,9 +322,11 @@
         <span class="n">caught_errors</span><span class="o">=</span><span class="n">caught_errors</span><span class="p">,</span>
     <span class="p">)</span></div>
 
+
 <span class="n">path_get</span><span class="o">.</span><span class="n">split_if_str</span> <span class="o">=</span> <span class="n">split_if_str</span>
 <span class="n">path_get</span><span class="o">.</span><span class="n">separate_keys_with_separator</span> <span class="o">=</span> <span class="n">separate_keys_with_separator</span>
 <span class="n">path_get</span><span class="o">.</span><span class="n">get_attr_or_item</span> <span class="o">=</span> <span class="n">get_attr_or_item</span>
+
 
 <div class="viewcode-block" id="chain_of_getters"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.chain_of_getters">[docs]</a><span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_get</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">chain_of_getters</span><span class="p">(</span>
@@ -344,6 +341,7 @@
             <span class="k">return</span> <span class="n">getter</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">caught_errors</span><span class="p">:</span>
             <span class="k">pass</span></div>
+
 
 <span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_get</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">cast_to_int_if_numeric_str</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
@@ -786,11 +784,7 @@
 
 <div class="viewcode-block" id="mk_relative_path_store"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.mk_relative_path_store">[docs]</a><span class="nd">@store_decorator</span>
 <span class="k">def</span> <span class="nf">mk_relative_path_store</span><span class="p">(</span>
-    <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">with_key_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;_prefix&#39;</span><span class="p">,</span>
+    <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_key_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;_prefix&#39;</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 
@@ -1627,8 +1621,7 @@
 
     <span class="c1"># @_return_none_if_none_input</span>
 <div class="viewcode-block" id="KeyTemplate.dict_to_namedtuple"><a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.dict_to_namedtuple">[docs]</a>    <span class="k">def</span> <span class="nf">dict_to_namedtuple</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a namedtuple from the dictionary values based on the template.</span>
 
