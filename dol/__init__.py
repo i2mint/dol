@@ -41,7 +41,9 @@ def ihead(store, n=1):
 # )
 
 
-from dol.tools import filter_suffixes, filter_prefixes, filter_regex
+from dol.tools import (
+    filt_iter,  # filter store keys (and contains ready to use filters as attributes)
+)
 
 from dol.kv_codecs import ValueCodecs, KeyCodecs
 
@@ -109,7 +111,6 @@ from dol.util import (
 from dol.trans import (
     wrap_kvs,  # transform store key and/or value
     cached_keys,  # cache store keys
-    filt_iter,  # filter store keys
     add_ipython_key_completions,  # add ipython key completions
     insert_hash_method,  # add a hash method to store
     add_path_get,  # add a path_get method to store

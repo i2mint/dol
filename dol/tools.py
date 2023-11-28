@@ -415,6 +415,7 @@ class Forest(KvReader):
 
 import re
 from dol.util import Pipe
+from dol.trans import filt_iter
 
 
 def filter_regex(regex, *, return_search_func=False):
@@ -479,3 +480,58 @@ def filter_prefixes(prefixes):
     if isinstance(prefixes, str):
         prefixes = [prefixes]
     return filter_regex('^' + '|'.join(map(re.escape, prefixes)))
+
+
+class FiltIter:
+    def __init__(self, *args, **kwargs):
+        raise ValueError(
+            "This class is not meant to be instantiated, but only act as a collection "
+            "of functions to make mapping filtering decorators."
+        )
+
+    def regex(regex):
+        """Make a mapping-filtering decorator that filters keys with a regex.
+
+        :param regex: A regex string or compiled regex
+
+        >>> contains_a = FiltIter.regex(r'a')
+        >>> d = {'apple': 1, 'banana': 2, 'cherry': 3}
+        >>> dd = contains_a(d)
+        >>> dict(dd)
+        {'apple': 1, 'banana': 2}
+        """
+        return filt_iter(filt=filter_regex(regex))
+
+    def prefixes(prefixes):
+        """Make a mapping-filtering decorator that filters keys with a prefixes.
+
+        :param prefixes: A string or iterable of strings that are the prefixes to filter
+
+        >>> is_test = FiltIter.prefixes('test')
+        >>> d = {'test.txt': 1, 'report.doc': 2, 'test_image.jpg': 3}
+        >>> dd = is_test(d)
+        >>> dict(dd)
+        {'test.txt': 1, 'test_image.jpg': 3}
+        """
+        return filt_iter(filt=filter_prefixes(prefixes))
+
+    def suffixes(suffixes):
+        """Make a mapping-filtering decorator that filters keys with a suffixes.
+
+        :param suffixes: A string or iterable of strings that are the suffixes to filter
+
+        >>> is_text = FiltIter.suffixes(['.txt', '.doc', '.pdf'])
+        >>> d = {'test.txt': 1, 'report.doc': 2, 'image.jpg': 3}
+        >>> dd = is_text(d)
+        >>> dict(dd)
+        {'test.txt': 1, 'report.doc': 2}
+        """
+        return filt_iter(filt=filter_suffixes(suffixes))
+
+
+# add all the functions in FiltIter as attributes of filt_iter, so they're ready to use
+for filt_name, filt_func in FiltIter.__dict__.items():
+    if not filt_name.startswith('_'):
+        # filt_func.__name__ = filt_name
+        filt_func.__doc__ = (filt_func.__doc__ or "").replace('FiltIter', 'filt_iter')
+        setattr(filt_iter, filt_name, filt_func)
