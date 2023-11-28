@@ -215,7 +215,7 @@ class iSliceStore(Mapping):
         return k in self.store
 
 
-from dol import KvReader
+from dol.base import KvReader
 from functools import partial
 from typing import Any, Iterable, Union, Callable
 from itertools import islice
@@ -409,3 +409,73 @@ class Forest(KvReader):
 
     def __repr__(self):
         return f'{type(self).__name__}({self.src})'
+
+
+# ------------------------------------ Filters ------------------------------------------
+
+import re
+from dol.util import Pipe
+
+
+def filter_regex(regex, *, return_search_func=False):
+    """Make a filter that returns True if a string matches the given regex
+
+    >>> is_txt = filter_regex(r'.*\.txt')
+    >>> is_txt("test.txt")
+    True
+    >>> is_txt("report.doc")
+    False
+
+    """
+    if isinstance(regex, str):
+        regex = re.compile(regex)
+    if return_search_func:
+        return regex.search
+    else:
+        pipe = Pipe(regex.search, bool)
+        pipe.regex = regex
+        return pipe
+
+
+def filter_suffixes(suffixes):
+    """Make a filter that returns True if a string ends with one of the given suffixes
+
+    >>> ends_with_txt = filter_suffixes('.txt')
+    >>> ends_with_txt("test.txt")
+    True
+    >>> ends_with_txt("report.doc")
+    False
+    >>> is_text = filter_suffixes(['.txt', '.doc', '.pdf'])
+    >>> is_text("test.txt")
+    True
+    >>> is_text("report.doc")
+    True
+    >>> is_text("image.jpg")
+    False
+
+    """
+    if isinstance(suffixes, str):
+        suffixes = [suffixes]
+    return filter_regex('|'.join(map(re.escape, suffixes)) + '$')
+
+
+def filter_prefixes(prefixes):
+    """Make a filter that returns True if a string starts with one of the given prefixes
+
+    >>> starts_with_test = filter_prefixes('test')
+    >>> starts_with_test("test.txt")
+    True
+    >>> starts_with_test("report.doc")
+    False
+    >>> is_test_or_report = filter_prefixes(['test', 'report'])
+    >>> is_test_or_report("test.txt")
+    True
+    >>> is_test_or_report("report.doc")
+    True
+    >>> is_test_or_report("image.jpg")
+    False
+
+    """
+    if isinstance(prefixes, str):
+        prefixes = [prefixes]
+    return filter_regex('^' + '|'.join(map(re.escape, prefixes)))

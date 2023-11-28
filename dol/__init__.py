@@ -41,6 +41,8 @@ def ihead(store, n=1):
 # )
 
 
+from dol.tools import filter_suffixes, filter_prefixes, filter_regex
+
 from dol.kv_codecs import ValueCodecs, KeyCodecs
 
 from dol.filesys import (
