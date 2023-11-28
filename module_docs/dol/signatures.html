@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.14 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.signatures &mdash; dol 0.2.15 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -261,26 +261,26 @@ inputs are:</p>
 <blockquote>
 <div><ul class="simple">
 <li><dl class="simple">
-<dt><cite>kwargs_from_args_and_kwargs</cite>: Map some args/kwargs input to a keyword-only</dt><dd><p>expression of the inputs. This is useful if you need to do some processing
+<dt><cite>map_arguments</cite>: Map some args/kwargs input to a keyword-only</dt><dd><p>expression of the inputs. This is useful if you need to do some processing
 based on the argument names.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><cite>args_and_kwargs_from_kwargs</cite>: Translate a fully keyword expression of some</dt><dd><p>inputs into an (args, kwargs) pair that can be used to call the function.
+<dt><cite>mk_args_and_kwargs</cite>: Translate a fully keyword expression of some</dt><dd><p>inputs into an (args, kwargs) pair that can be used to call the function.
 (Remember, your function can have constraints, so you may need to do this.</p>
 </dd>
 </dl>
 </li>
 </ul>
 </div></blockquote>
-<p>The usual pattern of use of these methods is to use <cite>kwargs_from_args_and_kwargs</cite>
+<p>The usual pattern of use of these methods is to use <cite>map_arguments</cite>
 to map all the inputs to their corresponding name, do what needs to be done with
 that (example, validation, transformation, decoration…) and then map back to an
 (args, kwargs) pair than can actually be used to call the function.</p>
 <p>Examples of methods and functions using these:
-<cite>call_forgivingly</cite>, <cite>tuple_the_args</cite>, <cite>extract_kwargs</cite>, <cite>extract_args_and_kwargs</cite>,
-<cite>source_kwargs</cite>, and <cite>source_args_and_kwargs</cite>.</p>
+<cite>call_forgivingly</cite>, <cite>tuple_the_args</cite>, <cite>map_arguments_from_variadics</cite>, <cite>extract_args_and_kwargs</cite>,
+<cite>source_arguments</cite>, and <cite>source_args_and_kwargs</cite>.</p>
 <p># Making a signature</p>
 <p>You can construct a <cite>Sig</cite> object from a callable,</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
@@ -372,6 +372,29 @@ One of the intents is to be able to do things like:</p>
 </pre></div>
 </div>
 <dl class="py method">
+<dt id="dol.signatures.Sig.add_optional_keywords">
+<code class="sig-name descname">add_optional_keywords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwarg_and_defaults</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kwarg_annotations</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.add_optional_keywords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.add_optional_keywords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add optional keyword arguments to a signature.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@Sig</span><span class="o">.</span><span class="n">add_optional_keywords</span><span class="p">({</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">})</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">a</span><span class="si">=}</span><span class="s2">, </span><span class="si">{</span><span class="n">b</span><span class="si">=}</span><span class="s2">, </span><span class="si">{</span><span class="n">kwargs</span><span class="si">=}</span><span class="s2">&quot;</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+<p>You can still call the function as before, and like before, any “extra” keyword
+arguments will be passed to kwargs:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">&quot;a=0, b=1, kwargs={&#39;d&#39;: 10}&quot;</span>
+</pre></div>
+</div>
+<p>The difference is that now the signature of <cite>foo</cite> now has <cite>c</cite> and <cite>d</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">))</span>
+<span class="go">&#39;(a, *, c: int = 2, d=3, b=1, **kwargs)&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt id="dol.signatures.Sig.add_params">
 <code class="sig-name descname">add_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">Iterable</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.add_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.add_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a new instance of Sig after merging the parameters of this signature
@@ -405,13 +428,13 @@ What <cite>func.__annotations__</cite> would give you.</p>
 
 <dl class="py method">
 <dt id="dol.signatures.Sig.args_and_kwargs_from_kwargs">
-<code class="sig-name descname">args_and_kwargs_from_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwargs</span></em>, <em class="sig-param"><span class="n">apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_excess</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_kind</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">args_limit</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">, </span>None<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.args_and_kwargs_from_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.args_and_kwargs_from_kwargs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">args_and_kwargs_from_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arguments</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_excess</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_kind</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">args_limit</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">, </span>None<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">0</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>tuple<span class="p">, </span>dict<span class="p">]</span><a class="headerlink" href="#dol.signatures.Sig.args_and_kwargs_from_kwargs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract args and kwargs such that func(<a href="#id5"><span class="problematic" id="id6">*</span></a>args, <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs) can be called,
 where func has instance’s signature.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>kwargs</strong> – The {argname: argval,…} dict to process</p></li>
+<li><p><strong>arguments</strong> – The {param_name: arg_val,…} dict to process</p></li>
 <li><p><strong>args_limit</strong> – <p>How “far” in the params should args (positional arguments)
 be searched for.
 - args_limit==0: Take the minimum number possible of args (positional</p>
@@ -438,11 +461,27 @@ and var-keyword arguments.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="p">((</span><span class="n">w</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="n">z</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span> <span class="o">==</span> <span class="p">((</span><span class="mi">4</span><span class="p">,),</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">foo</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">==</span> <span class="n">foo</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">14</span>
+</pre></div>
+</div>
+<p>What about variadics?</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="nb">dict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">c</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="mi">7</span><span class="p">))</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">((1, 2, 3, 4), {&#39;c&#39;: 5, &#39;d&#39;: 6, &#39;e&#39;: 7})</span>
+</pre></div>
+</div>
+<p>You can also give the arguments in a different order:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="nb">dict</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="mi">7</span><span class="p">),</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">((1, 2, 3, 4), {&#39;c&#39;: 5, &#39;d&#39;: 6, &#39;e&#39;: 7})</span>
 </pre></div>
 </div>
 <p>The <cite>args_limit</cite> begs explanation.
@@ -457,23 +496,29 @@ because of the / and * constraints.</p>
 should be returned? This is what the <cite>args_limit</cite> argument controls.</p>
 <p>If <cite>args_limit == 0</cite>, the least args (positional arguments) will be returned.
 It’s the default.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">arguments</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="go">((4,), {&#39;x&#39;: 3, &#39;y&#39;: 2, &#39;z&#39;: 1})</span>
 </pre></div>
 </div>
 <p>If <cite>args_limit is None</cite>, the least kwargs (keyword arguments) will be returned.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="go">((4, 3, 2), {&#39;z&#39;: 1})</span>
 </pre></div>
 </div>
-<p>If <cite>args_limit</cite> is a positive integer, the first <cite>args_limit</cite> arguments
+<p>If <cite>args_limit</cite> is a positive integer, the first <cite>[args_limit]</cite> arguments
 will be returned (not checking at all if this is valid!).</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="go">((4,), {&#39;x&#39;: 3, &#39;y&#39;: 2, &#39;z&#39;: 1})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="go">((4, 3), {&#39;y&#39;: 2, &#39;z&#39;: 1})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">((4, 3, 2), {&#39;z&#39;: 1})</span>
+</pre></div>
+</div>
+<p>Note that if you specify <cite>args_limit</cite> to be greater than the maximum of
+positional arguments, it behaves as if <cite>args_limit</cite> was <cite>None</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="go">((4, 3, 2), {&#39;z&#39;: 1})</span>
 </pre></div>
 </div>
@@ -488,24 +533,33 @@ that:</p>
 <span class="go">2</span>
 </pre></div>
 </div>
-<p>By default, only the arguments that were given in the kwargs input will be
+<p>If variable positional arguments are present, <cite>args_limit</cite> is ignored and
+all positional arguments are returned as args.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="nb">dict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">c</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="mi">7</span><span class="p">)),</span>
+<span class="gp">... </span>    <span class="n">args_limit</span><span class="o">=</span><span class="mi">1</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">((1, 2, 3, 4), {&#39;c&#39;: 5, &#39;d&#39;: 6, &#39;e&#39;: 7})</span>
+</pre></div>
+</div>
+<p>By default, only the arguments that were given in the <cite>arguments</cite> input will be
 returned in the (args, kwargs) output.
 If you also want to get those that have defaults (according to signature),
 you need to specify it with the <cite>apply_defaults=True</cite> argument.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
 <span class="go">((4,), {&#39;x&#39;: 3})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">apply_defaults</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">apply_defaults</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">((4,), {&#39;x&#39;: 3, &#39;y&#39;: 1, &#39;z&#39;: 1})</span>
 </pre></div>
 </div>
 <p>By default, all required arguments must be given.
 Not doing so will lead to a <cite>TypeError</cite>.
 If you want to process your arguments anyway, specify <cite>allow_partial=True</cite>.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;x&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">allow_partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">allow_partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">((4,), {})</span>
 </pre></div>
 </div>
@@ -513,23 +567,16 @@ If you want to process your arguments anyway, specify <cite>allow_partial=True</
 lead to a <cite>TypeError</cite>.
 If you want to avoid this (and just take from the input <cite>kwargs</cite> what ever you
 can), specify this with <cite>allow_excess=True</cite>.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s1">&#39;stuff&#39;</span><span class="p">))</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s1">&#39;stuff&#39;</span><span class="p">))</span>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="w">    </span><span class="o">...</span>
 <span class="gr">TypeError</span>: <span class="n">Got unexpected keyword arguments: extra</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s1">&#39;stuff&#39;</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s1">&#39;stuff&#39;</span><span class="p">),</span>
 <span class="gp">... </span>    <span class="n">allow_excess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">((4,), {&#39;x&#39;: 3})</span>
 </pre></div>
 </div>
-<p>An edge case: When a <cite>VAR_POSITIONAL</cite> follows a <cite>POSITION_OR_KEYWORD</cite>…</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">2</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">args_and_kwargs_from_kwargs</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="go">((1, [2, 3]), {&#39;c&#39;: 4})</span>
-</pre></div>
-</div>
-<p>See <cite>kwargs_from_args_and_kwargs</cite> (namely for the description of the arguments.</p>
+<p>See <cite>map_arguments</cite> (namely for the description of the arguments).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -600,7 +647,7 @@ wrapping with <cite>Sig</cite> objects takes care of that oversight!)</p>
 
 <dl class="py method">
 <dt id="dol.signatures.Sig.extract_args_and_kwargs">
-<code class="sig-name descname">extract_args_and_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">_ignore_kind</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">_allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_args_limit</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.extract_args_and_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.extract_args_and_kwargs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">extract_args_and_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">_ignore_kind</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">_allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_allow_excess</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">_apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_args_limit</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.extract_args_and_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.extract_args_and_kwargs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Source the (args, kwargs) for the signature instance, ignoring excess
 arguments.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
@@ -610,11 +657,9 @@ arguments.</p>
 <span class="go">True</span>
 </pre></div>
 </div>
-<p>The difference with extract_kwargs is that here the output is ready to be
-called by the
-function whose signature we have, since the position-only arguments will be
-returned as
-args.</p>
+<p>The difference with map_arguments_from_variadics is that here the output is
+ready to be called by the function whose signature we have, since the
+position-only arguments will be returned as args.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 <span class="go">10</span>
 </pre></div>
@@ -670,17 +715,14 @@ will be returned with their defaults:</p>
 
 <dl class="py method">
 <dt id="dol.signatures.Sig.extract_kwargs">
-<code class="sig-name descname">extract_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">_ignore_kind</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">_allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.extract_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.extract_kwargs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convenience method that calls kwargs_from_args_and_kwargs with defaults,
-and ignore_kind=True.</p>
-<p>Strict in the sense that the kwargs cannot contain any arguments that are not
-valid argument names (as per the signature).</p>
+<code class="sig-name descname">extract_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">_apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_allow_excess</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_ignore_kind</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.Sig.extract_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method that calls map_arguments from variadics</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;YY&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ZZ&quot;</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="o">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sig</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="o">==</span> <span class="n">sig</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sig</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="o">==</span> <span class="n">sig</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
@@ -689,46 +731,39 @@ valid argument names (as per the signature).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="o">...</span>
 <span class="gp">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="go">{&#39;args&#39;: (1, 2), &#39;kwargs&#39;: {&#39;y&#39;: 3, &#39;z&#39;: 4}}</span>
 </pre></div>
 </div>
 <p>Note that though <cite>w</cite> is a position only argument, you can specify <cite>w=11</cite> as
-a keyword argument too (by default):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+a keyword argument too, using <cite>_ignore_kind=True</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">_ignore_kind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
-</pre></div>
-</div>
-<p>If you don’t want to allow that, you can say <cite>_ignore_kind=False</cite></p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">_ignore_kind</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="gt">Traceback (most recent call last):</span>
-<span class="w">  </span><span class="c">...</span>
-<span class="gr">TypeError</span>: <span class="n">&#39;w&#39; parameter is positional only, but was passed as a keyword</span>
 </pre></div>
 </div>
 <p>You can use <cite>_allow_partial</cite> that will allow you, if
 set to <cite>True</cite>, to underspecify the params of a function
 (in view of being completed later).</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;w&#39;</span>
 </pre></div>
 </div>
 <p>But if you specify <cite>_allow_partial=True</cite>…</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">_allow_partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">_allow_partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">{&#39;x&#39;: 3, &#39;y&#39;: 2}</span>
 </pre></div>
 </div>
 <p>By default, <cite>_apply_defaults=False</cite>, which will lead to only get those arguments
 you input.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 4, &#39;x&#39;: 3, &#39;y&#39;: 2}</span>
 </pre></div>
 </div>
 <p>But if you specify <cite>_apply_defaults=True</cite> non-specified non-require arguments
 will be returned with their defaults:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">extract_kwargs</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">_apply_defaults</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">_apply_defaults</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 4, &#39;x&#39;: 3, &#39;y&#39;: 2, &#39;z&#39;: &#39;ZZ&#39;}</span>
 </pre></div>
 </div>
@@ -845,15 +880,14 @@ all valid ways to call the signature are valid for <code class="docutils literal
 
 <dl class="py method">
 <dt id="dol.signatures.Sig.kwargs_from_args_and_kwargs">
-<code class="sig-name descname">kwargs_from_args_and_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="n">kwargs</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_excess</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_kind</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.kwargs_from_args_and_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.kwargs_from_args_and_kwargs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extracts a dict of input argument values for target signature, from args
-and kwargs.</p>
+<code class="sig-name descname">kwargs_from_args_and_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span><span class="p">:</span> <span class="n">tuple</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kwargs</span><span class="p">:</span> <span class="n">dict</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_excess</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_kind</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#dol.signatures.Sig.kwargs_from_args_and_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map arguments (args and kwargs) to the parameters of function’s signature.</p>
 <p>When you need to manage how the arguments of a function are specified,
 you need to take care of
 multiple cases depending on whether they were specified as positional arguments
 (<cite>args</cite>) or keyword arguments (<cite>kwargs</cite>).</p>
-<p>The <cite>kwargs_from_args_and_kwargs</cite> (and it’s sorta-inverse inverse,
-<cite>args_and_kwargs_from_kwargs</cite>)
+<p>The <cite>map_arguments</cite> (and it’s sorta-inverse inverse,
+<cite>mk_args_and_kwargs</cite>)
 are there to help you manage this.</p>
 <p>If you could rely on the the fact that only <cite>kwargs</cite> were given it would
 reduce the complexity of your code.
@@ -864,7 +898,7 @@ We have <cite>Signature.bind</cite> (and <cite>bind_partial</cite>) for that.</p
 <p>But these methods will fail if there is extra stuff in the <cite>kwargs</cite>.
 Yet sometimes we’d like to have a <cite>dict</cite> that services several functions that
 will extract their needs from it.</p>
-<p>That’s where  <cite>Sig.extract_kwargs(*args, **kwargs)</cite> is needed.
+<p>That’s where  <cite>Sig.map_arguments_from_variadics(*args, **kwargs)</cite> is needed.
 :param args: The args the function will be called with.
 :param kwargs: The kwargs the function will be called with.
 :param apply_defaults: (bool) Whether to apply signature defaults to the
@@ -883,29 +917,29 @@ to be positional only)</p>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>An {argname: argval, …} dict</p>
+<dd class="field-odd"><p>An {param_name: arg_val, …} dict</p>
 </dd>
 </dl>
-<p>See also the sorta-inverse of this function: args_and_kwargs_from_kwargs</p>
+<p>See also the sorta-inverse of this function: mk_args_and_kwargs</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;YY&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ZZ&quot;</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="o">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">((</span><span class="mi">11</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="s2">&quot;you&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">z</span><span class="o">=</span><span class="s2">&quot;zoo&quot;</span><span class="p">))</span>
-<span class="gp">... </span>    <span class="o">==</span> <span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">((</span><span class="mi">11</span><span class="p">,</span> <span class="mi">22</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="s2">&quot;you&quot;</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="s2">&quot;zoo&quot;</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">((</span><span class="mi">11</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="s2">&quot;you&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">z</span><span class="o">=</span><span class="s2">&quot;zoo&quot;</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="o">==</span> <span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">((</span><span class="mi">11</span><span class="p">,</span> <span class="mi">22</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="s2">&quot;you&quot;</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="s2">&quot;zoo&quot;</span><span class="p">))</span>
 <span class="gp">... </span>    <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;you&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="s2">&quot;zoo&quot;</span><span class="p">}</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 <p>By default, <cite>apply_defaults=False</cite>, which will lead to only get those
 arguments you input.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">})</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">})</span>
 <span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
 </pre></div>
 </div>
 <p>But if you specify <cite>apply_defaults=True</cite> non-specified non-require arguments
 will be returned with their defaults:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">},</span> <span class="n">apply_defaults</span><span class="o">=</span><span class="kc">True</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22, &#39;y&#39;: &#39;YY&#39;, &#39;z&#39;: &#39;ZZ&#39;}</span>
@@ -913,17 +947,17 @@ will be returned with their defaults:</p>
 </div>
 <p>By default, <cite>ignore_excess=False</cite>, so specifying kwargs that are not in the
 signature will lead to an exception.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span> <span class="s2">&quot;not_in_sig&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">}</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="w">    </span><span class="o">...</span>
-<span class="gr">TypeError</span>: <span class="n">Got unexpected keyword arguments: not_in_sig</span>
+<span class="gr">TypeError</span>: <span class="n">got an unexpected keyword argument &#39;not_in_sig&#39;</span>
 </pre></div>
 </div>
 <p>Specifying <cite>allow_excess=True</cite> will ignore such excess fields of kwargs.
 This is useful when you want to source several functions from a same dict.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span> <span class="s2">&quot;not_in_sig&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="n">allow_excess</span><span class="o">=</span><span class="kc">True</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
@@ -933,14 +967,14 @@ This is useful when you want to source several functions from a same dict.</p>
 you, if
 set to <cite>True</cite>, to underspecify the params of a function (in view of being
 completed later).</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">})</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">})</span>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;w&#39;</span>
 </pre></div>
 </div>
 <p>But if you specify <cite>allow_partial=True</cite>…</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">},</span> <span class="n">allow_partial</span><span class="o">=</span><span class="kc">True</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="go">{&#39;x&#39;: 22}</span>
@@ -949,25 +983,209 @@ completed later).</p>
 <p>That’s a lot of control (eight combinations total), but not everything is
 controllable here:
 Position only and keyword only kinds need to be respected:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{})</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{})</span>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">too many positional arguments</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">&#39;w&#39; parameter is positional only, but was passed as a keyword</span>
 </pre></div>
 </div>
 <p>But if you want to ignore the kind of parameter, just say so:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{},</span> <span class="n">ignore_kind</span><span class="o">=</span><span class="kc">True</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 1, &#39;x&#39;: 2, &#39;y&#39;: 3, &#39;z&#39;: 4}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">kwargs_from_args_and_kwargs</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">ignore_kind</span><span class="o">=</span><span class="kc">True</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 1, &#39;x&#39;: 2, &#39;y&#39;: 3, &#39;z&#39;: 4}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.signatures.Sig.map_arguments">
+<code class="sig-name descname">map_arguments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span><span class="p">:</span> <span class="n">tuple</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kwargs</span><span class="p">:</span> <span class="n">dict</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_excess</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_kind</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../../_modules/dol/signatures.html#Sig.map_arguments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.map_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map arguments (args and kwargs) to the parameters of function’s signature.</p>
+<p>When you need to manage how the arguments of a function are specified,
+you need to take care of
+multiple cases depending on whether they were specified as positional arguments
+(<cite>args</cite>) or keyword arguments (<cite>kwargs</cite>).</p>
+<p>The <cite>map_arguments</cite> (and it’s sorta-inverse inverse,
+<cite>mk_args_and_kwargs</cite>)
+are there to help you manage this.</p>
+<p>If you could rely on the the fact that only <cite>kwargs</cite> were given it would
+reduce the complexity of your code.
+This is why we have the <cite>all_pk_signature</cite> function in <cite>signatures.py</cite>.</p>
+<p>We also need to have a means to make a <cite>kwargs</cite> only from the actual <cite>(*args,
+**kwargs)</cite> used at runtime.
+We have <cite>Signature.bind</cite> (and <cite>bind_partial</cite>) for that.</p>
+<p>But these methods will fail if there is extra stuff in the <cite>kwargs</cite>.
+Yet sometimes we’d like to have a <cite>dict</cite> that services several functions that
+will extract their needs from it.</p>
+<p>That’s where  <cite>Sig.map_arguments_from_variadics(*args, **kwargs)</cite> is needed.
+:param args: The args the function will be called with.
+:param kwargs: The kwargs the function will be called with.
+:param apply_defaults: (bool) Whether to apply signature defaults to the
+non-specified argument names
+:param allow_partial: (bool) True iff you want to allow partial signature
+fulfillment.
+:param allow_excess: (bool) Set to True iff you want to allow extra kwargs
+items to be ignored.
+:param ignore_kind: (bool) Set to True iff you want to ignore the position and
+keyword only kinds,</p>
+<blockquote>
+<div><p>in order to be able to accept args and kwargs in such a way that there can
+be cross-over
+(args that are supposed to be keyword only, and kwargs that are supposed
+to be positional only)</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An {param_name: arg_val, …} dict</p>
+</dd>
+</dl>
+<p>See also the sorta-inverse of this function: mk_args_and_kwargs</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;YY&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ZZ&quot;</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">((</span><span class="mi">11</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="s2">&quot;you&quot;</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">z</span><span class="o">=</span><span class="s2">&quot;zoo&quot;</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="o">==</span> <span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">((</span><span class="mi">11</span><span class="p">,</span> <span class="mi">22</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="s2">&quot;you&quot;</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="s2">&quot;zoo&quot;</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;you&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="s2">&quot;zoo&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, <cite>apply_defaults=False</cite>, which will lead to only get those
+arguments you input.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">})</span>
+<span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
+</pre></div>
+</div>
+<p>But if you specify <cite>apply_defaults=True</cite> non-specified non-require arguments
+will be returned with their defaults:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">},</span> <span class="n">apply_defaults</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22, &#39;y&#39;: &#39;YY&#39;, &#39;z&#39;: &#39;ZZ&#39;}</span>
+</pre></div>
+</div>
+<p>By default, <cite>ignore_excess=False</cite>, so specifying kwargs that are not in the
+signature will lead to an exception.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span> <span class="s2">&quot;not_in_sig&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">TypeError</span>: <span class="n">got an unexpected keyword argument &#39;not_in_sig&#39;</span>
+</pre></div>
+</div>
+<p>Specifying <cite>allow_excess=True</cite> will ignore such excess fields of kwargs.
+This is useful when you want to source several functions from a same dict.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span> <span class="s2">&quot;not_in_sig&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="n">allow_excess</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
+</pre></div>
+</div>
+<p>On the other side of <cite>ignore_excess</cite> you have <cite>allow_partial</cite> that will allow
+you, if
+set to <cite>True</cite>, to underspecify the params of a function (in view of being
+completed later).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">})</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;w&#39;</span>
+</pre></div>
+</div>
+<p>But if you specify <cite>allow_partial=True</cite>…</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">},</span> <span class="n">allow_partial</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">{&#39;x&#39;: 22}</span>
+</pre></div>
+</div>
+<p>That’s a lot of control (eight combinations total), but not everything is
+controllable here:
+Position only and keyword only kinds need to be respected:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{})</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">too many positional arguments</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">&#39;w&#39; parameter is positional only, but was passed as a keyword</span>
+</pre></div>
+</div>
+<p>But if you want to ignore the kind of parameter, just say so:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{},</span> <span class="n">ignore_kind</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">{&#39;w&#39;: 1, &#39;x&#39;: 2, &#39;y&#39;: 3, &#39;z&#39;: 4}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">map_arguments</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">ignore_kind</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">{&#39;w&#39;: 1, &#39;x&#39;: 2, &#39;y&#39;: 3, &#39;z&#39;: 4}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.signatures.Sig.map_arguments_from_variadics">
+<code class="sig-name descname">map_arguments_from_variadics</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">_apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_allow_excess</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_ignore_kind</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.map_arguments_from_variadics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.map_arguments_from_variadics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method that calls map_arguments from variadics</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;YY&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ZZ&quot;</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">sig</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="o">==</span> <span class="n">sig</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>What about var positional and var keywords?</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="o">...</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="go">{&#39;args&#39;: (1, 2), &#39;kwargs&#39;: {&#39;y&#39;: 3, &#39;z&#39;: 4}}</span>
+</pre></div>
+</div>
+<p>Note that though <cite>w</cite> is a position only argument, you can specify <cite>w=11</cite> as
+a keyword argument too, using <cite>_ignore_kind=True</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">_ignore_kind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
+</pre></div>
+</div>
+<p>You can use <cite>_allow_partial</cite> that will allow you, if
+set to <cite>True</cite>, to underspecify the params of a function
+(in view of being completed later).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;w&#39;</span>
+</pre></div>
+</div>
+<p>But if you specify <cite>_allow_partial=True</cite>…</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">_allow_partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">{&#39;x&#39;: 3, &#39;y&#39;: 2}</span>
+</pre></div>
+</div>
+<p>By default, <cite>_apply_defaults=False</cite>, which will lead to only get those arguments
+you input.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">{&#39;w&#39;: 4, &#39;x&#39;: 3, &#39;y&#39;: 2}</span>
+</pre></div>
+</div>
+<p>But if you specify <cite>_apply_defaults=True</cite> non-specified non-require arguments
+will be returned with their defaults:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">map_arguments_from_variadics</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">_apply_defaults</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">{&#39;w&#39;: 4, &#39;x&#39;: 3, &#39;y&#39;: 2, &#39;z&#39;: &#39;ZZ&#39;}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1019,6 +1237,159 @@ according to whether they have defaults and what their kind is:</p>
 <span class="go">&lt;Sig (a=None, b=1, c=2, d=3, e=4)&gt;</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.signatures.Sig.mk_args_and_kwargs">
+<code class="sig-name descname">mk_args_and_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arguments</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_excess</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_kind</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">args_limit</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">, </span>None<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">0</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>tuple<span class="p">, </span>dict<span class="p">]</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.mk_args_and_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.mk_args_and_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract args and kwargs such that func(<a href="#id13"><span class="problematic" id="id14">*</span></a>args, <a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs) can be called,
+where func has instance’s signature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arguments</strong> – The {param_name: arg_val,…} dict to process</p></li>
+<li><p><strong>args_limit</strong> – <p>How “far” in the params should args (positional arguments)
+be searched for.
+- args_limit==0: Take the minimum number possible of args (positional</p>
+<blockquote>
+<div><p>arguments). Only those that are position only or before a var-positional.</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>args_limit is None: Take the maximum number of args (positional arguments).</dt><dd><p>The only kwargs (keyword arguments) you should have are keyword-only
+and var-keyword arguments.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>args_limit positive integer: Take the args_limit first argument names</dt><dd><p>(of signature) as args, and the rest as kwargs.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="p">((</span><span class="n">w</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="n">z</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span> <span class="o">==</span> <span class="p">((</span><span class="mi">4</span><span class="p">,),</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">foo</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">==</span> <span class="n">foo</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">14</span>
+</pre></div>
+</div>
+<p>What about variadics?</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="nb">dict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">c</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="mi">7</span><span class="p">))</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">((1, 2, 3, 4), {&#39;c&#39;: 5, &#39;d&#39;: 6, &#39;e&#39;: 7})</span>
+</pre></div>
+</div>
+<p>You can also give the arguments in a different order:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="nb">dict</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="mi">7</span><span class="p">),</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">((1, 2, 3, 4), {&#39;c&#39;: 5, &#39;d&#39;: 6, &#39;e&#39;: 7})</span>
+</pre></div>
+</div>
+<p>The <cite>args_limit</cite> begs explanation.
+Consider the signature of <cite>def foo(w, /, x: float, y=1, *, z: int = 1): …</cite>
+for instance. We could call the function with the following (args, kwargs) pairs:
+- ((1,), {‘x’: 2, ‘y’: 3, ‘z’: 4})
+- ((1, 2), {‘y’: 3, ‘z’: 4})
+- ((1, 2, 3), {‘z’: 4})
+The two other combinations (empty args or empty kwargs) are not valid
+because of the / and * constraints.</p>
+<p>But when asked for an (args, kwargs) pair, which of the three valid options
+should be returned? This is what the <cite>args_limit</cite> argument controls.</p>
+<p>If <cite>args_limit == 0</cite>, the least args (positional arguments) will be returned.
+It’s the default.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">arguments</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">((4,), {&#39;x&#39;: 3, &#39;y&#39;: 2, &#39;z&#39;: 1})</span>
+</pre></div>
+</div>
+<p>If <cite>args_limit is None</cite>, the least kwargs (keyword arguments) will be returned.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">((4, 3, 2), {&#39;z&#39;: 1})</span>
+</pre></div>
+</div>
+<p>If <cite>args_limit</cite> is a positive integer, the first <cite>[args_limit]</cite> arguments
+will be returned (not checking at all if this is valid!).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">((4,), {&#39;x&#39;: 3, &#39;y&#39;: 2, &#39;z&#39;: 1})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">((4, 3), {&#39;y&#39;: 2, &#39;z&#39;: 1})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">((4, 3, 2), {&#39;z&#39;: 1})</span>
+</pre></div>
+</div>
+<p>Note that if you specify <cite>args_limit</cite> to be greater than the maximum of
+positional arguments, it behaves as if <cite>args_limit</cite> was <cite>None</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="go">((4, 3, 2), {&#39;z&#39;: 1})</span>
+</pre></div>
+</div>
+<p>Note that ‘args_limit’’s behavior is consistent with list behvior in the sense
+that:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">args</span><span class="p">[:</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">args</span><span class="p">[:</span><span class="kc">None</span><span class="p">]</span>
+<span class="go">(0, 1, 2, 3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<p>If variable positional arguments are present, <cite>args_limit</cite> is ignored and
+all positional arguments are returned as args.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="nb">dict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">c</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="mi">7</span><span class="p">)),</span>
+<span class="gp">... </span>    <span class="n">args_limit</span><span class="o">=</span><span class="mi">1</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">((1, 2, 3, 4), {&#39;c&#39;: 5, &#39;d&#39;: 6, &#39;e&#39;: 7})</span>
+</pre></div>
+</div>
+<p>By default, only the arguments that were given in the <cite>arguments</cite> input will be
+returned in the (args, kwargs) output.
+If you also want to get those that have defaults (according to signature),
+you need to specify it with the <cite>apply_defaults=True</cite> argument.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+<span class="go">((4,), {&#39;x&#39;: 3})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">apply_defaults</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">((4,), {&#39;x&#39;: 3, &#39;y&#39;: 1, &#39;z&#39;: 1})</span>
+</pre></div>
+</div>
+<p>By default, all required arguments must be given.
+Not doing so will lead to a <cite>TypeError</cite>.
+If you want to process your arguments anyway, specify <cite>allow_partial=True</cite>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;x&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">allow_partial</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">((4,), {})</span>
+</pre></div>
+</div>
+<p>Specifying argument names that are not recognized by the signature will
+lead to a <cite>TypeError</cite>.
+If you want to avoid this (and just take from the input <cite>kwargs</cite> what ever you
+can), specify this with <cite>allow_excess=True</cite>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s1">&#39;stuff&#39;</span><span class="p">))</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">TypeError</span>: <span class="n">Got unexpected keyword arguments: extra</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo_sig</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s1">&#39;stuff&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">allow_excess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">((4,), {&#39;x&#39;: 3})</span>
+</pre></div>
+</div>
+<p>See <cite>map_arguments</cite> (namely for the description of the arguments).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1074,7 +1445,7 @@ defaults, these defaults will actually be used (unlike with <cite>functools.wrap
 <em class="property">property </em><code class="sig-name descname">n_required</code><a class="headerlink" href="#dol.signatures.Sig.n_required" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of required arguments.
 A required argument is one that doesn’t have a default, nor is VAR_POSITIONAL
-(<a href="#id13"><span class="problematic" id="id14">*</span></a>args) or VAR_KEYWORD (<a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs).
+(<a href="#id17"><span class="problematic" id="id18">*</span></a>args) or VAR_KEYWORD (<a href="#id19"><span class="problematic" id="id20">**</span></a>kwargs).
 Note: Sometimes a minimum number of arguments in VAR_POSITIONAL and
 VAR_KEYWORD are in fact required,
 but we can’t see this from the signature, so we can’t tell you about that! You
@@ -1183,8 +1554,14 @@ signature through inspect.signature.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="dol.signatures.Sig.sort_params">
+<code class="sig-name descname">sort_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.sort_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.sort_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a signature with the parameters sorted by kind and default presence.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="dol.signatures.Sig.source_args_and_kwargs">
-<code class="sig-name descname">source_args_and_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">_ignore_kind</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">_allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.source_args_and_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.source_args_and_kwargs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">source_args_and_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">_ignore_kind</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">_allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_args_limit</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.source_args_and_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.source_args_and_kwargs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Source the (args, kwargs) for the signature instance, ignoring excess
 arguments.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
@@ -1192,11 +1569,11 @@ arguments.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_args_and_kwargs</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span> <span class="o">==</span> <span class="p">((</span><span class="mi">4</span><span class="p">,),</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
-<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span>
+<span class="go">((4,), {&#39;x&#39;: 3, &#39;y&#39;: 2})</span>
 </pre></div>
 </div>
-<p>The difference with source_kwargs is that here the output is ready to be
+<p>The difference with source_arguments is that here the output is ready to be
 called by the
 function whose signature we have, since the position-only arguments will be
 returned as
@@ -1260,23 +1637,23 @@ will be returned with their defaults:</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dol.signatures.Sig.source_kwargs">
-<code class="sig-name descname">source_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">_ignore_kind</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">_allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.source_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.source_kwargs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Source the kwargs for the signature instance, ignoring excess arguments.</p>
+<dt id="dol.signatures.Sig.source_arguments">
+<code class="sig-name descname">source_arguments</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">_apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_ignore_kind</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.source_arguments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.Sig.source_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Source the arguments for the signature instance, ignoring excess arguments.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;YY&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ZZ&quot;</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="o">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_kwargs</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
 </pre></div>
 </div>
 <p>Note that though <cite>w</cite> is a position only argument, you can specify <cite>w=11</cite> as a
 keyword argument too (by default):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_kwargs</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
 </pre></div>
 </div>
 <p>If you don’t want to allow that, you can say <cite>_ignore_kind=False</cite></p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_kwargs</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">w</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span> <span class="n">_ignore_kind</span><span class="o">=</span><span class="kc">False</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
@@ -1287,14 +1664,14 @@ keyword argument too (by default):</p>
 <p>You can use <cite>_allow_partial</cite> that will allow you, if
 set to <cite>True</cite>, to underspecify the params of a function (in view of being
 completed later).</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_kwargs</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;w&#39;</span>
 </pre></div>
 </div>
 <p>But if you specify <cite>_allow_partial=True</cite>…</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_kwargs</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span> <span class="n">_allow_partial</span><span class="o">=</span><span class="kc">True</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="go">{&#39;x&#39;: 3, &#39;y&#39;: 2}</span>
@@ -1302,13 +1679,70 @@ completed later).</p>
 </div>
 <p>By default, <cite>_apply_defaults=False</cite>, which will lead to only get those
 arguments you input.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_kwargs</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 4, &#39;x&#39;: 3, &#39;y&#39;: 2}</span>
 </pre></div>
 </div>
 <p>But if you specify <cite>_apply_defaults=True</cite> non-specified non-require arguments
 will be returned with their defaults:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_kwargs</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span> <span class="n">_apply_defaults</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">{&#39;w&#39;: 4, &#39;x&#39;: 3, &#39;y&#39;: 2, &#39;z&#39;: &#39;ZZ&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.signatures.Sig.source_kwargs">
+<code class="sig-name descname">source_kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">_apply_defaults</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_allow_partial</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_ignore_kind</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.Sig.source_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Source the arguments for the signature instance, ignoring excess arguments.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;YY&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ZZ&quot;</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
+<span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
+</pre></div>
+</div>
+<p>Note that though <cite>w</cite> is a position only argument, you can specify <cite>w=11</cite> as a
+keyword argument too (by default):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
+<span class="go">{&#39;w&#39;: 11, &#39;x&#39;: 22}</span>
+</pre></div>
+</div>
+<p>If you don’t want to allow that, you can say <cite>_ignore_kind=False</cite></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">w</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span> <span class="n">_ignore_kind</span><span class="o">=</span><span class="kc">False</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">&#39;w&#39; parameter is positional only, but was passed as a keyword</span>
+</pre></div>
+</div>
+<p>You can use <cite>_allow_partial</cite> that will allow you, if
+set to <cite>True</cite>, to underspecify the params of a function (in view of being
+completed later).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">missing a required argument: &#39;w&#39;</span>
+</pre></div>
+</div>
+<p>But if you specify <cite>_allow_partial=True</cite>…</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span> <span class="n">_allow_partial</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">{&#39;x&#39;: 3, &#39;y&#39;: 2}</span>
+</pre></div>
+</div>
+<p>By default, <cite>_apply_defaults=False</cite>, which will lead to only get those
+arguments you input.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">)</span>
+<span class="go">{&#39;w&#39;: 4, &#39;x&#39;: 3, &#39;y&#39;: 2}</span>
+</pre></div>
+</div>
+<p>But if you specify <cite>_apply_defaults=True</cite> non-specified non-require arguments
+will be returned with their defaults:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="o">.</span><span class="n">source_arguments</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="mi">4</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="n">are</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span> <span class="n">_apply_defaults</span><span class="o">=</span><span class="kc">True</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="go">{&#39;w&#39;: 4, &#39;x&#39;: 3, &#39;y&#39;: 2, &#39;z&#39;: &#39;ZZ&#39;}</span>
@@ -1332,7 +1766,7 @@ will be returned with their defaults:</p>
 </pre></div>
 </div>
 <p>Note that this does NOT return:
-<a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a></p>
+<a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
 <blockquote>
 <div><p>{‘parameters’: self.parameters,
 ‘return_annotation’: self.return_annotation}</p>
@@ -1488,7 +1922,7 @@ implementation though!</p>
 <span class="go">&lt;Sig (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
 </pre></div>
 </div>
-<p>But note that the variadic arguments <a href="#id21"><span class="problematic" id="id22">*</span></a>args and <a href="#id23"><span class="problematic" id="id24">**</span></a>kwargs remain variadic:</p>
+<p>But note that the variadic arguments <a href="#id25"><span class="problematic" id="id26">*</span></a>args and <a href="#id27"><span class="problematic" id="id28">**</span></a>kwargs remain variadic:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">all_pk_signature</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">bar</span><span class="p">))</span>
 <span class="go">&lt;Signature (*args, **kwargs)&gt;</span>
 </pre></div>
@@ -1502,7 +1936,7 @@ attributes (like name).</p>
 <span class="go">&#39;bar&#39;</span>
 </pre></div>
 </div>
-<p>See also: <code class="docutils literal notranslate"><span class="pre">i2.wrappers.nice_kinds</span></code></p>
+<p>See also: <code class="docutils literal notranslate"><span class="pre">i2.signatures.kind_forgiving_func</span></code></p>
 </dd></dl>
 
 <dl class="py function">
@@ -1577,12 +2011,12 @@ dict.</p>
 <span class="go">(1, (2, 3), 4, {&#39;z&#39;: 5})</span>
 </pre></div>
 </div>
-<p># &gt;&gt;&gt; def bar(x, y=1, <a href="#id25"><span class="problematic" id="id26">**</span></a>kwargs1):
+<p># &gt;&gt;&gt; def bar(x, y=1, <a href="#id29"><span class="problematic" id="id30">**</span></a>kwargs1):
 # …     return x, y, kwargs1
 # &gt;&gt;&gt; call_forgivingly(bar, 1, 2, 3, y=4, z=5)
 # (1, 4, {‘z’: 5})</p>
 <p># &gt;&gt;&gt; call_forgivingly(bar, 1, 2, 3, y=4, z=5)</p>
-<p># &gt;&gt;&gt; def bar(x, <a href="#id27"><span class="problematic" id="id28">*</span></a>args1, y=1):
+<p># &gt;&gt;&gt; def bar(x, <a href="#id31"><span class="problematic" id="id32">*</span></a>args1, y=1):
 # …     return x, args1, y
 # &gt;&gt;&gt; call_forgivingly(bar, 1, 2, 3, y=4, z=5)
 # (1, (2, 3), {‘z’: 5})</p>
@@ -1683,7 +2117,7 @@ raise a <cite>TypeError</cite>:</p>
 <span class="go">(x, y=1, args=(), **kwargs)</span>
 </pre></div>
 </div>
-<p># &gt;&gt;&gt; def h(x, <a href="#id29"><span class="problematic" id="id30">*</span></a>y, z):
+<p># &gt;&gt;&gt; def h(x, <a href="#id33"><span class="problematic" id="id34">*</span></a>y, z):
 # …     print(f”{x=}, {y=}, {z=}”)
 # &gt;&gt;&gt; h(1, 2, 3, z=4)
 # x=1, y=(2, 3), z=4
@@ -1714,7 +2148,7 @@ implementation though!</p>
 <span class="go">&lt;Sig (w, x: float, y=1, z: int = 1, **kwargs)&gt;</span>
 </pre></div>
 </div>
-<p>But note that the variadic arguments <a href="#id31"><span class="problematic" id="id32">*</span></a>args and <a href="#id33"><span class="problematic" id="id34">**</span></a>kwargs remain variadic:</p>
+<p>But note that the variadic arguments <a href="#id35"><span class="problematic" id="id36">*</span></a>args and <a href="#id37"><span class="problematic" id="id38">**</span></a>kwargs remain variadic:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">all_pk_signature</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">bar</span><span class="p">))</span>
 <span class="go">&lt;Signature (*args, **kwargs)&gt;</span>
 </pre></div>
@@ -1728,18 +2162,18 @@ attributes (like name).</p>
 <span class="go">&#39;bar&#39;</span>
 </pre></div>
 </div>
-<p>See also: <code class="docutils literal notranslate"><span class="pre">i2.wrappers.nice_kinds</span></code></p>
+<p>See also: <code class="docutils literal notranslate"><span class="pre">i2.signatures.kind_forgiving_func</span></code></p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="dol.signatures.ch_variadics_to_non_variadic_kind">
 <code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">ch_variadics_to_non_variadic_kind</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">ch_variadic_keyword_to_keyword</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#ch_variadics_to_non_variadic_kind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.ch_variadics_to_non_variadic_kind" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id35"><span class="problematic" id="id36">*</span></a>args) argument to a tuple (args)
+<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id39"><span class="problematic" id="id40">*</span></a>args) argument to a tuple (args)
 argument of the same name.</p>
 <p>Essentially, given a <cite>func(a, *b, c, **d)</cite> function want to get a
 <cite>new_func(a, b=(), c=None, d={})</cite> that has the same functionality
 (in fact, calls the original <cite>func</cite> function behind the scenes), but without
-where the variadic arguments <a href="#id37"><span class="problematic" id="id38">*</span></a>b and <a href="#id39"><span class="problematic" id="id40">**</span></a>d are replaced with a <cite>b</cite> expecting an
+where the variadic arguments <a href="#id41"><span class="problematic" id="id42">*</span></a>b and <a href="#id43"><span class="problematic" id="id44">**</span></a>d are replaced with a <cite>b</cite> expecting an
 iterable (e.g. tuple/list) and <cite>d</cite> expecting a <cite>dict</cite> to contain the
 desired inputs.</p>
 <p>Besides this, the decorator tries to be as conservative as possible, making only
@@ -1790,7 +2224,7 @@ will still be a keyword-only kind.</p>
 </pre></div>
 </div>
 <p>If you only want the variadic positional to be handled, but leave leave any
-VARIADIC_KEYWORD kinds (<a href="#id41"><span class="problematic" id="id42">**</span></a>kwargs) alone, you can do so by setting
+VARIADIC_KEYWORD kinds (<a href="#id45"><span class="problematic" id="id46">**</span></a>kwargs) alone, you can do so by setting
 <cite>ch_variadic_keyword_to_keyword=False</cite>.
 If you’ll need to use <cite>ch_variadics_to_non_variadic_kind</cite> in such a way
 repeatedly, we suggest you use <cite>functools.partial</cite> to not have to specify this
@@ -2566,21 +3000,30 @@ key function toeach input before applying the original comparator.</p>
 
 <dl class="py function">
 <dt id="dol.signatures.kind_forgiving_func">
-<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">kind_forgiving_func</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#kind_forgiving_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.kind_forgiving_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a version of the function that has all POSITIONAL_OR_KEYWORD kinds</p>
-<p>The inspiring use case: Many builtins have restrictive parameter kinds which makes it hard to
-curry, amongst other such annoyances. For instance, say you want to curry
-<cite>isinstance</cite> to make a boolean function that detects string types.
-You can’t with partial, because you can’t access the position only
-<cite>class_or_tuple</cite> argument to fix it.</p>
-<p>Well, make a <cite>kind_forgiving_func</cite> version, and partial to your heart’s content!</p>
+<code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">kind_forgiving_func</code><span class="sig-paren">(</span><em class="sig-param">func</em>, <em class="sig-param">kinds_modifier=&lt;function convert_to_PK&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#kind_forgiving_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.signatures.kind_forgiving_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wraps the func, changing the argument kinds according to kinds_modifier.
+The default behaviour is to change all kinds to POSITIONAL_OR_KEYWORD kinds.
+The original purpose of this function is to remove argument-kind restriction
+annoyances when doing functional manipulations such as:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">_isinstance</span> <span class="o">=</span> <span class="n">kind_forgiving_func</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">isinstance_of_str</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_isinstance</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">isinstance_of_str</span><span class="p">(</span><span class="s1">&#39;asdf&#39;</span><span class="p">)</span>
-<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">isinstance_of_str</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">isinstance_of_str</span><span class="p">(</span><span class="s1">&#39;I am a string&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">isinstance() takes no keyword arguments</span>
 </pre></div>
 </div>
+<p>Here, instead, we can just get a kinder version of the function and do what we
+want to do:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">_isinstance</span> <span class="o">=</span> <span class="n">kind_forgiving_func</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">isinstance_of_str</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_isinstance</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">isinstance_of_str</span><span class="p">(</span><span class="s1">&#39;I am a string&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">isinstance_of_str</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>See also: <code class="docutils literal notranslate"><span class="pre">i2.signatures.all_pk_signature</span></code></p>
 </dd></dl>
 
 <dl class="py function">
@@ -2903,7 +3346,7 @@ the <code class="docutils literal notranslate"><span class="pre">sort_params</sp
 <dl class="py function">
 <dt id="dol.signatures.tuple_the_args">
 <code class="sig-prename descclassname">dol.signatures.</code><code class="sig-name descname">tuple_the_args</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">ch_variadic_keyword_to_keyword</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.tuple_the_args" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id43"><span class="problematic" id="id44">*</span></a>args) argument to a tuple (args)
+<dd><p>A decorator that will change a VAR_POSITIONAL (<a href="#id47"><span class="problematic" id="id48">*</span></a>args) argument to a tuple (args)
 argument of the same name.</p>
 </dd></dl>
 
@@ -2919,12 +3362,12 @@ function <cite>g</cite> taking two inputs, <cite>a</cite>, and <cite>b</cite>.
 Now you want to carry out this functionality using a function <cite>f</cite> that does what
 <cite>g</cite> should do, but doesn’t use <cite>a</cite>, and doesn’t even have it in it’s arguments.</p>
 <p>The solution to this is to _adapt_ <cite>f</cite> to the <cite>g</cite> interface:
-<a href="#id45"><span class="problematic" id="id46">``</span></a>`
+<a href="#id49"><span class="problematic" id="id50">``</span></a>`
 def my_g(a, b):</p>
 <blockquote>
 <div><p>return f(a)</p>
 </div></blockquote>
-<p><a href="#id47"><span class="problematic" id="id48">``</span></a>`
+<p><a href="#id51"><span class="problematic" id="id52">``</span></a>`
 and use <cite>my_g</cite>.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="o">*</span> <span class="mi">11</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">:</span> <span class="o">...</span>

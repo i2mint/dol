@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.14 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.tools &mdash; dol 0.2.15 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -251,6 +251,59 @@ over-write):</p>
 <p>Border case: The strings “infinity” and “inf” actually convert to a valid float.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">convert_to_numerical_if_possible</span><span class="p">(</span><span class="s2">&quot;infinity&quot;</span><span class="p">)</span>
 <span class="go">inf</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.tools.filter_prefixes">
+<code class="sig-prename descclassname">dol.tools.</code><code class="sig-name descname">filter_prefixes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prefixes</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#filter_prefixes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.tools.filter_prefixes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a filter that returns True if a string starts with one of the given prefixes</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">starts_with_test</span> <span class="o">=</span> <span class="n">filter_prefixes</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">starts_with_test</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">starts_with_test</span><span class="p">(</span><span class="s2">&quot;report.doc&quot;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_test_or_report</span> <span class="o">=</span> <span class="n">filter_prefixes</span><span class="p">([</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="s1">&#39;report&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_test_or_report</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_test_or_report</span><span class="p">(</span><span class="s2">&quot;report.doc&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_test_or_report</span><span class="p">(</span><span class="s2">&quot;image.jpg&quot;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.tools.filter_regex">
+<code class="sig-prename descclassname">dol.tools.</code><code class="sig-name descname">filter_regex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">regex</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">return_search_func</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#filter_regex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.tools.filter_regex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a filter that returns True if a string matches the given regex</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_txt</span> <span class="o">=</span> <span class="n">filter_regex</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;.*\.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_txt</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_txt</span><span class="p">(</span><span class="s2">&quot;report.doc&quot;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dol.tools.filter_suffixes">
+<code class="sig-prename descclassname">dol.tools.</code><code class="sig-name descname">filter_suffixes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">suffixes</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#filter_suffixes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.tools.filter_suffixes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a filter that returns True if a string ends with one of the given suffixes</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ends_with_txt</span> <span class="o">=</span> <span class="n">filter_suffixes</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ends_with_txt</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ends_with_txt</span><span class="p">(</span><span class="s2">&quot;report.doc&quot;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_text</span> <span class="o">=</span> <span class="n">filter_suffixes</span><span class="p">([</span><span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;.doc&#39;</span><span class="p">,</span> <span class="s1">&#39;.pdf&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_text</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_text</span><span class="p">(</span><span class="s2">&quot;report.doc&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_text</span><span class="p">(</span><span class="s2">&quot;image.jpg&quot;</span><span class="p">)</span>
+<span class="go">False</span>
 </pre></div>
 </div>
 </dd></dl>
