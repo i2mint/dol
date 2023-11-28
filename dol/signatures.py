@@ -111,7 +111,19 @@ from functools import (
     update_wrapper as _update_wrapper,
 )
 
-from i2.util import FrozenDict, deprecation_of
+
+def deprecation_of(func, old_name):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        from warnings import warn
+
+        warn(
+            f'`{old_name}` is deprecated. Use `{func.__module__}.{func.__qualname__}` instead.',
+            DeprecationWarning,
+        )
+        return func(*args, **kwargs)
+
+    return wrapper
 
 # monkey patching WRAPPER_ASSIGNMENTS to get "proper" wrapping (adding defaults and
 # kwdefaults
@@ -138,7 +150,7 @@ VP, VK = Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD
 PO, KO = Parameter.POSITIONAL_ONLY, Parameter.KEYWORD_ONLY
 var_param_kinds = frozenset({VP, VK})
 var_param_types = var_param_kinds  # Deprecate: for back-compatibility. Delete in 2021
-var_param_kind_dflts = FrozenDict({VP: (), VK: {}})
+var_param_kind_dflts_items = tuple({VP: (), VK: {}}.items())
 
 DFLT_DEFAULT_CONFLICT_METHOD = 'strict'
 param_attributes = {'name', 'kind', 'default', 'annotation'}
