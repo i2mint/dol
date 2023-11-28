@@ -62,13 +62,24 @@ from dol.base import (
 )
 
 
-# TODO: On (my) pycharm IDE, these show up greyed out and grey out all
-#  of the base objects when included (pycharm bug?), so separating them out.
 from dol.base import KT, VT, BaseKeysView, BaseValuesView, BaseItemsView
 
 
-# TODO: Check usage and replace star import with explicit imports
-from dol.zipfiledol import *
+from dol.zipfiledol import (
+    zip_compress,
+    zip_decompress,
+    to_zip_file,
+    ZipReader,
+    ZipInfoReader,
+    FilesOfZip,
+    FileStreamsOfZip,
+    FlatZipFilesReader,
+    ZipStore,
+    ZipFileStreamsReader,
+    remove_mac_junk_from_zip,
+    tar_compress,
+    tar_decompress,
+)
 
 from dol.filesys import (
     Files,  # read-write-delete access to files; relative paths, bytes values
