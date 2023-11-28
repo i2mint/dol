@@ -227,6 +227,12 @@ class ValueCodecs:
 
     """
 
+    def __init__(self, *args, **kwargs):
+        raise ValueError(
+            "This class is not meant to be instantiated, but only act as a collection "
+            "of vakye codec functions"
+        )
+
     # TODO: Clean up module import polution?
     # TODO: Import all these in module instead of class
     # TODO: Figure out a way to import these dynamically, only if a particular codec is used
@@ -305,6 +311,12 @@ class KeyCodecs:
     """
     A collection of key codecs
     """
+
+    def __init__(self, *args, **kwargs):
+        raise ValueError(
+            "This class is not meant to be instantiated, but only act as a collection "
+            "of key codec functions"
+        )
 
     def suffixed(suffix: str):
         st = KeyTemplate('{}' + f'{suffix}')
