@@ -101,7 +101,13 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -122,6 +128,10 @@ def split_if_str(obj, sep='.'):
 
 def separate_keys_with_separator(obj, sep='.'):
     return map(cast_to_int_if_numeric_str, split_if_str(obj, sep))
+
+
+def getitem(obj, k):
+    return obj[k]
 
 
 def get_attr_or_item(obj, k):
@@ -218,6 +228,8 @@ def path_get(
 path_get.split_if_str = split_if_str
 path_get.separate_keys_with_separator = separate_keys_with_separator
 path_get.get_attr_or_item = get_attr_or_item
+path_get.get_item = getitem
+path_get.get_attr = getattr
 
 
 @add_as_attribute_of(path_get)
@@ -676,7 +688,11 @@ class PrefixRelativization(PrefixRelativizationMixin):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr='_prefix',
 ):
     """
 
@@ -1513,7 +1529,8 @@ class KeyTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self, params: dict,
+        self,
+        params: dict,
     ):
         r"""Generates a namedtuple from the dictionary values based on the template.
 
