@@ -1031,8 +1031,10 @@ def _cached_keys(
             return self._keys_cache
 
         def __iter__(self):
-            # if getattr(self, '_keys_cache', None) is None:
-            #     self._keys_cache = iter_to_container(super(cached_cls, self).__iter__())
+            # If _keys_cache is None, then we haven't iterated yet, so we'll do it now.
+            # This if clause was commmented out 3 years ago, and recently uncommented.
+            if getattr(self, '_keys_cache', None) is None:
+                self._keys_cache = keys_cache(super(cached_cls, self).__iter__())
             yield from self._keys_cache
 
         def __len__(self):
