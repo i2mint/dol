@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.2.17 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.trans &mdash; dol 0.2.18 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -1139,8 +1139,10 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_cache</span>
 
         <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="c1"># if getattr(self, &#39;_keys_cache&#39;, None) is None:</span>
-            <span class="c1">#     self._keys_cache = iter_to_container(super(cached_cls, self).__iter__())</span>
+            <span class="c1"># If _keys_cache is None, then we haven&#39;t iterated yet, so we&#39;ll do it now.</span>
+            <span class="c1"># This if clause was commmented out 3 years ago, and recently uncommented.</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_keys_cache&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_keys_cache</span> <span class="o">=</span> <span class="n">keys_cache</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">cached_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">())</span>
             <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_cache</span>
 
         <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
