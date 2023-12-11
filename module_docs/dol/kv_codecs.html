@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.kv_codecs &mdash; dol 0.2.18 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.kv_codecs &mdash; dol 0.2.19 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -120,7 +120,7 @@
 <dt id="dol.kv_codecs.ValueCodecs">
 <em class="property">class </em><code class="sig-prename descclassname">dol.kv_codecs.</code><code class="sig-name descname">ValueCodecs</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#ValueCodecs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.kv_codecs.ValueCodecs" title="Permalink to this definition">¶</a></dt>
 <dd><p>A collection of value codecs using standard lib tools.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">json_codec</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">json_codec</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>  <span class="c1"># call the json codec factory</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span> <span class="o">=</span> <span class="n">json_codec</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">encoder</span><span class="p">({</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
 <span class="go">&#39;{&quot;b&quot;: 2}&#39;</span>
@@ -128,6 +128,7 @@
 <span class="go">{&#39;b&#39;: 2}</span>
 </pre></div>
 </div>
+<p>The <cite>json_codec</cite> object is also a <cite>Mapping</cite> value wrapper:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">json_codec</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
@@ -136,10 +137,127 @@
 <span class="go">{&#39;b&#39;: 2}</span>
 </pre></div>
 </div>
+<p>In order not to have to call the codec factory when you just want the default,
+we’ve made a <cite>default</cite> attribute that contains all the default codecs:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">backend</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;{&quot;b&quot;: 2}&#39;</span><span class="p">}</span>  <span class="c1"># json was written in backend</span>
+</pre></div>
+</div>
+<p>For times when you want to parametrize your code though, know that you can also
+pass arguments to the encoder and decoder when you make your codec.
+For example, to make a json codec that indents the json, you can do:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">json_codec</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">json_codec</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">backend</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">])</span>  <span class="c1"># written in backend with indent</span>
+<span class="go">{</span>
+<span class="go">  &quot;b&quot;: 2</span>
+<span class="go">}</span>
+</pre></div>
+</div>
 <dl class="py attribute">
 <dt id="dol.kv_codecs.ValueCodecs.b64">
 <code class="sig-name descname">b64</code><em class="property"> = &lt;module 'base64' from '/opt/hostedtoolcache/Python/3.10.13/x64/lib/python3.10/base64.py'&gt;</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.b64" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py class">
+<dt id="dol.kv_codecs.ValueCodecs.default">
+<em class="property">class </em><code class="sig-name descname">default</code><a class="reference internal" href="../../_modules/dol/kv_codecs.html#ValueCodecs.default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default" title="Permalink to this definition">¶</a></dt>
+<dd><p>To contain default codecs</p>
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.base64">
+<code class="sig-name descname">base64</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function b64encode&gt;), decoder=functools.partial(&lt;function b64decode&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.base64" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.bytesio">
+<code class="sig-name descname">bytesio</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;class '_io.BytesIO'&gt;), decoder=functools.partial(operator.methodcaller('read')))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.bytesio" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.bz2">
+<code class="sig-name descname">bz2</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function compress&gt;), decoder=functools.partial(&lt;function decompress&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.bz2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.codecs">
+<code class="sig-name descname">codecs</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;built-in function encode&gt;), decoder=functools.partial(&lt;built-in function decode&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.codecs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.csv">
+<code class="sig-name descname">csv</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function csv_encode&gt;), decoder=functools.partial(&lt;function csv_decode&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.csv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.csv_dict">
+<code class="sig-name descname">csv_dict</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function csv_dict_encode&gt;), decoder=functools.partial(&lt;function csv_dict_decode&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.csv_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.gzip">
+<code class="sig-name descname">gzip</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function compress&gt;), decoder=functools.partial(&lt;function decompress&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.gzip" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.json">
+<code class="sig-name descname">json</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function dumps&gt;), decoder=functools.partial(&lt;function loads&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.lzma">
+<code class="sig-name descname">lzma</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function compress&gt;), decoder=functools.partial(&lt;function decompress&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.lzma" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.pickle">
+<code class="sig-name descname">pickle</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;built-in function dumps&gt;), decoder=functools.partial(&lt;built-in function loads&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.pickle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.plistlib">
+<code class="sig-name descname">plistlib</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function dumps&gt;), decoder=functools.partial(&lt;function loads&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.plistlib" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.quopri">
+<code class="sig-name descname">quopri</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function encodestring&gt;), decoder=functools.partial(&lt;function decodestring&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.quopri" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.str_to_bytes">
+<code class="sig-name descname">str_to_bytes</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;method 'encode' of 'str' objects&gt;), decoder=functools.partial(&lt;method 'decode' of 'bytes' objects&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.str_to_bytes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.stringio">
+<code class="sig-name descname">stringio</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;class '_io.StringIO'&gt;), decoder=functools.partial(operator.methodcaller('read')))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.stringio" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.tarfile">
+<code class="sig-name descname">tarfile</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function tar_compress&gt;), decoder=functools.partial(&lt;function tar_decompress&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.tarfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.urlsafe_b64">
+<code class="sig-name descname">urlsafe_b64</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function urlsafe_b64encode&gt;), decoder=functools.partial(&lt;function urlsafe_b64decode&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.urlsafe_b64" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.xml_etree">
+<code class="sig-name descname">xml_etree</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function _xml_tree_encode&gt;), decoder=functools.partial(&lt;function _xml_tree_decode&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.xml_etree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dol.kv_codecs.ValueCodecs.default.zipfile">
+<code class="sig-name descname">zipfile</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function zip_compress&gt;), decoder=functools.partial(&lt;function zip_decompress&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.zipfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
 
 <dl class="py attribute">
 <dt id="dol.kv_codecs.ValueCodecs.io">
