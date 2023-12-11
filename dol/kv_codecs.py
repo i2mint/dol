@@ -208,15 +208,17 @@ key_wrap.__name__ = 'key_wrap'
 
 
 class ValueCodecs:
-    """
+    r"""
     A collection of value codecs using standard lib tools.
 
-    >>> json_codec = ValueCodecs.json()
+    >>> json_codec = ValueCodecs.json()  # call the json codec factory
     >>> encoder, decoder = json_codec
     >>> encoder({'b': 2})
     '{"b": 2}'
     >>> decoder('{"b": 2}')
     {'b': 2}
+
+    The `json_codec` object is also a `Mapping` value wrapper:
 
     >>> backend = dict()
     >>> interface = json_codec(backend)
@@ -225,12 +227,34 @@ class ValueCodecs:
     >>> interface['a']  # but this json is decoded to a dict when read from interface
     {'b': 2}
 
+    In order not to have to call the codec factory when you just want the default,
+    we've made a `default` attribute that contains all the default codecs:
+
+    >>> backend = dict()
+    >>> interface = ValueCodecs.default.json(backend)
+    >>> interface['a'] = {'b': 2}  # we write a dict
+    >>> assert backend == {'a': '{"b": 2}'}  # json was written in backend
+
+    For times when you want to parametrize your code though, know that you can also
+    pass arguments to the encoder and decoder when you make your codec.
+    For example, to make a json codec that indents the json, you can do:
+
+    >>> json_codec = ValueCodecs.json(indent=2)
+    >>> backend = dict()
+    >>> interface = json_codec(backend)
+    >>> interface['a'] = {'b': 2}  # we write a dict
+    >>> print(backend['a'])  # written in backend with indent
+    {
+      "b": 2
+    }
+
+
     """
 
     def __init__(self, *args, **kwargs):
         raise ValueError(
             'This class is not meant to be instantiated, but only act as a collection '
-            'of vakye codec functions'
+            'of value codec functions'
         )
 
     # TODO: Clean up module import polution?
@@ -238,17 +262,21 @@ class ValueCodecs:
     # TODO: Figure out a way to import these dynamically, only if a particular codec is used
     # TODO: Figure out how to give codecs annotations that can actually be inspected!
 
-    def __iter__(self):
+    @classmethod
+    def _iter_codecs(cls):
         def is_value_codec(attr_val):
             func = getattr(attr_val, 'func', None)
             name = getattr(func, '__name__', '')
             return name == '_codec_wrap'
 
-        for attr in dir(self):
+        for attr in dir(cls):
             if not attr.startswith('_'):
-                attr_val = getattr(self, attr, None)
+                attr_val = getattr(cls, attr, None)
                 if is_value_codec(attr_val):
                     yield attr
+
+    class default:
+        """To contain default codecs"""
 
     import pickle, json, gzip, bz2, base64 as b64, lzma, codecs, io
     from operator import methodcaller
@@ -302,6 +330,16 @@ class ValueCodecs:
 
     # Any is really xml.etree.ElementTree.Element, but didn't want to import
     xml_etree: Codec[Any, bytes] = value_wrap(_xml_tree_encode, _xml_tree_decode)
+
+
+def _add_default_codecs():
+    for codec_name in ValueCodecs._iter_codecs():
+        codec_factory = getattr(ValueCodecs, codec_name)
+        dflt_codec = codec_factory()
+        setattr(ValueCodecs.default, codec_name, dflt_codec)
+
+
+_add_default_codecs()
 
 
 from dol.paths import KeyTemplate
