@@ -4,12 +4,12 @@ Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library too
 # ------------------------------------ Codecs ------------------------------------------
 
 from functools import partial
-from typing import Callable, Iterable, Any, Optional
+from typing import Callable, Iterable, Any, Optional, KT, VT
 
-from dol.trans import Codec, ValueCodec, KeyCodec
+from dol.trans import Codec, ValueCodec, KeyCodec, KeyValueCodec
 from dol.paths import KeyTemplate
 from dol.signatures import Sig
-from dol.util import named_partial
+from dol.util import named_partial, identity_func
 
 # For the codecs:
 import csv
@@ -203,8 +203,10 @@ def codec_wrap(cls, encoder: Callable, decoder: Callable, *, exclude=()):
     return sig(factory)
 
 
+# wrappers to manage encoder and decoder arguments and signature
 value_wrap = named_partial(codec_wrap, ValueCodec, __name__='value_wrap')
 key_wrap = named_partial(codec_wrap, KeyCodec, __name__='key_wrap')
+key_value_wrap = named_partial(codec_wrap, KeyValueCodec, __name__='key_value_wrap')
 
 
 class CodecCollection:
@@ -212,6 +214,7 @@ class CodecCollection:
     Makes sure that the class cannot be instantiated, but only used as a collection.
     Also provides an _iter_codecs method that iterates over the codec names.
     """
+
     def __init__(self, *args, **kwargs):
         name = getattr(type(self), '__name__', '')
         raise ValueError(
@@ -231,6 +234,7 @@ class CodecCollection:
                 attr_val = getattr(cls, attr, None)
                 if is_value_codec(attr_val):
                     yield attr
+
 
 def _add_default_codecs(cls):
     for codec_name in cls._iter_codecs():
@@ -358,6 +362,72 @@ class KeyCodecs(CodecCollection):
         return KeyCodec(st.simple_str_to_str, st.str_to_simple_str)
 
 
+dflt_ext_mapping = {
+    '.json': ValueCodecs.json,
+    '.csv': ValueCodecs.csv,
+    '.csv_dict': ValueCodecs.csv_dict,
+    '.pickle': ValueCodecs.pickle,
+    '.gz': ValueCodecs.gzip,
+    '.bz2': ValueCodecs.bz2,
+    '.lzma': ValueCodecs.lzma,
+    '.zip': ValueCodecs.zipfile,
+    '.tar': ValueCodecs.tarfile,
+    '.xml': ValueCodecs.xml_etree,
+}
+
+def key_based_codec_factory(key_mapping: dict, key_func: Callable = identity_func):
+    """A factory that creates a key codec that uses the key to determine the
+    codec to use."""
+
+    def encoder(key):
+        return key_mapping[key_func(key)]
+
+    def decoder(key):
+        return key_mapping[key_func(key)]
+
+    return ValueCodec(encoder, decoder)
+
+
+class NotGiven:
+    """A singleton to indicate that a value was not given"""
+
+    def __repr__(self):
+        return 'NotGiven'
+
+from typing import NewType
+def key_based_value_trans(
+        key_func: Callable[[KT], KT], 
+        value_trans_mapping, 
+        default_factory: Callable[[], Callable], 
+        k=NotGiven
+    ):
+    """A factory that creates a value codec that uses the key to determine the
+    codec to use.
+    
+    # a key_func that gets the extension of a file path
+
+    >>> import json
+    >>> from functools import partial
+    >>> key_func = lambda k: os.path.splitext(k)[1]
+    >>> value_trans_mapping = {'.json': json.loads, '.txt': bytes.decode}
+    >>> default_factory = partial(ValueError, "No codec for this extension")
+    >>> trans = key_based_value_trans(
+    ...     key_func, value_trans_mapping, default_factory=lambda: identity_func
+    ... )
+
+
+    """
+    if k is NotGiven:
+        return partial(
+            key_based_value_trans, key_func, value_trans_mapping, default_factory
+        )
+    value_trans_key = key_func(k)
+    value_trans = value_trans_mapping.get(value_trans_key, default_factory, None)
+    if value_trans is None:
+        value_trans = default_factory()
+    return value_trans
+
+
 
 @_add_default_codecs
 class KeyValueCodecs(CodecCollection):
@@ -365,6 +435,22 @@ class KeyValueCodecs(CodecCollection):
     A collection of key-value codecs that can be used with postget and preset kv_wraps.
     """
 
-    
+    def key_based(
+            key_mapping: dict, 
+            key_func: Callable = identity_func, 
+            *, 
+            default: Optional[Callable] = None
+        ):
+        """A factory that creates a key-value codec that uses the key to determine the
+        value codec to use."""
 
 
+
+    def extension_based(
+        ext_mapping: dict = dflt_ext_mapping,
+        *,
+        default: Optional[Callable] = None,
+    ):
+        """A factory that creates a key-value codec that uses the file extension to
+        determine the value codec to use."""
+        

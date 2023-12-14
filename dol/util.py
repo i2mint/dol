@@ -4,7 +4,17 @@ import shutil
 import re
 from collections import deque, namedtuple, defaultdict
 from warnings import warn
-from typing import Any, Hashable, Callable, Iterable, Optional, Union, Mapping, Sequence
+from typing import (
+    Any,
+    Hashable,
+    Callable,
+    Iterable,
+    Optional,
+    Union,
+    Mapping,
+    Sequence,
+    T,
+)
 from functools import update_wrapper as _update_wrapper
 from functools import wraps as _wraps
 from functools import partialmethod, partial, WRAPPER_ASSIGNMENTS
@@ -19,6 +29,15 @@ update_wrapper = partial(_update_wrapper, assigned=wrapper_assignments)
 wraps = partial(_wraps, assigned=wrapper_assignments)
 
 exhaust = partial(deque, maxlen=0)
+
+
+# TODO: Make identity_func "identifiable". If we use the following one, we can use == to detect it's use,
+# TODO: ... but there may be a way to annotate, register, or type any identity function so it can be detected.
+def identity_func(x: T) -> T:
+    return x
+
+
+static_identity_method = staticmethod(identity_func)
 
 
 def named_partial(func, *args, __name__=None, **keywords):

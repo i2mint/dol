@@ -36,7 +36,12 @@ from collections.abc import (
 )
 from typing import Any, Iterable, Tuple, Callable, Union, Optional
 
-from dol.util import wraps, _disabled_clear_method
+from dol.util import (
+    wraps,
+    _disabled_clear_method,
+    identity_func,
+    static_identity_method,
+)
 from dol.signatures import Sig
 
 Key = Any
@@ -232,15 +237,6 @@ class KvPersister(KvReader, MutableMapping):
 Persister = KvPersister  # alias for back-compatibility
 
 
-# TODO: Make identity_func "identifiable". If we use the following one, we can use == to detect it's use,
-# TODO: ... but there may be a way to annotate, register, or type any identity function so it can be detected.
-def identity_func(x):
-    return x
-
-
-static_identity_method = staticmethod(identity_func)
-
-
 class NoSuchItem:
     pass
 
@@ -325,7 +321,8 @@ def delegate_to(
         for attr in attrs:
             wrapped_attr = getattr(wrapped, attr)
             delegated_attribute = update_wrapper(
-                wrapper=DelegatedAttribute(delegation_attr, attr), wrapped=wrapped_attr,
+                wrapper=DelegatedAttribute(delegation_attr, attr),
+                wrapped=wrapped_attr,
             )
             setattr(Wrap, attr, delegated_attribute)
 
