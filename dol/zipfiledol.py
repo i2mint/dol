@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from io import BytesIO
 from functools import partial, wraps
-from typing import Callable, Union, Iterable
+from typing import Callable, Union, Iterable, Mapping, Literal
 import zipfile
 from zipfile import (
     ZipFile,
@@ -16,6 +16,7 @@ from zipfile import (
     ZIP_LZMA,
 )
 from dol.base import KvReader, KvPersister
+from dol.trans import filt_iter
 from dol.filesys import FileCollection, Files
 from dol.util import lazyprop, fullpath
 from dol.sources import FlatReader
@@ -123,7 +124,11 @@ def zip_compress(
 
 
 def zip_decompress(
-    b: bytes, *, allowZip64=True, compresslevel=None, strict_timestamps=True,
+    b: bytes,
+    *,
+    allowZip64=True,
+    compresslevel=None,
+    strict_timestamps=True,
 ) -> bytes:
     """Decompress input bytes of a single file zip, returning the uncompressed bytes
 
@@ -488,7 +493,11 @@ class ZipFilesReader(FileCollection, KvReader):
         self.zip_reader_kwargs = zip_reader_kwargs
         if self.zip_reader is ZipReader:
             self.zip_reader_kwargs = dict(
-                dict(prefix='', open_kws=None, file_info_filt=ZipReader.FILES_ONLY,),
+                dict(
+                    prefix='',
+                    open_kws=None,
+                    file_info_filt=ZipReader.FILES_ONLY,
+                ),
                 **self.zip_reader_kwargs,
             )
 
@@ -612,7 +621,8 @@ from dol.paths import mk_relative_path_store
 from dol.util import partialclass
 
 ZipFileStreamsReader = mk_relative_path_store(
-    partialclass(ZipFilesReader, zip_reader=FileStreamsOfZip), prefix_attr='rootdir',
+    partialclass(ZipFilesReader, zip_reader=FileStreamsOfZip),
+    prefix_attr='rootdir',
 )
 ZipFileStreamsReader.__name__ = 'ZipFileStreamsReader'
 ZipFileStreamsReader.__qualname__ = 'ZipFileStreamsReader'
@@ -774,7 +784,10 @@ class ZipStore(KvPersister):
 
     def __repr__(self):
         args_str = ', '.join(
-            (f"'{self.zip_filepath}'", f"'allow_overwrites={self.allow_overwrites}'",)
+            (
+                f"'{self.zip_filepath}'",
+                f"'allow_overwrites={self.allow_overwrites}'",
+            )
         )
         return f'{self.__class__.__name__}({args_str})'
 
@@ -859,10 +872,18 @@ PathString = str
 PathFilterFunc = Callable[[PathString], bool]
 
 
+def _not_in(excluded, obj=None):
+    if obj is None:
+        return partial(_not_in, excluded)
+    return obj not in excluded
+
+
 def remove_some_entries_from_zip(
     zip_source,
     keys_to_be_removed: Union[PathFilterFunc, Iterable[PathString]],
     ask_before_before_deleting=True,
+    *,
+    remove_action: Literal['delete', 'filter'] = 'filter',
 ):
     """Removes specific keys from a zip file.
 
@@ -881,7 +902,9 @@ def remove_some_entries_from_zip(
     ... )
 
     """
-    z = ZipStore(zip_source)
+    z = zip_source
+    if not isinstance(z, Mapping):
+        z = ZipStore(z)
     if not isinstance(keys_to_be_removed, Callable):
         if isinstance(keys_to_be_removed, str):
             keys_to_be_removed = [keys_to_be_removed]
@@ -889,16 +912,19 @@ def remove_some_entries_from_zip(
         keys_to_be_removed = lambda x: x in set(keys_to_be_removed)
     keys_that_will_be_deleted = list(filter(keys_to_be_removed, z))
     if keys_that_will_be_deleted:
-        if ask_before_before_deleting:
-            print('These keys will be removed:\n\r')
-            print(*keys_that_will_be_deleted, sep='\n')
-            n = len(keys_that_will_be_deleted)
-            answer = input(f'\nShould I go ahead and delete these {n} keys? (y/N)')
-            if not answer == 'y':
-                print('Okay, I will NOT delete these.')
-                return
-    for k in keys_that_will_be_deleted:
-        del z[k]
+        if remove_action == 'delete':
+            if ask_before_before_deleting:
+                print('These keys will be removed:\n\r')
+                print(*keys_that_will_be_deleted, sep='\n')
+                n = len(keys_that_will_be_deleted)
+                answer = input(f'\nShould I go ahead and delete these {n} keys? (y/N)')
+                if not answer == 'y':
+                    print('Okay, I will NOT delete these.')
+                    return
+            for k in keys_that_will_be_deleted:
+                del z[k]
+        else:  # remove_action == 'filter'
+            z = filt_iter(z, filt=_not_in(keys_that_will_be_deleted))
 
     return z
 
