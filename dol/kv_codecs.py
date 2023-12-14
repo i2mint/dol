@@ -375,6 +375,7 @@ dflt_ext_mapping = {
     '.xml': ValueCodecs.xml_etree,
 }
 
+
 def key_based_codec_factory(key_mapping: dict, key_func: Callable = identity_func):
     """A factory that creates a key codec that uses the key to determine the
     codec to use."""
@@ -394,13 +395,16 @@ class NotGiven:
     def __repr__(self):
         return 'NotGiven'
 
+
 from typing import NewType
+
+
 def key_based_value_trans(
-        key_func: Callable[[KT], KT], 
-        value_trans_mapping, 
-        default_factory: Callable[[], Callable], 
-        k=NotGiven
-    ):
+    key_func: Callable[[KT], KT],
+    value_trans_mapping,
+    default_factory: Callable[[], Callable],
+    k=NotGiven,
+):
     """A factory that creates a value codec that uses the key to determine the
     codec to use.
     
@@ -428,7 +432,6 @@ def key_based_value_trans(
     return value_trans
 
 
-
 @_add_default_codecs
 class KeyValueCodecs(CodecCollection):
     """
@@ -436,21 +439,16 @@ class KeyValueCodecs(CodecCollection):
     """
 
     def key_based(
-            key_mapping: dict, 
-            key_func: Callable = identity_func, 
-            *, 
-            default: Optional[Callable] = None
-        ):
-        """A factory that creates a key-value codec that uses the key to determine the
-        value codec to use."""
-
-
-
-    def extension_based(
-        ext_mapping: dict = dflt_ext_mapping,
+        key_mapping: dict,
+        key_func: Callable = identity_func,
         *,
         default: Optional[Callable] = None,
     ):
+        """A factory that creates a key-value codec that uses the key to determine the
+        value codec to use."""
+
+    def extension_based(
+        ext_mapping: dict = dflt_ext_mapping, *, default: Optional[Callable] = None,
+    ):
         """A factory that creates a key-value codec that uses the file extension to
         determine the value codec to use."""
-        
