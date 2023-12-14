@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.kv_codecs &mdash; dol 0.2.20 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.kv_codecs &mdash; dol 0.2.21 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -112,10 +112,12 @@
 <span class="c1"># ------------------------------------ Codecs ------------------------------------------</span>
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span>
 
-<span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">Codec</span><span class="p">,</span> <span class="n">ValueCodec</span><span class="p">,</span> <span class="n">KeyCodec</span>
+<span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">Codec</span><span class="p">,</span> <span class="n">ValueCodec</span><span class="p">,</span> <span class="n">KeyCodec</span><span class="p">,</span> <span class="n">KeyValueCodec</span>
+<span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="n">KeyTemplate</span>
 <span class="kn">from</span> <span class="nn">dol.signatures</span> <span class="kn">import</span> <span class="n">Sig</span>
+<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">named_partial</span><span class="p">,</span> <span class="n">identity_func</span>
 
 <span class="c1"># For the codecs:</span>
 <span class="kn">import</span> <span class="nn">csv</span>
@@ -309,15 +311,51 @@
     <span class="k">return</span> <span class="n">sig</span><span class="p">(</span><span class="n">factory</span><span class="p">)</span>
 
 
-<span class="n">value_wrap</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">codec_wrap</span><span class="p">,</span> <span class="n">ValueCodec</span><span class="p">)</span>
-<span class="n">value_wrap</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s1">&#39;value_wrap&#39;</span>
-<span class="n">key_wrap</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">codec_wrap</span><span class="p">,</span> <span class="n">KeyCodec</span><span class="p">)</span>
-<span class="n">key_wrap</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s1">&#39;key_wrap&#39;</span>
+<span class="c1"># wrappers to manage encoder and decoder arguments and signature</span>
+<span class="n">value_wrap</span> <span class="o">=</span> <span class="n">named_partial</span><span class="p">(</span><span class="n">codec_wrap</span><span class="p">,</span> <span class="n">ValueCodec</span><span class="p">,</span> <span class="vm">__name__</span><span class="o">=</span><span class="s1">&#39;value_wrap&#39;</span><span class="p">)</span>
+<span class="n">key_wrap</span> <span class="o">=</span> <span class="n">named_partial</span><span class="p">(</span><span class="n">codec_wrap</span><span class="p">,</span> <span class="n">KeyCodec</span><span class="p">,</span> <span class="vm">__name__</span><span class="o">=</span><span class="s1">&#39;key_wrap&#39;</span><span class="p">)</span>
+<span class="n">key_value_wrap</span> <span class="o">=</span> <span class="n">named_partial</span><span class="p">(</span><span class="n">codec_wrap</span><span class="p">,</span> <span class="n">KeyValueCodec</span><span class="p">,</span> <span class="vm">__name__</span><span class="o">=</span><span class="s1">&#39;key_value_wrap&#39;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ValueCodecs"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.ValueCodecs">[docs]</a><span class="k">class</span> <span class="nc">ValueCodecs</span><span class="p">:</span>
+<div class="viewcode-block" id="CodecCollection"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.CodecCollection">[docs]</a><span class="k">class</span> <span class="nc">CodecCollection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The base class for collections of codecs.</span>
+<span class="sd">    Makes sure that the class cannot be instantiated, but only used as a collection.</span>
+<span class="sd">    Also provides an _iter_codecs method that iterates over the codec names.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;The </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> class is not meant to be instantiated, &#39;</span>
+            <span class="s1">&#39;but only act as a collection of codec factories&#39;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_iter_codecs</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">is_value_codec</span><span class="p">(</span><span class="n">attr_val</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">attr_val</span><span class="p">,</span> <span class="s1">&#39;func&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;_codec_wrap&#39;</span>
+
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+                <span class="n">attr_val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">is_value_codec</span><span class="p">(</span><span class="n">attr_val</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">attr</span></div>
+
+
+<span class="k">def</span> <span class="nf">_add_default_codecs</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">codec_name</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_iter_codecs</span><span class="p">():</span>
+        <span class="n">codec_factory</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">codec_name</span><span class="p">)</span>
+        <span class="n">dflt_codec</span> <span class="o">=</span> <span class="n">codec_factory</span><span class="p">()</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">default</span><span class="p">,</span> <span class="n">codec_name</span><span class="p">,</span> <span class="n">dflt_codec</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">cls</span>
+
+
+<div class="viewcode-block" id="ValueCodecs"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.ValueCodecs">[docs]</a><span class="nd">@_add_default_codecs</span>
+<span class="k">class</span> <span class="nc">ValueCodecs</span><span class="p">(</span><span class="n">CodecCollection</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A collection of value codecs using standard lib tools.</span>
+<span class="sd">    A collection of value codec factories using standard lib tools.</span>
 
 <span class="sd">    &gt;&gt;&gt; json_codec = ValueCodecs.json()  # call the json codec factory</span>
 <span class="sd">    &gt;&gt;&gt; encoder, decoder = json_codec</span>
@@ -359,29 +397,10 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s1">&#39;This class is not meant to be instantiated, but only act as a collection &#39;</span>
-            <span class="s1">&#39;of value codec functions&#39;</span>
-        <span class="p">)</span>
-
     <span class="c1"># TODO: Clean up module import polution?</span>
     <span class="c1"># TODO: Import all these in module instead of class</span>
     <span class="c1"># TODO: Figure out a way to import these dynamically, only if a particular codec is used</span>
     <span class="c1"># TODO: Figure out how to give codecs annotations that can actually be inspected!</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_iter_codecs</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="k">def</span> <span class="nf">is_value_codec</span><span class="p">(</span><span class="n">attr_val</span><span class="p">):</span>
-            <span class="n">func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">attr_val</span><span class="p">,</span> <span class="s1">&#39;func&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;_codec_wrap&#39;</span>
-
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
-                <span class="n">attr_val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">is_value_codec</span><span class="p">(</span><span class="n">attr_val</span><span class="p">):</span>
-                    <span class="k">yield</span> <span class="n">attr</span>
 
 <div class="viewcode-block" id="ValueCodecs.default"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.ValueCodecs.default">[docs]</a>    <span class="k">class</span> <span class="nc">default</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;To contain default codecs&quot;&quot;&quot;</span></div>
@@ -440,37 +459,109 @@
     <span class="n">xml_etree</span><span class="p">:</span> <span class="n">Codec</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span><span class="n">_xml_tree_encode</span><span class="p">,</span> <span class="n">_xml_tree_decode</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_add_default_codecs</span><span class="p">():</span>
-    <span class="k">for</span> <span class="n">codec_name</span> <span class="ow">in</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">_iter_codecs</span><span class="p">():</span>
-        <span class="n">codec_factory</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ValueCodecs</span><span class="p">,</span> <span class="n">codec_name</span><span class="p">)</span>
-        <span class="n">dflt_codec</span> <span class="o">=</span> <span class="n">codec_factory</span><span class="p">()</span>
-        <span class="nb">setattr</span><span class="p">(</span><span class="n">ValueCodecs</span><span class="o">.</span><span class="n">default</span><span class="p">,</span> <span class="n">codec_name</span><span class="p">,</span> <span class="n">dflt_codec</span><span class="p">)</span>
-
-
-<span class="n">_add_default_codecs</span><span class="p">()</span>
-
-
-<span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="n">KeyTemplate</span>
-
-
-<div class="viewcode-block" id="KeyCodecs"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyCodecs">[docs]</a><span class="k">class</span> <span class="nc">KeyCodecs</span><span class="p">:</span>
+<div class="viewcode-block" id="KeyCodecs"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyCodecs">[docs]</a><span class="nd">@_add_default_codecs</span>
+<span class="k">class</span> <span class="nc">KeyCodecs</span><span class="p">(</span><span class="n">CodecCollection</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A collection of key codecs</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s1">&#39;This class is not meant to be instantiated, but only act as a collection &#39;</span>
-            <span class="s1">&#39;of key codec functions&#39;</span>
-        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">suffixed</span><span class="p">(</span><span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">st</span> <span class="o">=</span> <span class="n">KeyTemplate</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">KeyCodec</span><span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">simple_str_to_str</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">str_to_simple_str</span><span class="p">)</span></div>
 
-    <span class="c1"># def suffixed(suffix: str, field_type: FieldTypeNames = &#39;simple_str&#39;):</span>
-    <span class="c1">#     st = StringTemplate(&#39;{}&#39; + f&quot;{suffix}&quot;)</span>
-    <span class="c1">#     return KeyCodec(st.</span>
+
+<span class="n">dflt_ext_mapping</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;.json&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">json</span><span class="p">,</span>
+    <span class="s1">&#39;.csv&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">csv</span><span class="p">,</span>
+    <span class="s1">&#39;.csv_dict&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">csv_dict</span><span class="p">,</span>
+    <span class="s1">&#39;.pickle&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">pickle</span><span class="p">,</span>
+    <span class="s1">&#39;.gz&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">gzip</span><span class="p">,</span>
+    <span class="s1">&#39;.bz2&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">bz2</span><span class="p">,</span>
+    <span class="s1">&#39;.lzma&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">lzma</span><span class="p">,</span>
+    <span class="s1">&#39;.zip&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">zipfile</span><span class="p">,</span>
+    <span class="s1">&#39;.tar&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">tarfile</span><span class="p">,</span>
+    <span class="s1">&#39;.xml&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">xml_etree</span><span class="p">,</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="key_based_codec_factory"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.key_based_codec_factory">[docs]</a><span class="k">def</span> <span class="nf">key_based_codec_factory</span><span class="p">(</span><span class="n">key_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">key_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">identity_func</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A factory that creates a key codec that uses the key to determine the</span>
+<span class="sd">    codec to use.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">encoder</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">key_mapping</span><span class="p">[</span><span class="n">key_func</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">decoder</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">key_mapping</span><span class="p">[</span><span class="n">key_func</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span>
+
+    <span class="k">return</span> <span class="n">ValueCodec</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NotGiven"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.NotGiven">[docs]</a><span class="k">class</span> <span class="nc">NotGiven</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A singleton to indicate that a value was not given&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;NotGiven&#39;</span></div>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NewType</span>
+<div class="viewcode-block" id="key_based_value_trans"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.key_based_value_trans">[docs]</a><span class="k">def</span> <span class="nf">key_based_value_trans</span><span class="p">(</span>
+        <span class="n">key_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">KT</span><span class="p">],</span> <span class="n">KT</span><span class="p">],</span> 
+        <span class="n">value_trans_mapping</span><span class="p">,</span> 
+        <span class="n">default_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Callable</span><span class="p">],</span> 
+        <span class="n">k</span><span class="o">=</span><span class="n">NotGiven</span>
+    <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A factory that creates a value codec that uses the key to determine the</span>
+<span class="sd">    codec to use.</span>
+<span class="sd">    </span>
+<span class="sd">    # a key_func that gets the extension of a file path</span>
+
+<span class="sd">    &gt;&gt;&gt; import json</span>
+<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">    &gt;&gt;&gt; key_func = lambda k: os.path.splitext(k)[1]</span>
+<span class="sd">    &gt;&gt;&gt; value_trans_mapping = {&#39;.json&#39;: json.loads, &#39;.txt&#39;: bytes.decode}</span>
+<span class="sd">    &gt;&gt;&gt; default_factory = partial(ValueError, &quot;No codec for this extension&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; trans = key_based_value_trans(</span>
+<span class="sd">    ...     key_func, value_trans_mapping, default_factory=lambda: identity_func</span>
+<span class="sd">    ... )</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="ow">is</span> <span class="n">NotGiven</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
+            <span class="n">key_based_value_trans</span><span class="p">,</span> <span class="n">key_func</span><span class="p">,</span> <span class="n">value_trans_mapping</span><span class="p">,</span> <span class="n">default_factory</span>
+        <span class="p">)</span>
+    <span class="n">value_trans_key</span> <span class="o">=</span> <span class="n">key_func</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="n">value_trans</span> <span class="o">=</span> <span class="n">value_trans_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">value_trans_key</span><span class="p">,</span> <span class="n">default_factory</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">value_trans</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value_trans</span> <span class="o">=</span> <span class="n">default_factory</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">value_trans</span></div>
+
+
+
+<div class="viewcode-block" id="KeyValueCodecs"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyValueCodecs">[docs]</a><span class="nd">@_add_default_codecs</span>
+<span class="k">class</span> <span class="nc">KeyValueCodecs</span><span class="p">(</span><span class="n">CodecCollection</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A collection of key-value codecs that can be used with postget and preset kv_wraps.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="KeyValueCodecs.key_based"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyValueCodecs.key_based">[docs]</a>    <span class="k">def</span> <span class="nf">key_based</span><span class="p">(</span>
+            <span class="n">key_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> 
+            <span class="n">key_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">identity_func</span><span class="p">,</span> 
+            <span class="o">*</span><span class="p">,</span> 
+            <span class="n">default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A factory that creates a key-value codec that uses the key to determine the</span>
+<span class="sd">        value codec to use.&quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="KeyValueCodecs.extension_based"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyValueCodecs.extension_based">[docs]</a>    <span class="k">def</span> <span class="nf">extension_based</span><span class="p">(</span>
+        <span class="n">ext_mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">dflt_ext_mapping</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A factory that creates a key-value codec that uses the file extension to</span>
+<span class="sd">        determine the value codec to use.&quot;&quot;&quot;</span></div></div>
+        
 </pre></div>
 
            </div>

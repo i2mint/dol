@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.base &mdash; dol 0.2.20 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.base &mdash; dol 0.2.21 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -144,7 +144,12 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
 
-<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">_disabled_clear_method</span>
+<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">wraps</span><span class="p">,</span>
+    <span class="n">_disabled_clear_method</span><span class="p">,</span>
+    <span class="n">identity_func</span><span class="p">,</span>
+    <span class="n">static_identity_method</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">dol.signatures</span> <span class="kn">import</span> <span class="n">Sig</span>
 
 <span class="n">Key</span> <span class="o">=</span> <span class="n">Any</span>
@@ -340,15 +345,6 @@
 <span class="n">Persister</span> <span class="o">=</span> <span class="n">KvPersister</span>  <span class="c1"># alias for back-compatibility</span>
 
 
-<span class="c1"># TODO: Make identity_func &quot;identifiable&quot;. If we use the following one, we can use == to detect it&#39;s use,</span>
-<span class="c1"># TODO: ... but there may be a way to annotate, register, or type any identity function so it can be detected.</span>
-<span class="k">def</span> <span class="nf">identity_func</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">x</span>
-
-
-<span class="n">static_identity_method</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">identity_func</span><span class="p">)</span>
-
-
 <span class="k">class</span> <span class="nc">NoSuchItem</span><span class="p">:</span>
     <span class="k">pass</span>
 
@@ -433,7 +429,8 @@
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
             <span class="n">wrapped_attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">delegated_attribute</span> <span class="o">=</span> <span class="n">update_wrapper</span><span class="p">(</span>
-                <span class="n">wrapper</span><span class="o">=</span><span class="n">DelegatedAttribute</span><span class="p">(</span><span class="n">delegation_attr</span><span class="p">,</span> <span class="n">attr</span><span class="p">),</span> <span class="n">wrapped</span><span class="o">=</span><span class="n">wrapped_attr</span><span class="p">,</span>
+                <span class="n">wrapper</span><span class="o">=</span><span class="n">DelegatedAttribute</span><span class="p">(</span><span class="n">delegation_attr</span><span class="p">,</span> <span class="n">attr</span><span class="p">),</span>
+                <span class="n">wrapped</span><span class="o">=</span><span class="n">wrapped_attr</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">Wrap</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">delegated_attribute</span><span class="p">)</span>
 
