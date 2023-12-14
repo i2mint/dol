@@ -21,6 +21,22 @@ wraps = partial(_wraps, assigned=wrapper_assignments)
 exhaust = partial(deque, maxlen=0)
 
 
+def named_partial(func, *args, __name__=None, **keywords):
+    """functools.partial, but with a __name__
+
+    >>> f = named_partial(print, sep='\\n')
+    >>> f.__name__
+    'print'
+
+    >>> f = named_partial(print, sep='\\n', __name__='now_partial_has_a_name')
+    >>> f.__name__
+    'now_partial_has_a_name'
+    """
+    f = partial(func, *args, **keywords)
+    f.__name__ = __name__ or func.__name__
+    return f
+
+
 class staticproperty:
     """A decorator for defining static properties in classes.
 
@@ -494,7 +510,9 @@ def partialclass(cls, *args, **kwargs):
         __init__ = partialmethod(cls.__init__, *args, **kwargs)
 
     copy_attrs(
-        PartialClass, cls, attrs=('__name__', '__qualname__', '__module__', '__doc__'),
+        PartialClass,
+        cls,
+        attrs=('__name__', '__qualname__', '__module__', '__doc__'),
     )
 
     return PartialClass
@@ -902,7 +920,10 @@ def igroupby(
     if val is None:
         _append_to_group_items = append_to_group_items
     else:
-        _append_to_group_items = lambda group_items, item: (group_items, val(item),)
+        _append_to_group_items = lambda group_items, item: (
+            group_items,
+            val(item),
+        )
 
     for item in items:
         group_key = key(item)

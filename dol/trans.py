@@ -622,7 +622,9 @@ def _wrap_store(
 
 @store_decorator
 def insert_hash_method(
-    store=None, *, hash_method: Callable[[Any], int] = id,
+    store=None,
+    *,
+    hash_method: Callable[[Any], int] = id,
 ):
     """Make a store hashable using the specified ``hash_method``.
     Will add (or overwrite) a ``__hash__`` method to the store that uses the
@@ -3040,11 +3042,19 @@ class Codec(Generic[DecodedType, EncodedType]):
     __invert__ = invert
 
 
-class ValueCodec(Generic[DecodedType, EncodedType], Codec[DecodedType, EncodedType]):
+_CodecT = (Generic[DecodedType, EncodedType], Codec[DecodedType, EncodedType])
+
+
+class ValueCodec(*_CodecT):
     def __call__(self, obj):
         return wrap_kvs(obj, data_of_obj=self.encoder, obj_of_data=self.decoder)
 
 
-class KeyCodec(Generic[DecodedType, EncodedType], Codec[DecodedType, EncodedType]):
+class KeyCodec(*_CodecT):
     def __call__(self, obj):
         return wrap_kvs(obj, id_of_key=self.encoder, key_of_id=self.decoder)
+
+
+class KeyValueCodec(*_CodecT):
+    def __call__(self, obj):
+        return wrap_kvs(obj, preset=self.encoder, postget=self.decoder)

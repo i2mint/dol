@@ -7,7 +7,9 @@ from functools import partial
 from typing import Callable, Iterable, Any, Optional
 
 from dol.trans import Codec, ValueCodec, KeyCodec
+from dol.paths import KeyTemplate
 from dol.signatures import Sig
+from dol.util import named_partial
 
 # For the codecs:
 import csv
@@ -201,15 +203,47 @@ def codec_wrap(cls, encoder: Callable, decoder: Callable, *, exclude=()):
     return sig(factory)
 
 
-value_wrap = partial(codec_wrap, ValueCodec)
-value_wrap.__name__ = 'value_wrap'
-key_wrap = partial(codec_wrap, KeyCodec)
-key_wrap.__name__ = 'key_wrap'
+value_wrap = named_partial(codec_wrap, ValueCodec, __name__='value_wrap')
+key_wrap = named_partial(codec_wrap, KeyCodec, __name__='key_wrap')
 
 
-class ValueCodecs:
+class CodecCollection:
+    """The base class for collections of codecs.
+    Makes sure that the class cannot be instantiated, but only used as a collection.
+    Also provides an _iter_codecs method that iterates over the codec names.
+    """
+    def __init__(self, *args, **kwargs):
+        name = getattr(type(self), '__name__', '')
+        raise ValueError(
+            f'The {name} class is not meant to be instantiated, '
+            'but only act as a collection of codec factories'
+        )
+
+    @classmethod
+    def _iter_codecs(cls):
+        def is_value_codec(attr_val):
+            func = getattr(attr_val, 'func', None)
+            name = getattr(func, '__name__', '')
+            return name == '_codec_wrap'
+
+        for attr in dir(cls):
+            if not attr.startswith('_'):
+                attr_val = getattr(cls, attr, None)
+                if is_value_codec(attr_val):
+                    yield attr
+
+def _add_default_codecs(cls):
+    for codec_name in cls._iter_codecs():
+        codec_factory = getattr(cls, codec_name)
+        dflt_codec = codec_factory()
+        setattr(cls.default, codec_name, dflt_codec)
+    return cls
+
+
+@_add_default_codecs
+class ValueCodecs(CodecCollection):
     r"""
-    A collection of value codecs using standard lib tools.
+    A collection of value codec factories using standard lib tools.
 
     >>> json_codec = ValueCodecs.json()  # call the json codec factory
     >>> encoder, decoder = json_codec
@@ -251,29 +285,10 @@ class ValueCodecs:
 
     """
 
-    def __init__(self, *args, **kwargs):
-        raise ValueError(
-            'This class is not meant to be instantiated, but only act as a collection '
-            'of value codec functions'
-        )
-
     # TODO: Clean up module import polution?
     # TODO: Import all these in module instead of class
     # TODO: Figure out a way to import these dynamically, only if a particular codec is used
     # TODO: Figure out how to give codecs annotations that can actually be inspected!
-
-    @classmethod
-    def _iter_codecs(cls):
-        def is_value_codec(attr_val):
-            func = getattr(attr_val, 'func', None)
-            name = getattr(func, '__name__', '')
-            return name == '_codec_wrap'
-
-        for attr in dir(cls):
-            if not attr.startswith('_'):
-                attr_val = getattr(cls, attr, None)
-                if is_value_codec(attr_val):
-                    yield attr
 
     class default:
         """To contain default codecs"""
@@ -332,34 +347,24 @@ class ValueCodecs:
     xml_etree: Codec[Any, bytes] = value_wrap(_xml_tree_encode, _xml_tree_decode)
 
 
-def _add_default_codecs():
-    for codec_name in ValueCodecs._iter_codecs():
-        codec_factory = getattr(ValueCodecs, codec_name)
-        dflt_codec = codec_factory()
-        setattr(ValueCodecs.default, codec_name, dflt_codec)
-
-
-_add_default_codecs()
-
-
-from dol.paths import KeyTemplate
-
-
-class KeyCodecs:
+@_add_default_codecs
+class KeyCodecs(CodecCollection):
     """
     A collection of key codecs
     """
-
-    def __init__(self, *args, **kwargs):
-        raise ValueError(
-            'This class is not meant to be instantiated, but only act as a collection '
-            'of key codec functions'
-        )
 
     def suffixed(suffix: str):
         st = KeyTemplate('{}' + f'{suffix}')
         return KeyCodec(st.simple_str_to_str, st.str_to_simple_str)
 
-    # def suffixed(suffix: str, field_type: FieldTypeNames = 'simple_str'):
-    #     st = StringTemplate('{}' + f"{suffix}")
-    #     return KeyCodec(st.
+
+
+@_add_default_codecs
+class KeyValueCodecs(CodecCollection):
+    """
+    A collection of key-value codecs that can be used with postget and preset kv_wraps.
+    """
+
+    
+
+
