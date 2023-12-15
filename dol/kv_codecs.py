@@ -4,7 +4,7 @@ Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library too
 # ------------------------------------ Codecs ------------------------------------------
 
 from functools import partial
-from typing import Callable, Iterable, Any, Optional, KT, VT
+from typing import Callable, Iterable, Any, Optional, KT, VT, Mapping
 
 from dol.trans import Codec, ValueCodec, KeyCodec, KeyValueCodec
 from dol.paths import KeyTemplate
@@ -361,6 +361,25 @@ class KeyCodecs(CodecCollection):
         st = KeyTemplate('{}' + f'{suffix}')
         return KeyCodec(st.simple_str_to_str, st.str_to_simple_str)
 
+    def prefixed(prefix: str):
+        st = KeyTemplate(f'{prefix}' + '{}')
+        return KeyCodec(st.simple_str_to_str, st.str_to_simple_str)
+
+    def common_prefixed(keys: Iterable[str]):
+        from dol.util import max_common_prefix
+
+        prefix = max_common_prefix(keys)
+        return KeyCodecs.prefixed(prefix)
+
+
+def common_prefix_keys_wrap(s: Mapping):
+    """Transforms keys of mapping to omit the longest prefix they have in common"""
+    common_prefix_wrap = KeyCodecs.common_prefixed(s)
+    return common_prefix_wrap(s)
+
+
+# --------------------------------- KV Codecs ------------------------------------------
+
 
 dflt_ext_mapping = {
     '.json': ValueCodecs.json,
@@ -374,6 +393,7 @@ dflt_ext_mapping = {
     '.tar': ValueCodecs.tarfile,
     '.xml': ValueCodecs.xml_etree,
 }
+
 
 def key_based_codec_factory(key_mapping: dict, key_func: Callable = identity_func):
     """A factory that creates a key codec that uses the key to determine the
@@ -394,16 +414,19 @@ class NotGiven:
     def __repr__(self):
         return 'NotGiven'
 
+
 from typing import NewType
+
+
 def key_based_value_trans(
-        key_func: Callable[[KT], KT], 
-        value_trans_mapping, 
-        default_factory: Callable[[], Callable], 
-        k=NotGiven
-    ):
+    key_func: Callable[[KT], KT],
+    value_trans_mapping,
+    default_factory: Callable[[], Callable],
+    k=NotGiven,
+):
     """A factory that creates a value codec that uses the key to determine the
     codec to use.
-    
+
     # a key_func that gets the extension of a file path
 
     >>> import json
@@ -428,7 +451,6 @@ def key_based_value_trans(
     return value_trans
 
 
-
 @_add_default_codecs
 class KeyValueCodecs(CodecCollection):
     """
@@ -436,15 +458,13 @@ class KeyValueCodecs(CodecCollection):
     """
 
     def key_based(
-            key_mapping: dict, 
-            key_func: Callable = identity_func, 
-            *, 
-            default: Optional[Callable] = None
-        ):
+        key_mapping: dict,
+        key_func: Callable = identity_func,
+        *,
+        default: Optional[Callable] = None,
+    ):
         """A factory that creates a key-value codec that uses the key to determine the
         value codec to use."""
-
-
 
     def extension_based(
         ext_mapping: dict = dflt_ext_mapping,
@@ -453,4 +473,3 @@ class KeyValueCodecs(CodecCollection):
     ):
         """A factory that creates a key-value codec that uses the file extension to
         determine the value codec to use."""
-        

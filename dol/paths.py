@@ -101,7 +101,13 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -682,7 +688,11 @@ class PrefixRelativization(PrefixRelativizationMixin):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr='_prefix',
 ):
     """
 
@@ -1180,7 +1190,7 @@ from dol.trans import KeyCodec, filt_iter
 from inspect import signature
 
 # Codec = namedtuple('Codec', 'encoder decoder')
-FieldTypeNames = Literal['str', 'dict', 'tuple', 'namedtuple', 'simple_str']
+FieldTypeNames = Literal['str', 'dict', 'tuple', 'namedtuple', 'simple_str', 'single']
 
 
 # TODO: Make and use _return_none_if_none_input or not?
@@ -1407,7 +1417,7 @@ class KeyTemplate:
         decoder = getattr(self, f'{encoded}_to_{decoded}')
         return KeyCodec(coder, decoder)
 
-    def filt_iter(self, field_type: FieldTypeNames):
+    def filt_iter(self, field_type: FieldTypeNames = 'str'):
         r"""
         Makes a store decorator that filters out keys that don't match the template
         given field type.
@@ -1417,7 +1427,15 @@ class KeyTemplate:
         ...     'root/dol/v_9.json': '{"downloads": 132, "type": "utility"}',
         ...     'root/not/the/right/format': "something else"
         ... }
+        >>> filt = KeyTemplate('root/{pkg}/v_{version}.json')
+        >>> filtered_store = filt.filt_iter('str')(store)
+        >>> list(filtered_store)
+        ['root/meshed/v_151.json', 'root/dol/v_9.json']
+
         """
+        if isinstance(field_type, Mapping):
+            # The user wants to filter a store with the default
+            return self.filt_iter()(field_type)
         self._assert_field_type(field_type, 'field_type')
         filt_func = getattr(self, f'match_{field_type}')
         return filt_iter(filt=filt_func)
@@ -1518,8 +1536,37 @@ class KeyTemplate:
         return self.dict_to_str(self.tuple_to_dict(param_vals))
 
     # @_return_none_if_none_input
+    def str_to_single(self, s: str) -> Any:
+        r"""Parses the input string and returns a single value.
+
+        >>> st = KeyTemplate(
+        ...     'root/life/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> st.str_to_single('root/life/v_42.json')
+        42
+        """
+        if s is None:
+            return None
+        return self.str_to_tuple(s)[0]
+
+    # @_return_none_if_none_input
+    def single_to_str(self, k: Any) -> str:
+        r"""Generates a string from the single value based on the template.
+
+        >>> st = KeyTemplate(
+        ...     'root/life/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ... )
+        >>> st.single_to_str(42)
+        'root/life/v_042.json'
+        """
+        if k is None:
+            return None
+        return self.tuple_to_str((k,))
+
+    # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self, params: dict,
+        self,
+        params: dict,
     ):
         r"""Generates a namedtuple from the dictionary values based on the template.
 
