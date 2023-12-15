@@ -1831,6 +1831,7 @@ def wrap_kvs(
     # return wrapper.wrap(store, class_trans=class_trans)
     #
 
+
 class FirstArgIsMapping(LiteralVal):
     """A Literal class to mark a function as being one where the first argument is
     a mapping (store). This is intended to be used in wrappers such as ``wrap_kvs``

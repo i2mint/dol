@@ -124,11 +124,7 @@ def zip_compress(
 
 
 def zip_decompress(
-    b: bytes,
-    *,
-    allowZip64=True,
-    compresslevel=None,
-    strict_timestamps=True,
+    b: bytes, *, allowZip64=True, compresslevel=None, strict_timestamps=True,
 ) -> bytes:
     """Decompress input bytes of a single file zip, returning the uncompressed bytes
 
@@ -347,12 +343,7 @@ class ZipReader(KvReader):
     """
 
     def __init__(
-        self,
-        zip_file,
-        prefix='',
-        *,
-        open_kws=None,
-        file_info_filt=None,
+        self, zip_file, prefix='', *, open_kws=None, file_info_filt=None,
     ):
         """
 
@@ -500,11 +491,7 @@ class ZipFilesReader(FileCollection, KvReader):
         self.zip_reader_kwargs = zip_reader_kwargs
         if self.zip_reader is ZipReader:
             self.zip_reader_kwargs = dict(
-                dict(
-                    prefix='',
-                    open_kws=None,
-                    file_info_filt=ZipReader.FILES_ONLY,
-                ),
+                dict(prefix='', open_kws=None, file_info_filt=ZipReader.FILES_ONLY,),
                 **self.zip_reader_kwargs,
             )
 
@@ -628,8 +615,7 @@ from dol.paths import mk_relative_path_store
 from dol.util import partialclass
 
 ZipFileStreamsReader = mk_relative_path_store(
-    partialclass(ZipFilesReader, zip_reader=FileStreamsOfZip),
-    prefix_attr='rootdir',
+    partialclass(ZipFilesReader, zip_reader=FileStreamsOfZip), prefix_attr='rootdir',
 )
 ZipFileStreamsReader.__name__ = 'ZipFileStreamsReader'
 ZipFileStreamsReader.__qualname__ = 'ZipFileStreamsReader'
@@ -791,10 +777,7 @@ class ZipStore(KvPersister):
 
     def __repr__(self):
         args_str = ', '.join(
-            (
-                f"'{self.zip_filepath}'",
-                f"'allow_overwrites={self.allow_overwrites}'",
-            )
+            (f"'{self.zip_filepath}'", f"'allow_overwrites={self.allow_overwrites}'",)
         )
         return f'{self.__class__.__name__}({args_str})'
 
