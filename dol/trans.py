@@ -622,9 +622,7 @@ def _wrap_store(
 
 @store_decorator
 def insert_hash_method(
-    store=None,
-    *,
-    hash_method: Callable[[Any], int] = id,
+    store=None, *, hash_method: Callable[[Any], int] = id,
 ):
     """Make a store hashable using the specified ``hash_method``.
     Will add (or overwrite) a ``__hash__`` method to the store that uses the

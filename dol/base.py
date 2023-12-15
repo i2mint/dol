@@ -321,8 +321,7 @@ def delegate_to(
         for attr in attrs:
             wrapped_attr = getattr(wrapped, attr)
             delegated_attribute = update_wrapper(
-                wrapper=DelegatedAttribute(delegation_attr, attr),
-                wrapped=wrapped_attr,
+                wrapper=DelegatedAttribute(delegation_attr, attr), wrapped=wrapped_attr,
             )
             setattr(Wrap, attr, delegated_attribute)
 
