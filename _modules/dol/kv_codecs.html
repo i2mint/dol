@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.kv_codecs &mdash; dol 0.2.21 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.kv_codecs &mdash; dol 0.2.22 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -112,7 +112,7 @@
 <span class="c1"># ------------------------------------ Codecs ------------------------------------------</span>
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Mapping</span>
 
 <span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">Codec</span><span class="p">,</span> <span class="n">ValueCodec</span><span class="p">,</span> <span class="n">KeyCodec</span><span class="p">,</span> <span class="n">KeyValueCodec</span>
 <span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="n">KeyTemplate</span>
@@ -467,7 +467,26 @@
 
     <span class="k">def</span> <span class="nf">suffixed</span><span class="p">(</span><span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">st</span> <span class="o">=</span> <span class="n">KeyTemplate</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">KeyCodec</span><span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">simple_str_to_str</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">str_to_simple_str</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">KeyCodec</span><span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">simple_str_to_str</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">str_to_simple_str</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">prefixed</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">KeyTemplate</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">KeyCodec</span><span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">simple_str_to_str</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">str_to_simple_str</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">common_prefixed</span><span class="p">(</span><span class="n">keys</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+        <span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">max_common_prefix</span>
+
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">max_common_prefix</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">prefixed</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="common_prefix_keys_wrap"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.common_prefix_keys_wrap">[docs]</a><span class="k">def</span> <span class="nf">common_prefix_keys_wrap</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transforms keys of mapping to omit the longest prefix they have in common&quot;&quot;&quot;</span>
+    <span class="n">common_prefix_wrap</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">common_prefixed</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">common_prefix_wrap</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
+
+
+<span class="c1"># --------------------------------- KV Codecs ------------------------------------------</span>
 
 
 <span class="n">dflt_ext_mapping</span> <span class="o">=</span> <span class="p">{</span>
@@ -482,6 +501,7 @@
     <span class="s1">&#39;.tar&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">tarfile</span><span class="p">,</span>
     <span class="s1">&#39;.xml&#39;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">xml_etree</span><span class="p">,</span>
 <span class="p">}</span>
+
 
 <div class="viewcode-block" id="key_based_codec_factory"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.key_based_codec_factory">[docs]</a><span class="k">def</span> <span class="nf">key_based_codec_factory</span><span class="p">(</span><span class="n">key_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">key_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">identity_func</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A factory that creates a key codec that uses the key to determine the</span>
@@ -502,16 +522,19 @@
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;NotGiven&#39;</span></div>
 
+
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NewType</span>
+
+
 <div class="viewcode-block" id="key_based_value_trans"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.key_based_value_trans">[docs]</a><span class="k">def</span> <span class="nf">key_based_value_trans</span><span class="p">(</span>
-        <span class="n">key_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">KT</span><span class="p">],</span> <span class="n">KT</span><span class="p">],</span> 
-        <span class="n">value_trans_mapping</span><span class="p">,</span> 
-        <span class="n">default_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Callable</span><span class="p">],</span> 
-        <span class="n">k</span><span class="o">=</span><span class="n">NotGiven</span>
-    <span class="p">):</span>
+    <span class="n">key_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">KT</span><span class="p">],</span> <span class="n">KT</span><span class="p">],</span>
+    <span class="n">value_trans_mapping</span><span class="p">,</span>
+    <span class="n">default_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Callable</span><span class="p">],</span>
+    <span class="n">k</span><span class="o">=</span><span class="n">NotGiven</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A factory that creates a value codec that uses the key to determine the</span>
 <span class="sd">    codec to use.</span>
-<span class="sd">    </span>
+
 <span class="sd">    # a key_func that gets the extension of a file path</span>
 
 <span class="sd">    &gt;&gt;&gt; import json</span>
@@ -536,7 +559,6 @@
     <span class="k">return</span> <span class="n">value_trans</span></div>
 
 
-
 <div class="viewcode-block" id="KeyValueCodecs"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyValueCodecs">[docs]</a><span class="nd">@_add_default_codecs</span>
 <span class="k">class</span> <span class="nc">KeyValueCodecs</span><span class="p">(</span><span class="n">CodecCollection</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -544,24 +566,19 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="KeyValueCodecs.key_based"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyValueCodecs.key_based">[docs]</a>    <span class="k">def</span> <span class="nf">key_based</span><span class="p">(</span>
-            <span class="n">key_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> 
-            <span class="n">key_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">identity_func</span><span class="p">,</span> 
-            <span class="o">*</span><span class="p">,</span> 
-            <span class="n">default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A factory that creates a key-value codec that uses the key to determine the</span>
-<span class="sd">        value codec to use.&quot;&quot;&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="KeyValueCodecs.extension_based"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyValueCodecs.extension_based">[docs]</a>    <span class="k">def</span> <span class="nf">extension_based</span><span class="p">(</span>
-        <span class="n">ext_mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">dflt_ext_mapping</span><span class="p">,</span>
+        <span class="n">key_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">key_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">identity_func</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A factory that creates a key-value codec that uses the key to determine the</span>
+<span class="sd">        value codec to use.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="KeyValueCodecs.extension_based"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyValueCodecs.extension_based">[docs]</a>    <span class="k">def</span> <span class="nf">extension_based</span><span class="p">(</span>
+        <span class="n">ext_mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">dflt_ext_mapping</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A factory that creates a key-value codec that uses the file extension to</span>
 <span class="sd">        determine the value codec to use.&quot;&quot;&quot;</span></div></div>
-        
 </pre></div>
 
            </div>

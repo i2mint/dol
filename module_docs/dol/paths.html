@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.21 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.paths &mdash; dol 0.2.22 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -337,7 +337,7 @@ filter out keys that don’t fit the format, before you wrap the store with
 
 <dl class="py method">
 <dt id="dol.paths.KeyTemplate.filt_iter">
-<code class="sig-name descname">filt_iter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">field_type</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>str<span class="p">, </span>dict<span class="p">, </span>tuple<span class="p">, </span>namedtuple<span class="p">, </span>simple_str<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#KeyTemplate.filt_iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.KeyTemplate.filt_iter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">filt_iter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">field_type</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>str<span class="p">, </span>dict<span class="p">, </span>tuple<span class="p">, </span>namedtuple<span class="p">, </span>simple_str<span class="p">, </span>single<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'str'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#KeyTemplate.filt_iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.KeyTemplate.filt_iter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Makes a store decorator that filters out keys that don’t match the template
 given field type.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">store</span> <span class="o">=</span> <span class="p">{</span>
@@ -345,13 +345,17 @@ given field type.</p>
 <span class="gp">... </span>    <span class="s1">&#39;root/dol/v_9.json&#39;</span><span class="p">:</span> <span class="s1">&#39;{&quot;downloads&quot;: 132, &quot;type&quot;: &quot;utility&quot;}&#39;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="s1">&#39;root/not/the/right/format&#39;</span><span class="p">:</span> <span class="s2">&quot;something else&quot;</span>
 <span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filt</span> <span class="o">=</span> <span class="n">KeyTemplate</span><span class="p">(</span><span class="s1">&#39;root/</span><span class="si">{pkg}</span><span class="s1">/v_</span><span class="si">{version}</span><span class="s1">.json&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filtered_store</span> <span class="o">=</span> <span class="n">filt</span><span class="o">.</span><span class="n">filt_iter</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)(</span><span class="n">store</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">filtered_store</span><span class="p">)</span>
+<span class="go">[&#39;root/meshed/v_151.json&#39;, &#39;root/dol/v_9.json&#39;]</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
 <dt id="dol.paths.KeyTemplate.key_codec">
-<code class="sig-name descname">key_codec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">decoded</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>str<span class="p">, </span>dict<span class="p">, </span>tuple<span class="p">, </span>namedtuple<span class="p">, </span>simple_str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'tuple'</span></em>, <em class="sig-param"><span class="n">encoded</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>str<span class="p">, </span>dict<span class="p">, </span>tuple<span class="p">, </span>namedtuple<span class="p">, </span>simple_str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'str'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#KeyTemplate.key_codec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.KeyTemplate.key_codec" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">key_codec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">decoded</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>str<span class="p">, </span>dict<span class="p">, </span>tuple<span class="p">, </span>namedtuple<span class="p">, </span>simple_str<span class="p">, </span>single<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'tuple'</span></em>, <em class="sig-param"><span class="n">encoded</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>str<span class="p">, </span>dict<span class="p">, </span>tuple<span class="p">, </span>namedtuple<span class="p">, </span>simple_str<span class="p">, </span>single<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'str'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#KeyTemplate.key_codec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.KeyTemplate.key_codec" title="Permalink to this definition">¶</a></dt>
 <dd><p>Makes a <code class="docutils literal notranslate"><span class="pre">KeyCodec</span></code> for the given source and target types.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">KeyTemplate</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="s1">&#39;root/</span><span class="si">{name}</span><span class="s1">/v_</span><span class="si">{version}</span><span class="s1">.json&#39;</span><span class="p">,</span>
@@ -450,6 +454,19 @@ filter out keys that don’t fit the format, before you wrap the store with
 </dd></dl>
 
 <dl class="py method">
+<dt id="dol.paths.KeyTemplate.single_to_str">
+<code class="sig-name descname">single_to_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../../_modules/dol/paths.html#KeyTemplate.single_to_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.KeyTemplate.single_to_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a string from the single value based on the template.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">KeyTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s1">&#39;root/life/v_{ver:03.0f:\d+}.json&#39;</span><span class="p">,</span> <span class="n">from_str_funcs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;ver&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">single_to_str</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="go">&#39;root/life/v_042.json&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt id="dol.paths.KeyTemplate.str_to_dict">
 <code class="sig-name descname">str_to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../../_modules/dol/paths.html#KeyTemplate.str_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.KeyTemplate.str_to_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses the input string and returns a dictionary of extracted values.</p>
@@ -489,6 +506,19 @@ filter out keys that don’t fit the format, before you wrap the store with
 <span class="gp">&gt;&gt;&gt; </span><span class="n">st_clone</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">simple_str_sep</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">st_clone</span><span class="o">.</span><span class="n">str_to_simple_str</span><span class="p">(</span><span class="s1">&#39;root/life/v_042.json&#39;</span><span class="p">)</span>
 <span class="go">&#39;life-042&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.paths.KeyTemplate.str_to_single">
+<code class="sig-name descname">str_to_single</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; Any<a class="reference internal" href="../../_modules/dol/paths.html#KeyTemplate.str_to_single"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.paths.KeyTemplate.str_to_single" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the input string and returns a single value.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">KeyTemplate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s1">&#39;root/life/v_{ver:03.0f:\d+}.json&#39;</span><span class="p">,</span> <span class="n">from_str_funcs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;ver&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span><span class="o">.</span><span class="n">str_to_single</span><span class="p">(</span><span class="s1">&#39;root/life/v_42.json&#39;</span><span class="p">)</span>
+<span class="go">42</span>
 </pre></div>
 </div>
 </dd></dl>
