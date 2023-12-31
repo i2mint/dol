@@ -4393,7 +4393,7 @@ class sigs_for_builtin_modules:
 
     def methodcaller(
         name: KT, /, *args: Iterable[VT], **kwargs: MappingType[str, Any]
-    ) -> Callable[[], Any]:
+    ) -> Callable[[Any], Any]:
         """methodcaller(name, ...) --> methodcaller object"""
 
     def partial(func: Callable, *args, **keywords) -> Callable:
@@ -4422,8 +4422,7 @@ class sigs_for_type_name:
     def attrgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]:
         ...
 
-    @staticmethod  # just to have linter shut up about no arguments.
-    def methodcaller() -> Any:
+    def methodcaller(obj: Any) -> Any:
         ...
 
 
