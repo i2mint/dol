@@ -1831,6 +1831,36 @@ def wrap_kvs(
     # return wrapper.wrap(store, class_trans=class_trans)
     #
 
+@store_decorator
+def add_decoder(store_cls=None, *, decoder: Callable = None, name=None):
+    """Add a decoder layer to a store.
+
+    Note: This is a convenience function for ``wrap_kvs(..., obj_of_data=decoder)``.
+        
+    >>> s = {'a': "42"}
+    >>> ss = add_decoder(s, decoder=int)
+    >>> ss['a']
+    42
+
+    If there's only one callable argument, it is assumed to be the decoder:
+
+    >>> wrapper = add_decoder(int)
+    >>> S = wrapper(dict)
+    >>> sss = S({'a': "42"})
+    >>> dict(sss) == {'a': 42}
+    True
+    """
+    if decoder is None:
+        if callable(store_cls):
+            # assume the first argument is the decoder and return a wrapper using it
+            return add_decoder(decoder=store_cls)
+        else:
+            raise ValueError(
+                'If the decoder keyword is not given, the first argument must be the '
+                '(callable) decoder'
+            )
+    return wrap_kvs(store_cls, obj_of_data=decoder, name=name)
+
 
 class FirstArgIsMapping(LiteralVal):
     """A Literal class to mark a function as being one where the first argument is

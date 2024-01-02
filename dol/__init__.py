@@ -111,6 +111,7 @@ from dol.util import (
 from dol.trans import (
     wrap_kvs,  # transform store key and/or value
     cached_keys,  # cache store keys
+    add_decoder,  # add a decoder (i.e. outcomming value transformer) to a store
     add_ipython_key_completions,  # add ipython key completions
     insert_hash_method,  # add a hash method to store
     add_path_get,  # add a path_get method to store
