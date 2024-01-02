@@ -170,7 +170,7 @@ def _xml_tree_decode(
 
 
 def extract_arguments(func, args, kwargs):
-    return Sig(func).kwargs_from_args_and_kwargs(
+    return Sig(func).map_arguments(
         args, kwargs, allow_partial=True, allow_excess=True, ignore_kind=True
     )
 
