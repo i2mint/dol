@@ -1831,6 +1831,7 @@ def wrap_kvs(
     # return wrapper.wrap(store, class_trans=class_trans)
     #
 
+
 @store_decorator
 def add_decoder(store_cls=None, *, decoder: Callable = None, name=None):
     """Add a decoder layer to a store.
