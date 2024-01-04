@@ -217,6 +217,42 @@ class mk_item2kv_for:
                 return time_postproc(factor * utc_now() + offset_s), item
 
         return item2kv
+    
+    @staticmethod
+    def uuid_key(hex=True):
+        """Make an item2kv function that uses a uuid hex as the key.
+        This uses uuid.uuid1() to generate the uuid, so it is not cryptographically 
+        secure, and it may not be unique if you generate more than 10k uuids per second.
+        One advantage though, is that the uuid is time-based, so it can be used to sort
+        the keys in the order they were IDed. 
+
+        Returns: an item -> (uuid, item) function
+
+        >>> import uuid
+        >>> item2key = mk_item2kv_for.uuid_key()
+        >>> k, v = item2key('some data')
+        >>> v
+        'some data'
+        >>> isinstance(k, str)
+        True
+        >>> k  # doctest: +SKIP
+        '0d8a9930aaf411ee9f605e03a02258c9'
+        >>> item2key = mk_item2kv_for.uuid_key(hex=False)
+        >>> k, v = item2key('some data')
+        >>> isinstance(k, uuid.UUID)
+        True
+
+        """
+        import uuid
+            
+        if hex:
+            def item2kv(item):
+                return uuid.uuid1().hex, item
+        else:
+            def item2kv(item):
+                return uuid.uuid1(), item
+
+        return item2kv
 
     @staticmethod
     def item_to_key_params_and_val(item_to_key_params_and_val, key_str_format):
