@@ -227,7 +227,7 @@ class mk_item2kv_for:
                 return time_postproc(factor * utc_now() + offset_s), item
 
         return item2kv
-    
+
     @staticmethod
     def uuid_key(hex=True):
         """Make an item2kv function that uses a uuid hex as the key.
@@ -254,11 +254,14 @@ class mk_item2kv_for:
 
         """
         import uuid
-            
+
         if hex:
+
             def item2kv(item):
                 return uuid.uuid1().hex, item
+
         else:
+
             def item2kv(item):
                 return uuid.uuid1(), item
 
