@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.kv_codecs &mdash; dol 0.2.27 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.kv_codecs &mdash; dol 0.2.28 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -200,7 +200,7 @@ For example, to make a json codec that indents the json, you can do:</p>
 <dl class="py class">
 <dt id="dol.kv_codecs.ValueCodecs.default">
 <em class="property">class </em><code class="sig-name descname">default</code><a class="reference internal" href="../../_modules/dol/kv_codecs.html#ValueCodecs.default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default" title="Permalink to this definition">¶</a></dt>
-<dd><p>To contain default codecs</p>
+<dd><p>To contain default codecs. Is populated by &#64;_add_default_codecs</p>
 <dl class="py attribute">
 <dt id="dol.kv_codecs.ValueCodecs.default.base64">
 <code class="sig-name descname">base64</code><em class="property"> = ValueCodec(encoder=functools.partial(&lt;function b64encode&gt;), decoder=functools.partial(&lt;function b64decode&gt;))</em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default.base64" title="Permalink to this definition">¶</a></dt>
@@ -306,6 +306,55 @@ For example, to make a json codec that indents the json, you can do:</p>
 After f = methodcaller(‘name’), the call f(r) returns r.name().
 After g = methodcaller(‘name’, ‘date’, foo=1), the call g(r) returns
 r.name(‘date’, foo=1).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.kv_codecs.ValueCodecs.single_nested_value">
+<code class="sig-name descname">single_nested_value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#ValueCodecs.single_nested_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.single_nested_value" title="Permalink to this definition">¶</a></dt>
+<dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;un&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;uno&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;dos&#39;</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">en</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">single_nested_value</span><span class="p">(</span><span class="s1">&#39;en&#39;</span><span class="p">)(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">en</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">&#39;one&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">en</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ONE&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># note that here d[1] is completely replaced (not updated)</span>
+<span class="go">{&#39;en&#39;: &#39;ONE&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dol.kv_codecs.ValueCodecs.tuple_of_dict">
+<code class="sig-name descname">tuple_of_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#ValueCodecs.tuple_of_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.tuple_of_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a tuple-view of dict values.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;un&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;uno&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;dos&#39;</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">tuple_of_dict</span><span class="p">([</span><span class="s1">&#39;fr&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span><span class="o">.</span><span class="n">encoder</span><span class="p">([</span><span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;tre&#39;</span><span class="p">])</span>
+<span class="go">{&#39;fr&#39;: &#39;deux&#39;, &#39;sp&#39;: &#39;tre&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span><span class="o">.</span><span class="n">decoder</span><span class="p">({</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;un&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;uno&#39;</span><span class="p">})</span>
+<span class="go">(&#39;un&#39;, &#39;uno&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span> <span class="o">=</span> <span class="n">codec</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">(&#39;deux&#39;, &#39;dos&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;dos&#39;</span><span class="p">)</span>
+<span class="go">(&#39;deux&#39;, &#39;dos&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;DEUX&#39;</span><span class="p">,</span> <span class="s1">&#39;DOS&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">(&#39;DEUX&#39;, &#39;DOS&#39;)</span>
+</pre></div>
+</div>
+<p>Note that writes completely replace the values in the backend dict,
+it doesn’t update them:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">{&#39;fr&#39;: &#39;DEUX&#39;, &#39;sp&#39;: &#39;DOS&#39;}</span>
+</pre></div>
+</div>
+<p>See also <cite>dol.KeyTemplate</cite> for more general key-based views.</p>
 </dd></dl>
 
 <dl class="py method">

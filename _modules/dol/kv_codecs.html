@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.kv_codecs &mdash; dol 0.2.27 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>dol.kv_codecs &mdash; dol 0.2.28 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -112,12 +112,13 @@
 <span class="c1"># ------------------------------------ Codecs ------------------------------------------</span>
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">itemgetter</span>
 
 <span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">Codec</span><span class="p">,</span> <span class="n">ValueCodec</span><span class="p">,</span> <span class="n">KeyCodec</span><span class="p">,</span> <span class="n">KeyValueCodec</span>
 <span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="n">KeyTemplate</span>
 <span class="kn">from</span> <span class="nn">dol.signatures</span> <span class="kn">import</span> <span class="n">Sig</span>
-<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">named_partial</span><span class="p">,</span> <span class="n">identity_func</span>
+<span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">named_partial</span><span class="p">,</span> <span class="n">identity_func</span><span class="p">,</span> <span class="n">single_nest_in_dict</span><span class="p">,</span> <span class="n">nest_in_dict</span>
 
 <span class="c1"># For the codecs:</span>
 <span class="kn">import</span> <span class="nn">csv</span>
@@ -307,7 +308,13 @@
 <span class="k">def</span> <span class="nf">codec_wrap</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">encoder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">decoder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">()):</span>
     <span class="n">_cls_codec_wrap</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_codec_wrap</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span>
     <span class="n">factory</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_cls_codec_wrap</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">)</span>
+    <span class="c1"># TODO: Review this signature here. Should be keyword-only to match what</span>
+    <span class="c1">#  _codec_wrap implementation imposses, or _codec_wrap should be made to accpt</span>
+    <span class="c1">#  positional arguments (when encoder/decoder function are not class methods)</span>
+    <span class="c1"># See: https://github.com/i2mint/dol/discussions/41#discussioncomment-8015800</span>
     <span class="n">sig</span> <span class="o">=</span> <span class="n">_merge_signatures</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="n">exclude</span><span class="p">)</span>
+    <span class="c1"># Change all arguments to keyword-only</span>
+    <span class="c1"># sig = sig.ch_kinds(**{k: Sig.KEYWORD_ONLY for k in sig.names})</span>
     <span class="k">return</span> <span class="n">sig</span><span class="p">(</span><span class="n">factory</span><span class="p">)</span>
 
 
@@ -403,7 +410,7 @@
     <span class="c1"># TODO: Figure out how to give codecs annotations that can actually be inspected!</span>
 
 <div class="viewcode-block" id="ValueCodecs.default"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.ValueCodecs.default">[docs]</a>    <span class="k">class</span> <span class="nc">default</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;To contain default codecs&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;To contain default codecs. Is populated by @_add_default_codecs&quot;&quot;&quot;</span></div>
 
     <span class="kn">import</span> <span class="nn">pickle</span><span class="o">,</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">gzip</span><span class="o">,</span> <span class="nn">bz2</span><span class="o">,</span> <span class="nn">base64</span> <span class="k">as</span> <span class="nn">b64</span><span class="o">,</span> <span class="nn">lzma</span><span class="o">,</span> <span class="nn">codecs</span><span class="o">,</span> <span class="nn">io</span>
     <span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">methodcaller</span>
@@ -456,7 +463,61 @@
     <span class="p">)</span>
 
     <span class="c1"># Any is really xml.etree.ElementTree.Element, but didn&#39;t want to import</span>
-    <span class="n">xml_etree</span><span class="p">:</span> <span class="n">Codec</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span><span class="n">_xml_tree_encode</span><span class="p">,</span> <span class="n">_xml_tree_decode</span><span class="p">)</span></div>
+    <span class="n">xml_etree</span><span class="p">:</span> <span class="n">Codec</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span><span class="n">_xml_tree_encode</span><span class="p">,</span> <span class="n">_xml_tree_decode</span><span class="p">)</span>
+
+    <span class="c1"># TODO: Review value_wrap so it works with non-class functions like below</span>
+    <span class="c1">#   See: https://github.com/i2mint/dol/discussions/41#discussioncomment-8015800</span>
+
+    <span class="n">single_nested_value</span><span class="p">:</span> <span class="n">Codec</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]]</span>
+
+<div class="viewcode-block" id="ValueCodecs.single_nested_value"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.ValueCodecs.single_nested_value">[docs]</a>    <span class="k">def</span> <span class="nf">single_nested_value</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        &gt;&gt;&gt; d = {</span>
+<span class="sd">        ...     1: {&#39;en&#39;: &#39;one&#39;, &#39;fr&#39;: &#39;un&#39;, &#39;sp&#39;: &#39;uno&#39;},</span>
+<span class="sd">        ...     2: {&#39;en&#39;: &#39;two&#39;, &#39;fr&#39;: &#39;deux&#39;, &#39;sp&#39;: &#39;dos&#39;},</span>
+<span class="sd">        ... }</span>
+<span class="sd">        &gt;&gt;&gt; en = ValueCodecs.single_nested_value(&#39;en&#39;)(d)</span>
+<span class="sd">        &gt;&gt;&gt; en[1]</span>
+<span class="sd">        &#39;one&#39;</span>
+<span class="sd">        &gt;&gt;&gt; en[1] = &#39;ONE&#39;</span>
+<span class="sd">        &gt;&gt;&gt; d[1]  # note that here d[1] is completely replaced (not updated)</span>
+<span class="sd">        {&#39;en&#39;: &#39;ONE&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ValueCodec</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">single_nest_in_dict</span><span class="p">,</span> <span class="n">key</span><span class="p">),</span> <span class="n">itemgetter</span><span class="p">(</span><span class="n">key</span><span class="p">))</span></div>
+
+    <span class="n">tuple_of_dict</span><span class="p">:</span> <span class="n">Codec</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]]</span>
+
+<div class="viewcode-block" id="ValueCodecs.tuple_of_dict"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.ValueCodecs.tuple_of_dict">[docs]</a>    <span class="k">def</span> <span class="nf">tuple_of_dict</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a tuple-view of dict values.</span>
+
+<span class="sd">        &gt;&gt;&gt; d = {</span>
+<span class="sd">        ...     1: {&#39;en&#39;: &#39;one&#39;, &#39;fr&#39;: &#39;un&#39;, &#39;sp&#39;: &#39;uno&#39;},</span>
+<span class="sd">        ...     2: {&#39;en&#39;: &#39;two&#39;, &#39;fr&#39;: &#39;deux&#39;, &#39;sp&#39;: &#39;dos&#39;},</span>
+<span class="sd">        ... }</span>
+<span class="sd">        &gt;&gt;&gt; codec = ValueCodecs.tuple_of_dict([&#39;fr&#39;, &#39;sp&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; codec.encoder([&#39;deux&#39;, &#39;tre&#39;])</span>
+<span class="sd">        {&#39;fr&#39;: &#39;deux&#39;, &#39;sp&#39;: &#39;tre&#39;}</span>
+<span class="sd">        &gt;&gt;&gt; codec.decoder({&#39;en&#39;: &#39;one&#39;, &#39;fr&#39;: &#39;un&#39;, &#39;sp&#39;: &#39;uno&#39;})</span>
+<span class="sd">        (&#39;un&#39;, &#39;uno&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; frsp = codec(d)</span>
+<span class="sd">        &gt;&gt;&gt; frsp[2]</span>
+<span class="sd">        (&#39;deux&#39;, &#39;dos&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; (&#39;deux&#39;, &#39;dos&#39;)</span>
+<span class="sd">        (&#39;deux&#39;, &#39;dos&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; frsp[2] = (&#39;DEUX&#39;, &#39;DOS&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; frsp[2]</span>
+<span class="sd">        (&#39;DEUX&#39;, &#39;DOS&#39;)</span>
+
+<span class="sd">        Note that writes completely replace the values in the backend dict,</span>
+<span class="sd">        it doesn&#39;t update them:</span>
+
+<span class="sd">        &gt;&gt;&gt; d[2]</span>
+<span class="sd">        {&#39;fr&#39;: &#39;DEUX&#39;, &#39;sp&#39;: &#39;DOS&#39;}</span>
+
+<span class="sd">        See also `dol.KeyTemplate` for more general key-based views.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ValueCodec</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">nest_in_dict</span><span class="p">,</span> <span class="n">keys</span><span class="p">),</span> <span class="n">itemgetter</span><span class="p">(</span><span class="o">*</span><span class="n">keys</span><span class="p">))</span></div></div>
 
 
 <div class="viewcode-block" id="KeyCodecs"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyCodecs">[docs]</a><span class="nd">@_add_default_codecs</span>
@@ -575,7 +636,9 @@
 <span class="sd">        value codec to use.&quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="KeyValueCodecs.extension_based"><a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyValueCodecs.extension_based">[docs]</a>    <span class="k">def</span> <span class="nf">extension_based</span><span class="p">(</span>
-        <span class="n">ext_mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">dflt_ext_mapping</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ext_mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">dflt_ext_mapping</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A factory that creates a key-value codec that uses the file extension to</span>
 <span class="sd">        determine the value codec to use.&quot;&quot;&quot;</span></div></div>
