@@ -107,6 +107,16 @@ class mk_item2kv_for:
     """
 
     @staticmethod
+    def kv_pairs():
+        """
+        Essentially, the identity. Is used when the items are already (key, val) pairs.
+        """
+        def item2kv(item):
+            return item
+    
+        return item2kv
+
+    @staticmethod
     def item_to_key(item2key):
         """Make item2kv from a item2key function (the value will be the item itself).
 
