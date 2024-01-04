@@ -528,9 +528,7 @@ class KeyValueCodecs(CodecCollection):
         value codec to use."""
 
     def extension_based(
-        ext_mapping: dict = dflt_ext_mapping,
-        *,
-        default: Optional[Callable] = None,
+        ext_mapping: dict = dflt_ext_mapping, *, default: Optional[Callable] = None,
     ):
         """A factory that creates a key-value codec that uses the file extension to
         determine the value codec to use."""
