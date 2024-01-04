@@ -111,9 +111,10 @@ class mk_item2kv_for:
         """
         Essentially, the identity. Is used when the items are already (key, val) pairs.
         """
+
         def item2kv(item):
             return item
-    
+
         return item2kv
 
     @staticmethod
