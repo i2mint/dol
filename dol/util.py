@@ -529,7 +529,9 @@ def partialclass(cls, *args, **kwargs):
         __init__ = partialmethod(cls.__init__, *args, **kwargs)
 
     copy_attrs(
-        PartialClass, cls, attrs=('__name__', '__qualname__', '__module__', '__doc__'),
+        PartialClass,
+        cls,
+        attrs=('__name__', '__qualname__', '__module__', '__doc__'),
     )
 
     return PartialClass
@@ -937,7 +939,10 @@ def igroupby(
     if val is None:
         _append_to_group_items = append_to_group_items
     else:
-        _append_to_group_items = lambda group_items, item: (group_items, val(item),)
+        _append_to_group_items = lambda group_items, item: (
+            group_items,
+            val(item),
+        )
 
     for item in items:
         group_key = key(item)
@@ -1403,3 +1408,11 @@ def num_of_args(func):
     6
     """
     return len(signature(func).parameters)
+
+
+def single_nest_in_dict(key, value):
+    return {key: value}
+
+
+def nest_in_dict(keys, values):
+    return {k: v for k, v in zip(keys, values)}

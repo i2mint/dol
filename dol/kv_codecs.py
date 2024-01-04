@@ -4,12 +4,13 @@ Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library too
 # ------------------------------------ Codecs ------------------------------------------
 
 from functools import partial
-from typing import Callable, Iterable, Any, Optional, KT, VT, Mapping
+from typing import Callable, Iterable, Any, Optional, KT, VT, Mapping, Union, Dict
+from operator import itemgetter
 
 from dol.trans import Codec, ValueCodec, KeyCodec, KeyValueCodec
 from dol.paths import KeyTemplate
 from dol.signatures import Sig
-from dol.util import named_partial, identity_func
+from dol.util import named_partial, identity_func, single_nest_in_dict, nest_in_dict
 
 # For the codecs:
 import csv
@@ -199,7 +200,13 @@ def _codec_wrap(cls, encoder: Callable, decoder: Callable, **kwargs):
 def codec_wrap(cls, encoder: Callable, decoder: Callable, *, exclude=()):
     _cls_codec_wrap = partial(_codec_wrap, cls)
     factory = partial(_cls_codec_wrap, encoder, decoder)
+    # TODO: Review this signature here. Should be keyword-only to match what
+    #  _codec_wrap implementation imposses, or _codec_wrap should be made to accpt
+    #  positional arguments (when encoder/decoder function are not class methods)
+    # See: https://github.com/i2mint/dol/discussions/41#discussioncomment-8015800
     sig = _merge_signatures(encoder, decoder, exclude=exclude)
+    # Change all arguments to keyword-only
+    # sig = sig.ch_kinds(**{k: Sig.KEYWORD_ONLY for k in sig.names})
     return sig(factory)
 
 
@@ -295,7 +302,7 @@ class ValueCodecs(CodecCollection):
     # TODO: Figure out how to give codecs annotations that can actually be inspected!
 
     class default:
-        """To contain default codecs"""
+        """To contain default codecs. Is populated by @_add_default_codecs"""
 
     import pickle, json, gzip, bz2, base64 as b64, lzma, codecs, io
     from operator import methodcaller
@@ -349,6 +356,60 @@ class ValueCodecs(CodecCollection):
 
     # Any is really xml.etree.ElementTree.Element, but didn't want to import
     xml_etree: Codec[Any, bytes] = value_wrap(_xml_tree_encode, _xml_tree_decode)
+
+    # TODO: Review value_wrap so it works with non-class functions like below
+    #   See: https://github.com/i2mint/dol/discussions/41#discussioncomment-8015800
+
+    single_nested_value: Codec[KT, Dict[KT, VT]]
+
+    def single_nested_value(key):
+        """
+
+        >>> d = {
+        ...     1: {'en': 'one', 'fr': 'un', 'sp': 'uno'},
+        ...     2: {'en': 'two', 'fr': 'deux', 'sp': 'dos'},
+        ... }
+        >>> en = ValueCodecs.single_nested_value('en')(d)
+        >>> en[1]
+        'one'
+        >>> en[1] = 'ONE'
+        >>> d[1]  # note that here d[1] is completely replaced (not updated)
+        {'en': 'ONE'}
+        """
+        return ValueCodec(partial(single_nest_in_dict, key), itemgetter(key))
+
+    tuple_of_dict: Codec[Iterable[VT], Dict[KT, VT]]
+
+    def tuple_of_dict(keys):
+        """Get a tuple-view of dict values.
+
+        >>> d = {
+        ...     1: {'en': 'one', 'fr': 'un', 'sp': 'uno'},
+        ...     2: {'en': 'two', 'fr': 'deux', 'sp': 'dos'},
+        ... }
+        >>> codec = ValueCodecs.tuple_of_dict(['fr', 'sp'])
+        >>> codec.encoder(['deux', 'tre'])
+        {'fr': 'deux', 'sp': 'tre'}
+        >>> codec.decoder({'en': 'one', 'fr': 'un', 'sp': 'uno'})
+        ('un', 'uno')
+        >>> frsp = codec(d)
+        >>> frsp[2]
+        ('deux', 'dos')
+        >>> ('deux', 'dos')
+        ('deux', 'dos')
+        >>> frsp[2] = ('DEUX', 'DOS')
+        >>> frsp[2]
+        ('DEUX', 'DOS')
+
+        Note that writes completely replace the values in the backend dict,
+        it doesn't update them:
+
+        >>> d[2]
+        {'fr': 'DEUX', 'sp': 'DOS'}
+
+        See also `dol.KeyTemplate` for more general key-based views.
+        """
+        return ValueCodec(partial(nest_in_dict, keys), itemgetter(*keys))
 
 
 @_add_default_codecs
@@ -467,7 +528,9 @@ class KeyValueCodecs(CodecCollection):
         value codec to use."""
 
     def extension_based(
-        ext_mapping: dict = dflt_ext_mapping, *, default: Optional[Callable] = None,
+        ext_mapping: dict = dflt_ext_mapping,
+        *,
+        default: Optional[Callable] = None,
     ):
         """A factory that creates a key-value codec that uses the file extension to
         determine the value codec to use."""
