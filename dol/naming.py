@@ -265,8 +265,7 @@ def template_to_pattern(mapping_dict, template):
             )
         )
         return p.sub(
-            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]],
-            template,
+            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]], template,
         )
     else:
         return template
@@ -289,8 +288,7 @@ def mk_extract_pattern(
 
     return re.compile(
         p.sub(
-            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]],
-            template,
+            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]], template,
         )
     )
 
@@ -330,7 +328,7 @@ def mk_pattern_from_template_and_format_dict(template, format_dict=None, sep=pat
     except Exception as e:
         raise ValueError(
             f"Got an error when attempting to re.compile('{pattern}'): "
-            f"{type(e)}({e})"
+            f'{type(e)}({e})'
         )
 
 
