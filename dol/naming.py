@@ -265,7 +265,8 @@ def template_to_pattern(mapping_dict, template):
             )
         )
         return p.sub(
-            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]], template,
+            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]],
+            template,
         )
     else:
         return template
@@ -288,7 +289,8 @@ def mk_extract_pattern(
 
     return re.compile(
         p.sub(
-            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]], template,
+            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]],
+            template,
         )
     )
 
@@ -322,7 +324,14 @@ def mk_pattern_from_template_and_format_dict(template, format_dict=None, sep=pat
     fields = get_fields_from_template(template)
     format_dict = mk_format_mapping_dict(format_dict, fields, sep=sep)
     named_capture_patterns = mk_named_capture_patterns(format_dict)
-    return re.compile(template_to_pattern(named_capture_patterns, template))
+    pattern = template_to_pattern(named_capture_patterns, template)
+    try:
+        return re.compile(pattern)
+    except Exception as e:
+        raise ValueError(
+            f"Got an error when attempting to re.compile('{pattern}'): "
+            f"{type(e)}({e})"
+        )
 
 
 def mk_prefix_templates_dicts(template):
