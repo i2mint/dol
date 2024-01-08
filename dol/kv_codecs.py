@@ -412,25 +412,46 @@ class ValueCodecs(CodecCollection):
         return ValueCodec(partial(nest_in_dict, keys), itemgetter(*keys))
 
 
+# Note: An affix is a morpheme that is attached to a word stem to form a new word or
+# word form. Affixes include prefixes, suffixes, infixes, and circumfixes.
+
+
+def _affix_encoder(string: str, prefix: str = '', suffix: str = ''):
+    return f'{prefix}{string}{suffix}'
+
+
+def _affix_decoder(string: str, prefix: str = '', suffix: str = ''):
+    return string[len(prefix) : -len(suffix)]
+
+
+def affix_key_codec(prefix: str = '', suffix: str = ''):
+    """A factory that creates a key codec that affixes a prefix and suffix to the key"""
+    return KeyCodec(
+        encoder=partial(_affix_encoder, prefix=prefix, suffix=suffix),
+        decoder=partial(_affix_decoder, prefix=prefix, suffix=suffix),
+    )
+
+
 @_add_default_codecs
 class KeyCodecs(CodecCollection):
     """
     A collection of key codecs
     """
 
+    def affixed(prefix: str = '', suffix: str = ''):
+        return affix_key_codec(prefix=prefix, suffix=suffix)
+
     def suffixed(suffix: str):
-        st = KeyTemplate('{}' + f'{suffix}')
-        return KeyCodec(st.simple_str_to_str, st.str_to_simple_str)
+        return affix_key_codec(suffix=suffix)
 
     def prefixed(prefix: str):
-        st = KeyTemplate(f'{prefix}' + '{}')
-        return KeyCodec(st.simple_str_to_str, st.str_to_simple_str)
+        return affix_key_codec(prefix=prefix)
 
     def common_prefixed(keys: Iterable[str]):
         from dol.util import max_common_prefix
 
         prefix = max_common_prefix(keys)
-        return KeyCodecs.prefixed(prefix)
+        return KeyCodecs.prefixed(prefix, simple_str_sep='')
 
 
 def common_prefix_keys_wrap(s: Mapping):

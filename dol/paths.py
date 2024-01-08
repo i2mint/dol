@@ -1632,12 +1632,15 @@ class KeyTemplate:
         """
         if ss is None:
             return None
-        field_values = ss.split(self.simple_str_sep)
+        if self.simple_str_sep:
+            field_values = ss.split(self.simple_str_sep)
+        else:
+            field_values = (ss,)
         if len(field_values) != self._n_fields:
             raise ValueError(
                 f"String '{ss}' has does not have the right number of field values. "
-                f"Expected {self._n_fields}, got {len(field_values)} "
-                f"(namely: {field_values}.)"
+                f'Expected {self._n_fields}, got {len(field_values)} '
+                f'(namely: {field_values}.)'
             )
         return tuple(f(x) for f, x in zip(self._from_str_funcs.values(), field_values))
 
