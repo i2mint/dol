@@ -52,12 +52,12 @@ def test_string_template_template_construction():
 
 
 def test_string_template_regex():
-    assert KeyTemplate('{}.ext').regex.pattern == '(?P<i01_>.*)\\.ext'
-    assert KeyTemplate('{name}.ext').regex.pattern == '(?P<name>.*)\\.ext'
-    assert KeyTemplate('{::\w+}.ext').regex.pattern == '(?P<i01_>\\w+)\\.ext'
-    assert KeyTemplate('{name::\w+}.ext').regex.pattern == '(?P<name>\\w+)\\.ext'
-    assert KeyTemplate('{:0.02f:\w+}.ext').regex.pattern == '(?P<i01_>\\w+)\\.ext'
-    assert KeyTemplate('{name:0.02f:\w+}.ext').regex.pattern == '(?P<name>\\w+)\\.ext'
+    assert KeyTemplate('{}.ext')._regex.pattern == '(?P<i01_>.*)\\.ext'
+    assert KeyTemplate('{name}.ext')._regex.pattern == '(?P<name>.*)\\.ext'
+    assert KeyTemplate('{::\w+}.ext')._regex.pattern == '(?P<i01_>\\w+)\\.ext'
+    assert KeyTemplate('{name::\w+}.ext')._regex.pattern == '(?P<name>\\w+)\\.ext'
+    assert KeyTemplate('{:0.02f:\w+}.ext')._regex.pattern == '(?P<i01_>\\w+)\\.ext'
+    assert KeyTemplate('{name:0.02f:\w+}.ext')._regex.pattern == '(?P<name>\\w+)\\.ext'
 
 
 def test_string_template_simple():

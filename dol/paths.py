@@ -1335,23 +1335,24 @@ class KeyTemplate:
 
         (
             self.template,
-            self.field_names,
+            self._fields,
             to_str_funcs,
             field_patterns_,
         ) = self._extract_template_info(template)
 
-        self.field_patterns = dict(
-            {field: self.dflt_pattern for field in self.field_names},
+        self._field_patterns = dict(
+            {field: self.dflt_pattern for field in self._fields},
             **dict(field_patterns_, **(field_patterns or {})),
         )
-        self.to_str_funcs = dict(
-            {field: str for field in self.field_names},
+        self._to_str_funcs = dict(
+            {field: str for field in self._fields},
             **dict(to_str_funcs, **(to_str_funcs or {})),
         )
-        self.from_str_funcs = dict(
-            {field: identity for field in self.field_names}, **(from_str_funcs or {})
+        self._from_str_funcs = dict(
+            {field: identity for field in self._fields}, **(from_str_funcs or {})
         )
-        self.regex = self._compile_regex(self.template)
+        self._n_fields = len(self._fields)
+        self._regex = self._compile_regex(self.template)
 
     def clone(self, **kwargs):
         return type(self)(**{**self._init_kwargs, **kwargs})
@@ -1444,9 +1445,9 @@ class KeyTemplate:
         """
         if s is None:
             return None
-        match = self.regex.match(s)
+        match = self._regex.match(s)
         if match:
-            return {k: self.from_str_funcs[k](v) for k, v in match.groupdict().items()}
+            return {k: self._from_str_funcs[k](v) for k, v in match.groupdict().items()}
         else:
             raise ValueError(f"String '{s}' does not match the template.")
 
@@ -1463,7 +1464,7 @@ class KeyTemplate:
         """
         if params is None:
             return None
-        params = {k: self.to_str_funcs[k](v) for k, v in params.items()}
+        params = {k: self._to_str_funcs[k](v) for k, v in params.items()}
         return self.template.format(**params)
 
     # @_return_none_if_none_input
@@ -1479,7 +1480,7 @@ class KeyTemplate:
         """
         if params is None:
             return None
-        return tuple(params.get(field_name) for field_name in self.field_names)
+        return tuple(params.get(field_name) for field_name in self._fields)
 
     # @_return_none_if_none_input
     def tuple_to_dict(self, param_vals: tuple) -> dict:
@@ -1494,7 +1495,7 @@ class KeyTemplate:
         if param_vals is None:
             return None
         return {
-            field_name: value for field_name, value in zip(self.field_names, param_vals)
+            field_name: value for field_name, value in zip(self._fields, param_vals)
         }
 
     # @_return_none_if_none_input
@@ -1615,7 +1616,7 @@ class KeyTemplate:
         if s is None:
             return None
         return self.simple_str_sep.join(
-            self.to_str_funcs[k](v) for k, v in self.str_to_dict(s).items()
+            self._to_str_funcs[k](v) for k, v in self.str_to_dict(s).items()
         )
 
     # @_return_none_if_none_input
@@ -1631,10 +1632,14 @@ class KeyTemplate:
         """
         if ss is None:
             return None
-        return tuple(
-            f(x)
-            for f, x in zip(self.from_str_funcs.values(), ss.split(self.simple_str_sep))
-        )
+        field_values = ss.split(self.simple_str_sep)
+        if len(field_values) != self._n_fields:
+            raise ValueError(
+                f"String '{ss}' has does not have the right number of field values. "
+                f"Expected {self._n_fields}, got {len(field_values)} "
+                f"(namely: {field_values}.)"
+            )
+        return tuple(f(x) for f, x in zip(self._from_str_funcs.values(), field_values))
 
     # @_return_none_if_none_input
     def simple_str_to_str(self, ss: str):
@@ -1663,12 +1668,12 @@ class KeyTemplate:
         >>> st.match_str('this/does/not_match')
         False
         """
-        return self.regex.match(s) is not None
+        return self._regex.match(s) is not None
 
     def match_dict(self, params: dict) -> bool:
         return self.match_str(self.dict_to_str(params))
         # Note: Could do:
-        #  return all(self.field_patterns[k].match(v) for k, v in params.items())
+        #  return all(self._field_patterns[k].match(v) for k, v in params.items())
         # but not sure that's even quicker (given regex is compiled)
 
     def match_tuple(self, param_vals: tuple) -> bool:
@@ -1702,13 +1707,13 @@ class KeyTemplate:
         >>> st = KeyTemplate('{:03.0f}/{name::\w+}')
         >>> st.template
         '{i01_}/{name}'
-        >>> st.field_names
+        >>> st._fields
         ('i01_', 'name')
-        >>> st.field_patterns
+        >>> st._field_patterns
         {'i01_': '.*', 'name': '\\w+'}
-        >>> st.regex.pattern
+        >>> st._regex.pattern
         '(?P<i01_>.*)/(?P<name>\\w+)'
-        >>> to_str_funcs = st.to_str_funcs
+        >>> to_str_funcs = st._to_str_funcs
         >>> to_str_funcs['i01_'](3)
         '003'
         >>> to_str_funcs['name']('life')
@@ -1761,23 +1766,23 @@ class KeyTemplate:
         Instead, the escaped dot is matched literally.
         See https://docs.python.org/3/library/re.html#re.escape for more information.
 
-        >>> KeyTemplate('{}.ext').regex.pattern
+        >>> KeyTemplate('{}.ext')._regex.pattern
         '(?P<i01_>.*)\\.ext'
-        >>> KeyTemplate('{name}.ext').regex.pattern
+        >>> KeyTemplate('{name}.ext')._regex.pattern
         '(?P<name>.*)\\.ext'
-        >>> KeyTemplate('{::\w+}.ext').regex.pattern
+        >>> KeyTemplate('{::\w+}.ext')._regex.pattern
         '(?P<i01_>\\w+)\\.ext'
-        >>> KeyTemplate('{name::\w+}.ext').regex.pattern
+        >>> KeyTemplate('{name::\w+}.ext')._regex.pattern
         '(?P<name>\\w+)\\.ext'
-        >>> KeyTemplate('{:0.02f:\w+}.ext').regex.pattern
+        >>> KeyTemplate('{:0.02f:\w+}.ext')._regex.pattern
         '(?P<i01_>\\w+)\\.ext'
-        >>> KeyTemplate('{name:0.02f:\w+}.ext').regex.pattern
+        >>> KeyTemplate('{name:0.02f:\w+}.ext')._regex.pattern
         '(?P<name>\\w+)\\.ext'
         """
 
         def mk_named_capture_group(field_name):
             if field_name:
-                return f'(?P<{field_name}>{self.field_patterns[field_name]})'
+                return f'(?P<{field_name}>{self._field_patterns[field_name]})'
             else:
                 return ''
 
