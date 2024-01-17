@@ -440,6 +440,7 @@ def affix_key_codec(prefix: str = '', suffix: str = ''):
     >>> codec.encoder('name')
     '/folder/name.txt'
     >>> codec.decoder('/folder/name.txt')
+    'name'
     """
     return KeyCodec(
         encoder=partial(_affix_encoder, prefix=prefix, suffix=suffix),
