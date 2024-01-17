@@ -101,7 +101,13 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -224,6 +230,37 @@ path_get.separate_keys_with_separator = separate_keys_with_separator
 path_get.get_attr_or_item = get_attr_or_item
 path_get.get_item = getitem
 path_get.get_attr = getattr
+
+
+@add_as_attribute_of(path_get)
+def paths_getter(paths, obj=None, *, egress=dict, **kwargs):
+    """
+    Returns (path, values) pairs of the given paths in the given object.
+    This is the "fan-out" version of ``path_get``, specifically designed to
+    get multiple paths, returning the (path, value) pairs in a dict (by default),
+    or via any pairs aggregator (``egress``) function.
+
+    :param paths: The paths to get
+    :param obj: The object to get the paths from
+    :param egress: The egress function to use (default: dict)
+    :param kwargs: Extra kwargs to pass to ``path_get``
+
+    >>> obj = {'a': {'b': 1, 'c': 2}, 'd': 3}
+    >>> paths = ['a.c', 'd']
+    >>> paths_getter(paths, obj=obj)
+    {'a.c': 2, 'd': 3}
+    >>> path_extractor = paths_getter(paths)
+    >>> path_extractor(obj)
+    {'a.c': 2, 'd': 3}
+    """
+    if obj is None:
+        return partial(paths_getter, paths, **kwargs)
+
+    def pairs():
+        for path in paths:
+            yield path, path_get(obj, path=path, **kwargs)
+
+    return egress(pairs())
 
 
 @add_as_attribute_of(path_get)
@@ -682,7 +719,11 @@ class PrefixRelativization(PrefixRelativizationMixin):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr='_prefix',
 ):
     """
 
@@ -1556,7 +1597,8 @@ class KeyTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self, params: dict,
+        self,
+        params: dict,
     ):
         r"""Generates a namedtuple from the dictionary values based on the template.
 
