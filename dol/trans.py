@@ -3087,3 +3087,40 @@ class KeyCodec(*_CodecT):
 class KeyValueCodec(*_CodecT):
     def __call__(self, obj):
         return wrap_kvs(obj, preset=self.encoder, postget=self.decoder)
+
+
+
+# Note: An affix is a morpheme that is attached to a word stem to form a new word or
+# word form. Affixes include prefixes, suffixes, infixes, and circumfixes.
+
+
+def _affix_encoder(string: str, prefix: str = '', suffix: str = ''):
+    """Affix a prefix and suffix to a string
+    >>> _affix_encoder('name', prefix='/folder/', suffix='.txt')
+    '/folder/name.txt'
+    """
+    return f'{prefix}{string}{suffix}'
+
+
+def _affix_decoder(string: str, prefix: str = '', suffix: str = ''):
+    """Remove prefix and suffix from string
+    >>> _affix_decoder('/folder/name.txt', prefix='/folder/', suffix='.txt')
+    'name'
+    """
+    end_idx = -len(suffix) or None  # if suffix is empty, end_idx should be None
+    return string[len(prefix) : end_idx]
+
+
+def affix_key_codec(prefix: str = '', suffix: str = ''):
+    """A factory that creates a key codec that affixes a prefix and suffix to the key
+
+    >>> codec = affix_key_codec(prefix='/folder/', suffix='.txt')
+    >>> codec.encoder('name')
+    '/folder/name.txt'
+    >>> codec.decoder('/folder/name.txt')
+    'name'
+    """
+    return KeyCodec(
+        encoder=partial(_affix_encoder, prefix=prefix, suffix=suffix),
+        decoder=partial(_affix_decoder, prefix=prefix, suffix=suffix),
+    )

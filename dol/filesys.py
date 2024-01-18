@@ -9,7 +9,6 @@ from dol.base import Collection, KvReader, KvPersister
 from dol.trans import wrap_kvs, store_decorator, filt_iter
 from dol.naming import mk_pattern_from_template_and_format_dict
 from dol.paths import mk_relative_path_store
-from dol.kv_codecs import KeyCodecs
 
 file_sep = os.path.sep
 inf = float('infinity')
@@ -224,7 +223,10 @@ class FileSysCollection(Collection):
         return bool(self._key_pattern.match(k))
 
     def validate_key(
-        self, k, err_msg_format=_dflt_not_valid_error_msg, err_type=KeyValidationError,
+        self,
+        k,
+        err_msg_format=_dflt_not_valid_error_msg,
+        err_type=KeyValidationError,
     ):
         if not self.is_valid_key(k):
             raise err_type(err_msg_format.format(k))
@@ -438,19 +440,22 @@ class PickleFiles(TextFiles):
     """A store of pickles"""
 
 
+PickleStore = PickleFiles  # back-compatibility alias
+
+
 @json_bytes_wrap
 class JsonFiles(TextFiles):
     """A store of json files"""
 
 
-@KeyCodecs.suffixed('.json')
+from dol.trans import affix_key_codec
+
+
+@affix_key_codec(suffix='.json')
 @filt_iter.suffixes('.json')
 class Jsons(JsonFiles):
     """Like JsonFiles, but with added .json extension handling
     Namely: filtering for `.json` extensions but not showing the extension in keys"""
-
-
-PickleStore = PickleFiles  # back-compatibility alias
 
 
 # @wrap_kvs(key_of_id=lambda x: x[:-1], id_of_key=lambda x: x + path_sep)

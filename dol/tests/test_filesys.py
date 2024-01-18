@@ -83,6 +83,8 @@ def test_json_files():
     ss = Jsons(rootdir)
     assert 'foo' not in ss, "foo should be filtered out because no .json extension"
     ss['apple'] = {'crumble': True}
+    assert 'apple' in ss
+    assert 'apple' in set(ss)  # which is different than 'apple' in ss
     assert ss['apple'] == {'crumble': True}
     apple_path = Path(os.path.join(rootdir, 'apple.json'))
     assert apple_path.is_file(), "Should have created a file (with .json extension)"

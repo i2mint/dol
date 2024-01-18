@@ -7,7 +7,7 @@ from functools import partial
 from typing import Callable, Iterable, Any, Optional, KT, VT, Mapping, Union, Dict
 from operator import itemgetter
 
-from dol.trans import Codec, ValueCodec, KeyCodec, KeyValueCodec
+from dol.trans import Codec, ValueCodec, KeyCodec, KeyValueCodec, affix_key_codec
 from dol.paths import KeyTemplate
 from dol.signatures import Sig
 from dol.util import named_partial, identity_func, single_nest_in_dict, nest_in_dict
@@ -412,42 +412,6 @@ class ValueCodecs(CodecCollection):
         return ValueCodec(partial(nest_in_dict, keys), itemgetter(*keys))
 
 
-# Note: An affix is a morpheme that is attached to a word stem to form a new word or
-# word form. Affixes include prefixes, suffixes, infixes, and circumfixes.
-
-
-def _affix_encoder(string: str, prefix: str = '', suffix: str = ''):
-    """Affix a prefix and suffix to a string
-    >>> _affix_encoder('name', prefix='/folder/', suffix='.txt')
-    '/folder/name.txt'
-    """
-    return f'{prefix}{string}{suffix}'
-
-
-def _affix_decoder(string: str, prefix: str = '', suffix: str = ''):
-    """Remove prefix and suffix from string
-    >>> _affix_decoder('/folder/name.txt', prefix='/folder/', suffix='.txt')
-    'name'
-    """
-    end_idx = -len(suffix) or None  # if suffix is empty, end_idx should be None
-    return string[len(prefix) : end_idx]
-
-
-def affix_key_codec(prefix: str = '', suffix: str = ''):
-    """A factory that creates a key codec that affixes a prefix and suffix to the key
-
-    >>> codec = affix_key_codec(prefix='/folder/', suffix='.txt')
-    >>> codec.encoder('name')
-    '/folder/name.txt'
-    >>> codec.decoder('/folder/name.txt')
-    'name'
-    """
-    return KeyCodec(
-        encoder=partial(_affix_encoder, prefix=prefix, suffix=suffix),
-        decoder=partial(_affix_decoder, prefix=prefix, suffix=suffix),
-    )
-
-
 @_add_default_codecs
 class KeyCodecs(CodecCollection):
     """
@@ -565,7 +529,9 @@ class KeyValueCodecs(CodecCollection):
         value codec to use."""
 
     def extension_based(
-        ext_mapping: dict = dflt_ext_mapping, *, default: Optional[Callable] = None,
+        ext_mapping: dict = dflt_ext_mapping,
+        *,
+        default: Optional[Callable] = None,
     ):
         """A factory that creates a key-value codec that uses the file extension to
         determine the value codec to use."""
