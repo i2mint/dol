@@ -3089,7 +3089,6 @@ class KeyValueCodec(*_CodecT):
         return wrap_kvs(obj, preset=self.encoder, postget=self.decoder)
 
 
-
 # Note: An affix is a morpheme that is attached to a word stem to form a new word or
 # word form. Affixes include prefixes, suffixes, infixes, and circumfixes.
 

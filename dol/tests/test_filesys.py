@@ -77,18 +77,18 @@ def test_json_files():
     s['foo'] = {'bar': 1}
     assert s['foo'] == {'bar': 1}
     foo_path = Path(os.path.join(rootdir, 'foo'))
-    assert foo_path.is_file(), "Should have created a file"
-    assert foo_path.read_text() == '{"bar": 1}', "Should be json encoded"
+    assert foo_path.is_file(), 'Should have created a file'
+    assert foo_path.read_text() == '{"bar": 1}', 'Should be json encoded'
 
     ss = Jsons(rootdir)
-    assert 'foo' not in ss, "foo should be filtered out because no .json extension"
+    assert 'foo' not in ss, 'foo should be filtered out because no .json extension'
     ss['apple'] = {'crumble': True}
     assert 'apple' in ss
     assert 'apple' in set(ss)  # which is different than 'apple' in ss
     assert ss['apple'] == {'crumble': True}
     apple_path = Path(os.path.join(rootdir, 'apple.json'))
-    assert apple_path.is_file(), "Should have created a file (with .json extension)"
-    assert apple_path.read_text() == '{"crumble": true}', "Should be json encoded"
+    assert apple_path.is_file(), 'Should have created a file (with .json extension)'
+    assert apple_path.read_text() == '{"crumble": true}', 'Should be json encoded'
 
 
 def test_mk_dirs_if_missing():
