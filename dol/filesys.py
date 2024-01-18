@@ -6,9 +6,10 @@ from functools import wraps, partial
 from typing import Union, Callable
 
 from dol.base import Collection, KvReader, KvPersister
-from dol.trans import wrap_kvs, store_decorator
+from dol.trans import wrap_kvs, store_decorator, filt_iter
 from dol.naming import mk_pattern_from_template_and_format_dict
 from dol.paths import mk_relative_path_store
+from dol.kv_codecs import KeyCodecs
 
 file_sep = os.path.sep
 inf = float('infinity')
@@ -442,7 +443,14 @@ class PickleFiles(TextFiles):
 
 @json_bytes_wrap
 class JsonFiles(TextFiles):
-    """A store of pickles"""
+    """A store of json files"""
+
+
+@KeyCodecs.suffixed('.json')
+@filt_iter.suffixes('.json')
+class Jsons(JsonFiles):
+    """Like JsonFiles, but with added .json extension handling
+    Namely: filtering for `.json` extensions but not showing the extension in keys"""
 
 
 PickleStore = PickleFiles  # back-compatibility alias

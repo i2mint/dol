@@ -64,6 +64,31 @@ def empty_directory(s, path_must_include=('test_mk_dirs_if_missing',)):
 # Tests
 
 
+def test_json_files():
+    from dol import JsonFiles, Jsons
+    from pathlib import Path
+    import os
+
+    t = mk_tmp_local_store('test_mk_dirs_if_missing', make_dirs_if_missing=False)
+    empty_directory(t.rootdir, path_must_include='test_mk_dirs_if_missing')
+    rootdir = t.rootdir
+
+    s = JsonFiles(rootdir)
+    s['foo'] = {'bar': 1}
+    assert s['foo'] == {'bar': 1}
+    foo_path = Path(os.path.join(rootdir, 'foo'))
+    assert foo_path.is_file(), "Should have created a file"
+    assert foo_path.read_text() == '{"bar": 1}', "Should be json encoded"
+
+    ss = Jsons(rootdir)
+    assert 'foo' not in ss, "foo should be filtered out because no .json extension"
+    ss['apple'] = {'crumble': True}
+    assert ss['apple'] == {'crumble': True}
+    apple_path = Path(os.path.join(rootdir, 'apple.json'))
+    assert apple_path.is_file(), "Should have created a file (with .json extension)"
+    assert apple_path.read_text() == '{"crumble": true}', "Should be json encoded"
+
+
 def test_mk_dirs_if_missing():
     s = mk_tmp_local_store('test_mk_dirs_if_missing', make_dirs_if_missing=False)
     empty_directory(s.rootdir, path_must_include='test_mk_dirs_if_missing')
