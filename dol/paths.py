@@ -101,7 +101,13 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -246,13 +252,30 @@ def paths_getter(paths, obj=None, *, egress=dict, **kwargs):
     >>> path_extractor = paths_getter(paths)
     >>> path_extractor(obj)
     {'a.c': 2, 'd': 3}
+
+    See that the paths are used as the keys of the returned dict.
+    If you want to specify your own keys, you can simply specify `paths` as a dict
+    whose keys are the keys you want, and whose values are the paths to get:
+
+    >>> path_extractor_2 = paths_getter({'california': 'a.c', 'dreaming': 'd'})
+    >>> path_extractor_2(obj)
+    {'california': 2, 'dreaming': 3}
+
     """
     if obj is None:
         return partial(paths_getter, paths, **kwargs)
 
-    def pairs():
-        for path in paths:
-            yield path, path_get(obj, path=path, **kwargs)
+    if isinstance(paths, Mapping):
+
+        def pairs():
+            for key, path in paths.items():
+                yield key, path_get(obj, path=path, **kwargs)
+
+    else:
+
+        def pairs():
+            for path in paths:
+                yield path, path_get(obj, path=path, **kwargs)
 
     return egress(pairs())
 
@@ -713,7 +736,11 @@ class PrefixRelativization(PrefixRelativizationMixin):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr='_prefix',
 ):
     """
 
@@ -1587,7 +1614,8 @@ class KeyTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self, params: dict,
+        self,
+        params: dict,
     ):
         r"""Generates a namedtuple from the dictionary values based on the template.
 
