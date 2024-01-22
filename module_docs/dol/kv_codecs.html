@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dol.kv_codecs &mdash; dol 0.2.35 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=1c26a428"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+        <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="dol.misc" href="misc.html" />
+    <link rel="prev" title="dol.filesys" href="filesys.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dol.html">dol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appendable.html">dol.appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">dol.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">dol.caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dig.html">dol.dig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">dol.errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explicit.html">dol.explicit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesys.html">dol.filesys</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dol.kv_codecs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.CodecCollection"><code class="docutils literal notranslate"><span class="pre">CodecCollection</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.KeyCodecs"><code class="docutils literal notranslate"><span class="pre">KeyCodecs</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.KeyValueCodecs"><code class="docutils literal notranslate"><span class="pre">KeyValueCodecs</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.KeyValueCodecs.extension_based"><code class="docutils literal notranslate"><span class="pre">KeyValueCodecs.extension_based()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.KeyValueCodecs.key_based"><code class="docutils literal notranslate"><span class="pre">KeyValueCodecs.key_based()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.NotGiven"><code class="docutils literal notranslate"><span class="pre">NotGiven</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.ValueCodecs"><code class="docutils literal notranslate"><span class="pre">ValueCodecs</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.ValueCodecs.b64"><code class="docutils literal notranslate"><span class="pre">ValueCodecs.b64</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.ValueCodecs.default"><code class="docutils literal notranslate"><span class="pre">ValueCodecs.default</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.ValueCodecs.io"><code class="docutils literal notranslate"><span class="pre">ValueCodecs.io</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.ValueCodecs.methodcaller"><code class="docutils literal notranslate"><span class="pre">ValueCodecs.methodcaller</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.ValueCodecs.single_nested_value"><code class="docutils literal notranslate"><span class="pre">ValueCodecs.single_nested_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.ValueCodecs.tuple_of_dict"><code class="docutils literal notranslate"><span class="pre">ValueCodecs.tuple_of_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.ValueCodecs.zip_compress"><code class="docutils literal notranslate"><span class="pre">ValueCodecs.zip_compress()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.ValueCodecs.zip_decompress"><code class="docutils literal notranslate"><span class="pre">ValueCodecs.zip_decompress()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.common_prefix_keys_wrap"><code class="docutils literal notranslate"><span class="pre">common_prefix_keys_wrap()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.csv_dict_decode"><code class="docutils literal notranslate"><span class="pre">csv_dict_decode()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.csv_dict_encode"><code class="docutils literal notranslate"><span class="pre">csv_dict_encode()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.key_based_codec_factory"><code class="docutils literal notranslate"><span class="pre">key_based_codec_factory()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.key_based_value_trans"><code class="docutils literal notranslate"><span class="pre">key_based_value_trans()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">dol.misc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.html">dol.recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap.html">dol.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/new_store_wrap.html">dol.scrap.new_store_wrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/store_factories.html">dol.scrap.store_factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_appendable.html">dol.tests.test_appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zipfiledol.html">dol.zipfiledol</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">dol.kv_codecs</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/dol/kv_codecs.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dol.kv_codecs">
+<span id="dol-kv-codecs"></span><h1>dol.kv_codecs<a class="headerlink" href="#module-dol.kv_codecs" title="Link to this heading"></a></h1>
+<p>Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.kv_codecs.CodecCollection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">CodecCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#CodecCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.CodecCollection" title="Link to this definition"></a></dt>
+<dd><p>The base class for collections of codecs.
+Makes sure that the class cannot be instantiated, but only used as a collection.
+Also provides an _iter_codecs method that iterates over the codec names.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.kv_codecs.KeyCodecs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">KeyCodecs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#KeyCodecs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.KeyCodecs" title="Link to this definition"></a></dt>
+<dd><p>A collection of key codecs</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.kv_codecs.KeyValueCodecs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">KeyValueCodecs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#KeyValueCodecs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.KeyValueCodecs" title="Link to this definition"></a></dt>
+<dd><p>A collection of key-value codecs that can be used with postget and preset kv_wraps.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.kv_codecs.KeyValueCodecs.extension_based">
+<span class="sig-name descname"><span class="pre">extension_based</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#KeyValueCodecs.extension_based"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.KeyValueCodecs.extension_based" title="Link to this definition"></a></dt>
+<dd><p>A factory that creates a key-value codec that uses the file extension to
+determine the value codec to use.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.kv_codecs.KeyValueCodecs.key_based">
+<span class="sig-name descname"><span class="pre">key_based</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_func:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">identity_func&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default:</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#KeyValueCodecs.key_based"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.KeyValueCodecs.key_based" title="Link to this definition"></a></dt>
+<dd><p>A factory that creates a key-value codec that uses the key to determine the
+value codec to use.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.kv_codecs.NotGiven">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">NotGiven</span></span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#NotGiven"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.NotGiven" title="Link to this definition"></a></dt>
+<dd><p>A singleton to indicate that a value was not given</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">ValueCodecs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#ValueCodecs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.ValueCodecs" title="Link to this definition"></a></dt>
+<dd><p>A collection of value codec factories using standard lib tools.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">json_codec</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>  <span class="c1"># call the json codec factory</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span> <span class="o">=</span> <span class="n">json_codec</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encoder</span><span class="p">({</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="go">&#39;{&quot;b&quot;: 2}&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">decoder</span><span class="p">(</span><span class="s1">&#39;{&quot;b&quot;: 2}&#39;</span><span class="p">)</span>
+<span class="go">{&#39;b&#39;: 2}</span>
+</pre></div>
+</div>
+<p>The <cite>json_codec</cite> object is also a <cite>Mapping</cite> value wrapper:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">json_codec</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">backend</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;{&quot;b&quot;: 2}&#39;</span><span class="p">}</span>  <span class="c1"># json was written in backend</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>  <span class="c1"># but this json is decoded to a dict when read from interface</span>
+<span class="go">{&#39;b&#39;: 2}</span>
+</pre></div>
+</div>
+<p>In order not to have to call the codec factory when you just want the default,
+we’ve made a <cite>default</cite> attribute that contains all the default codecs:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">backend</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;{&quot;b&quot;: 2}&#39;</span><span class="p">}</span>  <span class="c1"># json was written in backend</span>
+</pre></div>
+</div>
+<p>For times when you want to parametrize your code though, know that you can also
+pass arguments to the encoder and decoder when you make your codec.
+For example, to make a json codec that indents the json, you can do:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">json_codec</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">json_codec</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">backend</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">])</span>  <span class="c1"># written in backend with indent</span>
+<span class="go">{</span>
+<span class="go">  &quot;b&quot;: 2</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs.b64">
+<span class="sig-name descname"><span class="pre">b64</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;module</span> <span class="pre">'base64'</span> <span class="pre">from</span> <span class="pre">'/opt/hostedtoolcache/Python/3.10.13/x64/lib/python3.10/base64.py'&gt;</span></em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.b64" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs.default">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default</span></span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#ValueCodecs.default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.default" title="Link to this definition"></a></dt>
+<dd><p>To contain default codecs. Is populated by &#64;_add_default_codecs</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs.io">
+<span class="sig-name descname"><span class="pre">io</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;module</span> <span class="pre">'io'</span> <span class="pre">from</span> <span class="pre">'/opt/hostedtoolcache/Python/3.10.13/x64/lib/python3.10/io.py'&gt;</span></em><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.io" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs.methodcaller">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">methodcaller</span></span><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.methodcaller" title="Link to this definition"></a></dt>
+<dd><p>methodcaller(name, …) –&gt; methodcaller object</p>
+<p>Return a callable object that calls the given method on its operand.
+After f = methodcaller(‘name’), the call f(r) returns r.name().
+After g = methodcaller(‘name’, ‘date’, foo=1), the call g(r) returns
+r.name(‘date’, foo=1).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs.single_nested_value">
+<span class="sig-name descname"><span class="pre">single_nested_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#ValueCodecs.single_nested_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.single_nested_value" title="Link to this definition"></a></dt>
+<dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;un&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;uno&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;dos&#39;</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">en</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">single_nested_value</span><span class="p">(</span><span class="s1">&#39;en&#39;</span><span class="p">)(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">en</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">&#39;one&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">en</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ONE&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># note that here d[1] is completely replaced (not updated)</span>
+<span class="go">{&#39;en&#39;: &#39;ONE&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs.tuple_of_dict">
+<span class="sig-name descname"><span class="pre">tuple_of_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#ValueCodecs.tuple_of_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.tuple_of_dict" title="Link to this definition"></a></dt>
+<dd><p>Get a tuple-view of dict values.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;un&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;uno&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;dos&#39;</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">tuple_of_dict</span><span class="p">([</span><span class="s1">&#39;fr&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span><span class="o">.</span><span class="n">encoder</span><span class="p">([</span><span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;tre&#39;</span><span class="p">])</span>
+<span class="go">{&#39;fr&#39;: &#39;deux&#39;, &#39;sp&#39;: &#39;tre&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span><span class="o">.</span><span class="n">decoder</span><span class="p">({</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;un&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;uno&#39;</span><span class="p">})</span>
+<span class="go">(&#39;un&#39;, &#39;uno&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span> <span class="o">=</span> <span class="n">codec</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">(&#39;deux&#39;, &#39;dos&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;dos&#39;</span><span class="p">)</span>
+<span class="go">(&#39;deux&#39;, &#39;dos&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;DEUX&#39;</span><span class="p">,</span> <span class="s1">&#39;DOS&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">(&#39;DEUX&#39;, &#39;DOS&#39;)</span>
+</pre></div>
+</div>
+<p>Note that writes completely replace the values in the backend dict,
+it doesn’t update them:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">{&#39;fr&#39;: &#39;DEUX&#39;, &#39;sp&#39;: &#39;DOS&#39;}</span>
+</pre></div>
+</div>
+<p>See also <cite>dol.KeyTemplate</cite> for more general key-based views.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs.zip_compress">
+<span class="sig-name descname"><span class="pre">zip_compress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'some_bytes'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowZip64</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compresslevel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_timestamps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.zip_compress" title="Link to this definition"></a></dt>
+<dd><p>Compress input bytes, returning the compressed bytes</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;x&#39;</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">+</span> <span class="sa">b</span><span class="s1">&#39;y&#39;</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># 2000 (quite compressible) bytes</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+<span class="go">2000</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">zipped_bytes</span> <span class="o">=</span> <span class="n">zip_compress</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Note: Compression details will be system dependent</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">zipped_bytes</span><span class="p">)</span>  
+<span class="go">137</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unzipped_bytes</span> <span class="o">=</span> <span class="n">zip_decompress</span><span class="p">(</span><span class="n">zipped_bytes</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unzipped_bytes</span> <span class="o">==</span> <span class="n">b</span>  <span class="c1"># verify that unzipped bytes are the same as the original</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.zipfiledol</span> <span class="kn">import</span> <span class="n">compression_methods</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">zipped_bytes</span> <span class="o">=</span> <span class="n">zip_compress</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression_methods</span><span class="p">[</span><span class="s1">&#39;bzip2&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Note: Compression details will be system dependent</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">zipped_bytes</span><span class="p">)</span>  
+<span class="go">221</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unzipped_bytes</span> <span class="o">=</span> <span class="n">zip_decompress</span><span class="p">(</span><span class="n">zipped_bytes</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unzipped_bytes</span> <span class="o">==</span> <span class="n">b</span>  <span class="c1"># verify that unzipped bytes are the same as the original</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs.zip_decompress">
+<span class="sig-name descname"><span class="pre">zip_decompress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowZip64</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compresslevel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_timestamps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.zip_decompress" title="Link to this definition"></a></dt>
+<dd><p>Decompress input bytes of a single file zip, returning the uncompressed bytes</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">zip_compress</span></code> for usage examples.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.kv_codecs.common_prefix_keys_wrap">
+<span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">common_prefix_keys_wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#common_prefix_keys_wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.common_prefix_keys_wrap" title="Link to this definition"></a></dt>
+<dd><p>Transforms keys of mapping to omit the longest prefix they have in common</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.kv_codecs.csv_dict_decode">
+<span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">csv_dict_decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fieldnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dialect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'excel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quotechar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'&quot;'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">escapechar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doublequote</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipinitialspace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lineterminator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'\r\n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quoting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrasaction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fieldcasts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#csv_dict_decode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.csv_dict_decode" title="Link to this definition"></a></dt>
+<dd><p>Decode a csv string into a list of dicts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>string</strong> – The csv string to decode</p></li>
+<li><p><strong>fieldcasts</strong> – A function that takes a row and returns a row with the same keys
+but with values cast to the desired type. If a dict, it should be a mapping
+from fieldnames to cast functions. If an iterable, it should be an iterable of
+cast functions, in which case each cast function will be applied to each element
+of the row, element wise.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encoded</span> <span class="o">=</span> <span class="n">csv_dict_encode</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encoded</span>
+<span class="go">&#39;a,b\r\n1,2\r\n3,4\r\n&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csv_dict_decode</span><span class="p">(</span><span class="n">encoded</span><span class="p">)</span>
+<span class="go">[{&#39;a&#39;: &#39;1&#39;, &#39;b&#39;: &#39;2&#39;}, {&#39;a&#39;: &#39;3&#39;, &#39;b&#39;: &#39;4&#39;}]</span>
+</pre></div>
+</div>
+<p>See that you don’t get back when you started with. The ints aren’t ints anymore!
+You can resolve this by using the fieldcasts argument
+(that’s our argument – not present in builtin csv module).
+I should be a function (that transforms a dict to the one you want) or
+list or tuple of the same size as the row (that specifies the cast function for
+each field)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">csv_dict_decode</span><span class="p">(</span><span class="n">encoded</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">],</span> <span class="n">fieldcasts</span><span class="o">=</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">[{&#39;a&#39;: 1, &#39;b&#39;: 2}, {&#39;a&#39;: 3, &#39;b&#39;: 4}]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csv_dict_decode</span><span class="p">(</span><span class="n">encoded</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">],</span> <span class="n">fieldcasts</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">})</span>
+<span class="go">[{&#39;a&#39;: &#39;1&#39;, &#39;b&#39;: 2.0}, {&#39;a&#39;: &#39;3&#39;, &#39;b&#39;: 4.0}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.kv_codecs.csv_dict_encode">
+<span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">csv_dict_encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fieldnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dialect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'excel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quotechar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'&quot;'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">escapechar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doublequote</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipinitialspace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lineterminator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'\r\n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quoting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrasaction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fieldcasts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#csv_dict_encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.csv_dict_encode" title="Link to this definition"></a></dt>
+<dd><p>Encode a list of dicts into a csv string.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encoded</span> <span class="o">=</span> <span class="n">csv_dict_encode</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encoded</span>
+<span class="go">&#39;a,b\r\n1,2\r\n3,4\r\n&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.kv_codecs.key_based_codec_factory">
+<span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">key_based_codec_factory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_mapping:</span> <span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_func:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">identity_func&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#key_based_codec_factory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.key_based_codec_factory" title="Link to this definition"></a></dt>
+<dd><p>A factory that creates a key codec that uses the key to determine the
+codec to use.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.kv_codecs.key_based_value_trans">
+<span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">key_based_value_trans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">key_func:</span> <span class="pre">~typing.Callable[[KT],</span> <span class="pre">KT],</span> <span class="pre">value_trans_mapping,</span> <span class="pre">default_factory:</span> <span class="pre">~typing.Callable[[],</span> <span class="pre">~typing.Callable],</span> <span class="pre">k=&lt;class</span> <span class="pre">'dol.kv_codecs.NotGiven'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#key_based_value_trans"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.key_based_value_trans" title="Link to this definition"></a></dt>
+<dd><p>A factory that creates a value codec that uses the key to determine the
+codec to use.</p>
+<p># a key_func that gets the extension of a file path</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">json</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">value_trans_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;.json&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="s1">&#39;.txt&#39;</span><span class="p">:</span> <span class="nb">bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">default_factory</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s2">&quot;No codec for this extension&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trans</span> <span class="o">=</span> <span class="n">key_based_value_trans</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">key_func</span><span class="p">,</span> <span class="n">value_trans_mapping</span><span class="p">,</span> <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">identity_func</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="filesys.html" class="btn btn-neutral float-left" title="dol.filesys" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="misc.html" class="btn btn-neutral float-right" title="dol.misc" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

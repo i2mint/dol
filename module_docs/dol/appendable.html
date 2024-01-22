@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dol.appendable &mdash; dol 0.2.35 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=1c26a428"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+        <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="dol.base" href="base.html" />
+    <link rel="prev" title="dol" href="../dol.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dol.html">dol</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dol.appendable</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dol.appendable.Extender"><code class="docutils literal notranslate"><span class="pre">Extender</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.appendable.Extender.extend"><code class="docutils literal notranslate"><span class="pre">Extender.extend()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.appendable.FirstAppendOnly"><code class="docutils literal notranslate"><span class="pre">FirstAppendOnly</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.appendable.add_append_functionality_to_store_cls"><code class="docutils literal notranslate"><span class="pre">add_append_functionality_to_store_cls()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.appendable.appendable"><code class="docutils literal notranslate"><span class="pre">appendable()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.appendable.define_extend_as_seq_of_appends"><code class="docutils literal notranslate"><span class="pre">define_extend_as_seq_of_appends()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.appendable.mk_item2kv_for"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.appendable.mk_item2kv_for.field"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for.field()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.appendable.mk_item2kv_for.fields"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for.fields()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.appendable.mk_item2kv_for.item_to_key"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for.item_to_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.appendable.mk_item2kv_for.item_to_key_params_and_val"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for.item_to_key_params_and_val()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.appendable.mk_item2kv_for.kv_pairs"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for.kv_pairs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.appendable.mk_item2kv_for.utc_key"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for.utc_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.appendable.mk_item2kv_for.uuid_key"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for.uuid_key()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.appendable.read_add_write"><code class="docutils literal notranslate"><span class="pre">read_add_write()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">dol.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">dol.caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dig.html">dol.dig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">dol.errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explicit.html">dol.explicit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kv_codecs.html">dol.kv_codecs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">dol.misc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.html">dol.recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap.html">dol.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/new_store_wrap.html">dol.scrap.new_store_wrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/store_factories.html">dol.scrap.store_factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_appendable.html">dol.tests.test_appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zipfiledol.html">dol.zipfiledol</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">dol.appendable</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/dol/appendable.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dol.appendable">
+<span id="dol-appendable"></span><h1>dol.appendable<a class="headerlink" href="#module-dol.appendable" title="Link to this heading"></a></h1>
+<dl class="simple">
+<dt>Tools to add append-functionality to key-val stores. The main function is</dt><dd><p><cite>appendable_store_cls = add_append_functionality_to_store_cls(store_cls, item2kv, …)</cite></p>
+</dd>
+</dl>
+<p>You give it the <cite>store_cls</cite> you want to sub class, and a item -&gt; (key, val) function, and you get a store (subclass) that
+has a <cite>store.append(item)</cite> method. Also includes an extend method (that just called appends in a loop.</p>
+<p>See add_append_functionality_to_store_cls docs for examples.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.appendable.Extender">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.appendable.</span></span><span class="sig-name descname"><span class="pre">Extender</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store:</span> <span class="pre">~collections.abc.MutableMapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extend_store_value=&lt;function</span> <span class="pre">read_add_write&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append_method=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#Extender"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.Extender" title="Link to this definition"></a></dt>
+<dd><p>Extends a value in a store.</p>
+<p>The value in the store (if it exists) must be an iterable.
+The value to extend must also be an iterable.</p>
+<p>Unless a different <code class="docutils literal notranslate"><span class="pre">extend_store_value</span></code> function is given,
+the sum of the two iterables must be an iterable.</p>
+<p>The default <code class="docutils literal notranslate"><span class="pre">extend_store_value</span></code> is such that if the key is not in the store,
+the value is simply written in the store.</p>
+<p>The default <code class="docutils literal notranslate"><span class="pre">append_method</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, which means that the <code class="docutils literal notranslate"><span class="pre">append</span></code> method
+is not defined. If you want to define it, you can pass a function that takes
+the <code class="docutils literal notranslate"><span class="pre">Extender</span></code> instance as first argument, and the object to append as second
+argument. The <code class="docutils literal notranslate"><span class="pre">append</span></code> method will then be defined as a partial of this function
+with the <code class="docutils literal notranslate"><span class="pre">Extender</span></code> instance as first argument.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">store</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;pple&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># test normal extend</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_extender</span> <span class="o">=</span> <span class="n">Extender</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_extender</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s1">&#39;sauce&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">store</span>
+<span class="go">{&#39;a&#39;: &#39;pplesauce&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># test creation (when key is not in store)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b_extender</span> <span class="o">=</span> <span class="n">Extender</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b_extender</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s1">&#39;anana&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">store</span>
+<span class="go">{&#39;a&#39;: &#39;pplesauce&#39;, &#39;b&#39;: &#39;anana&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># you can use the += operator too</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b_extender</span> <span class="o">+=</span> <span class="s1">&#39; split&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">store</span>
+<span class="go">{&#39;a&#39;: &#39;pplesauce&#39;, &#39;b&#39;: &#39;anana split&#39;}</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.appendable.Extender.extend">
+<span class="sig-name descname"><span class="pre">extend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#Extender.extend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.Extender.extend" title="Link to this definition"></a></dt>
+<dd><p>Extend the iterable stored in</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.appendable.FirstAppendOnly">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.appendable.</span></span><span class="sig-name descname"><span class="pre">FirstAppendOnly</span></span><a class="reference internal" href="../../_modules/dol/appendable.html#FirstAppendOnly"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.FirstAppendOnly" title="Link to this definition"></a></dt>
+<dd><p>A finite Sequence that can have no more than one element.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">FirstAppendOnly</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;something&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;something&#39;</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;something else&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>  <span class="c1"># still only one item</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;something&#39;</span>  <span class="c1"># still the same item</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Not that we&#39;d ever these methods of FirstAppendOnly, but know that FirstAppendOnly is a collection.abc.Sequence, so...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="p">[::</span><span class="o">-</span><span class="mi">10</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">t</span><span class="p">))</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;something&#39;</span><span class="p">]</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;something&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;something&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.appendable.add_append_functionality_to_store_cls">
+<span class="sig-prename descclassname"><span class="pre">dol.appendable.</span></span><span class="sig-name descname"><span class="pre">add_append_functionality_to_store_cls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item2kv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.appendable.add_append_functionality_to_store_cls" title="Link to this definition"></a></dt>
+<dd><p>Makes a new class with append (and consequential extend) methods</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>store_cls</strong> – The store class to subclass</p></li>
+<li><p><strong>item2kv</strong> – The function that produces a (key, val) pair from an item</p></li>
+<li><p><strong>new_store_name</strong> – The name to give the new class (default will be ‘Appendable’ + store_cls.__name__)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: A subclass of store_cls with two additional methods: append, and extend.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">],</span> <span class="n">item</span><span class="p">)</span>  <span class="c1"># use value of &#39;L&#39; as the key, and value is the item itself</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyStore</span> <span class="o">=</span> <span class="n">appendable</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">item2kv</span><span class="o">=</span><span class="n">item_to_kv</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">();</span> <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">});</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;let&#39;, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})]</span>
+</pre></div>
+</div>
+<p>Use mk_item2kv.from_item_to_key_params_and_val with tuple key params</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">appendable</span><span class="o">.</span><span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">item_to_key_params_and_val</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]),</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyStore</span> <span class="o">=</span> <span class="n">appendable</span><span class="p">(</span><span class="n">item2kv</span><span class="o">=</span><span class="n">item_to_kv</span><span class="p">)(</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># showing the append(...)(store) form</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">();</span> <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">});</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;let/it&#39;, &#39;go&#39;)]</span>
+</pre></div>
+</div>
+<p>Use mk_item2kv.from_item_to_key_params_and_val with dict key params</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">appendable</span><span class="o">.</span><span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">item_to_key_params_and_val</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">],</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]},</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]),</span> <span class="s1">&#39;</span><span class="si">{G}</span><span class="s1">_</span><span class="si">{L}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@appendable</span><span class="p">(</span><span class="n">item2kv</span><span class="o">=</span><span class="n">item_to_kv</span><span class="p">)</span>  <span class="c1"># showing the @ form</span>
+<span class="gp">... </span><span class="k">class</span> <span class="nc">MyStore</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">();</span> <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">});</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;go_let&#39;, &#39;it&#39;)]</span>
+</pre></div>
+</div>
+<p>Use mk_item2kv.fields to get a tuple key from item fields,
+defining the sub-dict of the remaining fields to be the value.
+Also showing here how you can decorate the instance itself.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">appendable</span><span class="o">.</span><span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">fields</span><span class="p">([</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">],</span> <span class="n">key_as_tuple</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">appendable</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">item2kv</span><span class="o">=</span><span class="n">item_to_kv</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">});</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[((&#39;go&#39;, &#39;let&#39;), {&#39;I&#39;: &#39;it&#39;})]</span>
+</pre></div>
+</div>
+<p>You can make the “append” and “extend” methods to return the new generated keys by
+using the “return_keys” flag.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">appendable</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">item2kv</span><span class="o">=</span><span class="n">item_to_kv</span><span class="p">,</span> <span class="n">return_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">(&#39;go&#39;, &#39;let&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.appendable.appendable">
+<span class="sig-prename descclassname"><span class="pre">dol.appendable.</span></span><span class="sig-name descname"><span class="pre">appendable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item2kv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#appendable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.appendable" title="Link to this definition"></a></dt>
+<dd><p>Makes a new class with append (and consequential extend) methods</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>store_cls</strong> – The store class to subclass</p></li>
+<li><p><strong>item2kv</strong> – The function that produces a (key, val) pair from an item</p></li>
+<li><p><strong>new_store_name</strong> – The name to give the new class (default will be ‘Appendable’ + store_cls.__name__)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: A subclass of store_cls with two additional methods: append, and extend.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">],</span> <span class="n">item</span><span class="p">)</span>  <span class="c1"># use value of &#39;L&#39; as the key, and value is the item itself</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyStore</span> <span class="o">=</span> <span class="n">appendable</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">item2kv</span><span class="o">=</span><span class="n">item_to_kv</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">();</span> <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">});</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;let&#39;, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})]</span>
+</pre></div>
+</div>
+<p>Use mk_item2kv.from_item_to_key_params_and_val with tuple key params</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">appendable</span><span class="o">.</span><span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">item_to_key_params_and_val</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]),</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MyStore</span> <span class="o">=</span> <span class="n">appendable</span><span class="p">(</span><span class="n">item2kv</span><span class="o">=</span><span class="n">item_to_kv</span><span class="p">)(</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># showing the append(...)(store) form</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">();</span> <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">});</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;let/it&#39;, &#39;go&#39;)]</span>
+</pre></div>
+</div>
+<p>Use mk_item2kv.from_item_to_key_params_and_val with dict key params</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">appendable</span><span class="o">.</span><span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">item_to_key_params_and_val</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">],</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]},</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]),</span> <span class="s1">&#39;</span><span class="si">{G}</span><span class="s1">_</span><span class="si">{L}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@appendable</span><span class="p">(</span><span class="n">item2kv</span><span class="o">=</span><span class="n">item_to_kv</span><span class="p">)</span>  <span class="c1"># showing the @ form</span>
+<span class="gp">... </span><span class="k">class</span> <span class="nc">MyStore</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">();</span> <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">});</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;go_let&#39;, &#39;it&#39;)]</span>
+</pre></div>
+</div>
+<p>Use mk_item2kv.fields to get a tuple key from item fields,
+defining the sub-dict of the remaining fields to be the value.
+Also showing here how you can decorate the instance itself.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">appendable</span><span class="o">.</span><span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">fields</span><span class="p">([</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">],</span> <span class="n">key_as_tuple</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">appendable</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">item2kv</span><span class="o">=</span><span class="n">item_to_kv</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">});</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[((&#39;go&#39;, &#39;let&#39;), {&#39;I&#39;: &#39;it&#39;})]</span>
+</pre></div>
+</div>
+<p>You can make the “append” and “extend” methods to return the new generated keys by
+using the “return_keys” flag.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">appendable</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">item2kv</span><span class="o">=</span><span class="n">item_to_kv</span><span class="p">,</span> <span class="n">return_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">(&#39;go&#39;, &#39;let&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.appendable.define_extend_as_seq_of_appends">
+<span class="sig-prename descclassname"><span class="pre">dol.appendable.</span></span><span class="sig-name descname"><span class="pre">define_extend_as_seq_of_appends</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#define_extend_as_seq_of_appends"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.define_extend_as_seq_of_appends" title="Link to this definition"></a></dt>
+<dd><p>Inject an extend method in obj that will used append method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> – Class (type) or instance of an object that has an “append” method.</p>
+</dd>
+</dl>
+<p>Returns: The obj, but with that extend method.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AA</span> <span class="o">=</span> <span class="n">define_extend_as_seq_of_appends</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">AA</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">t</span>
+<span class="go">[1, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">t</span>
+<span class="go">[1, 2, 3, 10, 20]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">A</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">define_extend_as_seq_of_appends</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">t</span>
+<span class="go">[1, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">t</span>
+<span class="go">[1, 2, 3, 10, 20]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.appendable.mk_item2kv_for">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.appendable.</span></span><span class="sig-name descname"><span class="pre">mk_item2kv_for</span></span><a class="reference internal" href="../../_modules/dol/appendable.html#mk_item2kv_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.mk_item2kv_for" title="Link to this definition"></a></dt>
+<dd><p>A bunch of functions to make item2kv functions</p>
+<p>A few examples (see individual methods’ docs for more examples)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># item_to_key</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">item_to_key</span><span class="p">(</span><span class="n">item2key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">]</span> <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">(&#39;let&#39;, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># utc_key</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2key</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">utc_key</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">item2key</span><span class="p">(</span><span class="s1">&#39;some data&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">k</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.01</span>  <span class="c1"># which asserts that k is indeed a (current) utc timestamp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">v</span> <span class="o">==</span> <span class="s1">&#39;some data&#39;</span>  <span class="c1"># just the item itself</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># item_to_key_params_and_val</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">item_to_key_params_and_val</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]),</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">(&#39;let/it&#39;, &#39;go&#39;)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># fields</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">fields</span><span class="p">([</span><span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;}, {&#39;G&#39;: &#39;go&#39;})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">fields</span><span class="p">((</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">),</span> <span class="n">keep_field_in_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>  <span class="c1"># note the order of the key is not (&#39;G&#39;, &#39;L&#39;)...</span>
+<span class="go">({&#39;L&#39;: &#39;let&#39;, &#39;G&#39;: &#39;go&#39;}, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">fields</span><span class="p">((</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">),</span> <span class="n">key_as_tuple</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># but (&#39;G&#39;, &#39;L&#39;) order is respected here</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">((&#39;go&#39;, &#39;let&#39;), {&#39;I&#39;: &#39;it&#39;})</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.appendable.mk_item2kv_for.field">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_field_in_value=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dflt_if_missing=&lt;class</span> <span class="pre">'dol.appendable.NotSpecified'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#mk_item2kv_for.field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.mk_item2kv_for.field" title="Link to this definition"></a></dt>
+<dd><p>item2kv that uses a specific key of a (mapping) item as the key</p>
+<dl class="simple">
+<dt>Note: If keep_field_in_value=False, the field will be popped OUT of the item.</dt><dd><p>If that’s not the desired effect, one should feed copies of the items (e.g. map(dict.copy, items))</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> – The field (value) to use as the returned key</p></li>
+<li><p><strong>keep_field_in_value</strong> – Whether to leave the field in the item. If False, will pop it out</p></li>
+<li><p><strong>dflt_if_missing</strong> – If specified (even None) will use the specified key as the key, if the field is missig</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A item2kv function</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item2kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s1">&#39;G&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">(&#39;go&#39;, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">keep_field_in_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">(&#39;go&#39;, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">dflt_if_missing</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;DIE&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">(None, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;DIE&#39;: &#39;go&#39;})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.appendable.mk_item2kv_for.fields">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fields</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_field_in_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_as_tuple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#mk_item2kv_for.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.mk_item2kv_for.fields" title="Link to this definition"></a></dt>
+<dd><p>Make item2kv from specific fields of a Mapping (i.e. dict-like object) item.</p>
+<p>Note: item2kv will not mutate item (even if keep_field_in_value=False).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fields</strong> – The sequence (list, tuple, etc.) of item fields that should be used to create the key.</p></li>
+<li><p><strong>keep_field_in_value</strong> – Set to True to return the item as is, as the value</p></li>
+<li><p><strong>key_as_tuple</strong> – Set to True if you want keys to be tuples (note that the fields order is important here!)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: an item -&gt; (item[fields], item[not in fields]) function</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">({&#39;L&#39;: &#39;let&#39;}, {&#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">fields</span><span class="p">([</span><span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;}, {&#39;G&#39;: &#39;go&#39;})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">fields</span><span class="p">((</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">),</span> <span class="n">keep_field_in_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>  <span class="c1"># note the order of the key is not (&#39;G&#39;, &#39;L&#39;)...</span>
+<span class="go">({&#39;L&#39;: &#39;let&#39;, &#39;G&#39;: &#39;go&#39;}, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">fields</span><span class="p">((</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;L&#39;</span><span class="p">),</span> <span class="n">key_as_tuple</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># but (&#39;G&#39;, &#39;L&#39;) order is respected here</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">((&#39;go&#39;, &#39;let&#39;), {&#39;I&#39;: &#39;it&#39;})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.appendable.mk_item2kv_for.item_to_key">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">item_to_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item2key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#mk_item2kv_for.item_to_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.mk_item2kv_for.item_to_key" title="Link to this definition"></a></dt>
+<dd><p>Make item2kv from a item2key function (the value will be the item itself).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item2key</strong> – an item -&gt; key function</p>
+</dd>
+</dl>
+<p>Returns: an item -&gt; (key, val) function</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item2key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span>  <span class="c1"># use value of &#39;L&#39; as the key</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2key</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">&#39;go&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">item_to_key</span><span class="p">(</span><span class="n">item2key</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">(&#39;go&#39;, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.appendable.mk_item2kv_for.item_to_key_params_and_val">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">item_to_key_params_and_val</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item_to_key_params_and_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_str_format</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#mk_item2kv_for.item_to_key_params_and_val"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.mk_item2kv_for.item_to_key_params_and_val" title="Link to this definition"></a></dt>
+<dd><p>Make item2kv from a function that produces key_params and val,
+and a key_template that will produce a string key from the key_params</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item_to_key_params_and_val</strong> – an item -&gt; (key_params, val) function</p></li>
+<li><p><strong>key_str_format</strong> – <dl class="simple">
+<dt>A string format such that</dt><dd><p>key_str_format.format(<a href="#id1"><span class="problematic" id="id2">*</span></a>key_params) or
+key_str_format.format(<a href="#id3"><span class="problematic" id="id4">**</span></a>key_params)</p>
+</dd>
+</dl>
+<p>will produce the desired key string</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: an item -&gt; (key, val) function</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Using tuple key params with unnamed string format fields</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">item_to_key_params_and_val</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]),</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]),</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">(&#39;let/it&#39;, &#39;go&#39;)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Using dict key params with named string format fields</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">item_to_key_params_and_val</span><span class="p">(</span>
+<span class="gp">... </span>                            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">({</span><span class="s1">&#39;second&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">],</span> <span class="s1">&#39;first&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]},</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]),</span> <span class="s1">&#39;</span><span class="si">{first}</span><span class="s1">_</span><span class="si">{second}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item_to_kv</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="s1">&#39;it&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;go&#39;</span><span class="p">})</span>
+<span class="go">(&#39;go_let&#39;, &#39;it&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.appendable.mk_item2kv_for.kv_pairs">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kv_pairs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#mk_item2kv_for.kv_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.mk_item2kv_for.kv_pairs" title="Link to this definition"></a></dt>
+<dd><p>Essentially, the identity. Is used when the items are already (key, val) pairs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.appendable.mk_item2kv_for.utc_key">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">utc_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_postproc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#mk_item2kv_for.utc_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.mk_item2kv_for.utc_key" title="Link to this definition"></a></dt>
+<dd><p>Make an item2kv function that uses the current time as the key, and the unchanged item as a value.
+The offset_s, which is added to the output key, can be used, for example, to align to another system’s clock,
+or to get a more accurate timestamp of an event.</p>
+<dl>
+<dt>Use case for offset_s:</dt><dd><ul class="simple">
+<li><p>Align to another system’s clock</p></li>
+<li><p>Get more accurate timestamping of an event. For example, in situations where the item is a chunk of live</p></li>
+</ul>
+<p>streaming data and we want the key (timestamp) to represent the timestamp of the beginning of the chunk.
+Without an offset_s, the timestamp would be the timestamp after the last byte of the chunk was produced,
+plus the time it took to reach the present function. If we know the data production rate (e.g. sample rate)
+and the average lag to get to the present function, we can get a more accurate timestamp for the beginning
+of the chunk</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>offset_s</strong> – An offset (in seconds, possibly negative) to add to the current time.</p>
+</dd>
+</dl>
+<p>Returns: an item -&gt; (current_utc_s, item) function</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2key</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">utc_key</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">item2key</span><span class="p">(</span><span class="s1">&#39;some data&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">k</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.01</span>  <span class="c1"># which asserts that k is indeed a (current) utc timestamp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">v</span> <span class="o">==</span> <span class="s1">&#39;some data&#39;</span>  <span class="c1"># just the item itself</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.appendable.mk_item2kv_for.uuid_key">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uuid_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#mk_item2kv_for.uuid_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.mk_item2kv_for.uuid_key" title="Link to this definition"></a></dt>
+<dd><p>Make an item2kv function that uses a uuid hex as the key.
+This uses uuid.uuid1() to generate the uuid, so it is not cryptographically
+secure, and it may not be unique if you generate more than 10k uuids per second.
+One advantage though, is that the uuid is time-based, so it can be used to sort
+the keys in the order they were IDed.</p>
+<p>Returns: an item -&gt; (uuid, item) function</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">uuid</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2key</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">uuid_key</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">item2key</span><span class="p">(</span><span class="s1">&#39;some data&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span>
+<span class="go">&#39;some data&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">k</span>  
+<span class="go">&#39;0d8a9930aaf411ee9f605e03a02258c9&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">item2key</span> <span class="o">=</span> <span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">uuid_key</span><span class="p">(</span><span class="nb">hex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">item2key</span><span class="p">(</span><span class="s1">&#39;some data&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.appendable.read_add_write">
+<span class="sig-prename descclassname"><span class="pre">dol.appendable.</span></span><span class="sig-name descname"><span class="pre">read_add_write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_iterables=&lt;built-in</span> <span class="pre">function</span> <span class="pre">add&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#read_add_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.read_add_write" title="Link to this definition"></a></dt>
+<dd><p>Retrieves</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../dol.html" class="btn btn-neutral float-left" title="dol" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="base.html" class="btn btn-neutral float-right" title="dol.base" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
