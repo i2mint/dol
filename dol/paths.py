@@ -171,6 +171,14 @@ def path_get(
     """
     Get elements of a mapping through a path to be called recursively.
 
+    :param obj: The object to get the path from
+    :param path: The path to get
+    :param on_error: The error handler to use (default: raise_on_error)
+    :param sep: The separator to use if the path is a string
+    :param key_transformer: A function to transform the keys of the path
+    :param get_value: A function to get the value of a key in a mapping
+    :param caught_errors: The errors to catch (default: Exception)
+
     It will
 
     - split a path into keys if it is a string, using the specified seperator ``sep``
@@ -233,7 +241,17 @@ path_get.get_attr = getattr
 
 
 @add_as_attribute_of(path_get)
-def paths_getter(paths, obj=None, *, egress=dict, **kwargs):
+def paths_getter(
+    paths,
+    obj=None,
+    *,
+    egress=dict,
+    on_error: OnErrorType = raise_on_error,
+    sep='.',
+    key_transformer=None,
+    get_value: Callable = get_attr_or_item,
+    caught_errors=(Exception,),
+):
     """
     Returns (path, values) pairs of the given paths in the given object.
     This is the "fan-out" version of ``path_get``, specifically designed to
@@ -243,7 +261,11 @@ def paths_getter(paths, obj=None, *, egress=dict, **kwargs):
     :param paths: The paths to get
     :param obj: The object to get the paths from
     :param egress: The egress function to use (default: dict)
-    :param kwargs: Extra kwargs to pass to ``path_get``
+    :param on_error: The error handler to use (default: raise_on_error)
+    :param sep: The separator to use if the path is a string
+    :param key_transformer: A function to transform the keys of the path
+    :param get_value: A function to get the value of a key in a mapping
+    :param caught_errors: The errors to catch (default: Exception)
 
     >>> obj = {'a': {'b': 1, 'c': 2}, 'd': 3}
     >>> paths = ['a.c', 'd']
@@ -262,8 +284,15 @@ def paths_getter(paths, obj=None, *, egress=dict, **kwargs):
     {'california': 2, 'dreaming': 3}
 
     """
+    kwargs = dict(
+        on_error=on_error,
+        sep=sep,
+        key_transformer=key_transformer,
+        get_value = get_value,
+        caught_errors=caught_errors,
+    )
     if obj is None:
-        return partial(paths_getter, paths, **kwargs)
+        return partial(paths_getter, paths, egress=egress, **kwargs)
 
     if isinstance(paths, Mapping):
 

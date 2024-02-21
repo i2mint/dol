@@ -146,6 +146,7 @@ from dol.paths import (
     KeyTemplate,  # express strings, tuples, and dict keys from a string template
     mk_relative_path_store,  # transform path store into relative path store
     KeyPath,  # a class to represent a path to a key
+    paths_getter,  # to make mapping extractors that use path_get
     path_get,  # get a value from a path
     path_set,  # set a value from a path
     path_filter,  # search through paths of a Mapping
