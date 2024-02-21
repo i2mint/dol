@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.35 documentation</title>
+  <title>dol.paths &mdash; dol 0.2.36 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=1c26a428"></script>
+        <script src="../../_static/documentation_options.js?v=2bde2e42"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -213,13 +213,7 @@
         <span class="k">except</span> <span class="n">caught_errors</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">on_error</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">on_error</span><span class="p">(</span>
-                    <span class="nb">dict</span><span class="p">(</span>
-                        <span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span>
-                        <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
-                        <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
-                        <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
-                        <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,</span>
-                    <span class="p">)</span>
+                    <span class="nb">dict</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,)</span>
                 <span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">on_error</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="c1"># use on_error as a message, raising the same error class</span>
@@ -288,6 +282,14 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get elements of a mapping through a path to be called recursively.</span>
 
+<span class="sd">    :param obj: The object to get the path from</span>
+<span class="sd">    :param path: The path to get</span>
+<span class="sd">    :param on_error: The error handler to use (default: raise_on_error)</span>
+<span class="sd">    :param sep: The separator to use if the path is a string</span>
+<span class="sd">    :param key_transformer: A function to transform the keys of the path</span>
+<span class="sd">    :param get_value: A function to get the value of a key in a mapping</span>
+<span class="sd">    :param caught_errors: The errors to catch (default: Exception)</span>
+
 <span class="sd">    It will</span>
 
 <span class="sd">    - split a path into keys if it is a string, using the specified seperator ``sep``</span>
@@ -353,7 +355,17 @@
 <div class="viewcode-block" id="paths_getter">
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.paths_getter">[docs]</a>
 <span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_get</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">paths_getter</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">egress</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">paths_getter</span><span class="p">(</span>
+    <span class="n">paths</span><span class="p">,</span>
+    <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">egress</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span>
+    <span class="n">on_error</span><span class="p">:</span> <span class="n">OnErrorType</span> <span class="o">=</span> <span class="n">raise_on_error</span><span class="p">,</span>
+    <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span>
+    <span class="n">key_transformer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">get_value</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">get_attr_or_item</span><span class="p">,</span>
+    <span class="n">caught_errors</span><span class="o">=</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,),</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns (path, values) pairs of the given paths in the given object.</span>
 <span class="sd">    This is the &quot;fan-out&quot; version of ``path_get``, specifically designed to</span>
@@ -363,7 +375,11 @@
 <span class="sd">    :param paths: The paths to get</span>
 <span class="sd">    :param obj: The object to get the paths from</span>
 <span class="sd">    :param egress: The egress function to use (default: dict)</span>
-<span class="sd">    :param kwargs: Extra kwargs to pass to ``path_get``</span>
+<span class="sd">    :param on_error: The error handler to use (default: raise_on_error)</span>
+<span class="sd">    :param sep: The separator to use if the path is a string</span>
+<span class="sd">    :param key_transformer: A function to transform the keys of the path</span>
+<span class="sd">    :param get_value: A function to get the value of a key in a mapping</span>
+<span class="sd">    :param caught_errors: The errors to catch (default: Exception)</span>
 
 <span class="sd">    &gt;&gt;&gt; obj = {&#39;a&#39;: {&#39;b&#39;: 1, &#39;c&#39;: 2}, &#39;d&#39;: 3}</span>
 <span class="sd">    &gt;&gt;&gt; paths = [&#39;a.c&#39;, &#39;d&#39;]</span>
@@ -382,8 +398,15 @@
 <span class="sd">    {&#39;california&#39;: 2, &#39;dreaming&#39;: 3}</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">on_error</span><span class="o">=</span><span class="n">on_error</span><span class="p">,</span>
+        <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span>
+        <span class="n">key_transformer</span><span class="o">=</span><span class="n">key_transformer</span><span class="p">,</span>
+        <span class="n">get_value</span> <span class="o">=</span> <span class="n">get_value</span><span class="p">,</span>
+        <span class="n">caught_errors</span><span class="o">=</span><span class="n">caught_errors</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">paths_getter</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">paths_getter</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="n">egress</span><span class="o">=</span><span class="n">egress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
 
@@ -883,11 +906,7 @@
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.mk_relative_path_store">[docs]</a>
 <span class="nd">@store_decorator</span>
 <span class="k">def</span> <span class="nf">mk_relative_path_store</span><span class="p">(</span>
-    <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">with_key_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;_prefix&#39;</span><span class="p">,</span>
+    <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_key_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;_prefix&#39;</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 
@@ -1814,8 +1833,7 @@
 <div class="viewcode-block" id="KeyTemplate.dict_to_namedtuple">
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.dict_to_namedtuple">[docs]</a>
     <span class="k">def</span> <span class="nf">dict_to_namedtuple</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a namedtuple from the dictionary values based on the template.</span>
 
