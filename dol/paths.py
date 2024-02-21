@@ -282,7 +282,7 @@ def paths_getter(
         on_error=on_error,
         sep=sep,
         key_transformer=key_transformer,
-        get_value = get_value,
+        get_value=get_value,
         caught_errors=caught_errors,
     )
     if obj is None:
