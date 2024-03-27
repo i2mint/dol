@@ -705,10 +705,7 @@ def extract_arguments(
 
     if include_all_when_var_keywords_in_params:
         if (
-            next(
-                (p.name for p in params if p.kind == Parameter.VAR_KEYWORD),
-                None,
-            )
+            next((p.name for p in params if p.kind == Parameter.VAR_KEYWORD), None,)
             is not None
         ):
             param_kwargs.update(remaining_kwargs)
@@ -2928,9 +2925,7 @@ class Sig(Signature, Mapping):
             ignore_kind=_ignore_kind,
         )
         return self.mk_args_and_kwargs(
-            arguments,
-            allow_partial=_allow_partial,
-            args_limit=_args_limit,
+            arguments, allow_partial=_allow_partial, args_limit=_args_limit,
         )
 
     def source_arguments(
@@ -3095,9 +3090,7 @@ class Sig(Signature, Mapping):
             **kwargs,
         )
         return self.mk_args_and_kwargs(
-            arguments,
-            allow_partial=_allow_partial,
-            args_limit=_args_limit,
+            arguments, allow_partial=_allow_partial, args_limit=_args_limit,
         )
 
 
@@ -4234,23 +4227,32 @@ class sigs_for_builtins:
         zip(*iterables) --> A zip object yielding tuples until an input is exhausted.
         """
 
-    def bool(x: Any, /) -> bool: ...
+    def bool(x: Any, /) -> bool:
+        ...
 
-    def bytearray(iterable_of_ints: Iterable[int], /): ...
+    def bytearray(iterable_of_ints: Iterable[int], /):
+        ...
 
-    def classmethod(function: Callable, /): ...
+    def classmethod(function: Callable, /):
+        ...
 
-    def int(x, base=10, /): ...
+    def int(x, base=10, /):
+        ...
 
-    def iter(callable: Callable, sentinel=None, /): ...
+    def iter(callable: Callable, sentinel=None, /):
+        ...
 
-    def next(iterator: Iterator, default=None, /): ...
+    def next(iterator: Iterator, default=None, /):
+        ...
 
-    def staticmethod(function: Callable, /): ...
+    def staticmethod(function: Callable, /):
+        ...
 
-    def str(bytes_or_buffer, encoding=None, errors=None, /): ...
+    def str(bytes_or_buffer, encoding=None, errors=None, /):
+        ...
 
-    def super(type_, obj=None, /): ...
+    def super(type_, obj=None, /):
+        ...
 
     # def type(name, bases=None, dict=None, /):
     #     ...
@@ -4420,11 +4422,14 @@ class sigs_for_type_name:
     signatures (through ``inspect.signature``),
     """
 
-    def itemgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]: ...
+    def itemgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]:
+        ...
 
-    def attrgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]: ...
+    def attrgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]:
+        ...
 
-    def methodcaller(obj: Any) -> Any: ...
+    def methodcaller(obj: Any) -> Any:
+        ...
 
 
 ############# Tools for testing #########################################################
@@ -4469,9 +4474,7 @@ for kind in param_kinds:
     lower_kind = kind.lower()
     setattr(param_for_kind, lower_kind, partial(param_for_kind, kind=kind))
     setattr(
-        param_for_kind,
-        'with_default',
-        partial(param_for_kind, with_default=True),
+        param_for_kind, 'with_default', partial(param_for_kind, with_default=True),
     )
     setattr(
         getattr(param_for_kind, lower_kind),
@@ -4525,10 +4528,7 @@ def mk_func_comparator_based_on_signature_comparator(
 
 
 def _keyed_comparator(
-    comparator: Comparator,
-    key: KeyFunction,
-    x: CT,
-    y: CT,
+    comparator: Comparator, key: KeyFunction, x: CT, y: CT,
 ) -> Comparison:
     """Apply a comparator after transforming inputs through a key function.
 
@@ -4542,10 +4542,7 @@ def _keyed_comparator(
     return comparator(key(x), key(y))
 
 
-def keyed_comparator(
-    comparator: Comparator,
-    key: KeyFunction,
-) -> Comparator:
+def keyed_comparator(comparator: Comparator, key: KeyFunction,) -> Comparator:
     """Create a key-function enabled binary operator.
 
     In various places in python functionality is extended by allowing a key function.
