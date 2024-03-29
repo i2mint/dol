@@ -1,4 +1,5 @@
 """Transformation/wrapping tools"""
+
 from functools import wraps, partial, reduce
 import types
 from types import SimpleNamespace
@@ -585,8 +586,7 @@ class OverWritesNotAllowedMixin:
     @staticmethod
     def wrap(cls):
         # TODO: Consider moving to trans and making instances wrappable too
-        class NoOverWritesClass(OverWritesNotAllowedMixin, cls):
-            ...
+        class NoOverWritesClass(OverWritesNotAllowedMixin, cls): ...
 
         copy_attrs(NoOverWritesClass, cls, ('__name__', '__qualname__', '__module__'))
         return NoOverWritesClass
@@ -622,7 +622,9 @@ def _wrap_store(
 
 @store_decorator
 def insert_hash_method(
-    store=None, *, hash_method: Callable[[Any], int] = id,
+    store=None,
+    *,
+    hash_method: Callable[[Any], int] = id,
 ):
     """Make a store hashable using the specified ``hash_method``.
     Will add (or overwrite) a ``__hash__`` method to the store that uses the
@@ -1679,6 +1681,12 @@ def wrap_kvs(
     data_of_obj=None,
     preset=None,
     postget=None,
+    key_codec=None,
+    value_codec=None,
+    key_encoder=None,
+    key_decoder=None,
+    value_encoder=None,
+    value_decoder=None,
     __module__=None,
     outcoming_key_methods=(),
     outcoming_value_methods=(),
@@ -1816,20 +1824,112 @@ def wrap_kvs(
 
     # TODO: Add tests for outcoming_key_methods etc.
     """
-
-    return _wrap_store(
-        _wrap_kvs,
-        dict(locals(), wrapper=wrapper or Store, name=store.__qualname__ + 'Wrapped'),
+    kwargs = dict(
+        locals(), wrapper=wrapper or Store, name=store.__qualname__ + 'Wrapped'
     )
+    _handle_codecs(kwargs)
+    return _wrap_store(_wrap_kvs, kwargs)
 
-    # arguments = {k: v for k, v in locals().items() if k != "arguments"}
-    # store = arguments.pop("store")
-    # wrapper = wrapper or Store
-    # arguments["name"] = arguments["name"] or store.__qualname__ + "Wrapped"
-    #
-    # class_trans = partial(_wrap_kvs, **arguments)
-    # return wrapper.wrap(store, class_trans=class_trans)
-    #
+
+def _handle_codecs(kwargs: dict):
+    """Handle the key_codec and data_codec kwargs, converting them to key_of_id
+    and obj_of_data.
+
+    Warning: Mutates kwargs in place.
+
+    >>> kwargs = {'value_decoder': int, 'value_encoder': str}
+    >>> _handle_codecs(kwargs)
+    >>> assert kwargs['obj_of_data'] == int
+    >>> assert kwargs['data_of_obj'] == str
+    >>> from types import SimpleNamespace
+    >>> kwargs = {'key_codec': SimpleNamespace(decoder=int, encoder=str)}
+    >>> _handle_codecs(kwargs)
+    >>> assert kwargs['key_of_id'] == int
+    >>> assert kwargs['id_of_key'] == str
+
+    """
+    if key_codec := kwargs.get('key_codec', None):
+        if kwargs.get('key_of_id', None):
+            raise ValueError('Cannot specify both key_codec and key_of_id')
+        kwargs['key_of_id'] = key_codec.decoder
+        if kwargs.get('id_of_key', None):
+            raise ValueError('Cannot specify both key_codec and id_of_key')
+        kwargs['id_of_key'] = key_codec.encoder
+        del kwargs['key_codec']
+    if value_codec := kwargs.get('value_codec', None):
+        if kwargs.get('obj_of_data', None):
+            raise ValueError('Cannot specify both value_codec and obj_of_data')
+        kwargs['obj_of_data'] = value_codec.decoder
+        if kwargs.get('data_of_obj', None):
+            raise ValueError('Cannot specify both value_codec and data_of_obj')
+        kwargs['data_of_obj'] = value_codec.encoder
+        del kwargs['value_codec']
+
+    if key_decoder := kwargs.get('key_decoder', None):
+        if kwargs.get('key_of_id', None):
+            raise ValueError('Cannot specify both key_decoder and key_of_id')
+        kwargs['key_of_id'] = key_decoder
+        del kwargs['key_decoder']
+
+    if key_encoder := kwargs.get('key_encoder', None):
+        if kwargs.get('id_of_key', None):
+            raise ValueError('Cannot specify both key_encoder and id_of_key')
+        kwargs['id_of_key'] = key_encoder
+        del kwargs['key_encoder']
+
+    if value_decoder := kwargs.get('value_decoder', None):
+        if kwargs.get('obj_of_data', None):
+            raise ValueError('Cannot specify both value_decoder and obj_of_data')
+        kwargs['obj_of_data'] = value_decoder
+        del kwargs['value_decoder']
+
+    if value_encoder := kwargs.get('value_encoder', None):
+        if kwargs.get('data_of_obj', None):
+            raise ValueError('Cannot specify both value_encoder and data_of_obj')
+        kwargs['data_of_obj'] = value_encoder
+        del kwargs['value_encoder']
+
+
+# TODO: Below is more general and clean, but breaks tests. Fix tests and use this.
+# def _handle_codecs(kwargs: dict):
+#     """
+#     Handle the key_codec, data_codec, key_decoder, key_encoder, value_decoder, and value_encoder
+#     kwargs, converting them to key_of_id, obj_of_data, id_of_key, and data_of_obj respectively.
+
+#     Warning: Mutates kwargs in place.
+
+#     >>> kwargs = {'value_decoder': int, 'value_encoder': str}
+#     >>> _handle_codecs(kwargs)
+#     >>> assert kwargs['obj_of_data'] == int
+#     >>> assert kwargs['data_of_obj'] == str
+#     >>> from types import SimpleNamespace
+#     >>> kwargs = {'key_codec': SimpleNamespace(decoder=int, encoder=str)}
+#     >>> _handle_codecs(kwargs)
+#     >>> assert kwargs['key_of_id'] == int
+#     >>> assert kwargs['id_of_key'] == str
+
+#     """
+#     from operator import attrgetter
+
+#     def handle_replacements(source_key, target_keys_and_extractors):
+#         for target_key, extractor in target_keys_and_extractors.items():
+#             if target_key in kwargs:
+#                 raise ValueError(f'Cannot specify both {source_key} and {target_key}')
+#             kwargs[target_key] = extractor(kwargs[source_key])
+
+#     replacements = {
+#         'key_codec': {'key_of_id': attrgetter('decoder'), 'id_of_key': attrgetter('encoder')},
+#         'value_codec': {'obj_of_data': attrgetter('decoder'), 'data_of_obj': attrgetter('encoder')},
+#         'key_decoder': {'key_of_id': lambda x: x},
+#         'key_encoder': {'id_of_key': lambda x: x},
+#         'value_decoder': {'obj_of_data': lambda x: x},
+#         'value_encoder': {'data_of_obj': lambda x: x},
+#     }
+
+#     for source_key, write_instructions in replacements.items():
+#         if source_key in kwargs:
+#             handle_replacements(source_key, write_instructions)
+#             del kwargs[source_key]
 
 
 @store_decorator
@@ -1837,7 +1937,7 @@ def add_decoder(store_cls=None, *, decoder: Callable = None, name=None):
     """Add a decoder layer to a store.
 
     Note: This is a convenience function for ``wrap_kvs(..., obj_of_data=decoder)``.
-        
+
     >>> s = {'a': "42"}
     >>> ss = add_decoder(s, decoder=int)
     >>> ss['a']
