@@ -1,6 +1,7 @@
 """
 This module contains key-value views of disparate sources.
 """
+
 from typing import Iterator, Mapping, Iterable, Callable, Union, Any
 from operator import itemgetter
 from itertools import groupby as itertools_groupby
@@ -181,6 +182,13 @@ class FanoutReader(KvReader):
         default: Any = None,
         get_existing_values_only: bool = False,
     ):
+        if not isinstance(stores, Mapping):
+            if isinstance(stores, Iterable):
+                stores = dict(enumerate(stores))
+            else:
+                raise ValueError(
+                    f'stores must be a Mapping or an Iterable, not {type(stores)}'
+                )
         self._stores = stores
         self._default = default
         self._get_existing_values_only = get_existing_values_only
@@ -734,7 +742,7 @@ class ObjReader:
 
     >>> 'therefore should contain what I just said' in pr[file_where_this_code_is]
     True
-    
+
     """
 
     def __init__(self, _obj_of_key: Callable):
