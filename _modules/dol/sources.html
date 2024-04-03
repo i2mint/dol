@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.2.39 documentation</title>
+  <title>dol.sources &mdash; dol 0.2.40 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=c3c48d80"></script>
+        <script src="../../_static/documentation_options.js?v=a1310d0b"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -113,6 +113,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module contains key-value views of disparate sources.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span>
 <span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">itemgetter</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">groupby</span> <span class="k">as</span> <span class="n">itertools_groupby</span>
@@ -301,6 +302,13 @@
         <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">get_existing_values_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stores</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stores</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+                <span class="n">stores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">stores</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;stores must be a Mapping or an Iterable, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">stores</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span> <span class="o">=</span> <span class="n">stores</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_default</span> <span class="o">=</span> <span class="n">default</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_existing_values_only</span> <span class="o">=</span> <span class="n">get_existing_values_only</span>
@@ -878,7 +886,7 @@
 
 <span class="sd">    &gt;&gt;&gt; &#39;therefore should contain what I just said&#39; in pr[file_where_this_code_is]</span>
 <span class="sd">    True</span>
-<span class="sd">    </span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_obj_of_key</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
