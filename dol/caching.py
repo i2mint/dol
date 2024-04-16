@@ -49,6 +49,7 @@ def mk_memoizer(cache):
     20
 
     """
+
     def memoize(method):
         @wraps(method)
         def memoizer(self, k):
