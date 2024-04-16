@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.2.40 documentation</title>
+  <title>dol.caching &mdash; dol 0.2.41 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a1310d0b"></script>
+        <script src="../../_static/documentation_options.js?v=05498912"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -141,7 +141,31 @@
 <span class="c1"># Read caching</span>
 
 <span class="c1"># The following is a &quot;Cache-Aside&quot; read-cache with NO builtin cache update or refresh mechanism.</span>
+<div class="viewcode-block" id="mk_memoizer">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.mk_memoizer">[docs]</a>
 <span class="k">def</span> <span class="nf">mk_memoizer</span><span class="p">(</span><span class="n">cache</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a memoizer that caches the output of a getter function in a cache.</span>
+
+<span class="sd">    Note: This is a specialized memoizer for getter functions/methods, i.e. </span>
+<span class="sd">    functions/methods that have the signature (instance, key) and return a value.</span>
+
+<span class="sd">    :param cache: The cache to use. Must have __getitem__ and __setitem__ methods.</span>
+<span class="sd">    :return: A memoizer that caches the output of the function in the cache.</span>
+
+<span class="sd">    &gt;&gt;&gt; cache = dict()</span>
+<span class="sd">    &gt;&gt;&gt; @mk_memoizer(cache)</span>
+<span class="sd">    ... def getter(self, k):</span>
+<span class="sd">    ...     print(f&quot;getting value for {k}...&quot;)</span>
+<span class="sd">    ...     return k * 10</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; getter(None, 2)</span>
+<span class="sd">    getting value for 2...</span>
+<span class="sd">    20</span>
+<span class="sd">    &gt;&gt;&gt; getter(None, 2)</span>
+<span class="sd">    20</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">memoize</span><span class="p">(</span><span class="n">method</span><span class="p">):</span>
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">memoizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
@@ -154,7 +178,8 @@
 
         <span class="k">return</span> <span class="n">memoizer</span>
 
-    <span class="k">return</span> <span class="n">memoize</span>
+    <span class="k">return</span> <span class="n">memoize</span></div>
+
 
 
 <span class="k">def</span> <span class="nf">_mk_cache_instance</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">assert_attrs</span><span class="o">=</span><span class="p">()):</span>
@@ -633,7 +658,7 @@
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">new_cls</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">)</span>
         <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">flush_cache</span><span class="p">()</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">new_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">new_cls</span><span class="o">.</span><span class="fm">__exit__</span> <span class="o">=</span> <span class="fm">__exit__</span>
 

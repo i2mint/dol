@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.2.40 documentation</title>
+  <title>dol.caching &mdash; dol 0.2.41 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a1310d0b"></script>
+        <script src="../../_static/documentation_options.js?v=05498912"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -60,6 +60,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.cache_vals"><code class="docutils literal notranslate"><span class="pre">cache_vals()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.get_cache"><code class="docutils literal notranslate"><span class="pre">get_cache()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.mk_cached_store"><code class="docutils literal notranslate"><span class="pre">mk_cached_store()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.mk_memoizer"><code class="docutils literal notranslate"><span class="pre">mk_memoizer()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.mk_sourced_store"><code class="docutils literal notranslate"><span class="pre">mk_sourced_store()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.mk_write_cached_store"><code class="docutils literal notranslate"><span class="pre">mk_write_cached_store()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.store_cached"><code class="docutils literal notranslate"><span class="pre">store_cached()</span></code></a></li>
@@ -333,6 +334,35 @@ By default, it will use a dict</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># so you can take a peep there if needed:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_cache</span>
 <span class="go">{&#39;a&#39;: 1, &#39;b&#39;: 2, &#39;d&#39;: 4}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.caching.mk_memoizer">
+<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">mk_memoizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cache</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#mk_memoizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.mk_memoizer" title="Link to this definition"></a></dt>
+<dd><p>Make a memoizer that caches the output of a getter function in a cache.</p>
+<p>Note: This is a specialized memoizer for getter functions/methods, i.e.
+functions/methods that have the signature (instance, key) and return a value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cache</strong> – The cache to use. Must have __getitem__ and __setitem__ methods.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A memoizer that caches the output of the function in the cache.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@mk_memoizer</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">getter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;getting value for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">k</span> <span class="o">*</span> <span class="mi">10</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">getter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">getting value for 2...</span>
+<span class="go">20</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">getter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">20</span>
 </pre></div>
 </div>
 </dd></dl>
