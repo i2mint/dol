@@ -506,7 +506,7 @@ def flush_on_exit(cls):
         @wraps(new_cls.__exit__)
         def __exit__(self, *args, **kwargs):
             self.flush_cache()
-            return super().__exit__(*args, **kwargs)
+            return super(new_cls, self).__exit__(*args, **kwargs)
 
     new_cls.__exit__ = __exit__
 
