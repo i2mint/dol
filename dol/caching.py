@@ -27,6 +27,28 @@ def get_cache(cache):
 
 # The following is a "Cache-Aside" read-cache with NO builtin cache update or refresh mechanism.
 def mk_memoizer(cache):
+    """
+    Make a memoizer that caches the output of a getter function in a cache.
+
+    Note: This is a specialized memoizer for getter functions/methods, i.e. 
+    functions/methods that have the signature (instance, key) and return a value.
+
+    :param cache: The cache to use. Must have __getitem__ and __setitem__ methods.
+    :return: A memoizer that caches the output of the function in the cache.
+
+    >>> cache = dict()
+    >>> @mk_memoizer(cache)
+    ... def getter(self, k):
+    ...     print(f"getting value for {k}...")
+    ...     return k * 10
+    ...
+    >>> getter(None, 2)
+    getting value for 2...
+    20
+    >>> getter(None, 2)
+    20
+
+    """
     def memoize(method):
         @wraps(method)
         def memoizer(self, k):
