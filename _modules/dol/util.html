@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.42 documentation</title>
+  <title>dol.util &mdash; dol 0.2.43 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=32b10378"></script>
+        <script src="../../_static/documentation_options.js?v=96c98761"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -683,9 +683,7 @@
         <span class="fm">__init__</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">copy_attrs</span><span class="p">(</span>
-        <span class="n">PartialClass</span><span class="p">,</span>
-        <span class="bp">cls</span><span class="p">,</span>
-        <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
+        <span class="n">PartialClass</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PartialClass</span></div>
@@ -1114,10 +1112,7 @@
     <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="n">append_to_group_items</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span>
-            <span class="n">group_items</span><span class="p">,</span>
-            <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),</span>
-        <span class="p">)</span>
+        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span><span class="n">group_items</span><span class="p">,</span> <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),)</span>
 
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
         <span class="n">group_key</span> <span class="o">=</span> <span class="n">key</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
@@ -1647,6 +1642,11 @@
 <span class="sd">    :param obj: The object to write.</span>
 <span class="sd">    :return: The bytes that would have been written to a file.</span>
 
+<span class="sd">    Use case: When you have a function that writes to files, and you want to get an </span>
+<span class="sd">    equivalent function but that gives you what bytes or string WOULD have been written </span>
+<span class="sd">    to a file, so you can better reuse (to write elsewhere, for example, or because </span>
+<span class="sd">    you need to pipe those bytes to another function).</span>
+<span class="sd">    </span>
 <span class="sd">    Example usage: Yes, we have json.dumps to get the JSON string, but what if</span>
 <span class="sd">    (like is often the case) you just have a function that writes to a file-like object,</span>
 <span class="sd">    like the `json.dump(obj, fp)` function? You can use `written_bytes` to get a</span>
@@ -1692,7 +1692,7 @@
     <span class="k">elif</span> <span class="n">obj_arg_position_in_writer</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">file_writer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;obj_arg_position_in_writer must be 0 or 1&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;obj_arg_position_in_writer must be 0 or 1&#39;</span><span class="p">)</span>
 
     <span class="c1"># Retrieve the bytes from the buffer</span>
     <span class="n">buffer</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
