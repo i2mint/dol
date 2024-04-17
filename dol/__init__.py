@@ -104,6 +104,7 @@ from dol.util import (
     not_a_mac_junk_path,  # filter function to filter out mac junk paths
     instance_checker,  # make filter function that checks the type of an object
     chain_get,  # a function to perform chained get operations (i.e. path keys get)
+    written_bytes,  # transform a file-writing function into a bytes-writing function
 )
 
 from dol.trans import (

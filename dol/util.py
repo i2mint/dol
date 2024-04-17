@@ -1,4 +1,5 @@
 """General util objects"""
+
 import os
 import shutil
 import re
@@ -529,7 +530,9 @@ def partialclass(cls, *args, **kwargs):
         __init__ = partialmethod(cls.__init__, *args, **kwargs)
 
     copy_attrs(
-        PartialClass, cls, attrs=('__name__', '__qualname__', '__module__', '__doc__'),
+        PartialClass,
+        cls,
+        attrs=('__name__', '__qualname__', '__module__', '__doc__'),
     )
 
     return PartialClass
@@ -937,7 +940,10 @@ def igroupby(
     if val is None:
         _append_to_group_items = append_to_group_items
     else:
-        _append_to_group_items = lambda group_items, item: (group_items, val(item),)
+        _append_to_group_items = lambda group_items, item: (
+            group_items,
+            val(item),
+        )
 
     for item in items:
         group_key = key(item)
@@ -1411,3 +1417,82 @@ def single_nest_in_dict(key, value):
 
 def nest_in_dict(keys, values):
     return {k: v for k, v in zip(keys, values)}
+
+
+import io
+from typing import Callable, Any, VT, Union
+from functools import partial
+
+Buffer = Union[io.BytesIO, io.StringIO]
+FileWriter = Callable[[VT, Buffer], Any]
+
+
+def written_bytes(
+    file_writer: FileWriter,
+    obj=None,
+    *,
+    obj_arg_position_in_writer=0,
+    io_buffer_cls: Buffer = io.BytesIO,
+):
+    """
+    Takes a file writing function that expects an object and a file-like object,
+    and returns a function that instead of writing to a file, returns the bytes that
+    would have been written.
+
+    Note: If obj is not given, write_bytes will return a "bytes writer" function that
+    takes obj as the first argument, and uses the file_writer to write the bytes.
+
+    :param file_writer: A function that writes an object to a file-like object.
+    :param obj: The object to write.
+    :return: The bytes that would have been written to a file.
+
+    Example usage: Yes, we have json.dumps to get the JSON string, but what if
+    (like is often the case) you just have a function that writes to a file-like object,
+    like the `json.dump(obj, fp)` function? You can use `written_bytes` to get a
+    function that will act as `json.dumps` like so:
+
+    >>> import json
+    >>> get_json_bytes = written_bytes(json.dump, io_buffer_cls=io.StringIO)
+    >>> get_json_bytes({'a': 1, 'b': 2})
+    '{"a": 1, "b": 2}'
+
+    Here's another example with pandas DataFrame.to_parquet:
+
+    >>> # import pandas as pd
+
+    df = pd.DataFrame({
+        'column1': [1, 2, 3],
+        'column2': ['A', 'B', 'C']
+    })
+
+    # Get a function that converts DataFrame to Parquet bytes
+    df_to_parquet_bytes = written_bytes(pd.DataFrame.to_parquet)
+
+    # Get the bytes of the DataFrame in Parquet format
+    parquet_bytes = df_to_parquet_bytes(df)
+    all(pd.read_parquet(io.BytesIO(parquet_bytes)) == df)
+
+
+    """
+    if obj is None:
+        return partial(
+            written_bytes,
+            file_writer,
+            obj_arg_position_in_writer=obj_arg_position_in_writer,
+            io_buffer_cls=io_buffer_cls,
+        )
+
+    # Create a BytesIO object to act as an in-memory file
+    buffer = io_buffer_cls()
+
+    # Use the provided file_writer function to write to the buffer
+    if obj_arg_position_in_writer == 0:
+        file_writer(obj, buffer)
+    elif obj_arg_position_in_writer == 1:
+        file_writer(buffer, obj)
+    else:
+        raise ValueError("obj_arg_position_in_writer must be 0 or 1")
+
+    # Retrieve the bytes from the buffer
+    buffer.seek(0)
+    return buffer.read()
