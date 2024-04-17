@@ -1446,6 +1446,11 @@ def written_bytes(
     :param obj: The object to write.
     :return: The bytes that would have been written to a file.
 
+    Use case: When you have a function that writes to files, and you want to get an 
+    equivalent function but that gives you what bytes or string WOULD have been written 
+    to a file, so you can better reuse (to write elsewhere, for example, or because 
+    you need to pipe those bytes to another function).
+    
     Example usage: Yes, we have json.dumps to get the JSON string, but what if
     (like is often the case) you just have a function that writes to a file-like object,
     like the `json.dump(obj, fp)` function? You can use `written_bytes` to get a
