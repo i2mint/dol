@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.41 documentation</title>
+  <title>dol.util &mdash; dol 0.2.42 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
 
   
   <!--[if lt IE 9]>
@@ -16,8 +16,8 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=05498912"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/documentation_options.js?v=32b10378"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
         <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -111,6 +111,7 @@
              
   <h1>Source code for dol.util</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;General util objects&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">re</span>
@@ -682,7 +683,9 @@
         <span class="fm">__init__</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">copy_attrs</span><span class="p">(</span>
-        <span class="n">PartialClass</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
+        <span class="n">PartialClass</span><span class="p">,</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PartialClass</span></div>
@@ -1111,7 +1114,10 @@
     <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="n">append_to_group_items</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span><span class="n">group_items</span><span class="p">,</span> <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),)</span>
+        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">group_items</span><span class="p">,</span>
+            <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),</span>
+        <span class="p">)</span>
 
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
         <span class="n">group_key</span> <span class="o">=</span> <span class="n">key</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
@@ -1610,6 +1616,88 @@
 
 <span class="k">def</span> <span class="nf">nest_in_dict</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">values</span><span class="p">)}</span>
+
+
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+
+<span class="n">Buffer</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">]</span>
+<span class="n">FileWriter</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Buffer</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="written_bytes">
+<a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.written_bytes">[docs]</a>
+<span class="k">def</span> <span class="nf">written_bytes</span><span class="p">(</span>
+    <span class="n">file_writer</span><span class="p">:</span> <span class="n">FileWriter</span><span class="p">,</span>
+    <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">obj_arg_position_in_writer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">io_buffer_cls</span><span class="p">:</span> <span class="n">Buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes a file writing function that expects an object and a file-like object,</span>
+<span class="sd">    and returns a function that instead of writing to a file, returns the bytes that</span>
+<span class="sd">    would have been written.</span>
+
+<span class="sd">    Note: If obj is not given, write_bytes will return a &quot;bytes writer&quot; function that</span>
+<span class="sd">    takes obj as the first argument, and uses the file_writer to write the bytes.</span>
+
+<span class="sd">    :param file_writer: A function that writes an object to a file-like object.</span>
+<span class="sd">    :param obj: The object to write.</span>
+<span class="sd">    :return: The bytes that would have been written to a file.</span>
+
+<span class="sd">    Example usage: Yes, we have json.dumps to get the JSON string, but what if</span>
+<span class="sd">    (like is often the case) you just have a function that writes to a file-like object,</span>
+<span class="sd">    like the `json.dump(obj, fp)` function? You can use `written_bytes` to get a</span>
+<span class="sd">    function that will act as `json.dumps` like so:</span>
+
+<span class="sd">    &gt;&gt;&gt; import json</span>
+<span class="sd">    &gt;&gt;&gt; get_json_bytes = written_bytes(json.dump, io_buffer_cls=io.StringIO)</span>
+<span class="sd">    &gt;&gt;&gt; get_json_bytes({&#39;a&#39;: 1, &#39;b&#39;: 2})</span>
+<span class="sd">    &#39;{&quot;a&quot;: 1, &quot;b&quot;: 2}&#39;</span>
+
+<span class="sd">    Here&#39;s another example with pandas DataFrame.to_parquet:</span>
+
+<span class="sd">    &gt;&gt;&gt; # import pandas as pd</span>
+
+<span class="sd">    df = pd.DataFrame({</span>
+<span class="sd">        &#39;column1&#39;: [1, 2, 3],</span>
+<span class="sd">        &#39;column2&#39;: [&#39;A&#39;, &#39;B&#39;, &#39;C&#39;]</span>
+<span class="sd">    })</span>
+
+<span class="sd">    # Get a function that converts DataFrame to Parquet bytes</span>
+<span class="sd">    df_to_parquet_bytes = written_bytes(pd.DataFrame.to_parquet)</span>
+
+<span class="sd">    # Get the bytes of the DataFrame in Parquet format</span>
+<span class="sd">    parquet_bytes = df_to_parquet_bytes(df)</span>
+<span class="sd">    all(pd.read_parquet(io.BytesIO(parquet_bytes)) == df)</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
+            <span class="n">written_bytes</span><span class="p">,</span>
+            <span class="n">file_writer</span><span class="p">,</span>
+            <span class="n">obj_arg_position_in_writer</span><span class="o">=</span><span class="n">obj_arg_position_in_writer</span><span class="p">,</span>
+            <span class="n">io_buffer_cls</span><span class="o">=</span><span class="n">io_buffer_cls</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Create a BytesIO object to act as an in-memory file</span>
+    <span class="n">buffer</span> <span class="o">=</span> <span class="n">io_buffer_cls</span><span class="p">()</span>
+
+    <span class="c1"># Use the provided file_writer function to write to the buffer</span>
+    <span class="k">if</span> <span class="n">obj_arg_position_in_writer</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">file_writer</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">obj_arg_position_in_writer</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">file_writer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;obj_arg_position_in_writer must be 0 or 1&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Retrieve the bytes from the buffer</span>
+    <span class="n">buffer</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">buffer</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
+
 </pre></div>
 
            </div>
