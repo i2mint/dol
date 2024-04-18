@@ -1413,7 +1413,7 @@ class KeyTemplate:
         (
             self.template,
             self._fields,
-            to_str_funcs,
+            _to_str_funcs,
             field_patterns_,
         ) = self._extract_template_info(template)
 
@@ -1423,7 +1423,7 @@ class KeyTemplate:
         )
         self._to_str_funcs = dict(
             {field: str for field in self._fields},
-            **dict(to_str_funcs, **(to_str_funcs or {})),
+            **dict(_to_str_funcs, **(to_str_funcs or {})),
         )
         self._from_str_funcs = dict(
             {field: identity for field in self._fields}, **(from_str_funcs or {})
