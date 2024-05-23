@@ -846,7 +846,7 @@ def igroupby(
     release_remainding=True,
     append_to_group_items: Callable[[GroupItems, Item], Any] = list.append,
     grouper_mapping=defaultdict,
-) -> dict:
+):
     """The generator version of dol groupby.
     Groups items according to group keys updated from those items through the given (item_to_)key function,
     yielding the groups according to a logic defined by ``group_release_cond``
