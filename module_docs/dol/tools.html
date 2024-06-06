@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.45 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.46 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=f93893b5"></script>
+        <script src="../../_static/documentation_options.js?v=cec019df"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -84,6 +84,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">dol.tools</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.Forest"><code class="docutils literal notranslate"><span class="pre">Forest</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.ask_user_for_value_when_missing"><code class="docutils literal notranslate"><span class="pre">ask_user_for_value_when_missing()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.tools.cache_this"><code class="docutils literal notranslate"><span class="pre">cache_this()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.confirm_overwrite"><code class="docutils literal notranslate"><span class="pre">confirm_overwrite()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.convert_to_numerical_if_possible"><code class="docutils literal notranslate"><span class="pre">convert_to_numerical_if_possible()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.filter_prefixes"><code class="docutils literal notranslate"><span class="pre">filter_prefixes()</span></code></a></li>
@@ -221,6 +222,143 @@ value</p></li>
 <dd class="field-even"><p></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.tools.cache_this">
+<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">cache_this</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#cache_this"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.cache_this" title="Link to this definition"></a></dt>
+<dd><p>Transforms a method into a cached property with control over cache object and key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> – The function to be decorated (usually left empty).</p></li>
+<li><p><strong>cache</strong> – The cache storage, can be a <cite>MutableMapping</cite> or the name of an
+instance attribute that is a <cite>MutableMapping</cite>.</p></li>
+<li><p><strong>key</strong> – The key to store the cache value, can be a callable that will be
+applied to the method name to make a key, or an explicit string.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The decorated function.</p>
+</dd>
+</dl>
+<p>Used with no arguments, <cite>cache_this</cite> will cache just as the builtin
+<cite>cached_property</cite> does – in the instance’s <cite>__dict__</cite> attribute.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">SameAsCachedProperty</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In SameAsCachedProperty.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">SameAsCachedProperty</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span>  <span class="c1"># the cache is empty</span>
+<span class="go">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>  <span class="c1"># when we access foo, it&#39;s computed and returned...</span>
+<span class="go">In SameAsCachedProperty.foo...</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span>  <span class="c1"># ... but also cached</span>
+<span class="go">{&#39;foo&#39;: 42}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>  <span class="c1"># so that the next time we access foo, it&#39;s returned from the cache.</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>Specify the cache as a dictionary that lives outside the instance:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">external_cache</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">CacheWithExternalMapping</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="n">external_cache</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In CacheWithExternalMapping.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">CacheWithExternalMapping</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">external_cache</span>
+<span class="go">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">In CacheWithExternalMapping.foo...</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">external_cache</span>
+<span class="go">{&#39;foo&#39;: 42}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>Specify the cache as an attribute of the instance, and an explicit key:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">WithCacheInInstanceAttribute</span><span class="p">:</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">my_cache</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">&#39;my_cache&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;key_for_foo&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In WithCacheInInstanceAttribute.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">WithCacheInInstanceAttribute</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">my_cache</span>
+<span class="go">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">In WithCacheInInstanceAttribute.foo...</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">my_cache</span>
+<span class="go">{&#39;key_for_foo&#39;: 42}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>Now let’s see a more involved example that exhibits how <cite>cache_this</cite> would be used
+in real life. Note two things in the example below.</p>
+<p>First, that we use <cite>functools.partial</cite> to fix the parameters of our <cite>cache_this</cite>.
+This enables us to reuse the same <cite>cache_this</cite> in multiple places without all
+the verbosity. We fix that the cache is the attribute <cite>cache</cite> of the instance,
+and that the key is a function that will be computed from the name of the method
+adding a <cite>‘.pkl’</cite> extension to it.</p>
+<p>Secondly, we use the <cite>ValueCodecs</cite> from <cite>dol</cite> to provide a pickle codec for storying
+values. The backend store used here is a dictionary, so we don’t really need a
+codec to store values, but in real life you would use a persistent storage that
+would require a codec, such as files or a database.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol</span> <span class="kn">import</span> <span class="n">ValueCodecs</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cache_with_pickle</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">cache_this</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="s1">&#39;cache&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">PickleCached</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_store_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="c1"># usually this would be a mapping interface to persistent storage:</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_store</span> <span class="o">=</span> <span class="n">backend_store_factory</span><span class="p">()</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">pickle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_store</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@cache_with_pickle</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In PickleCached.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
+<span class="gp">...</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">PickleCached</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">)</span>
+<span class="go">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">In PickleCached.foo...</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>As usuall, it’s because the cache now holds something that has to do with <cite>foo</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">)</span>
+<span class="go">[&#39;foo.pkl&#39;]</span>
+</pre></div>
+</div>
+<p>The value of <cite>‘foo.pkl’</cite> is indeed <cite>42</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="s1">&#39;foo.pkl&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>But note that the actual way it’s stored in the <cite>_backend_store</cite> is as pickle bytes:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">_backend_store</span><span class="p">[</span><span class="s1">&#39;foo.pkl&#39;</span><span class="p">]</span>
+<span class="go">b&#39;\x80\x04K*.&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
