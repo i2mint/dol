@@ -49,18 +49,18 @@ class _cache_this:
             self.attrname = name
         elif name != self.attrname:
             raise TypeError(
-                "Cannot assign the same _cache_this to two different names "
-                f"({self.attrname!r} and {name!r})."
+                'Cannot assign the same _cache_this to two different names '
+                f'({self.attrname!r} and {name!r}).'
             )
         if isinstance(self.key, str):
             self.cache_key = self.key
         else:
             assert callable(
                 self.key
-            ), f"The key must be a callable or a string, not {type(self.key).__name__}."
+            ), f'The key must be a callable or a string, not {type(self.key).__name__}.'
             self.cache_key = self.key(self.attrname)
             if self.cache_key is None and not self.allow_none_keys:
-                raise TypeError("The key returned by the key function cannot be None.")
+                raise TypeError('The key returned by the key function cannot be None.')
 
     def __get_cache(self, instance):
         """
@@ -97,7 +97,7 @@ class _cache_this:
             return self
         if self.attrname is None:
             raise TypeError(
-                "Cannot use _cache_this instance without calling __set_name__ on it."
+                'Cannot use _cache_this instance without calling __set_name__ on it.'
             )
         try:
             cache = self.__get_cache(instance)
@@ -106,7 +106,7 @@ class _cache_this:
         ):  # not all objects have __dict__ (e.g. class defines slots)
             msg = (
                 f"No '__dict__' attribute on {type(instance).__name__!r} "
-                f"instance to cache {self.attrname!r} property."
+                f'instance to cache {self.attrname!r} property.'
             )
             raise TypeError(msg) from None
 
@@ -121,8 +121,8 @@ class _cache_this:
                         cache[self.cache_key] = val
                     except TypeError:
                         msg = (
-                            f"The cache on {type(instance).__name__!r} instance "
-                            f"does not support item assignment for caching {self.cache_key!r} property."
+                            f'The cache on {type(instance).__name__!r} instance '
+                            f'does not support item assignment for caching {self.cache_key!r} property.'
                         )
                         raise TypeError(msg) from None
         return val
