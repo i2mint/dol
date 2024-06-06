@@ -12,6 +12,266 @@ from dol.trans import store_decorator
 NoSuchKey = type('NoSuchKey', (), {})
 
 
+from functools import RLock
+from types import GenericAlias
+from collections.abc import MutableMapping
+
+_NOT_FOUND = object()
+
+
+class _cache_this:
+    def __init__(
+        self, func, cache=None, key=None, *, allow_none_keys=False, lock_factory=RLock
+    ):
+        """
+        Initialize the cached property.
+
+        :param func: The function whose result needs to be cached.
+        :param cache: The cache storage, can be a MutableMapping or an attribute name.
+        :param key: The key to store the cache value, can be a callable or a string.
+        """
+        self.func = func
+        self.attrname = None
+        self.__doc__ = func.__doc__
+        self.lock = lock_factory()
+        self.cache = cache
+        self.key = key if key else lambda name: name
+        self.allow_none_keys = allow_none_keys
+
+    def __set_name__(self, owner, name):
+        """
+        Set the name of the property.
+
+        :param owner: The class owning the property.
+        :param name: The name of the property.
+        """
+        if self.attrname is None:
+            self.attrname = name
+        elif name != self.attrname:
+            raise TypeError(
+                "Cannot assign the same _cache_this to two different names "
+                f"({self.attrname!r} and {name!r})."
+            )
+        if isinstance(self.key, str):
+            self.cache_key = self.key
+        else:
+            assert callable(
+                self.key
+            ), f"The key must be a callable or a string, not {type(self.key).__name__}."
+            self.cache_key = self.key(self.attrname)
+            if self.cache_key is None and not self.allow_none_keys:
+                raise TypeError("The key returned by the key function cannot be None.")
+
+    def __get_cache(self, instance):
+        """
+        Get the cache for the instance.
+
+        :param instance: The instance of the class.
+        :return: The cache storage.
+        """
+        if isinstance(self.cache, str):
+            cache = getattr(instance, self.cache, None)
+            if cache is None:
+                raise TypeError(
+                    f"No attribute named '{self.cache}' found on {type(instance).__name__!r} instance."
+                )
+            if not isinstance(cache, MutableMapping):
+                raise TypeError(
+                    f"Attribute '{self.cache}' on {type(instance).__name__!r} instance is not a MutableMapping."
+                )
+            return cache
+        elif isinstance(self.cache, MutableMapping):
+            return self.cache
+        else:
+            return instance.__dict__
+
+    def __get__(self, instance, owner=None):
+        """
+        Get the value of the cached property.
+
+        :param instance: The instance of the class.
+        :param owner: The owner class.
+        :return: The cached value or computed value if not cached.
+        """
+        if instance is None:
+            return self
+        if self.attrname is None:
+            raise TypeError(
+                "Cannot use _cache_this instance without calling __set_name__ on it."
+            )
+        try:
+            cache = self.__get_cache(instance)
+        except (
+            AttributeError
+        ):  # not all objects have __dict__ (e.g. class defines slots)
+            msg = (
+                f"No '__dict__' attribute on {type(instance).__name__!r} "
+                f"instance to cache {self.attrname!r} property."
+            )
+            raise TypeError(msg) from None
+
+        val = cache.get(self.cache_key, _NOT_FOUND)
+        if val is _NOT_FOUND:
+            with self.lock:
+                # check if another thread filled cache while we awaited lock
+                val = cache.get(self.cache_key, _NOT_FOUND)
+                if val is _NOT_FOUND:
+                    val = self.func(instance)
+                    try:
+                        cache[self.cache_key] = val
+                    except TypeError:
+                        msg = (
+                            f"The cache on {type(instance).__name__!r} instance "
+                            f"does not support item assignment for caching {self.cache_key!r} property."
+                        )
+                        raise TypeError(msg) from None
+        return val
+
+    __class_getitem__ = classmethod(GenericAlias)
+
+
+def cache_this(func=None, *, cache=None, key=None):
+    r"""
+    Transforms a method into a cached property with control over cache object and key.
+
+    :param func: The function to be decorated (usually left empty).
+    :param cache: The cache storage, can be a `MutableMapping` or the name of an
+        instance attribute that is a `MutableMapping`.
+    :param key: The key to store the cache value, can be a callable that will be
+        applied to the method name to make a key, or an explicit string.
+    :return: The decorated function.
+
+    Used with no arguments, `cache_this` will cache just as the builtin
+    `cached_property` does -- in the instance's `__dict__` attribute.
+
+    >>> class SameAsCachedProperty:
+    ...     @cache_this
+    ...     def foo(self):
+    ...         print("In SameAsCachedProperty.foo...")
+    ...         return 42
+    ...
+    >>> obj = SameAsCachedProperty()
+    >>> obj.__dict__  # the cache is empty
+    {}
+    >>> obj.foo  # when we access foo, it's computed and returned...
+    In SameAsCachedProperty.foo...
+    42
+    >>> obj.__dict__  # ... but also cached
+    {'foo': 42}
+    >>> obj.foo  # so that the next time we access foo, it's returned from the cache.
+    42
+
+
+    Specify the cache as a dictionary that lives outside the instance:
+
+    >>> external_cache = {}
+    >>>
+    >>> class CacheWithExternalMapping:
+    ...     @cache_this(cache=external_cache)
+    ...     def foo(self):
+    ...         print("In CacheWithExternalMapping.foo...")
+    ...         return 42
+    ...
+    >>> obj = CacheWithExternalMapping()
+    >>> external_cache
+    {}
+    >>> obj.foo
+    In CacheWithExternalMapping.foo...
+    42
+    >>> external_cache
+    {'foo': 42}
+    >>> obj.foo
+    42
+
+    Specify the cache as an attribute of the instance, and an explicit key:
+
+    >>> class WithCacheInInstanceAttribute:
+    ...
+    ...     def __init__(self):
+    ...         self.my_cache = {}
+    ...
+    ...     @cache_this(cache='my_cache', key='key_for_foo')
+    ...     def foo(self):
+    ...         print("In WithCacheInInstanceAttribute.foo...")
+    ...         return 42
+    ...
+    >>> obj = WithCacheInInstanceAttribute()
+    >>> obj.my_cache
+    {}
+    >>> obj.foo
+    In WithCacheInInstanceAttribute.foo...
+    42
+    >>> obj.my_cache
+    {'key_for_foo': 42}
+    >>> obj.foo
+    42
+
+    Now let's see a more involved example that exhibits how `cache_this` would be used
+    in real life. Note two things in the example below.
+
+    First, that we use `functools.partial` to fix the parameters of our `cache_this`.
+    This enables us to reuse the same `cache_this` in multiple places without all
+    the verbosity. We fix that the cache is the attribute `cache` of the instance,
+    and that the key is a function that will be computed from the name of the method
+    adding a `'.pkl'` extension to it.
+
+    Secondly, we use the `ValueCodecs` from `dol` to provide a pickle codec for storying
+    values. The backend store used here is a dictionary, so we don't really need a
+    codec to store values, but in real life you would use a persistent storage that
+    would require a codec, such as files or a database.
+
+    >>> from functools import partial
+    >>> from dol import ValueCodecs
+    >>>
+    >>> cache_with_pickle = partial(cache_this, cache='cache', key=lambda x: f"{x}.pkl")
+    >>>
+    >>> class PickleCached:
+    ...     def __init__(self, backend_store_factory=dict):
+    ...         # usually this would be a mapping interface to persistent storage:
+    ...         self._backend_store = backend_store_factory()
+    ...         self.cache = ValueCodecs.default.pickle(self._backend_store)
+    ...
+    ...     @cache_with_pickle
+    ...     def foo(self):
+    ...         print("In PickleCached.foo...")
+    ...         return 42
+    ...
+    ...
+    >>> obj = PickleCached()
+    >>> list(obj.cache)
+    []
+    >>> obj.foo
+    In PickleCached.foo...
+    42
+    >>> obj.foo
+    42
+
+    As usuall, it's because the cache now holds something that has to do with `foo`:
+
+    >>> list(obj.cache)
+    ['foo.pkl']
+
+    The value of `'foo.pkl'` is indeed `42`:
+
+    >>> obj.cache['foo.pkl']
+    42
+
+    But note that the actual way it's stored in the `_backend_store` is as pickle bytes:
+
+    >>> obj._backend_store['foo.pkl']
+    b'\x80\x04K*.'
+
+    """
+    if func is None:
+
+        def wrapper(f):
+            return _cache_this(f, cache=cache, key=key)
+
+        return wrapper
+    else:
+        return _cache_this(func, cache=cache, key=key)
+
+
 # ------------ useful trans functions to be used with wrap_kvs etc. ---------------------
 # TODO: Consider typing or decorating functions to indicate their role (e.g. id_of_key,
 #   key_of_id, data_of_obj, obj_of_data, preset, postget...)

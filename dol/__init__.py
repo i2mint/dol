@@ -43,6 +43,7 @@ def ihead(store, n=1):
 
 from dol.tools import (
     filt_iter,  # filter store keys (and contains ready to use filters as attributes)
+    cache_this,  # cache the result of "property" methods in a store
 )
 
 from dol.kv_codecs import ValueCodecs, KeyCodecs
