@@ -321,7 +321,8 @@ def delegate_to(
         for attr in attrs:
             wrapped_attr = getattr(wrapped, attr)
             delegated_attribute = update_wrapper(
-                wrapper=DelegatedAttribute(delegation_attr, attr), wrapped=wrapped_attr,
+                wrapper=DelegatedAttribute(delegation_attr, attr),
+                wrapped=wrapped_attr,
             )
             setattr(Wrap, attr, delegated_attribute)
 
@@ -610,12 +611,12 @@ class Store(KvPersister):
         _id = self._id_of_key(k)
         try:
             data = self.store[_id]
-        except self._errors_that_trigger_missing:
-            data = self.__missing__(k)
+        except self._errors_that_trigger_missing as error:
+            if hasattr(self, '__missing__'):
+                data = self.__missing__(k)
+            else:
+                raise error
         return self._obj_of_data(data)
-
-    def __missing__(self, k):
-        raise KeyError(k)
 
     def get(self, k: Key, default=None) -> Val:
         try:
