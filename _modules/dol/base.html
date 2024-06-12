@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.base &mdash; dol 0.2.46 documentation</title>
+  <title>dol.base &mdash; dol 0.2.47 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=cec019df"></script>
+        <script src="../../_static/documentation_options.js?v=6ab89dc6"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -445,7 +445,8 @@
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
             <span class="n">wrapped_attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">delegated_attribute</span> <span class="o">=</span> <span class="n">update_wrapper</span><span class="p">(</span>
-                <span class="n">wrapper</span><span class="o">=</span><span class="n">DelegatedAttribute</span><span class="p">(</span><span class="n">delegation_attr</span><span class="p">,</span> <span class="n">attr</span><span class="p">),</span> <span class="n">wrapped</span><span class="o">=</span><span class="n">wrapped_attr</span><span class="p">,</span>
+                <span class="n">wrapper</span><span class="o">=</span><span class="n">DelegatedAttribute</span><span class="p">(</span><span class="n">delegation_attr</span><span class="p">,</span> <span class="n">attr</span><span class="p">),</span>
+                <span class="n">wrapped</span><span class="o">=</span><span class="n">wrapped_attr</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">Wrap</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">delegated_attribute</span><span class="p">)</span>
 
@@ -739,12 +740,12 @@
         <span class="n">_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">_id</span><span class="p">]</span>
-        <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">_errors_that_trigger_missing</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__missing__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">_errors_that_trigger_missing</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;__missing__&#39;</span><span class="p">):</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__missing__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">error</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_of_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__missing__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Store.get">
 <a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.Store.get">[docs]</a>
