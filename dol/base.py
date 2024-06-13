@@ -319,9 +319,15 @@ def delegate_to(
         )  # don't bother adding attributes that the class already has
         # set all the attributes
         for attr in attrs:
+            if attr == '__provides__':  # TODO: Hack. Find better solution.
+                # This is because __provides__ happened to be in wrapper_cls but not
+                # in wrapped.
+                # Happened at some point with `from sqldol import SqlRowsReader``
+                continue
             wrapped_attr = getattr(wrapped, attr)
             delegated_attribute = update_wrapper(
-                wrapper=DelegatedAttribute(delegation_attr, attr), wrapped=wrapped_attr,
+                wrapper=DelegatedAttribute(delegation_attr, attr),
+                wrapped=wrapped_attr,
             )
             setattr(Wrap, attr, delegated_attribute)
 
