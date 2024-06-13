@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.base &mdash; dol 0.2.47 documentation</title>
+  <title>dol.base &mdash; dol 0.2.48 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=6ab89dc6"></script>
+        <script src="../../_static/documentation_options.js?v=82a23e04"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -443,6 +443,11 @@
         <span class="p">)</span>  <span class="c1"># don&#39;t bother adding attributes that the class already has</span>
         <span class="c1"># set all the attributes</span>
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s1">&#39;__provides__&#39;</span><span class="p">:</span>  <span class="c1"># TODO: Hack. Find better solution.</span>
+                <span class="c1"># This is because __provides__ happened to be in wrapper_cls but not</span>
+                <span class="c1"># in wrapped.</span>
+                <span class="c1"># Happened at some point with `from sqldol import SqlRowsReader``</span>
+                <span class="k">continue</span>
             <span class="n">wrapped_attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">delegated_attribute</span> <span class="o">=</span> <span class="n">update_wrapper</span><span class="p">(</span>
                 <span class="n">wrapper</span><span class="o">=</span><span class="n">DelegatedAttribute</span><span class="p">(</span><span class="n">delegation_attr</span><span class="p">,</span> <span class="n">attr</span><span class="p">),</span>
