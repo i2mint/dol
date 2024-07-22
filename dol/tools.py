@@ -99,6 +99,10 @@ class _cache_this:
             raise TypeError(
                 'Cannot use _cache_this instance without calling __set_name__ on it.'
             )
+        if self.cache is False:
+            # If cache is False, always compute the value
+            return self.func(instance)
+
         try:
             cache = self.__get_cache(instance)
         except (
@@ -161,6 +165,22 @@ def cache_this(func=None, *, cache=None, key=None):
     >>> obj.foo  # so that the next time we access foo, it's returned from the cache.
     42
 
+    Not that if you specify `cache=False`, you get a property that is computed
+    every time it's accessed:
+
+    >>> class NoCache:
+    ...     @cache_this(cache=False)
+    ...     def foo(self):
+    ...         print("In NoCache.foo...")
+    ...         return 42
+    ...
+    >>> obj = NoCache()
+    >>> obj.foo
+    In NoCache.foo...
+    42
+    >>> obj.foo
+    In NoCache.foo...
+    42
 
     Specify the cache as a dictionary that lives outside the instance:
 
@@ -262,12 +282,26 @@ def cache_this(func=None, *, cache=None, key=None):
     b'\x80\x04K*.'
 
     """
+    # the cache is False case, where we just want a property, computed by func
+    if cache is False:
+        if func is None:
+
+            def wrapper(f):
+                return property(f)
+
+            return wrapper
+        else:
+            return property(func)
+
+    # The general case
+    #   If func is not given, we want a decorator
     if func is None:
 
         def wrapper(f):
             return _cache_this(f, cache=cache, key=key)
 
         return wrapper
+    #   If func is given, we want to return the _cache_this instance
     else:
         return _cache_this(func, cache=cache, key=key)
 
