@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.48 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.49 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=82a23e04"></script>
+        <script src="../../_static/documentation_options.js?v=26daba1d"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -211,6 +211,10 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="s1">&#39;Cannot use _cache_this instance without calling __set_name__ on it.&#39;</span>
             <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="c1"># If cache is False, always compute the value</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_cache</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span>
@@ -275,6 +279,22 @@
 <span class="sd">    &gt;&gt;&gt; obj.foo  # so that the next time we access foo, it&#39;s returned from the cache.</span>
 <span class="sd">    42</span>
 
+<span class="sd">    Not that if you specify `cache=False`, you get a property that is computed</span>
+<span class="sd">    every time it&#39;s accessed:</span>
+
+<span class="sd">    &gt;&gt;&gt; class NoCache:</span>
+<span class="sd">    ...     @cache_this(cache=False)</span>
+<span class="sd">    ...     def foo(self):</span>
+<span class="sd">    ...         print(&quot;In NoCache.foo...&quot;)</span>
+<span class="sd">    ...         return 42</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = NoCache()</span>
+<span class="sd">    &gt;&gt;&gt; obj.foo</span>
+<span class="sd">    In NoCache.foo...</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; obj.foo</span>
+<span class="sd">    In NoCache.foo...</span>
+<span class="sd">    42</span>
 
 <span class="sd">    Specify the cache as a dictionary that lives outside the instance:</span>
 
@@ -376,12 +396,26 @@
 <span class="sd">    b&#39;\x80\x04K*.&#39;</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># the cache is False case, where we just want a property, computed by func</span>
+    <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">property</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">wrapper</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">property</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="c1"># The general case</span>
+    <span class="c1">#   If func is not given, we want a decorator</span>
     <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 
         <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">_cache_this</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">wrapper</span>
+    <span class="c1">#   If func is given, we want to return the _cache_this instance</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_cache_this</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span></div>
 
