@@ -12,14 +12,20 @@ from dol.trans import store_decorator
 NoSuchKey = type('NoSuchKey', (), {})
 
 
-from functools import RLock
+from functools import RLock, cached_property
 from types import GenericAlias
 from collections.abc import MutableMapping
 
 _NOT_FOUND = object()
 
 
-class _cache_this:
+class CachedProperty:
+    """Descriptor that caches the result of the first call to a method.
+
+    It generalizes the builtin functools.cached_property class, enabling the user to
+    specify a cache object and a key to store the cache value.
+    """
+
     def __init__(
         self, func, cache=None, key=None, *, allow_none_keys=False, lock_factory=RLock
     ):
@@ -49,7 +55,7 @@ class _cache_this:
             self.attrname = name
         elif name != self.attrname:
             raise TypeError(
-                'Cannot assign the same _cache_this to two different names '
+                'Cannot assign the same CachedProperty to two different names '
                 f'({self.attrname!r} and {name!r}).'
             )
         if isinstance(self.key, str):
@@ -97,7 +103,7 @@ class _cache_this:
             return self
         if self.attrname is None:
             raise TypeError(
-                'Cannot use _cache_this instance without calling __set_name__ on it.'
+                'Cannot use CachedProperty instance without calling __set_name__ on it.'
             )
         if self.cache is False:
             # If cache is False, always compute the value
@@ -298,12 +304,80 @@ def cache_this(func=None, *, cache=None, key=None):
     if func is None:
 
         def wrapper(f):
-            return _cache_this(f, cache=cache, key=key)
+            return CachedProperty(f, cache=cache, key=key)
 
         return wrapper
-    #   If func is given, we want to return the _cache_this instance
+    #   If func is given, we want to return the CachedProperty instance
     else:
-        return _cache_this(func, cache=cache, key=key)
+        return CachedProperty(func, cache=cache, key=key)
+
+
+def cache_property_method(cls, method_name, cache_decorator=cache_this):
+    """
+    Converts a method of a class into a CachedProperty.
+
+    Essentially, it does what A.method = cache_this(A.method) would do, taking care of
+    the __set_name__ problem.
+
+    Args:
+        cls (type): The class containing the method.
+        method_name (str): The name of the method to convert to a cached property.
+        cache_decorator (Callable): The decorator to use to cache the method. Defaults to
+            `cache_this`. One frequent use case would be to use `functools.partial` to
+            fix the cache and key parameters of `cache_this` and inject that.
+
+    Example:
+
+    >>> class TestClass:
+    ...     def normal_method(self):
+    ...         print('normal_method called')
+    ...         return 1
+    ...
+    ...     @property
+    ...     def property_method(self):
+    ...         print('property_method called')
+    ...         return 2
+    >>>
+    >>> cache_property_method(
+    ...     TestClass,
+    ...     [
+    ...         'normal_method',
+    ...         'property_method',
+    ...     ],
+    ... )  # doctest: +ELLIPSIS
+    <class ...TestClass'>
+    >>> c = TestClass()
+    >>> c.normal_method
+    normal_method called
+    1
+    >>> c.normal_method
+    1
+    >>> c.property_method
+    property_method called
+    2
+    >>> c.property_method
+    2
+
+    """
+    if not isinstance(method_name, str) and isinstance(method_name, Iterable):
+        for name in method_name:
+            cache_property_method(cls, name, cache_decorator)
+        return cls
+
+    method = getattr(cls, method_name)
+
+    if isinstance(method, property):
+        method = method.fget  # Get the original method from the property
+    elif isinstance(method, (cached_property, CachedProperty)):
+        method = method.func
+    # not sure we want to handle (staticmethod, classmethod, but in case:
+    # elif isinstance(method, (staticmethod, classmethod)):
+    #     method = method.__func__
+
+    cached_method = cache_decorator(method)
+    cached_method.__set_name__(cls, method_name)
+    setattr(cls, method_name, cached_method)
+    return cls
 
 
 # ------------ useful trans functions to be used with wrap_kvs etc. ---------------------
