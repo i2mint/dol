@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.49 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.50 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=26daba1d"></script>
+        <script src="../../_static/documentation_options.js?v=c5fedd4f"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -82,8 +82,10 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">dol.tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dol.tools.CachedProperty"><code class="docutils literal notranslate"><span class="pre">CachedProperty</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.Forest"><code class="docutils literal notranslate"><span class="pre">Forest</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.ask_user_for_value_when_missing"><code class="docutils literal notranslate"><span class="pre">ask_user_for_value_when_missing()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.tools.cache_property_method"><code class="docutils literal notranslate"><span class="pre">cache_property_method()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.cache_this"><code class="docutils literal notranslate"><span class="pre">cache_this()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.confirm_overwrite"><code class="docutils literal notranslate"><span class="pre">confirm_overwrite()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.convert_to_numerical_if_possible"><code class="docutils literal notranslate"><span class="pre">convert_to_numerical_if_possible()</span></code></a></li>
@@ -125,6 +127,14 @@
   <section id="module-dol.tools">
 <span id="dol-tools"></span><h1>dol.tools<a class="headerlink" href="#module-dol.tools" title="Link to this heading"></a></h1>
 <p>Various tools to add functionality to stores</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.tools.CachedProperty">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">CachedProperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_none_keys=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock_factory=&lt;class</span> <span class="pre">'_thread.RLock'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#CachedProperty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.CachedProperty" title="Link to this definition"></a></dt>
+<dd><p>Descriptor that caches the result of the first call to a method.</p>
+<p>It generalizes the builtin functools.cached_property class, enabling the user to
+specify a cache object and a key to store the cache value.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.tools.Forest">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">Forest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">src:</span> <span class="pre">~typing.Any,</span> <span class="pre">*,</span> <span class="pre">get_node_keys:</span> <span class="pre">~typing.Callable[[~typing.Any],</span> <span class="pre">~typing.Iterable[~typing.Any]],</span> <span class="pre">get_src_item:</span> <span class="pre">~typing.Callable[[~typing.Any,</span> <span class="pre">~typing.Any],</span> <span class="pre">bool],</span> <span class="pre">is_leaf:</span> <span class="pre">~typing.Callable[[~typing.Any,</span> <span class="pre">~typing.Any],</span> <span class="pre">bool],</span> <span class="pre">forest_type:</span> <span class="pre">type</span> <span class="pre">|</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'list'&gt;,</span> <span class="pre">leaf_trans:</span> <span class="pre">~typing.Callable[[~typing.Any],</span> <span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">return_input&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#Forest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.Forest" title="Link to this definition"></a></dt>
@@ -222,6 +232,57 @@ value</p></li>
 <dd class="field-even"><p></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.tools.cache_property_method">
+<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">cache_property_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_decorator=&lt;function</span> <span class="pre">cache_this&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#cache_property_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.cache_property_method" title="Link to this definition"></a></dt>
+<dd><p>Converts a method of a class into a CachedProperty.</p>
+<p>Essentially, it does what A.method = cache_this(A.method) would do, taking care of
+the __set_name__ problem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls</strong> (<em>type</em>) – The class containing the method.</p></li>
+<li><p><strong>method_name</strong> (<em>str</em>) – The name of the method to convert to a cached property.</p></li>
+<li><p><strong>cache_decorator</strong> (<em>Callable</em>) – The decorator to use to cache the method. Defaults to
+<cite>cache_this</cite>. One frequent use case would be to use <cite>functools.partial</cite> to
+fix the cache and key parameters of <cite>cache_this</cite> and inject that.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">TestClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">normal_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;normal_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">1</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@property</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">property_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;property_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cache_property_method</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">TestClass</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">[</span>
+<span class="gp">... </span>        <span class="s1">&#39;normal_method&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;property_method&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">],</span>
+<span class="gp">... </span><span class="p">)</span>  
+<span class="go">&lt;class ...TestClass&#39;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">TestClass</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">normal_method</span>
+<span class="go">normal_method called</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">normal_method</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">property_method</span>
+<span class="go">property_method called</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">property_method</span>
+<span class="go">2</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
