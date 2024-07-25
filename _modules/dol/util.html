@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.50 documentation</title>
+  <title>dol.util &mdash; dol 0.2.51 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=c5fedd4f"></script>
+        <script src="../../_static/documentation_options.js?v=61865956"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -195,37 +195,6 @@
 
 
 
-<div class="viewcode-block" id="decorate_callables">
-<a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.decorate_callables">[docs]</a>
-<span class="k">def</span> <span class="nf">decorate_callables</span><span class="p">(</span><span class="n">decorator</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorate all (non-underscored) callables in a class with a decorator.</span>
-
-<span class="sd">    &gt;&gt;&gt; from dol.util import LiteralVal</span>
-<span class="sd">    &gt;&gt;&gt; @decorate_callables(property)</span>
-<span class="sd">    ... class A:</span>
-<span class="sd">    ...     def wet(self):</span>
-<span class="sd">    ...         return &#39;dry&#39;</span>
-<span class="sd">    ...     @LiteralVal</span>
-<span class="sd">    ...     def big(self):</span>
-<span class="sd">    ...         return &#39;small&#39;</span>
-<span class="sd">    &gt;&gt;&gt; a = A()</span>
-<span class="sd">    &gt;&gt;&gt; a.wet</span>
-<span class="sd">    &#39;dry&#39;</span>
-<span class="sd">    &gt;&gt;&gt; a.big()</span>
-<span class="sd">    &#39;small&#39;</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">decorate_callables</span><span class="p">,</span> <span class="n">decorator</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">LiteralVal</span><span class="p">):</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attr</span><span class="o">.</span><span class="n">get_val</span><span class="p">())</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">decorator</span><span class="p">(</span><span class="n">attr</span><span class="p">))</span>
-    <span class="k">return</span> <span class="bp">cls</span></div>
-
-
-
 <div class="viewcode-block" id="add_as_attribute_of">
 <a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.add_as_attribute_of">[docs]</a>
 <span class="k">def</span> <span class="nf">add_as_attribute_of</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -331,6 +300,102 @@
 
     <span class="fm">__call__</span> <span class="o">=</span> <span class="n">get_val</span></div>
 
+
+    <span class="c1"># def __get__(self, instance, owner):</span>
+    <span class="c1">#     return self.val</span>
+
+
+<div class="viewcode-block" id="decorate_callables">
+<a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.decorate_callables">[docs]</a>
+<span class="k">def</span> <span class="nf">decorate_callables</span><span class="p">(</span><span class="n">decorator</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorate all (non-underscored) callables in a class with a decorator.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.util import LiteralVal</span>
+<span class="sd">    &gt;&gt;&gt; @decorate_callables(property)</span>
+<span class="sd">    ... class A:</span>
+<span class="sd">    ...     def wet(self):</span>
+<span class="sd">    ...         return &#39;dry&#39;</span>
+<span class="sd">    ...     @LiteralVal</span>
+<span class="sd">    ...     def big(self):</span>
+<span class="sd">    ...         return &#39;small&#39;</span>
+<span class="sd">    &gt;&gt;&gt; a = A()</span>
+<span class="sd">    &gt;&gt;&gt; a.wet</span>
+<span class="sd">    &#39;dry&#39;</span>
+<span class="sd">    &gt;&gt;&gt; a.big()</span>
+<span class="sd">    &#39;small&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">decorate_callables</span><span class="p">,</span> <span class="n">decorator</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">LiteralVal</span><span class="p">):</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attr</span><span class="o">.</span><span class="n">get_val</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">decorator</span><span class="p">(</span><span class="n">attr</span><span class="p">))</span>
+    <span class="k">return</span> <span class="bp">cls</span></div>
+
+
+
+<span class="c1"># class LiteralVal:</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     An object to indicate that the value should be considered literally.</span>
+
+<span class="c1">#     &gt;&gt;&gt; t = LiteralVal(42)</span>
+<span class="c1">#     &gt;&gt;&gt; t.get_val()</span>
+<span class="c1">#     42</span>
+<span class="c1">#     &gt;&gt;&gt; t()</span>
+<span class="c1">#     42</span>
+
+<span class="c1">#     &gt;&gt;&gt; class A:</span>
+<span class="c1">#     ...     @LiteralVal</span>
+<span class="c1">#     ...     def value(self):</span>
+<span class="c1">#     ...         return 42</span>
+<span class="c1">#     &gt;&gt;&gt; a = A()</span>
+<span class="c1">#     &gt;&gt;&gt; a.value</span>
+<span class="c1">#     42</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+
+<span class="c1">#     def __init__(self, val):</span>
+<span class="c1">#         if callable(val):</span>
+<span class="c1">#             self.val = val()</span>
+<span class="c1">#         else:</span>
+<span class="c1">#             self.val = val</span>
+
+<span class="c1">#     def get_val(self):</span>
+<span class="c1">#         &quot;&quot;&quot;Get the value wrapped by LiteralVal instance.&quot;&quot;&quot;</span>
+<span class="c1">#         return self.val</span>
+
+<span class="c1">#     def __call__(self):</span>
+<span class="c1">#         return self.get_val()</span>
+
+<span class="c1">#     def __get__(self, instance, owner):</span>
+<span class="c1">#         return self.val</span>
+
+<span class="c1"># def decorate_callables(decorator, cls=None):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Decorate all (non-underscored) callables in a class with a decorator.</span>
+
+<span class="c1">#     &gt;&gt;&gt; @decorate_callables(property)</span>
+<span class="c1">#     ... class A:</span>
+<span class="c1">#     ...     def wet(self):</span>
+<span class="c1">#     ...         return &#39;dry&#39;</span>
+<span class="c1">#     ...     @LiteralVal</span>
+<span class="c1">#     ...     def big(self):</span>
+<span class="c1">#     ...         return &#39;small&#39;</span>
+<span class="c1">#     &gt;&gt;&gt; a = A()</span>
+<span class="c1">#     &gt;&gt;&gt; a.wet</span>
+<span class="c1">#     &#39;dry&#39;</span>
+<span class="c1">#     &gt;&gt;&gt; a.big</span>
+<span class="c1">#     &#39;small&#39;</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     if cls is None:</span>
+<span class="c1">#         return partial(decorate_callables, decorator)</span>
+<span class="c1">#     for name, attr in vars(cls).items():</span>
+<span class="c1">#         if isinstance(attr, LiteralVal):</span>
+<span class="c1">#             setattr(cls, name, property(attr.get_val))</span>
+<span class="c1">#         elif not name.startswith(&#39;_&#39;) and callable(attr):</span>
+<span class="c1">#             setattr(cls, name, decorator(attr))</span>
+<span class="c1">#     return cls</span>
 
 
 <span class="k">def</span> <span class="nf">_isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="p">):</span>
@@ -683,7 +748,9 @@
         <span class="fm">__init__</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">copy_attrs</span><span class="p">(</span>
-        <span class="n">PartialClass</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
+        <span class="n">PartialClass</span><span class="p">,</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PartialClass</span></div>
@@ -1112,7 +1179,10 @@
     <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="n">append_to_group_items</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span><span class="n">group_items</span><span class="p">,</span> <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),)</span>
+        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">group_items</span><span class="p">,</span>
+            <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),</span>
+        <span class="p">)</span>
 
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
         <span class="n">group_key</span> <span class="o">=</span> <span class="n">key</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
@@ -1614,20 +1684,46 @@
 
 
 <span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">KT</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
 
 <span class="n">Buffer</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">]</span>
 <span class="n">FileWriter</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Buffer</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span>
+<span class="n">Writer</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">VT</span><span class="p">,</span> <span class="n">KT</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="n">Any</span><span class="p">]]</span>
+
+
+<span class="k">def</span> <span class="nf">_call_writer</span><span class="p">(</span>
+    <span class="n">writer</span><span class="p">:</span> <span class="n">Writer</span><span class="p">,</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">VT</span><span class="p">,</span>
+    <span class="n">destination</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">Buffer</span><span class="p">],</span>
+    <span class="n">obj_arg_position_in_writer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to handle writing to the buffer based on obj_arg_position_in_writer.</span>
+
+<span class="sd">    :param writer: A function that writes an object to a file-like object.</span>
+<span class="sd">    :param obj: The object to write.</span>
+<span class="sd">    :param destination: The key (e.g. filepath) or file-like object.</span>
+<span class="sd">    :param obj_arg_position_in_writer: Position of the object argument in writer function (0 or 1).</span>
+
+<span class="sd">    :raises ValueError: If obj_arg_position_in_writer is not 0 or 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">obj_arg_position_in_writer</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">writer</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">destination</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">obj_arg_position_in_writer</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">writer</span><span class="p">(</span><span class="n">destination</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;obj_arg_position_in_writer must be 0 or 1&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="written_bytes">
 <a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.written_bytes">[docs]</a>
 <span class="k">def</span> <span class="nf">written_bytes</span><span class="p">(</span>
     <span class="n">file_writer</span><span class="p">:</span> <span class="n">FileWriter</span><span class="p">,</span>
-    <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">VT</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">obj_arg_position_in_writer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">obj_arg_position_in_writer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">io_buffer_cls</span><span class="p">:</span> <span class="n">Buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1642,11 +1738,11 @@
 <span class="sd">    :param obj: The object to write.</span>
 <span class="sd">    :return: The bytes that would have been written to a file.</span>
 
-<span class="sd">    Use case: When you have a function that writes to files, and you want to get an </span>
-<span class="sd">    equivalent function but that gives you what bytes or string WOULD have been written </span>
-<span class="sd">    to a file, so you can better reuse (to write elsewhere, for example, or because </span>
+<span class="sd">    Use case: When you have a function that writes to files, and you want to get an</span>
+<span class="sd">    equivalent function but that gives you what bytes or string WOULD have been written</span>
+<span class="sd">    to a file, so you can better reuse (to write elsewhere, for example, or because</span>
 <span class="sd">    you need to pipe those bytes to another function).</span>
-<span class="sd">    </span>
+
 <span class="sd">    Example usage: Yes, we have json.dumps to get the JSON string, but what if</span>
 <span class="sd">    (like is often the case) you just have a function that writes to a file-like object,</span>
 <span class="sd">    like the `json.dump(obj, fp)` function? You can use `written_bytes` to get a</span>
@@ -1687,16 +1783,130 @@
     <span class="n">buffer</span> <span class="o">=</span> <span class="n">io_buffer_cls</span><span class="p">()</span>
 
     <span class="c1"># Use the provided file_writer function to write to the buffer</span>
-    <span class="k">if</span> <span class="n">obj_arg_position_in_writer</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">file_writer</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">obj_arg_position_in_writer</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">file_writer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;obj_arg_position_in_writer must be 0 or 1&#39;</span><span class="p">)</span>
+    <span class="n">_call_writer</span><span class="p">(</span><span class="n">file_writer</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">obj_arg_position_in_writer</span><span class="p">)</span>
 
     <span class="c1"># Retrieve the bytes from the buffer</span>
     <span class="n">buffer</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">buffer</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="written_key">
+<a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.written_key">[docs]</a>
+<span class="k">def</span> <span class="nf">written_key</span><span class="p">(</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">VT</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">writer</span><span class="p">:</span> <span class="n">Writer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">key</span><span class="p">:</span> <span class="n">KT</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">obj_arg_position_in_writer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Writes an object to a key and returns the key.</span>
+<span class="sd">    If key is not given, a temporary file is created and its path is returned.</span>
+
+<span class="sd">    :param obj: The object to write.</span>
+<span class="sd">    :param writer: A function that writes an object to a file.</span>
+<span class="sd">    :param key: The key (by default, filepath) to write to.</span>
+<span class="sd">        If None, a temporary file is created.</span>
+<span class="sd">        If a string with a &#39;*&#39;, the &#39;*&#39; is replaced with a unique temporary filename.</span>
+<span class="sd">    :param obj_arg_position_in_writer: Position of the object argument in writer function (0 or 1).</span>
+
+<span class="sd">    :return: The file path where the object was written.</span>
+
+<span class="sd">    Example usage:</span>
+
+<span class="sd">    Let&#39;s make a store and a writer for that store.</span>
+
+<span class="sd">    &gt;&gt;&gt; store = dict()</span>
+<span class="sd">    &gt;&gt;&gt; writer = writer=lambda obj, key: store.__setitem__(key, obj)</span>
+
+<span class="sd">    Note the order a writer expects is (obj, key), or we&#39;d just be able to use </span>
+<span class="sd">    `store.__setitem__` as our writer.</span>
+
+<span class="sd">    If we specify a key, the object will be written to that key in the store </span>
+<span class="sd">    and the key is output.</span>
+
+<span class="sd">    &gt;&gt;&gt; written_key(42, writer=writer, key=&#39;my_key&#39;)</span>
+<span class="sd">    &#39;my_key&#39;</span>
+<span class="sd">    &gt;&gt;&gt; store</span>
+<span class="sd">    {&#39;my_key&#39;: 42}</span>
+
+<span class="sd">    Often, you&#39;ll want to fix your writer (and possibly your key).</span>
+<span class="sd">    You can do so with `functools.partial`, but for convenience, you can also</span>
+<span class="sd">    just specify a writer, without an input object, and get a function that</span>
+<span class="sd">    will write an object to a key.</span>
+
+<span class="sd">    &gt;&gt;&gt; write_to_store = written_key(writer=writer, key=&#39;another_key&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; write_to_store(99)</span>
+<span class="sd">    &#39;another_key&#39;</span>
+<span class="sd">    &gt;&gt;&gt; store</span>
+<span class="sd">    {&#39;my_key&#39;: 42, &#39;another_key&#39;: 99}</span>
+<span class="sd">    </span>
+<span class="sd">    If you don&#39;t specify a key, a temporary file is created and the key is output.</span>
+
+<span class="sd">    &gt;&gt;&gt; write_to_store = written_key(writer=writer)</span>
+<span class="sd">    &gt;&gt;&gt; key = write_to_store(43)</span>
+<span class="sd">    &gt;&gt;&gt; key  # doctest: +SKIP</span>
+<span class="sd">    &#39;/var/folders/mc/c070wfh51kxd9lft8dl74q1r0000gn/T/tmp8yaczd8b&#39;</span>
+<span class="sd">    &gt;&gt;&gt; store[key]</span>
+<span class="sd">    43</span>
+<span class="sd">    </span>
+<span class="sd">    If the key you specify is a string with a &#39;*&#39;, the &#39;*&#39; is replaced with a </span>
+<span class="sd">    unique temporary filename, or the full path of the temporary file if the * </span>
+<span class="sd">    is at the start.</span>
+
+<span class="sd">    &gt;&gt;&gt; write_to_store = written_key(writer=writer, key=&#39;*.ext&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; key = write_to_store(44)</span>
+<span class="sd">    &gt;&gt;&gt; key  # doctest: +ELLIPSIS</span>
+<span class="sd">    &#39;....ext&#39;</span>
+<span class="sd">    &gt;&gt;&gt; store[key]</span>
+<span class="sd">    44</span>
+
+<span class="sd">    One useful use case is when you want to pipe the output of one function into </span>
+<span class="sd">    another function that expects a file path. </span>
+<span class="sd">    What you need to do then is just pipe your written_key function into that </span>
+<span class="sd">    function that expects to work with a file path, and it&#39;ll be like piping the</span>
+<span class="sd">    value of your input object into that function (just via a temp file).</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; from dol.util import Pipe</span>
+<span class="sd">    &gt;&gt;&gt; store.clear()</span>
+<span class="sd">    &gt;&gt;&gt; key_func = lambda key: store.get(key) * 10</span>
+<span class="sd">    &gt;&gt;&gt; pipe_obj_to_reader = Pipe(written_key(writer=writer), key_func)</span>
+<span class="sd">    &gt;&gt;&gt; pipe_obj_to_reader(45)</span>
+<span class="sd">    450</span>
+<span class="sd">    &gt;&gt;&gt; store  # doctest: +ELLIPSIS</span>
+<span class="sd">    {...: 45}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
+            <span class="n">written_key</span><span class="p">,</span>
+            <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+            <span class="n">obj_arg_position_in_writer</span><span class="o">=</span><span class="n">obj_arg_position_in_writer</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Create a temporary file</span>
+        <span class="n">fd</span><span class="p">,</span> <span class="n">temp_filepath</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">()</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">temp_filepath</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+        <span class="n">temp_filepath</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mktemp</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">):</span>
+            <span class="c1"># Replace * of key with a unique temporary filename</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">temp_filepath</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># separate directory and filename</span>
+            <span class="n">dir_name</span><span class="p">,</span> <span class="n">base_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">temp_filepath</span><span class="p">)</span>
+            <span class="c1"># Replace * of key with a unique temporary filename</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">base_name</span><span class="p">)</span>
+
+    <span class="c1"># Write the object to the specified filepath</span>
+    <span class="n">_call_writer</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">obj_arg_position_in_writer</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">key</span></div>
+
 
 </pre></div>
 
