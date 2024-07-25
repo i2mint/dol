@@ -77,34 +77,6 @@ class staticproperty:
         return self.function()
 
 
-def decorate_callables(decorator, cls=None):
-    """Decorate all (non-underscored) callables in a class with a decorator.
-
-    >>> from dol.util import LiteralVal
-    >>> @decorate_callables(property)
-    ... class A:
-    ...     def wet(self):
-    ...         return 'dry'
-    ...     @LiteralVal
-    ...     def big(self):
-    ...         return 'small'
-    >>> a = A()
-    >>> a.wet
-    'dry'
-    >>> a.big()
-    'small'
-
-    """
-    if cls is None:
-        return partial(decorate_callables, decorator)
-    for name, attr in vars(cls).items():
-        if isinstance(attr, LiteralVal):
-            setattr(cls, name, attr.get_val())
-        elif not name.startswith('_') and callable(attr):
-            setattr(cls, name, decorator(attr))
-    return cls
-
-
 def add_as_attribute_of(obj, name=None):
     """Decorator that adds a function as an attribute of a container object ``obj``.
 
@@ -198,6 +170,99 @@ class LiteralVal:
         return self.val
 
     __call__ = get_val
+
+    # def __get__(self, instance, owner):
+    #     return self.val
+
+
+def decorate_callables(decorator, cls=None):
+    """Decorate all (non-underscored) callables in a class with a decorator.
+
+    >>> from dol.util import LiteralVal
+    >>> @decorate_callables(property)
+    ... class A:
+    ...     def wet(self):
+    ...         return 'dry'
+    ...     @LiteralVal
+    ...     def big(self):
+    ...         return 'small'
+    >>> a = A()
+    >>> a.wet
+    'dry'
+    >>> a.big()
+    'small'
+
+    """
+    if cls is None:
+        return partial(decorate_callables, decorator)
+    for name, attr in vars(cls).items():
+        if isinstance(attr, LiteralVal):
+            setattr(cls, name, attr.get_val())
+        elif not name.startswith('_') and callable(attr):
+            setattr(cls, name, decorator(attr))
+    return cls
+
+
+# class LiteralVal:
+#     """
+#     An object to indicate that the value should be considered literally.
+
+#     >>> t = LiteralVal(42)
+#     >>> t.get_val()
+#     42
+#     >>> t()
+#     42
+
+#     >>> class A:
+#     ...     @LiteralVal
+#     ...     def value(self):
+#     ...         return 42
+#     >>> a = A()
+#     >>> a.value
+#     42
+#     """
+
+#     def __init__(self, val):
+#         if callable(val):
+#             self.val = val()
+#         else:
+#             self.val = val
+
+#     def get_val(self):
+#         """Get the value wrapped by LiteralVal instance."""
+#         return self.val
+
+#     def __call__(self):
+#         return self.get_val()
+
+#     def __get__(self, instance, owner):
+#         return self.val
+
+# def decorate_callables(decorator, cls=None):
+#     """
+#     Decorate all (non-underscored) callables in a class with a decorator.
+
+#     >>> @decorate_callables(property)
+#     ... class A:
+#     ...     def wet(self):
+#     ...         return 'dry'
+#     ...     @LiteralVal
+#     ...     def big(self):
+#     ...         return 'small'
+#     >>> a = A()
+#     >>> a.wet
+#     'dry'
+#     >>> a.big
+#     'small'
+#     """
+#     if cls is None:
+#         return partial(decorate_callables, decorator)
+#     for name, attr in vars(cls).items():
+#         if isinstance(attr, LiteralVal):
+#             setattr(cls, name, property(attr.get_val))
+#         elif not name.startswith('_') and callable(attr):
+#             setattr(cls, name, decorator(attr))
+#     return cls
 
 
 def _isinstance(obj, class_or_tuple):
@@ -530,7 +595,9 @@ def partialclass(cls, *args, **kwargs):
         __init__ = partialmethod(cls.__init__, *args, **kwargs)
 
     copy_attrs(
-        PartialClass, cls, attrs=('__name__', '__qualname__', '__module__', '__doc__'),
+        PartialClass,
+        cls,
+        attrs=('__name__', '__qualname__', '__module__', '__doc__'),
     )
 
     return PartialClass
@@ -938,7 +1005,10 @@ def igroupby(
     if val is None:
         _append_to_group_items = append_to_group_items
     else:
-        _append_to_group_items = lambda group_items, item: (group_items, val(item),)
+        _append_to_group_items = lambda group_items, item: (
+            group_items,
+            val(item),
+        )
 
     for item in items:
         group_key = key(item)
@@ -1415,18 +1485,44 @@ def nest_in_dict(keys, values):
 
 
 import io
-from typing import Callable, Any, VT, Union
+from typing import Callable, Any, VT, Union, KT
 from functools import partial
+import tempfile
 
 Buffer = Union[io.BytesIO, io.StringIO]
 FileWriter = Callable[[VT, Buffer], Any]
+Writer = Union[Callable[[VT, KT], Any], Callable[[KT, VT], Any]]
+
+
+def _call_writer(
+    writer: Writer,
+    obj: VT,
+    destination: Union[KT, Buffer],
+    obj_arg_position_in_writer: int = 0,
+):
+    """
+    Helper function to handle writing to the buffer based on obj_arg_position_in_writer.
+
+    :param writer: A function that writes an object to a file-like object.
+    :param obj: The object to write.
+    :param destination: The key (e.g. filepath) or file-like object.
+    :param obj_arg_position_in_writer: Position of the object argument in writer function (0 or 1).
+
+    :raises ValueError: If obj_arg_position_in_writer is not 0 or 1.
+    """
+    if obj_arg_position_in_writer == 0:
+        writer(obj, destination)
+    elif obj_arg_position_in_writer == 1:
+        writer(destination, obj)
+    else:
+        raise ValueError('obj_arg_position_in_writer must be 0 or 1')
 
 
 def written_bytes(
     file_writer: FileWriter,
-    obj=None,
+    obj: VT = None,
     *,
-    obj_arg_position_in_writer=0,
+    obj_arg_position_in_writer: int = 0,
     io_buffer_cls: Buffer = io.BytesIO,
 ):
     """
@@ -1441,11 +1537,11 @@ def written_bytes(
     :param obj: The object to write.
     :return: The bytes that would have been written to a file.
 
-    Use case: When you have a function that writes to files, and you want to get an 
-    equivalent function but that gives you what bytes or string WOULD have been written 
-    to a file, so you can better reuse (to write elsewhere, for example, or because 
+    Use case: When you have a function that writes to files, and you want to get an
+    equivalent function but that gives you what bytes or string WOULD have been written
+    to a file, so you can better reuse (to write elsewhere, for example, or because
     you need to pipe those bytes to another function).
-    
+
     Example usage: Yes, we have json.dumps to get the JSON string, but what if
     (like is often the case) you just have a function that writes to a file-like object,
     like the `json.dump(obj, fp)` function? You can use `written_bytes` to get a
@@ -1486,13 +1582,124 @@ def written_bytes(
     buffer = io_buffer_cls()
 
     # Use the provided file_writer function to write to the buffer
-    if obj_arg_position_in_writer == 0:
-        file_writer(obj, buffer)
-    elif obj_arg_position_in_writer == 1:
-        file_writer(buffer, obj)
-    else:
-        raise ValueError('obj_arg_position_in_writer must be 0 or 1')
+    _call_writer(file_writer, obj, buffer, obj_arg_position_in_writer)
 
     # Retrieve the bytes from the buffer
     buffer.seek(0)
     return buffer.read()
+
+
+def written_key(
+    obj: VT = None,
+    writer: Writer = None,
+    *,
+    key: KT = None,
+    obj_arg_position_in_writer: int = 0,
+):
+    """
+    Writes an object to a key and returns the key.
+    If key is not given, a temporary file is created and its path is returned.
+
+    :param obj: The object to write.
+    :param writer: A function that writes an object to a file.
+    :param key: The key (by default, filepath) to write to.
+        If None, a temporary file is created.
+        If a string with a '*', the '*' is replaced with a unique temporary filename.
+    :param obj_arg_position_in_writer: Position of the object argument in writer function (0 or 1).
+
+    :return: The file path where the object was written.
+
+    Example usage:
+
+    Let's make a store and a writer for that store.
+
+    >>> store = dict()
+    >>> writer = writer=lambda obj, key: store.__setitem__(key, obj)
+
+    Note the order a writer expects is (obj, key), or we'd just be able to use 
+    `store.__setitem__` as our writer.
+
+    If we specify a key, the object will be written to that key in the store 
+    and the key is output.
+
+    >>> written_key(42, writer=writer, key='my_key')
+    'my_key'
+    >>> store
+    {'my_key': 42}
+
+    Often, you'll want to fix your writer (and possibly your key).
+    You can do so with `functools.partial`, but for convenience, you can also
+    just specify a writer, without an input object, and get a function that
+    will write an object to a key.
+
+    >>> write_to_store = written_key(writer=writer, key='another_key')
+    >>> write_to_store(99)
+    'another_key'
+    >>> store
+    {'my_key': 42, 'another_key': 99}
+    
+    If you don't specify a key, a temporary file is created and the key is output.
+
+    >>> write_to_store = written_key(writer=writer)
+    >>> key = write_to_store(43)
+    >>> key  # doctest: +SKIP
+    '/var/folders/mc/c070wfh51kxd9lft8dl74q1r0000gn/T/tmp8yaczd8b'
+    >>> store[key]
+    43
+    
+    If the key you specify is a string with a '*', the '*' is replaced with a 
+    unique temporary filename, or the full path of the temporary file if the * 
+    is at the start.
+
+    >>> write_to_store = written_key(writer=writer, key='*.ext')
+    >>> key = write_to_store(44)
+    >>> key  # doctest: +ELLIPSIS
+    '....ext'
+    >>> store[key]
+    44
+
+    One useful use case is when you want to pipe the output of one function into 
+    another function that expects a file path. 
+    What you need to do then is just pipe your written_key function into that 
+    function that expects to work with a file path, and it'll be like piping the
+    value of your input object into that function (just via a temp file).
+    
+    >>> from dol.util import Pipe
+    >>> store.clear()
+    >>> key_func = lambda key: store.get(key) * 10
+    >>> pipe_obj_to_reader = Pipe(written_key(writer=writer), key_func)
+    >>> pipe_obj_to_reader(45)
+    450
+    >>> store  # doctest: +ELLIPSIS
+    {...: 45}
+
+    """
+    if obj is None:
+        return partial(
+            written_key,
+            writer=writer,
+            key=key,
+            obj_arg_position_in_writer=obj_arg_position_in_writer,
+        )
+
+    if key is None:
+        # Create a temporary file
+        fd, temp_filepath = tempfile.mkstemp()
+        os.close(fd)
+        key = temp_filepath
+    elif isinstance(key, str) and '*' in key:
+        temp_filepath = tempfile.mktemp()
+        if key.startswith('*'):
+            # Replace * of key with a unique temporary filename
+            key = key.replace('*', temp_filepath)
+        else:
+            # separate directory and filename
+            dir_name, base_name = os.path.split(temp_filepath)
+            # Replace * of key with a unique temporary filename
+            key = key.replace('*', base_name)
+
+    # Write the object to the specified filepath
+    _call_writer(writer, obj, key, obj_arg_position_in_writer)
+
+    return key
+
