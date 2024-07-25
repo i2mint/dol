@@ -77,35 +77,35 @@ def test_cache_property_method(capsys):
     # Test normal method
     assert obj.normal_method == 1
     captured = capsys.readouterr()
-    assert "normal_method called" in captured.out
+    assert 'normal_method called' in captured.out
 
     assert obj.normal_method == 1
     captured = capsys.readouterr()
-    assert "normal_method called" not in captured.out  # Should not print again
+    assert 'normal_method called' not in captured.out  # Should not print again
 
     # Test property method
     assert obj.property_method == 2
     captured = capsys.readouterr()
-    assert "property_method called" in captured.out
+    assert 'property_method called' in captured.out
 
     assert obj.property_method == 2
     captured = capsys.readouterr()
-    assert "property_method called" not in captured.out  # Should not print again
+    assert 'property_method called' not in captured.out  # Should not print again
 
     # Test cached_property method
     assert obj.cached_property_method == 3
     captured = capsys.readouterr()
-    assert "cached_property_method called" in captured.out
+    assert 'cached_property_method called' in captured.out
 
     assert obj.cached_property_method == 3
     captured = capsys.readouterr()
-    assert "cached_property_method called" not in captured.out  # Should not print again
+    assert 'cached_property_method called' not in captured.out  # Should not print again
 
     # Test cache_this method
     assert obj.cache_this_method == 4
     captured = capsys.readouterr()
-    assert "cache_this_method called" in captured.out
+    assert 'cache_this_method called' in captured.out
 
     assert obj.cache_this_method == 4
     captured = capsys.readouterr()
-    assert "cache_this_method called" not in captured.out  # Should not print again
+    assert 'cache_this_method called' not in captured.out  # Should not print again
