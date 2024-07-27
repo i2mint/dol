@@ -2,7 +2,7 @@
 Various tools to add functionality to stores
 """
 
-from typing import Optional, Callable, KT, VT
+from typing import Optional, Callable, KT, VT, Any, Union
 from collections.abc import Mapping
 
 from dol.base import Store
