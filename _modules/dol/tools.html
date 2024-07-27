@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.51 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.52 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=61865956"></script>
+        <script src="../../_static/documentation_options.js?v=567ed33c"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -114,7 +114,7 @@
 <span class="sd">Various tools to add functionality to stores</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
 
 <span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
@@ -130,6 +130,12 @@
 
 <span class="n">_NOT_FOUND</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
 
+<span class="n">Instance</span> <span class="o">=</span> <span class="n">Any</span>
+<span class="n">PropertyFunc</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Instance</span><span class="p">],</span> <span class="n">VT</span><span class="p">]</span>
+<span class="n">MethodName</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="n">Cache</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">MethodName</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]]</span>
+<span class="n">KeyType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">MethodName</span><span class="p">],</span> <span class="n">KT</span><span class="p">]]</span>
+
 
 <div class="viewcode-block" id="CachedProperty">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.CachedProperty">[docs]</a>
@@ -141,7 +147,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">allow_none_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lock_factory</span><span class="o">=</span><span class="n">RLock</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">func</span><span class="p">:</span> <span class="n">PropertyFunc</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Cache</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">KeyType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">allow_none_keys</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">lock_factory</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">RLock</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the cached property.</span>
@@ -257,7 +269,12 @@
 
 <div class="viewcode-block" id="cache_this">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.cache_this">[docs]</a>
-<span class="k">def</span> <span class="nf">cache_this</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">cache_this</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">:</span> <span class="n">PropertyFunc</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Cache</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">KeyType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms a method into a cached property with control over cache object and key.</span>
 
@@ -432,7 +449,9 @@
 
 <div class="viewcode-block" id="cache_property_method">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.cache_property_method">[docs]</a>
-<span class="k">def</span> <span class="nf">cache_property_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">cache_decorator</span><span class="o">=</span><span class="n">cache_this</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">cache_property_method</span><span class="p">(</span>
+    <span class="bp">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="n">MethodName</span><span class="p">,</span> <span class="n">cache_decorator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">cache_this</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Converts a method of a class into a CachedProperty.</span>
 
