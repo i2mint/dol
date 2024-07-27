@@ -2,7 +2,7 @@
 Various tools to add functionality to stores
 """
 
-from typing import Optional, Callable
+from typing import Optional, Callable, KT, VT
 from collections.abc import Mapping
 
 from dol.base import Store
@@ -18,6 +18,12 @@ from collections.abc import MutableMapping
 
 _NOT_FOUND = object()
 
+Instance = Any
+PropertyFunc = Callable[[Instance], VT]
+MethodName = str
+Cache = Union[MethodName, MutableMapping[KT, VT]]
+KeyType = Union[KT, Callable[[MethodName], KT]]
+
 
 class CachedProperty:
     """Descriptor that caches the result of the first call to a method.
@@ -27,7 +33,13 @@ class CachedProperty:
     """
 
     def __init__(
-        self, func, cache=None, key=None, *, allow_none_keys=False, lock_factory=RLock
+        self,
+        func: PropertyFunc,
+        cache: Optional[Cache] = None,
+        key: Optional[KeyType] = None,
+        *,
+        allow_none_keys: bool = False,
+        lock_factory: Callable = RLock,
     ):
         """
         Initialize the cached property.
@@ -140,7 +152,12 @@ class CachedProperty:
     __class_getitem__ = classmethod(GenericAlias)
 
 
-def cache_this(func=None, *, cache=None, key=None):
+def cache_this(
+    func: PropertyFunc = None,
+    *,
+    cache: Optional[Cache] = None,
+    key: Optional[KeyType] = None,
+):
     r"""
     Transforms a method into a cached property with control over cache object and key.
 
@@ -312,7 +329,9 @@ def cache_this(func=None, *, cache=None, key=None):
         return CachedProperty(func, cache=cache, key=key)
 
 
-def cache_property_method(cls, method_name, cache_decorator=cache_this):
+def cache_property_method(
+    cls, method_name: MethodName, cache_decorator: Callable = cache_this
+):
     """
     Converts a method of a class into a CachedProperty.
 
