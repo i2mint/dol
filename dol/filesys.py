@@ -3,7 +3,7 @@
 import os
 from os import stat as os_stat
 from functools import wraps, partial
-from typing import Union, Callable
+from typing import Union, Callable, Iterable, Optional
 
 from dol.base import Collection, KvReader, KvPersister
 from dol.trans import wrap_kvs, store_decorator, filt_iter
@@ -68,10 +68,142 @@ def iter_dirpaths_in_folder_recursively(
                     yield entry
 
 
-def ensure_dir(dirpath, verbose: Union[bool, str, Callable] = False):
+def create_directories(dirpath, max_dirs_to_make: Optional[int] = None):
+    """
+    Create directories up to a specified limit.
+
+    Parameters:
+    dirpath (str): The directory path to create.
+    max_dirs_to_make (int, optional): The maximum number of directories to create. If None, there's no limit.
+
+    Returns:
+    bool: True if the directory was created successfully, False otherwise.
+
+    Raises:
+    ValueError: If max_dirs_to_make is negative.
+
+    Examples:
+    >>> import tempfile, shutil
+    >>> temp_dir = tempfile.mkdtemp()
+    >>> target_dir = os.path.join(temp_dir, 'a', 'b', 'c')
+    >>> create_directories(target_dir, max_dirs_to_make=2)
+    False
+    >>> create_directories(target_dir, max_dirs_to_make=3)
+    True
+    >>> os.path.isdir(target_dir)
+    True
+    >>> shutil.rmtree(temp_dir)  # Cleanup
+
+    >>> temp_dir = tempfile.mkdtemp()
+    >>> target_dir = os.path.join(temp_dir, 'a', 'b', 'c', 'd')
+    >>> create_directories(target_dir)
+    True
+    >>> os.path.isdir(target_dir)
+    True
+    >>> shutil.rmtree(temp_dir)  # Cleanup
+    """
+    if max_dirs_to_make is not None and max_dirs_to_make < 0:
+        raise ValueError("max_dirs_to_make must be non-negative or None")
+
+    if os.path.exists(dirpath):
+        return True
+
+    if max_dirs_to_make is None:
+        os.makedirs(dirpath, exist_ok=True)
+        return True
+
+    # Calculate the number of directories to create
+    dirs_to_make = []
+    current_path = dirpath
+
+    while not os.path.exists(current_path):
+        dirs_to_make.append(current_path)
+        current_path, _ = os.path.split(current_path)
+
+    if len(dirs_to_make) > max_dirs_to_make:
+        return False
+
+    # Create directories from the top level down
+    for dir_to_make in reversed(dirs_to_make):
+        os.mkdir(dir_to_make)
+
+    return True
+
+
+def process_path(
+    *path: Iterable[str],
+    ensure_dir_exists: Union[int, bool] = False,
+    assert_exists: bool = False,
+    ensure_endswith_slash: bool = False,
+    ensure_does_not_end_with_slash: bool = False,
+    expanduser: bool = True,
+    expandvars: bool = True,
+    abspath: bool = True,
+    rootdir: str = '',
+) -> str:
+    """
+    Process a path string, ensuring it exists, and optionally expanding user.
+
+    Args:
+        path (Iterable[str]): The path to process. Can be multiple components of a path.
+        ensure_dir_exists (bool): Whether to ensure the path exists.
+        assert_exists (bool): Whether to assert that the path exists.
+        ensure_endswith_slash (bool): Whether to ensure the path ends with a slash.
+        ensure_does_not_end_with_slash (bool): Whether to ensure the path does not end with a slash.
+        expanduser (bool): Whether to expand the user in the path.
+        expandvars (bool): Whether to expand environment variables in the path.
+        abspath (bool): Whether to convert the path to an absolute path.
+        rootdir (str): The root directory to prepend to the path.
+
+    Returns:
+        str: The processed path.
+
+    >>> process_path('a', 'b', 'c')  # doctest: +ELLIPSIS
+    '...a/b/c'
+    >>> from functools import partial
+    >>> process_path('a', 'b', 'c', rootdir='/root/dir/', ensure_endswith_slash=True)
+    '/root/dir/a/b/c/'
+
+    """
+    path = os.path.join(*path)
+    if ensure_endswith_slash and ensure_does_not_end_with_slash:
+        raise ValueError(
+            'Cannot ensure both ends with slash and does not end with slash.'
+        )
+    if rootdir:
+        path = os.path.join(rootdir, path)
+    if expanduser:
+        path = os.path.expanduser(path)
+    if expandvars:
+        path = os.path.expandvars(path)
+    if abspath:
+        path = os.path.abspath(path)
+    if ensure_endswith_slash:
+        if not path.endswith('/'):
+            path = path + '/'
+    if ensure_does_not_end_with_slash:
+        if path.endswith('/'):
+            path = path[:-1]
+    if ensure_dir_exists:
+        if ensure_dir_exists is True:
+            ensure_dir_exists = None  # max_dirs_to_make
+        create_directories(path, max_dirs_to_make=ensure_dir_exists)
+    if assert_exists:
+        assert os.path.exists(path), f'Path does not exist: {path}'
+    return path
+
+
+def ensure_dir(
+    dirpath,
+    *,
+    max_dirs_to_make: Optional[int] = None,
+    verbose: Union[bool, str, Callable] = False,
+):
     """Ensure that a directory exists, creating it if necessary.
 
     :param dirpath: path to the directory to create
+    :param max_dirs_to_make: the maximum number of directories to create.
+        If None, there's no limit.
     :param verbose: controls verbosity (the noise ensure_dir makes if it make folder)
     :return: the path to the directory
 
@@ -99,7 +231,7 @@ def ensure_dir(dirpath, verbose: Union[bool, str, Callable] = False):
             else:
                 string_to_print = verbose
                 print(string_to_print)
-        os.makedirs(dirpath, exist_ok=True)
+        create_directories(dirpath, max_dirs_to_make=max_dirs_to_make)
     return dirpath
 
 
@@ -108,7 +240,7 @@ def temp_dir(dirname='', make_it_if_necessary=True, verbose=False):
 
     tmpdir = os.path.join(gettempdir(), dirname)
     if make_it_if_necessary:
-        ensure_dir(tmpdir, verbose)
+        ensure_dir(tmpdir, verbose=verbose)
     return tmpdir
 
 
@@ -223,7 +355,10 @@ class FileSysCollection(Collection):
         return bool(self._key_pattern.match(k))
 
     def validate_key(
-        self, k, err_msg_format=_dflt_not_valid_error_msg, err_type=KeyValidationError,
+        self,
+        k,
+        err_msg_format=_dflt_not_valid_error_msg,
+        err_type=KeyValidationError,
     ):
         if not self.is_valid_key(k):
             raise err_type(err_msg_format.format(k))
@@ -470,7 +605,9 @@ class DirReader(DirCollection, KvReader):
         return DirReader(k)
 
 
-def mk_dirs_if_missing_preset(self, k, v, verbose=False):
+def mk_dirs_if_missing_preset(
+    self, k, v, *, max_dirs_to_make: Optional[int] = None, verbose=False
+):
     # TODO: I'm not thrilled in the way I'm doing this; find alternatives
     try:
         super(type(self), self).__setitem__(k, v)
@@ -483,8 +620,8 @@ def mk_dirs_if_missing_preset(self, k, v, verbose=False):
         # get the full path of directory needed for this file
         dirname = os.path.dirname(_id)
         # make all the directories needed
-        ensure_dir(dirname, verbose=verbose)
-        os.makedirs(dirname, exist_ok=True)
+        ensure_dir(dirname, max_dirs_to_make=max_dirs_to_make, verbose=verbose)
+        # os.makedirs(dirname, exist_ok=True)  # TODO: ensure_dir does this already, no?
         # try writing again
         super(type(self), self).__setitem__(k, v)
         # TODO: Undesirable here: If the setitem still fails, we created dirs
@@ -501,6 +638,7 @@ def mk_dirs_if_missing_preset(self, k, v, verbose=False):
 def mk_dirs_if_missing(
     store_cls=None,
     *,
+    max_dirs_to_make: Optional[int] = None,
     verbose: Union[bool, str, Callable] = False,
     key_condition=None,  # TODO: not used! Should use! Add to ensure_dir
 ):
@@ -510,7 +648,9 @@ def mk_dirs_if_missing(
     Note that it'll only effect paths relative to the rootdir, which needs to be
     ensured to exist separatedly.
     """
-    _mk_dirs_if_missing_preset = partial(mk_dirs_if_missing_preset, verbose=verbose)
+    _mk_dirs_if_missing_preset = partial(
+        mk_dirs_if_missing_preset, max_dirs_to_make=max_dirs_to_make, verbose=verbose
+    )
     return wrap_kvs(store_cls, preset=_mk_dirs_if_missing_preset)
 
 

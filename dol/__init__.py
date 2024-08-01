@@ -93,6 +93,7 @@ from dol.filesys import (
     PickleFiles,  # CRUD access to pickled files
     JsonFiles,  # CRUD access to jsob files,
     Jsons,  # Same as JsonFiles, but with added .json extension handling
+    create_directories,
 )
 
 from dol.util import (
