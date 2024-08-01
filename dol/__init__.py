@@ -1,4 +1,5 @@
 """Core tools to build simple interfaces to complex data sources and bend the interface to your will (and need)"""
+
 import os
 
 # from contextlib import suppress
@@ -94,6 +95,7 @@ from dol.filesys import (
     JsonFiles,  # CRUD access to jsob files,
     Jsons,  # Same as JsonFiles, but with added .json extension handling
     create_directories,
+    process_path,
 )
 
 from dol.util import (
