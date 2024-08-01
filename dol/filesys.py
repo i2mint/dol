@@ -103,7 +103,7 @@ def create_directories(dirpath, max_dirs_to_make: Optional[int] = None):
     >>> shutil.rmtree(temp_dir)  # Cleanup
     """
     if max_dirs_to_make is not None and max_dirs_to_make < 0:
-        raise ValueError("max_dirs_to_make must be non-negative or None")
+        raise ValueError('max_dirs_to_make must be non-negative or None')
 
     if os.path.exists(dirpath):
         return True
@@ -355,10 +355,7 @@ class FileSysCollection(Collection):
         return bool(self._key_pattern.match(k))
 
     def validate_key(
-        self,
-        k,
-        err_msg_format=_dflt_not_valid_error_msg,
-        err_type=KeyValidationError,
+        self, k, err_msg_format=_dflt_not_valid_error_msg, err_type=KeyValidationError,
     ):
         if not self.is_valid_key(k):
             raise err_type(err_msg_format.format(k))
