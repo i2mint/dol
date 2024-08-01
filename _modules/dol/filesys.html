@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.filesys &mdash; dol 0.2.52 documentation</title>
+  <title>dol.filesys &mdash; dol 0.2.53 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=567ed33c"></script>
+        <script src="../../_static/documentation_options.js?v=f2065725"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -115,7 +115,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">stat</span> <span class="k">as</span> <span class="n">os_stat</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">,</span> <span class="n">KvPersister</span>
 <span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">wrap_kvs</span><span class="p">,</span> <span class="n">store_decorator</span><span class="p">,</span> <span class="n">filt_iter</span>
@@ -189,12 +189,150 @@
 
 
 
+<div class="viewcode-block" id="create_directories">
+<a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.create_directories">[docs]</a>
+<span class="k">def</span> <span class="nf">create_directories</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create directories up to a specified limit.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    dirpath (str): The directory path to create.</span>
+<span class="sd">    max_dirs_to_make (int, optional): The maximum number of directories to create. If None, there&#39;s no limit.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    bool: True if the directory was created successfully, False otherwise.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">    ValueError: If max_dirs_to_make is negative.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">    &gt;&gt;&gt; import tempfile, shutil</span>
+<span class="sd">    &gt;&gt;&gt; temp_dir = tempfile.mkdtemp()</span>
+<span class="sd">    &gt;&gt;&gt; target_dir = os.path.join(temp_dir, &#39;a&#39;, &#39;b&#39;, &#39;c&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; create_directories(target_dir, max_dirs_to_make=2)</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; create_directories(target_dir, max_dirs_to_make=3)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; os.path.isdir(target_dir)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; shutil.rmtree(temp_dir)  # Cleanup</span>
+
+<span class="sd">    &gt;&gt;&gt; temp_dir = tempfile.mkdtemp()</span>
+<span class="sd">    &gt;&gt;&gt; target_dir = os.path.join(temp_dir, &#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; create_directories(target_dir)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; os.path.isdir(target_dir)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; shutil.rmtree(temp_dir)  # Cleanup</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">max_dirs_to_make</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_dirs_to_make</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;max_dirs_to_make must be non-negative or None&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dirpath</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="n">max_dirs_to_make</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="c1"># Calculate the number of directories to create</span>
+    <span class="n">dirs_to_make</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">current_path</span> <span class="o">=</span> <span class="n">dirpath</span>
+
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">current_path</span><span class="p">):</span>
+        <span class="n">dirs_to_make</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_path</span><span class="p">)</span>
+        <span class="n">current_path</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">current_path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dirs_to_make</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_dirs_to_make</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># Create directories from the top level down</span>
+    <span class="k">for</span> <span class="n">dir_to_make</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">dirs_to_make</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dir_to_make</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="process_path">
+<a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.process_path">[docs]</a>
+<span class="k">def</span> <span class="nf">process_path</span><span class="p">(</span>
+    <span class="o">*</span><span class="n">path</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">ensure_dir_exists</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">assert_exists</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">ensure_endswith_slash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">ensure_does_not_end_with_slash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">expanduser</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">expandvars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">abspath</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">rootdir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process a path string, ensuring it exists, and optionally expanding user.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path (Iterable[str]): The path to process. Can be multiple components of a path.</span>
+<span class="sd">        ensure_dir_exists (bool): Whether to ensure the path exists.</span>
+<span class="sd">        assert_exists (bool): Whether to assert that the path exists.</span>
+<span class="sd">        ensure_endswith_slash (bool): Whether to ensure the path ends with a slash.</span>
+<span class="sd">        ensure_does_not_end_with_slash (bool): Whether to ensure the path does not end with a slash.</span>
+<span class="sd">        expanduser (bool): Whether to expand the user in the path.</span>
+<span class="sd">        expandvars (bool): Whether to expand environment variables in the path.</span>
+<span class="sd">        abspath (bool): Whether to convert the path to an absolute path.</span>
+<span class="sd">        rootdir (str): The root directory to prepend to the path.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The processed path.</span>
+
+<span class="sd">    &gt;&gt;&gt; process_path(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;)  # doctest: +ELLIPSIS</span>
+<span class="sd">    &#39;...a/b/c&#39;</span>
+<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">    &gt;&gt;&gt; process_path(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, rootdir=&#39;/root/dir/&#39;, ensure_endswith_slash=True)</span>
+<span class="sd">    &#39;/root/dir/a/b/c/&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ensure_endswith_slash</span> <span class="ow">and</span> <span class="n">ensure_does_not_end_with_slash</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s1">&#39;Cannot ensure both ends with slash and does not end with slash.&#39;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">rootdir</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">expanduser</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">expandvars</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">abspath</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ensure_endswith_slash</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
+    <span class="k">if</span> <span class="n">ensure_does_not_end_with_slash</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">ensure_dir_exists</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ensure_dir_exists</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">ensure_dir_exists</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># max_dirs_to_make</span>
+        <span class="n">create_directories</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">ensure_dir_exists</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">assert_exists</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;Path does not exist: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="k">return</span> <span class="n">path</span></div>
+
+
+
 <div class="viewcode-block" id="ensure_dir">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.ensure_dir">[docs]</a>
-<span class="k">def</span> <span class="nf">ensure_dir</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">ensure_dir</span><span class="p">(</span>
+    <span class="n">dirpath</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">max_dirs_to_make</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure that a directory exists, creating it if necessary.</span>
 
 <span class="sd">    :param dirpath: path to the directory to create</span>
+<span class="sd">    :param max_dirs_to_make: the maximum number of directories to create.</span>
+<span class="sd">        If None, there&#39;s no limit.</span>
 <span class="sd">    :param verbose: controls verbosity (the noise ensure_dir makes if it make folder)</span>
 <span class="sd">    :return: the path to the directory</span>
 
@@ -222,7 +360,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">string_to_print</span> <span class="o">=</span> <span class="n">verbose</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">string_to_print</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">create_directories</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">max_dirs_to_make</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dirpath</span></div>
 
 
@@ -232,7 +370,7 @@
 
     <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="n">dirname</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">make_it_if_necessary</span><span class="p">:</span>
-        <span class="n">ensure_dir</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+        <span class="n">ensure_dir</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">tmpdir</span>
 
 
@@ -358,7 +496,10 @@
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">validate_key</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">err_msg_format</span><span class="o">=</span><span class="n">_dflt_not_valid_error_msg</span><span class="p">,</span> <span class="n">err_type</span><span class="o">=</span><span class="n">KeyValidationError</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">,</span>
+        <span class="n">err_msg_format</span><span class="o">=</span><span class="n">_dflt_not_valid_error_msg</span><span class="p">,</span>
+        <span class="n">err_type</span><span class="o">=</span><span class="n">KeyValidationError</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid_key</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">err_type</span><span class="p">(</span><span class="n">err_msg_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
@@ -657,7 +798,9 @@
 
 
 
-<span class="k">def</span> <span class="nf">mk_dirs_if_missing_preset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">mk_dirs_if_missing_preset</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">):</span>
     <span class="c1"># TODO: I&#39;m not thrilled in the way I&#39;m doing this; find alternatives</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
@@ -670,8 +813,8 @@
         <span class="c1"># get the full path of directory needed for this file</span>
         <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">_id</span><span class="p">)</span>
         <span class="c1"># make all the directories needed</span>
-        <span class="n">ensure_dir</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">ensure_dir</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">max_dirs_to_make</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="c1"># os.makedirs(dirname, exist_ok=True)  # TODO: ensure_dir does this already, no?</span>
         <span class="c1"># try writing again</span>
         <span class="nb">super</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
         <span class="c1"># TODO: Undesirable here: If the setitem still fails, we created dirs</span>
@@ -690,6 +833,7 @@
 <span class="k">def</span> <span class="nf">mk_dirs_if_missing</span><span class="p">(</span>
     <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
+    <span class="n">max_dirs_to_make</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">verbose</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">key_condition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># TODO: not used! Should use! Add to ensure_dir</span>
 <span class="p">):</span>
@@ -699,7 +843,9 @@
 <span class="sd">    Note that it&#39;ll only effect paths relative to the rootdir, which needs to be</span>
 <span class="sd">    ensured to exist separatedly.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_mk_dirs_if_missing_preset</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">mk_dirs_if_missing_preset</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">_mk_dirs_if_missing_preset</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">mk_dirs_if_missing_preset</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">max_dirs_to_make</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="n">_mk_dirs_if_missing_preset</span><span class="p">)</span></div>
 
 

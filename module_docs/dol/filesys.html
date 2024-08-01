@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.filesys &mdash; dol 0.2.52 documentation</title>
+  <title>dol.filesys &mdash; dol 0.2.53 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=567ed33c"></script>
+        <script src="../../_static/documentation_options.js?v=f2065725"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -86,11 +86,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.RelPathFileStringReader"><code class="docutils literal notranslate"><span class="pre">RelPathFileStringReader</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.TextFiles"><code class="docutils literal notranslate"><span class="pre">TextFiles</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.TextFilesReader"><code class="docutils literal notranslate"><span class="pre">TextFilesReader</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.filesys.create_directories"><code class="docutils literal notranslate"><span class="pre">create_directories()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.ensure_dir"><code class="docutils literal notranslate"><span class="pre">ensure_dir()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.ensure_slash_suffix"><code class="docutils literal notranslate"><span class="pre">ensure_slash_suffix()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.iter_dirpaths_in_folder_recursively"><code class="docutils literal notranslate"><span class="pre">iter_dirpaths_in_folder_recursively()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.iter_filepaths_in_folder_recursively"><code class="docutils literal notranslate"><span class="pre">iter_filepaths_in_folder_recursively()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.mk_dirs_if_missing"><code class="docutils literal notranslate"><span class="pre">mk_dirs_if_missing()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.filesys.process_path"><code class="docutils literal notranslate"><span class="pre">process_path()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.resolve_dir"><code class="docutils literal notranslate"><span class="pre">resolve_dir()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.resolve_path"><code class="docutils literal notranslate"><span class="pre">resolve_path()</span></code></a></li>
 </ul>
@@ -292,13 +294,48 @@ Should be placed before the concrete perisister in the mro but in such a manner 
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.filesys.create_directories">
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">create_directories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dirs_to_make</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#create_directories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.create_directories" title="Link to this definition"></a></dt>
+<dd><p>Create directories up to a specified limit.</p>
+<p>Parameters:
+dirpath (str): The directory path to create.
+max_dirs_to_make (int, optional): The maximum number of directories to create. If None, there’s no limit.</p>
+<p>Returns:
+bool: True if the directory was created successfully, False otherwise.</p>
+<p>Raises:
+ValueError: If max_dirs_to_make is negative.</p>
+<p>Examples:
+&gt;&gt;&gt; import tempfile, shutil
+&gt;&gt;&gt; temp_dir = tempfile.mkdtemp()
+&gt;&gt;&gt; target_dir = os.path.join(temp_dir, ‘a’, ‘b’, ‘c’)
+&gt;&gt;&gt; create_directories(target_dir, max_dirs_to_make=2)
+False
+&gt;&gt;&gt; create_directories(target_dir, max_dirs_to_make=3)
+True
+&gt;&gt;&gt; os.path.isdir(target_dir)
+True
+&gt;&gt;&gt; shutil.rmtree(temp_dir)  # Cleanup</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">create_directories</span><span class="p">(</span><span class="n">target_dir</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">target_dir</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">)</span>  <span class="c1"># Cleanup</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.filesys.ensure_dir">
-<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">ensure_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#ensure_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.ensure_dir" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">ensure_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirpath</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dirs_to_make</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#ensure_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.ensure_dir" title="Link to this definition"></a></dt>
 <dd><p>Ensure that a directory exists, creating it if necessary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dirpath</strong> – path to the directory to create</p></li>
+<li><p><strong>max_dirs_to_make</strong> – the maximum number of directories to create.
+If None, there’s no limit.</p></li>
 <li><p><strong>verbose</strong> – controls verbosity (the noise ensure_dir makes if it make folder)</p></li>
 </ul>
 </dd>
@@ -339,11 +376,45 @@ on <code class="docutils literal notranslate"><span class="pre">dirpath</span></
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.filesys.mk_dirs_if_missing">
-<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">mk_dirs_if_missing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_condition</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#mk_dirs_if_missing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.mk_dirs_if_missing" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">mk_dirs_if_missing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dirs_to_make</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_condition</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#mk_dirs_if_missing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.mk_dirs_if_missing" title="Link to this definition"></a></dt>
 <dd><p>Store decorator that will make the store create directories on write as
 needed.</p>
 <p>Note that it’ll only effect paths relative to the rootdir, which needs to be
 ensured to exist separatedly.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.filesys.process_path">
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">process_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_dir_exists</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assert_exists</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_endswith_slash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_does_not_end_with_slash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expanduser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expandvars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abspath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rootdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dol/filesys.html#process_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.process_path" title="Link to this definition"></a></dt>
+<dd><p>Process a path string, ensuring it exists, and optionally expanding user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>Iterable</em><em>[</em><em>str</em><em>]</em>) – The path to process. Can be multiple components of a path.</p></li>
+<li><p><strong>ensure_dir_exists</strong> (<em>bool</em>) – Whether to ensure the path exists.</p></li>
+<li><p><strong>assert_exists</strong> (<em>bool</em>) – Whether to assert that the path exists.</p></li>
+<li><p><strong>ensure_endswith_slash</strong> (<em>bool</em>) – Whether to ensure the path ends with a slash.</p></li>
+<li><p><strong>ensure_does_not_end_with_slash</strong> (<em>bool</em>) – Whether to ensure the path does not end with a slash.</p></li>
+<li><p><strong>expanduser</strong> (<em>bool</em>) – Whether to expand the user in the path.</p></li>
+<li><p><strong>expandvars</strong> (<em>bool</em>) – Whether to expand environment variables in the path.</p></li>
+<li><p><strong>abspath</strong> (<em>bool</em>) – Whether to convert the path to an absolute path.</p></li>
+<li><p><strong>rootdir</strong> (<em>str</em>) – The root directory to prepend to the path.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The processed path.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">process_path</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">)</span>  
+<span class="go">&#39;...a/b/c&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">process_path</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="n">rootdir</span><span class="o">=</span><span class="s1">&#39;/root/dir/&#39;</span><span class="p">,</span> <span class="n">ensure_endswith_slash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">&#39;/root/dir/a/b/c/&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
