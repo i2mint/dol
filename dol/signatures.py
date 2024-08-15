@@ -164,9 +164,24 @@ class FuncCallNotMatchingSignature(TypeError):
 
 
 class IncompatibleSignatures(ValueError):
+    from pprint import pformat
+
     """Raise when two signatures are not compatible.
     (see https://github.com/i2mint/i2/discussions/76 for more information on signature
     compatibility)"""
+
+    def __init__(self, *args, sig1=None, sig2=None, **kwargs):
+        args = list(args or ("",))
+        sig_pairs = None
+        if sig1 and sig2:
+            sig_pairs = SigPair(sig1, sig2)
+            # add the signature differences to the error message
+            args[0] += (
+                f"\n----- Signature differences (not all differences necessarily "
+                f"matter in your context): ----- \n{sig_pairs.diff_str()}"
+            )
+        super().__init__(*args, **kwargs)
+        self.sig_pairs = sig_pairs
 
 
 # TODO: Couldn't make this work. See https://www.python.org/dev/peps/pep-0562/
@@ -1421,6 +1436,13 @@ class Sig(Signature, Mapping):
         """
         return Signature(**self.to_signature_kwargs())
 
+    def pair_with(self, other_sig) -> 'SigPair':
+        """Get an object that pairs with another signature for comparison, merging, etc.
+
+        See `SigPair` for more details.
+        """
+        return SigPair(self, other_sig)
+
     def is_call_compatible_with(
         self, other_sig, *, param_comparator: Callable = dflt1_is_empty_or_dflt2_is_not
     ):
@@ -2053,28 +2075,72 @@ class Sig(Signature, Mapping):
             _self = self
             _sig = Sig(sig)
 
+        # Validation of the signatures
+
         _msg = f'\nHappened during an attempt to merge {self} and {sig}'
+        errors = {}
 
-        assert not _self.has_var_keyword or not _sig.has_var_keyword, (
-            f"Can't merge two signatures if they both have a VAR_POSITIONAL parameter:"
-            f'{_msg}'
-        )
-        assert (
-            not _self.has_var_keyword or not _sig.has_var_keyword
-        ), "Can't merge two signatures if they both have a VAR_KEYWORD parameter:{_msg}"
+        # Check if both signatures have VAR_POSITIONAL parameters
+        if _self.has_var_keyword and _sig.has_var_keyword:
+            errors['var_positional_conflict'] = (
+                f"Can't merge two signatures if they both have a VAR_POSITIONAL parameter: {_msg}"
+            )
 
-        assert all(
+        # Check if both signatures have VAR_KEYWORD parameters
+        if _self.has_var_keyword and _sig.has_var_keyword:
+            errors['var_keyword_conflict'] = (
+                f"Can't merge two signatures if they both have a VAR_KEYWORD parameter: {_msg}"
+            )
+
+        # Check if parameters with the same name have the same kind
+        if not all(
             _self[name].kind == _sig[name].kind for name in _self.keys() & _sig.keys()
-        ), (
-            'During a signature merge, if two names are the same, they must have the '
-            f'**same kind**:\n\t{_msg}\n'
-            "Tip: If you're trying to merge functions in some way, consider decorating "
-            'them with a signature mapping that avoids the argument name clashing'
-        )
+        ):
+            errors['kind_mismatch'] = (
+                'During a signature merge, if two names are the same, they must have the '
+                f'**same kind**:\n\t{_msg}\n'
+                "Tip: If you're trying to merge functions in some way, consider decorating "
+                'them with a signature mapping that avoids the argument name clashing'
+            )
 
-        assert default_conflict_method in get_args(SigMergeOptions), (
-            'default_conflict_method should be one of: ' f'{get_args(SigMergeOptions)}'
-        )
+        # Check if default_conflict_method is a valid SigMergeOption
+        if default_conflict_method not in get_args(SigMergeOptions):
+            errors['invalid_conflict_method'] = (
+                'default_conflict_method should be one of: '
+                f'{get_args(SigMergeOptions)}'
+            )
+
+        if errors:
+            # TODO: Raise all errors at once?
+            # TODO: Raise custom errors with more info?
+
+            # raise the first error
+            error_msg = next(iter(errors.values()))
+            raise IncompatibleSignatures(error_msg, sig1=_self, sig2=_sig)
+
+        # if _self.has_var_keyword and _sig.has_var_keyword:
+        #     errors['VAR_KEYWORD'] = 'Both signatures have a VAR_KEYWORD parameter'
+
+        # assert not _self.has_var_keyword or not _sig.has_var_keyword, (
+        #     f"Can't merge two signatures if they both have a VAR_POSITIONAL parameter:"
+        #     f'{_msg}'
+        # )
+        # assert (
+        #     not _self.has_var_keyword or not _sig.has_var_keyword
+        # ), "Can't merge two signatures if they both have a VAR_KEYWORD parameter:{_msg}"
+
+        # assert all(
+        #     _self[name].kind == _sig[name].kind for name in _self.keys() & _sig.keys()
+        # ), (
+        #     'During a signature merge, if two names are the same, they must have the '
+        #     f'**same kind**:\n\t{_msg}\n'
+        #     "Tip: If you're trying to merge functions in some way, consider decorating "
+        #     'them with a signature mapping that avoids the argument name clashing'
+        # )
+
+        # assert default_conflict_method in get_args(SigMergeOptions), (
+        #     'default_conflict_method should be one of: ' f'{get_args(SigMergeOptions)}'
+        # )
 
         if default_conflict_method == 'take_first':
             _sig = _sig - set(_self.keys() & _sig.keys())
@@ -2089,14 +2155,19 @@ class Sig(Signature, Mapping):
             # if default_conflict_method == 'take_first':
             #     _sig = _sig - set(_self.keys() & _sig.keys())
             # else:
-            raise ValueError(
-                'During a signature merge, if two names are the same, they must have '
-                'the '
+
+            error_msg = (
+                'During a signature merge, if two names are the same they must have the'
                 f'**same default**:\n\t{_msg}\n'
                 "Tip: If you're trying to merge functions in some way, consider "
                 'decorating '
-                'them with a signature mapping that avoids the argument name clashing'
+                'them with a signature mapping that avoids the argument name clashing.'
+                'You can also set ch_to_all_pk=True to ignore the kind of the '
+                'parameters or change the default_conflict_method to "take_first",'
+                'or another method that suits your needs.'
             )
+
+            raise IncompatibleSignatures(error_msg, sig1=_self, sig2=_sig)
 
         # assert all(
         #     _self[name].default == _sig[name].default
@@ -2168,32 +2239,22 @@ class Sig(Signature, Mapping):
 
         >>> def ff(w, /, x: float, y=1, *, z: int = 1):
         ...     ...  # just like f, but without the default for x
-        >>> Sig(f) + Sig(ff)  # doctest: +IGNORE_EXCEPTION_DETAIL
+        >>> Sig(f) + Sig(ff)  # doctest: +IGNORE_EXCEPTION_DETAIL +ELLIPSIS
         Traceback (most recent call last):
         ...
-        ValueError: During a signature merge, if two names are the same, they must
-        have the **same default**:
-        <BLANKSPACE>
-        Happened during an attempt to merge (w, /, x: float = 1, y=1, *, z: int = 1)
-        and (w, /, x: float, y=1, *, z: int = 1)
-        Tip: If you're trying to merge functions in some way, consider decorating them
-        with a signature mapping that avoids the argument name clashing
-
+        IncompatibleSignatures: During a signature merge, if two names are the same, they must
+        have the **same default**
+        ...
 
         >>> def hh(i, j, w=1):
         ...     ...  # like h, but w has a default
         ...
-        >>> Sig(h) + Sig(hh)  # doctest: +IGNORE_EXCEPTION_DETAIL
+        >>> Sig(h) + Sig(hh)  # doctest: +IGNORE_EXCEPTION_DETAIL +ELLIPSIS
         Traceback (most recent call last):
         ...
-        ValueError: During a signature merge, if two names are the same, they must
-        have the **same default**:
-        <BLANKSPACE>
-        Happened during an attempt to merge (i, j, w) and (i, j, w=1)
-        Tip: If you're trying to merge fposiunctions in some way, consider decorating
-        them
-        with a signature mapping that avoids the argument name clashing
-
+        IncompatibleSignatures: During a signature merge, if two names are the same, they must
+        have the **same default**
+        ...
 
         >>> Sig(f) + [
         ...     "w",
@@ -3181,8 +3242,28 @@ def _validate_sanity_of_signature_change(
             f'over function defaults and signatures.'
             f'The function you were wrapping had signature: '
             f"{name_of_obj(func) or ''}{Sig(func)} and "
-            f"the signature you wanted to inject was {new_sig.name or ''}{new_sig}"
+            f"the signature you wanted to inject was {new_sig.name or ''}{new_sig}",
+            sig1=Sig(func), sig2=new_sig,
         )
+
+
+########################################################################################
+# Utils
+
+
+def _signature_differences_str_for_error_msg(sig1, sig2):
+
+    from pprint import pformat
+
+    sig_diff = sig1.pair_with(sig2)
+
+    sig1_name = f"{sig1.name}" if sig1.name else "sig1"
+    sig2_name = f"{sig2.name}" if sig2.name else "sig2"
+
+    return (
+        'FYI: Here are the raw signature differences for {sig1_name} and {sig2_name} '
+        f'(not all need to necessarily be resolved):\n{pformat(sig_diff)}'
+    )
 
 
 ########################################################################################
@@ -4927,10 +5008,59 @@ from inspect import Parameter
 @dataclass
 class SigPair:
     """
-    Class to compare two signatures.
+    Class that operates on a pair of signatures.
+
+    For example, offers methods to compare two signatures in various ways.
 
     :param sig1: First signature or signature-able object.
     :param sig2: Second signature or signature-able object.
+
+    >>> from pprint import pprint
+    >>> def three(a, b: int, c=3): ...
+    >>> def little(a, *, b=2, d=4) -> int: ...
+    >>> def pigs(a, b: int = 2) -> int: ...
+    >>> sig_pair = SigPair(three, little)
+    >>>
+    >>> sig_pair.shared_names
+    ['a', 'b']
+    >>> sig_pair.names_missing_in_sig1
+    ['d']
+    >>> sig_pair.names_missing_in_sig2
+    ['c']
+    >>> sig_pair.param_comparison()
+    False
+    >>> pprint(sig_pair.diff())  # doctest: +NORMALIZE_WHITESPACE
+    {'names_missing_in_sig1': ['d'],
+    'names_missing_in_sig2': ['c'],
+    'param_differences': {'b': {'annotation': (<class 'int'>,
+                                                <class 'inspect._empty'>),
+                                'default': (<class 'inspect._empty'>, 2),
+                                'kind': (<_ParameterKind.POSITIONAL_OR_KEYWORD: 1>,
+                                        <_ParameterKind.KEYWORD_ONLY: 3>)}},
+    'return_annotation': (<class 'inspect._empty'>, <class 'int'>)}
+
+    Call compatibility says that any arguments leading to a valid call to a function
+    having the first signature, will also lead to a valid call to a function having the
+    second signature. This is not the case for the signatures of `three` and `little`:
+
+    >>> sig_pair.are_call_compatible()
+    False
+
+    But we don't need to have equal signatures to have call compatibility. For example,
+
+    >>> SigPair(three, lambda a, b=2, c=30: None).are_call_compatible()
+    True
+
+    Note that compatibility is not symmetric. For example, call compatibility is not:
+
+    >>> SigPair(three, pigs).are_call_compatible()
+    False
+
+    But,
+
+    >>> SigPair(pigs, three).are_call_compatible()
+    True
+
     """
 
     sig1: Union[Callable, Sig]
@@ -5002,11 +5132,7 @@ class SigPair:
             self.sig1, self.sig2, param_comparator=param_comparator
         )
 
-    def param_comparison(
-        self,
-        comparator=param_comparator,
-        aggregation=all,
-    ) -> bool:
+    def param_comparison(self, comparator=param_comparator, aggregation=all) -> bool:
         """
         Compare parameters between the two signatures using the provided comparator function.
 
@@ -5030,26 +5156,78 @@ class SigPair:
         """
         Get a dictionary of parameter differences between the two signatures.
 
-        :return: A dictionary containing differences for each parameter.
+        :return: A dict containing differences for each shared param that has any.
 
         >>> sig1 = Sig('(a, b: int, c=3)')
         >>> sig2 = Sig('(a, *, b=2, d=4)')
         >>> comp = SigPair(sig1, sig2)
         >>> result = comp.param_differences()
         >>> expected = {
-        ...     'a': {},
         ...     'b': {
         ...         'kind': (Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY),
         ...         'default': (Parameter.empty, 2),
         ...         'annotation': (int, Parameter.empty),
-        ...     },
+        ...     }
         ... }
         >>> result == expected
         True
         """
-        return {
-            name: param_differences_dict(
-                self.sig1.parameters[name], self.sig2.parameters[name]
-            )
-            for name in self.shared_names
+
+        def diff_pairs():
+            for name in self.shared_names:
+                diff_dict = param_differences_dict(
+                    self.sig1.parameters[name], self.sig2.parameters[name]
+                )
+                if diff_dict:
+                    yield name, diff_dict
+
+        return dict(diff_pairs())
+
+    def diff(self) -> dict:
+        """
+        Get a dictionary of differences between the two signatures.
+
+        >>> from pprint import pprint
+        >>> def three(a, b: int, c=3): ...
+        >>> def little(a, *, b=2, d=4) -> int: ...
+        >>> def pigs(a, b: int = 2) -> int: ...
+        >>> pprint(SigPair(three, little).diff())  # doctest: +NORMALIZE_WHITESPACE
+        {'names_missing_in_sig1': ['d'],
+        'names_missing_in_sig2': ['c'],
+        'param_differences': {'b': {'annotation': (<class 'int'>,
+                                                    <class 'inspect._empty'>),
+                                    'default': (<class 'inspect._empty'>, 2),
+                                    'kind': (<_ParameterKind.POSITIONAL_OR_KEYWORD: 1>,
+                                            <_ParameterKind.KEYWORD_ONLY: 3>)}},
+        'return_annotation': (<class 'inspect._empty'>, <class 'int'>)}
+        >>> pprint(SigPair(three, pigs).diff())  # doctest: +NORMALIZE_WHITESPACE
+        {'names_missing_in_sig2': ['c'],
+        'param_differences': {'b': {'default': (<class 'inspect._empty'>, 2)}},
+        'return_annotation': (<class 'inspect._empty'>, <class 'int'>)}
+        >>> pprint(SigPair(three, three).diff())
+        {}
+        """
+        d = {
+            key: value
+            for key, value in {
+                'names_missing_in_sig1': self.names_missing_in_sig1,
+                'names_missing_in_sig2': self.names_missing_in_sig2,
+                'param_differences': self.param_differences(),
+            }.items()
+            if value
         }
+        # add the return_annotation difference, if any
+        if self.sig1.return_annotation != self.sig2.return_annotation:
+            d['return_annotation'] = (
+                self.sig1.return_annotation,
+                self.sig2.return_annotation,
+            )
+        return d
+
+    def diff_str(self) -> str:
+        """
+        Get a string representation of the differences between the two signatures.
+        """
+        from pprint import pformat
+
+        return pformat(self.diff())
