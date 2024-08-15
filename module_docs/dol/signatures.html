@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.56 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.57 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=aa0fc99b"></script>
+        <script src="../../_static/documentation_options.js?v=0e774d82"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -70,7 +70,10 @@
 <li class="toctree-l1"><a class="reference internal" href="scrap/store_factories.html">dol.scrap.store_factories</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">dol.signatures</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.FuncCallNotMatchingSignature"><code class="docutils literal notranslate"><span class="pre">FuncCallNotMatchingSignature</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dol.signatures.IncompatibleSignatures"><code class="docutils literal notranslate"><span class="pre">IncompatibleSignatures</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.signatures.IncompatibleSignatures"><code class="docutils literal notranslate"><span class="pre">IncompatibleSignatures</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.signatures.IncompatibleSignatures.pformat"><code class="docutils literal notranslate"><span class="pre">IncompatibleSignatures.pformat()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.MissingArgValFor"><code class="docutils literal notranslate"><span class="pre">MissingArgValFor</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.P"><code class="docutils literal notranslate"><span class="pre">P</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.Param"><code class="docutils literal notranslate"><span class="pre">Param</span></code></a></li>
@@ -98,6 +101,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.modified"><code class="docutils literal notranslate"><span class="pre">Sig.modified()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.n_required"><code class="docutils literal notranslate"><span class="pre">Sig.n_required</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.names_for_kind"><code class="docutils literal notranslate"><span class="pre">Sig.names_for_kind()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.pair_with"><code class="docutils literal notranslate"><span class="pre">Sig.pair_with()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.params"><code class="docutils literal notranslate"><span class="pre">Sig.params</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.required_names"><code class="docutils literal notranslate"><span class="pre">Sig.required_names</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.sig_or_default"><code class="docutils literal notranslate"><span class="pre">Sig.sig_or_default()</span></code></a></li>
@@ -115,6 +119,8 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.SigPair"><code class="docutils literal notranslate"><span class="pre">SigPair</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.SigPair.are_call_compatible"><code class="docutils literal notranslate"><span class="pre">SigPair.are_call_compatible()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.signatures.SigPair.diff"><code class="docutils literal notranslate"><span class="pre">SigPair.diff()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.signatures.SigPair.diff_str"><code class="docutils literal notranslate"><span class="pre">SigPair.diff_str()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.SigPair.names_missing_in_sig1"><code class="docutils literal notranslate"><span class="pre">SigPair.names_missing_in_sig1</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.SigPair.names_missing_in_sig2"><code class="docutils literal notranslate"><span class="pre">SigPair.names_missing_in_sig2</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.SigPair.param_comparison"><code class="docutils literal notranslate"><span class="pre">SigPair.param_comparison()</span></code></a></li>
@@ -285,10 +291,13 @@
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="dol.signatures.IncompatibleSignatures">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.signatures.</span></span><span class="sig-name descname"><span class="pre">IncompatibleSignatures</span></span><a class="reference internal" href="../../_modules/dol/signatures.html#IncompatibleSignatures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.IncompatibleSignatures" title="Link to this definition"></a></dt>
-<dd><p>Raise when two signatures are not compatible.
-(see <a class="reference external" href="https://github.com/i2mint/i2/discussions/76">https://github.com/i2mint/i2/discussions/76</a> for more information on signature
-compatibility)</p>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.signatures.</span></span><span class="sig-name descname"><span class="pre">IncompatibleSignatures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#IncompatibleSignatures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.IncompatibleSignatures" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="dol.signatures.IncompatibleSignatures.pformat">
+<span class="sig-name descname"><span class="pre">pformat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">80</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_dicts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">underscore_numbers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.IncompatibleSignatures.pformat" title="Link to this definition"></a></dt>
+<dd><p>Format a Python object into a pretty-printed representation.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1562,6 +1571,13 @@ Note, if you need to do this several times, or for several kinds, use
 and caches the result.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.signatures.Sig.pair_with">
+<span class="sig-name descname"><span class="pre">pair_with</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other_sig</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dol.signatures.SigPair" title="dol.signatures.SigPair"><span class="pre">SigPair</span></a></span></span><a class="reference internal" href="../../_modules/dol/signatures.html#Sig.pair_with"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.Sig.pair_with" title="Link to this definition"></a></dt>
+<dd><p>Get an object that pairs with another signature for comparison, merging, etc.</p>
+<p>See <cite>SigPair</cite> for more details.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="dol.signatures.Sig.params">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">params</span></span><a class="headerlink" href="#dol.signatures.Sig.params" title="Link to this definition"></a></dt>
@@ -1999,7 +2015,8 @@ signature, you’ll fail.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.signatures.SigPair">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.signatures.</span></span><span class="sig-name descname"><span class="pre">SigPair</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#dol.signatures.Sig" title="dol.signatures.Sig"><span class="pre">Sig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#dol.signatures.Sig" title="dol.signatures.Sig"><span class="pre">Sig</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#SigPair"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.SigPair" title="Link to this definition"></a></dt>
-<dd><p>Class to compare two signatures.</p>
+<dd><p>Class that operates on a pair of signatures.</p>
+<p>For example, offers methods to compare two signatures in various ways.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2008,6 +2025,53 @@ signature, you’ll fail.</p>
 </ul>
 </dd>
 </dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">three</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">little</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">pigs</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig_pair</span> <span class="o">=</span> <span class="n">SigPair</span><span class="p">(</span><span class="n">three</span><span class="p">,</span> <span class="n">little</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig_pair</span><span class="o">.</span><span class="n">shared_names</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig_pair</span><span class="o">.</span><span class="n">names_missing_in_sig1</span>
+<span class="go">[&#39;d&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig_pair</span><span class="o">.</span><span class="n">names_missing_in_sig2</span>
+<span class="go">[&#39;c&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig_pair</span><span class="o">.</span><span class="n">param_comparison</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="p">(</span><span class="n">sig_pair</span><span class="o">.</span><span class="n">diff</span><span class="p">())</span>  
+<span class="go">{&#39;names_missing_in_sig1&#39;: [&#39;d&#39;],</span>
+<span class="go">&#39;names_missing_in_sig2&#39;: [&#39;c&#39;],</span>
+<span class="go">&#39;param_differences&#39;: {&#39;b&#39;: {&#39;annotation&#39;: (&lt;class &#39;int&#39;&gt;,</span>
+<span class="go">                                            &lt;class &#39;inspect._empty&#39;&gt;),</span>
+<span class="go">                            &#39;default&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, 2),</span>
+<span class="go">                            &#39;kind&#39;: (&lt;_ParameterKind.POSITIONAL_OR_KEYWORD: 1&gt;,</span>
+<span class="go">                                    &lt;_ParameterKind.KEYWORD_ONLY: 3&gt;)}},</span>
+<span class="go">&#39;return_annotation&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, &lt;class &#39;int&#39;&gt;)}</span>
+</pre></div>
+</div>
+<p>Call compatibility says that any arguments leading to a valid call to a function
+having the first signature, will also lead to a valid call to a function having the
+second signature. This is not the case for the signatures of <cite>three</cite> and <cite>little</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig_pair</span><span class="o">.</span><span class="n">are_call_compatible</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>But we don’t need to have equal signatures to have call compatibility. For example,</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SigPair</span><span class="p">(</span><span class="n">three</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">30</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">are_call_compatible</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Note that compatibility is not symmetric. For example, call compatibility is not:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SigPair</span><span class="p">(</span><span class="n">three</span><span class="p">,</span> <span class="n">pigs</span><span class="p">)</span><span class="o">.</span><span class="n">are_call_compatible</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>But,</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SigPair</span><span class="p">(</span><span class="n">pigs</span><span class="p">,</span> <span class="n">three</span><span class="p">)</span><span class="o">.</span><span class="n">are_call_compatible</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="dol.signatures.SigPair.are_call_compatible">
 <span class="sig-name descname"><span class="pre">are_call_compatible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_comparator=&lt;function</span> <span class="pre">dflt1_is_empty_or_dflt2_is_not&gt;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/dol/signatures.html#SigPair.are_call_compatible"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.SigPair.are_call_compatible" title="Link to this definition"></a></dt>
@@ -2025,6 +2089,39 @@ signature, you’ll fail.</p>
 <span class="go">True</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.signatures.SigPair.diff">
+<span class="sig-name descname"><span class="pre">diff</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../../_modules/dol/signatures.html#SigPair.diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.SigPair.diff" title="Link to this definition"></a></dt>
+<dd><p>Get a dictionary of differences between the two signatures.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">three</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">little</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">pigs</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="p">(</span><span class="n">SigPair</span><span class="p">(</span><span class="n">three</span><span class="p">,</span> <span class="n">little</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">())</span>  
+<span class="go">{&#39;names_missing_in_sig1&#39;: [&#39;d&#39;],</span>
+<span class="go">&#39;names_missing_in_sig2&#39;: [&#39;c&#39;],</span>
+<span class="go">&#39;param_differences&#39;: {&#39;b&#39;: {&#39;annotation&#39;: (&lt;class &#39;int&#39;&gt;,</span>
+<span class="go">                                            &lt;class &#39;inspect._empty&#39;&gt;),</span>
+<span class="go">                            &#39;default&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, 2),</span>
+<span class="go">                            &#39;kind&#39;: (&lt;_ParameterKind.POSITIONAL_OR_KEYWORD: 1&gt;,</span>
+<span class="go">                                    &lt;_ParameterKind.KEYWORD_ONLY: 3&gt;)}},</span>
+<span class="go">&#39;return_annotation&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, &lt;class &#39;int&#39;&gt;)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="p">(</span><span class="n">SigPair</span><span class="p">(</span><span class="n">three</span><span class="p">,</span> <span class="n">pigs</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">())</span>  
+<span class="go">{&#39;names_missing_in_sig2&#39;: [&#39;c&#39;],</span>
+<span class="go">&#39;param_differences&#39;: {&#39;b&#39;: {&#39;default&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, 2)}},</span>
+<span class="go">&#39;return_annotation&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, &lt;class &#39;int&#39;&gt;)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="p">(</span><span class="n">SigPair</span><span class="p">(</span><span class="n">three</span><span class="p">,</span> <span class="n">three</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">())</span>
+<span class="go">{}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.signatures.SigPair.diff_str">
+<span class="sig-name descname"><span class="pre">diff_str</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dol/signatures.html#SigPair.diff_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.SigPair.diff_str" title="Link to this definition"></a></dt>
+<dd><p>Get a string representation of the differences between the two signatures.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2083,7 +2180,7 @@ signature, you’ll fail.</p>
 <dd><p>Get a dictionary of parameter differences between the two signatures.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary containing differences for each parameter.</p>
+<dd class="field-odd"><p>A dict containing differences for each shared param that has any.</p>
 </dd>
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sig1</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="s1">&#39;(a, b: int, c=3)&#39;</span><span class="p">)</span>
@@ -2091,12 +2188,11 @@ signature, you’ll fail.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">comp</span> <span class="o">=</span> <span class="n">SigPair</span><span class="p">(</span><span class="n">sig1</span><span class="p">,</span> <span class="n">sig2</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">param_differences</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">expected</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>    <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{},</span>
 <span class="gp">... </span>    <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span>
 <span class="gp">... </span>        <span class="s1">&#39;kind&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_OR_KEYWORD</span><span class="p">,</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span><span class="p">),</span>
 <span class="gp">... </span>        <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
 <span class="gp">... </span>        <span class="s1">&#39;annotation&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="p">},</span>
+<span class="gp">... </span>    <span class="p">}</span>
 <span class="gp">... </span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">==</span> <span class="n">expected</span>
 <span class="go">True</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.56 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.57 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=aa0fc99b"></script>
+        <script src="../../_static/documentation_options.js?v=0e774d82"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -281,9 +281,24 @@
 <div class="viewcode-block" id="IncompatibleSignatures">
 <a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.IncompatibleSignatures">[docs]</a>
 <span class="k">class</span> <span class="nc">IncompatibleSignatures</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pformat</span>
+
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise when two signatures are not compatible.</span>
 <span class="sd">    (see https://github.com/i2mint/i2/discussions/76 for more information on signature</span>
-<span class="sd">    compatibility)&quot;&quot;&quot;</span></div>
+<span class="sd">    compatibility)&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">sig1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sig2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,))</span>
+        <span class="n">sig_pairs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">sig1</span> <span class="ow">and</span> <span class="n">sig2</span><span class="p">:</span>
+            <span class="n">sig_pairs</span> <span class="o">=</span> <span class="n">SigPair</span><span class="p">(</span><span class="n">sig1</span><span class="p">,</span> <span class="n">sig2</span><span class="p">)</span>
+            <span class="c1"># add the signature differences to the error message</span>
+            <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">----- Signature differences (not all differences necessarily &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;matter in your context): ----- </span><span class="se">\n</span><span class="si">{</span><span class="n">sig_pairs</span><span class="o">.</span><span class="n">diff_str</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sig_pairs</span> <span class="o">=</span> <span class="n">sig_pairs</span></div>
 
 
 
@@ -847,10 +862,7 @@
 
     <span class="k">if</span> <span class="n">include_all_when_var_keywords_in_params</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span>
-            <span class="nb">next</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">),</span>
-                <span class="kc">None</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="nb">next</span><span class="p">((</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">),</span> <span class="kc">None</span><span class="p">,)</span>
             <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="p">):</span>
             <span class="n">param_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">remaining_kwargs</span><span class="p">)</span>
@@ -1580,6 +1592,16 @@
         <span class="k">return</span> <span class="n">Signature</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">to_signature_kwargs</span><span class="p">())</span></div>
 
 
+<div class="viewcode-block" id="Sig.pair_with">
+<a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.pair_with">[docs]</a>
+    <span class="k">def</span> <span class="nf">pair_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other_sig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;SigPair&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get an object that pairs with another signature for comparison, merging, etc.</span>
+
+<span class="sd">        See `SigPair` for more details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SigPair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other_sig</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="Sig.is_call_compatible_with">
 <a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.Sig.is_call_compatible_with">[docs]</a>
     <span class="k">def</span> <span class="nf">is_call_compatible_with</span><span class="p">(</span>
@@ -2235,28 +2257,72 @@
             <span class="n">_self</span> <span class="o">=</span> <span class="bp">self</span>
             <span class="n">_sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
 
+        <span class="c1"># Validation of the signatures</span>
+
         <span class="n">_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Happened during an attempt to merge </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s1"> and </span><span class="si">{</span><span class="n">sig</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">errors</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="k">assert</span> <span class="ow">not</span> <span class="n">_self</span><span class="o">.</span><span class="n">has_var_keyword</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_sig</span><span class="o">.</span><span class="n">has_var_keyword</span><span class="p">,</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Can&#39;t merge two signatures if they both have a VAR_POSITIONAL parameter:&quot;</span>
-            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">_msg</span><span class="si">}</span><span class="s1">&#39;</span>
-        <span class="p">)</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="ow">not</span> <span class="n">_self</span><span class="o">.</span><span class="n">has_var_keyword</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_sig</span><span class="o">.</span><span class="n">has_var_keyword</span>
-        <span class="p">),</span> <span class="s2">&quot;Can&#39;t merge two signatures if they both have a VAR_KEYWORD parameter:</span><span class="si">{_msg}</span><span class="s2">&quot;</span>
+        <span class="c1"># Check if both signatures have VAR_POSITIONAL parameters</span>
+        <span class="k">if</span> <span class="n">_self</span><span class="o">.</span><span class="n">has_var_keyword</span> <span class="ow">and</span> <span class="n">_sig</span><span class="o">.</span><span class="n">has_var_keyword</span><span class="p">:</span>
+            <span class="n">errors</span><span class="p">[</span><span class="s1">&#39;var_positional_conflict&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Can&#39;t merge two signatures if they both have a VAR_POSITIONAL parameter: </span><span class="si">{</span><span class="n">_msg</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
+        <span class="c1"># Check if both signatures have VAR_KEYWORD parameters</span>
+        <span class="k">if</span> <span class="n">_self</span><span class="o">.</span><span class="n">has_var_keyword</span> <span class="ow">and</span> <span class="n">_sig</span><span class="o">.</span><span class="n">has_var_keyword</span><span class="p">:</span>
+            <span class="n">errors</span><span class="p">[</span><span class="s1">&#39;var_keyword_conflict&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Can&#39;t merge two signatures if they both have a VAR_KEYWORD parameter: </span><span class="si">{</span><span class="n">_msg</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Check if parameters with the same name have the same kind</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
             <span class="n">_self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">_sig</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">kind</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">_sig</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-        <span class="p">),</span> <span class="p">(</span>
-            <span class="s1">&#39;During a signature merge, if two names are the same, they must have the &#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;**same kind**:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">_msg</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
-            <span class="s2">&quot;Tip: If you&#39;re trying to merge functions in some way, consider decorating &quot;</span>
-            <span class="s1">&#39;them with a signature mapping that avoids the argument name clashing&#39;</span>
-        <span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">errors</span><span class="p">[</span><span class="s1">&#39;kind_mismatch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39;During a signature merge, if two names are the same, they must have the &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;**same kind**:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">_msg</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s2">&quot;Tip: If you&#39;re trying to merge functions in some way, consider decorating &quot;</span>
+                <span class="s1">&#39;them with a signature mapping that avoids the argument name clashing&#39;</span>
+            <span class="p">)</span>
 
-        <span class="k">assert</span> <span class="n">default_conflict_method</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">SigMergeOptions</span><span class="p">),</span> <span class="p">(</span>
-            <span class="s1">&#39;default_conflict_method should be one of: &#39;</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">get_args</span><span class="p">(</span><span class="n">SigMergeOptions</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-        <span class="p">)</span>
+        <span class="c1"># Check if default_conflict_method is a valid SigMergeOption</span>
+        <span class="k">if</span> <span class="n">default_conflict_method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">SigMergeOptions</span><span class="p">):</span>
+            <span class="n">errors</span><span class="p">[</span><span class="s1">&#39;invalid_conflict_method&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39;default_conflict_method should be one of: &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">get_args</span><span class="p">(</span><span class="n">SigMergeOptions</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">errors</span><span class="p">:</span>
+            <span class="c1"># TODO: Raise all errors at once?</span>
+            <span class="c1"># TODO: Raise custom errors with more info?</span>
+
+            <span class="c1"># raise the first error</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+            <span class="k">raise</span> <span class="n">IncompatibleSignatures</span><span class="p">(</span><span class="n">error_msg</span><span class="p">,</span> <span class="n">sig1</span><span class="o">=</span><span class="n">_self</span><span class="p">,</span> <span class="n">sig2</span><span class="o">=</span><span class="n">_sig</span><span class="p">)</span>
+
+        <span class="c1"># if _self.has_var_keyword and _sig.has_var_keyword:</span>
+        <span class="c1">#     errors[&#39;VAR_KEYWORD&#39;] = &#39;Both signatures have a VAR_KEYWORD parameter&#39;</span>
+
+        <span class="c1"># assert not _self.has_var_keyword or not _sig.has_var_keyword, (</span>
+        <span class="c1">#     f&quot;Can&#39;t merge two signatures if they both have a VAR_POSITIONAL parameter:&quot;</span>
+        <span class="c1">#     f&#39;{_msg}&#39;</span>
+        <span class="c1"># )</span>
+        <span class="c1"># assert (</span>
+        <span class="c1">#     not _self.has_var_keyword or not _sig.has_var_keyword</span>
+        <span class="c1"># ), &quot;Can&#39;t merge two signatures if they both have a VAR_KEYWORD parameter:{_msg}&quot;</span>
+
+        <span class="c1"># assert all(</span>
+        <span class="c1">#     _self[name].kind == _sig[name].kind for name in _self.keys() &amp; _sig.keys()</span>
+        <span class="c1"># ), (</span>
+        <span class="c1">#     &#39;During a signature merge, if two names are the same, they must have the &#39;</span>
+        <span class="c1">#     f&#39;**same kind**:\n\t{_msg}\n&#39;</span>
+        <span class="c1">#     &quot;Tip: If you&#39;re trying to merge functions in some way, consider decorating &quot;</span>
+        <span class="c1">#     &#39;them with a signature mapping that avoids the argument name clashing&#39;</span>
+        <span class="c1"># )</span>
+
+        <span class="c1"># assert default_conflict_method in get_args(SigMergeOptions), (</span>
+        <span class="c1">#     &#39;default_conflict_method should be one of: &#39; f&#39;{get_args(SigMergeOptions)}&#39;</span>
+        <span class="c1"># )</span>
 
         <span class="k">if</span> <span class="n">default_conflict_method</span> <span class="o">==</span> <span class="s1">&#39;take_first&#39;</span><span class="p">:</span>
             <span class="n">_sig</span> <span class="o">=</span> <span class="n">_sig</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">_self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">_sig</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -2271,14 +2337,19 @@
             <span class="c1"># if default_conflict_method == &#39;take_first&#39;:</span>
             <span class="c1">#     _sig = _sig - set(_self.keys() &amp; _sig.keys())</span>
             <span class="c1"># else:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s1">&#39;During a signature merge, if two names are the same, they must have &#39;</span>
-                <span class="s1">&#39;the &#39;</span>
+
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39;During a signature merge, if two names are the same they must have the&#39;</span>
                 <span class="sa">f</span><span class="s1">&#39;**same default**:</span><span class="se">\n\t</span><span class="si">{</span><span class="n">_msg</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
                 <span class="s2">&quot;Tip: If you&#39;re trying to merge functions in some way, consider &quot;</span>
                 <span class="s1">&#39;decorating &#39;</span>
-                <span class="s1">&#39;them with a signature mapping that avoids the argument name clashing&#39;</span>
+                <span class="s1">&#39;them with a signature mapping that avoids the argument name clashing.&#39;</span>
+                <span class="s1">&#39;You can also set ch_to_all_pk=True to ignore the kind of the &#39;</span>
+                <span class="s1">&#39;parameters or change the default_conflict_method to &quot;take_first&quot;,&#39;</span>
+                <span class="s1">&#39;or another method that suits your needs.&#39;</span>
             <span class="p">)</span>
+
+            <span class="k">raise</span> <span class="n">IncompatibleSignatures</span><span class="p">(</span><span class="n">error_msg</span><span class="p">,</span> <span class="n">sig1</span><span class="o">=</span><span class="n">_self</span><span class="p">,</span> <span class="n">sig2</span><span class="o">=</span><span class="n">_sig</span><span class="p">)</span>
 
         <span class="c1"># assert all(</span>
         <span class="c1">#     _self[name].default == _sig[name].default</span>
@@ -2351,32 +2422,22 @@
 
 <span class="sd">        &gt;&gt;&gt; def ff(w, /, x: float, y=1, *, z: int = 1):</span>
 <span class="sd">        ...     ...  # just like f, but without the default for x</span>
-<span class="sd">        &gt;&gt;&gt; Sig(f) + Sig(ff)  # doctest: +IGNORE_EXCEPTION_DETAIL</span>
+<span class="sd">        &gt;&gt;&gt; Sig(f) + Sig(ff)  # doctest: +IGNORE_EXCEPTION_DETAIL +ELLIPSIS</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
-<span class="sd">        ValueError: During a signature merge, if two names are the same, they must</span>
-<span class="sd">        have the **same default**:</span>
-<span class="sd">        &lt;BLANKSPACE&gt;</span>
-<span class="sd">        Happened during an attempt to merge (w, /, x: float = 1, y=1, *, z: int = 1)</span>
-<span class="sd">        and (w, /, x: float, y=1, *, z: int = 1)</span>
-<span class="sd">        Tip: If you&#39;re trying to merge functions in some way, consider decorating them</span>
-<span class="sd">        with a signature mapping that avoids the argument name clashing</span>
-
+<span class="sd">        IncompatibleSignatures: During a signature merge, if two names are the same, they must</span>
+<span class="sd">        have the **same default**</span>
+<span class="sd">        ...</span>
 
 <span class="sd">        &gt;&gt;&gt; def hh(i, j, w=1):</span>
 <span class="sd">        ...     ...  # like h, but w has a default</span>
 <span class="sd">        ...</span>
-<span class="sd">        &gt;&gt;&gt; Sig(h) + Sig(hh)  # doctest: +IGNORE_EXCEPTION_DETAIL</span>
+<span class="sd">        &gt;&gt;&gt; Sig(h) + Sig(hh)  # doctest: +IGNORE_EXCEPTION_DETAIL +ELLIPSIS</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
-<span class="sd">        ValueError: During a signature merge, if two names are the same, they must</span>
-<span class="sd">        have the **same default**:</span>
-<span class="sd">        &lt;BLANKSPACE&gt;</span>
-<span class="sd">        Happened during an attempt to merge (i, j, w) and (i, j, w=1)</span>
-<span class="sd">        Tip: If you&#39;re trying to merge fposiunctions in some way, consider decorating</span>
-<span class="sd">        them</span>
-<span class="sd">        with a signature mapping that avoids the argument name clashing</span>
-
+<span class="sd">        IncompatibleSignatures: During a signature merge, if two names are the same, they must</span>
+<span class="sd">        have the **same default**</span>
+<span class="sd">        ...</span>
 
 <span class="sd">        &gt;&gt;&gt; Sig(f) + [</span>
 <span class="sd">        ...     &quot;w&quot;,</span>
@@ -3145,9 +3206,7 @@
             <span class="n">ignore_kind</span><span class="o">=</span><span class="n">_ignore_kind</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span>
-            <span class="n">arguments</span><span class="p">,</span>
-            <span class="n">allow_partial</span><span class="o">=</span><span class="n">_allow_partial</span><span class="p">,</span>
-            <span class="n">args_limit</span><span class="o">=</span><span class="n">_args_limit</span><span class="p">,</span>
+            <span class="n">arguments</span><span class="p">,</span> <span class="n">allow_partial</span><span class="o">=</span><span class="n">_allow_partial</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="n">_args_limit</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -3318,9 +3377,7 @@
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mk_args_and_kwargs</span><span class="p">(</span>
-            <span class="n">arguments</span><span class="p">,</span>
-            <span class="n">allow_partial</span><span class="o">=</span><span class="n">_allow_partial</span><span class="p">,</span>
-            <span class="n">args_limit</span><span class="o">=</span><span class="n">_args_limit</span><span class="p">,</span>
+            <span class="n">arguments</span><span class="p">,</span> <span class="n">allow_partial</span><span class="o">=</span><span class="n">_allow_partial</span><span class="p">,</span> <span class="n">args_limit</span><span class="o">=</span><span class="n">_args_limit</span><span class="p">,</span>
         <span class="p">)</span></div>
 </div>
 
@@ -3386,8 +3443,28 @@
             <span class="sa">f</span><span class="s1">&#39;over function defaults and signatures.&#39;</span>
             <span class="sa">f</span><span class="s1">&#39;The function you were wrapping had signature: &#39;</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_of_obj</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}{</span><span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="si">}</span><span class="s2"> and &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;the signature you wanted to inject was </span><span class="si">{</span><span class="n">new_sig</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}{</span><span class="n">new_sig</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the signature you wanted to inject was </span><span class="si">{</span><span class="n">new_sig</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}{</span><span class="n">new_sig</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">sig1</span><span class="o">=</span><span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">),</span> <span class="n">sig2</span><span class="o">=</span><span class="n">new_sig</span><span class="p">,</span>
         <span class="p">)</span>
+
+
+<span class="c1">########################################################################################</span>
+<span class="c1"># Utils</span>
+
+
+<span class="k">def</span> <span class="nf">_signature_differences_str_for_error_msg</span><span class="p">(</span><span class="n">sig1</span><span class="p">,</span> <span class="n">sig2</span><span class="p">):</span>
+
+    <span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pformat</span>
+
+    <span class="n">sig_diff</span> <span class="o">=</span> <span class="n">sig1</span><span class="o">.</span><span class="n">pair_with</span><span class="p">(</span><span class="n">sig2</span><span class="p">)</span>
+
+    <span class="n">sig1_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sig1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">sig1</span><span class="o">.</span><span class="n">name</span> <span class="k">else</span> <span class="s2">&quot;sig1&quot;</span>
+    <span class="n">sig2_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sig2</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">sig2</span><span class="o">.</span><span class="n">name</span> <span class="k">else</span> <span class="s2">&quot;sig2&quot;</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="s1">&#39;FYI: Here are the raw signature differences for </span><span class="si">{sig1_name}</span><span class="s1"> and </span><span class="si">{sig2_name}</span><span class="s1"> &#39;</span>
+        <span class="sa">f</span><span class="s1">&#39;(not all need to necessarily be resolved):</span><span class="se">\n</span><span class="si">{</span><span class="n">pformat</span><span class="p">(</span><span class="n">sig_diff</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="p">)</span>
 
 
 <span class="c1">########################################################################################</span>
@@ -4507,23 +4584,32 @@
 <span class="sd">        zip(*iterables) --&gt; A zip object yielding tuples until an input is exhausted.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">bool</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">bool</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">bytearray</span><span class="p">(</span><span class="n">iterable_of_ints</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="o">/</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">bytearray</span><span class="p">(</span><span class="n">iterable_of_ints</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="o">/</span><span class="p">):</span>
+        <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">classmethod</span><span class="p">(</span><span class="n">function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">classmethod</span><span class="p">(</span><span class="n">function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
+        <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">int</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">int</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
+        <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">iter</span><span class="p">(</span><span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">sentinel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">iter</span><span class="p">(</span><span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">sentinel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
+        <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
+        <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">staticmethod</span><span class="p">(</span><span class="n">function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">staticmethod</span><span class="p">(</span><span class="n">function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
+        <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">str</span><span class="p">(</span><span class="n">bytes_or_buffer</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">str</span><span class="p">(</span><span class="n">bytes_or_buffer</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
+        <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">super</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">super</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">):</span>
+        <span class="o">...</span>
 
     <span class="c1"># def type(name, bases=None, dict=None, /):</span>
     <span class="c1">#     ...</span>
@@ -4693,11 +4779,14 @@
 <span class="sd">    signatures (through ``inspect.signature``),</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">itemgetter</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]:</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">itemgetter</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]:</span>
+        <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">attrgetter</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]:</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">attrgetter</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]:</span>
+        <span class="o">...</span>
 
-    <span class="k">def</span> <span class="nf">methodcaller</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">methodcaller</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="o">...</span>
 
 
 <span class="c1">############# Tools for testing #########################################################</span>
@@ -4745,9 +4834,7 @@
     <span class="n">lower_kind</span> <span class="o">=</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="nb">setattr</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">lower_kind</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">))</span>
     <span class="nb">setattr</span><span class="p">(</span>
-        <span class="n">param_for_kind</span><span class="p">,</span>
-        <span class="s1">&#39;with_default&#39;</span><span class="p">,</span>
-        <span class="n">partial</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">with_default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">param_for_kind</span><span class="p">,</span> <span class="s1">&#39;with_default&#39;</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">with_default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="nb">setattr</span><span class="p">(</span>
         <span class="nb">getattr</span><span class="p">(</span><span class="n">param_for_kind</span><span class="p">,</span> <span class="n">lower_kind</span><span class="p">),</span>
@@ -4799,10 +4886,7 @@
 
 
 <span class="k">def</span> <span class="nf">_keyed_comparator</span><span class="p">(</span>
-    <span class="n">comparator</span><span class="p">:</span> <span class="n">Comparator</span><span class="p">,</span>
-    <span class="n">key</span><span class="p">:</span> <span class="n">KeyFunction</span><span class="p">,</span>
-    <span class="n">x</span><span class="p">:</span> <span class="n">CT</span><span class="p">,</span>
-    <span class="n">y</span><span class="p">:</span> <span class="n">CT</span><span class="p">,</span>
+    <span class="n">comparator</span><span class="p">:</span> <span class="n">Comparator</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KeyFunction</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">CT</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">CT</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Comparison</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a comparator after transforming inputs through a key function.</span>
 
@@ -4818,10 +4902,7 @@
 
 <div class="viewcode-block" id="keyed_comparator">
 <a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.keyed_comparator">[docs]</a>
-<span class="k">def</span> <span class="nf">keyed_comparator</span><span class="p">(</span>
-    <span class="n">comparator</span><span class="p">:</span> <span class="n">Comparator</span><span class="p">,</span>
-    <span class="n">key</span><span class="p">:</span> <span class="n">KeyFunction</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Comparator</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">keyed_comparator</span><span class="p">(</span><span class="n">comparator</span><span class="p">:</span> <span class="n">Comparator</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KeyFunction</span><span class="p">,)</span> <span class="o">-&gt;</span> <span class="n">Comparator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a key-function enabled binary operator.</span>
 
 <span class="sd">    In various places in python functionality is extended by allowing a key function.</span>
@@ -5200,10 +5281,59 @@
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">SigPair</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Class to compare two signatures.</span>
+<span class="sd">    Class that operates on a pair of signatures.</span>
+
+<span class="sd">    For example, offers methods to compare two signatures in various ways.</span>
 
 <span class="sd">    :param sig1: First signature or signature-able object.</span>
 <span class="sd">    :param sig2: Second signature or signature-able object.</span>
+
+<span class="sd">    &gt;&gt;&gt; from pprint import pprint</span>
+<span class="sd">    &gt;&gt;&gt; def three(a, b: int, c=3): ...</span>
+<span class="sd">    &gt;&gt;&gt; def little(a, *, b=2, d=4) -&gt; int: ...</span>
+<span class="sd">    &gt;&gt;&gt; def pigs(a, b: int = 2) -&gt; int: ...</span>
+<span class="sd">    &gt;&gt;&gt; sig_pair = SigPair(three, little)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; sig_pair.shared_names</span>
+<span class="sd">    [&#39;a&#39;, &#39;b&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; sig_pair.names_missing_in_sig1</span>
+<span class="sd">    [&#39;d&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; sig_pair.names_missing_in_sig2</span>
+<span class="sd">    [&#39;c&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; sig_pair.param_comparison()</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; pprint(sig_pair.diff())  # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">    {&#39;names_missing_in_sig1&#39;: [&#39;d&#39;],</span>
+<span class="sd">    &#39;names_missing_in_sig2&#39;: [&#39;c&#39;],</span>
+<span class="sd">    &#39;param_differences&#39;: {&#39;b&#39;: {&#39;annotation&#39;: (&lt;class &#39;int&#39;&gt;,</span>
+<span class="sd">                                                &lt;class &#39;inspect._empty&#39;&gt;),</span>
+<span class="sd">                                &#39;default&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, 2),</span>
+<span class="sd">                                &#39;kind&#39;: (&lt;_ParameterKind.POSITIONAL_OR_KEYWORD: 1&gt;,</span>
+<span class="sd">                                        &lt;_ParameterKind.KEYWORD_ONLY: 3&gt;)}},</span>
+<span class="sd">    &#39;return_annotation&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, &lt;class &#39;int&#39;&gt;)}</span>
+
+<span class="sd">    Call compatibility says that any arguments leading to a valid call to a function</span>
+<span class="sd">    having the first signature, will also lead to a valid call to a function having the</span>
+<span class="sd">    second signature. This is not the case for the signatures of `three` and `little`:</span>
+
+<span class="sd">    &gt;&gt;&gt; sig_pair.are_call_compatible()</span>
+<span class="sd">    False</span>
+
+<span class="sd">    But we don&#39;t need to have equal signatures to have call compatibility. For example,</span>
+
+<span class="sd">    &gt;&gt;&gt; SigPair(three, lambda a, b=2, c=30: None).are_call_compatible()</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Note that compatibility is not symmetric. For example, call compatibility is not:</span>
+
+<span class="sd">    &gt;&gt;&gt; SigPair(three, pigs).are_call_compatible()</span>
+<span class="sd">    False</span>
+
+<span class="sd">    But,</span>
+
+<span class="sd">    &gt;&gt;&gt; SigPair(pigs, three).are_call_compatible()</span>
+<span class="sd">    True</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">sig1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">Sig</span><span class="p">]</span>
@@ -5280,11 +5410,7 @@
 
 <div class="viewcode-block" id="SigPair.param_comparison">
 <a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.SigPair.param_comparison">[docs]</a>
-    <span class="k">def</span> <span class="nf">param_comparison</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">comparator</span><span class="o">=</span><span class="n">param_comparator</span><span class="p">,</span>
-        <span class="n">aggregation</span><span class="o">=</span><span class="nb">all</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">param_comparison</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comparator</span><span class="o">=</span><span class="n">param_comparator</span><span class="p">,</span> <span class="n">aggregation</span><span class="o">=</span><span class="nb">all</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compare parameters between the two signatures using the provided comparator function.</span>
 
@@ -5311,29 +5437,87 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get a dictionary of parameter differences between the two signatures.</span>
 
-<span class="sd">        :return: A dictionary containing differences for each parameter.</span>
+<span class="sd">        :return: A dict containing differences for each shared param that has any.</span>
 
 <span class="sd">        &gt;&gt;&gt; sig1 = Sig(&#39;(a, b: int, c=3)&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; sig2 = Sig(&#39;(a, *, b=2, d=4)&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; comp = SigPair(sig1, sig2)</span>
 <span class="sd">        &gt;&gt;&gt; result = comp.param_differences()</span>
 <span class="sd">        &gt;&gt;&gt; expected = {</span>
-<span class="sd">        ...     &#39;a&#39;: {},</span>
 <span class="sd">        ...     &#39;b&#39;: {</span>
 <span class="sd">        ...         &#39;kind&#39;: (Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY),</span>
 <span class="sd">        ...         &#39;default&#39;: (Parameter.empty, 2),</span>
 <span class="sd">        ...         &#39;annotation&#39;: (int, Parameter.empty),</span>
-<span class="sd">        ...     },</span>
+<span class="sd">        ...     }</span>
 <span class="sd">        ... }</span>
 <span class="sd">        &gt;&gt;&gt; result == expected</span>
 <span class="sd">        True</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="n">name</span><span class="p">:</span> <span class="n">param_differences_dict</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">sig1</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig2</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">diff_pairs</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_names</span><span class="p">:</span>
+                <span class="n">diff_dict</span> <span class="o">=</span> <span class="n">param_differences_dict</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">sig1</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig2</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">diff_dict</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">name</span><span class="p">,</span> <span class="n">diff_dict</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">diff_pairs</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="SigPair.diff">
+<a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.SigPair.diff">[docs]</a>
+    <span class="k">def</span> <span class="nf">diff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a dictionary of differences between the two signatures.</span>
+
+<span class="sd">        &gt;&gt;&gt; from pprint import pprint</span>
+<span class="sd">        &gt;&gt;&gt; def three(a, b: int, c=3): ...</span>
+<span class="sd">        &gt;&gt;&gt; def little(a, *, b=2, d=4) -&gt; int: ...</span>
+<span class="sd">        &gt;&gt;&gt; def pigs(a, b: int = 2) -&gt; int: ...</span>
+<span class="sd">        &gt;&gt;&gt; pprint(SigPair(three, little).diff())  # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">        {&#39;names_missing_in_sig1&#39;: [&#39;d&#39;],</span>
+<span class="sd">        &#39;names_missing_in_sig2&#39;: [&#39;c&#39;],</span>
+<span class="sd">        &#39;param_differences&#39;: {&#39;b&#39;: {&#39;annotation&#39;: (&lt;class &#39;int&#39;&gt;,</span>
+<span class="sd">                                                    &lt;class &#39;inspect._empty&#39;&gt;),</span>
+<span class="sd">                                    &#39;default&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, 2),</span>
+<span class="sd">                                    &#39;kind&#39;: (&lt;_ParameterKind.POSITIONAL_OR_KEYWORD: 1&gt;,</span>
+<span class="sd">                                            &lt;_ParameterKind.KEYWORD_ONLY: 3&gt;)}},</span>
+<span class="sd">        &#39;return_annotation&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, &lt;class &#39;int&#39;&gt;)}</span>
+<span class="sd">        &gt;&gt;&gt; pprint(SigPair(three, pigs).diff())  # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">        {&#39;names_missing_in_sig2&#39;: [&#39;c&#39;],</span>
+<span class="sd">        &#39;param_differences&#39;: {&#39;b&#39;: {&#39;default&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, 2)}},</span>
+<span class="sd">        &#39;return_annotation&#39;: (&lt;class &#39;inspect._empty&#39;&gt;, &lt;class &#39;int&#39;&gt;)}</span>
+<span class="sd">        &gt;&gt;&gt; pprint(SigPair(three, three).diff())</span>
+<span class="sd">        {}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="n">value</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">{</span>
+                <span class="s1">&#39;names_missing_in_sig1&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">names_missing_in_sig1</span><span class="p">,</span>
+                <span class="s1">&#39;names_missing_in_sig2&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">names_missing_in_sig2</span><span class="p">,</span>
+                <span class="s1">&#39;param_differences&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_differences</span><span class="p">(),</span>
+            <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">value</span>
+        <span class="p">}</span>
+        <span class="c1"># add the return_annotation difference, if any</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig1</span><span class="o">.</span><span class="n">return_annotation</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig2</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;return_annotation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sig1</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sig2</span><span class="o">.</span><span class="n">return_annotation</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_names</span>
-        <span class="p">}</span></div>
+        <span class="k">return</span> <span class="n">d</span></div>
+
+
+<div class="viewcode-block" id="SigPair.diff_str">
+<a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.SigPair.diff_str">[docs]</a>
+    <span class="k">def</span> <span class="nf">diff_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a string representation of the differences between the two signatures.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pformat</span>
+
+        <span class="k">return</span> <span class="n">pformat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diff</span><span class="p">())</span></div>
 </div>
 
 </pre></div>
