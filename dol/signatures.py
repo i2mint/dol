@@ -140,9 +140,6 @@ wraps = partial(_wraps, assigned=wrapper_assignments)
 _empty = Parameter.empty
 empty = _empty
 
-_ParameterKind = type(
-    Parameter(name='param_kind', kind=Parameter.POSITIONAL_OR_KEYWORD)
-)
 ParamsType = Iterable[Parameter]
 ParamsAble = Union[ParamsType, Signature, MappingType[str, Parameter], Callable, str]
 SignatureAble = Union[Signature, ParamsAble]
@@ -168,7 +165,7 @@ class FuncCallNotMatchingSignature(TypeError):
 
 class IncompatibleSignatures(ValueError):
     """Raise when two signatures are not compatible.
-    (see https://github.com/i2mint/i2/issues/16 for more information on signature
+    (see https://github.com/i2mint/i2/discussions/76 for more information on signature
     compatibility)"""
 
 
@@ -887,6 +884,23 @@ def flatten_if_var_kw(kvs, var_kw_name):
     return _map_action_on_cond(kvs, cond, expand)
 
 
+def dflt1_is_empty_or_dflt2_is_not(dflt1, dflt2):
+    """
+    Why such a strange default comparison function?
+
+    This is to be used as a default in is_call_compatible_with.
+
+    Consider two functions func1 and func2 with a parameter p with default values
+    dflt1 and dflt2 respectively.
+    If dflt1 was not empty and dflt2 was, this would mean that func1 could be called
+    without specifying p, but func2 couldn't.
+
+    So to avoid this situation, we use dflt1_is_empty_or_dflt2_is_not as the default
+
+    """
+    return dflt1 is empty or dflt2 is not empty
+
+
 # TODO: See other signature operating functions below in this module:
 #   Do we need them now that we have Sig?
 #   Do we want to keep them and have Sig use them?
@@ -1407,7 +1421,9 @@ class Sig(Signature, Mapping):
         """
         return Signature(**self.to_signature_kwargs())
 
-    def is_call_compatible_with(self, other_sig, *, param_comparator: Callable = None):
+    def is_call_compatible_with(
+        self, other_sig, *, param_comparator: Callable = dflt1_is_empty_or_dflt2_is_not
+    ):
         """Return True if the signature is compatible with ``other_sig``. Meaning that
         all valid ways to call the signature are valid for ``other_sig``.
         """
@@ -2057,7 +2073,7 @@ class Sig(Signature, Mapping):
         )
 
         assert default_conflict_method in get_args(SigMergeOptions), (
-            'default_conflict_method should be one of: ' f"{get_args(SigMergeOptions)}"
+            'default_conflict_method should be one of: ' f'{get_args(SigMergeOptions)}'
         )
 
         if default_conflict_method == 'take_first':
@@ -4493,7 +4509,6 @@ for kind in param_kinds:
 ########################################################################################
 
 Compared = TypeVar('Compared')
-
 Comparison = TypeVar('Comparison')
 Comparator = Callable[[Compared, Compared], Comparison]
 Comparison.__doc__ = (
@@ -4508,7 +4523,6 @@ Comparison.__doc__ = (
 SignatureComparator = Callable[[Signature, Signature], Comparison]
 ParamComparator = Callable[[Parameter, Parameter], Comparison]
 CallableComparator = Callable[[Callable, Callable], Comparison]
-
 
 ComparisonAggreg = Callable[[Iterable[Comparison]], Any]
 
@@ -4648,13 +4662,13 @@ permissive_param_comparator = partial(
     default=ignore_any_differences,
     annotation=ignore_any_differences,
 )
-permissive_param_comparator.__doc__ = """
+permissive_param_comparator.__doc__ = '''
 Permissive version of param_comparator that ignores any differences of parameter 
 attributes.
 
 It is meant to be used with partial, but with a permissive base, contrary to the 
 base param_comparator which requires strict equality (`eq`) for all attributes.
-"""
+'''
 
 
 def return_tuple(x, y):
@@ -4678,14 +4692,14 @@ param_comparison_dict = partial(
     aggreg=param_attribute_dict,
 )
 
-param_comparison_dict.__doc__ = """
+param_comparison_dict.__doc__ = '''
 A ParamComparator that returns a dictionary with pairs parameter attributes.
 
 >>> param1 = Sig('(a: int = 1)')['a']
 >>> param2 = Sig('(a: str = 2)')['a']
 >>> param_comparison_dict(param1, param2)  # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
 {'name': ('a', 'a'), 'kind': ..., 'default': (1, 2), 'annotation': (<class 'int'>, <class 'str'>)}
-"""
+'''
 
 
 def param_differences_dict(
@@ -4739,30 +4753,16 @@ def defaults_are_the_same_when_not_empty(dflt1, dflt2):
     return dflt1 is empty or dflt2 is empty or dflt1 == dflt2
 
 
-def dflt1_is_empty_or_dflt2_is_not(dflt1, dflt2):
-    """
-    Why such a strange default comparison function?
-
-    This is to be used as a default in is_call_compatible_with.
-
-    Consider two functions func1 and func2 with a parameter p with default values
-    dflt1 and dflt2 respectively.
-    If dflt1 was not empty and dflt2 was, this would mean that func1 could be called
-    without specifying p, but func2 couldn't.
-
-    So to avoid this situation, we use dflt1_is_empty_or_dflt2_is_not as the default
-
-    """
-    return dflt1 is empty or dflt2 is not empty
-
-
 # TODO: It seems like param_comparator is really only used to compare parameters on defaults.
 #   This may be due to the fact that is_call_compatible_with was developed independently
 #   from the other general param_comparator functionality that was developed (see above)
 #   The code of is_call_compatible_with should be reviwed and refactored to use general
 #   tools.
 def is_call_compatible_with(
-    sig1: Sig, sig2: Sig, *, param_comparator: ParamComparator = None
+    sig1: Sig,
+    sig2: Sig,
+    *,
+    param_comparator: ParamComparator = dflt1_is_empty_or_dflt2_is_not,
 ) -> bool:
     """Return True if ``sig1`` is compatible with ``sig2``. Meaning that all valid ways
     to call ``sig1`` are valid for ``sig2``.
@@ -4892,8 +4892,6 @@ def is_call_compatible_with(
                 return False
         return True
 
-    param_comparator = param_comparator or dflt1_is_empty_or_dflt2_is_not
-
     pos1, pks1, vp1, kos1, vk1 = sig1.detail_names_by_kind()
     ps1 = pos1 + pks1
     ks1 = pks1 + kos1
@@ -4923,15 +4921,6 @@ from dataclasses import dataclass
 
 from functools import cached_property
 from dataclasses import dataclass
-from i2.signatures import (
-    Sig,
-    SignatureAble,
-    is_call_compatible_with,
-    param_comparator,
-    ParamComparator,
-    ComparisonAggreg,
-    param_differences_dict,
-)
 from inspect import Parameter
 
 
@@ -4991,7 +4980,9 @@ class SigComparison:
         return [name for name in self.sig2.names if name not in self.sig1.names]
 
     # TODO: Verify that the doctests are correct!
-    def are_call_compatible(self, param_comparator = None) -> bool:
+    def are_call_compatible(
+        self, param_comparator=dflt1_is_empty_or_dflt2_is_not
+    ) -> bool:
         """
         Check if the signatures are call-compatible.
 
@@ -5013,8 +5004,8 @@ class SigComparison:
 
     def param_comparison(
         self,
-        comparator = param_comparator,
-        aggregation = all,
+        comparator=param_comparator,
+        aggregation=all,
     ) -> bool:
         """
         Compare parameters between the two signatures using the provided comparator function.
