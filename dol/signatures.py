@@ -171,14 +171,14 @@ class IncompatibleSignatures(ValueError):
     compatibility)"""
 
     def __init__(self, *args, sig1=None, sig2=None, **kwargs):
-        args = list(args or ("",))
+        args = list(args or ('',))
         sig_pairs = None
         if sig1 and sig2:
             sig_pairs = SigPair(sig1, sig2)
             # add the signature differences to the error message
             args[0] += (
-                f"\n----- Signature differences (not all differences necessarily "
-                f"matter in your context): ----- \n{sig_pairs.diff_str()}"
+                f'\n----- Signature differences (not all differences necessarily '
+                f'matter in your context): ----- \n{sig_pairs.diff_str()}'
             )
         super().__init__(*args, **kwargs)
         self.sig_pairs = sig_pairs
@@ -2079,15 +2079,15 @@ class Sig(Signature, Mapping):
 
         # Check if both signatures have VAR_POSITIONAL parameters
         if _self.has_var_keyword and _sig.has_var_keyword:
-            errors['var_positional_conflict'] = (
-                f"Can't merge two signatures if they both have a VAR_POSITIONAL parameter: {_msg}"
-            )
+            errors[
+                'var_positional_conflict'
+            ] = f"Can't merge two signatures if they both have a VAR_POSITIONAL parameter: {_msg}"
 
         # Check if both signatures have VAR_KEYWORD parameters
         if _self.has_var_keyword and _sig.has_var_keyword:
-            errors['var_keyword_conflict'] = (
-                f"Can't merge two signatures if they both have a VAR_KEYWORD parameter: {_msg}"
-            )
+            errors[
+                'var_keyword_conflict'
+            ] = f"Can't merge two signatures if they both have a VAR_KEYWORD parameter: {_msg}"
 
         # Check if parameters with the same name have the same kind
         if not all(
@@ -3236,7 +3236,8 @@ def _validate_sanity_of_signature_change(
             f'The function you were wrapping had signature: '
             f"{name_of_obj(func) or ''}{Sig(func)} and "
             f"the signature you wanted to inject was {new_sig.name or ''}{new_sig}",
-            sig1=Sig(func), sig2=new_sig,
+            sig1=Sig(func),
+            sig2=new_sig,
         )
 
 
@@ -3250,8 +3251,8 @@ def _signature_differences_str_for_error_msg(sig1, sig2):
 
     sig_diff = sig1.pair_with(sig2)
 
-    sig1_name = f"{sig1.name}" if sig1.name else "sig1"
-    sig2_name = f"{sig2.name}" if sig2.name else "sig2"
+    sig1_name = f'{sig1.name}' if sig1.name else 'sig1'
+    sig2_name = f'{sig2.name}' if sig2.name else 'sig2'
 
     return (
         'FYI: Here are the raw signature differences for {sig1_name} and {sig2_name} '
