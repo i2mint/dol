@@ -727,7 +727,10 @@ def extract_arguments(
 
     if include_all_when_var_keywords_in_params:
         if (
-            next((p.name for p in params if p.kind == Parameter.VAR_KEYWORD), None,)
+            next(
+                (p.name for p in params if p.kind == Parameter.VAR_KEYWORD),
+                None,
+            )
             is not None
         ):
             param_kwargs.update(remaining_kwargs)
@@ -894,23 +897,6 @@ def flatten_if_var_kw(kvs, var_kw_name):
     expand = lambda k: k.items()
     # expand = lambda k: k.values()
     return _map_action_on_cond(kvs, cond, expand)
-
-
-def dflt1_is_empty_or_dflt2_is_not(dflt1, dflt2):
-    """
-    Why such a strange default comparison function?
-
-    This is to be used as a default in is_call_compatible_with.
-
-    Consider two functions func1 and func2 with a parameter p with default values
-    dflt1 and dflt2 respectively.
-    If dflt1 was not empty and dflt2 was, this would mean that func1 could be called
-    without specifying p, but func2 couldn't.
-
-    So to avoid this situation, we use dflt1_is_empty_or_dflt2_is_not as the default
-
-    """
-    return dflt1 is empty or dflt2 is not empty
 
 
 # TODO: See other signature operating functions below in this module:
@@ -1440,9 +1426,7 @@ class Sig(Signature, Mapping):
         """
         return SigPair(self, other_sig)
 
-    def is_call_compatible_with(
-        self, other_sig, *, param_comparator: Callable = dflt1_is_empty_or_dflt2_is_not
-    ):
+    def is_call_compatible_with(self, other_sig, *, param_comparator: Callable = None):
         """Return True if the signature is compatible with ``other_sig``. Meaning that
         all valid ways to call the signature are valid for ``other_sig``.
         """
@@ -2079,15 +2063,15 @@ class Sig(Signature, Mapping):
 
         # Check if both signatures have VAR_POSITIONAL parameters
         if _self.has_var_keyword and _sig.has_var_keyword:
-            errors[
-                'var_positional_conflict'
-            ] = f"Can't merge two signatures if they both have a VAR_POSITIONAL parameter: {_msg}"
+            errors['var_positional_conflict'] = (
+                f"Can't merge two signatures if they both have a VAR_POSITIONAL parameter: {_msg}"
+            )
 
         # Check if both signatures have VAR_KEYWORD parameters
         if _self.has_var_keyword and _sig.has_var_keyword:
-            errors[
-                'var_keyword_conflict'
-            ] = f"Can't merge two signatures if they both have a VAR_KEYWORD parameter: {_msg}"
+            errors['var_keyword_conflict'] = (
+                f"Can't merge two signatures if they both have a VAR_KEYWORD parameter: {_msg}"
+            )
 
         # Check if parameters with the same name have the same kind
         if not all(
@@ -3006,7 +2990,9 @@ class Sig(Signature, Mapping):
             ignore_kind=_ignore_kind,
         )
         return self.mk_args_and_kwargs(
-            arguments, allow_partial=_allow_partial, args_limit=_args_limit,
+            arguments,
+            allow_partial=_allow_partial,
+            args_limit=_args_limit,
         )
 
     def source_arguments(
@@ -3171,7 +3157,9 @@ class Sig(Signature, Mapping):
             **kwargs,
         )
         return self.mk_args_and_kwargs(
-            arguments, allow_partial=_allow_partial, args_limit=_args_limit,
+            arguments,
+            allow_partial=_allow_partial,
+            args_limit=_args_limit,
         )
 
 
@@ -4329,32 +4317,23 @@ class sigs_for_builtins:
         zip(*iterables) --> A zip object yielding tuples until an input is exhausted.
         """
 
-    def bool(x: Any, /) -> bool:
-        ...
+    def bool(x: Any, /) -> bool: ...
 
-    def bytearray(iterable_of_ints: Iterable[int], /):
-        ...
+    def bytearray(iterable_of_ints: Iterable[int], /): ...
 
-    def classmethod(function: Callable, /):
-        ...
+    def classmethod(function: Callable, /): ...
 
-    def int(x, base=10, /):
-        ...
+    def int(x, base=10, /): ...
 
-    def iter(callable: Callable, sentinel=None, /):
-        ...
+    def iter(callable: Callable, sentinel=None, /): ...
 
-    def next(iterator: Iterator, default=None, /):
-        ...
+    def next(iterator: Iterator, default=None, /): ...
 
-    def staticmethod(function: Callable, /):
-        ...
+    def staticmethod(function: Callable, /): ...
 
-    def str(bytes_or_buffer, encoding=None, errors=None, /):
-        ...
+    def str(bytes_or_buffer, encoding=None, errors=None, /): ...
 
-    def super(type_, obj=None, /):
-        ...
+    def super(type_, obj=None, /): ...
 
     # def type(name, bases=None, dict=None, /):
     #     ...
@@ -4524,14 +4503,11 @@ class sigs_for_type_name:
     signatures (through ``inspect.signature``),
     """
 
-    def itemgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]:
-        ...
+    def itemgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]: ...
 
-    def attrgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]:
-        ...
+    def attrgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]: ...
 
-    def methodcaller(obj: Any) -> Any:
-        ...
+    def methodcaller(obj: Any) -> Any: ...
 
 
 ############# Tools for testing #########################################################
@@ -4576,7 +4552,9 @@ for kind in param_kinds:
     lower_kind = kind.lower()
     setattr(param_for_kind, lower_kind, partial(param_for_kind, kind=kind))
     setattr(
-        param_for_kind, 'with_default', partial(param_for_kind, with_default=True),
+        param_for_kind,
+        'with_default',
+        partial(param_for_kind, with_default=True),
     )
     setattr(
         getattr(param_for_kind, lower_kind),
@@ -4628,7 +4606,10 @@ def mk_func_comparator_based_on_signature_comparator(
 
 
 def _keyed_comparator(
-    comparator: Comparator, key: KeyFunction, x: CT, y: CT,
+    comparator: Comparator,
+    key: KeyFunction,
+    x: CT,
+    y: CT,
 ) -> Comparison:
     """Apply a comparator after transforming inputs through a key function.
 
@@ -4642,7 +4623,10 @@ def _keyed_comparator(
     return comparator(key(x), key(y))
 
 
-def keyed_comparator(comparator: Comparator, key: KeyFunction,) -> Comparator:
+def keyed_comparator(
+    comparator: Comparator,
+    key: KeyFunction,
+) -> Comparator:
     """Create a key-function enabled binary operator.
 
     In various places in python functionality is extended by allowing a key function.
@@ -4681,7 +4665,7 @@ def param_comparator(
     default: Comparator = eq,
     annotation: Comparator = eq,
     aggreg: ComparisonAggreg = all,
-):
+) -> Comparison:
     """Compare two parameters.
 
     Note that by default, this function is strict, and will return False if
@@ -4729,6 +4713,23 @@ param_comparator: ParamComparator
 param_binary_func = param_comparator  # back compatibility alias
 
 
+def dflt1_is_empty_or_dflt2_is_not(dflt1, dflt2):
+    """
+    Why such a strange default comparison function?
+
+    This is to be used as a default in is_call_compatible_with.
+
+    Consider two functions func1 and func2 with a parameter p with default values
+    dflt1 and dflt2 respectively.
+    If dflt1 was not empty and dflt2 was, this would mean that func1 could be called
+    without specifying p, but func2 couldn't.
+
+    So to avoid this situation, we use dflt1_is_empty_or_dflt2_is_not as the default
+
+    """
+    return dflt1 is empty or dflt2 is not empty
+
+
 # TODO: Implement annotation compatibility
 def ignore_any_differences(x, y):
     return True
@@ -4748,6 +4749,10 @@ attributes.
 It is meant to be used with partial, but with a permissive base, contrary to the 
 base param_comparator which requires strict equality (`eq`) for all attributes.
 '''
+
+dflt1_is_empty_or_dflt2_is_not_param_comparator = partial(
+    permissive_param_comparator, default=dflt1_is_empty_or_dflt2_is_not
+)
 
 
 def return_tuple(x, y):
@@ -4832,16 +4837,34 @@ def defaults_are_the_same_when_not_empty(dflt1, dflt2):
     return dflt1 is empty or dflt2 is empty or dflt1 == dflt2
 
 
+def postprocess(egress: Callable):
+    """A decorator that will process the output of the wrapped function with egress"""
+
+    # Note: Vendorized version equivalent ones in i2.deco and i2.wrapper
+    def postprocessed(func):
+        @wraps(func)
+        def wrapped_func(*args, **kwargs):
+            original_output = func(*args, **kwargs)
+            return egress(original_output)
+
+        return wrapped_func
+
+    return postprocessed
+
+
 # TODO: It seems like param_comparator is really only used to compare parameters on defaults.
 #   This may be due to the fact that is_call_compatible_with was developed independently
 #   from the other general param_comparator functionality that was developed (see above)
 #   The code of is_call_compatible_with should be reviwed and refactored to use general
 #   tools.
+@postprocess(
+    all
+)  # see "Use of postprocess" in https://github.com/i2mint/i2/discussions/63#discussioncomment-10394910
 def is_call_compatible_with(
     sig1: Sig,
     sig2: Sig,
     *,
-    param_comparator: ParamComparator = dflt1_is_empty_or_dflt2_is_not,
+    param_comparator: Optional[ParamComparator] = None,
 ) -> bool:
     """Return True if ``sig1`` is compatible with ``sig2``. Meaning that all valid ways
     to call ``sig1`` are valid for ``sig2``.
@@ -4891,6 +4914,16 @@ def is_call_compatible_with(
     ... )
     True
     """
+
+    # Note: In case you're tempted to put this default function as an argument default,
+    #  don't. Yes, it's preferable in many ways, but makes the "one source of truth"
+    #  principle harder to maintain, since this default has to be the same anywhere
+    #  the current function is called. Better signature/docs injection functionality
+    #  would be warranted.
+    #  See https://stackoverflow.com/questions/78874506/how-can-i-avoid-interface-repetition-in-python-function-signatures-and-docstring
+    param_comparator = (
+        param_comparator or dflt1_is_empty_or_dflt2_is_not_param_comparator
+    )
 
     def validate_variadics():
         return (
@@ -4988,11 +5021,14 @@ def is_call_compatible_with(
         sig2 -= vk2
 
     return (
-        validate_variadics()
-        and validate_param_counts()
-        and validate_extra_params()
-        and validate_param_positions()
-        and validate_param_compatibility()
+        f()
+        for f in [
+            validate_variadics,
+            validate_param_counts,
+            validate_extra_params,
+            validate_param_positions,
+            validate_param_compatibility,
+        ]
     )
 
 
@@ -5016,7 +5052,7 @@ class SigPair:
     >>> from pprint import pprint
     >>> def three(a, b: int, c=3): ...
     >>> def little(a, *, b=2, d=4) -> int: ...
-    >>> def pigs(a, b: int = 2) -> int: ...
+    >>> def pigs(a, b) -> int: ...
     >>> sig_pair = SigPair(three, little)
     >>>
     >>> sig_pair.shared_names
@@ -5049,15 +5085,18 @@ class SigPair:
     >>> SigPair(three, lambda a, b=2, c=30: None).are_call_compatible()
     True
 
-    Note that compatibility is not symmetric. For example, call compatibility is not:
-
-    >>> SigPair(three, pigs).are_call_compatible()
-    False
-
-    But,
+    Note that call-compatibility is not symmetric. For example, `pigs` is call
+    compatible with `three`, since any arguments that are valid for `pigs` are valid
+    for `three`:
 
     >>> SigPair(pigs, three).are_call_compatible()
     True
+
+    But `three` is not call-compatible with `pigs` since `three` requires could include
+    a `c` argument, which `pigs` would choke on.
+
+    >>> SigPair(three, pigs).are_call_compatible()
+    False
 
     """
 
@@ -5108,9 +5147,7 @@ class SigPair:
         return [name for name in self.sig2.names if name not in self.sig1.names]
 
     # TODO: Verify that the doctests are correct!
-    def are_call_compatible(
-        self, param_comparator=dflt1_is_empty_or_dflt2_is_not
-    ) -> bool:
+    def are_call_compatible(self, param_comparator=None) -> bool:
         """
         Check if the signatures are call-compatible.
 
