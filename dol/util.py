@@ -539,19 +539,34 @@ class Pipe:
             for i, func in enumerate(self.other_funcs, 1):
                 out = func(out)
         except Exception as e:
-            msg = self._mk_pipe_call_error(i, func, out, e)
-            raise type(e)(msg) from e
+            raise self._mk_pipe_call_error(e, i, out, args, kwargs) from e
         return out
 
-    def _mk_pipe_call_error(self, i, func, out, error_obj):
-        msg = f'Error calling {function_info_string(func)} (index={i})\n'
-        out_str = f'{out}'
+    def _mk_pipe_call_error(self, error_obj, i, out, args, kwargs):
+        msg = f'Error calling function {self._func_info_str(i)}\n'
+        out_str = f"{out}"
         msg += f'on input {truncate_string_with_marker(out_str)}\n'
-        previous_func = self.funcs[i - 1]
-        msg += 'which was the output of '
-        msg += f'{function_info_string(previous_func)} (index={i-1})'
-        msg += f'\nError was: {error_obj}'
-        return msg
+        msg += 'which was the output of previous function'
+        msg += f'{self._func_info_str(i - 1)}\n'
+        args_str = ', '.join(map(str, args))
+        kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
+        msg += f'The error was cause by calling {self} on ({args_str}, {kwargs_str})\n'
+        msg += f'Error was: {error_obj}'
+        new_error_obj = type(error_obj)(msg)
+        new_error_obj.error_context = {
+            'Pipe': self,
+            'args': args,
+            'kwargs': kwargs,
+            'func_index': i,
+            'func': self.funcs[i],
+            'func_input': out,
+        }
+        return new_error_obj
+
+    def _func_info_str(self, i):
+        func = self.funcs[i]
+        func_info = function_info_string(func)
+        return f'{func_info} (index={i})'
 
     def __len__(self):
         return len(self.funcs)
