@@ -20,7 +20,7 @@ from functools import update_wrapper as _update_wrapper
 from functools import wraps as _wraps
 from functools import partialmethod, partial, WRAPPER_ASSIGNMENTS
 from types import MethodType
-from inspect import Signature, signature, Parameter
+from inspect import Signature, signature, Parameter, getsource
 
 
 # monkey patching WRAPPER_ASSIGNMENTS to get "proper" wrapping (adding defaults and kwdefaults
@@ -384,6 +384,66 @@ _delete_keys_one_by_one.disabled = False
 _delete_keys_one_by_one_with_keyerror_supressed.disabled = False
 
 
+def truncate_string_with_marker(
+    s, *, left_limit=15, right_limit=15, middle_marker='...'
+):
+    """
+    Return a string with a limited length.
+
+    If the string is longer than the sum of the left_limit and right_limit,
+    the string is truncated and the middle_marker is inserted in the middle.
+
+    If the string is shorter than the sum of the left_limit and right_limit,
+    the string is returned as is.
+
+    >>> truncate_string_with_marker('1234567890')
+    '1234567890'
+
+    But if the string is longer than the sum of the limits, it is truncated:
+
+    >>> truncate_string_with_marker('1234567890', left_limit=3, right_limit=3)
+    '123...890'
+    >>> truncate_string_with_marker('1234567890', left_limit=3, right_limit=0)
+    '123...'
+    >>> truncate_string_with_marker('1234567890', left_limit=0, right_limit=3)
+    '...890'
+
+    If you're using a specific parametrization of the function often, you can
+    create a partial function with the desired parameters:
+
+    >>> from functools import partial
+    >>> truncate_string = partial(truncate_string_with_marker, left_limit=2, right_limit=2, middle_marker='---')
+    >>> truncate_string('1234567890')
+    '12---90'
+    >>> truncate_string('supercalifragilisticexpialidocious')
+    'su---us'
+
+    """
+    middle_marker_len = len(middle_marker)
+    if len(s) <= left_limit + right_limit:
+        return s
+    elif right_limit == 0:
+        return s[:left_limit] + middle_marker
+    elif left_limit == 0:
+        return middle_marker + s[-right_limit:]
+    else:
+        return s[:left_limit] + middle_marker + s[-right_limit:]
+
+
+def signature_string_or_default(func, default='(-no signature-)'):
+    try:
+        return str(signature(func))
+    except ValueError:
+        return default
+
+
+def function_info_string(func: Callable):
+    func_name = getattr(func, '__name__', str(func))
+    if func_name == '<lambda>':
+        return f"a lambda function on {signature(func)}"
+    return f'{func_name}{signature_string_or_default(func)}'
+
+
 # Note: Pipe code is completely independent (with inspect imports signature & Signature)
 #  If you only need simple pipelines, use this, or even copy/paste it where needed.
 # TODO: Public interface mis-aligned with i2. funcs list here, in i2 it's dict. Align?
@@ -474,9 +534,23 @@ class Pipe:
 
     def __call__(self, *args, **kwargs):
         out = self.first_func(*args, **kwargs)
-        for func in self.other_funcs:
-            out = func(out)
+        try:  # first call has no exeption handling, but subsequent calls do
+            for i, func in enumerate(self.other_funcs, 1):
+                out = func(out)
+        except Exception as e:
+            msg = self._mk_pipe_call_error(i, func, out, e)
+            raise type(e)(msg) from e
         return out
+
+    def _mk_pipe_call_error(self, i, func, out, error_obj):
+        msg = f'Error calling {function_info_string(func)} (index={i})\n'
+        out_str = f"{out}"
+        msg += f'on input {truncate_string_with_marker(out_str)}\n'
+        previous_func = self.funcs[i - 1]
+        msg += 'which was the output of '
+        msg += f'{function_info_string(previous_func)} (index={i-1})'
+        msg += f'\nError was: {error_obj}'
+        return msg
 
     def __len__(self):
         return len(self.funcs)
@@ -595,7 +669,9 @@ def partialclass(cls, *args, **kwargs):
         __init__ = partialmethod(cls.__init__, *args, **kwargs)
 
     copy_attrs(
-        PartialClass, cls, attrs=('__name__', '__qualname__', '__module__', '__doc__'),
+        PartialClass,
+        cls,
+        attrs=('__name__', '__qualname__', '__module__', '__doc__'),
     )
 
     return PartialClass
@@ -1003,7 +1079,10 @@ def igroupby(
     if val is None:
         _append_to_group_items = append_to_group_items
     else:
-        _append_to_group_items = lambda group_items, item: (group_items, val(item),)
+        _append_to_group_items = lambda group_items, item: (
+            group_items,
+            val(item),
+        )
 
     for item in items:
         group_key = key(item)
@@ -1611,10 +1690,10 @@ def written_key(
     >>> store = dict()
     >>> writer = writer=lambda obj, key: store.__setitem__(key, obj)
 
-    Note the order a writer expects is (obj, key), or we'd just be able to use 
+    Note the order a writer expects is (obj, key), or we'd just be able to use
     `store.__setitem__` as our writer.
 
-    If we specify a key, the object will be written to that key in the store 
+    If we specify a key, the object will be written to that key in the store
     and the key is output.
 
     >>> written_key(42, writer=writer, key='my_key')
@@ -1632,7 +1711,7 @@ def written_key(
     'another_key'
     >>> store
     {'my_key': 42, 'another_key': 99}
-    
+
     If you don't specify a key, a temporary file is created and the key is output.
 
     >>> write_to_store = written_key(writer=writer)
@@ -1641,9 +1720,9 @@ def written_key(
     '/var/folders/mc/c070wfh51kxd9lft8dl74q1r0000gn/T/tmp8yaczd8b'
     >>> store[key]
     43
-    
-    If the key you specify is a string with a '*', the '*' is replaced with a 
-    unique temporary filename, or the full path of the temporary file if the * 
+
+    If the key you specify is a string with a '*', the '*' is replaced with a
+    unique temporary filename, or the full path of the temporary file if the *
     is at the start.
 
     >>> write_to_store = written_key(writer=writer, key='*.ext')
@@ -1653,12 +1732,12 @@ def written_key(
     >>> store[key]
     44
 
-    One useful use case is when you want to pipe the output of one function into 
-    another function that expects a file path. 
-    What you need to do then is just pipe your written_key function into that 
+    One useful use case is when you want to pipe the output of one function into
+    another function that expects a file path.
+    What you need to do then is just pipe your written_key function into that
     function that expects to work with a file path, and it'll be like piping the
     value of your input object into that function (just via a temp file).
-    
+
     >>> from dol.util import Pipe
     >>> store.clear()
     >>> key_func = lambda key: store.get(key) * 10
