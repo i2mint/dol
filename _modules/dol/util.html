@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.59 documentation</title>
+  <title>dol.util &mdash; dol 0.2.60 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=42156a59"></script>
+        <script src="../../_static/documentation_options.js?v=68aead83"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -529,6 +529,7 @@
 <span class="n">_delete_keys_one_by_one_with_keyerror_supressed</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">False</span>
 
 
+<span class="c1"># Note: Vendored in i2.multi_objects and lkj.strings</span>
 <div class="viewcode-block" id="truncate_string_with_marker">
 <a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.truncate_string_with_marker">[docs]</a>
 <span class="k">def</span> <span class="nf">truncate_string_with_marker</span><span class="p">(</span>
@@ -588,7 +589,7 @@
 <span class="k">def</span> <span class="nf">function_info_string</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
     <span class="n">func_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">func</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">func_name</span> <span class="o">==</span> <span class="s1">&#39;&lt;lambda&gt;&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;a lambda function on </span><span class="si">{</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;a lambda function on </span><span class="si">{</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">func_name</span><span class="si">}{</span><span class="n">signature_string_or_default</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
 
 
@@ -694,7 +695,7 @@
 
     <span class="k">def</span> <span class="nf">_mk_pipe_call_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">error_obj</span><span class="p">):</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Error calling </span><span class="si">{</span><span class="n">function_info_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="si">}</span><span class="s1"> (index=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">)</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">out_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">out</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">out_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">out</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;on input </span><span class="si">{</span><span class="n">truncate_string_with_marker</span><span class="p">(</span><span class="n">out_str</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="n">previous_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">funcs</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">msg</span> <span class="o">+=</span> <span class="s1">&#39;which was the output of &#39;</span>
@@ -825,9 +826,7 @@
         <span class="fm">__init__</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">copy_attrs</span><span class="p">(</span>
-        <span class="n">PartialClass</span><span class="p">,</span>
-        <span class="bp">cls</span><span class="p">,</span>
-        <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
+        <span class="n">PartialClass</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PartialClass</span></div>
@@ -1256,10 +1255,7 @@
     <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="n">append_to_group_items</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span>
-            <span class="n">group_items</span><span class="p">,</span>
-            <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),</span>
-        <span class="p">)</span>
+        <span class="n">_append_to_group_items</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">group_items</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="p">(</span><span class="n">group_items</span><span class="p">,</span> <span class="n">val</span><span class="p">(</span><span class="n">item</span><span class="p">),)</span>
 
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
         <span class="n">group_key</span> <span class="o">=</span> <span class="n">key</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
