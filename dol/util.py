@@ -384,6 +384,7 @@ _delete_keys_one_by_one.disabled = False
 _delete_keys_one_by_one_with_keyerror_supressed.disabled = False
 
 
+# Note: Vendored in i2.multi_objects and lkj.strings
 def truncate_string_with_marker(
     s, *, left_limit=15, right_limit=15, middle_marker='...'
 ):
