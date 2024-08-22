@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.61 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=ccd6299a"></script>
+        <script src="../../_static/documentation_options.js?v=fb2ea3f0"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -80,6 +80,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_trans.html">dol.tests.test_trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">dol.tools</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.CachedProperty"><code class="docutils literal notranslate"><span class="pre">CachedProperty</span></code></a></li>
@@ -89,10 +90,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.cache_this"><code class="docutils literal notranslate"><span class="pre">cache_this()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.confirm_overwrite"><code class="docutils literal notranslate"><span class="pre">confirm_overwrite()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.convert_to_numerical_if_possible"><code class="docutils literal notranslate"><span class="pre">convert_to_numerical_if_possible()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dol.tools.filter_prefixes"><code class="docutils literal notranslate"><span class="pre">filter_prefixes()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dol.tools.filter_regex"><code class="docutils literal notranslate"><span class="pre">filter_regex()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dol.tools.filter_suffixes"><code class="docutils literal notranslate"><span class="pre">filter_suffixes()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.iSliceStore"><code class="docutils literal notranslate"><span class="pre">iSliceStore</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.tools.store_aggregate"><code class="docutils literal notranslate"><span class="pre">store_aggregate()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
@@ -486,59 +485,6 @@ over-write):</p>
 </div>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.tools.filter_prefixes">
-<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">filter_prefixes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefixes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#filter_prefixes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.filter_prefixes" title="Link to this definition"></a></dt>
-<dd><p>Make a filter that returns True if a string starts with one of the given prefixes</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">starts_with_test</span> <span class="o">=</span> <span class="n">filter_prefixes</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">starts_with_test</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">starts_with_test</span><span class="p">(</span><span class="s2">&quot;report.doc&quot;</span><span class="p">)</span>
-<span class="go">False</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_test_or_report</span> <span class="o">=</span> <span class="n">filter_prefixes</span><span class="p">([</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="s1">&#39;report&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_test_or_report</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_test_or_report</span><span class="p">(</span><span class="s2">&quot;report.doc&quot;</span><span class="p">)</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_test_or_report</span><span class="p">(</span><span class="s2">&quot;image.jpg&quot;</span><span class="p">)</span>
-<span class="go">False</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.tools.filter_regex">
-<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">filter_regex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">regex</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_search_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#filter_regex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.filter_regex" title="Link to this definition"></a></dt>
-<dd><p>Make a filter that returns True if a string matches the given regex</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_txt</span> <span class="o">=</span> <span class="n">filter_regex</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;.*\.txt&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_txt</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_txt</span><span class="p">(</span><span class="s2">&quot;report.doc&quot;</span><span class="p">)</span>
-<span class="go">False</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.tools.filter_suffixes">
-<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">filter_suffixes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suffixes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#filter_suffixes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.filter_suffixes" title="Link to this definition"></a></dt>
-<dd><p>Make a filter that returns True if a string ends with one of the given suffixes</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ends_with_txt</span> <span class="o">=</span> <span class="n">filter_suffixes</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ends_with_txt</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ends_with_txt</span><span class="p">(</span><span class="s2">&quot;report.doc&quot;</span><span class="p">)</span>
-<span class="go">False</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_text</span> <span class="o">=</span> <span class="n">filter_suffixes</span><span class="p">([</span><span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;.doc&#39;</span><span class="p">,</span> <span class="s1">&#39;.pdf&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_text</span><span class="p">(</span><span class="s2">&quot;test.txt&quot;</span><span class="p">)</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_text</span><span class="p">(</span><span class="s2">&quot;report.doc&quot;</span><span class="p">)</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_text</span><span class="p">(</span><span class="s2">&quot;image.jpg&quot;</span><span class="p">)</span>
-<span class="go">False</span>
-</pre></div>
-</div>
-</dd></dl>
-
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.tools.iSliceStore">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">iSliceStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#iSliceStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.iSliceStore" title="Link to this definition"></a></dt>
@@ -588,6 +534,89 @@ format, you can use <cite>dol.trans.wrap_kvs</cite> for that.</p>
 <span class="go">[&#39;bob&#39;, &#39;world&#39;]</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.tools.store_aggregate">
+<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">store_aggregate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">content_store:</span> <span class="pre">~typing.Mapping</span> <span class="pre">|</span> <span class="pre">str,</span> <span class="pre">*,</span> <span class="pre">kv_to_item:</span> <span class="pre">~typing.Callable[[KT,</span> <span class="pre">VT],</span> <span class="pre">~dol.tools.Item]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">markdown_section&gt;,</span> <span class="pre">aggregator:</span> <span class="pre">~typing.Callable[[~typing.Iterable[~dol.tools.Item]],</span> <span class="pre">~dol.tools.Aggregate]</span> <span class="pre">=</span> <span class="pre">&lt;built-in</span> <span class="pre">method</span> <span class="pre">join</span> <span class="pre">of</span> <span class="pre">str</span> <span class="pre">object&gt;,</span> <span class="pre">egress:</span> <span class="pre">~typing.Callable[[~dol.tools.Aggregate],</span> <span class="pre">~typing.Any]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">identity&gt;,</span> <span class="pre">key_filter:</span> <span class="pre">~typing.Callable[[KT],</span> <span class="pre">bool]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">value_filter:</span> <span class="pre">~typing.Callable[[VT],</span> <span class="pre">bool]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">kv_filter:</span> <span class="pre">~typing.Callable[[~typing.Tuple],</span> <span class="pre">bool]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">local_store_factory:</span> <span class="pre">~typing.Callable[[str],</span> <span class="pre">~typing.Mapping]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'dol.filesys.Files'&gt;</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../_modules/dol/tools.html#store_aggregate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.store_aggregate" title="Link to this definition"></a></dt>
+<dd><p>Create an aggregate object of a store’s content.</p>
+<p>The function is written to be able to aggregate the keys and/or values of a store,
+no matter their type, and concatenate them into an object of arbitrary type.
+That said, the defaults are setup assuming the store’s keys and values are text,
+and you want to concatenate them into a single string.
+This is useful, for example, when you have several files in a folder,
+and you want to create a single text/markdown file with all the content therein.</p>
+<p>This function filters content from a given content store, converts the key-value
+pairs to items (usually text), and (if you specify a filepath as the <cite>egress</cite>)
+saves the aggregate (text) before returning it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_store</strong> (<em>Union</em><em>[</em><em>Mapping</em><em>[</em><em>KT</em><em>, </em><em>VT</em><em>]</em><em>, </em><em>str</em><em>]</em>) – Path to the folder or dol store to read from.</p></li>
+<li><p><strong>kv_to_item</strong> (<em>Callable</em><em>[</em><em>[</em><em>KT</em><em>, </em><em>VT</em><em>]</em><em>, </em><em>Item</em><em>]</em>) – Function to convert key-value pairs to an Item (usually a string).</p></li>
+<li><p><strong>aggregator</strong> (<em>Callable</em><em>[</em><em>[</em><em>Iterable</em><em>[</em><em>Item</em><em>]</em><em>]</em><em>, </em><em>Aggregate</em><em>]</em>) – The function that will aggregate the items that <cite>kv_to_item</cite> produces.
+Defaults to ‘nn’.join.</p></li>
+<li><p><strong>egress</strong> (<em>Union</em><em>[</em><em>Callable</em><em>[</em><em>[</em><em>Aggregate</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>str</em><em>]</em>) – The function that will be called on the aggregate before returning it.
+Defaults to identity.
+Note that if you provide a string, the function will save the aggregate
+text to a file, assuming it is indeed text.</p></li>
+<li><p><strong>key_filter</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>[</em><em>[</em><em>KT</em><em>]</em><em>, </em><em>bool</em><em>]</em><em>]</em>) – Optional filter for keys. Defaults to None (no filtering).</p></li>
+<li><p><strong>value_filter</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>[</em><em>[</em><em>VT</em><em>]</em><em>, </em><em>bool</em><em>]</em><em>]</em>) – Optional filter for values. Defaults to None (no filtering).</p></li>
+<li><p><strong>kv_filter</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>[</em><em>[</em><em>Tuple</em><em>[</em><em>KT</em><em>, </em><em>VT</em><em>]</em><em>]</em><em>, </em><em>bool</em><em>]</em><em>]</em>) – Optional filter for key-value pairs. Defaults to None (no filtering).</p></li>
+<li><p><strong>local_store_factory</strong> (<em>Callable</em><em>[</em><em>[</em><em>str</em><em>]</em><em>, </em><em>Mapping</em><em>[</em><em>KT</em><em>, </em><em>VT</em><em>]</em><em>]</em>) – Factory function for the local store,
+used only if <cite>content_store</cite> is an existing folder path. Defaults to Latin1TextFiles.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Usually the aggregate object, which is usually the concatenated text.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+<p>Normally, you’d specify your content store by specifying a root folder
+(the function will create a Mapping-view of the contents of the folder for you),
+or make a content store yourself (a Mapping object providing the key-value pairs).</p>
+<p>To provide a small example, we’ll take a dict as our content store:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">content_store</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;file1.py&#39;</span><span class="p">:</span> <span class="s1">&#39;&quot;&quot;&quot;Module docstring.&quot;&quot;&quot;&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;file2.py&#39;</span><span class="p">:</span> <span class="s1">&#39;def foo(): pass&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;file3.py&#39;</span><span class="p">:</span> <span class="s1">&#39;&quot;&quot;&quot;Another docstring.&quot;&quot;&quot;&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;file4.md&#39;</span><span class="p">:</span> <span class="s1">&#39;Markdown content here.&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;file5.py&#39;</span><span class="p">:</span> <span class="s1">&#39;&quot;&quot;&quot;If I mention file5.py, I will be excluded.&quot;&quot;&quot;&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Define the filters:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">key_filter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.py&#39;</span><span class="p">)</span>  <span class="c1"># Only include keys that end with &#39;.py&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">value_filter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s1">&#39;&quot;&quot;&quot;&#39;</span>
+<span class="gp">... </span><span class="p">)</span>  <span class="c1"># Only include values that start with &quot;&quot;&quot; (marking a module docstring)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kv_filter</span> <span class="o">=</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="n">kv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>  <span class="c1"># Exclude key-value pairs where the value mentions the key</span>
+</pre></div>
+</div>
+<p>Call the function with the provided filters and settings</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">store_aggregate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">content_store</span><span class="o">=</span><span class="n">content_store</span><span class="p">,</span>  <span class="c1"># The content_store dict</span>
+<span class="gp">... </span>    <span class="n">kv_to_item</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> -&gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>  <span class="c1"># Format key-value pairs as &quot;key -&gt; value&quot;</span>
+<span class="gp">... </span>    <span class="n">key_filter</span><span class="o">=</span><span class="n">key_filter</span><span class="p">,</span>  <span class="c1"># Key filter: Include only .py files</span>
+<span class="gp">... </span>    <span class="n">value_filter</span><span class="o">=</span><span class="n">value_filter</span><span class="p">,</span>  <span class="c1"># Value filter: Include only values starting with &quot;&quot;&quot;</span>
+<span class="gp">... </span>    <span class="n">kv_filter</span><span class="o">=</span><span class="n">kv_filter</span><span class="p">,</span>  <span class="c1"># KV filter: Exclude if value contains the key</span>
+<span class="gp">... </span>    <span class="n">aggregator</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">egress</span><span class="o">=</span><span class="s1">&#39;~/test.md&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span>
+<span class="go">&#39;file1.py -&gt; &quot;&quot;&quot;Module docstring.&quot;&quot;&quot;, file3.py -&gt; &quot;&quot;&quot;Another docstring.&quot;&quot;&quot;&#39;</span>
+</pre></div>
+</div>
+<p>Here, you got the string as the result. If you want to save it to a file,
+you can provide the save_filepath argument, and it will save the text to the file,
+and return the save_filepath to you (which )</p>
+<p>Recipe: You can do a lot with the <cite>kv_to_text</cite> argument. For example, if your
+content store doesn’t have string keys or values, you can always extract whatever
+information you need from them to produce the text that will represent that item.</p>
 </dd></dl>
 
 </section>

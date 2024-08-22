@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.2.61 documentation</title>
+  <title>dol.trans &mdash; dol 0.2.62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=ccd6299a"></script>
+        <script src="../../_static/documentation_options.js?v=fb2ea3f0"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -77,6 +77,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_trans.html">dol.tests.test_trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
@@ -114,7 +115,7 @@
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">reduce</span>
 <span class="kn">import</span> <span class="nn">types</span>
-<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">SimpleNamespace</span>
+<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span><span class="p">,</span> <span class="n">Parameter</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
@@ -712,8 +713,7 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="c1"># TODO: Consider moving to trans and making instances wrappable too</span>
-        <span class="k">class</span> <span class="nc">NoOverWritesClass</span><span class="p">(</span><span class="n">OverWritesNotAllowedMixin</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
-            <span class="o">...</span>
+        <span class="k">class</span> <span class="nc">NoOverWritesClass</span><span class="p">(</span><span class="n">OverWritesNotAllowedMixin</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span> <span class="o">...</span>
 
         <span class="n">copy_attrs</span><span class="p">(</span><span class="n">NoOverWritesClass</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">NoOverWritesClass</span>
@@ -752,7 +752,9 @@
 <a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.trans.insert_hash_method">[docs]</a>
 <span class="nd">@store_decorator</span>
 <span class="k">def</span> <span class="nf">insert_hash_method</span><span class="p">(</span>
-    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">hash_method</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">id</span><span class="p">,</span>
+    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">hash_method</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">id</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a store hashable using the specified ``hash_method``.</span>
 <span class="sd">    Will add (or overwrite) a ``__hash__`` method to the store that uses the</span>
@@ -1476,6 +1478,8 @@
 <span class="n">FiltFunc</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
 
 
+<span class="c1"># Note: The full definition of filt_iter includes some attributes that will be added</span>
+<span class="c1">#   to it below (seach for FiltIter.__dict__.items())</span>
 <div class="viewcode-block" id="filt_iter">
 <a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.trans.filt_iter">[docs]</a>
 <span class="nd">@store_decorator</span>
@@ -1604,6 +1608,134 @@
 
         <span class="n">store_cls</span><span class="o">.</span><span class="fm">__delitem__</span> <span class="o">=</span> <span class="fm">__delitem__</span>
     <span class="k">return</span> <span class="n">store_cls</span>
+
+
+<div class="viewcode-block" id="filter_regex">
+<a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.trans.filter_regex">[docs]</a>
+<span class="k">def</span> <span class="nf">filter_regex</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_search_func</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a filter that returns True if a string matches the given regex</span>
+
+<span class="sd">    &gt;&gt;&gt; is_txt = filter_regex(r&#39;.*\.txt&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; is_txt(&quot;test.txt&quot;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; is_txt(&quot;report.doc&quot;)</span>
+<span class="sd">    False</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_search_func</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">regex</span><span class="o">.</span><span class="n">search</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">regex</span><span class="o">.</span><span class="n">search</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">pipe</span><span class="o">.</span><span class="n">regex</span> <span class="o">=</span> <span class="n">regex</span>
+        <span class="k">return</span> <span class="n">pipe</span></div>
+
+
+
+<div class="viewcode-block" id="filter_suffixes">
+<a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.trans.filter_suffixes">[docs]</a>
+<span class="k">def</span> <span class="nf">filter_suffixes</span><span class="p">(</span><span class="n">suffixes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a filter that returns True if a string ends with one of the given suffixes</span>
+
+<span class="sd">    &gt;&gt;&gt; ends_with_txt = filter_suffixes(&#39;.txt&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; ends_with_txt(&quot;test.txt&quot;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; ends_with_txt(&quot;report.doc&quot;)</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; is_text = filter_suffixes([&#39;.txt&#39;, &#39;.doc&#39;, &#39;.pdf&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; is_text(&quot;test.txt&quot;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; is_text(&quot;report.doc&quot;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; is_text(&quot;image.jpg&quot;)</span>
+<span class="sd">    False</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">suffixes</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">suffixes</span> <span class="o">=</span> <span class="p">[</span><span class="n">suffixes</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">filter_regex</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">,</span> <span class="n">suffixes</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;$&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="filter_prefixes">
+<a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.trans.filter_prefixes">[docs]</a>
+<span class="k">def</span> <span class="nf">filter_prefixes</span><span class="p">(</span><span class="n">prefixes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a filter that returns True if a string starts with one of the given prefixes</span>
+
+<span class="sd">    &gt;&gt;&gt; starts_with_test = filter_prefixes(&#39;test&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; starts_with_test(&quot;test.txt&quot;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; starts_with_test(&quot;report.doc&quot;)</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; is_test_or_report = filter_prefixes([&#39;test&#39;, &#39;report&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; is_test_or_report(&quot;test.txt&quot;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; is_test_or_report(&quot;report.doc&quot;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; is_test_or_report(&quot;image.jpg&quot;)</span>
+<span class="sd">    False</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prefixes</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">prefixes</span> <span class="o">=</span> <span class="p">[</span><span class="n">prefixes</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">filter_regex</span><span class="p">(</span><span class="s1">&#39;^&#39;</span> <span class="o">+</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">,</span> <span class="n">prefixes</span><span class="p">)))</span></div>
+
+
+
+<span class="k">class</span> <span class="nc">FiltIter</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s1">&#39;This class is not meant to be instantiated, but only act as a collection &#39;</span>
+            <span class="s1">&#39;of functions to make mapping filtering decorators.&#39;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">regex</span><span class="p">(</span><span class="n">regex</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a mapping-filtering decorator that filters keys with a regex.</span>
+
+<span class="sd">        :param regex: A regex string or compiled regex</span>
+
+<span class="sd">        &gt;&gt;&gt; contains_a = FiltIter.regex(r&#39;a&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; d = {&#39;apple&#39;: 1, &#39;banana&#39;: 2, &#39;cherry&#39;: 3}</span>
+<span class="sd">        &gt;&gt;&gt; dd = contains_a(d)</span>
+<span class="sd">        &gt;&gt;&gt; dict(dd)</span>
+<span class="sd">        {&#39;apple&#39;: 1, &#39;banana&#39;: 2}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="n">filter_regex</span><span class="p">(</span><span class="n">regex</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">prefixes</span><span class="p">(</span><span class="n">prefixes</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a mapping-filtering decorator that filters keys with a prefixes.</span>
+
+<span class="sd">        :param prefixes: A string or iterable of strings that are the prefixes to filter</span>
+
+<span class="sd">        &gt;&gt;&gt; is_test = FiltIter.prefixes(&#39;test&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; d = {&#39;test.txt&#39;: 1, &#39;report.doc&#39;: 2, &#39;test_image.jpg&#39;: 3}</span>
+<span class="sd">        &gt;&gt;&gt; dd = is_test(d)</span>
+<span class="sd">        &gt;&gt;&gt; dict(dd)</span>
+<span class="sd">        {&#39;test.txt&#39;: 1, &#39;test_image.jpg&#39;: 3}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="n">filter_prefixes</span><span class="p">(</span><span class="n">prefixes</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">suffixes</span><span class="p">(</span><span class="n">suffixes</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a mapping-filtering decorator that filters keys with a suffixes.</span>
+
+<span class="sd">        :param suffixes: A string or iterable of strings that are the suffixes to filter</span>
+
+<span class="sd">        &gt;&gt;&gt; is_text = FiltIter.suffixes([&#39;.txt&#39;, &#39;.doc&#39;, &#39;.pdf&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; d = {&#39;test.txt&#39;: 1, &#39;report.doc&#39;: 2, &#39;image.jpg&#39;: 3}</span>
+<span class="sd">        &gt;&gt;&gt; dd = is_text(d)</span>
+<span class="sd">        &gt;&gt;&gt; dict(dd)</span>
+<span class="sd">        {&#39;test.txt&#39;: 1, &#39;report.doc&#39;: 2}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="n">filter_suffixes</span><span class="p">(</span><span class="n">suffixes</span><span class="p">))</span>
+
+
+<span class="c1"># add all the functions in FiltIter as attributes of filt_iter, so they&#39;re ready to use</span>
+<span class="k">for</span> <span class="n">filt_name</span><span class="p">,</span> <span class="n">filt_func</span> <span class="ow">in</span> <span class="n">FiltIter</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filt_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+        <span class="c1"># filt_func.__name__ = filt_name</span>
+        <span class="n">filt_func</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="p">(</span><span class="n">filt_func</span><span class="o">.</span><span class="vm">__doc__</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;FiltIter&#39;</span><span class="p">,</span> <span class="s1">&#39;filt_iter&#39;</span><span class="p">)</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">filt_iter</span><span class="p">,</span> <span class="n">filt_name</span><span class="p">,</span> <span class="n">filt_func</span><span class="p">)</span>
 
 
 <span class="c1">########################################################################################################################</span>
