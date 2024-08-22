@@ -451,6 +451,181 @@ def confirm_overwrite(
     return v
 
 
+# -------------------------------- Aggregate a store -----------------------------------
+
+from typing import (
+    Callable,
+    Optional,
+    KT,
+    VT,
+    Tuple,
+    Mapping,
+    Union,
+    TypeVar,
+    Any,
+    Iterable,
+)
+import os
+from functools import partial
+from pathlib import Path
+from dol.trans import wrap_kvs
+from dol.filesys import Files
+
+
+def decode_as_latin1(b: bytes) -> str:
+    return b.decode('latin1')
+
+
+def markdown_section(k: KT, v: VT) -> str:
+    return f"## {k}\n\n{v.strip()}\n\n"
+
+
+def save_string_to_filepath(filepath: str, string: str):
+    filepath = Path(filepath).expanduser().absolute()
+    filepath.write_text(string)
+    return string
+
+
+def identity(x):
+    return x
+
+
+Latin1TextFiles = wrap_kvs(Files, value_decoder=decode_as_latin1)
+
+Item = TypeVar('Item')
+Aggregate = TypeVar('Aggregate')
+
+
+def store_aggregate(
+    content_store: Union[Mapping[KT, VT], str],  # Path to the folder or dol store
+    *,
+    kv_to_item: Callable[
+        [KT, VT], Item
+    ] = markdown_section,  # Function to convert key-value pairs to text
+    aggregator: Callable[
+        [Iterable[Item]], Aggregate
+    ] = '\n\n'.join,  # How to aggregate the item's into an aggregate
+    egress: Union[
+        Callable[[Aggregate], Any], str
+    ] = identity,  # function to apply to the aggregate before returning
+    key_filter: Optional[Callable[[KT], bool]] = None,  # Filter function for keys
+    value_filter: Optional[Callable[[VT], bool]] = None,  # Filter function for values
+    kv_filter: Optional[
+        Callable[[Tuple[KT, VT]], bool]
+    ] = None,  # Filter function for key-value pairs
+    local_store_factory: Callable[
+        [str], Mapping[KT, VT]
+    ] = Latin1TextFiles,  # Factory function for the local store
+) -> Any:
+    r'''
+    Create an aggregate object of a store's content.
+
+    The function is written to be able to aggregate the keys and/or values of a store,
+    no matter their type, and concatenate them into an object of arbitrary type.
+    That said, the defaults are setup assuming the store's keys and values are text,
+    and you want to concatenate them into a single string.
+    This is useful, for example, when you have several files in a folder,
+    and you want to create a single text/markdown file with all the content therein.
+
+    This function filters content from a given content store, converts the key-value
+    pairs to items (usually text), and (if you specify a filepath as the `egress`)
+    saves the aggregate (text) before returning it.
+
+    Args:
+        content_store (Union[Mapping[KT, VT], str]): Path to the folder or dol store to read from.
+        kv_to_item (Callable[[KT, VT], Item]):
+            Function to convert key-value pairs to an Item (usually a string).
+        aggregator (Callable[[Iterable[Item]], Aggregate]):
+            The function that will aggregate the items that `kv_to_item` produces.
+            Defaults to '\n\n'.join.
+        egress (Union[Callable[[Aggregate], Any], str]):
+            The function that will be called on the aggregate before returning it.
+            Defaults to identity.
+            Note that if you provide a string, the function will save the aggregate
+            text to a file, assuming it is indeed text.
+        key_filter (Optional[Callable[[KT], bool]]):
+            Optional filter for keys. Defaults to None (no filtering).
+        value_filter (Optional[Callable[[VT], bool]]):
+            Optional filter for values. Defaults to None (no filtering).
+        kv_filter (Optional[Callable[[Tuple[KT, VT]], bool]]):
+            Optional filter for key-value pairs. Defaults to None (no filtering).
+        local_store_factory (Callable[[str], Mapping[KT, VT]]): Factory function for the local store,
+            used only if `content_store` is an existing folder path. Defaults to Latin1TextFiles.
+
+    Returns:
+        Any: Usually the aggregate object, which is usually the concatenated text.
+
+    Normally, you'd specify your content store by specifying a root folder
+    (the function will create a Mapping-view of the contents of the folder for you),
+    or make a content store yourself (a Mapping object providing the key-value pairs).
+
+    To provide a small example, we'll take a dict as our content store:
+
+    >>> content_store = {
+    ...     'file1.py': '"""Module docstring."""',
+    ...     'file2.py': 'def foo(): pass',
+    ...     'file3.py': '"""Another docstring."""',
+    ...     'file4.md': 'Markdown content here.',
+    ...     'file5.py': '"""If I mention file5.py, I will be excluded."""',
+    ... }
+
+    Define the filters:
+
+    >>> key_filter = lambda k: k.endswith('.py')  # Only include keys that end with '.py'
+    >>> value_filter = lambda v: v.startswith(
+    ...     '"""'
+    ... )  # Only include values that start with """ (marking a module docstring)
+    >>> kv_filter = (
+    ...     lambda kv: kv[0] not in kv[1]
+    ... )  # Exclude key-value pairs where the value mentions the key
+
+    Call the function with the provided filters and settings
+
+    >>> result = store_aggregate(
+    ...     content_store=content_store,  # The content_store dict
+    ...     kv_to_item="{} -> {}".format,  # Format key-value pairs as "key -> value"
+    ...     key_filter=key_filter,  # Key filter: Include only .py files
+    ...     value_filter=value_filter,  # Value filter: Include only values starting with """
+    ...     kv_filter=kv_filter,  # KV filter: Exclude if value contains the key
+    ...     aggregator=', '.join,
+    ...     egress='~/test.md'
+    ... )
+    >>> result
+    'file1.py -> """Module docstring.""", file3.py -> """Another docstring."""'
+
+    Here, you got the string as the result. If you want to save it to a file,
+    you can provide the save_filepath argument, and it will save the text to the file,
+    and return the save_filepath to you (which )
+
+    Recipe: You can do a lot with the `kv_to_text` argument. For example, if your
+    content store doesn't have string keys or values, you can always extract whatever
+    information you need from them to produce the text that will represent that item.
+    '''
+    # Convert content_store to a dol store if it's a directory path
+    if isinstance(content_store, str) and os.path.isdir(content_store):
+        content_store = local_store_factory(content_store)
+
+    if isinstance(egress, str):
+        save_filepath = egress
+        # make an egress that will save the string to a file (then return the string)
+        egress = partial(save_string_to_filepath, save_filepath)
+
+    # Define default filters if not provided
+    key_filter = key_filter or (lambda key: True)
+    value_filter = value_filter or (lambda value: True)
+    kv_filter = kv_filter or (lambda kv: True)
+
+    def actual_kv_filter(kv):
+        k, v = kv
+        return key_filter(k) and value_filter(v) and kv_filter(kv)
+
+    # Create the string by applying filters and kv_to_text conversion
+    filtered_kv_pairs = filter(actual_kv_filter, content_store.items())
+    aggregate = aggregator(kv_to_item(k, v) for k, v in filtered_kv_pairs)
+
+    return egress(aggregate)
+
+
 # --------------------------------------- Misc ------------------------------------------
 
 _dflt_ask_user_for_value_when_missing_msg = (
@@ -796,129 +971,3 @@ class Forest(KvReader):
 
     def __repr__(self):
         return f'{type(self).__name__}({self.src})'
-
-
-# ------------------------------------ Filters ------------------------------------------
-
-import re
-from dol.util import Pipe
-from dol.trans import filt_iter
-
-
-def filter_regex(regex, *, return_search_func=False):
-    """Make a filter that returns True if a string matches the given regex
-
-    >>> is_txt = filter_regex(r'.*\.txt')
-    >>> is_txt("test.txt")
-    True
-    >>> is_txt("report.doc")
-    False
-
-    """
-    if isinstance(regex, str):
-        regex = re.compile(regex)
-    if return_search_func:
-        return regex.search
-    else:
-        pipe = Pipe(regex.search, bool)
-        pipe.regex = regex
-        return pipe
-
-
-def filter_suffixes(suffixes):
-    """Make a filter that returns True if a string ends with one of the given suffixes
-
-    >>> ends_with_txt = filter_suffixes('.txt')
-    >>> ends_with_txt("test.txt")
-    True
-    >>> ends_with_txt("report.doc")
-    False
-    >>> is_text = filter_suffixes(['.txt', '.doc', '.pdf'])
-    >>> is_text("test.txt")
-    True
-    >>> is_text("report.doc")
-    True
-    >>> is_text("image.jpg")
-    False
-
-    """
-    if isinstance(suffixes, str):
-        suffixes = [suffixes]
-    return filter_regex('|'.join(map(re.escape, suffixes)) + '$')
-
-
-def filter_prefixes(prefixes):
-    """Make a filter that returns True if a string starts with one of the given prefixes
-
-    >>> starts_with_test = filter_prefixes('test')
-    >>> starts_with_test("test.txt")
-    True
-    >>> starts_with_test("report.doc")
-    False
-    >>> is_test_or_report = filter_prefixes(['test', 'report'])
-    >>> is_test_or_report("test.txt")
-    True
-    >>> is_test_or_report("report.doc")
-    True
-    >>> is_test_or_report("image.jpg")
-    False
-
-    """
-    if isinstance(prefixes, str):
-        prefixes = [prefixes]
-    return filter_regex('^' + '|'.join(map(re.escape, prefixes)))
-
-
-class FiltIter:
-    def __init__(self, *args, **kwargs):
-        raise ValueError(
-            'This class is not meant to be instantiated, but only act as a collection '
-            'of functions to make mapping filtering decorators.'
-        )
-
-    def regex(regex):
-        """Make a mapping-filtering decorator that filters keys with a regex.
-
-        :param regex: A regex string or compiled regex
-
-        >>> contains_a = FiltIter.regex(r'a')
-        >>> d = {'apple': 1, 'banana': 2, 'cherry': 3}
-        >>> dd = contains_a(d)
-        >>> dict(dd)
-        {'apple': 1, 'banana': 2}
-        """
-        return filt_iter(filt=filter_regex(regex))
-
-    def prefixes(prefixes):
-        """Make a mapping-filtering decorator that filters keys with a prefixes.
-
-        :param prefixes: A string or iterable of strings that are the prefixes to filter
-
-        >>> is_test = FiltIter.prefixes('test')
-        >>> d = {'test.txt': 1, 'report.doc': 2, 'test_image.jpg': 3}
-        >>> dd = is_test(d)
-        >>> dict(dd)
-        {'test.txt': 1, 'test_image.jpg': 3}
-        """
-        return filt_iter(filt=filter_prefixes(prefixes))
-
-    def suffixes(suffixes):
-        """Make a mapping-filtering decorator that filters keys with a suffixes.
-
-        :param suffixes: A string or iterable of strings that are the suffixes to filter
-
-        >>> is_text = FiltIter.suffixes(['.txt', '.doc', '.pdf'])
-        >>> d = {'test.txt': 1, 'report.doc': 2, 'image.jpg': 3}
-        >>> dd = is_text(d)
-        >>> dict(dd)
-        {'test.txt': 1, 'report.doc': 2}
-        """
-        return filt_iter(filt=filter_suffixes(suffixes))
-
-
-# add all the functions in FiltIter as attributes of filt_iter, so they're ready to use
-for filt_name, filt_func in FiltIter.__dict__.items():
-    if not filt_name.startswith('_'):
-        # filt_func.__name__ = filt_name
-        filt_func.__doc__ = (filt_func.__doc__ or '').replace('FiltIter', 'filt_iter')
-        setattr(filt_iter, filt_name, filt_func)

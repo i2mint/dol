@@ -43,8 +43,8 @@ def ihead(store, n=1):
 
 
 from dol.tools import (
-    filt_iter,  # filter store keys (and contains ready to use filters as attributes)
     cache_this,  # cache the result of "property" methods in a store
+    store_aggregate,  # aggregate stores keys and values into an aggregate object (e.g. string concatenation)
 )
 
 from dol.kv_codecs import ValueCodecs, KeyCodecs
@@ -114,6 +114,7 @@ from dol.util import (
 
 from dol.trans import (
     wrap_kvs,  # transform store key and/or value
+    filt_iter,  # filter store keys (and contains ready to use filters as attributes)
     cached_keys,  # cache store keys
     add_decoder,  # add a decoder (i.e. outcomming value transformer) to a store
     add_ipython_key_completions,  # add ipython key completions

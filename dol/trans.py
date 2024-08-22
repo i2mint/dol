@@ -2,7 +2,7 @@
 
 from functools import wraps, partial, reduce
 import types
-from types import SimpleNamespace
+import re
 from inspect import signature, Parameter
 from typing import Union, Iterable, Optional, Collection, Callable, Any, Generic
 from dataclasses import dataclass
@@ -586,8 +586,7 @@ class OverWritesNotAllowedMixin:
     @staticmethod
     def wrap(cls):
         # TODO: Consider moving to trans and making instances wrappable too
-        class NoOverWritesClass(OverWritesNotAllowedMixin, cls):
-            ...
+        class NoOverWritesClass(OverWritesNotAllowedMixin, cls): ...
 
         copy_attrs(NoOverWritesClass, cls, ('__name__', '__qualname__', '__module__'))
         return NoOverWritesClass
@@ -623,7 +622,9 @@ def _wrap_store(
 
 @store_decorator
 def insert_hash_method(
-    store=None, *, hash_method: Callable[[Any], int] = id,
+    store=None,
+    *,
+    hash_method: Callable[[Any], int] = id,
 ):
     """Make a store hashable using the specified ``hash_method``.
     Will add (or overwrite) a ``__hash__`` method to the store that uses the
@@ -1340,6 +1341,8 @@ def take_everything(key):
 FiltFunc = Callable[[Any], bool]
 
 
+# Note: The full definition of filt_iter includes some attributes that will be added
+#   to it below (seach for FiltIter.__dict__.items())
 @store_decorator
 def filt_iter(
     store=None,
@@ -1465,6 +1468,125 @@ def _filt_iter(store_cls: type, filt, name, __module__):
 
         store_cls.__delitem__ = __delitem__
     return store_cls
+
+
+def filter_regex(regex, *, return_search_func=False):
+    """Make a filter that returns True if a string matches the given regex
+
+    >>> is_txt = filter_regex(r'.*\.txt')
+    >>> is_txt("test.txt")
+    True
+    >>> is_txt("report.doc")
+    False
+
+    """
+    if isinstance(regex, str):
+        regex = re.compile(regex)
+    if return_search_func:
+        return regex.search
+    else:
+        pipe = Pipe(regex.search, bool)
+        pipe.regex = regex
+        return pipe
+
+
+def filter_suffixes(suffixes):
+    """Make a filter that returns True if a string ends with one of the given suffixes
+
+    >>> ends_with_txt = filter_suffixes('.txt')
+    >>> ends_with_txt("test.txt")
+    True
+    >>> ends_with_txt("report.doc")
+    False
+    >>> is_text = filter_suffixes(['.txt', '.doc', '.pdf'])
+    >>> is_text("test.txt")
+    True
+    >>> is_text("report.doc")
+    True
+    >>> is_text("image.jpg")
+    False
+
+    """
+    if isinstance(suffixes, str):
+        suffixes = [suffixes]
+    return filter_regex('|'.join(map(re.escape, suffixes)) + '$')
+
+
+def filter_prefixes(prefixes):
+    """Make a filter that returns True if a string starts with one of the given prefixes
+
+    >>> starts_with_test = filter_prefixes('test')
+    >>> starts_with_test("test.txt")
+    True
+    >>> starts_with_test("report.doc")
+    False
+    >>> is_test_or_report = filter_prefixes(['test', 'report'])
+    >>> is_test_or_report("test.txt")
+    True
+    >>> is_test_or_report("report.doc")
+    True
+    >>> is_test_or_report("image.jpg")
+    False
+
+    """
+    if isinstance(prefixes, str):
+        prefixes = [prefixes]
+    return filter_regex('^' + '|'.join(map(re.escape, prefixes)))
+
+
+class FiltIter:
+    def __init__(self, *args, **kwargs):
+        raise ValueError(
+            'This class is not meant to be instantiated, but only act as a collection '
+            'of functions to make mapping filtering decorators.'
+        )
+
+    def regex(regex):
+        """Make a mapping-filtering decorator that filters keys with a regex.
+
+        :param regex: A regex string or compiled regex
+
+        >>> contains_a = FiltIter.regex(r'a')
+        >>> d = {'apple': 1, 'banana': 2, 'cherry': 3}
+        >>> dd = contains_a(d)
+        >>> dict(dd)
+        {'apple': 1, 'banana': 2}
+        """
+        return filt_iter(filt=filter_regex(regex))
+
+    def prefixes(prefixes):
+        """Make a mapping-filtering decorator that filters keys with a prefixes.
+
+        :param prefixes: A string or iterable of strings that are the prefixes to filter
+
+        >>> is_test = FiltIter.prefixes('test')
+        >>> d = {'test.txt': 1, 'report.doc': 2, 'test_image.jpg': 3}
+        >>> dd = is_test(d)
+        >>> dict(dd)
+        {'test.txt': 1, 'test_image.jpg': 3}
+        """
+        return filt_iter(filt=filter_prefixes(prefixes))
+
+    def suffixes(suffixes):
+        """Make a mapping-filtering decorator that filters keys with a suffixes.
+
+        :param suffixes: A string or iterable of strings that are the suffixes to filter
+
+        >>> is_text = FiltIter.suffixes(['.txt', '.doc', '.pdf'])
+        >>> d = {'test.txt': 1, 'report.doc': 2, 'image.jpg': 3}
+        >>> dd = is_text(d)
+        >>> dict(dd)
+        {'test.txt': 1, 'report.doc': 2}
+        """
+        return filt_iter(filt=filter_suffixes(suffixes))
+
+
+# add all the functions in FiltIter as attributes of filt_iter, so they're ready to use
+for filt_name, filt_func in FiltIter.__dict__.items():
+    if not filt_name.startswith('_'):
+        # filt_func.__name__ = filt_name
+        filt_func.__doc__ = (filt_func.__doc__ or '').replace('FiltIter', 'filt_iter')
+        setattr(filt_iter, filt_name, filt_func)
 
 
 ########################################################################################################################
