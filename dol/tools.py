@@ -477,7 +477,7 @@ def decode_as_latin1(b: bytes) -> str:
 
 
 def markdown_section(k: KT, v: VT) -> str:
-    return f"## {k}\n\n{v.strip()}\n\n"
+    return f'## {k}\n\n{v.strip()}\n\n'
 
 
 def save_string_to_filepath(filepath: str, string: str):
