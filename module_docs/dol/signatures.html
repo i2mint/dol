@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.63 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.64 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=5f5627e9"></script>
+        <script src="../../_static/documentation_options.js?v=94dfb724"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -74,6 +74,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.IncompatibleSignatures.pformat"><code class="docutils literal notranslate"><span class="pre">IncompatibleSignatures.pformat()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.signatures.InvalidSignature"><code class="docutils literal notranslate"><span class="pre">InvalidSignature</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.MissingArgValFor"><code class="docutils literal notranslate"><span class="pre">MissingArgValFor</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.P"><code class="docutils literal notranslate"><span class="pre">P</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.Param"><code class="docutils literal notranslate"><span class="pre">Param</span></code></a></li>
@@ -166,6 +167,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.sort_params"><code class="docutils literal notranslate"><span class="pre">sort_params()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.tuple_the_args"><code class="docutils literal notranslate"><span class="pre">tuple_the_args()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.use_interface"><code class="docutils literal notranslate"><span class="pre">use_interface()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.signatures.validate_signature"><code class="docutils literal notranslate"><span class="pre">validate_signature()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
@@ -301,6 +303,12 @@
 <dd><p>Format a Python object into a pretty-printed representation.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="dol.signatures.InvalidSignature">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.signatures.</span></span><span class="sig-name descname"><span class="pre">InvalidSignature</span></span><a class="reference internal" href="../../_modules/dol/signatures.html#InvalidSignature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.InvalidSignature" title="Link to this definition"></a></dt>
+<dd><p>Raise when a signature is not valid</p>
 </dd></dl>
 
 <dl class="py class">
@@ -3762,6 +3770,26 @@ or any keyword arguments that <cite>interface</cite> doesn’t recognize…</p>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="w">  </span><span class="c">...</span>
 <span class="gr">TypeError</span>: <span class="n">got an unexpected keyword argument &#39;c&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.signatures.validate_signature">
+<span class="sig-prename descclassname"><span class="pre">dol.signatures.</span></span><span class="sig-name descname"><span class="pre">validate_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span></span></span><a class="reference internal" href="../../_modules/dol/signatures.html#validate_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.validate_signature" title="Link to this definition"></a></dt>
+<dd><p>Validates the signature of a function.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@validate_signature</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">has_valid_signature</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">Sig</span><span class="o">.</span><span class="n">empty</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># all good, no errors raised</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@validate_signature</span>  
+<span class="gp">... </span><span class="k">def</span> <span class="nf">does_no_have_valid_signature</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">Sig</span><span class="o">.</span><span class="n">empty</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">i2.signatures.InvalidSignature</span>: <span class="n">Invalid signature for function &lt;function does_no_have_valid_signature at 0x106a72a70&gt;: non-default argument follows default a</span>
+<span class="x">rgument</span>
 </pre></div>
 </div>
 </dd></dl>
