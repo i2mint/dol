@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.66 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.67 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=075fb957"></script>
+        <script src="../../_static/documentation_options.js?v=a3273d4e"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -1618,7 +1618,6 @@ arguments to another function, and you want to make sure that the signature of t
 function).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_apple_options</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="n">z</span>
-<span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@replace_kwargs_using</span><span class="p">(</span><span class="n">apple</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
@@ -1633,6 +1632,26 @@ function).</p>
 signature elements sourced from <cite>apple</cite>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
 <span class="go">&lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
+</pre></div>
+</div>
+<p>One thing to note is that the order of the arguments in the signature of <cite>apple</cite>
+may change to accomodate for the python parameter order rules
+(see <a class="reference external" href="https://docs.python.org/3/reference/compound_stmts.html#function-definitions">https://docs.python.org/3/reference/compound_stmts.html#function-definitions</a>).
+The new order will try to conserve the order of the original arguments of <cite>sauce</cite>
+in-so-far as it doesn’t violate the python parameter order rules, though.
+See examples below:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@Sig</span><span class="o">.</span><span class="n">replace_kwargs_using</span><span class="p">(</span><span class="n">apple</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
+<span class="go">&lt;Sig (a, x: int, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@Sig</span><span class="o">.</span><span class="n">replace_kwargs_using</span><span class="p">(</span><span class="n">apple</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
+<span class="go">&lt;Sig (x: int, a=1, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3604,7 +3623,6 @@ arguments to another function, and you want to make sure that the signature of t
 function).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_apple_options</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="n">z</span>
-<span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@replace_kwargs_using</span><span class="p">(</span><span class="n">apple</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
@@ -3619,6 +3637,26 @@ function).</p>
 signature elements sourced from <cite>apple</cite>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
 <span class="go">&lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
+</pre></div>
+</div>
+<p>One thing to note is that the order of the arguments in the signature of <cite>apple</cite>
+may change to accomodate for the python parameter order rules
+(see <a class="reference external" href="https://docs.python.org/3/reference/compound_stmts.html#function-definitions">https://docs.python.org/3/reference/compound_stmts.html#function-definitions</a>).
+The new order will try to conserve the order of the original arguments of <cite>sauce</cite>
+in-so-far as it doesn’t violate the python parameter order rules, though.
+See examples below:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@Sig</span><span class="o">.</span><span class="n">replace_kwargs_using</span><span class="p">(</span><span class="n">apple</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
+<span class="go">&lt;Sig (a, x: int, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@Sig</span><span class="o">.</span><span class="n">replace_kwargs_using</span><span class="p">(</span><span class="n">apple</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
+<span class="go">&lt;Sig (x: int, a=1, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
 </pre></div>
 </div>
 </dd></dl>

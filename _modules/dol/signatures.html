@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.66 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.67 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=075fb957"></script>
+        <script src="../../_static/documentation_options.js?v=a3273d4e"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -2316,30 +2316,6 @@
             <span class="n">error_msg</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
             <span class="k">raise</span> <span class="n">IncompatibleSignatures</span><span class="p">(</span><span class="n">error_msg</span><span class="p">,</span> <span class="n">sig1</span><span class="o">=</span><span class="n">_self</span><span class="p">,</span> <span class="n">sig2</span><span class="o">=</span><span class="n">_sig</span><span class="p">)</span>
 
-        <span class="c1"># if _self.has_var_keyword and _sig.has_var_keyword:</span>
-        <span class="c1">#     errors[&#39;VAR_KEYWORD&#39;] = &#39;Both signatures have a VAR_KEYWORD parameter&#39;</span>
-
-        <span class="c1"># assert not _self.has_var_keyword or not _sig.has_var_keyword, (</span>
-        <span class="c1">#     f&quot;Can&#39;t merge two signatures if they both have a VAR_POSITIONAL parameter:&quot;</span>
-        <span class="c1">#     f&#39;{_msg}&#39;</span>
-        <span class="c1"># )</span>
-        <span class="c1"># assert (</span>
-        <span class="c1">#     not _self.has_var_keyword or not _sig.has_var_keyword</span>
-        <span class="c1"># ), &quot;Can&#39;t merge two signatures if they both have a VAR_KEYWORD parameter:{_msg}&quot;</span>
-
-        <span class="c1"># assert all(</span>
-        <span class="c1">#     _self[name].kind == _sig[name].kind for name in _self.keys() &amp; _sig.keys()</span>
-        <span class="c1"># ), (</span>
-        <span class="c1">#     &#39;During a signature merge, if two names are the same, they must have the &#39;</span>
-        <span class="c1">#     f&#39;**same kind**:\n\t{_msg}\n&#39;</span>
-        <span class="c1">#     &quot;Tip: If you&#39;re trying to merge functions in some way, consider decorating &quot;</span>
-        <span class="c1">#     &#39;them with a signature mapping that avoids the argument name clashing&#39;</span>
-        <span class="c1"># )</span>
-
-        <span class="c1"># assert default_conflict_method in get_args(SigMergeOptions), (</span>
-        <span class="c1">#     &#39;default_conflict_method should be one of: &#39; f&#39;{get_args(SigMergeOptions)}&#39;</span>
-        <span class="c1"># )</span>
-
         <span class="k">if</span> <span class="n">default_conflict_method</span> <span class="o">==</span> <span class="s1">&#39;take_first&#39;</span><span class="p">:</span>
             <span class="n">_sig</span> <span class="o">=</span> <span class="n">_sig</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">_self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">_sig</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="k">elif</span> <span class="n">default_conflict_method</span> <span class="o">==</span> <span class="s1">&#39;fill_defaults_and_annotations&#39;</span><span class="p">:</span>
@@ -4465,7 +4441,6 @@
 
 <span class="sd">    &gt;&gt;&gt; def apple(a, x: int, y=2, *, z=3, **extra_apple_options):</span>
 <span class="sd">    ...     return a + x + y + z</span>
-<span class="sd">    ...</span>
 <span class="sd">    &gt;&gt;&gt; @replace_kwargs_using(apple)</span>
 <span class="sd">    ... def sauce(a, b, c, **sauce_kwargs):</span>
 <span class="sd">    ...     return b * c + apple(a, **sauce_kwargs)</span>
@@ -4481,21 +4456,47 @@
 <span class="sd">    &gt;&gt;&gt; Sig(sauce)</span>
 <span class="sd">    &lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
 
+<span class="sd">    One thing to note is that the order of the arguments in the signature of `apple`</span>
+<span class="sd">    may change to accomodate for the python parameter order rules</span>
+<span class="sd">    (see https://docs.python.org/3/reference/compound_stmts.html#function-definitions).</span>
+<span class="sd">    The new order will try to conserve the order of the original arguments of `sauce`</span>
+<span class="sd">    in-so-far as it doesn&#39;t violate the python parameter order rules, though.</span>
+<span class="sd">    See examples below:</span>
+
+<span class="sd">    &gt;&gt;&gt; @Sig.replace_kwargs_using(apple)</span>
+<span class="sd">    ... def sauce(a, b=2, c=3, **sauce_kwargs):</span>
+<span class="sd">    ...     return b * c + apple(a, **sauce_kwargs)</span>
+<span class="sd">    &gt;&gt;&gt; Sig(sauce)</span>
+<span class="sd">    &lt;Sig (a, x: int, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
+
+<span class="sd">    &gt;&gt;&gt; @Sig.replace_kwargs_using(apple)</span>
+<span class="sd">    ... def sauce(a=1, b=2, c=3, **sauce_kwargs):</span>
+<span class="sd">    ...     return b * c + apple(a, **sauce_kwargs)</span>
+<span class="sd">    &gt;&gt;&gt; Sig(sauce)</span>
+<span class="sd">    &lt;Sig (x: int, a=1, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">targ_func</span><span class="p">):</span>
-        <span class="n">targ_func_sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">targ_func</span><span class="p">)</span>
+        <span class="n">targ_func_sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">targ_func</span><span class="p">)</span>  <span class="c1"># function whose signature we&#39;re changing</span>
         <span class="k">if</span> <span class="n">targ_func_sig</span><span class="o">.</span><span class="n">has_var_keyword</span><span class="p">:</span>
-            <span class="c1"># remove it from the signature of targ_sig</span>
+            <span class="c1"># remove it from the signature of targ_sig (we&#39;re replacing it!)</span>
             <span class="n">targ_func_sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">targ_func</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if there is none, we shouldn&#39;t be using replace_kwargs_using!</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s1">&#39;Target function </span><span class="si">{</span><span class="n">targ_func</span><span class="si">}</span><span class="s1"> must have a variadict keyword argument&#39;</span>
             <span class="p">)</span>
 
-        <span class="n">new_sig</span> <span class="o">=</span> <span class="n">targ_func_sig</span><span class="o">.</span><span class="n">merge_with_sig</span><span class="p">(</span>
-            <span class="n">Sig</span><span class="p">(</span><span class="n">sig</span><span class="p">),</span>  <span class="c1"># default_conflict_method=&#39;take_first&#39;</span>
-        <span class="p">)</span>
+        <span class="n">src_sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>  <span class="c1"># signature we&#39;re using to replace kwargs of targ_func</span>
+
+        <span class="c1"># Remove all params of src_sig that are in targ_func_sig</span>
+        <span class="c1"># This is because if they&#39;re used, they will be bound to the non-variadic </span>
+        <span class="c1"># target arguments, so there&#39;s no conflict: the target kind, default, </span>
+        <span class="c1"># and annotation should be used not the source ones.</span>
+        <span class="n">src_sig</span> <span class="o">-=</span> <span class="n">targ_func_sig</span> 
+
+        <span class="n">new_sig</span> <span class="o">=</span> <span class="n">targ_func_sig</span><span class="o">.</span><span class="n">merge_with_sig</span><span class="p">(</span><span class="n">src_sig</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">new_sig</span><span class="p">(</span><span class="n">targ_func</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">decorator</span></div>
