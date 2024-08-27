@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.64 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.65 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=94dfb724"></script>
+        <script src="../../_static/documentation_options.js?v=30a7333d"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -104,6 +104,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.names_for_kind"><code class="docutils literal notranslate"><span class="pre">Sig.names_for_kind()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.pair_with"><code class="docutils literal notranslate"><span class="pre">Sig.pair_with()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.params"><code class="docutils literal notranslate"><span class="pre">Sig.params</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.replace_kwargs_using"><code class="docutils literal notranslate"><span class="pre">Sig.replace_kwargs_using()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.required_names"><code class="docutils literal notranslate"><span class="pre">Sig.required_names</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.sig_or_default"><code class="docutils literal notranslate"><span class="pre">Sig.sig_or_default()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.sig_or_none"><code class="docutils literal notranslate"><span class="pre">Sig.sig_or_none()</span></code></a></li>
@@ -161,6 +162,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.param_for_kind"><code class="docutils literal notranslate"><span class="pre">param_for_kind()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.permissive_param_comparator"><code class="docutils literal notranslate"><span class="pre">permissive_param_comparator()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.postprocess"><code class="docutils literal notranslate"><span class="pre">postprocess()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.signatures.replace_kwargs_using"><code class="docutils literal notranslate"><span class="pre">replace_kwargs_using()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.resolve_function"><code class="docutils literal notranslate"><span class="pre">resolve_function()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.set_signature_of_func"><code class="docutils literal notranslate"><span class="pre">set_signature_of_func()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.signatures.sig_to_dataclass"><code class="docutils literal notranslate"><span class="pre">sig_to_dataclass()</span></code></a></li>
@@ -1599,6 +1601,37 @@ is a name-&gt;Parameter mapping, but the Signature argument <cite>parameters</ci
 though baring the same name,
 is expected to be a list of Parameter instances.</p>
 <p>So Sig.params is there to restore semantic consistence sanity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.signatures.Sig.replace_kwargs_using">
+<span class="sig-name descname"><span class="pre">replace_kwargs_using</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.Sig.replace_kwargs_using" title="Link to this definition"></a></dt>
+<dd><p>Replaces the
+Injects the`sig` signature into the signature of a target function.</p>
+<p>This is meant to be used when a targ_func has a variadict keyword argument
+that is just used to forward the arguments to another function, and you want
+to make sure that the signature of the <cite>targ_func</cite> is consistent with the
+<cite>sig</cite> signature. (Also, you don’t want to copy the signatures around
+manually.)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_apple_options</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="n">z</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@replace_kwargs_using</span><span class="p">(</span><span class="n">apple</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The function will works:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sauce</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># func still works? Should be: 1 + 4 + 2 + 5 + 2 * 3</span>
+<span class="go">18</span>
+</pre></div>
+</div>
+<p>But the signature now doesn’t have the <cite>**sauce_kwargs</cite>, but more informative
+signature elements sourced from <cite>apple</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
+<span class="go">&lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py property">
@@ -3551,6 +3584,37 @@ base param_comparator which requires strict equality (<cite>eq</cite>) for all a
 <dt class="sig sig-object py" id="dol.signatures.postprocess">
 <span class="sig-prename descclassname"><span class="pre">dol.signatures.</span></span><span class="sig-name descname"><span class="pre">postprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">egress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#postprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.postprocess" title="Link to this definition"></a></dt>
 <dd><p>A decorator that will process the output of the wrapped function with egress</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.signatures.replace_kwargs_using">
+<span class="sig-prename descclassname"><span class="pre">dol.signatures.</span></span><span class="sig-name descname"><span class="pre">replace_kwargs_using</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Signature</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#replace_kwargs_using"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.replace_kwargs_using" title="Link to this definition"></a></dt>
+<dd><p>Replaces the
+Injects the`sig` signature into the signature of a target function.</p>
+<p>This is meant to be used when a targ_func has a variadict keyword argument
+that is just used to forward the arguments to another function, and you want
+to make sure that the signature of the <cite>targ_func</cite> is consistent with the
+<cite>sig</cite> signature. (Also, you don’t want to copy the signatures around
+manually.)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_apple_options</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="n">z</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@replace_kwargs_using</span><span class="p">(</span><span class="n">apple</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The function will works:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sauce</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># func still works? Should be: 1 + 4 + 2 + 5 + 2 * 3</span>
+<span class="go">18</span>
+</pre></div>
+</div>
+<p>But the signature now doesn’t have the <cite>**sauce_kwargs</cite>, but more informative
+signature elements sourced from <cite>apple</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
+<span class="go">&lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">

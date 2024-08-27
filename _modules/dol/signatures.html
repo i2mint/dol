@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.64 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.65 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=94dfb724"></script>
+        <script src="../../_static/documentation_options.js?v=30a7333d"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -346,7 +346,7 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>  <span class="c1"># to get errors if the signature is not valid</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">InvalidSignature</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid signature for function </span><span class="si">{</span><span class="n">func</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">InvalidSignature</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid signature for function </span><span class="si">{</span><span class="n">func</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">func</span>  <span class="c1"># if all goes well, return the original function</span></div>
 
 
@@ -4452,6 +4452,60 @@
     <span class="k">return</span> <span class="bp">cls</span></div>
 
 
+
+<div class="viewcode-block" id="replace_kwargs_using">
+<a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.replace_kwargs_using">[docs]</a>
+<span class="k">def</span> <span class="nf">replace_kwargs_using</span><span class="p">(</span><span class="n">sig</span><span class="p">:</span> <span class="n">SignatureAble</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replaces the</span>
+<span class="sd">    Injects the`sig` signature into the signature of a target function.</span>
+
+<span class="sd">    This is meant to be used when a targ_func has a variadict keyword argument</span>
+<span class="sd">    that is just used to forward the arguments to another function, and you want</span>
+<span class="sd">    to make sure that the signature of the `targ_func` is consistent with the</span>
+<span class="sd">    `sig` signature. (Also, you don&#39;t want to copy the signatures around</span>
+<span class="sd">    manually.)</span>
+
+<span class="sd">    &gt;&gt;&gt; def apple(a, x: int, y=2, *, z=3, **extra_apple_options):</span>
+<span class="sd">    ...     return a + x + y + z</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; @replace_kwargs_using(apple)</span>
+<span class="sd">    ... def sauce(a, b, c, **sauce_kwargs):</span>
+<span class="sd">    ...     return b * c + apple(a, **sauce_kwargs)</span>
+
+<span class="sd">    The function will works:</span>
+
+<span class="sd">    &gt;&gt;&gt; sauce(1, 2, 3, x=4, z=5)  # func still works? Should be: 1 + 4 + 2 + 5 + 2 * 3</span>
+<span class="sd">    18</span>
+
+<span class="sd">    But the signature now doesn&#39;t have the `**sauce_kwargs`, but more informative</span>
+<span class="sd">    signature elements sourced from `apple`:</span>
+
+<span class="sd">    &gt;&gt;&gt; Sig(sauce)</span>
+<span class="sd">    &lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">targ_func</span><span class="p">):</span>
+        <span class="n">targ_func_sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">targ_func</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">targ_func_sig</span><span class="o">.</span><span class="n">has_var_keyword</span><span class="p">:</span>
+            <span class="c1"># remove it from the signature of targ_sig</span>
+            <span class="n">targ_func_sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">targ_func</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Target function </span><span class="si">{</span><span class="n">targ_func</span><span class="si">}</span><span class="s2"> must have a variadict keyword argument&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">new_sig</span> <span class="o">=</span> <span class="n">targ_func_sig</span><span class="o">.</span><span class="n">merge_with_sig</span><span class="p">(</span>
+            <span class="n">Sig</span><span class="p">(</span><span class="n">sig</span><span class="p">),</span>  <span class="c1"># default_conflict_method=&#39;take_first&#39;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_sig</span><span class="p">(</span><span class="n">targ_func</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">decorator</span></div>
+
+
+
+<span class="n">Sig</span><span class="o">.</span><span class="n">replace_kwargs_using</span> <span class="o">=</span> <span class="n">replace_kwargs_using</span>
 
 <span class="c1">#########################################################################################</span>
 <span class="c1"># Manual construction of missing signatures</span>
