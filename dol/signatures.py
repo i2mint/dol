@@ -2127,30 +2127,6 @@ class Sig(Signature, Mapping):
             error_msg = next(iter(errors.values()))
             raise IncompatibleSignatures(error_msg, sig1=_self, sig2=_sig)
 
-        # if _self.has_var_keyword and _sig.has_var_keyword:
-        #     errors['VAR_KEYWORD'] = 'Both signatures have a VAR_KEYWORD parameter'
-
-        # assert not _self.has_var_keyword or not _sig.has_var_keyword, (
-        #     f"Can't merge two signatures if they both have a VAR_POSITIONAL parameter:"
-        #     f'{_msg}'
-        # )
-        # assert (
-        #     not _self.has_var_keyword or not _sig.has_var_keyword
-        # ), "Can't merge two signatures if they both have a VAR_KEYWORD parameter:{_msg}"
-
-        # assert all(
-        #     _self[name].kind == _sig[name].kind for name in _self.keys() & _sig.keys()
-        # ), (
-        #     'During a signature merge, if two names are the same, they must have the '
-        #     f'**same kind**:\n\t{_msg}\n'
-        #     "Tip: If you're trying to merge functions in some way, consider decorating "
-        #     'them with a signature mapping that avoids the argument name clashing'
-        # )
-
-        # assert default_conflict_method in get_args(SigMergeOptions), (
-        #     'default_conflict_method should be one of: ' f'{get_args(SigMergeOptions)}'
-        # )
-
         if default_conflict_method == 'take_first':
             _sig = _sig - set(_self.keys() & _sig.keys())
         elif default_conflict_method == 'fill_defaults_and_annotations':
@@ -4209,7 +4185,6 @@ def replace_kwargs_using(sig: SignatureAble):
 
     >>> def apple(a, x: int, y=2, *, z=3, **extra_apple_options):
     ...     return a + x + y + z
-    ...
     >>> @replace_kwargs_using(apple)
     ... def sauce(a, b, c, **sauce_kwargs):
     ...     return b * c + apple(a, **sauce_kwargs)
@@ -4225,21 +4200,47 @@ def replace_kwargs_using(sig: SignatureAble):
     >>> Sig(sauce)
     <Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)>
 
+    One thing to note is that the order of the arguments in the signature of `apple`
+    may change to accomodate for the python parameter order rules
+    (see https://docs.python.org/3/reference/compound_stmts.html#function-definitions).
+    The new order will try to conserve the order of the original arguments of `sauce`
+    in-so-far as it doesn't violate the python parameter order rules, though.
+    See examples below:
+
+    >>> @Sig.replace_kwargs_using(apple)
+    ... def sauce(a, b=2, c=3, **sauce_kwargs):
+    ...     return b * c + apple(a, **sauce_kwargs)
+    >>> Sig(sauce)
+    <Sig (a, x: int, b=2, c=3, y=2, *, z=3, **extra_apple_options)>
+
+    >>> @Sig.replace_kwargs_using(apple)
+    ... def sauce(a=1, b=2, c=3, **sauce_kwargs):
+    ...     return b * c + apple(a, **sauce_kwargs)
+    >>> Sig(sauce)
+    <Sig (x: int, a=1, b=2, c=3, y=2, *, z=3, **extra_apple_options)>
+
     """
 
     def decorator(targ_func):
-        targ_func_sig = Sig(targ_func)
+        targ_func_sig = Sig(targ_func)  # function whose signature we're changing
         if targ_func_sig.has_var_keyword:
-            # remove it from the signature of targ_sig
+            # remove it from the signature of targ_sig (we're replacing it!)
             targ_func_sig = Sig(targ_func)[:-1]
         else:
+            # if there is none, we shouldn't be using replace_kwargs_using!
             raise ValueError(
                 f'Target function {targ_func} must have a variadict keyword argument'
             )
 
-        new_sig = targ_func_sig.merge_with_sig(
-            Sig(sig),  # default_conflict_method='take_first'
-        )
+        src_sig = Sig(sig)  # signature we're using to replace kwargs of targ_func
+
+        # Remove all params of src_sig that are in targ_func_sig
+        # This is because if they're used, they will be bound to the non-variadic 
+        # target arguments, so there's no conflict: the target kind, default, 
+        # and annotation should be used not the source ones.
+        src_sig -= targ_func_sig 
+
+        new_sig = targ_func_sig.merge_with_sig(src_sig)
         return new_sig(targ_func)
 
     return decorator
