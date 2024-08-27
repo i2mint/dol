@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.65 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.66 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=30a7333d"></script>
+        <script src="../../_static/documentation_options.js?v=075fb957"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -1606,13 +1606,16 @@ is expected to be a list of Parameter instances.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dol.signatures.Sig.replace_kwargs_using">
 <span class="sig-name descname"><span class="pre">replace_kwargs_using</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.Sig.replace_kwargs_using" title="Link to this definition"></a></dt>
-<dd><p>Replaces the
-Injects the`sig` signature into the signature of a target function.</p>
-<p>This is meant to be used when a targ_func has a variadict keyword argument
-that is just used to forward the arguments to another function, and you want
-to make sure that the signature of the <cite>targ_func</cite> is consistent with the
-<cite>sig</cite> signature. (Also, you don’t want to copy the signatures around
-manually.)</p>
+<dd><p>Decorator that replaces the variadic keyword argument of the target function using
+the <cite>sig</cite>, the signature of a source function.</p>
+<p>This is meant to be used when a <cite>targ_func</cite> (the function you’ll apply the
+decorator to) has a variadict keyword argument that is just used to forward “extra”
+arguments to another function, and you want to make sure that the signature of the
+<cite>targ_func</cite> is consistent with the <cite>sig</cite> signature.
+(Also, you don’t want to copy the signatures around manually.)</p>
+<p>In the following, <cite>sauce</cite> (the target function) has a variadic keyword argument,
+<cite>sauce_kwargs</cite>, that is used to forward extra arguments to <cite>apple</cite> (the source
+function).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_apple_options</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="n">z</span>
 <span class="gp">...</span>
@@ -3589,13 +3592,16 @@ base param_comparator which requires strict equality (<cite>eq</cite>) for all a
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.signatures.replace_kwargs_using">
 <span class="sig-prename descclassname"><span class="pre">dol.signatures.</span></span><span class="sig-name descname"><span class="pre">replace_kwargs_using</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Signature</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#replace_kwargs_using"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.replace_kwargs_using" title="Link to this definition"></a></dt>
-<dd><p>Replaces the
-Injects the`sig` signature into the signature of a target function.</p>
-<p>This is meant to be used when a targ_func has a variadict keyword argument
-that is just used to forward the arguments to another function, and you want
-to make sure that the signature of the <cite>targ_func</cite> is consistent with the
-<cite>sig</cite> signature. (Also, you don’t want to copy the signatures around
-manually.)</p>
+<dd><p>Decorator that replaces the variadic keyword argument of the target function using
+the <cite>sig</cite>, the signature of a source function.</p>
+<p>This is meant to be used when a <cite>targ_func</cite> (the function you’ll apply the
+decorator to) has a variadict keyword argument that is just used to forward “extra”
+arguments to another function, and you want to make sure that the signature of the
+<cite>targ_func</cite> is consistent with the <cite>sig</cite> signature.
+(Also, you don’t want to copy the signatures around manually.)</p>
+<p>In the following, <cite>sauce</cite> (the target function) has a variadic keyword argument,
+<cite>sauce_kwargs</cite>, that is used to forward extra arguments to <cite>apple</cite> (the source
+function).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_apple_options</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="n">z</span>
 <span class="gp">...</span>
