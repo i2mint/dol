@@ -4235,10 +4235,10 @@ def replace_kwargs_using(sig: SignatureAble):
         src_sig = Sig(sig)  # signature we're using to replace kwargs of targ_func
 
         # Remove all params of src_sig that are in targ_func_sig
-        # This is because if they're used, they will be bound to the non-variadic 
-        # target arguments, so there's no conflict: the target kind, default, 
+        # This is because if they're used, they will be bound to the non-variadic
+        # target arguments, so there's no conflict: the target kind, default,
         # and annotation should be used not the source ones.
-        src_sig -= targ_func_sig 
+        src_sig -= targ_func_sig
 
         new_sig = targ_func_sig.merge_with_sig(src_sig)
         return new_sig(targ_func)
