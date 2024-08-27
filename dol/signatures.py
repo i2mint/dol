@@ -4201,14 +4201,18 @@ def sig_to_dataclass(
 
 def replace_kwargs_using(sig: SignatureAble):
     """
-    Replaces the
-    Injects the`sig` signature into the signature of a target function.
+    Decorator that replaces the variadic keyword argument of the target function using 
+    the `sig`, the signature of a source function. 
 
-    This is meant to be used when a targ_func has a variadict keyword argument
-    that is just used to forward the arguments to another function, and you want
-    to make sure that the signature of the `targ_func` is consistent with the
-    `sig` signature. (Also, you don't want to copy the signatures around
-    manually.)
+    This is meant to be used when a `targ_func` (the function you'll apply the 
+    decorator to) has a variadict keyword argument that is just used to forward "extra"  
+    arguments to another function, and you want to make sure that the signature of the 
+    `targ_func` is consistent with the `sig` signature. 
+    (Also, you don't want to copy the signatures around manually.)
+
+    In the following, `sauce` (the target function) has a variadic keyword argument, 
+    `sauce_kwargs`, that is used to forward extra arguments to `apple` (the source 
+    function). 
 
     >>> def apple(a, x: int, y=2, *, z=3, **extra_apple_options):
     ...     return a + x + y + z
