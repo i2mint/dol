@@ -19,7 +19,22 @@ Examples::
 
 from functools import wraps, partial
 from dataclasses import dataclass
-from typing import Union, Callable, Any, Mapping, Iterable, Tuple, Literal
+from typing import (
+    Union,
+    Callable,
+    Any,
+    Mapping,
+    Iterable,
+    Tuple,
+    Literal,
+    Iterator,
+    KT,
+    VT,
+    TypeVar,
+    List,
+    Dict,
+)
+
 from operator import getitem
 import os
 
@@ -101,7 +116,13 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -349,6 +370,76 @@ def _return_new_dict_on_error(d: Any):
     return dict()
 
 
+Data = TypeVar('Data', bound=Mapping)
+
+
+class PathMappedData(Mapping):
+    """
+    A mapping that extracts data from a mapping according to a list or dict of paths.
+
+    Args:
+        data: The mapping to extract data from
+        paths: The paths to extract data from the mapping
+
+    Example::
+
+    >>> data = {
+    ...     'a': {
+    ...         'b': [{'c': 1}, {'c': 2}],
+    ...         'd': 'bar'
+    ...     }
+    ... }
+    >>> paths = ['a.d', 'a.b.0.c']
+    >>>
+    >>> d = PathMappedData(data, paths)
+    >>> list(d)
+    ['a.d', 'a.b.0.c']
+    >>> d['a.d']
+    'bar'
+    >>> d['a.b.0.c']
+    1
+    
+    Now, data does contain a key path for 'a.b.1.c': 
+
+    >>> d.getter(d.data, 'a.b.1.c')
+    2
+
+    But since we didn't mention it in our paths parameter, it will raise a KeyError 
+    if we try to access it via the `PathMappedData` object:
+    
+    >>> d['a.b.1.c']  # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+    ...
+    KeyError: 'Path not found (in .paths attribute): a.b.1.c'
+
+    """
+    def __init__(
+        self,
+        data: Data,
+        paths: Union[Dict[Path, VT], List[Path]],
+        getter: Callable[[Data, Path], VT] = path_get,
+    ) -> None:
+        self.data = data
+        self.paths = paths
+        self.path_get = path_get
+        self.getter = getter
+
+    def __getitem__(self, path: Path) -> VT:
+        if path in self:
+            return self.getter(self.data, path)
+        else:
+            raise KeyError(f'Path not found (in .paths attribute): {path}')
+        
+    def __iter__(self) -> Iterator[Path]:
+        yield from self.paths
+
+    def __len__(self) -> int:
+        return len(self.paths)
+
+    def __contains__(self, path: Path) -> bool:
+        return path in self.paths
+
+
 # Note: Purposely didn't include any path validation to favor efficiency.
 # Validation such as:
 # if not key_path or not isinstance(key_path, Iterable):
@@ -475,7 +566,6 @@ def path_edit(d: Mapping, edits: Edits = ()) -> Mapping:
     return d
 
 
-from typing import Callable, Mapping, KT, VT, TypeVar, Iterator, Union, Literal
 from dol.base import kv_walk
 
 
@@ -759,7 +849,11 @@ class PrefixRelativization(PrefixRelativizationMixin):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr='_prefix',
 ):
     """
 
@@ -1085,8 +1179,7 @@ def str_template_key_trans(
         key_type in PathKeyTypes
     ), f"key_type was {key_type}. Needs to be one of these: {', '.join(PathKeyTypes)}"
 
-    class PathKeyMapper(StrTupleDict):
-        ...
+    class PathKeyMapper(StrTupleDict): ...
 
     setattr(
         PathKeyMapper,
@@ -1633,7 +1726,8 @@ class KeyTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self, params: dict,
+        self,
+        params: dict,
     ):
         r"""Generates a namedtuple from the dictionary values based on the template.
 
