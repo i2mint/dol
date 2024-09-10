@@ -116,13 +116,7 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(
-                        obj=obj,
-                        path=path,
-                        result=result,
-                        k=k,
-                        error=error,
-                    )
+                    dict(obj=obj, path=path, result=result, k=k, error=error,)
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -888,11 +882,7 @@ class ExplicitKeysWithPrefixRelativization(PrefixRelativizationMixin, Store):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None,
-    *,
-    name=None,
-    with_key_validation=False,
-    prefix_attr='_prefix',
+    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
 ):
     """
 
@@ -1218,7 +1208,8 @@ def str_template_key_trans(
         key_type in PathKeyTypes
     ), f"key_type was {key_type}. Needs to be one of these: {', '.join(PathKeyTypes)}"
 
-    class PathKeyMapper(StrTupleDict): ...
+    class PathKeyMapper(StrTupleDict):
+        ...
 
     setattr(
         PathKeyMapper,
@@ -1765,8 +1756,7 @@ class KeyTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self,
-        params: dict,
+        self, params: dict,
     ):
         r"""Generates a namedtuple from the dictionary values based on the template.
 

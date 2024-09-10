@@ -86,7 +86,7 @@ class KeysReader(Mapping):
         *,
         key_error_msg: Callable[
             [Source, KT], str
-        ] = "Key {key} was not found in {src} should be in .key_collection attribute)".format,
+        ] = 'Key {key} was not found in {src} should be in .key_collection attribute)'.format,
     ) -> None:
         self.src = src
         self.key_collection = key_collection
@@ -317,6 +317,7 @@ class ExplicitKeymapReader(ExplicitKeys, Store):
 
 
 # ExplicitKeysWithPrefixRelativization: Moved to dol.paths
+
 
 class ObjDumper(object):
     def __init__(self, save_data_to_key, data_of_obj=None):
