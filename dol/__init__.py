@@ -158,12 +158,12 @@ from dol.paths import (
     path_set,  # set a value from a path
     path_filter,  # search through paths of a Mapping
     add_prefix_filtering,  # add a prefix filtering method to a store
-    PathMappedData,  # A mapping that extracts data from a mapping according to paths
+    # PathMappedData,  # A mapping that extracts data from a mapping according to paths
 )
 
 from dol.dig import trace_getitem  # trace getitem calls, stepping through the layers
 
-from dol.explicit import ExplicitKeyMap, invertible_maps
+from dol.explicit import ExplicitKeyMap, invertible_maps, KeysReader
 
 
 from dol.sources import (

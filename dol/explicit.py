@@ -1,14 +1,116 @@
 """
 utils to make stores based on a the input data itself
 """
+
 from collections.abc import Mapping
-from typing import Callable, Collection as CollectionType
+from typing import Callable, Collection as CollectionType, KT, VT, TypeVar, Iterator
 
 from dol.base import Collection, KvReader, Store
 from dol.trans import kv_wrap
-from dol.paths import PrefixRelativizationMixin
 from dol.util import max_common_prefix
 from dol.sources import ObjReader  # because it used to be here
+
+
+Source = TypeVar('Source')  # the source of some values
+Getter = Callable[
+    [Source, KT], VT
+]  # a function that gets a value from a source and a key
+# TODO: Might want to make the Getter by generic, so that we can do things like
+#   Getter[Mapping] or Getter[Mapping, KeyType] or Getter[Any, KeyType]
+
+
+class KeysReader(Mapping):
+    """
+    A collection of keys with a getter function that gets values from keys.
+
+    `KeysReader` is particularly useful in cases where you want to have a mapping
+    that lazy-load values for keys from an explicit collection.
+
+    Keywords: Lazy-evaluation, Mapping
+
+    Args:
+        src: The source where values will be extracted from.
+        key_collection: A collection of keys that will be used to extract values from `src`.
+        getter: A function that takes a source and a key, and returns the value for that key.
+        key_error_msg: A function that takes a source and a key, and returns an error message.
+
+
+    Example::
+
+    >>> src = {'apple': 'pie', 'banana': 'split', 'carrot': 'cake'}
+    >>> key_collection = ['carrot', 'apple']
+    >>> getter = lambda src, key: src[key]
+    >>> key_reader = KeysReader(src, key_collection, getter)
+
+    Note that the only the keys mentioned by `key_collection` will be iterated through,
+    and in the order they are mentioned in `key_collection`.
+
+    >>> list(key_reader)
+    ['carrot', 'apple']
+
+    >>> key_reader['apple']
+    'pie'
+    >>> key_reader['banana']  # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+    ...
+    KeyError: "Key 'banana' was not found....key_collection attribute)"
+
+    Let's take the same `src` and `key_collection`, but with a different getter and
+    key_error_msg:
+
+    Note that a key_error_msg must be a function that takes a `src` and a `key`,
+    in that order and with those argument names. Say you wanted to not use the `src`
+    in your message. You would still have to write a function that takes `src` as the
+    first argument.
+
+    >>> key_error_msg = lambda src, key: f"Key {key} was not found"  # no source information
+
+    >>> getter = lambda src, key: f"Value for {key} in {src}: {src[key]}"
+    >>> key_reader = KeysReader(src, key_collection, getter, key_error_msg=key_error_msg)
+    >>> list(key_reader)
+    ['carrot', 'apple']
+    >>> key_reader['apple']
+    "Value for apple in {'apple': 'pie', 'banana': 'split', 'carrot': 'cake'}: pie"
+    >>> key_reader['banana']  # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+    ...
+    KeyError: "Key banana was not found"
+
+    """
+
+    def __init__(
+        self,
+        src: Source,
+        key_collection: CollectionType[KT],
+        getter: Callable[[Source, KT], VT],
+        *,
+        key_error_msg: Callable[
+            [Source, KT], str
+        ] = "Key {key} was not found in {src} should be in .key_collection attribute)".format,
+    ) -> None:
+        self.src = src
+        self.key_collection = key_collection
+        self.getter = getter
+        self.key_error_msg = key_error_msg
+
+    def __getitem__(self, key: KT) -> VT:
+        if key in self:
+            return self.getter(self.src, key)
+        else:
+            raise KeyError(self.key_error_msg(src=self.src, key=key))
+
+    def __iter__(self) -> Iterator[KT]:
+        yield from self.key_collection
+
+    def __len__(self) -> int:
+        return len(self.key_collection)
+
+    def __contains__(self, key: KT) -> bool:
+        return key in self.key_collection
+
+
+# --------------------------------------------------------------------------------------
+# Older stuff:
 
 
 # TODO: Revisit ExplicitKeys and ExplicitKeysWithPrefixRelativization. Not extendible to full store!
@@ -214,31 +316,7 @@ class ExplicitKeymapReader(ExplicitKeys, Store):
         ExplicitKeys.__init__(self, key_trans.id_of_key_map.keys())
 
 
-class ExplicitKeysWithPrefixRelativization(PrefixRelativizationMixin, Store):
-    """
-    dol.base.Keys implementation that gets it's keys explicitly from a collection given at initialization time.
-    The key_collection must be a collections.abc.Collection (such as list, tuple, set, etc.)
-
-    >>> from dol.base import Store
-    >>> s = ExplicitKeysWithPrefixRelativization(key_collection=['/root/of/foo', '/root/of/bar', '/root/for/alice'])
-    >>> keys = Store(store=s)
-    >>> 'of/foo' in keys
-    True
-    >>> 'not there' in keys
-    False
-    >>> list(keys)
-    ['of/foo', 'of/bar', 'for/alice']
-    """
-
-    __slots__ = ('_key_collection',)
-
-    def __init__(self, key_collection, _prefix=None):
-        if _prefix is None:
-            _prefix = max_common_prefix(key_collection)
-        store = ExplicitKeys(key_collection=key_collection)
-        self._prefix = _prefix
-        super().__init__(store=store)
-
+# ExplicitKeysWithPrefixRelativization: Moved to dol.paths
 
 class ObjDumper(object):
     def __init__(self, save_data_to_key, data_of_obj=None):

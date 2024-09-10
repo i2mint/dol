@@ -116,7 +116,13 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
@@ -364,12 +370,22 @@ def _return_new_dict_on_error(d: Any):
     return dict()
 
 
-Data = TypeVar('Data', bound=Mapping)
+from dol.explicit import KeysReader
 
 
-class PathMappedData(Mapping):
+# TODO: Nothing particular about paths here. It's just a collection of keys
+# (see dol.explicit.ExplicitKeys) with a key_to_value function.
+# TODO: Yet another "explicit" pattern, found in dol.explicit, dol.sources
+# (e.g. ObjReader), and which can (but perhaps not should) really be completely
+# implemented with a value decoder (the getter) in a wrap_kvs over a {k: k...} mapping.
+class PathMappedData(KeysReader):
     """
-    A mapping that extracts data from a mapping according to a list or dict of paths.
+    A collection of keys with a key_to_value function to lazy load values.
+
+    `PathMappedData` is particularly useful in cases where you want to have a mapping
+    that lazy-loads values for keys from an explicit collection.
+
+    Keywords: Lazy-evaluation, Mapping
 
     Args:
         data: The mapping to extract data from
@@ -392,47 +408,46 @@ class PathMappedData(Mapping):
     'bar'
     >>> d['a.b.0.c']
     1
-    
-    Now, data does contain a key path for 'a.b.1.c': 
 
-    >>> d.getter(d.data, 'a.b.1.c')
+    Now, data does contain a key path for 'a.b.1.c':
+
+    >>> d.getter(d.src, 'a.b.1.c')
     2
 
-    But since we didn't mention it in our paths parameter, it will raise a KeyError 
+    But since we didn't mention it in our paths parameter, it will raise a KeyError
     if we try to access it via the `PathMappedData` object:
-    
+
     >>> d['a.b.1.c']  # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
     ...
-    KeyError: 'Path not found (in .paths attribute): a.b.1.c'
+    KeyError: "Key a.b.1.c was not found....key_collection attribute)"
 
     """
 
     def __init__(
         self,
-        data: Data,
-        paths: Union[Dict[Path, VT], List[Path]],
-        getter: Callable[[Data, Path], VT] = path_get,
+        src: Mapping,
+        key_collection,
+        getter: Callable[[Mapping, Path], VT] = path_get,
+        *,
+        key_to_value: Callable[[Path], VT] = None,
     ) -> None:
-        self.data = data
-        self.paths = paths
-        self.path_get = path_get
-        self.getter = getter
+        super().__init__(src, key_collection, getter)
 
-    def __getitem__(self, path: Path) -> VT:
-        if path in self:
-            return self.getter(self.data, path)
-        else:
-            raise KeyError(f'Path not found (in .paths attribute): {path}')
+    # def __getitem__(self, path: Path) -> VT:
+    #     if path in self:
+    #         return self.getter(self.data, path)
+    #     else:
+    #         raise KeyError(f'Path not found (in .paths attribute): {path}')
 
-    def __iter__(self) -> Iterator[Path]:
-        yield from self.paths
+    # def __iter__(self) -> Iterator[Path]:
+    #     yield from self.paths
 
-    def __len__(self) -> int:
-        return len(self.paths)
+    # def __len__(self) -> int:
+    #     return len(self.paths)
 
-    def __contains__(self, path: Path) -> bool:
-        return path in self.paths
+    # def __contains__(self, path: Path) -> bool:
+    #     return path in self.paths
 
 
 # Note: Purposely didn't include any path validation to favor efficiency.
@@ -842,9 +857,42 @@ class PrefixRelativization(PrefixRelativizationMixin):
         self._prefix = _prefix
 
 
+class ExplicitKeysWithPrefixRelativization(PrefixRelativizationMixin, Store):
+    """
+    dol.base.Keys implementation that gets it's keys explicitly from a collection given at initialization time.
+    The key_collection must be a collections.abc.Collection (such as list, tuple, set, etc.)
+
+    >>> from dol.base import Store
+    >>> s = ExplicitKeysWithPrefixRelativization(key_collection=['/root/of/foo', '/root/of/bar', '/root/for/alice'])
+    >>> keys = Store(store=s)
+    >>> 'of/foo' in keys
+    True
+    >>> 'not there' in keys
+    False
+    >>> list(keys)
+    ['of/foo', 'of/bar', 'for/alice']
+    """
+
+    __slots__ = ('_key_collection',)
+
+    def __init__(self, key_collection, _prefix=None):
+        # TODO: Find a better way to avoid the circular import
+        from dol.explicit import ExplicitKeys  # here to avoid circular imports
+
+        if _prefix is None:
+            _prefix = max_common_prefix(key_collection)
+        store = ExplicitKeys(key_collection=key_collection)
+        self._prefix = _prefix
+        super().__init__(store=store)
+
+
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr='_prefix',
 ):
     """
 
@@ -1170,8 +1218,7 @@ def str_template_key_trans(
         key_type in PathKeyTypes
     ), f"key_type was {key_type}. Needs to be one of these: {', '.join(PathKeyTypes)}"
 
-    class PathKeyMapper(StrTupleDict):
-        ...
+    class PathKeyMapper(StrTupleDict): ...
 
     setattr(
         PathKeyMapper,
@@ -1718,7 +1765,8 @@ class KeyTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self, params: dict,
+        self,
+        params: dict,
     ):
         r"""Generates a namedtuple from the dictionary values based on the template.
 

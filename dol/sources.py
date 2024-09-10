@@ -715,6 +715,7 @@ class ObjLoader(object):
 
 # TODO: See explicit.py module and FuncReader above for near duplicates!
 # TODO: Add an obj_of_key argument to wrap_kvs? (Or should it be data_of_key?)
+# TODO: Another near-duplicate found: dol.paths.PathMappedData
 # Note: Older version commmented below
 class ObjReader:
     """
