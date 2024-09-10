@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.explicit &mdash; dol 0.2.68 documentation</title>
+  <title>dol.explicit &mdash; dol 0.2.69 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=4b3d9e8c"></script>
+        <script src="../../_static/documentation_options.js?v=ef451a95"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -114,14 +114,119 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">utils to make stores based on a the input data itself</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Collection</span> <span class="k">as</span> <span class="n">CollectionType</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Collection</span> <span class="k">as</span> <span class="n">CollectionType</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Iterator</span>
 
 <span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">,</span> <span class="n">Store</span>
 <span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">kv_wrap</span>
-<span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="n">PrefixRelativizationMixin</span>
 <span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">max_common_prefix</span>
 <span class="kn">from</span> <span class="nn">dol.sources</span> <span class="kn">import</span> <span class="n">ObjReader</span>  <span class="c1"># because it used to be here</span>
+
+
+<span class="n">Source</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;Source&#39;</span><span class="p">)</span>  <span class="c1"># the source of some values</span>
+<span class="n">Getter</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[</span>
+    <span class="p">[</span><span class="n">Source</span><span class="p">,</span> <span class="n">KT</span><span class="p">],</span> <span class="n">VT</span>
+<span class="p">]</span>  <span class="c1"># a function that gets a value from a source and a key</span>
+<span class="c1"># TODO: Might want to make the Getter by generic, so that we can do things like</span>
+<span class="c1">#   Getter[Mapping] or Getter[Mapping, KeyType] or Getter[Any, KeyType]</span>
+
+
+<div class="viewcode-block" id="KeysReader">
+<a class="viewcode-back" href="../../module_docs/dol/explicit.html#dol.explicit.KeysReader">[docs]</a>
+<span class="k">class</span> <span class="nc">KeysReader</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A collection of keys with a getter function that gets values from keys.</span>
+
+<span class="sd">    `KeysReader` is particularly useful in cases where you want to have a mapping</span>
+<span class="sd">    that lazy-load values for keys from an explicit collection.</span>
+
+<span class="sd">    Keywords: Lazy-evaluation, Mapping</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        src: The source where values will be extracted from.</span>
+<span class="sd">        key_collection: A collection of keys that will be used to extract values from `src`.</span>
+<span class="sd">        getter: A function that takes a source and a key, and returns the value for that key.</span>
+<span class="sd">        key_error_msg: A function that takes a source and a key, and returns an error message.</span>
+
+
+<span class="sd">    Example::</span>
+
+<span class="sd">    &gt;&gt;&gt; src = {&#39;apple&#39;: &#39;pie&#39;, &#39;banana&#39;: &#39;split&#39;, &#39;carrot&#39;: &#39;cake&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; key_collection = [&#39;carrot&#39;, &#39;apple&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; getter = lambda src, key: src[key]</span>
+<span class="sd">    &gt;&gt;&gt; key_reader = KeysReader(src, key_collection, getter)</span>
+
+<span class="sd">    Note that the only the keys mentioned by `key_collection` will be iterated through,</span>
+<span class="sd">    and in the order they are mentioned in `key_collection`.</span>
+
+<span class="sd">    &gt;&gt;&gt; list(key_reader)</span>
+<span class="sd">    [&#39;carrot&#39;, &#39;apple&#39;]</span>
+
+<span class="sd">    &gt;&gt;&gt; key_reader[&#39;apple&#39;]</span>
+<span class="sd">    &#39;pie&#39;</span>
+<span class="sd">    &gt;&gt;&gt; key_reader[&#39;banana&#39;]  # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">    ...</span>
+<span class="sd">    KeyError: &quot;Key &#39;banana&#39; was not found....key_collection attribute)&quot;</span>
+
+<span class="sd">    Let&#39;s take the same `src` and `key_collection`, but with a different getter and</span>
+<span class="sd">    key_error_msg:</span>
+
+<span class="sd">    Note that a key_error_msg must be a function that takes a `src` and a `key`,</span>
+<span class="sd">    in that order and with those argument names. Say you wanted to not use the `src`</span>
+<span class="sd">    in your message. You would still have to write a function that takes `src` as the</span>
+<span class="sd">    first argument.</span>
+
+<span class="sd">    &gt;&gt;&gt; key_error_msg = lambda src, key: f&quot;Key {key} was not found&quot;  # no source information</span>
+
+<span class="sd">    &gt;&gt;&gt; getter = lambda src, key: f&quot;Value for {key} in {src}: {src[key]}&quot;</span>
+<span class="sd">    &gt;&gt;&gt; key_reader = KeysReader(src, key_collection, getter, key_error_msg=key_error_msg)</span>
+<span class="sd">    &gt;&gt;&gt; list(key_reader)</span>
+<span class="sd">    [&#39;carrot&#39;, &#39;apple&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; key_reader[&#39;apple&#39;]</span>
+<span class="sd">    &quot;Value for apple in {&#39;apple&#39;: &#39;pie&#39;, &#39;banana&#39;: &#39;split&#39;, &#39;carrot&#39;: &#39;cake&#39;}: pie&quot;</span>
+<span class="sd">    &gt;&gt;&gt; key_reader[&#39;banana&#39;]  # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">    ...</span>
+<span class="sd">    KeyError: &quot;Key banana was not found&quot;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">src</span><span class="p">:</span> <span class="n">Source</span><span class="p">,</span>
+        <span class="n">key_collection</span><span class="p">:</span> <span class="n">CollectionType</span><span class="p">[</span><span class="n">KT</span><span class="p">],</span>
+        <span class="n">getter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Source</span><span class="p">,</span> <span class="n">KT</span><span class="p">],</span> <span class="n">VT</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">key_error_msg</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
+            <span class="p">[</span><span class="n">Source</span><span class="p">,</span> <span class="n">KT</span><span class="p">],</span> <span class="nb">str</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Key </span><span class="si">{key}</span><span class="s2"> was not found in </span><span class="si">{src}</span><span class="s2"> should be in .key_collection attribute)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">src</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_collection</span> <span class="o">=</span> <span class="n">key_collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">getter</span> <span class="o">=</span> <span class="n">getter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_error_msg</span> <span class="o">=</span> <span class="n">key_error_msg</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VT</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key_error_msg</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">KT</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_collection</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key_collection</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_collection</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Older stuff:</span>
 
 
 <span class="c1"># TODO: Revisit ExplicitKeys and ExplicitKeysWithPrefixRelativization. Not extendible to full store!</span>
@@ -342,34 +447,7 @@
 
 
 
-<div class="viewcode-block" id="ExplicitKeysWithPrefixRelativization">
-<a class="viewcode-back" href="../../module_docs/dol/explicit.html#dol.explicit.ExplicitKeysWithPrefixRelativization">[docs]</a>
-<span class="k">class</span> <span class="nc">ExplicitKeysWithPrefixRelativization</span><span class="p">(</span><span class="n">PrefixRelativizationMixin</span><span class="p">,</span> <span class="n">Store</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    dol.base.Keys implementation that gets it&#39;s keys explicitly from a collection given at initialization time.</span>
-<span class="sd">    The key_collection must be a collections.abc.Collection (such as list, tuple, set, etc.)</span>
-
-<span class="sd">    &gt;&gt;&gt; from dol.base import Store</span>
-<span class="sd">    &gt;&gt;&gt; s = ExplicitKeysWithPrefixRelativization(key_collection=[&#39;/root/of/foo&#39;, &#39;/root/of/bar&#39;, &#39;/root/for/alice&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; keys = Store(store=s)</span>
-<span class="sd">    &gt;&gt;&gt; &#39;of/foo&#39; in keys</span>
-<span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; &#39;not there&#39; in keys</span>
-<span class="sd">    False</span>
-<span class="sd">    &gt;&gt;&gt; list(keys)</span>
-<span class="sd">    [&#39;of/foo&#39;, &#39;of/bar&#39;, &#39;for/alice&#39;]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_key_collection&#39;</span><span class="p">,)</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_collection</span><span class="p">,</span> <span class="n">_prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">_prefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">_prefix</span> <span class="o">=</span> <span class="n">max_common_prefix</span><span class="p">(</span><span class="n">key_collection</span><span class="p">)</span>
-        <span class="n">store</span> <span class="o">=</span> <span class="n">ExplicitKeys</span><span class="p">(</span><span class="n">key_collection</span><span class="o">=</span><span class="n">key_collection</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">_prefix</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">store</span><span class="p">)</span></div>
-
-
+<span class="c1"># ExplicitKeysWithPrefixRelativization: Moved to dol.paths</span>
 
 <span class="k">class</span> <span class="nc">ObjDumper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_data_to_key</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

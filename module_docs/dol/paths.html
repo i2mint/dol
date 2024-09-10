@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.68 documentation</title>
+  <title>dol.paths &mdash; dol 0.2.69 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=4b3d9e8c"></script>
+        <script src="../../_static/documentation_options.js?v=ef451a95"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -64,6 +64,7 @@
 <li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">dol.paths</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dol.paths.ExplicitKeysWithPrefixRelativization"><code class="docutils literal notranslate"><span class="pre">ExplicitKeysWithPrefixRelativization</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.KeyPath"><code class="docutils literal notranslate"><span class="pre">KeyPath</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.KeyTemplate"><code class="docutils literal notranslate"><span class="pre">KeyTemplate</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dol.paths.KeyTemplate.dict_to_namedtuple"><code class="docutils literal notranslate"><span class="pre">KeyTemplate.dict_to_namedtuple()</span></code></a></li>
@@ -170,6 +171,24 @@
 <span class="go">{&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 1, &#39;d&#39;: 4, &#39;new_ab_key&#39;: 42}, &#39;e&#39;: 3}}</span>
 </pre></div>
 </div>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.paths.ExplicitKeysWithPrefixRelativization">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">ExplicitKeysWithPrefixRelativization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#ExplicitKeysWithPrefixRelativization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.ExplicitKeysWithPrefixRelativization" title="Link to this definition"></a></dt>
+<dd><p>dol.base.Keys implementation that gets it’s keys explicitly from a collection given at initialization time.
+The key_collection must be a collections.abc.Collection (such as list, tuple, set, etc.)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">ExplicitKeysWithPrefixRelativization</span><span class="p">(</span><span class="n">key_collection</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;/root/of/foo&#39;</span><span class="p">,</span> <span class="s1">&#39;/root/of/bar&#39;</span><span class="p">,</span> <span class="s1">&#39;/root/for/alice&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">keys</span> <span class="o">=</span> <span class="n">Store</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">s</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;of/foo&#39;</span> <span class="ow">in</span> <span class="n">keys</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;not there&#39;</span> <span class="ow">in</span> <span class="n">keys</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+<span class="go">[&#39;of/foo&#39;, &#39;of/bar&#39;, &#39;for/alice&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.paths.KeyPath">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">KeyPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_sep:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_path_type:</span> <span class="pre">type</span> <span class="pre">|</span> <span class="pre">callable</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'tuple'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#KeyPath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.KeyPath" title="Link to this definition"></a></dt>
@@ -618,8 +637,11 @@ filter out keys that don’t fit the format, before you wrap the store with
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.paths.PathMappedData">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">PathMappedData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">data:</span> <span class="pre">~dol.paths.Data,</span> <span class="pre">paths:</span> <span class="pre">~typing.Dict[~typing.Iterable</span> <span class="pre">|</span> <span class="pre">str,</span> <span class="pre">VT]</span> <span class="pre">|</span> <span class="pre">~typing.List[~typing.Iterable</span> <span class="pre">|</span> <span class="pre">str],</span> <span class="pre">getter:</span> <span class="pre">~typing.Callable[[~dol.paths.Data,</span> <span class="pre">~typing.Iterable</span> <span class="pre">|</span> <span class="pre">str],</span> <span class="pre">VT]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">path_get&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#PathMappedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.PathMappedData" title="Link to this definition"></a></dt>
-<dd><p>A mapping that extracts data from a mapping according to a list or dict of paths.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">PathMappedData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">src:</span> <span class="pre">~typing.Mapping,</span> <span class="pre">key_collection,</span> <span class="pre">getter:</span> <span class="pre">~typing.Callable[[~typing.Mapping,</span> <span class="pre">~typing.Iterable</span> <span class="pre">|</span> <span class="pre">str],</span> <span class="pre">VT]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">path_get&gt;,</span> <span class="pre">*,</span> <span class="pre">key_to_value:</span> <span class="pre">~typing.Callable[[~typing.Iterable</span> <span class="pre">|</span> <span class="pre">str],</span> <span class="pre">VT]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#PathMappedData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.PathMappedData" title="Link to this definition"></a></dt>
+<dd><p>A collection of keys with a key_to_value function to lazy load values.</p>
+<p><cite>PathMappedData</cite> is particularly useful in cases where you want to have a mapping
+that lazy-loads values for keys from an explicit collection.</p>
+<p>Keywords: Lazy-evaluation, Mapping</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -647,7 +669,7 @@ filter out keys that don’t fit the format, before you wrap the store with
 &gt;&gt;&gt; d[‘a.b.0.c’]
 1</p>
 <p>Now, data does contain a key path for ‘a.b.1.c’:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">getter</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;a.b.1.c&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">getter</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;a.b.1.c&#39;</span><span class="p">)</span>
 <span class="go">2</span>
 </pre></div>
 </div>
@@ -656,7 +678,7 @@ if we try to access it via the <cite>PathMappedData</cite> object:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a.b.1.c&#39;</span><span class="p">]</span>  
 <span class="gt">Traceback (most recent call last):</span>
 <span class="c">...</span>
-<span class="gr">KeyError</span>: <span class="n">&#39;Path not found (in .paths attribute): a.b.1.c&#39;</span>
+<span class="gr">KeyError</span>: <span class="n">&quot;Key a.b.1.c was not found....key_collection attribute)&quot;</span>
 </pre></div>
 </div>
 </dd></dl>

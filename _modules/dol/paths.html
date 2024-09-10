@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.68 documentation</title>
+  <title>dol.paths &mdash; dol 0.2.69 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=4b3d9e8c"></script>
+        <script src="../../_static/documentation_options.js?v=ef451a95"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -495,14 +495,24 @@
     <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
 
 
-<span class="n">Data</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;Data&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Mapping</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">dol.explicit</span> <span class="kn">import</span> <span class="n">KeysReader</span>
 
 
+<span class="c1"># TODO: Nothing particular about paths here. It&#39;s just a collection of keys</span>
+<span class="c1"># (see dol.explicit.ExplicitKeys) with a key_to_value function.</span>
+<span class="c1"># TODO: Yet another &quot;explicit&quot; pattern, found in dol.explicit, dol.sources</span>
+<span class="c1"># (e.g. ObjReader), and which can (but perhaps not should) really be completely</span>
+<span class="c1"># implemented with a value decoder (the getter) in a wrap_kvs over a {k: k...} mapping.</span>
 <div class="viewcode-block" id="PathMappedData">
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.PathMappedData">[docs]</a>
-<span class="k">class</span> <span class="nc">PathMappedData</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">PathMappedData</span><span class="p">(</span><span class="n">KeysReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A mapping that extracts data from a mapping according to a list or dict of paths.</span>
+<span class="sd">    A collection of keys with a key_to_value function to lazy load values.</span>
+
+<span class="sd">    `PathMappedData` is particularly useful in cases where you want to have a mapping</span>
+<span class="sd">    that lazy-loads values for keys from an explicit collection.</span>
+
+<span class="sd">    Keywords: Lazy-evaluation, Mapping</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        data: The mapping to extract data from</span>
@@ -525,47 +535,47 @@
 <span class="sd">    &#39;bar&#39;</span>
 <span class="sd">    &gt;&gt;&gt; d[&#39;a.b.0.c&#39;]</span>
 <span class="sd">    1</span>
-<span class="sd">    </span>
-<span class="sd">    Now, data does contain a key path for &#39;a.b.1.c&#39;: </span>
 
-<span class="sd">    &gt;&gt;&gt; d.getter(d.data, &#39;a.b.1.c&#39;)</span>
+<span class="sd">    Now, data does contain a key path for &#39;a.b.1.c&#39;:</span>
+
+<span class="sd">    &gt;&gt;&gt; d.getter(d.src, &#39;a.b.1.c&#39;)</span>
 <span class="sd">    2</span>
 
-<span class="sd">    But since we didn&#39;t mention it in our paths parameter, it will raise a KeyError </span>
+<span class="sd">    But since we didn&#39;t mention it in our paths parameter, it will raise a KeyError</span>
 <span class="sd">    if we try to access it via the `PathMappedData` object:</span>
-<span class="sd">    </span>
+
 <span class="sd">    &gt;&gt;&gt; d[&#39;a.b.1.c&#39;]  # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL</span>
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">    ...</span>
-<span class="sd">    KeyError: &#39;Path not found (in .paths attribute): a.b.1.c&#39;</span>
+<span class="sd">    KeyError: &quot;Key a.b.1.c was not found....key_collection attribute)&quot;</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">data</span><span class="p">:</span> <span class="n">Data</span><span class="p">,</span>
-        <span class="n">paths</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]],</span>
-        <span class="n">getter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Data</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">VT</span><span class="p">]</span> <span class="o">=</span> <span class="n">path_get</span><span class="p">,</span>
+        <span class="n">src</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
+        <span class="n">key_collection</span><span class="p">,</span>
+        <span class="n">getter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Mapping</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">VT</span><span class="p">]</span> <span class="o">=</span> <span class="n">path_get</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">key_to_value</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Path</span><span class="p">],</span> <span class="n">VT</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">paths</span> <span class="o">=</span> <span class="n">paths</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">path_get</span> <span class="o">=</span> <span class="n">path_get</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">getter</span> <span class="o">=</span> <span class="n">getter</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">key_collection</span><span class="p">,</span> <span class="n">getter</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VT</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">path</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Path not found (in .paths attribute): </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
-        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span>
 
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">)</span>
+    <span class="c1"># def __getitem__(self, path: Path) -&gt; VT:</span>
+    <span class="c1">#     if path in self:</span>
+    <span class="c1">#         return self.getter(self.data, path)</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         raise KeyError(f&#39;Path not found (in .paths attribute): {path}&#39;)</span>
 
-    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span></div>
+    <span class="c1"># def __iter__(self) -&gt; Iterator[Path]:</span>
+    <span class="c1">#     yield from self.paths</span>
 
+    <span class="c1"># def __len__(self) -&gt; int:</span>
+    <span class="c1">#     return len(self.paths)</span>
+
+    <span class="c1"># def __contains__(self, path: Path) -&gt; bool:</span>
+    <span class="c1">#     return path in self.paths</span>
 
 
 <span class="c1"># Note: Purposely didn&#39;t include any path validation to favor efficiency.</span>
@@ -993,6 +1003,38 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">_prefix</span></div>
+
+
+
+<div class="viewcode-block" id="ExplicitKeysWithPrefixRelativization">
+<a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.ExplicitKeysWithPrefixRelativization">[docs]</a>
+<span class="k">class</span> <span class="nc">ExplicitKeysWithPrefixRelativization</span><span class="p">(</span><span class="n">PrefixRelativizationMixin</span><span class="p">,</span> <span class="n">Store</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    dol.base.Keys implementation that gets it&#39;s keys explicitly from a collection given at initialization time.</span>
+<span class="sd">    The key_collection must be a collections.abc.Collection (such as list, tuple, set, etc.)</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.base import Store</span>
+<span class="sd">    &gt;&gt;&gt; s = ExplicitKeysWithPrefixRelativization(key_collection=[&#39;/root/of/foo&#39;, &#39;/root/of/bar&#39;, &#39;/root/for/alice&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; keys = Store(store=s)</span>
+<span class="sd">    &gt;&gt;&gt; &#39;of/foo&#39; in keys</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; &#39;not there&#39; in keys</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; list(keys)</span>
+<span class="sd">    [&#39;of/foo&#39;, &#39;of/bar&#39;, &#39;for/alice&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_key_collection&#39;</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_collection</span><span class="p">,</span> <span class="n">_prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># TODO: Find a better way to avoid the circular import</span>
+        <span class="kn">from</span> <span class="nn">dol.explicit</span> <span class="kn">import</span> <span class="n">ExplicitKeys</span>  <span class="c1"># here to avoid circular imports</span>
+
+        <span class="k">if</span> <span class="n">_prefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_prefix</span> <span class="o">=</span> <span class="n">max_common_prefix</span><span class="p">(</span><span class="n">key_collection</span><span class="p">)</span>
+        <span class="n">store</span> <span class="o">=</span> <span class="n">ExplicitKeys</span><span class="p">(</span><span class="n">key_collection</span><span class="o">=</span><span class="n">key_collection</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">_prefix</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">store</span><span class="p">)</span></div>
 
 
 

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.explicit &mdash; dol 0.2.68 documentation</title>
+  <title>dol.explicit &mdash; dol 0.2.69 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=4b3d9e8c"></script>
+        <script src="../../_static/documentation_options.js?v=ef451a95"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -62,7 +62,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.explicit.ExplicitKeys"><code class="docutils literal notranslate"><span class="pre">ExplicitKeys</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.explicit.ExplicitKeysSource"><code class="docutils literal notranslate"><span class="pre">ExplicitKeysSource</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.explicit.ExplicitKeysStore"><code class="docutils literal notranslate"><span class="pre">ExplicitKeysStore</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dol.explicit.ExplicitKeysWithPrefixRelativization"><code class="docutils literal notranslate"><span class="pre">ExplicitKeysWithPrefixRelativization</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.explicit.KeysReader"><code class="docutils literal notranslate"><span class="pre">KeysReader</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.explicit.invertible_maps"><code class="docutils literal notranslate"><span class="pre">invertible_maps()</span></code></a></li>
 </ul>
 </li>
@@ -204,19 +204,62 @@ read contents for a key.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="dol.explicit.ExplicitKeysWithPrefixRelativization">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.explicit.</span></span><span class="sig-name descname"><span class="pre">ExplicitKeysWithPrefixRelativization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/explicit.html#ExplicitKeysWithPrefixRelativization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.explicit.ExplicitKeysWithPrefixRelativization" title="Link to this definition"></a></dt>
-<dd><p>dol.base.Keys implementation that gets it’s keys explicitly from a collection given at initialization time.
-The key_collection must be a collections.abc.Collection (such as list, tuple, set, etc.)</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">ExplicitKeysWithPrefixRelativization</span><span class="p">(</span><span class="n">key_collection</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;/root/of/foo&#39;</span><span class="p">,</span> <span class="s1">&#39;/root/of/bar&#39;</span><span class="p">,</span> <span class="s1">&#39;/root/for/alice&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">keys</span> <span class="o">=</span> <span class="n">Store</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">s</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;of/foo&#39;</span> <span class="ow">in</span> <span class="n">keys</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;not there&#39;</span> <span class="ow">in</span> <span class="n">keys</span>
-<span class="go">False</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
-<span class="go">[&#39;of/foo&#39;, &#39;of/bar&#39;, &#39;for/alice&#39;]</span>
+<dt class="sig sig-object py" id="dol.explicit.KeysReader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.explicit.</span></span><span class="sig-name descname"><span class="pre">KeysReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">src:</span> <span class="pre">~dol.explicit.Source,</span> <span class="pre">key_collection:</span> <span class="pre">~typing.Collection,</span> <span class="pre">getter:</span> <span class="pre">~typing.Callable[[~dol.explicit.Source,</span> <span class="pre">KT],</span> <span class="pre">VT],</span> <span class="pre">*,</span> <span class="pre">key_error_msg:</span> <span class="pre">~typing.Callable[[~dol.explicit.Source,</span> <span class="pre">KT],</span> <span class="pre">str]</span> <span class="pre">=</span> <span class="pre">&lt;built-in</span> <span class="pre">method</span> <span class="pre">format</span> <span class="pre">of</span> <span class="pre">str</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/explicit.html#KeysReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.explicit.KeysReader" title="Link to this definition"></a></dt>
+<dd><p>A collection of keys with a getter function that gets values from keys.</p>
+<p><cite>KeysReader</cite> is particularly useful in cases where you want to have a mapping
+that lazy-load values for keys from an explicit collection.</p>
+<p>Keywords: Lazy-evaluation, Mapping</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src</strong> – The source where values will be extracted from.</p></li>
+<li><p><strong>key_collection</strong> – A collection of keys that will be used to extract values from <cite>src</cite>.</p></li>
+<li><p><strong>getter</strong> – A function that takes a source and a key, and returns the value for that key.</p></li>
+<li><p><strong>key_error_msg</strong> – A function that takes a source and a key, and returns an error message.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">src</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;apple&#39;</span><span class="p">:</span> <span class="s1">&#39;pie&#39;</span><span class="p">,</span> <span class="s1">&#39;banana&#39;</span><span class="p">:</span> <span class="s1">&#39;split&#39;</span><span class="p">,</span> <span class="s1">&#39;carrot&#39;</span><span class="p">:</span> <span class="s1">&#39;cake&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key_collection</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;carrot&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">getter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">src</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">src</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key_reader</span> <span class="o">=</span> <span class="n">KeysReader</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">key_collection</span><span class="p">,</span> <span class="n">getter</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that the only the keys mentioned by <cite>key_collection</cite> will be iterated through,
+and in the order they are mentioned in <cite>key_collection</cite>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">key_reader</span><span class="p">)</span>
+<span class="go">[&#39;carrot&#39;, &#39;apple&#39;]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">key_reader</span><span class="p">[</span><span class="s1">&#39;apple&#39;</span><span class="p">]</span>
+<span class="go">&#39;pie&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key_reader</span><span class="p">[</span><span class="s1">&#39;banana&#39;</span><span class="p">]</span>  
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">KeyError</span>: <span class="n">&quot;Key &#39;banana&#39; was not found....key_collection attribute)&quot;</span>
+</pre></div>
+</div>
+<p>Let’s take the same <cite>src</cite> and <cite>key_collection</cite>, but with a different getter and
+key_error_msg:</p>
+<p>Note that a key_error_msg must be a function that takes a <cite>src</cite> and a <cite>key</cite>,
+in that order and with those argument names. Say you wanted to not use the <cite>src</cite>
+in your message. You would still have to write a function that takes <cite>src</cite> as the
+first argument.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">key_error_msg</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">src</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> was not found&quot;</span>  <span class="c1"># no source information</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">getter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">src</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Value for </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">src</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key_reader</span> <span class="o">=</span> <span class="n">KeysReader</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">key_collection</span><span class="p">,</span> <span class="n">getter</span><span class="p">,</span> <span class="n">key_error_msg</span><span class="o">=</span><span class="n">key_error_msg</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">key_reader</span><span class="p">)</span>
+<span class="go">[&#39;carrot&#39;, &#39;apple&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key_reader</span><span class="p">[</span><span class="s1">&#39;apple&#39;</span><span class="p">]</span>
+<span class="go">&quot;Value for apple in {&#39;apple&#39;: &#39;pie&#39;, &#39;banana&#39;: &#39;split&#39;, &#39;carrot&#39;: &#39;cake&#39;}: pie&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key_reader</span><span class="p">[</span><span class="s1">&#39;banana&#39;</span><span class="p">]</span>  
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">KeyError</span>: <span class="n">&quot;Key banana was not found&quot;</span>
 </pre></div>
 </div>
 </dd></dl>
