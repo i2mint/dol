@@ -21,7 +21,7 @@ Getter = Callable[
 
 class KeysReader(Mapping):
     """
-    A collection of keys with a getter function that gets values from keys.
+    Mapping defined by keys with a getter function that gets values from keys.
 
     `KeysReader` is particularly useful in cases where you want to have a mapping
     that lazy-load values for keys from an explicit collection.
