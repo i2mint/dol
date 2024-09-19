@@ -621,8 +621,8 @@ def cache_property_method(
     """
     if method_name is None:
         assert cls is not None, (
-            "If method_name is None, cls (which will play the role of method_name in "
-            "a decorator factory) must not be None."
+            'If method_name is None, cls (which will play the role of method_name in '
+            'a decorator factory) must not be None.'
         )
         method_name = cls
         return partial(
