@@ -157,6 +157,7 @@ def cache_this(
     *,
     cache: Optional[Cache] = None,
     key: Optional[KeyType] = None,
+    add_ram_cache: bool = False,
 ):
     r"""
     Transforms a method into a cached property with control over cache object and key.
@@ -166,6 +167,9 @@ def cache_this(
         instance attribute that is a `MutableMapping`.
     :param key: The key to store the cache value, can be a callable that will be
         applied to the method name to make a key, or an explicit string.
+    :param add_ram_cache: If True, adds an LRU cache to the method to (also) cache the
+        result of the method call in memory. This is useful when you want a persistent
+        cache but also want to speed up access to the method in the same session.
     :return: The decorated function.
 
     Used with no arguments, `cache_this` will cache just as the builtin
@@ -305,28 +309,36 @@ def cache_this(
     b'\x80\x04K*.'
 
     """
+
+    # if add_ram_cache is requested, we'll need to add an lru_cache_method to the
+    # function
+    if add_ram_cache:
+        possibly_add_ram_cache = lambda func: lru_cache_method(func)
+    else:
+        possibly_add_ram_cache = lambda func: func
+
     # the cache is False case, where we just want a property, computed by func
     if cache is False:
         if func is None:
 
             def wrapper(f):
-                return property(f)
+                return property(possibly_add_ram_cache(f))
 
             return wrapper
         else:
-            return property(func)
+            return property(possibly_add_ram_cache(func))
 
     # The general case
     #   If func is not given, we want a decorator
     if func is None:
 
         def wrapper(f):
-            return CachedProperty(f, cache=cache, key=key)
+            return CachedProperty(possibly_add_ram_cache(f), cache=cache, key=key)
 
         return wrapper
     #   If func is given, we want to return the CachedProperty instance
     else:
-        return CachedProperty(func, cache=cache, key=key)
+        return CachedProperty(possibly_add_ram_cache(func), cache=cache, key=key)
 
 
 from functools import lru_cache, partial, wraps
