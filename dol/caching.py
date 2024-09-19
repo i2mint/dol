@@ -107,7 +107,7 @@ def _mk_cache_instance(cache=None, assert_attrs=()):
 
 
 @store_decorator
-def mk_cached_store(store=None, *, cache=dict):
+def cache_vals(store=None, *, cache=dict):
     """
 
     Args:
@@ -117,7 +117,7 @@ def mk_cached_store(store=None, *, cache=dict):
 
     Returns: A subclass of the input store, but with caching (to the cache store)
 
-    >>> from dol.caching import mk_cached_store
+    >>> from dol.caching import cache_vals
     >>> import time
     >>> class SlowDict(dict):
     ...     sleep_s = 0.2
@@ -131,7 +131,7 @@ def mk_cached_store(store=None, *, cache=dict):
     >>> d['a']  # Wow! Takes a long time to get 'a'
     1
     >>> cache = dict()
-    >>> CachedSlowDict = mk_cached_store(store=SlowDict, cache=cache)
+    >>> CachedSlowDict = cache_vals(store=SlowDict, cache=cache)
     >>>
     >>> s = CachedSlowDict({'a': 1, 'b': 2, 'c': 3})
     >>> print(f"store: {list(s)}\\ncache: {list(cache)}")
@@ -191,7 +191,7 @@ def mk_cached_store(store=None, *, cache=dict):
 
         def __getitem__(self, k):
             if k not in self._cache:
-                val = super().__getitem__(k)
+                val = super(type(self), self).__getitem__(k)
                 self._cache[k] = val  # cache it
                 return val
             else:
@@ -200,7 +200,7 @@ def mk_cached_store(store=None, *, cache=dict):
     return CachedStore
 
 
-cache_vals = mk_cached_store  # alias proposed for better name
+mk_cached_store = cache_vals  # backwards compatibility alias
 
 
 @store_decorator

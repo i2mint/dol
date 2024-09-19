@@ -135,7 +135,8 @@ from dol.trans import (
 
 from dol.caching import (
     WriteBackChainMap,  # write-back cache
-    mk_cached_store,  # wrap a store so it uses a cache
+    mk_cached_store,  # (old alias of cache_vals) wrap a store so it uses a cache
+    cache_vals,  # wrap a store so it uses a cache
     store_cached,  # func memorizer using a specific store as its "memory"
     store_cached_with_single_key,
     ensure_clear_to_kv_store,  # add a clear method to a store (removed by default)

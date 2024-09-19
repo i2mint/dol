@@ -2,12 +2,12 @@
 Various tools to add functionality to stores
 """
 
-from typing import Optional, Callable, KT, VT, Any, Union
+from typing import Optional, Callable, KT, VT, Any, Union, T
 from collections.abc import Mapping
 
 from dol.base import Store
 from dol.trans import store_decorator
-
+from dol.caching import cache_vals
 
 NoSuchKey = type('NoSuchKey', (), {})
 
@@ -25,8 +25,15 @@ Cache = Union[MethodName, MutableMapping[KT, VT]]
 KeyType = Union[KT, Callable[[MethodName], KT]]
 
 
+def identity(x: T) -> T:
+    return x
+
+
 class CachedProperty:
     """Descriptor that caches the result of the first call to a method.
+
+    Note: Usually, you'd want to use the convenience decorator `cache_this` instead of
+    using this class directly.
 
     It generalizes the builtin functools.cached_property class, enabling the user to
     specify a cache object and a key to store the cache value.
@@ -40,6 +47,7 @@ class CachedProperty:
         *,
         allow_none_keys: bool = False,
         lock_factory: Callable = RLock,
+        pre_cache: Union[bool, MutableMapping] = False,
     ):
         """
         Initialize the cached property.
@@ -47,6 +55,11 @@ class CachedProperty:
         :param func: The function whose result needs to be cached.
         :param cache: The cache storage, can be a MutableMapping or an attribute name.
         :param key: The key to store the cache value, can be a callable or a string.
+        :param pre_cache: Default is False. If True, adds an in-memory cache to the method
+            to (also) cache the results in memory. If a MutableMapping is given,
+            it will be used as the pre-cache.
+            This is useful when you want a persistent cache but also want to speed up
+            access to the method in the same session.
         """
         self.func = func
         self.attrname = None
@@ -55,6 +68,18 @@ class CachedProperty:
         self.cache = cache
         self.key = key if key else lambda name: name
         self.allow_none_keys = allow_none_keys
+
+        if pre_cache is not False:
+            if pre_cache is True:
+                pre_cache = dict()
+            else:
+                assert isinstance(pre_cache, MutableMapping), (
+                    f"`pre_cache` must be a bool or a MutableMapping, "
+                    f"Was a {type(pre_cache)}: {pre_cache}"
+                )
+            self.wrap_cache = partial(cache_vals, cache=pre_cache)
+        else:
+            self.wrap_cache = identity
 
     def __set_name__(self, owner, name):
         """
@@ -97,11 +122,13 @@ class CachedProperty:
                 raise TypeError(
                     f"Attribute '{self.cache}' on {type(instance).__name__!r} instance is not a MutableMapping."
                 )
-            return cache
+            __cache = cache
         elif isinstance(self.cache, MutableMapping):
-            return self.cache
+            __cache = self.cache
         else:
-            return instance.__dict__
+            __cache = instance.__dict__
+
+        return self.wrap_cache(__cache)
 
     def __get__(self, instance, owner=None):
         """
@@ -157,7 +184,7 @@ def cache_this(
     *,
     cache: Optional[Cache] = None,
     key: Optional[KeyType] = None,
-    add_ram_cache: bool = False,
+    pre_cache: Union[bool, MutableMapping] = False,
 ):
     r"""
     Transforms a method into a cached property with control over cache object and key.
@@ -167,9 +194,11 @@ def cache_this(
         instance attribute that is a `MutableMapping`.
     :param key: The key to store the cache value, can be a callable that will be
         applied to the method name to make a key, or an explicit string.
-    :param add_ram_cache: If True, adds an LRU cache to the method to (also) cache the
-        result of the method call in memory. This is useful when you want a persistent
-        cache but also want to speed up access to the method in the same session.
+    :param pre_cache: Default is False. If True, adds an in-memory cache to the method
+        to (also) cache the results in memory. If a MutableMapping is given, it will be
+        used as the pre-cache.
+        This is useful when you want a persistent cache but also want to speed up
+        access to the method in the same session.
     :return: The decorated function.
 
     Used with no arguments, `cache_this` will cache just as the builtin
@@ -267,13 +296,54 @@ def cache_this(
     codec to store values, but in real life you would use a persistent storage that
     would require a codec, such as files or a database.
 
+    Thirdly, we'll use a `pre_cache` to store the values in a different cache "before"
+    (setting and getting) them in the main cache.
+    This is useful, for instance, when you want to persist the values (in the main
+    cache), but keep them in memory for faster access in the same session
+    (the pre-cache, a dict() instance usually). It can also be used to store and
+    use things locally (pre-cache) while sharing them with others by storing them in
+    a remote store (main cache).
+
+    Finally, we'll use a dict that logs any setting and getting of values to show
+    how the caches are being used.
+
+    >>> from dol import cache_this
+    >>>
     >>> from functools import partial
     >>> from dol import ValueCodecs
+    >>> from collections import UserDict
     >>>
-    >>> cache_with_pickle = partial(cache_this, cache='cache', key=lambda x: f"{x}.pkl")
+    >>>
+    >>> class LoggedCache(UserDict):
+    ...     name = 'cache'
+    ...
+    ...     def __setitem__(self, key, value):
+    ...         print(f"In {self.name}: setting {key} to {value}")
+    ...         return super().__setitem__(key, value)
+    ...
+    ...     def __getitem__(self, key):
+    ...         print(f"In {self.name}: getting value of {key}")
+    ...         return super().__getitem__(key)
+    ...
+    >>>
+    >>> class CacheA(LoggedCache):
+    ...     name = 'CacheA'
+    ...
+    >>>
+    >>> class CacheB(LoggedCache):
+    ...     name = 'CacheB'
+    ...
+    >>>
+    >>> cache_with_pickle = partial(
+    ...     cache_this,
+    ...     cache='cache',  # the cache can be found on the instance attribute `cache`
+    ...     key=lambda x: f"{x}.pkl",  # the key is the method name with a '.pkl' extension
+    ...     pre_cache=CacheB(),
+    ... )
+    >>>
     >>>
     >>> class PickleCached:
-    ...     def __init__(self, backend_store_factory=dict):
+    ...     def __init__(self, backend_store_factory=CacheA):
     ...         # usually this would be a mapping interface to persistent storage:
     ...         self._backend_store = backend_store_factory()
     ...         self.cache = ValueCodecs.default.pickle(self._backend_store)
@@ -283,62 +353,67 @@ def cache_this(
     ...         print("In PickleCached.foo...")
     ...         return 42
     ...
-    ...
+
     >>> obj = PickleCached()
     >>> list(obj.cache)
     []
+
     >>> obj.foo
+    In CacheA: getting value of foo.pkl
+    In CacheA: getting value of foo.pkl
     In PickleCached.foo...
+    In CacheA: setting foo.pkl to b'\x80\x04K*.'
     42
     >>> obj.foo
+    In CacheA: getting value of foo.pkl
+    In CacheB: setting foo.pkl to 42
     42
 
-    As usuall, it's because the cache now holds something that has to do with `foo`:
+    As usual, it's because the cache now holds something that has to do with `foo`:
 
     >>> list(obj.cache)
     ['foo.pkl']
+    >>> # == ['foo.pkl']
 
     The value of `'foo.pkl'` is indeed `42`:
 
     >>> obj.cache['foo.pkl']
+    In CacheA: getting value of foo.pkl
     42
+
 
     But note that the actual way it's stored in the `_backend_store` is as pickle bytes:
 
     >>> obj._backend_store['foo.pkl']
+    In CacheA: getting value of foo.pkl
     b'\x80\x04K*.'
+    >>> # == b'\x80\x04K*.'
+
 
     """
-
-    # if add_ram_cache is requested, we'll need to add an lru_cache_method to the
-    # function
-    if add_ram_cache:
-        possibly_add_ram_cache = lambda func: lru_cache_method(func)
-    else:
-        possibly_add_ram_cache = lambda func: func
 
     # the cache is False case, where we just want a property, computed by func
     if cache is False:
         if func is None:
 
             def wrapper(f):
-                return property(possibly_add_ram_cache(f))
+                return property(f)
 
             return wrapper
         else:
-            return property(possibly_add_ram_cache(func))
+            return property(func)
 
     # The general case
-    #   If func is not given, we want a decorator
-    if func is None:
+    else:  #   If func is not given, we want a decorator
+        if func is None:
 
-        def wrapper(f):
-            return CachedProperty(possibly_add_ram_cache(f), cache=cache, key=key)
+            def wrapper(f):
+                return CachedProperty(f, cache=cache, key=key, pre_cache=pre_cache)
 
-        return wrapper
-    #   If func is given, we want to return the CachedProperty instance
-    else:
-        return CachedProperty(possibly_add_ram_cache(func), cache=cache, key=key)
+            return wrapper
+
+        else:  #   If func is given, we want to return the CachedProperty instance
+            return CachedProperty(func, cache=cache, key=key, pre_cache=pre_cache)
 
 
 from functools import lru_cache, partial, wraps
