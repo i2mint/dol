@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.70 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.71 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=0c617dc7"></script>
+        <script src="../../_static/documentation_options.js?v=a819f9de"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -448,16 +448,149 @@
 
 
 
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
+
+
+<div class="viewcode-block" id="cached_method">
+<a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.cached_method">[docs]</a>
+<span class="k">def</span> <span class="nf">cached_method</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A decorator to cache the result of a method, ignoring the first argument (usually `self`).</span>
+
+<span class="sd">    This decorator uses `functools.lru_cache` to cache the method result based on the arguments passed</span>
+<span class="sd">    to the method, excluding the first argument (typically `self`). This allows methods of a class to</span>
+<span class="sd">    be cached while ignoring the instance (`self`) in the cache key.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    - func (callable, optional): The method to be decorated. If not provided, a partially applied decorator</span>
+<span class="sd">      will be returned for later application.</span>
+<span class="sd">    - maxsize (int, optional): The maximum size of the cache. Defaults to 128.</span>
+<span class="sd">    - typed (bool, optional): If True, cache entries will be different based on argument types, such as</span>
+<span class="sd">      distinguishing between `1` and `1.0`. Defaults to False.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    &gt;&gt;&gt; class MyClass:</span>
+<span class="sd">    ...     @cached_method(maxsize=2, typed=True)</span>
+<span class="sd">    ...     def add(self, x, y):</span>
+<span class="sd">    ...         print(f&quot;Computing {x} + {y}&quot;)</span>
+<span class="sd">    ...         return x + y</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = MyClass()</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)</span>
+<span class="sd">    Computing 1 + 2</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)  # Cached result, no recomputation</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1.0, 2.0)  # Different types, recomputation occurs</span>
+<span class="sd">    Computing 1.0 + 2.0</span>
+<span class="sd">    3.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Parametrize cached_method and return a decorator to be applied to a function directly</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">cached_method</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="n">maxsize</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="n">typed</span><span class="p">)</span>
+
+    <span class="c1"># Create a cache, ignoring the first argument (`self`)</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">maxsize</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="n">typed</span><span class="p">)(</span>
+        <span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">func</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Call the cache but don&#39;t include `self` in the arguments for caching</span>
+        <span class="k">return</span> <span class="n">cache</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
+
+
+<div class="viewcode-block" id="lru_cache_method">
+<a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.lru_cache_method">[docs]</a>
+<span class="k">def</span> <span class="nf">lru_cache_method</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A decorator to cache the result of a method, ignoring the first argument</span>
+<span class="sd">    (usually `self`).</span>
+
+<span class="sd">    This decorator uses `functools.lru_cache` to cache the method result based on the arguments passed</span>
+<span class="sd">    to the method, excluding the first argument (typically `self`). This allows methods of a class to</span>
+<span class="sd">    be cached while ignoring the instance (`self`) in the cache key.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    - func (callable, optional): The method to be decorated. If not provided, a partially applied decorator</span>
+<span class="sd">      will be returned for later application.</span>
+<span class="sd">    - maxsize (int, optional): The maximum size of the cache. Defaults to 128.</span>
+<span class="sd">    - typed (bool, optional): If True, cache entries will be different based on argument types, such as</span>
+<span class="sd">      distinguishing between `1` and `1.0`. Defaults to False.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; class MyClass:</span>
+<span class="sd">    ...     @lru_cache_method</span>
+<span class="sd">    ...     def add(self, x, y):</span>
+<span class="sd">    ...         print(f&quot;Computing {x} + {y}&quot;)</span>
+<span class="sd">    ...         return x + y</span>
+<span class="sd">    &gt;&gt;&gt; obj = MyClass()</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)</span>
+<span class="sd">    Computing 1 + 2</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)  # Cached result, no recomputation</span>
+<span class="sd">    3</span>
+
+<span class="sd">    Like `lru_cache`, you can specify the `maxsize` and `typed` parameters:</span>
+
+<span class="sd">    &gt;&gt;&gt; class MyOtherClass:</span>
+<span class="sd">    ...     @lru_cache_method(maxsize=2, typed=True)</span>
+<span class="sd">    ...     def add(self, x, y):</span>
+<span class="sd">    ...         print(f&quot;Computing {x} + {y}&quot;)</span>
+<span class="sd">    ...         return x + y</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = MyOtherClass()</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)</span>
+<span class="sd">    Computing 1 + 2</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)  # Cached result, no recomputation</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1.0, 2.0)  # Different types, recomputation occurs</span>
+<span class="sd">    Computing 1.0 + 2.0</span>
+<span class="sd">    3.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Parametrize lru_cache_method and return a decorator to be applied to a function directly</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">lru_cache_method</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="n">maxsize</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="n">typed</span><span class="p">)</span>
+
+    <span class="c1"># Create a cache, ignoring the first argument (`self`)</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">maxsize</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="n">typed</span><span class="p">)(</span>
+        <span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">func</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Call the cache but don&#39;t include `self` in the arguments for caching</span>
+        <span class="k">return</span> <span class="n">cache</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+
 <div class="viewcode-block" id="cache_property_method">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.cache_property_method">[docs]</a>
 <span class="k">def</span> <span class="nf">cache_property_method</span><span class="p">(</span>
-    <span class="bp">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="n">MethodName</span><span class="p">,</span> <span class="n">cache_decorator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">cache_this</span>
+    <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="n">MethodName</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache_decorator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">cache_this</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Converts a method of a class into a CachedProperty.</span>
 
-<span class="sd">    Essentially, it does what A.method = cache_this(A.method) would do, taking care of</span>
-<span class="sd">    the __set_name__ problem.</span>
+<span class="sd">    Essentially, it does what `A.method = cache_this(A.method)` would do, taking care of</span>
+<span class="sd">    the `__set_name__` problem that you&#39;d run into doing it that way.</span>
+<span class="sd">    Note that here, you need to say `cache_property_method(A, &#39;method&#39;)`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        cls (type): The class containing the method.</span>
@@ -467,6 +600,32 @@
 <span class="sd">            fix the cache and key parameters of `cache_this` and inject that.</span>
 
 <span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; @cache_property_method([&#39;normal_method&#39;, &#39;property_method&#39;])</span>
+<span class="sd">    ... class TestClass:</span>
+<span class="sd">    ...     def normal_method(self):</span>
+<span class="sd">    ...         print(&#39;normal_method called&#39;)</span>
+<span class="sd">    ...         return 1</span>
+<span class="sd">    ...</span>
+<span class="sd">    ...     @property</span>
+<span class="sd">    ...     def property_method(self):</span>
+<span class="sd">    ...         print(&#39;property_method called&#39;)</span>
+<span class="sd">    ...         return 2</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; c = TestClass()</span>
+<span class="sd">    &gt;&gt;&gt; c.normal_method</span>
+<span class="sd">    normal_method called</span>
+<span class="sd">    1</span>
+<span class="sd">    &gt;&gt;&gt; c.normal_method</span>
+<span class="sd">    1</span>
+<span class="sd">    &gt;&gt;&gt; c.property_method</span>
+<span class="sd">    property_method called</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; c.property_method</span>
+<span class="sd">    2</span>
+
+
+<span class="sd">    You can also use it like this:</span>
 
 <span class="sd">    &gt;&gt;&gt; class TestClass:</span>
 <span class="sd">    ...     def normal_method(self):</span>
@@ -498,10 +657,22 @@
 <span class="sd">    &gt;&gt;&gt; c.property_method</span>
 <span class="sd">    2</span>
 
+
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">method_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">&quot;If method_name is None, cls (which will play the role of method_name in &quot;</span>
+            <span class="s2">&quot;a decorator factory) must not be None.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">method_name</span> <span class="o">=</span> <span class="bp">cls</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
+            <span class="n">cache_property_method</span><span class="p">,</span>
+            <span class="n">method_name</span><span class="o">=</span><span class="n">method_name</span><span class="p">,</span>
+            <span class="n">cache_decorator</span><span class="o">=</span><span class="n">cache_decorator</span><span class="p">,</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method_name</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">method_name</span><span class="p">:</span>
-            <span class="n">cache_property_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cache_decorator</span><span class="p">)</span>
+            <span class="n">cache_property_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cache_decorator</span><span class="o">=</span><span class="n">cache_decorator</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span>
 
     <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)</span>

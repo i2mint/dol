@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.70 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.71 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=0c617dc7"></script>
+        <script src="../../_static/documentation_options.js?v=a819f9de"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -88,9 +88,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.ask_user_for_value_when_missing"><code class="docutils literal notranslate"><span class="pre">ask_user_for_value_when_missing()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.cache_property_method"><code class="docutils literal notranslate"><span class="pre">cache_property_method()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.cache_this"><code class="docutils literal notranslate"><span class="pre">cache_this()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.tools.cached_method"><code class="docutils literal notranslate"><span class="pre">cached_method()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.confirm_overwrite"><code class="docutils literal notranslate"><span class="pre">confirm_overwrite()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.convert_to_numerical_if_possible"><code class="docutils literal notranslate"><span class="pre">convert_to_numerical_if_possible()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.iSliceStore"><code class="docutils literal notranslate"><span class="pre">iSliceStore</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.tools.lru_cache_method"><code class="docutils literal notranslate"><span class="pre">lru_cache_method()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.tools.store_aggregate"><code class="docutils literal notranslate"><span class="pre">store_aggregate()</span></code></a></li>
 </ul>
 </li>
@@ -235,10 +237,11 @@ value</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.tools.cache_property_method">
-<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">cache_property_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_decorator:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">cache_this&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#cache_property_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.cache_property_method" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">cache_property_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_decorator:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">cache_this&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#cache_property_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.cache_property_method" title="Link to this definition"></a></dt>
 <dd><p>Converts a method of a class into a CachedProperty.</p>
-<p>Essentially, it does what A.method = cache_this(A.method) would do, taking care of
-the __set_name__ problem.</p>
+<p>Essentially, it does what <cite>A.method = cache_this(A.method)</cite> would do, taking care of
+the <cite>__set_name__</cite> problem that you’d run into doing it that way.
+Note that here, you need to say <cite>cache_property_method(A, ‘method’)</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -251,6 +254,31 @@ fix the cache and key parameters of <cite>cache_this</cite> and inject that.</p>
 </dd>
 </dl>
 <p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@cache_property_method</span><span class="p">([</span><span class="s1">&#39;normal_method&#39;</span><span class="p">,</span> <span class="s1">&#39;property_method&#39;</span><span class="p">])</span>
+<span class="gp">... </span><span class="k">class</span> <span class="nc">TestClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">normal_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;normal_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">1</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@property</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">property_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;property_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">TestClass</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">normal_method</span>
+<span class="go">normal_method called</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">normal_method</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">property_method</span>
+<span class="go">property_method called</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">property_method</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<p>You can also use it like this:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">TestClass</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">def</span> <span class="nf">normal_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;normal_method called&#39;</span><span class="p">)</span>
@@ -439,6 +467,43 @@ would require a codec, such as files or a database.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.tools.cached_method">
+<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">cached_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#cached_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.cached_method" title="Link to this definition"></a></dt>
+<dd><p>A decorator to cache the result of a method, ignoring the first argument (usually <cite>self</cite>).</p>
+<p>This decorator uses <cite>functools.lru_cache</cite> to cache the method result based on the arguments passed
+to the method, excluding the first argument (typically <cite>self</cite>). This allows methods of a class to
+be cached while ignoring the instance (<cite>self</cite>) in the cache key.</p>
+<p>Parameters:
+- func (callable, optional): The method to be decorated. If not provided, a partially applied decorator</p>
+<blockquote>
+<div><p>will be returned for later application.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>maxsize (int, optional): The maximum size of the cache. Defaults to 128.</p></li>
+<li><p>typed (bool, optional): If True, cache entries will be different based on argument types, such as
+distinguishing between <cite>1</cite> and <cite>1.0</cite>. Defaults to False.</p></li>
+</ul>
+<p>Returns:
+- callable: A wrapped function with LRU caching applied, ignoring the first argument (<cite>self</cite>).</p>
+<p>Example:
+&gt;&gt;&gt; class MyClass:
+…     &#64;cached_method(maxsize=2, typed=True)
+…     def add(self, x, y):
+…         print(f”Computing {x} + {y}”)
+…         return x + y
+…
+&gt;&gt;&gt; obj = MyClass()
+&gt;&gt;&gt; obj.add(1, 2)
+Computing 1 + 2
+3
+&gt;&gt;&gt; obj.add(1, 2)  # Cached result, no recomputation
+3
+&gt;&gt;&gt; obj.add(1.0, 2.0)  # Different types, recomputation occurs
+Computing 1.0 + 2.0
+3.0</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.tools.confirm_overwrite">
 <span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">confirm_overwrite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_input_msg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'The</span> <span class="pre">key</span> <span class="pre">{k}</span> <span class="pre">already</span> <span class="pre">exists</span> <span class="pre">and</span> <span class="pre">has</span> <span class="pre">value</span> <span class="pre">{existing_v}.</span> <span class="pre">If</span> <span class="pre">you</span> <span class="pre">want</span> <span class="pre">to</span> <span class="pre">overwrite</span> <span class="pre">it</span> <span class="pre">with</span> <span class="pre">{v},</span> <span class="pre">confirm</span> <span class="pre">by</span> <span class="pre">typing</span> <span class="pre">{v}</span> <span class="pre">here:</span> <span class="pre">'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#confirm_overwrite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.confirm_overwrite" title="Link to this definition"></a></dt>
 <dd><p>A preset function you can use in wrap_kvs to ask the user to confirm if
@@ -532,6 +597,60 @@ format, you can use <cite>dol.trans.wrap_kvs</cite> for that.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sss</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">sliceable_s</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="nb">sorted</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sss</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
 <span class="go">[&#39;bob&#39;, &#39;world&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.tools.lru_cache_method">
+<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">lru_cache_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#lru_cache_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.lru_cache_method" title="Link to this definition"></a></dt>
+<dd><p>A decorator to cache the result of a method, ignoring the first argument
+(usually <cite>self</cite>).</p>
+<p>This decorator uses <cite>functools.lru_cache</cite> to cache the method result based on the arguments passed
+to the method, excluding the first argument (typically <cite>self</cite>). This allows methods of a class to
+be cached while ignoring the instance (<cite>self</cite>) in the cache key.</p>
+<p>Parameters:
+- func (callable, optional): The method to be decorated. If not provided, a partially applied decorator</p>
+<blockquote>
+<div><p>will be returned for later application.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>maxsize (int, optional): The maximum size of the cache. Defaults to 128.</p></li>
+<li><p>typed (bool, optional): If True, cache entries will be different based on argument types, such as
+distinguishing between <cite>1</cite> and <cite>1.0</cite>. Defaults to False.</p></li>
+</ul>
+<p>Returns:
+- callable: A wrapped function with LRU caching applied, ignoring the first argument (<cite>self</cite>).</p>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@lru_cache_method</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">Computing 1 + 2</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># Cached result, no recomputation</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<p>Like <cite>lru_cache</cite>, you can specify the <cite>maxsize</cite> and <cite>typed</cite> parameters:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyOtherClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@lru_cache_method</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">MyOtherClass</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">Computing 1 + 2</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># Cached result, no recomputation</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>  <span class="c1"># Different types, recomputation occurs</span>
+<span class="go">Computing 1.0 + 2.0</span>
+<span class="go">3.0</span>
 </pre></div>
 </div>
 </dd></dl>
