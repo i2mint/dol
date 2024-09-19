@@ -74,8 +74,8 @@ class CachedProperty:
                 pre_cache = dict()
             else:
                 assert isinstance(pre_cache, MutableMapping), (
-                    f"`pre_cache` must be a bool or a MutableMapping, "
-                    f"Was a {type(pre_cache)}: {pre_cache}"
+                    f'`pre_cache` must be a bool or a MutableMapping, '
+                    f'Was a {type(pre_cache)}: {pre_cache}'
                 )
             self.wrap_cache = partial(cache_vals, cache=pre_cache)
         else:
