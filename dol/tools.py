@@ -329,14 +329,141 @@ def cache_this(
         return CachedProperty(func, cache=cache, key=key)
 
 
+from functools import lru_cache, partial, wraps
+
+
+def cached_method(func=None, *, maxsize=128, typed=False):
+    """
+    A decorator to cache the result of a method, ignoring the first argument (usually `self`).
+
+    This decorator uses `functools.lru_cache` to cache the method result based on the arguments passed
+    to the method, excluding the first argument (typically `self`). This allows methods of a class to
+    be cached while ignoring the instance (`self`) in the cache key.
+
+    Parameters:
+    - func (callable, optional): The method to be decorated. If not provided, a partially applied decorator
+      will be returned for later application.
+    - maxsize (int, optional): The maximum size of the cache. Defaults to 128.
+    - typed (bool, optional): If True, cache entries will be different based on argument types, such as
+      distinguishing between `1` and `1.0`. Defaults to False.
+
+    Returns:
+    - callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).
+
+    Example:
+    >>> class MyClass:
+    ...     @cached_method(maxsize=2, typed=True)
+    ...     def add(self, x, y):
+    ...         print(f"Computing {x} + {y}")
+    ...         return x + y
+    ...
+    >>> obj = MyClass()
+    >>> obj.add(1, 2)
+    Computing 1 + 2
+    3
+    >>> obj.add(1, 2)  # Cached result, no recomputation
+    3
+    >>> obj.add(1.0, 2.0)  # Different types, recomputation occurs
+    Computing 1.0 + 2.0
+    3.0
+    """
+    if func is None:
+        # Parametrize cached_method and return a decorator to be applied to a function directly
+        return partial(cached_method, maxsize=maxsize, typed=typed)
+
+    # Create a cache, ignoring the first argument (`self`)
+    cache = lru_cache(maxsize=maxsize, typed=typed)(
+        lambda _, *args, **kwargs: func(_, *args, **kwargs)
+    )
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        # Call the cache but don't include `self` in the arguments for caching
+        return cache(None, *args, **kwargs)
+
+    return wrapper
+
+
+from functools import lru_cache, partial, wraps
+
+
+def lru_cache_method(func=None, *, maxsize=128, typed=False):
+    """
+    A decorator to cache the result of a method, ignoring the first argument
+    (usually `self`).
+
+    This decorator uses `functools.lru_cache` to cache the method result based on the arguments passed
+    to the method, excluding the first argument (typically `self`). This allows methods of a class to
+    be cached while ignoring the instance (`self`) in the cache key.
+
+    Parameters:
+    - func (callable, optional): The method to be decorated. If not provided, a partially applied decorator
+      will be returned for later application.
+    - maxsize (int, optional): The maximum size of the cache. Defaults to 128.
+    - typed (bool, optional): If True, cache entries will be different based on argument types, such as
+      distinguishing between `1` and `1.0`. Defaults to False.
+
+    Returns:
+    - callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).
+
+    Example:
+
+    >>> class MyClass:
+    ...     @lru_cache_method
+    ...     def add(self, x, y):
+    ...         print(f"Computing {x} + {y}")
+    ...         return x + y
+    >>> obj = MyClass()
+    >>> obj.add(1, 2)
+    Computing 1 + 2
+    3
+    >>> obj.add(1, 2)  # Cached result, no recomputation
+    3
+
+    Like `lru_cache`, you can specify the `maxsize` and `typed` parameters:
+
+    >>> class MyOtherClass:
+    ...     @lru_cache_method(maxsize=2, typed=True)
+    ...     def add(self, x, y):
+    ...         print(f"Computing {x} + {y}")
+    ...         return x + y
+    ...
+    >>> obj = MyOtherClass()
+    >>> obj.add(1, 2)
+    Computing 1 + 2
+    3
+    >>> obj.add(1, 2)  # Cached result, no recomputation
+    3
+    >>> obj.add(1.0, 2.0)  # Different types, recomputation occurs
+    Computing 1.0 + 2.0
+    3.0
+    """
+    if func is None:
+        # Parametrize lru_cache_method and return a decorator to be applied to a function directly
+        return partial(lru_cache_method, maxsize=maxsize, typed=typed)
+
+    # Create a cache, ignoring the first argument (`self`)
+    cache = lru_cache(maxsize=maxsize, typed=typed)(
+        lambda _, *args, **kwargs: func(_, *args, **kwargs)
+    )
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        # Call the cache but don't include `self` in the arguments for caching
+        return cache(None, *args, **kwargs)
+
+    return wrapper
+
+
 def cache_property_method(
-    cls, method_name: MethodName, cache_decorator: Callable = cache_this
+    cls=None, method_name: MethodName = None, *, cache_decorator: Callable = cache_this
 ):
     """
     Converts a method of a class into a CachedProperty.
 
-    Essentially, it does what A.method = cache_this(A.method) would do, taking care of
-    the __set_name__ problem.
+    Essentially, it does what `A.method = cache_this(A.method)` would do, taking care of
+    the `__set_name__` problem that you'd run into doing it that way.
+    Note that here, you need to say `cache_property_method(A, 'method')`.
 
     Args:
         cls (type): The class containing the method.
@@ -346,6 +473,32 @@ def cache_property_method(
             fix the cache and key parameters of `cache_this` and inject that.
 
     Example:
+
+    >>> @cache_property_method(['normal_method', 'property_method'])
+    ... class TestClass:
+    ...     def normal_method(self):
+    ...         print('normal_method called')
+    ...         return 1
+    ...
+    ...     @property
+    ...     def property_method(self):
+    ...         print('property_method called')
+    ...         return 2
+    >>>
+    >>> c = TestClass()
+    >>> c.normal_method
+    normal_method called
+    1
+    >>> c.normal_method
+    1
+    >>> c.property_method
+    property_method called
+    2
+    >>> c.property_method
+    2
+
+
+    You can also use it like this:
 
     >>> class TestClass:
     ...     def normal_method(self):
@@ -377,10 +530,22 @@ def cache_property_method(
     >>> c.property_method
     2
 
+
     """
+    if method_name is None:
+        assert cls is not None, (
+            "If method_name is None, cls (which will play the role of method_name in "
+            "a decorator factory) must not be None."
+        )
+        method_name = cls
+        return partial(
+            cache_property_method,
+            method_name=method_name,
+            cache_decorator=cache_decorator,
+        )
     if not isinstance(method_name, str) and isinstance(method_name, Iterable):
         for name in method_name:
-            cache_property_method(cls, name, cache_decorator)
+            cache_property_method(cls, name, cache_decorator=cache_decorator)
         return cls
 
     method = getattr(cls, method_name)
