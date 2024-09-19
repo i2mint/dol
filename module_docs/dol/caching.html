@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.2.71 documentation</title>
+  <title>dol.caching &mdash; dol 0.2.72 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a819f9de"></script>
+        <script src="../../_static/documentation_options.js?v=9fe173b4"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -189,7 +189,7 @@ resolution) and environment variables.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.caching.cache_vals">
-<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">cache_vals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache=&lt;class</span> <span class="pre">'dict'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.caching.cache_vals" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">cache_vals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache=&lt;class</span> <span class="pre">'dict'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#cache_vals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.cache_vals" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -200,7 +200,7 @@ By default, it will use a dict</p></li>
 </dd>
 </dl>
 <p>Returns: A subclass of the input store, but with caching (to the cache store)</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">mk_cached_store</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">cache_vals</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">time</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">SlowDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">sleep_s</span> <span class="o">=</span> <span class="mf">0.2</span>
@@ -214,7 +214,7 @@ By default, it will use a dict</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>  <span class="c1"># Wow! Takes a long time to get &#39;a&#39;</span>
 <span class="go">1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">CachedSlowDict</span> <span class="o">=</span> <span class="n">mk_cached_store</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">SlowDict</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CachedSlowDict</span> <span class="o">=</span> <span class="n">cache_vals</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">SlowDict</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">CachedSlowDict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -268,7 +268,7 @@ By default, it will use a dict</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.caching.mk_cached_store">
-<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">mk_cached_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache=&lt;class</span> <span class="pre">'dict'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#mk_cached_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.mk_cached_store" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">mk_cached_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache=&lt;class</span> <span class="pre">'dict'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.caching.mk_cached_store" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -279,7 +279,7 @@ By default, it will use a dict</p></li>
 </dd>
 </dl>
 <p>Returns: A subclass of the input store, but with caching (to the cache store)</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">mk_cached_store</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">cache_vals</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">time</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">SlowDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">sleep_s</span> <span class="o">=</span> <span class="mf">0.2</span>
@@ -293,7 +293,7 @@ By default, it will use a dict</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>  <span class="c1"># Wow! Takes a long time to get &#39;a&#39;</span>
 <span class="go">1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">CachedSlowDict</span> <span class="o">=</span> <span class="n">mk_cached_store</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">SlowDict</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CachedSlowDict</span> <span class="o">=</span> <span class="n">cache_vals</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">SlowDict</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">CachedSlowDict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>

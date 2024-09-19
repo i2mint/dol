@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.71 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.72 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a819f9de"></script>
+        <script src="../../_static/documentation_options.js?v=9fe173b4"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -130,8 +130,10 @@
 <p>Various tools to add functionality to stores</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.tools.CachedProperty">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">CachedProperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">func:</span> <span class="pre">~typing.Callable[[~typing.Any],</span> <span class="pre">VT],</span> <span class="pre">cache:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~collections.abc.MutableMapping</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">key:</span> <span class="pre">KT</span> <span class="pre">|</span> <span class="pre">~typing.Callable[[str],</span> <span class="pre">KT]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">*,</span> <span class="pre">allow_none_keys:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">lock_factory:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'_thread.RLock'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#CachedProperty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.CachedProperty" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">CachedProperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">func:</span> <span class="pre">~typing.Callable[[~typing.Any],</span> <span class="pre">VT],</span> <span class="pre">cache:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~collections.abc.MutableMapping</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">key:</span> <span class="pre">KT</span> <span class="pre">|</span> <span class="pre">~typing.Callable[[str],</span> <span class="pre">KT]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">*,</span> <span class="pre">allow_none_keys:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">lock_factory:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'_thread.RLock'&gt;,</span> <span class="pre">pre_cache:</span> <span class="pre">bool</span> <span class="pre">|</span> <span class="pre">~collections.abc.MutableMapping</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#CachedProperty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.CachedProperty" title="Link to this definition"></a></dt>
 <dd><p>Descriptor that caches the result of the first call to a method.</p>
+<p>Note: Usually, you’d want to use the convenience decorator <cite>cache_this</cite> instead of
+using this class directly.</p>
 <p>It generalizes the builtin functools.cached_property class, enabling the user to
 specify a cache object and a key to store the cache value.</p>
 </dd></dl>
@@ -314,7 +316,7 @@ fix the cache and key parameters of <cite>cache_this</cite> and inject that.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.tools.cache_this">
-<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">cache_this</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">VT</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">MutableMapping</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">KT</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">KT</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#cache_this"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.cache_this" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">cache_this</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">VT</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">MutableMapping</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">KT</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">KT</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">MutableMapping</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#cache_this"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.cache_this" title="Link to this definition"></a></dt>
 <dd><p>Transforms a method into a cached property with control over cache object and key.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -324,6 +326,11 @@ fix the cache and key parameters of <cite>cache_this</cite> and inject that.</p>
 instance attribute that is a <cite>MutableMapping</cite>.</p></li>
 <li><p><strong>key</strong> – The key to store the cache value, can be a callable that will be
 applied to the method name to make a key, or an explicit string.</p></li>
+<li><p><strong>pre_cache</strong> – Default is False. If True, adds an in-memory cache to the method
+to (also) cache the results in memory. If a MutableMapping is given, it will be
+used as the pre-cache.
+This is useful when you want a persistent cache but also want to speed up
+access to the method in the same session.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -422,13 +429,52 @@ adding a <cite>‘.pkl’</cite> extension to it.</p>
 values. The backend store used here is a dictionary, so we don’t really need a
 codec to store values, but in real life you would use a persistent storage that
 would require a codec, such as files or a database.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol</span> <span class="kn">import</span> <span class="n">ValueCodecs</span>
+<p>Thirdly, we’ll use a <cite>pre_cache</cite> to store the values in a different cache “before”
+(setting and getting) them in the main cache.
+This is useful, for instance, when you want to persist the values (in the main
+cache), but keep them in memory for faster access in the same session
+(the pre-cache, a dict() instance usually). It can also be used to store and
+use things locally (pre-cache) while sharing them with others by storing them in
+a remote store (main cache).</p>
+<p>Finally, we’ll use a dict that logs any setting and getting of values to show
+how the caches are being used.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol</span> <span class="kn">import</span> <span class="n">cache_this</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cache_with_pickle</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">cache_this</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="s1">&#39;cache&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol</span> <span class="kn">import</span> <span class="n">ValueCodecs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">UserDict</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">LoggedCache</span><span class="p">(</span><span class="n">UserDict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;cache&#39;</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;In </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: setting </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;In </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: getting value of </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">CacheA</span><span class="p">(</span><span class="n">LoggedCache</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CacheA&#39;</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">CacheB</span><span class="p">(</span><span class="n">LoggedCache</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CacheB&#39;</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cache_with_pickle</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">cache_this</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">cache</span><span class="o">=</span><span class="s1">&#39;cache&#39;</span><span class="p">,</span>  <span class="c1"># the cache can be found on the instance attribute `cache`</span>
+<span class="gp">... </span>    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">,</span>  <span class="c1"># the key is the method name with a &#39;.pkl&#39; extension</span>
+<span class="gp">... </span>    <span class="n">pre_cache</span><span class="o">=</span><span class="n">CacheB</span><span class="p">(),</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">PickleCached</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_store_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_store_factory</span><span class="o">=</span><span class="n">CacheA</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="c1"># usually this would be a mapping interface to persistent storage:</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_store</span> <span class="o">=</span> <span class="n">backend_store_factory</span><span class="p">()</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">pickle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_store</span><span class="p">)</span>
@@ -438,30 +484,42 @@ would require a codec, such as files or a database.</p>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In PickleCached.foo...&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
 <span class="gp">...</span>
-<span class="gp">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">PickleCached</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">PickleCached</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">)</span>
 <span class="go">[]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">In CacheA: getting value of foo.pkl</span>
+<span class="go">In CacheA: getting value of foo.pkl</span>
 <span class="go">In PickleCached.foo...</span>
+<span class="go">In CacheA: setting foo.pkl to b&#39;\x80\x04K*.&#39;</span>
 <span class="go">42</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">In CacheA: getting value of foo.pkl</span>
+<span class="go">In CacheB: setting foo.pkl to 42</span>
 <span class="go">42</span>
 </pre></div>
 </div>
-<p>As usuall, it’s because the cache now holds something that has to do with <cite>foo</cite>:</p>
+<p>As usual, it’s because the cache now holds something that has to do with <cite>foo</cite>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">)</span>
 <span class="go">[&#39;foo.pkl&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># == [&#39;foo.pkl&#39;]</span>
 </pre></div>
 </div>
 <p>The value of <cite>‘foo.pkl’</cite> is indeed <cite>42</cite>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="s1">&#39;foo.pkl&#39;</span><span class="p">]</span>
+<span class="go">In CacheA: getting value of foo.pkl</span>
 <span class="go">42</span>
 </pre></div>
 </div>
 <p>But note that the actual way it’s stored in the <cite>_backend_store</cite> is as pickle bytes:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">_backend_store</span><span class="p">[</span><span class="s1">&#39;foo.pkl&#39;</span><span class="p">]</span>
+<span class="go">In CacheA: getting value of foo.pkl</span>
 <span class="go">b&#39;\x80\x04K*.&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># == b&#39;\x80\x04K*.&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
