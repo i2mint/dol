@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.2.73 documentation</title>
+  <title>dol.sources &mdash; dol 0.2.74 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -17,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=3b99f7ad"></script>
+        <script src="../../_static/documentation_options.js?v=f0106760"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -83,6 +83,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.CachedSequenceKvReader"><code class="docutils literal notranslate"><span class="pre">CachedSequenceKvReader</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.sources.CascadedStores"><code class="docutils literal notranslate"><span class="pre">CascadedStores</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.sources.CascadedStores.from_variadics"><code class="docutils literal notranslate"><span class="pre">CascadedStores.from_variadics</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.Ddir"><code class="docutils literal notranslate"><span class="pre">Ddir</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.FanoutPersister"><code class="docutils literal notranslate"><span class="pre">FanoutPersister</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.FanoutReader"><code class="docutils literal notranslate"><span class="pre">FanoutReader</span></code></a><ul>
@@ -94,10 +98,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.FuncReader"><code class="docutils literal notranslate"><span class="pre">FuncReader</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.NotUnique"><code class="docutils literal notranslate"><span class="pre">NotUnique</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.ObjReader"><code class="docutils literal notranslate"><span class="pre">ObjReader</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dol.sources.ReplicatedStores"><code class="docutils literal notranslate"><span class="pre">ReplicatedStores</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dol.sources.ReplicatedStores.from_variadics"><code class="docutils literal notranslate"><span class="pre">ReplicatedStores.from_variadics</span></code></a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.SequenceKvReader"><code class="docutils literal notranslate"><span class="pre">SequenceKvReader</span></code></a></li>
 </ul>
 </li>
@@ -293,6 +293,135 @@ In either case, this is followed by: for k, v in F.items(): D[k] = v</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.sources.</span></span><span class="sig-name descname"><span class="pre">CachedSequenceKvReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key:</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">~typing.Iterable[str</span> <span class="pre">|</span> <span class="pre">int]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val:</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">~typing.Iterable[str</span> <span class="pre">|</span> <span class="pre">int]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_postproc=&lt;class</span> <span class="pre">'list'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#CachedSequenceKvReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.sources.CachedSequenceKvReader" title="Link to this definition"></a></dt>
 <dd><p>SequenceKvReader but with the whole mapping cached as a dict. Use this one if
 you will perform multiple accesses to the store</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.sources.CascadedStores">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.sources.</span></span><span class="sig-name descname"><span class="pre">CascadedStores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_existing_values_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">need_to_set_all_stores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_non_existing_store_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#CascadedStores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.sources.CascadedStores" title="Link to this definition"></a></dt>
+<dd><p>A MutableMapping interface to a collection of stores that will write a value in
+all the stores it contains, read it from the first store it finds that has it, and
+write it back to all the stores up to the store where it found it.</p>
+<p>This is useful, for example, when you want to, say, write something to disk,
+and possibly to a remote backup or shared store, but also keep that value in memory.</p>
+<p>The name <cite>CascadedStores</cite> comes from “Cascaded Caches”, which is a common pattern in
+caching systems
+(e.g. <a class="reference external" href="https://philipwalton.com/articles/cascading-cache-invalidation/">https://philipwalton.com/articles/cascading-cache-invalidation/</a>)</p>
+<p>To demo this, let’s create a couple of stores that print when they get a value:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">UserDict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">LoggedDict</span><span class="p">(</span><span class="n">UserDict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="gp">... </span>       <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<span class="gp">... </span>       <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Getting </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="n">LoggedDict</span><span class="p">(</span><span class="s1">&#39;cache&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">disk</span> <span class="o">=</span> <span class="n">LoggedDict</span><span class="p">(</span><span class="s1">&#39;disk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">remote</span> <span class="o">=</span> <span class="n">LoggedDict</span><span class="p">(</span><span class="s1">&#39;remote&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we can create a CascadedStores instance with these stores and write a
+value to it:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stores</span> <span class="o">=</span> <span class="n">CascadedStores</span><span class="p">([</span><span class="n">cache</span><span class="p">,</span> <span class="n">disk</span><span class="p">,</span> <span class="n">remote</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stores</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">42</span>
+</pre></div>
+</div>
+<p>See that it’s in both stores:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span>
+<span class="go">Getting f from cache</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">disk</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span>
+<span class="go">Getting f from disk</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">remote</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span>
+<span class="go">Getting f from remote</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>See how it reads from the first store only, because it found the <cite>f</cite> key there:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stores</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span>
+<span class="go">Getting f from cache</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>Let’s write something in disk only:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">disk</span><span class="p">[</span><span class="s1">&#39;g&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">43</span>
+</pre></div>
+</div>
+<p>Now if you ask for <cite>g</cite>, it won’t find it in cache, but will find it in <cite>disk</cite>
+and return it. The reason you see the “Getting g from cache” message is because
+the <cite>stores</cite> object first tries to get it in <cite>cache</cite>, and only if it doesn’t find
+it there, it tries to get it from <cite>disk</cite>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stores</span><span class="p">[</span><span class="s1">&#39;g&#39;</span><span class="p">]</span>
+<span class="go">Getting g from cache</span>
+<span class="go">Getting g from disk</span>
+<span class="go">43</span>
+</pre></div>
+</div>
+<p>Here’s the thing though. Now, <cite>g</cite> is also in <cite>cache</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span>
+<span class="go">{&#39;f&#39;: 42, &#39;g&#39;: 43}</span>
+</pre></div>
+</div>
+<p>But <cite>remote</cite> still only has <cite>f</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">remote</span>
+<span class="go">{&#39;f&#39;: 42}</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dol.sources.CascadedStores.from_variadics">
+<span class="sig-name descname"><span class="pre">from_variadics</span></span><a class="headerlink" href="#dol.sources.CascadedStores.from_variadics" title="Link to this definition"></a></dt>
+<dd><p>A way to create a fan-out store from a mix of args and kwargs, instead of a
+single dict.</p>
+<dl class="simple">
+<dt>param args: sub-stores used to fan-out the data. These stores will be</dt><dd><p>represented by their index in the tuple.</p>
+</dd>
+<dt>param kwargs: sub-stores used to fan-out the data. These stores will be</dt><dd><p>represented by their name in the dict. __init__ arguments can also be passed
+as kwargs (i.e. <cite>default</cite>, <cite>get_existing_values_only</cite>, and any other subclass
+specific arguments).</p>
+</dd>
+</dl>
+<p>Let’s use the same sub-stores:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bytes_store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">a</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;a&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">b</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;b&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;c&#39;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">metadata_store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">b</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">d</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can create a fan-out reader from these stores, using args:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="o">.</span><span class="n">from_variadics</span><span class="p">(</span><span class="n">bytes_store</span><span class="p">,</span> <span class="n">metadata_store</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="go">{0: b&#39;b&#39;, 1: {&#39;x&#39;: 2}}</span>
+</pre></div>
+</div>
+<p>The reader returns a dict with the values from each store, keyed by the index of
+the store in the <cite>args</cite> tuple.</p>
+<p>We can also create a fan-out reader passing the stores in kwargs:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="o">.</span><span class="n">from_variadics</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">bytes_store</span><span class="o">=</span><span class="n">bytes_store</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">metadata_store</span><span class="o">=</span><span class="n">metadata_store</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="go">{&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
+</pre></div>
+</div>
+<p>This way, the returned value is keyed by the name of the store.</p>
+<p>We can also mix args and kwargs:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="o">.</span><span class="n">from_variadics</span><span class="p">(</span><span class="n">bytes_store</span><span class="p">,</span> <span class="n">metadata_store</span><span class="o">=</span><span class="n">metadata_store</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="go">{0: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
+</pre></div>
+</div>
+<p>Note that the order of the stores is determined by the order of the args and
+kwargs.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py attribute">
@@ -625,97 +754,6 @@ therefore should contain what I just said:</p>
 <span class="go">True</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="dol.sources.ReplicatedStores">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.sources.</span></span><span class="sig-name descname"><span class="pre">ReplicatedStores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_existing_values_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">need_to_set_all_stores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_non_existing_store_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#ReplicatedStores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.sources.ReplicatedStores" title="Link to this definition"></a></dt>
-<dd><p>A MutableMapping interface to a collection of stores that will write a value in
-all the stores it contains and read it from the first store.</p>
-<p>This is useful, for example, when you want to, say, write something to disk,
-and possibly to a remote backup or shared store, but also keep that value in memory.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">LoggedDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="gp">... </span>       <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-<span class="gp">... </span>       <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Getting </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="n">LoggedDict</span><span class="p">(</span><span class="s1">&#39;cache&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">disk</span> <span class="o">=</span> <span class="n">LoggedDict</span><span class="p">(</span><span class="s1">&#39;disk&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">stores</span> <span class="o">=</span> <span class="n">ReplicatedStores</span><span class="p">([</span><span class="n">cache</span><span class="p">,</span> <span class="n">disk</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">stores</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">42</span>
-</pre></div>
-</div>
-<p>See that it’s in both stores:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span>
-<span class="go">Getting f from cache</span>
-<span class="go">42</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">disk</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span>
-<span class="go">Getting f from disk</span>
-<span class="go">42</span>
-</pre></div>
-</div>
-<p>See how it reads from the first store only:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stores</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]</span>
-<span class="go">Getting f from cache</span>
-<span class="go">42</span>
-</pre></div>
-</div>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="dol.sources.ReplicatedStores.from_variadics">
-<span class="sig-name descname"><span class="pre">from_variadics</span></span><a class="headerlink" href="#dol.sources.ReplicatedStores.from_variadics" title="Link to this definition"></a></dt>
-<dd><p>A way to create a fan-out store from a mix of args and kwargs, instead of a
-single dict.</p>
-<dl class="simple">
-<dt>param args: sub-stores used to fan-out the data. These stores will be</dt><dd><p>represented by their index in the tuple.</p>
-</dd>
-<dt>param kwargs: sub-stores used to fan-out the data. These stores will be</dt><dd><p>represented by their name in the dict. __init__ arguments can also be passed
-as kwargs (i.e. <cite>default</cite>, <cite>get_existing_values_only</cite>, and any other subclass
-specific arguments).</p>
-</dd>
-</dl>
-<p>Let’s use the same sub-stores:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bytes_store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">a</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;a&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">b</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;b&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">c</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;c&#39;</span><span class="p">,</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">metadata_store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">b</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="n">c</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="n">d</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
-<span class="gp">... </span><span class="p">)</span>
-</pre></div>
-</div>
-<p>We can create a fan-out reader from these stores, using args:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="o">.</span><span class="n">from_variadics</span><span class="p">(</span><span class="n">bytes_store</span><span class="p">,</span> <span class="n">metadata_store</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
-<span class="go">{0: b&#39;b&#39;, 1: {&#39;x&#39;: 2}}</span>
-</pre></div>
-</div>
-<p>The reader returns a dict with the values from each store, keyed by the index of
-the store in the <cite>args</cite> tuple.</p>
-<p>We can also create a fan-out reader passing the stores in kwargs:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="o">.</span><span class="n">from_variadics</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">bytes_store</span><span class="o">=</span><span class="n">bytes_store</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">metadata_store</span><span class="o">=</span><span class="n">metadata_store</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
-<span class="go">{&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
-</pre></div>
-</div>
-<p>This way, the returned value is keyed by the name of the store.</p>
-<p>We can also mix args and kwargs:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">FanoutReader</span><span class="o">.</span><span class="n">from_variadics</span><span class="p">(</span><span class="n">bytes_store</span><span class="p">,</span> <span class="n">metadata_store</span><span class="o">=</span><span class="n">metadata_store</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
-<span class="go">{0: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
-</pre></div>
-</div>
-<p>Note that the order of the stores is determined by the order of the args and
-kwargs.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
