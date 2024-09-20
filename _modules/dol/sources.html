@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.2.72 documentation</title>
+  <title>dol.sources &mdash; dol 0.2.73 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=9fe173b4"></script>
+        <script src="../../_static/documentation_options.js?v=3b99f7ad"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -301,6 +301,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">stores</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">],</span>
         <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">get_existing_values_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stores</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
@@ -523,6 +524,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">stores</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">],</span>
         <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">get_existing_values_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">need_to_set_all_stores</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">ignore_non_existing_store_keys</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -561,6 +563,54 @@
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">store</span> <span class="ow">in</span> <span class="n">stores_to_delete_from</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="k">del</span> <span class="n">store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="ReplicatedStores">
+<a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.ReplicatedStores">[docs]</a>
+<span class="nd">@wrap_kvs</span><span class="p">(</span><span class="n">value_encoder</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="o">.</span><span class="n">keys</span><span class="p">()})</span>
+<span class="k">class</span> <span class="nc">ReplicatedStores</span><span class="p">(</span><span class="n">FanoutPersister</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A MutableMapping interface to a collection of stores that will write a value in </span>
+<span class="sd">    all the stores it contains and read it from the first store.</span>
+
+<span class="sd">    This is useful, for example, when you want to, say, write something to disk,</span>
+<span class="sd">    and possibly to a remote backup or shared store, but also keep that value in memory.</span>
+
+<span class="sd">    &gt;&gt;&gt; class LoggedDict(dict):</span>
+<span class="sd">    ...     def __init__(self, name: str):</span>
+<span class="sd">    ...        self.name = name</span>
+<span class="sd">    ...        super().__init__()</span>
+<span class="sd">    ...     def __getitem__(self, k):</span>
+<span class="sd">    ...         print(f&quot;Getting {k} from {self.name}&quot;)</span>
+<span class="sd">    ...         return super().__getitem__(k)</span>
+<span class="sd">    &gt;&gt;&gt; cache = LoggedDict(&#39;cache&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; disk = LoggedDict(&#39;disk&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; stores = ReplicatedStores([cache, disk])</span>
+<span class="sd">    &gt;&gt;&gt; stores[&#39;f&#39;] = 42</span>
+
+<span class="sd">    See that it&#39;s in both stores:</span>
+
+<span class="sd">    &gt;&gt;&gt; cache[&#39;f&#39;]</span>
+<span class="sd">    Getting f from cache</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; disk[&#39;f&#39;]</span>
+<span class="sd">    Getting f from disk</span>
+<span class="sd">    42</span>
+
+<span class="sd">    See how it reads from the first store only:</span>
+
+<span class="sd">    &gt;&gt;&gt; stores[&#39;f&#39;]</span>
+<span class="sd">    Getting f from cache</span>
+<span class="sd">    42</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Note: Need to overwrite FanoutPersister&#39;s getitem to not read values from all stores</span>
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the value of the first store for that key&quot;&quot;&quot;</span>
+        <span class="n">first_store</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">first_store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span></div>
 
 
 
