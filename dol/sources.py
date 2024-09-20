@@ -438,16 +438,28 @@ class FanoutPersister(FanoutReader, KvPersister):
             del store[k]
 
 
+NotFound = type('NotFound', (object,), {})()
+
+
 @wrap_kvs(value_encoder=lambda self, v: {k: v for k in self._stores.keys()})
-class ReplicatedStores(FanoutPersister):
+class CascadedStores(FanoutPersister):
     """
     A MutableMapping interface to a collection of stores that will write a value in 
-    all the stores it contains and read it from the first store.
+    all the stores it contains, read it from the first store it finds that has it, and
+    write it back to all the stores up to the store where it found it.
 
     This is useful, for example, when you want to, say, write something to disk,
     and possibly to a remote backup or shared store, but also keep that value in memory.
 
-    >>> class LoggedDict(dict):
+    The name `CascadedStores` comes from "Cascaded Caches", which is a common pattern in
+    caching systems 
+    (e.g. https://philipwalton.com/articles/cascading-cache-invalidation/)
+
+    To demo this, let's create a couple of stores that print when they get a value:
+
+
+    >>> from collections import UserDict
+    >>> class LoggedDict(UserDict):
     ...     def __init__(self, name: str):
     ...        self.name = name
     ...        super().__init__()
@@ -456,7 +468,12 @@ class ReplicatedStores(FanoutPersister):
     ...         return super().__getitem__(k)
     >>> cache = LoggedDict('cache')
     >>> disk = LoggedDict('disk')
-    >>> stores = ReplicatedStores([cache, disk])
+    >>> remote = LoggedDict('remote')
+    
+    Now we can create a CascadedStores instance with these stores and write a 
+    value to it:
+
+    >>> stores = CascadedStores([cache, disk, remote])
     >>> stores['f'] = 42
 
     See that it's in both stores:
@@ -467,20 +484,57 @@ class ReplicatedStores(FanoutPersister):
     >>> disk['f']
     Getting f from disk
     42
+    >>> remote['f']
+    Getting f from remote
+    42
 
-    See how it reads from the first store only:
+    See how it reads from the first store only, because it found the `f` key there:
 
     >>> stores['f']
     Getting f from cache
     42
 
+    Let's write something in disk only:
+
+    >>> disk['g'] = 43
+
+    Now if you ask for `g`, it won't find it in cache, but will find it in `disk`
+    and return it. The reason you see the "Getting g from cache" message is because
+    the `stores` object first tries to get it in `cache`, and only if it doesn't find
+    it there, it tries to get it from `disk`.
+
+    >>> stores['g']
+    Getting g from cache
+    Getting g from disk
+    43
+
+    Here's the thing though. Now, `g` is also in `cache`:
+
+    >>> cache
+    {'f': 42, 'g': 43}
+
+    But `remote` still only has `f`:
+
+    >>> remote
+    {'f': 42}
+
+    
     """
 
     # Note: Need to overwrite FanoutPersister's getitem to not read values from all stores
     def __getitem__(self, k):
         """Returns the value of the first store for that key"""
-        first_store = next(iter(self._stores.values()))
-        return first_store[k]
+        for store_ref, store in self._stores.items():
+            if (v := store.get(k, NotFound)) is not NotFound:
+                # value found, now let's write it to all the stores up to the store_ref
+                for _store_ref, store in self._stores.items():
+                    if _store_ref != store_ref:
+                        store[k] = v
+                    else:
+                        break
+                # now return the value
+                return v
+        raise KeyError(k)
 
 
 class SequenceKvReader(KvReader):
