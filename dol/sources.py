@@ -180,6 +180,7 @@ class FanoutReader(KvReader):
         self,
         stores: Mapping[Any, Mapping],
         default: Any = None,
+        *,
         get_existing_values_only: bool = False,
     ):
         if not isinstance(stores, Mapping):
@@ -396,6 +397,7 @@ class FanoutPersister(FanoutReader, KvPersister):
         self,
         stores: Mapping[Any, Mapping],
         default: Any = None,
+        *,
         get_existing_values_only: bool = False,
         need_to_set_all_stores: bool = False,
         ignore_non_existing_store_keys: bool = False,
@@ -434,6 +436,51 @@ class FanoutPersister(FanoutReader, KvPersister):
             raise KeyError(k)
         for store in stores_to_delete_from.values():
             del store[k]
+
+
+@wrap_kvs(value_encoder=lambda self, v: {k: v for k in self._stores.keys()})
+class ReplicatedStores(FanoutPersister):
+    """
+    A MutableMapping interface to a collection of stores that will write a value in 
+    all the stores it contains and read it from the first store.
+
+    This is useful, for example, when you want to, say, write something to disk,
+    and possibly to a remote backup or shared store, but also keep that value in memory.
+
+    >>> class LoggedDict(dict):
+    ...     def __init__(self, name: str):
+    ...        self.name = name
+    ...        super().__init__()
+    ...     def __getitem__(self, k):
+    ...         print(f"Getting {k} from {self.name}")
+    ...         return super().__getitem__(k)
+    >>> cache = LoggedDict('cache')
+    >>> disk = LoggedDict('disk')
+    >>> stores = ReplicatedStores([cache, disk])
+    >>> stores['f'] = 42
+
+    See that it's in both stores:
+
+    >>> cache['f']
+    Getting f from cache
+    42
+    >>> disk['f']
+    Getting f from disk
+    42
+
+    See how it reads from the first store only:
+
+    >>> stores['f']
+    Getting f from cache
+    42
+
+    """
+
+    # Note: Need to overwrite FanoutPersister's getitem to not read values from all stores
+    def __getitem__(self, k):
+        """Returns the value of the first store for that key"""
+        first_store = next(iter(self._stores.values()))
+        return first_store[k]
 
 
 class SequenceKvReader(KvReader):

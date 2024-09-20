@@ -176,4 +176,5 @@ from dol.sources import (
     ObjReader,
     FanoutReader,
     FanoutPersister,
+    ReplicatedStores,  # multi-store writes to all stores and reads from first store.
 )
