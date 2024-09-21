@@ -131,6 +131,7 @@ from dol.trans import (
     insert_aliases,  # insert aliases for special (dunder) store methods,
     add_missing_key_handling,  # add a missing key handler to a store
     cache_iter,  # being deprecated
+    store_decorator,  # Helper to make store decorators.
 )
 
 from dol.caching import (
