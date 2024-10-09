@@ -5,16 +5,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.zipfiledol &mdash; dol 0.2.76 documentation</title>
+  <title>dol.zipfiledol &mdash; dol 0.2.77 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=63906913"></script>
+      <script src="../../_static/documentation_options.js?v=c7e8ed0a"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -112,6 +112,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Data object layers and other utils to work with zip files.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
@@ -133,34 +134,34 @@
 <span class="kn">from</span> <span class="nn">dol.sources</span> <span class="kn">import</span> <span class="n">FlatReader</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;COMPRESSION&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;DFLT_COMPRESSION&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;compression_methods&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;zip_compress&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;zip_decompress&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;to_zip_file&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;file_or_folder_to_zip_file&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;if_i_zipped_stats&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;ZipReader&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;ZipInfoReader&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;ZipFilesReader&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;ZipFilesReaderAndBytesWriter&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;FlatZipFilesReader&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;mk_flatzips_store&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;FilesOfZip&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;FileStreamsOfZip&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;ZipFileStreamsReader&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;OverwriteNotAllowed&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;EmptyZipError&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;ZipStore&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;remove_some_entries_from_zip&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;remove_mac_junk_from_zip&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;COMPRESSION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DFLT_COMPRESSION&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;compression_methods&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;zip_compress&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;zip_decompress&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;to_zip_file&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;file_or_folder_to_zip_file&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;if_i_zipped_stats&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ZipReader&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ZipInfoReader&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ZipFilesReader&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ZipFilesReaderAndBytesWriter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FlatZipFilesReader&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mk_flatzips_store&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FilesOfZip&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FileStreamsOfZip&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ZipFileStreamsReader&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;OverwriteNotAllowed&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EmptyZipError&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ZipStore&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;remove_some_entries_from_zip&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;remove_mac_junk_from_zip&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="c1"># TODO: Do all systems have this? If not, need to choose dflt carefully</span>
 <span class="c1">#  (choose dynamically?)</span>
 <span class="n">DFLT_COMPRESSION</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZIP_DEFLATED</span>
-<span class="n">DFLT_ENCODING</span> <span class="o">=</span> <span class="s1">&#39;utf-8&#39;</span>
+<span class="n">DFLT_ENCODING</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">COMPRESSION</span><span class="p">:</span>
@@ -175,10 +176,10 @@
 
 
 <span class="n">compression_methods</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;stored&#39;</span><span class="p">:</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZIP_STORED</span><span class="p">,</span>  <span class="c1"># doesn&#39;t even compress</span>
-    <span class="s1">&#39;deflated&#39;</span><span class="p">:</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZIP_DEFLATED</span><span class="p">,</span>  <span class="c1"># usual zip compression method</span>
-    <span class="s1">&#39;bzip2&#39;</span><span class="p">:</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZIP_BZIP2</span><span class="p">,</span>  <span class="c1"># BZIP2 compression method.</span>
-    <span class="s1">&#39;lzma&#39;</span><span class="p">:</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZIP_LZMA</span><span class="p">,</span>  <span class="c1"># LZMA compression method</span>
+    <span class="s2">&quot;stored&quot;</span><span class="p">:</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZIP_STORED</span><span class="p">,</span>  <span class="c1"># doesn&#39;t even compress</span>
+    <span class="s2">&quot;deflated&quot;</span><span class="p">:</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZIP_DEFLATED</span><span class="p">,</span>  <span class="c1"># usual zip compression method</span>
+    <span class="s2">&quot;bzip2&quot;</span><span class="p">:</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZIP_BZIP2</span><span class="p">,</span>  <span class="c1"># BZIP2 compression method.</span>
+    <span class="s2">&quot;lzma&quot;</span><span class="p">:</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZIP_LZMA</span><span class="p">,</span>  <span class="c1"># LZMA compression method</span>
 <span class="p">}</span>
 
 
@@ -190,7 +191,7 @@
 <a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.zip_compress">[docs]</a>
 <span class="k">def</span> <span class="nf">zip_compress</span><span class="p">(</span>
     <span class="n">b</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
-    <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;some_bytes&#39;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;some_bytes&quot;</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">compression</span><span class="o">=</span><span class="n">DFLT_COMPRESSION</span><span class="p">,</span>
     <span class="n">allowZip64</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -231,7 +232,7 @@
     <span class="n">bytes_buffer</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">()</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>  <span class="c1"># if b is a string, need to convert to bytes</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">encoding</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">bytes_buffer</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">bytes_buffer</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
         <span class="n">fp</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">bytes_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
 
@@ -240,7 +241,11 @@
 <div class="viewcode-block" id="zip_decompress">
 <a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.zip_decompress">[docs]</a>
 <span class="k">def</span> <span class="nf">zip_decompress</span><span class="p">(</span>
-    <span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">allowZip64</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">compresslevel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">strict_timestamps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">allowZip64</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">compresslevel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">strict_timestamps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Decompress input bytes of a single file zip, returning the uncompressed bytes</span>
 
@@ -252,12 +257,12 @@
         <span class="n">strict_timestamps</span><span class="o">=</span><span class="n">strict_timestamps</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">bytes_buffer</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">bytes_buffer</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_file</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">bytes_buffer</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_file</span><span class="p">:</span>
         <span class="n">file_list</span> <span class="o">=</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">file_list</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;zip_decompress only works with single file zips&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;zip_decompress only works with single file zips&quot;</span><span class="p">)</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">file_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">with</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
             <span class="n">file_bytes</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">file_bytes</span></div>
 
@@ -265,7 +270,7 @@
 
 <span class="k">def</span> <span class="nf">_filename_from_zip_path</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="n">path</span>  <span class="c1"># default</span>
-    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.zip&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.zip&quot;</span><span class="p">):</span>
         <span class="n">filename</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">filename</span>
 
@@ -318,7 +323,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Zip input bytes and save to a single-file zip file.&quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">zip_filepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">zip_filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.zip&#39;</span>
+        <span class="n">zip_filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.zip&quot;</span>
 
     <span class="n">z</span> <span class="o">=</span> <span class="n">ZipStore</span><span class="p">(</span>
         <span class="n">zip_filepath</span><span class="p">,</span>
@@ -335,7 +340,7 @@
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">z</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 
@@ -363,23 +368,23 @@
     <span class="kn">import</span> <span class="nn">time</span>
 
     <span class="n">stats</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="n">stats</span><span class="p">[</span><span class="s1">&#39;uncompressed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bytes&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="s1">&#39;comp_time&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;uncomp_time&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;uncompressed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bytes&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="s2">&quot;comp_time&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;uncomp_time&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">compression</span> <span class="ow">in</span> <span class="n">compression_methods</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;stored&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;stored&quot;</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">stats</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;uncompressed&#39;</span><span class="p">])</span>
+                <span class="n">stats</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;uncompressed&quot;</span><span class="p">])</span>
                 <span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
                 <span class="n">compressed</span> <span class="o">=</span> <span class="n">zip_compress</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">)</span>
                 <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">tic</span>
-                <span class="n">stats</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;bytes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
-                <span class="n">stats</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;comp_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elapsed</span>
+                <span class="n">stats</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;bytes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
+                <span class="n">stats</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;comp_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elapsed</span>
                 <span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
                 <span class="n">uncompressed</span> <span class="o">=</span> <span class="n">zip_decompress</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
                 <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">tic</span>
                 <span class="k">assert</span> <span class="p">(</span>
                     <span class="n">uncompressed</span> <span class="o">==</span> <span class="n">b</span>
-                <span class="p">),</span> <span class="s1">&#39;the uncompressed bytes were different than the original&#39;</span>
-                <span class="n">stats</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;uncomp_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elapsed</span>
+                <span class="p">),</span> <span class="s2">&quot;the uncompressed bytes were different than the original&quot;</span>
+                <span class="n">stats</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;uncomp_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elapsed</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="k">raise</span>
                 <span class="k">pass</span>
@@ -471,7 +476,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">zip_file</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">open_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_info_filt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">zip_file</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">open_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">file_info_filt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
@@ -500,7 +510,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">zip_file</span> <span class="o">=</span> <span class="n">zip_file</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">for_files_only</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">zip_file</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">open_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_info_filt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">for_files_only</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">zip_file</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">open_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_info_filt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">file_info_filt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">file_info_filt</span> <span class="o">=</span> <span class="n">ZipReader</span><span class="o">.</span><span class="n">FILES_ONLY</span>
         <span class="k">else</span><span class="p">:</span>
@@ -547,15 +557,15 @@
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">args_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">args_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_file</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
                 <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
-                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">open_kws</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_info_filt</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">open_kws</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_info_filt</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">args_str</span><span class="si">}</span><span class="s1">)&#39;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">args_str</span><span class="si">}</span><span class="s2">)&quot;</span>
 
     <span class="c1"># TODO: Unaware of trans (filters, key trans, etc.)</span>
     <span class="k">def</span> <span class="nf">get_info_reader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -579,7 +589,7 @@
 <div class="viewcode-block" id="FilesOfZip">
 <a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.FilesOfZip">[docs]</a>
 <span class="k">class</span> <span class="nc">FilesOfZip</span><span class="p">(</span><span class="n">ZipReader</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zip_file</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">open_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zip_file</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">open_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">zip_file</span><span class="p">,</span>
             <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
@@ -620,7 +630,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">rootdir</span><span class="p">,</span>
-        <span class="n">subpath</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;.+\.zip&#39;</span><span class="p">,</span>
+        <span class="n">subpath</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;.+\.zip&quot;</span><span class="p">,</span>
         <span class="n">pattern_for_field</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">max_levels</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">zip_reader</span><span class="o">=</span><span class="n">ZipReader</span><span class="p">,</span>
@@ -631,7 +641,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">zip_reader_kwargs</span> <span class="o">=</span> <span class="n">zip_reader_kwargs</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_reader</span> <span class="ow">is</span> <span class="n">ZipReader</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">zip_reader_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-                <span class="nb">dict</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">open_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_info_filt</span><span class="o">=</span><span class="n">ZipReader</span><span class="o">.</span><span class="n">FILES_ONLY</span><span class="p">,),</span>
+                <span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">open_kws</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">file_info_filt</span><span class="o">=</span><span class="n">ZipReader</span><span class="o">.</span><span class="n">FILES_ONLY</span><span class="p">,</span>
+                <span class="p">),</span>
                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_reader_kwargs</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -639,7 +653,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_reader</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_reader_kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;FileNotFoundError: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FileNotFoundError: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 
@@ -651,7 +665,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
             <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div>
 
 
@@ -765,12 +779,13 @@
 <span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">partialclass</span>
 
 <span class="n">ZipFileStreamsReader</span> <span class="o">=</span> <span class="n">mk_relative_path_store</span><span class="p">(</span>
-    <span class="n">partialclass</span><span class="p">(</span><span class="n">ZipFilesReader</span><span class="p">,</span> <span class="n">zip_reader</span><span class="o">=</span><span class="n">FileStreamsOfZip</span><span class="p">),</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">,</span>
+    <span class="n">partialclass</span><span class="p">(</span><span class="n">ZipFilesReader</span><span class="p">,</span> <span class="n">zip_reader</span><span class="o">=</span><span class="n">FileStreamsOfZip</span><span class="p">),</span>
+    <span class="n">prefix_attr</span><span class="o">=</span><span class="s2">&quot;rootdir&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">ZipFileStreamsReader</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s1">&#39;ZipFileStreamsReader&#39;</span>
-<span class="n">ZipFileStreamsReader</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">=</span> <span class="s1">&#39;ZipFileStreamsReader&#39;</span>
+<span class="n">ZipFileStreamsReader</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">&quot;ZipFileStreamsReader&quot;</span>
+<span class="n">ZipFileStreamsReader</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">=</span> <span class="s2">&quot;ZipFileStreamsReader&quot;</span>
 <span class="n">ZipFileStreamsReader</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="p">(</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;Like ZipFilesReader, but objects returned are file streams instead.&#39;&#39;&#39;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Like ZipFilesReader, but objects returned are file streams instead.&quot;&quot;&quot;</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">dol.errors</span> <span class="kn">import</span> <span class="n">OverWritesNotAllowedError</span>
@@ -778,15 +793,13 @@
 
 <div class="viewcode-block" id="OverwriteNotAllowed">
 <a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.OverwriteNotAllowed">[docs]</a>
-<span class="k">class</span> <span class="nc">OverwriteNotAllowed</span><span class="p">(</span><span class="ne">FileExistsError</span><span class="p">,</span> <span class="n">OverWritesNotAllowedError</span><span class="p">):</span>
-    <span class="o">...</span></div>
+<span class="k">class</span> <span class="nc">OverwriteNotAllowed</span><span class="p">(</span><span class="ne">FileExistsError</span><span class="p">,</span> <span class="n">OverWritesNotAllowedError</span><span class="p">):</span> <span class="o">...</span></div>
 
 
 
 <div class="viewcode-block" id="EmptyZipError">
 <a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.EmptyZipError">[docs]</a>
-<span class="k">class</span> <span class="nc">EmptyZipError</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">):</span>
-    <span class="o">...</span></div>
+<span class="k">class</span> <span class="nc">EmptyZipError</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">):</span> <span class="o">...</span></div>
 
 
 
@@ -802,7 +815,7 @@
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">EmptyZipError</span><span class="p">(</span>
-            <span class="s1">&#39;The store is empty: ZipStore(zip_filepath=</span><span class="si">{self.zip_filepath}</span><span class="s1">)&#39;</span>
+            <span class="s2">&quot;The store is empty: ZipStore(zip_filepath=</span><span class="si">{self.zip_filepath}</span><span class="s2">)&quot;</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -919,7 +932,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">zip_reader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">ZipFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_zipfile_init_kw</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ZipFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_zipfile_init_kw</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">_EmptyZipReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="p">)</span>
 
@@ -930,18 +943,21 @@
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_reader</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_open_kw</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_reader</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_open_kw</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">args_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&#39;allow_overwrites=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">allow_overwrites</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,)</span>
+        <span class="n">args_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;allow_overwrites=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">allow_overwrites</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">args_str</span><span class="si">}</span><span class="s1">)&#39;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">args_str</span><span class="si">}</span><span class="s2">)&quot;</span>
 
     <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_reader</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_open_kw</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_reader</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_open_kw</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="p">(</span>
@@ -974,7 +990,7 @@
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_writer_opened</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">OverwriteNotAllowed</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;When using the context mode, you&#39;re not allowed to overwrite an &quot;</span>
-                        <span class="sa">f</span><span class="s1">&#39;existing key: </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">&#39;</span>
+                        <span class="sa">f</span><span class="s2">&quot;existing key: </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">OverwriteNotAllowed</span><span class="p">(</span>
@@ -982,25 +998,25 @@
                     <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_writer_opened</span><span class="p">:</span>
-            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_writer</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_open_kw</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">zip_writer</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_open_kw</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_zipfile_init_kw</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_zipfile_init_kw</span>
             <span class="p">)</span> <span class="k">as</span> <span class="n">zip_writer</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">zip_writer</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_open_kw</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">zip_writer</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_open_kw</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;zip -d </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;zip -d </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># raise NotImplementedError(&quot;zipfile, the backend of ZipStore, doesn&#39;t support deletion,</span>
         <span class="c1"># so neither will we.&quot;)</span>
 
     <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">zip_writer</span> <span class="o">=</span> <span class="n">ZipFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_zipfile_init_kw</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zip_writer</span> <span class="o">=</span> <span class="n">ZipFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_zipfile_init_kw</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zip_writer_opened</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="bp">self</span>
 
@@ -1034,7 +1050,7 @@
     <span class="n">keys_to_be_removed</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PathFilterFunc</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">PathString</span><span class="p">]],</span>
     <span class="n">ask_before_before_deleting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">remove_action</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;delete&#39;</span><span class="p">,</span> <span class="s1">&#39;filter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;filter&#39;</span><span class="p">,</span>
+    <span class="n">remove_action</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;delete&quot;</span><span class="p">,</span> <span class="s2">&quot;filter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;filter&quot;</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Removes specific keys from a zip file.</span>
 
@@ -1063,14 +1079,14 @@
         <span class="n">keys_to_be_removed</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">keys_to_be_removed</span><span class="p">)</span>
     <span class="n">keys_that_will_be_deleted</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">keys_to_be_removed</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">keys_that_will_be_deleted</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">remove_action</span> <span class="o">==</span> <span class="s1">&#39;delete&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">remove_action</span> <span class="o">==</span> <span class="s2">&quot;delete&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">ask_before_before_deleting</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;These keys will be removed:</span><span class="se">\n\r</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="o">*</span><span class="n">keys_that_will_be_deleted</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;These keys will be removed:</span><span class="se">\n\r</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="o">*</span><span class="n">keys_that_will_be_deleted</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys_that_will_be_deleted</span><span class="p">)</span>
-                <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Should I go ahead and delete these </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1"> keys? (y/N)&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">answer</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Okay, I will NOT delete these.&#39;</span><span class="p">)</span>
+                <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Should I go ahead and delete these </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> keys? (y/N)&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Okay, I will NOT delete these.&quot;</span><span class="p">)</span>
                     <span class="k">return</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys_that_will_be_deleted</span><span class="p">:</span>
                 <span class="k">del</span> <span class="n">z</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -1093,7 +1109,7 @@
     <span class="n">keys_to_be_removed</span><span class="o">=</span><span class="n">is_a_mac_junk_path</span><span class="p">,</span>
     <span class="n">ask_before_before_deleting</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">remove_mac_junk_from_zip</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;Removes mac junk keys from zip&#39;</span>
+<span class="n">remove_mac_junk_from_zip</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;Removes mac junk keys from zip&quot;</span>
 
 <span class="c1"># TODO: The way prefix and file_info_filt is handled is not efficient</span>
 <span class="c1"># TODO: prefix is silly: less general than filename_filt would be, and not even producing</span>
@@ -1112,12 +1128,12 @@
 <span class="c1"># ----------------------------- Extras -------------------------------------------------</span>
 
 
-<span class="k">def</span> <span class="nf">tar_compress</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;data.bin&#39;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">tar_compress</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;data.bin&quot;</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">tarfile</span>
     <span class="kn">import</span> <span class="nn">io</span>
 
     <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">tar_buffer</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fileobj</span><span class="o">=</span><span class="n">tar_buffer</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fileobj</span><span class="o">=</span><span class="n">tar_buffer</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
             <span class="n">data_file</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">)</span>
             <span class="n">tarinfo</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">TarInfo</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">file_name</span><span class="p">)</span>
             <span class="n">tarinfo</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">)</span>
@@ -1130,7 +1146,7 @@
     <span class="kn">import</span> <span class="nn">io</span>
 
     <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">tar_bytes</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar_buffer</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fileobj</span><span class="o">=</span><span class="n">tar_buffer</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r:&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fileobj</span><span class="o">=</span><span class="n">tar_buffer</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r:&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">tar</span><span class="o">.</span><span class="n">getmembers</span><span class="p">():</span>
                 <span class="n">extracted_file</span> <span class="o">=</span> <span class="n">tar</span><span class="o">.</span><span class="n">extractfile</span><span class="p">(</span><span class="n">member</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">extracted_file</span><span class="p">:</span>

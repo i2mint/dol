@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.76 documentation</title>
+  <title>dol.util &mdash; dol 0.2.77 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=63906913"></script>
+      <script src="../../_static/documentation_options.js?v=c7e8ed0a"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -102,6 +102,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.imdict"><code class="docutils literal notranslate"><span class="pre">imdict</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.inject_method"><code class="docutils literal notranslate"><span class="pre">inject_method()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.instance_checker"><code class="docutils literal notranslate"><span class="pre">instance_checker()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.util.invertible_maps"><code class="docutils literal notranslate"><span class="pre">invertible_maps()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.lazyprop"><code class="docutils literal notranslate"><span class="pre">lazyprop</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.lazyprop_w_sentinel"><code class="docutils literal notranslate"><span class="pre">lazyprop_w_sentinel</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.max_common_prefix"><code class="docutils literal notranslate"><span class="pre">max_common_prefix()</span></code></a></li>
@@ -586,6 +587,50 @@ and release_remainding=True`` we have <code class="docutils literal notranslate"
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="s1">&#39;1.0&#39;</span><span class="p">)</span>
 <span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.util.invertible_maps">
+<span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">invertible_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/dol/util.html#invertible_maps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.invertible_maps" title="Link to this definition"></a></dt>
+<dd><p>Returns two maps that are inverse of each other.
+Raises an AssertionError iif both maps are None, or if the maps are not inverse of
+each other.</p>
+<p>Get a pair of invertible maps</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">invertible_maps</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">22</span><span class="p">})</span>
+<span class="go">({1: 11, 2: 22}, {11: 1, 22: 2})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">invertible_maps</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="p">{</span><span class="mi">11</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">22</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="go">({1: 11, 2: 22}, {11: 1, 22: 2})</span>
+</pre></div>
+</div>
+<p>You can specify one argument as an iterable (of keys for the mapping) and the
+other as a function (to be applied to the keys to get the inverse mapping).
+The function acts similarly to a <cite>Mapping.__getitem__</cite>, transforming each key to
+its associated value. The iterable defines the keys for the mapping, while the
+function is applied to each key to produce the values.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">invertible_maps</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+<span class="go">({10: 1, 20: 2, 30: 3}, {1: 10, 2: 20, 3: 30})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">invertible_maps</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">10</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="go">({1: 10, 2: 20, 3: 30}, {10: 1, 20: 2, 30: 3})</span>
+</pre></div>
+</div>
+<p>If two maps are given and invertible, you just get them back</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">invertible_maps</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">22</span><span class="p">},</span> <span class="p">{</span><span class="mi">11</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">22</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="go">({1: 11, 2: 22}, {11: 1, 22: 2})</span>
+</pre></div>
+</div>
+<p>Or if they’re not invertible</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">invertible_maps</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">22</span><span class="p">},</span> <span class="p">{</span><span class="mi">11</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">22</span><span class="p">:</span> <span class="s1">&#39;ha, not what you expected!&#39;</span><span class="p">})</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">AssertionError</span>: <span class="n">mapping and inv_mapping are not inverse of each other!</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">invertible_maps</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">You need to specify one or both maps</span>
 </pre></div>
 </div>
 </dd></dl>

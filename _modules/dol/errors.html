@@ -5,16 +5,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.errors &mdash; dol 0.2.76 documentation</title>
+  <title>dol.errors &mdash; dol 0.2.77 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=63906913"></script>
+      <script src="../../_static/documentation_options.js?v=c7e8ed0a"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -214,14 +214,16 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>  <span class="c1"># try getting the value...</span>
             <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span>  <span class="c1"># and if you do, yield the (k, v) pair</span>
-        <span class="k">except</span> <span class="n">catch_exceptions</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># catch the specific exceptions you requested to catch</span>
+        <span class="k">except</span> <span class="p">(</span>
+            <span class="n">catch_exceptions</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># catch the specific exceptions you requested to catch</span>
             <span class="n">t</span> <span class="o">=</span> <span class="n">wrapped_callback</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="n">e</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>  <span class="c1"># call it</span>
             <span class="k">if</span> <span class="n">yield_callback_output</span><span class="p">:</span>  <span class="c1"># if the user wants the output of the callback</span>
                 <span class="k">yield</span> <span class="n">t</span>  <span class="c1"># yield it</span></div>
 
 
 
-<span class="k">def</span> <span class="nf">_assert_condition</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">err_msg</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">err_cls</span><span class="o">=</span><span class="ne">AssertionError</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_assert_condition</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">err_msg</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">err_cls</span><span class="o">=</span><span class="ne">AssertionError</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">condition</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">err_cls</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
 

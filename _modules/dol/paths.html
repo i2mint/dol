@@ -5,16 +5,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.76 documentation</title>
+  <title>dol.paths &mdash; dol 0.2.77 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=63906913"></script>
+      <script src="../../_static/documentation_options.js?v=c7e8ed0a"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -227,26 +227,32 @@
         <span class="k">except</span> <span class="n">caught_errors</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">on_error</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">on_error</span><span class="p">(</span>
-                    <span class="nb">dict</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,)</span>
+                    <span class="nb">dict</span><span class="p">(</span>
+                        <span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+                        <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
+                        <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+                        <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">on_error</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="c1"># use on_error as a message, raising the same error class</span>
                 <span class="k">raise</span> <span class="nb">type</span><span class="p">(</span><span class="n">error</span><span class="p">)(</span><span class="n">on_error</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s1">&#39;on_error should be a callable (input is a dict) or a string. &#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;Was: </span><span class="si">{</span><span class="n">on_error</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="sa">f</span><span class="s2">&quot;on_error should be a callable (input is a dict) or a string. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Was: </span><span class="si">{</span><span class="n">on_error</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span>
 
 
-<span class="k">def</span> <span class="nf">split_if_str</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">split_if_str</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">obj</span>
 
 
-<span class="k">def</span> <span class="nf">separate_keys_with_separator</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">separate_keys_with_separator</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="n">cast_to_int_if_numeric_str</span><span class="p">,</span> <span class="n">split_if_str</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="p">))</span>
 
 
@@ -288,7 +294,7 @@
     <span class="n">path</span><span class="p">,</span>
     <span class="n">on_error</span><span class="p">:</span> <span class="n">OnErrorType</span> <span class="o">=</span> <span class="n">raise_on_error</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span>
+    <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
     <span class="n">key_transformer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">get_value</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">get_attr_or_item</span><span class="p">,</span>
     <span class="n">caught_errors</span><span class="o">=</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,),</span>
@@ -375,7 +381,7 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">egress</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span>
     <span class="n">on_error</span><span class="p">:</span> <span class="n">OnErrorType</span> <span class="o">=</span> <span class="n">raise_on_error</span><span class="p">,</span>
-    <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span>
+    <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
     <span class="n">key_transformer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">get_value</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">get_attr_or_item</span><span class="p">,</span>
     <span class="n">caught_errors</span><span class="o">=</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,),</span>
@@ -587,7 +593,7 @@
     <span class="n">key_path</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">KT</span><span class="p">],</span>
     <span class="n">val</span><span class="p">:</span> <span class="n">VT</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span>
+    <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span>
     <span class="n">new_mapping</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">VT</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -705,7 +711,7 @@
 <span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">kv_walk</span>
 
 
-<span class="n">PT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;PT&#39;</span><span class="p">)</span>  <span class="c1"># Path Type</span>
+<span class="n">PT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;PT&quot;</span><span class="p">)</span>  <span class="c1"># Path Type</span>
 <span class="n">PkvFilt</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
 
 
@@ -770,7 +776,7 @@
     <span class="n">_leaf_yield</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_path_matcher_leaf_yield</span><span class="p">,</span> <span class="n">pkv_filt</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">leaf_yield</span><span class="o">=</span><span class="n">_leaf_yield</span><span class="p">,</span> <span class="n">breadth_first</span><span class="o">=</span><span class="n">breadth_first</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">leafs_only</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;branch_yield&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_leaf_yield</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;branch_yield&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_leaf_yield</span>
     <span class="n">walker</span> <span class="o">=</span> <span class="n">kv_walk</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">yield from</span> <span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">walker</span><span class="p">)</span></div>
 
@@ -810,7 +816,7 @@
 
 <span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_filter</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_mk_pkv_filt</span><span class="p">(</span>
-    <span class="n">filt</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Union</span><span class="p">[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">]</span>
+    <span class="n">filt</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Union</span><span class="p">[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PkvFilt</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;pkv_filt based on a ``filt`` that matches EITHER path, key, or value.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_pkv_filt</span><span class="p">,</span> <span class="n">filt</span><span class="p">,</span> <span class="n">kind</span><span class="p">)</span>
@@ -818,21 +824,21 @@
 
 <span class="k">def</span> <span class="nf">_pkv_filt</span><span class="p">(</span>
     <span class="n">filt</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Union</span><span class="p">[</span><span class="n">PT</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">],</span>
-    <span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">],</span>
+    <span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">],</span>
     <span class="n">p</span><span class="p">:</span> <span class="n">PT</span><span class="p">,</span>
     <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span>
     <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to make (picklable) pkv_filt based on a ``filt`` that matches EITHER</span>
 <span class="sd">    path, key, or value.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;path&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;path&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">filt</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;key&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">filt</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">filt</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid kind: </span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid kind: </span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="KeyPath">
@@ -963,7 +969,7 @@
 <span class="sd">    dict_items([(&#39;/root/of/data/foo&#39;, &#39;bar&#39;), (&#39;/root/of/data/too&#39;, &#39;much&#39;)])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">_prefix_attr_name</span> <span class="o">=</span> <span class="s1">&#39;_prefix&#39;</span>
+    <span class="n">_prefix_attr_name</span> <span class="o">=</span> <span class="s2">&quot;_prefix&quot;</span>
 
     <span class="nd">@lazyprop</span>
     <span class="k">def</span> <span class="nf">_prefix_length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -993,7 +999,7 @@
 <span class="sd">    In fact, not only strings, but any key object that has a __len__, __add__, and subscripting.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">_prefix</span></div>
 
 
@@ -1016,7 +1022,7 @@
 <span class="sd">    [&#39;of/foo&#39;, &#39;of/bar&#39;, &#39;for/alice&#39;]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_key_collection&#39;</span><span class="p">,)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;_key_collection&quot;</span><span class="p">,)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_collection</span><span class="p">,</span> <span class="n">_prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># TODO: Find a better way to avoid the circular import</span>
@@ -1034,7 +1040,11 @@
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.mk_relative_path_store">[docs]</a>
 <span class="nd">@store_decorator</span>
 <span class="k">def</span> <span class="nf">mk_relative_path_store</span><span class="p">(</span>
-    <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_key_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;_prefix&#39;</span><span class="p">,</span>
+    <span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">with_key_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">prefix_attr</span><span class="o">=</span><span class="s2">&quot;_prefix&quot;</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 
@@ -1086,7 +1096,7 @@
         <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 
         <span class="n">warn</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;The use of name argumment is deprecated. Use __name__ instead&#39;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;The use of name argumment is deprecated. Use __name__ instead&quot;</span><span class="p">,</span>
             <span class="ne">DeprecationWarning</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -1095,17 +1105,17 @@
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">store_cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">Store</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="n">store_cls</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
-        <span class="n">prefix</span> <span class="o">=</span> <span class="n">recursive_get_attr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">recursive_get_attr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="nb">setattr</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="p">,</span> <span class="n">prefix</span>
         <span class="p">)</span>  <span class="c1"># TODO: Might need descriptor to enable assignment</span>
 
     <span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="fm">__init__</span>
 
-    <span class="k">if</span> <span class="n">prefix_attr</span> <span class="o">!=</span> <span class="s1">&#39;_prefix&#39;</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="s1">&#39;_prefix&#39;</span><span class="p">),</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;You already have a _prefix attribute, &#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;but want the prefix name to be </span><span class="si">{</span><span class="n">prefix_attr</span><span class="si">}</span><span class="s1">. &#39;</span>
+    <span class="k">if</span> <span class="n">prefix_attr</span> <span class="o">!=</span> <span class="s2">&quot;_prefix&quot;</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="s2">&quot;_prefix&quot;</span><span class="p">),</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;You already have a _prefix attribute, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;but want the prefix name to be </span><span class="si">{</span><span class="n">prefix_attr</span><span class="si">}</span><span class="s2">. &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;That&#39;s not going to be easy for me.&quot;</span>
         <span class="p">)</span>
 
@@ -1121,8 +1131,8 @@
         <span class="bp">cls</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">_prefix</span>
 
     <span class="k">if</span> <span class="n">with_key_validation</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="s1">&#39;is_valid_key&#39;</span><span class="p">),</span> <span class="p">(</span>
-            <span class="s1">&#39;If you want with_key_validation=True, &#39;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="s2">&quot;is_valid_key&quot;</span><span class="p">),</span> <span class="p">(</span>
+            <span class="s2">&quot;If you want with_key_validation=True, &quot;</span>
             <span class="s2">&quot;you&#39;ll need a method called is_valid_key to do the validation job&quot;</span>
         <span class="p">)</span>
 
@@ -1132,7 +1142,7 @@
                 <span class="k">return</span> <span class="n">_id</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s1">&#39;Key not valid (usually because does not exist or access not permitted): </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Key not valid (usually because does not exist or access not permitted): </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
 
         <span class="bp">cls</span><span class="o">.</span><span class="n">_id_of_key</span> <span class="o">=</span> <span class="n">_id_of_key</span>
@@ -1260,7 +1270,7 @@
     <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">filter_prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">relativize_prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">default_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">default_prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A store decorator that handles prefixes.</span>
 
@@ -1291,7 +1301,7 @@
     <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;I can only infer prefix from a store instance, not a type: </span><span class="si">{</span><span class="n">store</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s2">&quot;I can only infer prefix from a store instance, not a type: </span><span class="si">{</span><span class="n">store</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="n">prefix</span> <span class="o">=</span> <span class="n">max_common_prefix</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default_prefix</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">filter_prefix</span><span class="p">:</span>
@@ -1312,10 +1322,10 @@
 <div class="viewcode-block" id="PathKeyTypes">
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.PathKeyTypes">[docs]</a>
 <span class="k">class</span> <span class="nc">PathKeyTypes</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;str&#39;</span>
-    <span class="nb">dict</span> <span class="o">=</span> <span class="s1">&#39;dict&#39;</span>
-    <span class="nb">tuple</span> <span class="o">=</span> <span class="s1">&#39;tuple&#39;</span>
-    <span class="n">namedtuple</span> <span class="o">=</span> <span class="s1">&#39;namedtuple&#39;</span></div>
+    <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;str&quot;</span>
+    <span class="nb">dict</span> <span class="o">=</span> <span class="s2">&quot;dict&quot;</span>
+    <span class="nb">tuple</span> <span class="o">=</span> <span class="s2">&quot;tuple&quot;</span>
+    <span class="n">namedtuple</span> <span class="o">=</span> <span class="s2">&quot;namedtuple&quot;</span></div>
 
 
 
@@ -1327,20 +1337,20 @@
 
 <span class="n">_method_names_for_path_type</span> <span class="o">=</span> <span class="p">{</span>
     <span class="n">PathKeyTypes</span><span class="o">.</span><span class="n">str</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;_id_of_key&#39;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">simple_str_to_str</span><span class="p">,</span>
-        <span class="s1">&#39;_key_of_id&#39;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">str_to_simple_str</span><span class="p">,</span>
+        <span class="s2">&quot;_id_of_key&quot;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">simple_str_to_str</span><span class="p">,</span>
+        <span class="s2">&quot;_key_of_id&quot;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">str_to_simple_str</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">PathKeyTypes</span><span class="o">.</span><span class="n">dict</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;_id_of_key&#39;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">dict_to_str</span><span class="p">,</span>
-        <span class="s1">&#39;_key_of_id&#39;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">str_to_dict</span><span class="p">,</span>
+        <span class="s2">&quot;_id_of_key&quot;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">dict_to_str</span><span class="p">,</span>
+        <span class="s2">&quot;_key_of_id&quot;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">str_to_dict</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">PathKeyTypes</span><span class="o">.</span><span class="n">tuple</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;_id_of_key&#39;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">tuple_to_str</span><span class="p">,</span>
-        <span class="s1">&#39;_key_of_id&#39;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">str_to_tuple</span><span class="p">,</span>
+        <span class="s2">&quot;_id_of_key&quot;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">tuple_to_str</span><span class="p">,</span>
+        <span class="s2">&quot;_key_of_id&quot;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">str_to_tuple</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">PathKeyTypes</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;_id_of_key&#39;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">namedtuple_to_str</span><span class="p">,</span>
-        <span class="s1">&#39;_key_of_id&#39;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">str_to_namedtuple</span><span class="p">,</span>
+        <span class="s2">&quot;_id_of_key&quot;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">namedtuple_to_str</span><span class="p">,</span>
+        <span class="s2">&quot;_key_of_id&quot;</span><span class="p">:</span> <span class="n">StrTupleDict</span><span class="o">.</span><span class="n">str_to_namedtuple</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">}</span>
 
@@ -1363,7 +1373,7 @@
     <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">process_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">process_info_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">named_tuple_type_name</span><span class="o">=</span><span class="s1">&#39;NamedTuple&#39;</span><span class="p">,</span>
+    <span class="n">named_tuple_type_name</span><span class="o">=</span><span class="s2">&quot;NamedTuple&quot;</span><span class="p">,</span>
     <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">path_sep</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a key trans object that translates from a string _id to a dict, tuple, or namedtuple key (and back)&quot;&quot;&quot;</span>
@@ -1372,18 +1382,17 @@
         <span class="n">key_type</span> <span class="ow">in</span> <span class="n">PathKeyTypes</span>
     <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;key_type was </span><span class="si">{</span><span class="n">key_type</span><span class="si">}</span><span class="s2">. Needs to be one of these: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PathKeyTypes</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
 
-    <span class="k">class</span> <span class="nc">PathKeyMapper</span><span class="p">(</span><span class="n">StrTupleDict</span><span class="p">):</span>
-        <span class="o">...</span>
+    <span class="k">class</span> <span class="nc">PathKeyMapper</span><span class="p">(</span><span class="n">StrTupleDict</span><span class="p">):</span> <span class="o">...</span>
 
     <span class="nb">setattr</span><span class="p">(</span>
         <span class="n">PathKeyMapper</span><span class="p">,</span>
-        <span class="s1">&#39;_id_of_key&#39;</span><span class="p">,</span>
-        <span class="n">_method_names_for_path_type</span><span class="p">[</span><span class="n">key_type</span><span class="p">][</span><span class="s1">&#39;_id_of_key&#39;</span><span class="p">],</span>
+        <span class="s2">&quot;_id_of_key&quot;</span><span class="p">,</span>
+        <span class="n">_method_names_for_path_type</span><span class="p">[</span><span class="n">key_type</span><span class="p">][</span><span class="s2">&quot;_id_of_key&quot;</span><span class="p">],</span>
     <span class="p">)</span>
     <span class="nb">setattr</span><span class="p">(</span>
         <span class="n">PathKeyMapper</span><span class="p">,</span>
-        <span class="s1">&#39;_key_of_id&#39;</span><span class="p">,</span>
-        <span class="n">_method_names_for_path_type</span><span class="p">[</span><span class="n">key_type</span><span class="p">][</span><span class="s1">&#39;_key_of_id&#39;</span><span class="p">],</span>
+        <span class="s2">&quot;_key_of_id&quot;</span><span class="p">,</span>
+        <span class="n">_method_names_for_path_type</span><span class="p">[</span><span class="n">key_type</span><span class="p">][</span><span class="s2">&quot;_key_of_id&quot;</span><span class="p">],</span>
     <span class="p">)</span>
 
     <span class="n">key_trans</span> <span class="o">=</span> <span class="n">PathKeyMapper</span><span class="p">(</span>
@@ -1512,19 +1521,19 @@
 <span class="sd">    &gt;&gt;&gt; string_unparse(formatter.parse(&#39;literal{name!c:spec}&#39;))</span>
 <span class="sd">    &#39;literal{name!c:spec}&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">reconstructed</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">reconstructed</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="k">for</span> <span class="n">literal_text</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">format_spec</span><span class="p">,</span> <span class="n">conversion</span> <span class="ow">in</span> <span class="n">parsing_result</span><span class="p">:</span>
         <span class="n">reconstructed</span> <span class="o">+=</span> <span class="n">literal_text</span>
         <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">field</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">{{</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">if</span> <span class="n">conversion</span><span class="p">:</span>
                 <span class="k">assert</span> <span class="p">(</span>
                     <span class="nb">len</span><span class="p">(</span><span class="n">conversion</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
-                <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;conversion can only be a single character: </span><span class="si">{</span><span class="n">conversion</span><span class="si">=}</span><span class="s1">&#39;</span>
-                <span class="n">field</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;!</span><span class="si">{</span><span class="n">conversion</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;conversion can only be a single character: </span><span class="si">{</span><span class="n">conversion</span><span class="si">=}</span><span class="s2">&quot;</span>
+                <span class="n">field</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;!</span><span class="si">{</span><span class="n">conversion</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">if</span> <span class="n">format_spec</span><span class="p">:</span>
-                <span class="n">field</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;:</span><span class="si">{</span><span class="n">format_spec</span><span class="si">}</span><span class="s1">&#39;</span>
-            <span class="n">field</span> <span class="o">+=</span> <span class="s1">&#39;}&#39;</span>
+                <span class="n">field</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{</span><span class="n">format_spec</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">field</span> <span class="o">+=</span> <span class="s2">&quot;}&quot;</span>
             <span class="n">reconstructed</span> <span class="o">+=</span> <span class="n">field</span>
     <span class="k">return</span> <span class="n">reconstructed</span></div>
 
@@ -1551,7 +1560,7 @@
 <span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span>
 
 <span class="c1"># Codec = namedtuple(&#39;Codec&#39;, &#39;encoder decoder&#39;)</span>
-<span class="n">FieldTypeNames</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;dict&#39;</span><span class="p">,</span> <span class="s1">&#39;tuple&#39;</span><span class="p">,</span> <span class="s1">&#39;namedtuple&#39;</span><span class="p">,</span> <span class="s1">&#39;simple_str&#39;</span><span class="p">,</span> <span class="s1">&#39;single&#39;</span><span class="p">]</span>
+<span class="n">FieldTypeNames</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;dict&quot;</span><span class="p">,</span> <span class="s2">&quot;tuple&quot;</span><span class="p">,</span> <span class="s2">&quot;namedtuple&quot;</span><span class="p">,</span> <span class="s2">&quot;simple_str&quot;</span><span class="p">,</span> <span class="s2">&quot;single&quot;</span><span class="p">]</span>
 
 
 <span class="c1"># TODO: Make and use _return_none_if_none_input or not?</span>
@@ -1685,10 +1694,10 @@
         <span class="n">field_patterns</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">to_str_funcs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">from_str_funcs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">simple_str_sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span>
-        <span class="n">namedtuple_type_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;NamedTuple&#39;</span><span class="p">,</span>
-        <span class="n">dflt_pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;.*&#39;</span><span class="p">,</span>
-        <span class="n">dflt_field_name</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;i</span><span class="si">{:02.0f}</span><span class="s1">_&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+        <span class="n">simple_str_sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
+        <span class="n">namedtuple_type_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;NamedTuple&quot;</span><span class="p">,</span>
+        <span class="n">dflt_pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.*&quot;</span><span class="p">,</span>
+        <span class="n">dflt_field_name</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;i</span><span class="si">{:02.0f}</span><span class="s2">_&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="p">,</span>
@@ -1735,7 +1744,7 @@
 <div class="viewcode-block" id="KeyTemplate.key_codec">
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.key_codec">[docs]</a>
     <span class="k">def</span> <span class="nf">key_codec</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">decoded</span><span class="p">:</span> <span class="n">FieldTypeNames</span> <span class="o">=</span> <span class="s1">&#39;tuple&#39;</span><span class="p">,</span> <span class="n">encoded</span><span class="p">:</span> <span class="n">FieldTypeNames</span> <span class="o">=</span> <span class="s1">&#39;str&#39;</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">decoded</span><span class="p">:</span> <span class="n">FieldTypeNames</span> <span class="o">=</span> <span class="s2">&quot;tuple&quot;</span><span class="p">,</span> <span class="n">encoded</span><span class="p">:</span> <span class="n">FieldTypeNames</span> <span class="o">=</span> <span class="s2">&quot;str&quot;</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Makes a ``KeyCodec`` for the given source and target types.</span>
 
@@ -1777,16 +1786,16 @@
 <span class="sd">        ``st.key_codec``.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_field_type</span><span class="p">(</span><span class="n">decoded</span><span class="p">,</span> <span class="s1">&#39;decoded&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_field_type</span><span class="p">(</span><span class="n">encoded</span><span class="p">,</span> <span class="s1">&#39;encoded&#39;</span><span class="p">)</span>
-        <span class="n">coder</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">decoded</span><span class="si">}</span><span class="s1">_to_</span><span class="si">{</span><span class="n">encoded</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">decoder</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">encoded</span><span class="si">}</span><span class="s1">_to_</span><span class="si">{</span><span class="n">decoded</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_field_type</span><span class="p">(</span><span class="n">decoded</span><span class="p">,</span> <span class="s2">&quot;decoded&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_field_type</span><span class="p">(</span><span class="n">encoded</span><span class="p">,</span> <span class="s2">&quot;encoded&quot;</span><span class="p">)</span>
+        <span class="n">coder</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">decoded</span><span class="si">}</span><span class="s2">_to_</span><span class="si">{</span><span class="n">encoded</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">decoder</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">encoded</span><span class="si">}</span><span class="s2">_to_</span><span class="si">{</span><span class="n">decoded</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">KeyCodec</span><span class="p">(</span><span class="n">coder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="KeyTemplate.filt_iter">
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.filt_iter">[docs]</a>
-    <span class="k">def</span> <span class="nf">filt_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_type</span><span class="p">:</span> <span class="n">FieldTypeNames</span> <span class="o">=</span> <span class="s1">&#39;str&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">filt_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_type</span><span class="p">:</span> <span class="n">FieldTypeNames</span> <span class="o">=</span> <span class="s2">&quot;str&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Makes a store decorator that filters out keys that don&#39;t match the template</span>
 <span class="sd">        given field type.</span>
@@ -1805,8 +1814,8 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">field_type</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
             <span class="c1"># The user wants to filter a store with the default</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filt_iter</span><span class="p">()(</span><span class="n">field_type</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_field_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">,</span> <span class="s1">&#39;field_type&#39;</span><span class="p">)</span>
-        <span class="n">filt_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;match_</span><span class="si">{</span><span class="n">field_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_field_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">,</span> <span class="s2">&quot;field_type&quot;</span><span class="p">)</span>
+        <span class="n">filt_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;match_</span><span class="si">{</span><span class="n">field_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="n">filt_func</span><span class="p">)</span></div>
 
 
@@ -1961,7 +1970,8 @@
 <div class="viewcode-block" id="KeyTemplate.dict_to_namedtuple">
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate.dict_to_namedtuple">[docs]</a>
     <span class="k">def</span> <span class="nf">dict_to_namedtuple</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a namedtuple from the dictionary values based on the template.</span>
 
@@ -2056,8 +2066,8 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">field_values</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_fields</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;String &#39;</span><span class="si">{</span><span class="n">ss</span><span class="si">}</span><span class="s2">&#39; has does not have the right number of field values. &quot;</span>
-                <span class="sa">f</span><span class="s1">&#39;Expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_fields</span><span class="si">}</span><span class="s1">, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">field_values</span><span class="p">)</span><span class="si">}</span><span class="s1"> &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;(namely: </span><span class="si">{</span><span class="n">field_values</span><span class="si">}</span><span class="s1">.)&#39;</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_fields</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">field_values</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(namely: </span><span class="si">{</span><span class="n">field_values</span><span class="si">}</span><span class="s2">.)&quot;</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_from_str_funcs</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">field_values</span><span class="p">))</span></div>
 
@@ -2157,24 +2167,24 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_formatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">template</span><span class="p">),</span> <span class="mi">1</span>
             <span class="p">):</span>
                 <span class="n">field_name</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">dflt_field_name</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="k">if</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="k">else</span> <span class="n">field_name</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dflt_field_name</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="k">if</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="k">else</span> <span class="n">field_name</span>
                 <span class="p">)</span>
                 <span class="k">if</span> <span class="n">field_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">field_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>  <span class="c1"># remember the field name</span>
                     <span class="c1"># extract format and pattern information:</span>
-                    <span class="k">if</span> <span class="s1">&#39;:&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">format_spec</span><span class="p">:</span>
-                        <span class="n">format_spec</span> <span class="o">+=</span> <span class="s1">&#39;:&#39;</span>
-                    <span class="n">to_str_func_format</span><span class="p">,</span> <span class="n">pattern</span> <span class="o">=</span> <span class="n">format_spec</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">format_spec</span><span class="p">:</span>
+                        <span class="n">format_spec</span> <span class="o">+=</span> <span class="s2">&quot;:&quot;</span>
+                    <span class="n">to_str_func_format</span><span class="p">,</span> <span class="n">pattern</span> <span class="o">=</span> <span class="n">format_spec</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">to_str_func_format</span><span class="p">:</span>
                         <span class="n">to_str_funcs</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                            <span class="s1">&#39;{&#39;</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;:</span><span class="si">{</span><span class="n">to_str_func_format</span><span class="si">}</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;}&#39;</span>
+                            <span class="s2">&quot;{&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{</span><span class="n">to_str_func_format</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span>
                         <span class="p">)</span><span class="o">.</span><span class="n">format</span>
                     <span class="n">field_patterns_</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">pattern</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dflt_pattern</span>
                 <span class="c1"># At this point you should have a valid field_name and empty format_spec</span>
                 <span class="k">yield</span> <span class="p">(</span>
                     <span class="n">literal_text</span><span class="p">,</span>
                     <span class="n">field_name</span><span class="p">,</span>
-                    <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                    <span class="s2">&quot;&quot;</span><span class="p">,</span>
                     <span class="n">conversion</span><span class="p">,</span>
                 <span class="p">)</span>
 
@@ -2209,22 +2219,22 @@
 
         <span class="k">def</span> <span class="nf">mk_named_capture_group</span><span class="p">(</span><span class="n">field_name</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">field_name</span><span class="p">:</span>
-                <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;(?P&lt;</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s1">&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_field_patterns</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span><span class="si">}</span><span class="s1">)&#39;</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(?P&lt;</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_field_patterns</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+                <span class="k">return</span> <span class="s2">&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">generate_pattern_parts</span><span class="p">(</span><span class="n">template</span><span class="p">):</span>
             <span class="n">parts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_formatter</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">literal_text</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">literal_text</span><span class="p">)</span> <span class="o">+</span> <span class="n">mk_named_capture_group</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">generate_pattern_parts</span><span class="p">(</span><span class="n">template</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">generate_pattern_parts</span><span class="p">(</span><span class="n">template</span><span class="p">)))</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_assert_field_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">:</span> <span class="n">FieldTypeNames</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;field_type&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_assert_field_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">:</span> <span class="n">FieldTypeNames</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;field_type&quot;</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">field_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">FieldTypeNames</span><span class="o">.</span><span class="n">__args__</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> must be one of </span><span class="si">{</span><span class="n">FieldTypeNames</span><span class="si">}</span><span class="s1">. Was: </span><span class="si">{</span><span class="n">field_type</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be one of </span><span class="si">{</span><span class="n">FieldTypeNames</span><span class="si">}</span><span class="s2">. Was: </span><span class="si">{</span><span class="n">field_type</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span></div>
 
 </pre></div>

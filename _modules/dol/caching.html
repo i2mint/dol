@@ -5,16 +5,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.2.76 documentation</title>
+  <title>dol.caching &mdash; dol 0.2.77 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=63906913"></script>
+      <script src="../../_static/documentation_options.js?v=c7e8ed0a"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -121,7 +121,10 @@
 
 <span class="k">def</span> <span class="nf">is_a_cache</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">all</span><span class="p">(</span>
-        <span class="nb">map</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">,</span> <span class="n">obj</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;__contains__&#39;</span><span class="p">,</span> <span class="s1">&#39;__getitem__&#39;</span><span class="p">,</span> <span class="s1">&#39;__setitem__&#39;</span><span class="p">),)</span>
+        <span class="nb">map</span><span class="p">(</span>
+            <span class="n">partial</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">,</span> <span class="n">obj</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;__contains__&quot;</span><span class="p">,</span> <span class="s2">&quot;__getitem__&quot;</span><span class="p">,</span> <span class="s2">&quot;__setitem__&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
     <span class="p">)</span>
 
 
@@ -139,6 +142,7 @@
 <span class="c1">########################################################################################################################</span>
 <span class="c1"># Read caching</span>
 
+
 <span class="c1"># The following is a &quot;Cache-Aside&quot; read-cache with NO builtin cache update or refresh mechanism.</span>
 <div class="viewcode-block" id="mk_memoizer">
 <a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.mk_memoizer">[docs]</a>
@@ -146,7 +150,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make a memoizer that caches the output of a getter function in a cache.</span>
 
-<span class="sd">    Note: This is a specialized memoizer for getter functions/methods, i.e. </span>
+<span class="sd">    Note: This is a specialized memoizer for getter functions/methods, i.e.</span>
 <span class="sd">    functions/methods that have the signature (instance, key) and return a value.</span>
 
 <span class="sd">    :param cache: The cache to use. Must have __getitem__ and __setitem__ methods.</span>
@@ -205,7 +209,7 @@
     <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">cache</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># use a dict (memory caching) by default</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>  <span class="c1"># if caching_store is a type...</span>
-        <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="s1">&#39;__getitem__&#39;</span><span class="p">)</span>  <span class="c1"># ... or is a callable without a __getitem__</span>
+        <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="s2">&quot;__getitem__&quot;</span><span class="p">)</span>  <span class="c1"># ... or is a callable without a __getitem__</span>
         <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
     <span class="p">):</span>
         <span class="n">cache</span> <span class="o">=</span> <span class="p">(</span>
@@ -214,7 +218,7 @@
     <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">assert_attrs</span> <span class="ow">or</span> <span class="p">():</span>
         <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span>
             <span class="n">cache</span><span class="p">,</span> <span class="n">method</span>
-        <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;cache should have the </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s1"> method, but does not: </span><span class="si">{</span><span class="n">cache</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;cache should have the </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2"> method, but does not: </span><span class="si">{</span><span class="n">cache</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="n">cache</span>
 
 
@@ -297,14 +301,15 @@
     <span class="c1"># cache = _mk_cache_instance(cache, assert_attrs=(&#39;__getitem__&#39;, &#39;__setitem__&#39;))</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
         <span class="n">store</span><span class="p">,</span> <span class="nb">type</span>
-    <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;store should be a type, was a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">store</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;store should be a type, was a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">store</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="k">class</span> <span class="nc">CachedStore</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="n">_mk_cache_instance</span><span class="p">(</span>
-                <span class="n">cache</span><span class="p">,</span> <span class="n">assert_attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__getitem__&#39;</span><span class="p">,</span> <span class="s1">&#39;__contains__&#39;</span><span class="p">,</span> <span class="s1">&#39;__setitem__&#39;</span><span class="p">),</span>
+                <span class="n">cache</span><span class="p">,</span>
+                <span class="n">assert_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;__getitem__&quot;</span><span class="p">,</span> <span class="s2">&quot;__contains__&quot;</span><span class="p">,</span> <span class="s2">&quot;__setitem__&quot;</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="c1"># self.__getitem__ = mk_memoizer(self._cache)(self.__getitem__)</span>
 
@@ -397,13 +402,13 @@
 <span class="sd">    &gt;&gt;&gt; list(s)</span>
 <span class="sd">    [&#39;some&#39;, &#39;foo&#39;, &#39;hello&#39;, &#39;something&#39;]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;You need to specify a source&#39;</span>
+    <span class="k">assert</span> <span class="n">source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;You need to specify a source&quot;</span>
 
-    <span class="n">source</span> <span class="o">=</span> <span class="n">_mk_cache_instance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">assert_attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__getitem__&#39;</span><span class="p">,))</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="n">_mk_cache_instance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">assert_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;__getitem__&quot;</span><span class="p">,))</span>
 
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
         <span class="n">store</span><span class="p">,</span> <span class="nb">type</span>
-    <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;store should be a type, was a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">store</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;store should be a type, was a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">store</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="k">if</span> <span class="n">return_source_data</span><span class="p">:</span>
 
@@ -471,7 +476,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">single_val</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">single_val</span><span class="p">,</span> <span class="s1">&#39;items&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">single_val</span><span class="p">,</span> <span class="s2">&quot;items&quot;</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
                 <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">_slow_but_somewhat_general_hash</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">single_val</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="p">)</span>
@@ -529,7 +534,7 @@
 <span class="sd">    {(1, 2): 3, (3, 4): 7}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">key_func</span><span class="p">),</span> <span class="p">(</span>
-        <span class="s1">&#39;key_func should be a callable: &#39;</span>
+        <span class="s2">&quot;key_func should be a callable: &quot;</span>
         <span class="s2">&quot;It&#39;s called on the wrapped function&#39;s input to make a key for the caching store.&quot;</span>
     <span class="p">)</span>
 
@@ -627,7 +632,7 @@
 
 
 <span class="k">def</span> <span class="nf">ensure_clear_to_kv_store</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s1">&#39;clear&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">&quot;clear&quot;</span><span class="p">):</span>
 
         <span class="k">def</span> <span class="nf">_clear</span><span class="p">(</span><span class="n">kv_store</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kv_store</span><span class="p">:</span>
@@ -641,14 +646,14 @@
 <span class="k">def</span> <span class="nf">flush_on_exit</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
     <span class="n">new_cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="p">(</span><span class="bp">cls</span><span class="p">,),</span> <span class="p">{})</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">new_cls</span><span class="p">,</span> <span class="s1">&#39;__enter__&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">new_cls</span><span class="p">,</span> <span class="s2">&quot;__enter__&quot;</span><span class="p">):</span>
 
         <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span>
 
         <span class="n">new_cls</span><span class="o">.</span><span class="fm">__enter__</span> <span class="o">=</span> <span class="fm">__enter__</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">new_cls</span><span class="p">,</span> <span class="s1">&#39;__exit__&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">new_cls</span><span class="p">,</span> <span class="s2">&quot;__exit__&quot;</span><span class="p">):</span>
 
         <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">flush_cache</span><span class="p">()</span>
@@ -758,15 +763,15 @@
 <span class="sd">    store: {0: 0, 1: 10, 2: 20, 3: 30, 4: 40, 5: 50, 6: 60} ----- store._w_cache: {}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">w_cache</span> <span class="o">=</span> <span class="n">_mk_cache_instance</span><span class="p">(</span><span class="n">w_cache</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;clear&#39;</span><span class="p">,</span> <span class="s1">&#39;__setitem__&#39;</span><span class="p">,</span> <span class="s1">&#39;items&#39;</span><span class="p">))</span>
+    <span class="n">w_cache</span> <span class="o">=</span> <span class="n">_mk_cache_instance</span><span class="p">(</span><span class="n">w_cache</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;clear&quot;</span><span class="p">,</span> <span class="s2">&quot;__setitem__&quot;</span><span class="p">,</span> <span class="s2">&quot;items&quot;</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">has_enabled_clear_method</span><span class="p">(</span><span class="n">w_cache</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-<span class="w">            </span><span class="sd">&#39;&#39;&#39;w_cache needs to have an enabled clear method to be able to act as a write cache.</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;w_cache needs to have an enabled clear method to be able to act as a write cache.</span>
 <span class="sd">        You can wrap w_cache in dol.trans.ensure_clear_method to inject a clear method, </span>
 <span class="sd">        but BE WARNED: mk_write_cached_store will immediately delete all contents of `w_cache`!</span>
 <span class="sd">        So don&#39;t give it your filesystem or important DB to delete!</span>
-<span class="sd">        &#39;&#39;&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="p">)</span>
     <span class="n">w_cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>  <span class="c1"># assure the cache is empty, by emptying it.</span>
 
@@ -782,9 +787,9 @@
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">flush_cache_condition</span><span class="p">),</span> <span class="p">(</span>
-                <span class="s1">&#39;flush_cache_condition must be None or a callable &#39;</span><span class="p">,</span>
-                <span class="s1">&#39;taking the (write) cache store as an input and returning&#39;</span>
-                <span class="s1">&#39;True if and only if the cache should be flushed.&#39;</span><span class="p">,</span>
+                <span class="s2">&quot;flush_cache_condition must be None or a callable &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;taking the (write) cache store as an input and returning&quot;</span>
+                <span class="s2">&quot;True if and only if the cache should be flushed.&quot;</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
@@ -793,7 +798,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">flush_cache</span><span class="p">()</span>
                 <span class="k">return</span> <span class="n">r</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s1">&#39;flush&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">&quot;flush&quot;</span><span class="p">):</span>
 
             <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="n">Iterable</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()):</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
@@ -906,7 +911,7 @@
 
 
 <span class="k">def</span> <span class="nf">_mk_cache_method_local_path_key</span><span class="p">(</span>
-    <span class="n">method</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s1">&#39;.p&#39;</span><span class="p">,</span> <span class="n">path_sep</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
+    <span class="n">method</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;.p&quot;</span><span class="p">,</span> <span class="n">path_sep</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span>
@@ -915,8 +920,8 @@
         <span class="o">+</span> <span class="n">method</span><span class="o">.</span><span class="vm">__qualname__</span>
         <span class="o">+</span> <span class="n">path_sep</span>
         <span class="o">+</span> <span class="p">(</span>
-            <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
-            <span class="o">+</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+            <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
             <span class="o">+</span> <span class="n">ext</span>
         <span class="p">)</span>
     <span class="p">)</span>

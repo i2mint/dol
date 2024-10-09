@@ -5,16 +5,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.misc &mdash; dol 0.2.76 documentation</title>
+  <title>dol.misc &mdash; dol 0.2.77 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=63906913"></script>
+      <script src="../../_static/documentation_options.js?v=c7e8ed0a"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -112,6 +112,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Functions to read from and write to misc sources</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="c1"># TODO: Completely redo this, using preset and postget and making it into a plugin</span>
 <span class="c1">#  architecture. See</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
@@ -129,7 +130,7 @@
 
 
 <span class="k">def</span> <span class="nf">csv_fileobj</span><span class="p">(</span><span class="n">csv_data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># TODO: Use extended wraps func to inject</span>
-    <span class="n">fp</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">fp</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
     <span class="n">writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="n">csv_data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">fp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -149,25 +150,25 @@
 <span class="c1"># TODO: Get rid of lambdas. Use methodcaller and partial instead</span>
 <span class="c1">#  Requires solving https://github.com/i2mint/dol/issues/9 first</span>
 <span class="n">dflt_incoming_val_trans_for_key</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;.bin&#39;</span><span class="p">:</span> <span class="n">identity_method</span><span class="p">,</span>
-    <span class="s1">&#39;.csv&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">decode</span><span class="p">()))),</span>
-    <span class="s1">&#39;.txt&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span>
-    <span class="s1">&#39;.pkl&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
-    <span class="s1">&#39;.pickle&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
-    <span class="s1">&#39;.json&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
-    <span class="s1">&#39;.zip&#39;</span><span class="p">:</span> <span class="n">FilesOfZip</span><span class="p">,</span>
-    <span class="s1">&#39;.gzip&#39;</span><span class="p">:</span> <span class="n">gzip</span><span class="o">.</span><span class="n">decompress</span><span class="p">,</span>
+    <span class="s2">&quot;.bin&quot;</span><span class="p">:</span> <span class="n">identity_method</span><span class="p">,</span>
+    <span class="s2">&quot;.csv&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">decode</span><span class="p">()))),</span>
+    <span class="s2">&quot;.txt&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span>
+    <span class="s2">&quot;.pkl&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
+    <span class="s2">&quot;.pickle&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
+    <span class="s2">&quot;.json&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
+    <span class="s2">&quot;.zip&quot;</span><span class="p">:</span> <span class="n">FilesOfZip</span><span class="p">,</span>
+    <span class="s2">&quot;.gzip&quot;</span><span class="p">:</span> <span class="n">gzip</span><span class="o">.</span><span class="n">decompress</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">dflt_outgoing_val_trans_for_key</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;.bin&#39;</span><span class="p">:</span> <span class="n">identity_method</span><span class="p">,</span>
-    <span class="s1">&#39;.csv&#39;</span><span class="p">:</span> <span class="n">csv_fileobj</span><span class="p">,</span>
-    <span class="s1">&#39;.txt&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
-    <span class="s1">&#39;.pkl&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
-    <span class="s1">&#39;.pickle&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
-    <span class="s1">&#39;.json&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
-    <span class="s1">&#39;.gzip&#39;</span><span class="p">:</span> <span class="n">gzip</span><span class="o">.</span><span class="n">compress</span><span class="p">,</span>
-    <span class="s1">&#39;.ini&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">ConfigStore</span><span class="p">(</span>
+    <span class="s2">&quot;.bin&quot;</span><span class="p">:</span> <span class="n">identity_method</span><span class="p">,</span>
+    <span class="s2">&quot;.csv&quot;</span><span class="p">:</span> <span class="n">csv_fileobj</span><span class="p">,</span>
+    <span class="s2">&quot;.txt&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
+    <span class="s2">&quot;.pkl&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
+    <span class="s2">&quot;.pickle&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
+    <span class="s2">&quot;.json&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
+    <span class="s2">&quot;.gzip&quot;</span><span class="p">:</span> <span class="n">gzip</span><span class="o">.</span><span class="n">compress</span><span class="p">,</span>
+    <span class="s2">&quot;.ini&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">ConfigStore</span><span class="p">(</span>
         <span class="n">v</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">ConfigReader</span><span class="o">.</span><span class="n">ExtendedInterpolation</span><span class="p">()</span>
     <span class="p">),</span>
 <span class="p">}</span>
@@ -176,16 +177,17 @@
 <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">config2py</span> <span class="kn">import</span> <span class="n">ConfigReader</span><span class="p">,</span> <span class="n">ConfigStore</span>
 
-    <span class="n">dflt_incoming_val_trans_for_key</span><span class="p">[</span><span class="s1">&#39;.ini&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
-        <span class="n">ConfigStore</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">ConfigReader</span><span class="o">.</span><span class="n">ExtendedInterpolation</span><span class="p">(),</span>
+    <span class="n">dflt_incoming_val_trans_for_key</span><span class="p">[</span><span class="s2">&quot;.ini&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">ConfigStore</span><span class="p">,</span>
+        <span class="n">interpolation</span><span class="o">=</span><span class="n">ConfigReader</span><span class="o">.</span><span class="n">ExtendedInterpolation</span><span class="p">(),</span>
     <span class="p">)</span>
 
-    <span class="n">dflt_outgoing_val_trans_for_key</span><span class="p">[</span><span class="s1">&#39;.ini&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+    <span class="n">dflt_outgoing_val_trans_for_key</span><span class="p">[</span><span class="s2">&quot;.ini&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
         <span class="n">ConfigStore</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">ConfigReader</span><span class="o">.</span><span class="n">ExtendedInterpolation</span><span class="p">()</span>
     <span class="p">)</span>
 
 
-<span class="n">synset_of_ext</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;.ini&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;.cnf&#39;</span><span class="p">,</span> <span class="s1">&#39;.conf&#39;</span><span class="p">,</span> <span class="s1">&#39;.config&#39;</span><span class="p">},</span> <span class="s1">&#39;.gzip&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;.gz&#39;</span><span class="p">]}</span>
+<span class="n">synset_of_ext</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;.ini&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;.cnf&quot;</span><span class="p">,</span> <span class="s2">&quot;.conf&quot;</span><span class="p">,</span> <span class="s2">&quot;.config&quot;</span><span class="p">},</span> <span class="s2">&quot;.gzip&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;.gz&quot;</span><span class="p">]}</span>
 <span class="k">for</span> <span class="n">_user_this</span><span class="p">,</span> <span class="n">_for_these_extensions</span> <span class="ow">in</span> <span class="n">synset_of_ext</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">_d</span> <span class="ow">in</span> <span class="p">[</span>
         <span class="n">dflt_incoming_val_trans_for_key</span><span class="p">,</span>
@@ -277,12 +279,12 @@
 <span class="c1"># import urllib</span>
 <span class="kn">import</span> <span class="nn">urllib.request</span>
 
-<span class="n">DFLT_USER_AGENT</span> <span class="o">=</span> <span class="s1">&#39;Wget/1.16 (linux-gnu)&#39;</span>
+<span class="n">DFLT_USER_AGENT</span> <span class="o">=</span> <span class="s2">&quot;Wget/1.16 (linux-gnu)&quot;</span>
 
 
 <span class="k">def</span> <span class="nf">_is_dropbox_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;http://www.dropbox.com&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
-        <span class="s1">&#39;https://www.dropbox.com&#39;</span>
+    <span class="k">return</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http://www.dropbox.com&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
+        <span class="s2">&quot;https://www.dropbox.com&quot;</span>
     <span class="p">)</span>
 
 
@@ -292,7 +294,7 @@
     <span class="k">def</span> <span class="nf">_download_from_dropbox</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">chk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">DFLT_USER_AGENT</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">iter_content_and_copy_to</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
             <span class="n">req</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-            <span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s1">&#39;user-agent&#39;</span><span class="p">,</span> <span class="n">user_agent</span><span class="p">)</span>
+            <span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s2">&quot;user-agent&quot;</span><span class="p">,</span> <span class="n">user_agent</span><span class="p">)</span>
             <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
                 <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
                     <span class="n">chk</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">chk_size</span><span class="p">)</span>
@@ -304,7 +306,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">iter_content_and_copy_to</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">_target_file</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">_target_file</span><span class="p">:</span>
                 <span class="n">iter_content_and_copy_to</span><span class="p">(</span><span class="n">_target_file</span><span class="p">)</span>
 
     <span class="k">with</span> <span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
@@ -330,22 +332,22 @@
 <a class="viewcode-back" href="../../module_docs/dol/misc.html#dol.misc.get_obj">[docs]</a>
 <span class="k">def</span> <span class="nf">get_obj</span><span class="p">(</span>
     <span class="n">k</span><span class="p">,</span>
-    <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">),</span>
+    <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
     <span class="n">incoming_val_trans_for_key</span><span class="o">=</span><span class="n">imdict</span><span class="p">(</span><span class="n">dflt_incoming_val_trans_for_key</span><span class="p">),</span>
     <span class="n">dflt_incoming_val_trans</span><span class="o">=</span><span class="n">identity_method</span><span class="p">,</span>
     <span class="n">func_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A quick way to get an object, with default... everything (but the key, you know, a clue of what you want)&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;http://&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;https://&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http://&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;https://&quot;</span><span class="p">):</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">url_to_bytes</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
             <span class="n">store</span><span class="p">,</span> <span class="n">Files</span>
         <span class="p">):</span>  <span class="c1"># being extra careful to only do this if default local store</span>
             <span class="c1"># preprocessing the key if it starts with &#39;.&#39;, &#39;..&#39;, or &#39;~&#39;</span>
-            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">):</span>
                 <span class="n">k</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">):</span>
                 <span class="n">k</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
     <span class="n">trans_func</span> <span class="o">=</span> <span class="p">(</span><span class="n">incoming_val_trans_for_key</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -384,7 +386,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">),</span>
+        <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
         <span class="n">incoming_val_trans_for_key</span><span class="o">=</span><span class="n">imdict</span><span class="p">(</span><span class="n">dflt_incoming_val_trans_for_key</span><span class="p">),</span>
         <span class="n">dflt_incoming_val_trans</span><span class="o">=</span><span class="n">identity_method</span><span class="p">,</span>
         <span class="n">func_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
@@ -411,8 +413,8 @@
 
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="s2">&quot;By default, there&#39;s no iteration in MiscGetter. &quot;</span>
-            <span class="s1">&#39;But feel free to subclass if you &#39;</span>
-            <span class="s1">&#39;have a particular sense of what the iteration should yield!&#39;</span>
+            <span class="s2">&quot;But feel free to subclass if you &quot;</span>
+            <span class="s2">&quot;have a particular sense of what the iteration should yield!&quot;</span>
         <span class="p">)</span></div>
 
 
@@ -477,6 +479,7 @@
 <span class="sd">    a.json: b&#39;{&quot;str&quot;: &quot;field&quot;, &quot;int&quot;: 42, &quot;float&quot;: 3.14, &quot;array&quot;: [1, 2], &quot;nested&quot;: {&quot;a&quot;: 1, &quot;b&quot;: 2}}&#39;</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">_dflt_outgoing_val_trans_for_key</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">identity_method</span><span class="p">)</span>
     <span class="n">_outgoing_val_trans_for_key</span> <span class="o">=</span> <span class="n">dflt_outgoing_val_trans_for_key</span>
 
@@ -511,13 +514,13 @@
 <span class="k">def</span> <span class="nf">set_obj</span><span class="p">(</span>
     <span class="n">k</span><span class="p">,</span>
     <span class="n">v</span><span class="p">,</span>
-    <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">),</span>
+    <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
     <span class="n">outgoing_val_trans_for_key</span><span class="o">=</span><span class="n">imdict</span><span class="p">(</span><span class="n">dflt_outgoing_val_trans_for_key</span><span class="p">),</span>
     <span class="n">func_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A quick way to get an object, with default...</span>
 <span class="sd">    # everything (but the key, you know, a clue of what you want)&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">Files</span><span class="p">)</span> <span class="ow">and</span> <span class="n">store</span><span class="o">.</span><span class="n">_prefix</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">}:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">Files</span><span class="p">)</span> <span class="ow">and</span> <span class="n">store</span><span class="o">.</span><span class="n">_prefix</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">}:</span>
         <span class="n">k</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
 
     <span class="n">trans_func</span> <span class="o">=</span> <span class="n">outgoing_val_trans_for_key</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -568,7 +571,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">),</span>
+        <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
         <span class="n">incoming_val_trans_for_key</span><span class="o">=</span><span class="n">imdict</span><span class="p">(</span><span class="n">dflt_incoming_val_trans_for_key</span><span class="p">),</span>
         <span class="n">outgoing_val_trans_for_key</span><span class="o">=</span><span class="n">imdict</span><span class="p">(</span><span class="n">dflt_outgoing_val_trans_for_key</span><span class="p">),</span>
         <span class="n">dflt_incoming_val_trans</span><span class="o">=</span><span class="n">identity_method</span><span class="p">,</span>

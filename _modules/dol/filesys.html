@@ -5,16 +5,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.filesys &mdash; dol 0.2.76 documentation</title>
+  <title>dol.filesys &mdash; dol 0.2.77 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=63906913"></script>
+      <script src="../../_static/documentation_options.js?v=c7e8ed0a"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -122,7 +122,7 @@
 <span class="kn">from</span> <span class="nn">dol.paths</span> <span class="kn">import</span> <span class="n">mk_relative_path_store</span>
 
 <span class="n">file_sep</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
-<span class="n">inf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;infinity&#39;</span><span class="p">)</span>
+<span class="n">inf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;infinity&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ensure_slash_suffix">
@@ -139,7 +139,7 @@
 <span class="k">def</span> <span class="nf">paths_in_dir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">include_hidden</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">include_hidden</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
-            <span class="s1">&#39;.&#39;</span>
+            <span class="s2">&quot;.&quot;</span>
         <span class="p">):</span>  <span class="c1"># TODO: is dot a platform independent marker for hidden file?</span>
             <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
@@ -225,7 +225,7 @@
 <span class="sd">    &gt;&gt;&gt; shutil.rmtree(temp_dir)  # Cleanup</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">max_dirs_to_make</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_dirs_to_make</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;max_dirs_to_make must be non-negative or None&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;max_dirs_to_make must be non-negative or None&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dirpath</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">True</span>
@@ -264,7 +264,7 @@
     <span class="n">expanduser</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">expandvars</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">abspath</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">rootdir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">rootdir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Process a path string, ensuring it exists, and optionally expanding user.</span>
@@ -293,7 +293,7 @@
     <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ensure_endswith_slash</span> <span class="ow">and</span> <span class="n">ensure_does_not_end_with_slash</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s1">&#39;Cannot ensure both ends with slash and does not end with slash.&#39;</span>
+            <span class="s2">&quot;Cannot ensure both ends with slash and does not end with slash.&quot;</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">rootdir</span><span class="p">:</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
@@ -304,17 +304,17 @@
     <span class="k">if</span> <span class="n">abspath</span><span class="p">:</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ensure_endswith_slash</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
     <span class="k">if</span> <span class="n">ensure_does_not_end_with_slash</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">ensure_dir_exists</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">ensure_dir_exists</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">ensure_dir_exists</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># max_dirs_to_make</span>
         <span class="n">create_directories</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">ensure_dir_exists</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">assert_exists</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;Path does not exist: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Path does not exist: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="n">path</span></div>
 
 
@@ -352,7 +352,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dirpath</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">verbose</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Making the directory: </span><span class="si">{</span><span class="n">dirpath</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Making the directory: </span><span class="si">{</span><span class="n">dirpath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">verbose</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
                 <span class="n">callaback</span> <span class="o">=</span> <span class="n">verbose</span>
                 <span class="n">callaback</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span>
@@ -364,7 +364,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">temp_dir</span><span class="p">(</span><span class="n">dirname</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">make_it_if_necessary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">temp_dir</span><span class="p">(</span><span class="n">dirname</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">make_it_if_necessary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">tempfile</span> <span class="kn">import</span> <span class="n">gettempdir</span>
 
     <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="n">dirname</span><span class="p">)</span>
@@ -377,9 +377,9 @@
 
 
 <span class="k">def</span> <span class="nf">mk_absolute_path</span><span class="p">(</span><span class="n">path_format</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">path_format</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">path_format</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">):</span>
         <span class="n">path_format</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">path_format</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">path_format</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">path_format</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
         <span class="n">path_format</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path_format</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">path_format</span>
 
@@ -387,9 +387,9 @@
 <span class="c1"># TODO: subpath: Need to be able to allow named and unnamed file format markers (i.e {} and {named})</span>
 
 <span class="n">_dflt_not_valid_error_msg</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s1">&#39;Key not valid (usually because does not exist or access not permitted): </span><span class="si">{}</span><span class="s1">&#39;</span>
+    <span class="s2">&quot;Key not valid (usually because does not exist or access not permitted): </span><span class="si">{}</span><span class="s2">&quot;</span>
 <span class="p">)</span>
-<span class="n">_dflt_not_found_error_msg</span> <span class="o">=</span> <span class="s1">&#39;Key not found: </span><span class="si">{}</span><span class="s1">&#39;</span>
+<span class="n">_dflt_not_found_error_msg</span> <span class="o">=</span> <span class="s2">&quot;Key not found: </span><span class="si">{}</span><span class="s2">&quot;</span>
 
 
 <div class="viewcode-block" id="KeyValidationError">
@@ -418,9 +418,9 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve a path to a full, real, (file or folder) path (opt assert existence).</span>
 <span class="sd">    That is, resolve situations where ~ and . prefix the paths.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">):</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">assert_existence</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;This path (file or folder) wasn&#39;t found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -453,9 +453,9 @@
 <span class="sd">    &#39;None&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">obj</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">quote</span><span class="si">}{</span><span class="n">obj</span><span class="si">}{</span><span class="n">quote</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">quote</span><span class="si">}{</span><span class="n">obj</span><span class="si">}{</span><span class="n">quote</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">elif</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">obj</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
     <span class="k">return</span> <span class="n">obj</span>
 
 
@@ -467,21 +467,21 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">rootdir</span><span class="p">,</span>
-        <span class="n">subpath</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">subpath</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">pattern_for_field</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">max_levels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">include_hidden</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">assert_rootdir_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;self&#39;</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;self&quot;</span><span class="p">}</span>
         <span class="n">rootdir</span> <span class="o">=</span> <span class="n">resolve_dir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">assert_existence</span><span class="o">=</span><span class="n">assert_rootdir_existence</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">max_levels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">max_levels</span> <span class="o">=</span> <span class="n">inf</span>
         <span class="n">subpath_implied_min_levels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subpath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="n">max_levels</span> <span class="o">&gt;=</span> <span class="n">subpath_implied_min_levels</span>
-        <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;max_levels is </span><span class="si">{</span><span class="n">max_levels</span><span class="si">}</span><span class="s1">, but subpath </span><span class="si">{</span><span class="n">subpath</span><span class="si">}</span><span class="s1"> would imply at least </span><span class="si">{</span><span class="n">subpath_implied_min_levels</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;max_levels is </span><span class="si">{</span><span class="n">max_levels</span><span class="si">}</span><span class="s2">, but subpath </span><span class="si">{</span><span class="n">subpath</span><span class="si">}</span><span class="s2"> would imply at least </span><span class="si">{</span><span class="n">subpath_implied_min_levels</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">pattern_for_field</span> <span class="o">=</span> <span class="n">pattern_for_field</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span> <span class="o">=</span> <span class="n">ensure_slash_suffix</span><span class="p">(</span><span class="n">rootdir</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">subpath</span> <span class="o">=</span> <span class="n">subpath</span>
@@ -504,10 +504,10 @@
             <span class="k">raise</span> <span class="n">err_type</span><span class="p">(</span><span class="n">err_msg_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">input_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">_for_repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="n">input_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">_for_repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">input_str</span><span class="si">}</span><span class="s1">)&#39;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">input_str</span><span class="si">}</span><span class="s2">)&quot;</span>
 
 <div class="viewcode-block" id="FileSysCollection.with_relative_paths">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.FileSysCollection.with_relative_paths">[docs]</a>
@@ -592,7 +592,7 @@
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.FileBytesReader">[docs]</a>
 <span class="k">class</span> <span class="nc">FileBytesReader</span><span class="p">(</span><span class="n">FileCollection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">):</span>
     <span class="n">_read_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;rb&#39;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">,</span>
         <span class="n">buffering</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">errors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -647,7 +647,7 @@
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.FileBytesPersister">[docs]</a>
 <span class="k">class</span> <span class="nc">FileBytesPersister</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="p">,</span> <span class="n">KvPersister</span><span class="p">):</span>
     <span class="n">_write_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wb&#39;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;wb&quot;</span><span class="p">,</span>
         <span class="n">buffering</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">errors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -675,7 +675,7 @@
 <span class="c1"># ---------------------------------------------------------------------------------------</span>
 <span class="c1"># TODO: Once test coverage sufficient, apply this pattern to all other convenience stores</span>
 
-<span class="n">with_relative_paths</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">mk_relative_path_store</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">)</span>
+<span class="n">with_relative_paths</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">mk_relative_path_store</span><span class="p">,</span> <span class="n">prefix_attr</span><span class="o">=</span><span class="s2">&quot;rootdir&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="FilesReader">
@@ -703,21 +703,21 @@
 <div class="viewcode-block" id="FileStringReader">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.FileStringReader">[docs]</a>
 <span class="k">class</span> <span class="nc">FileStringReader</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="p">):</span>
-    <span class="n">_read_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="o">.</span><span class="n">_read_open_kwargs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;rt&#39;</span><span class="p">)</span></div>
+    <span class="n">_read_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="o">.</span><span class="n">_read_open_kwargs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rt&quot;</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="FileStringPersister">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.FileStringPersister">[docs]</a>
 <span class="k">class</span> <span class="nc">FileStringPersister</span><span class="p">(</span><span class="n">FileBytesPersister</span><span class="p">):</span>
-    <span class="n">_read_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="o">.</span><span class="n">_read_open_kwargs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;rt&#39;</span><span class="p">)</span>
-    <span class="n">_write_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">FileBytesPersister</span><span class="o">.</span><span class="n">_write_open_kwargs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span></div>
+    <span class="n">_read_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="o">.</span><span class="n">_read_open_kwargs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rt&quot;</span><span class="p">)</span>
+    <span class="n">_write_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">FileBytesPersister</span><span class="o">.</span><span class="n">_write_open_kwargs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;wt&quot;</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="TextFilesReader">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.TextFilesReader">[docs]</a>
-<span class="nd">@with_relative_paths</span><span class="p">(</span><span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">)</span>
+<span class="nd">@with_relative_paths</span><span class="p">(</span><span class="n">prefix_attr</span><span class="o">=</span><span class="s2">&quot;rootdir&quot;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">TextFilesReader</span><span class="p">(</span><span class="n">FileStringReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;FileStringReader with relative paths&quot;&quot;&quot;</span></div>
 
@@ -725,7 +725,7 @@
 
 <div class="viewcode-block" id="TextFiles">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.TextFiles">[docs]</a>
-<span class="nd">@with_relative_paths</span><span class="p">(</span><span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">)</span>
+<span class="nd">@with_relative_paths</span><span class="p">(</span><span class="n">prefix_attr</span><span class="o">=</span><span class="s2">&quot;rootdir&quot;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">TextFiles</span><span class="p">(</span><span class="n">FileStringPersister</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;FileStringPersister with relative paths&quot;&quot;&quot;</span></div>
 
@@ -768,8 +768,8 @@
 
 <div class="viewcode-block" id="Jsons">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.Jsons">[docs]</a>
-<span class="nd">@affix_key_codec</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.json&#39;</span><span class="p">)</span>
-<span class="nd">@filt_iter</span><span class="o">.</span><span class="n">suffixes</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">)</span>
+<span class="nd">@affix_key_codec</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.json&quot;</span><span class="p">)</span>
+<span class="nd">@filt_iter</span><span class="o">.</span><span class="n">suffixes</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Jsons</span><span class="p">(</span><span class="n">JsonFiles</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Like JsonFiles, but with added .json extension handling</span>
 <span class="sd">    Namely: filtering for `.json` extensions but not showing the extension in keys&quot;&quot;&quot;</span></div>
@@ -779,7 +779,7 @@
 <span class="c1"># @wrap_kvs(key_of_id=lambda x: x[:-1], id_of_key=lambda x: x + path_sep)</span>
 <div class="viewcode-block" id="PickleStores">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.PickleStores">[docs]</a>
-<span class="nd">@mk_relative_path_store</span><span class="p">(</span><span class="n">prefix_attr</span><span class="o">=</span><span class="s1">&#39;rootdir&#39;</span><span class="p">)</span>
+<span class="nd">@mk_relative_path_store</span><span class="p">(</span><span class="n">prefix_attr</span><span class="o">=</span><span class="s2">&quot;rootdir&quot;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">PickleStores</span><span class="p">(</span><span class="n">DirCollection</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">PickleFiles</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
@@ -862,7 +862,7 @@
 
     <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;Deprecating message: Consider using the mk_dirs_if_missing decorator instead.&#39;</span>
+            <span class="sa">f</span><span class="s2">&quot;Deprecating message: Consider using the mk_dirs_if_missing decorator instead.&quot;</span>
         <span class="p">)</span>
         <span class="c1"># TODO: I&#39;m not thrilled in the way I&#39;m doing this; find alternatives</span>
         <span class="k">try</span><span class="p">:</span>
@@ -912,8 +912,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">root_folder</span> <span class="o">=</span> <span class="n">ensure_slash_suffix</span><span class="p">(</span><span class="n">root_folder</span><span class="p">)</span>
     <span class="n">wrap</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">affixed</span><span class="p">(</span>
-        <span class="n">prefix</span><span class="o">=</span><span class="n">root_folder</span> <span class="k">if</span> <span class="n">relative_paths</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-        <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;/&#39;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">slash_suffix</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="o">=</span><span class="n">root_folder</span> <span class="k">if</span> <span class="n">relative_paths</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;/&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">slash_suffix</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">folders</span> <span class="o">=</span> <span class="n">iter_dirpaths_in_folder_recursively</span><span class="p">(</span>
         <span class="n">root_folder</span><span class="p">,</span> <span class="n">max_levels</span><span class="o">=</span><span class="n">max_levels</span><span class="p">,</span> <span class="n">include_hidden</span><span class="o">=</span><span class="n">include_hidden</span>

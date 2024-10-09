@@ -5,16 +5,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.76 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.77 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=63906913"></script>
+      <script src="../../_static/documentation_options.js?v=c7e8ed0a"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -120,7 +120,7 @@
 <span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">store_decorator</span>
 <span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">cache_vals</span>
 
-<span class="n">NoSuchKey</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;NoSuchKey&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})</span>
+<span class="n">NoSuchKey</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;NoSuchKey&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})</span>
 
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">RLock</span><span class="p">,</span> <span class="n">cached_property</span>
@@ -187,8 +187,8 @@
                 <span class="n">pre_cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pre_cache</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">),</span> <span class="p">(</span>
-                    <span class="sa">f</span><span class="s1">&#39;`pre_cache` must be a bool or a MutableMapping, &#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;Was a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">pre_cache</span><span class="p">)</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">pre_cache</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="sa">f</span><span class="s2">&quot;`pre_cache` must be a bool or a MutableMapping, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Was a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">pre_cache</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">pre_cache</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">wrap_cache</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">cache_vals</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">pre_cache</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -205,18 +205,18 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span> <span class="o">=</span> <span class="n">name</span>
         <span class="k">elif</span> <span class="n">name</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s1">&#39;Cannot assign the same CachedProperty to two different names &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="si">!r}</span><span class="s1"> and </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s1">).&#39;</span>
+                <span class="s2">&quot;Cannot assign the same CachedProperty to two different names &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="si">!r}</span><span class="s2"> and </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">).&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">key</span>
-            <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;The key must be a callable or a string, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">.&#39;</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;The key must be a callable or a string, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_none_keys</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The key returned by the key function cannot be None.&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The key returned by the key function cannot be None.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -255,7 +255,7 @@
             <span class="k">return</span> <span class="bp">self</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s1">&#39;Cannot use CachedProperty instance without calling __set_name__ on it.&#39;</span>
+                <span class="s2">&quot;Cannot use CachedProperty instance without calling __set_name__ on it.&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="c1"># If cache is False, always compute the value</span>
@@ -268,7 +268,7 @@
         <span class="p">):</span>  <span class="c1"># not all objects have __dict__ (e.g. class defines slots)</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;No &#39;__dict__&#39; attribute on </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s1">&#39;instance to cache </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="si">!r}</span><span class="s1"> property.&#39;</span>
+                <span class="sa">f</span><span class="s2">&quot;instance to cache </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="si">!r}</span><span class="s2"> property.&quot;</span>
             <span class="p">)</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
 
@@ -283,8 +283,8 @@
                         <span class="n">cache</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
                     <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                         <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                            <span class="sa">f</span><span class="s1">&#39;The cache on </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s1"> instance &#39;</span>
-                            <span class="sa">f</span><span class="s1">&#39;does not support item assignment for caching </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span><span class="si">!r}</span><span class="s1"> property.&#39;</span>
+                            <span class="sa">f</span><span class="s2">&quot;The cache on </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> instance &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;does not support item assignment for caching </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span><span class="si">!r}</span><span class="s2"> property.&quot;</span>
                         <span class="p">)</span>
                         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">val</span>
@@ -746,8 +746,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">method_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">assert</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s1">&#39;If method_name is None, cls (which will play the role of method_name in &#39;</span>
-            <span class="s1">&#39;a decorator factory) must not be None.&#39;</span>
+            <span class="s2">&quot;If method_name is None, cls (which will play the role of method_name in &quot;</span>
+            <span class="s2">&quot;a decorator factory) must not be None.&quot;</span>
         <span class="p">)</span>
         <span class="n">method_name</span> <span class="o">=</span> <span class="bp">cls</span>
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
@@ -783,8 +783,8 @@
 
 
 <span class="n">_dflt_confirm_overwrite_user_input_msg</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s1">&#39;The key </span><span class="si">{k}</span><span class="s1"> already exists and has value </span><span class="si">{existing_v}</span><span class="s1">. &#39;</span>
-    <span class="s1">&#39;If you want to overwrite it with </span><span class="si">{v}</span><span class="s1">, confirm by typing </span><span class="si">{v}</span><span class="s1"> here: &#39;</span>
+    <span class="s2">&quot;The key </span><span class="si">{k}</span><span class="s2"> already exists and has value </span><span class="si">{existing_v}</span><span class="s2">. &quot;</span>
+    <span class="s2">&quot;If you want to overwrite it with </span><span class="si">{v}</span><span class="s2">, confirm by typing </span><span class="si">{v}</span><span class="s2"> here: &quot;</span>
 <span class="p">)</span>
 
 
@@ -854,11 +854,11 @@
 
 
 <span class="k">def</span> <span class="nf">decode_as_latin1</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;latin1&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;latin1&quot;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">markdown_section</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;## </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;## </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
 
 
 <span class="k">def</span> <span class="nf">save_string_to_filepath</span><span class="p">(</span><span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -873,8 +873,8 @@
 
 <span class="n">Latin1TextFiles</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">Files</span><span class="p">,</span> <span class="n">value_decoder</span><span class="o">=</span><span class="n">decode_as_latin1</span><span class="p">)</span>
 
-<span class="n">Item</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;Item&#39;</span><span class="p">)</span>
-<span class="n">Aggregate</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;Aggregate&#39;</span><span class="p">)</span>
+<span class="n">Item</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Item&quot;</span><span class="p">)</span>
+<span class="n">Aggregate</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Aggregate&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="store_aggregate">
@@ -887,7 +887,7 @@
     <span class="p">]</span> <span class="o">=</span> <span class="n">markdown_section</span><span class="p">,</span>  <span class="c1"># Function to convert key-value pairs to text</span>
     <span class="n">aggregator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
         <span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Item</span><span class="p">]],</span> <span class="n">Aggregate</span>
-    <span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">,</span>  <span class="c1"># How to aggregate the item&#39;s into an aggregate</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">,</span>  <span class="c1"># How to aggregate the item&#39;s into an aggregate</span>
     <span class="n">egress</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
         <span class="n">Callable</span><span class="p">[[</span><span class="n">Aggregate</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">str</span>
     <span class="p">]</span> <span class="o">=</span> <span class="n">identity</span><span class="p">,</span>  <span class="c1"># function to apply to the aggregate before returning</span>
@@ -1013,8 +1013,8 @@
 <span class="c1"># --------------------------------------- Misc ------------------------------------------</span>
 
 <span class="n">_dflt_ask_user_for_value_when_missing_msg</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s1">&#39;No such key was found. You can enter a value for it here &#39;</span>
-    <span class="s1">&#39;or simply hit enter to leave the slot empty&#39;</span>
+    <span class="s2">&quot;No such key was found. You can enter a value for it here &quot;</span>
+    <span class="s2">&quot;or simply hit enter to leave the slot empty&quot;</span>
 <span class="p">)</span>
 
 
@@ -1069,7 +1069,7 @@
     <span class="n">store</span> <span class="o">=</span> <span class="n">Store</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__missing__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="n">user_value</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">on_missing_msg</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39; Value for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">user_value</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">on_missing_msg</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; Value for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">user_value</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">value_preprocessor</span><span class="p">:</span>
@@ -1179,7 +1179,7 @@
 <span class="n">Key</span> <span class="o">=</span> <span class="n">Any</span>
 <span class="n">Val</span> <span class="o">=</span> <span class="n">Any</span>
 
-<span class="n">key_error_flag</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;KeyErrorFlag&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>
+<span class="n">key_error_flag</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;KeyErrorFlag&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>
 
 
 <span class="k">def</span> <span class="nf">_isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="p">):</span>
@@ -1339,14 +1339,14 @@
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_forest</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;When the src is a forest, you should key with an &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;integer. The key was </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s2">&quot;When the src is a forest, you should key with an &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;integer. The key was </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
             <span class="n">v</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
                 <span class="n">islice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">key_error_flag</span>
             <span class="p">)</span>  <span class="c1"># TODO: raise KeyError if</span>
             <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="n">key_error_flag</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No value for </span><span class="si">{</span><span class="n">k</span><span class="si">=}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No value for </span><span class="si">{</span><span class="n">k</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_src_item</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
@@ -1365,7 +1365,7 @@
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">gen</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 
 </pre></div>
 
