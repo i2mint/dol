@@ -25,13 +25,13 @@ from functools import partialmethod, partial, WRAPPER_ASSIGNMENTS
 from types import MethodType
 from inspect import Signature, signature, Parameter, getsource
 
-Key = TypeVar('Key')
+Key = TypeVar("Key")
 Key.__doc__ = "The type of the keys used in the interface (outer keys)"
-Id = TypeVar('Id')
+Id = TypeVar("Id")
 Id.__doc__ = "The type of the keys used in the backend (inner keys)"
-Val = TypeVar('Val')
+Val = TypeVar("Val")
 Val.__doc__ = "The type of the values used in the interface (outer values)"
-Data = TypeVar('Data')
+Data = TypeVar("Data")
 Data.__doc__ = "The type of the values used in the backend (inner values)"
 Item = Tuple[Key, Val]
 KeyIter = Iterable[Key]
@@ -699,7 +699,7 @@ def partialclass(cls, *args, **kwargs):
     copy_attrs(
         PartialClass,
         cls,
-        attrs=('__name__', '__qualname__', '__module__', '__doc__'),
+        attrs=("__name__", "__qualname__", "__module__", "__doc__"),
     )
 
     return PartialClass
@@ -1826,10 +1826,10 @@ def invertible_maps(
     >>> invertible_maps(None, {11: 1, 22: 2})
     ({1: 11, 2: 22}, {11: 1, 22: 2})
 
-    You can specify one argument as an iterable (of keys for the mapping) and the 
+    You can specify one argument as an iterable (of keys for the mapping) and the
     other as a function (to be applied to the keys to get the inverse mapping).
-    The function acts similarly to a `Mapping.__getitem__`, transforming each key to 
-    its associated value. The iterable defines the keys for the mapping, while the 
+    The function acts similarly to a `Mapping.__getitem__`, transforming each key to
+    its associated value. The iterable defines the keys for the mapping, while the
     function is applied to each key to produce the values.
 
     >>> invertible_maps([1,2,3], lambda x: x * 10)
@@ -1855,38 +1855,38 @@ def invertible_maps(
     ValueError: You need to specify one or both maps
     """
     if inv_mapping is None and mapping is None:
-        raise ValueError('You need to specify one or both maps')
-    
+        raise ValueError("You need to specify one or both maps")
+
     # Take care of the case where one is a function and the other is a list
     # Here, we apply the function to the list items to get the mappings
     if callable(mapping):
-        assert isinstance(inv_mapping, Iterable), (
-            f"If one argument is callable, the other one must be an iterable of keys"
-        )
+        assert isinstance(
+            inv_mapping, Iterable
+        ), f"If one argument is callable, the other one must be an iterable of keys"
         mapping = {k: mapping(k) for k in inv_mapping}
         inv_mapping = {v: k for k, v in mapping.items()}
     elif callable(inv_mapping):
-        assert isinstance(mapping, Iterable), (
-            f"If one argument is callable, the other one must be an iterable of keys"
-        )
+        assert isinstance(
+            mapping, Iterable
+        ), f"If one argument is callable, the other one must be an iterable of keys"
         inv_mapping = {k: inv_mapping(k) for k in mapping}
         mapping = {v: k for k, v in inv_mapping.items()}
-    
+
     if inv_mapping is None:
-        assert hasattr(mapping, 'items')
+        assert hasattr(mapping, "items")
         inv_mapping = {v: k for k, v in mapping.items()}
         assert len(inv_mapping) == len(
             mapping
-        ), 'The values of mapping are not unique, so the mapping is not invertible'
+        ), "The values of mapping are not unique, so the mapping is not invertible"
     elif mapping is None:
-        assert hasattr(inv_mapping, 'items')
+        assert hasattr(inv_mapping, "items")
         mapping = {v: k for k, v in inv_mapping.items()}
         assert len(mapping) == len(
             inv_mapping
-        ), 'The values of inv_mapping are not unique, so the mapping is not invertible'
+        ), "The values of inv_mapping are not unique, so the mapping is not invertible"
     else:
         assert (len(mapping) == len(inv_mapping)) and (
             mapping == {v: k for k, v in inv_mapping.items()}
-        ), 'mapping and inv_mapping are not inverse of each other!'
+        ), "mapping and inv_mapping are not inverse of each other!"
 
     return mapping, inv_mapping

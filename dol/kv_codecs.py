@@ -2,7 +2,6 @@
 Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.
 """
 
-
 # ------------------------------------ Codecs ------------------------------------------
 
 from functools import partial
@@ -47,7 +46,7 @@ def _csv_rw_sig(
 
 @Sig
 def _csv_dict_extra_sig(
-    fieldnames, restkey=None, restval='', extrasaction='raise', fieldcasts=None
+    fieldnames, restkey=None, restval="", extrasaction="raise", fieldcasts=None
 ): ...
 
 
