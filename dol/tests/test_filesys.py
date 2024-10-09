@@ -4,7 +4,7 @@ import os
 from functools import partial
 import tempfile
 from pathlib import Path
-from typing import MutableMapping
+from typing import Mapping
 import pytest
 
 from dol.tests.utils_for_tests import mk_test_store_from_keys, mk_tmp_local_store
@@ -60,6 +60,28 @@ def empty_directory(s, path_must_include=('test_mk_dirs_if_missing',)):
                 os.remove(item.path)
     except FileNotFoundError:
         pass
+
+
+# TODO: Should have a more general version of this that works with any MutableMapping
+#  store as target store (instead of dirpath).
+#  That's easy -- but then we need to also be able to make a filesys target store
+#  that it works with (need to make folders on write, etc.)
+def populate_folder(dirpath, contents: Mapping):
+    """Populate a folder with the given (Mapping) contents."""
+    for key, content in contents.items():
+        path = os.path.join(dirpath, key)
+        if isinstance(content, Mapping):
+            os.makedirs(path, exist_ok=True)
+            populate_folder(path, content)
+        else:
+            if isinstance(content, str):
+                data_type = 's'
+            elif isinstance(content, bytes):
+                data_type = 'b'
+            else:
+                raise ValueError(f'Unsupported type: {type(content)}')
+            with open(path, 'w' + data_type) as f:
+                f.write(content)
 
 
 # --------------------------------------------------------------------------------------
@@ -141,3 +163,80 @@ def test_mk_dirs_if_missing():
     # TextFilesWithAutoMkdir = mk_tmp_local_store(TextFiles)
     # sss = TextFilesWithAutoMkdir(s.rootdir)
     # assert sss["another/path/that/does/not/exist"] == "hello"
+
+
+def test_subfolder_stores():
+    import os
+    import tempfile
+    from dol import Files
+    from dol.tests.utils_for_tests import mk_tmp_local_store
+
+    # from dol.kv_codecs import KeyCodecs
+    # from pathlib import Path
+
+    # Create a temporary directory
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Define the folder structure and contents
+        data = {
+            'folder1': {
+                'subfolder': {
+                    'apple.p': b'pie',
+                },
+                'day.doc': b'time',
+            },
+            'folder2': {
+                'this.txt': b'that',
+                'over.json': b'there',
+            },
+        }
+
+        # Create the directory structure in the temporary directory
+        populate_folder(temp_dir, data)
+
+        # Now import the function to be tested
+        from dol.filesys import subfolder_stores
+
+        # Invoke subfolder_stores with the temporary directory
+        stores = subfolder_stores(
+            root_folder=temp_dir,
+            max_levels=None,
+            include_hidden=False,
+            relative_paths=True,
+            slash_suffix=False,
+            folder_to_store=Files,
+        )
+
+        # Collect the keys (subfolder paths)
+        store_keys = set(stores.keys())
+
+        # Expected subfolder paths (relative to temp_dir)
+        expected_subfolders = {
+            'folder1',
+            os.path.join('folder1', 'subfolder'),
+            'folder2',
+        }
+
+        # Assert that the discovered subfolders match the expected ones
+        assert (
+            store_keys == expected_subfolders
+        ), f'Expected {expected_subfolders}, got {store_keys}'
+
+        # Test that the stores can access the files in their respective folders
+        # Testing folder1
+        folder1_store = stores['folder1']
+        assert isinstance(folder1_store, Files)
+        assert set(folder1_store.keys()) == {'day.doc', 'subfolder/apple.p'}
+        assert folder1_store['day.doc'] == b'time'
+
+        # Testing folder1/subfolder
+        subfolder_store = stores[os.path.join('folder1', 'subfolder')]
+        assert isinstance(subfolder_store, Files)
+        assert set(subfolder_store.keys()) == {'apple.p'}
+        assert subfolder_store['apple.p'] == b'pie'
+
+        # Testing folder2
+        folder2_store = stores['folder2']
+        assert isinstance(folder2_store, Files)
+        assert set(folder2_store.keys()) == {'this.txt', 'over.json'}
+        assert folder2_store['this.txt'] == b'that'
+        assert folder2_store['over.json'] == b'there'

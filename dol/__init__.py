@@ -97,6 +97,7 @@ from dol.filesys import (
     Jsons,  # Same as JsonFiles, but with added .json extension handling
     create_directories,
     process_path,
+    subfolder_stores,  # a store of stores, each store corresponding to a subfolder
 )
 
 from dol.util import (

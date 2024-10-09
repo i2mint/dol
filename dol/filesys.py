@@ -355,7 +355,10 @@ class FileSysCollection(Collection):
         return bool(self._key_pattern.match(k))
 
     def validate_key(
-        self, k, err_msg_format=_dflt_not_valid_error_msg, err_type=KeyValidationError,
+        self,
+        k,
+        err_msg_format=_dflt_not_valid_error_msg,
+        err_type=KeyValidationError,
     ):
         if not self.is_valid_key(k):
             raise err_type(err_msg_format.format(k))
@@ -683,3 +686,36 @@ class MakeMissingDirsStoreMixin:
             # TODO: Undesirable here: If the setitem still fails, we created dirs
             #  already, for nothing, and are not cleaning up (if clean up need to make
             #  sure to not delete dirs that already existed!)
+
+
+# -------------------------------------------------------------------------------------
+
+from dol.kv_codecs import KeyCodecs
+
+
+def subfolder_stores(
+    root_folder,
+    *,
+    max_levels: Optional[int] = None,
+    include_hidden: bool = False,
+    relative_paths: bool = True,
+    slash_suffix: bool = False,
+    folder_to_store=Files,
+):
+    """
+    Create a store of subfolders of a given folder, where the keys are the subfolder
+    paths (by default, relative and slash-less) and the values are stores of these
+    subfolders.
+
+    By default, all subfolders will be taken, recursively, but this can be controlled by
+    the `max_levels` parameter.
+    """
+    root_folder = ensure_slash_suffix(root_folder)
+    wrap = KeyCodecs.affixed(
+        prefix=root_folder if relative_paths else '',
+        suffix='/' if not slash_suffix else '',
+    )
+    folders = iter_dirpaths_in_folder_recursively(
+        root_folder, max_levels=max_levels, include_hidden=include_hidden
+    )
+    return wrap({path: folder_to_store(path) for path in folders})
