@@ -9,7 +9,7 @@ from dol.base import Store
 from dol.trans import store_decorator
 from dol.caching import cache_vals
 
-NoSuchKey = type('NoSuchKey', (), {})
+NoSuchKey = type("NoSuchKey", (), {})
 
 
 from functools import RLock, cached_property
@@ -74,8 +74,8 @@ class CachedProperty:
                 pre_cache = dict()
             else:
                 assert isinstance(pre_cache, MutableMapping), (
-                    f'`pre_cache` must be a bool or a MutableMapping, '
-                    f'Was a {type(pre_cache)}: {pre_cache}'
+                    f"`pre_cache` must be a bool or a MutableMapping, "
+                    f"Was a {type(pre_cache)}: {pre_cache}"
                 )
             self.wrap_cache = partial(cache_vals, cache=pre_cache)
         else:
@@ -92,18 +92,18 @@ class CachedProperty:
             self.attrname = name
         elif name != self.attrname:
             raise TypeError(
-                'Cannot assign the same CachedProperty to two different names '
-                f'({self.attrname!r} and {name!r}).'
+                "Cannot assign the same CachedProperty to two different names "
+                f"({self.attrname!r} and {name!r})."
             )
         if isinstance(self.key, str):
             self.cache_key = self.key
         else:
             assert callable(
                 self.key
-            ), f'The key must be a callable or a string, not {type(self.key).__name__}.'
+            ), f"The key must be a callable or a string, not {type(self.key).__name__}."
             self.cache_key = self.key(self.attrname)
             if self.cache_key is None and not self.allow_none_keys:
-                raise TypeError('The key returned by the key function cannot be None.')
+                raise TypeError("The key returned by the key function cannot be None.")
 
     def __get_cache(self, instance):
         """
@@ -142,7 +142,7 @@ class CachedProperty:
             return self
         if self.attrname is None:
             raise TypeError(
-                'Cannot use CachedProperty instance without calling __set_name__ on it.'
+                "Cannot use CachedProperty instance without calling __set_name__ on it."
             )
         if self.cache is False:
             # If cache is False, always compute the value
@@ -155,7 +155,7 @@ class CachedProperty:
         ):  # not all objects have __dict__ (e.g. class defines slots)
             msg = (
                 f"No '__dict__' attribute on {type(instance).__name__!r} "
-                f'instance to cache {self.attrname!r} property.'
+                f"instance to cache {self.attrname!r} property."
             )
             raise TypeError(msg) from None
 
@@ -170,8 +170,8 @@ class CachedProperty:
                         cache[self.cache_key] = val
                     except TypeError:
                         msg = (
-                            f'The cache on {type(instance).__name__!r} instance '
-                            f'does not support item assignment for caching {self.cache_key!r} property.'
+                            f"The cache on {type(instance).__name__!r} instance "
+                            f"does not support item assignment for caching {self.cache_key!r} property."
                         )
                         raise TypeError(msg) from None
         return val
@@ -621,8 +621,8 @@ def cache_property_method(
     """
     if method_name is None:
         assert cls is not None, (
-            'If method_name is None, cls (which will play the role of method_name in '
-            'a decorator factory) must not be None.'
+            "If method_name is None, cls (which will play the role of method_name in "
+            "a decorator factory) must not be None."
         )
         method_name = cls
         return partial(
@@ -657,8 +657,8 @@ def cache_property_method(
 
 
 _dflt_confirm_overwrite_user_input_msg = (
-    'The key {k} already exists and has value {existing_v}. '
-    'If you want to overwrite it with {v}, confirm by typing {v} here: '
+    "The key {k} already exists and has value {existing_v}. "
+    "If you want to overwrite it with {v}, confirm by typing {v} here: "
 )
 
 
@@ -725,11 +725,11 @@ from dol.filesys import Files
 
 
 def decode_as_latin1(b: bytes) -> str:
-    return b.decode('latin1')
+    return b.decode("latin1")
 
 
 def markdown_section(k: KT, v: VT) -> str:
-    return f'## {k}\n\n{v.strip()}\n\n'
+    return f"## {k}\n\n{v.strip()}\n\n"
 
 
 def save_string_to_filepath(filepath: str, string: str):
@@ -744,8 +744,8 @@ def identity(x):
 
 Latin1TextFiles = wrap_kvs(Files, value_decoder=decode_as_latin1)
 
-Item = TypeVar('Item')
-Aggregate = TypeVar('Aggregate')
+Item = TypeVar("Item")
+Aggregate = TypeVar("Aggregate")
 
 
 def store_aggregate(
@@ -756,7 +756,7 @@ def store_aggregate(
     ] = markdown_section,  # Function to convert key-value pairs to text
     aggregator: Callable[
         [Iterable[Item]], Aggregate
-    ] = '\n\n'.join,  # How to aggregate the item's into an aggregate
+    ] = "\n\n".join,  # How to aggregate the item's into an aggregate
     egress: Union[
         Callable[[Aggregate], Any], str
     ] = identity,  # function to apply to the aggregate before returning
@@ -881,8 +881,8 @@ def store_aggregate(
 # --------------------------------------- Misc ------------------------------------------
 
 _dflt_ask_user_for_value_when_missing_msg = (
-    'No such key was found. You can enter a value for it here '
-    'or simply hit enter to leave the slot empty'
+    "No such key was found. You can enter a value for it here "
+    "or simply hit enter to leave the slot empty"
 )
 
 
@@ -932,7 +932,7 @@ def ask_user_for_value_when_missing(
     store = Store.wrap(store)
 
     def __missing__(self, k):
-        user_value = input(on_missing_msg + f' Value for {k}:\n')
+        user_value = input(on_missing_msg + f" Value for {k}:\n")
 
         if user_value:
             if value_preprocessor:
@@ -1038,7 +1038,7 @@ Src = Any
 Key = Any
 Val = Any
 
-key_error_flag = type('KeyErrorFlag', (), {})()
+key_error_flag = type("KeyErrorFlag", (), {})()
 
 
 def _isinstance(obj, class_or_tuple):
@@ -1196,14 +1196,14 @@ class Forest(KvReader):
     def __getitem__(self, k):
         if self.is_forest:
             assert isinstance(k, int), (
-                f'When the src is a forest, you should key with an '
-                f'integer. The key was {k}'
+                f"When the src is a forest, you should key with an "
+                f"integer. The key was {k}"
             )
             v = next(
                 islice(self.src, k, k + 1), key_error_flag
             )  # TODO: raise KeyError if
             if v is key_error_flag:
-                raise KeyError(f'No value for {k=}')
+                raise KeyError(f"No value for {k=}")
         else:
             v = self.get_src_item(self.src, k)
         if self.is_leaf(k, v):
@@ -1222,4 +1222,4 @@ class Forest(KvReader):
         return dict(gen())
 
     def __repr__(self):
-        return f'{type(self).__name__}({self.src})'
+        return f"{type(self).__name__}({self.src})"

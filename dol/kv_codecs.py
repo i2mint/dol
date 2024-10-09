@@ -2,6 +2,7 @@
 Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.
 """
 
+
 # ------------------------------------ Codecs ------------------------------------------
 
 from functools import partial
@@ -31,14 +32,14 @@ def _string(string: str): ...
 
 @Sig
 def _csv_rw_sig(
-    dialect: str = 'excel',
+    dialect: str = "excel",
     *,
-    delimiter: str = ',',
+    delimiter: str = ",",
     quotechar: Optional[str] = '"',
     escapechar: Optional[str] = None,
     doublequote: bool = True,
     skipinitialspace: bool = False,
-    lineterminator: str = '\r\n',
+    lineterminator: str = "\r\n",
     quoting=0,
     strict: bool = False,
 ): ...
@@ -80,7 +81,7 @@ def csv_dict_encode(string, *args, **kwargs):
     'a,b\r\n1,2\r\n3,4\r\n'
 
     """
-    _ = kwargs.pop('fieldcasts', None)  # this one is for decoder only
+    _ = kwargs.pop("fieldcasts", None)  # this one is for decoder only
     with io.StringIO() as buffer:
         writer = csv.DictWriter(buffer, *args, **kwargs)
         writer.writeheader()
@@ -121,7 +122,7 @@ def csv_dict_decode(string, *args, **kwargs):
     [{'a': '1', 'b': 2.0}, {'a': '3', 'b': 4.0}]
 
     """
-    fieldcasts = kwargs.pop('fieldcasts', lambda row: row)
+    fieldcasts = kwargs.pop("fieldcasts", lambda row: row)
     if isinstance(fieldcasts, Iterable):
         if isinstance(fieldcasts, dict):
             cast_dict = dict(fieldcasts)
@@ -216,9 +217,9 @@ def codec_wrap(cls, encoder: Callable, decoder: Callable, *, exclude=()):
 
 
 # wrappers to manage encoder and decoder arguments and signature
-value_wrap = named_partial(codec_wrap, ValueCodec, __name__='value_wrap')
-key_wrap = named_partial(codec_wrap, KeyCodec, __name__='key_wrap')
-key_value_wrap = named_partial(codec_wrap, KeyValueCodec, __name__='key_value_wrap')
+value_wrap = named_partial(codec_wrap, ValueCodec, __name__="value_wrap")
+key_wrap = named_partial(codec_wrap, KeyCodec, __name__="key_wrap")
+key_value_wrap = named_partial(codec_wrap, KeyValueCodec, __name__="key_value_wrap")
 
 
 class CodecCollection:
@@ -228,21 +229,21 @@ class CodecCollection:
     """
 
     def __init__(self, *args, **kwargs):
-        name = getattr(type(self), '__name__', '')
+        name = getattr(type(self), "__name__", "")
         raise ValueError(
-            f'The {name} class is not meant to be instantiated, '
-            'but only act as a collection of codec factories'
+            f"The {name} class is not meant to be instantiated, "
+            "but only act as a collection of codec factories"
         )
 
     @classmethod
     def _iter_codecs(cls):
         def is_value_codec(attr_val):
-            func = getattr(attr_val, 'func', None)
-            name = getattr(func, '__name__', '')
-            return name == '_codec_wrap'
+            func = getattr(attr_val, "func", None)
+            name = getattr(func, "__name__", "")
+            return name == "_codec_wrap"
 
         for attr in dir(cls):
-            if not attr.startswith('_'):
+            if not attr.startswith("_"):
                 attr_val = getattr(cls, attr, None)
                 if is_value_codec(attr_val):
                     yield attr
@@ -320,10 +321,10 @@ class ValueCodecs(CodecCollection):
 
     str_to_bytes: ValueCodec[bytes, bytes] = value_wrap(str.encode, bytes.decode)
     stringio: ValueCodec[str, io.StringIO] = value_wrap(
-        io.StringIO, methodcaller('read')
+        io.StringIO, methodcaller("read")
     )
     bytesio: ValueCodec[bytes, io.BytesIO] = value_wrap(
-        io.BytesIO, methodcaller('read')
+        io.BytesIO, methodcaller("read")
     )
 
     pickle: ValueCodec[Any, bytes] = value_wrap(pickle.dumps, pickle.loads)
@@ -347,7 +348,7 @@ class ValueCodecs(CodecCollection):
     bz2: ValueCodec[bytes, bytes] = value_wrap(bz2.compress, bz2.decompress)
     tarfile: ValueCodec[bytes, bytes] = value_wrap(tar_compress, tar_decompress)
     lzma: ValueCodec[bytes, bytes] = value_wrap(
-        lzma.compress, lzma.decompress, exclude=('format',)
+        lzma.compress, lzma.decompress, exclude=("format",)
     )
 
     import quopri, plistlib
@@ -356,7 +357,7 @@ class ValueCodecs(CodecCollection):
         quopri.encodestring, quopri.decodestring
     )
     plistlib: ValueCodec[bytes, bytes] = value_wrap(
-        plistlib.dumps, plistlib.loads, exclude=('fmt',)
+        plistlib.dumps, plistlib.loads, exclude=("fmt",)
     )
 
     # Any is really xml.etree.ElementTree.Element, but didn't want to import
@@ -426,7 +427,7 @@ class KeyCodecs(CodecCollection):
     A collection of key codecs
     """
 
-    def affixed(prefix: str = '', suffix: str = ''):
+    def affixed(prefix: str = "", suffix: str = ""):
         return affix_key_codec(prefix=prefix, suffix=suffix)
 
     def suffixed(suffix: str):
@@ -499,16 +500,16 @@ def add_invertible_key_decoder(store: Mapping, *, decoder: Callable):
 
 
 dflt_ext_mapping = {
-    '.json': ValueCodecs.json,
-    '.csv': ValueCodecs.csv,
-    '.csv_dict': ValueCodecs.csv_dict,
-    '.pickle': ValueCodecs.pickle,
-    '.gz': ValueCodecs.gzip,
-    '.bz2': ValueCodecs.bz2,
-    '.lzma': ValueCodecs.lzma,
-    '.zip': ValueCodecs.zipfile,
-    '.tar': ValueCodecs.tarfile,
-    '.xml': ValueCodecs.xml_etree,
+    ".json": ValueCodecs.json,
+    ".csv": ValueCodecs.csv,
+    ".csv_dict": ValueCodecs.csv_dict,
+    ".pickle": ValueCodecs.pickle,
+    ".gz": ValueCodecs.gzip,
+    ".bz2": ValueCodecs.bz2,
+    ".lzma": ValueCodecs.lzma,
+    ".zip": ValueCodecs.zipfile,
+    ".tar": ValueCodecs.tarfile,
+    ".xml": ValueCodecs.xml_etree,
 }
 
 
@@ -529,7 +530,7 @@ class NotGiven:
     """A singleton to indicate that a value was not given"""
 
     def __repr__(self):
-        return 'NotGiven'
+        return "NotGiven"
 
 
 from typing import NewType

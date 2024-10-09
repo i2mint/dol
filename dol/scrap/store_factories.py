@@ -1,4 +1,5 @@
 """Utils to make stores"""
+
 from typing import Mapping, Callable, KT, VT, Iterator, Any, NewType, Collection
 import dataclasses
 from dataclasses import dataclass
@@ -7,12 +8,12 @@ from functools import partial
 from contextlib import suppress
 from dol.base import KvReader
 
-Getter = NewType('Getter', Callable[[Mapping, KT], VT])
-Lister = NewType('Getter', Callable[[Mapping], Iterator[KT]])
-Sizer = NewType('Sizer', Callable[[Mapping], int])
-ContainmentChecker = NewType('ContainmentChecker', Callable[[Mapping], bool])
-Setter = NewType('Setter', Callable[[Mapping, KT, VT], Any])
-Deleter = NewType('Deleter', Callable[[Mapping, KT], Any])
+Getter = NewType("Getter", Callable[[Mapping, KT], VT])
+Lister = NewType("Getter", Callable[[Mapping], Iterator[KT]])
+Sizer = NewType("Sizer", Callable[[Mapping], int])
+ContainmentChecker = NewType("ContainmentChecker", Callable[[Mapping], bool])
+Setter = NewType("Setter", Callable[[Mapping, KT, VT], Any])
+Deleter = NewType("Deleter", Callable[[Mapping, KT], Any])
 
 count_by_iteration: Sizer
 check_by_iteration: ContainmentChecker

@@ -10,7 +10,10 @@ from dol.trans import store_decorator
 
 def is_a_cache(obj):
     return all(
-        map(partial(hasattr, obj), ('__contains__', '__getitem__', '__setitem__'),)
+        map(
+            partial(hasattr, obj),
+            ("__contains__", "__getitem__", "__setitem__"),
+        )
     )
 
 
@@ -25,12 +28,13 @@ def get_cache(cache):
 ########################################################################################################################
 # Read caching
 
+
 # The following is a "Cache-Aside" read-cache with NO builtin cache update or refresh mechanism.
 def mk_memoizer(cache):
     """
     Make a memoizer that caches the output of a getter function in a cache.
 
-    Note: This is a specialized memoizer for getter functions/methods, i.e. 
+    Note: This is a specialized memoizer for getter functions/methods, i.e.
     functions/methods that have the signature (instance, key) and return a value.
 
     :param cache: The cache to use. Must have __getitem__ and __setitem__ methods.
@@ -88,7 +92,7 @@ def _mk_cache_instance(cache=None, assert_attrs=()):
     if cache is None:
         cache = {}  # use a dict (memory caching) by default
     elif isinstance(cache, type) or (  # if caching_store is a type...
-        not hasattr(cache, '__getitem__')  # ... or is a callable without a __getitem__
+        not hasattr(cache, "__getitem__")  # ... or is a callable without a __getitem__
         and callable(cache)
     ):
         cache = (
@@ -97,7 +101,7 @@ def _mk_cache_instance(cache=None, assert_attrs=()):
     for method in assert_attrs or ():
         assert hasattr(
             cache, method
-        ), f'cache should have the {method} method, but does not: {cache}'
+        ), f"cache should have the {method} method, but does not: {cache}"
     return cache
 
 
@@ -178,14 +182,15 @@ def cache_vals(store=None, *, cache=dict):
     # cache = _mk_cache_instance(cache, assert_attrs=('__getitem__', '__setitem__'))
     assert isinstance(
         store, type
-    ), f'store should be a type, was a {type(store)}: {store}'
+    ), f"store should be a type, was a {type(store)}: {store}"
 
     class CachedStore(store):
         @wraps(store)
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self._cache = _mk_cache_instance(
-                cache, assert_attrs=('__getitem__', '__contains__', '__setitem__'),
+                cache,
+                assert_attrs=("__getitem__", "__contains__", "__setitem__"),
             )
             # self.__getitem__ = mk_memoizer(self._cache)(self.__getitem__)
 
@@ -275,13 +280,13 @@ def mk_sourced_store(store=None, *, source=None, return_source_data=True):
     >>> list(s)
     ['some', 'foo', 'hello', 'something']
     """
-    assert source is not None, 'You need to specify a source'
+    assert source is not None, "You need to specify a source"
 
-    source = _mk_cache_instance(source, assert_attrs=('__getitem__',))
+    source = _mk_cache_instance(source, assert_attrs=("__getitem__",))
 
     assert isinstance(
         store, type
-    ), f'store should be a type, was a {type(store)}: {store}'
+    ), f"store should be a type, was a {type(store)}: {store}"
 
     if return_source_data:
 
@@ -348,7 +353,7 @@ def _slow_but_somewhat_general_hash(*args, **kwargs):
     """
     if len(kwargs) == 0 and len(args) == 1:
         single_val = args[0]
-        if hasattr(single_val, 'items'):
+        if hasattr(single_val, "items"):
             return tuple(
                 (k, _slow_but_somewhat_general_hash(v)) for k, v in single_val.items()
             )
@@ -404,7 +409,7 @@ def store_cached(store, key_func: Callable):
     {(1, 2): 3, (3, 4): 7}
     """
     assert callable(key_func), (
-        'key_func should be a callable: '
+        "key_func should be a callable: "
         "It's called on the wrapped function's input to make a key for the caching store."
     )
 
@@ -498,7 +503,7 @@ def store_cached_with_single_key(store, key):
 
 
 def ensure_clear_to_kv_store(store):
-    if not hasattr(store, 'clear'):
+    if not hasattr(store, "clear"):
 
         def _clear(kv_store):
             for k in kv_store:
@@ -512,14 +517,14 @@ def ensure_clear_to_kv_store(store):
 def flush_on_exit(cls):
     new_cls = type(cls.__name__, (cls,), {})
 
-    if not hasattr(new_cls, '__enter__'):
+    if not hasattr(new_cls, "__enter__"):
 
         def __enter__(self):
             return self
 
         new_cls.__enter__ = __enter__
 
-    if not hasattr(new_cls, '__exit__'):
+    if not hasattr(new_cls, "__exit__"):
 
         def __exit__(self, *args, **kwargs):
             return self.flush_cache()
@@ -627,15 +632,15 @@ def mk_write_cached_store(store=None, *, w_cache=dict, flush_cache_condition=Non
     store: {0: 0, 1: 10, 2: 20, 3: 30, 4: 40, 5: 50, 6: 60} ----- store._w_cache: {}
     """
 
-    w_cache = _mk_cache_instance(w_cache, ('clear', '__setitem__', 'items'))
+    w_cache = _mk_cache_instance(w_cache, ("clear", "__setitem__", "items"))
 
     if not has_enabled_clear_method(w_cache):
         raise TypeError(
-            '''w_cache needs to have an enabled clear method to be able to act as a write cache.
+            """w_cache needs to have an enabled clear method to be able to act as a write cache.
         You can wrap w_cache in dol.trans.ensure_clear_method to inject a clear method, 
         but BE WARNED: mk_write_cached_store will immediately delete all contents of `w_cache`!
         So don't give it your filesystem or important DB to delete!
-        '''
+        """
         )
     w_cache.clear()  # assure the cache is empty, by emptying it.
 
@@ -651,9 +656,9 @@ def mk_write_cached_store(store=None, *, w_cache=dict, flush_cache_condition=Non
 
         else:
             assert callable(flush_cache_condition), (
-                'flush_cache_condition must be None or a callable ',
-                'taking the (write) cache store as an input and returning'
-                'True if and only if the cache should be flushed.',
+                "flush_cache_condition must be None or a callable ",
+                "taking the (write) cache store as an input and returning"
+                "True if and only if the cache should be flushed.",
             )
 
             def __setitem__(self, k, v):
@@ -662,7 +667,7 @@ def mk_write_cached_store(store=None, *, w_cache=dict, flush_cache_condition=Non
                     self.flush_cache()
                 return r
 
-        if not hasattr(store, 'flush'):
+        if not hasattr(store, "flush"):
 
             def flush(self, items: Iterable = tuple()):
                 for k, v in items:
@@ -771,7 +776,7 @@ class WriteBackChainMap(ChainMap):
 
 
 def _mk_cache_method_local_path_key(
-    method, args, kwargs, ext='.p', path_sep=os.path.sep
+    method, args, kwargs, ext=".p", path_sep=os.path.sep
 ):
     """"""
     return (
@@ -780,8 +785,8 @@ def _mk_cache_method_local_path_key(
         + method.__qualname__
         + path_sep
         + (
-            ','.join(map(str, args))
-            + ','.join(f'{k}={v}' for k, v in kwargs.items())
+            ",".join(map(str, args))
+            + ",".join(f"{k}={v}" for k, v in kwargs.items())
             + ext
         )
     )

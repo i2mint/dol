@@ -50,8 +50,8 @@ def define_extend_as_seq_of_appends(obj):
 
     """
     assert hasattr(
-        obj, 'append'
-    ), f'Your object needs to have an append method! Object was: {obj}'
+        obj, "append"
+    ), f"Your object needs to have an append method! Object was: {obj}"
 
     def extend(self, items):
         for item in items:
@@ -232,10 +232,10 @@ class mk_item2kv_for:
     @staticmethod
     def uuid_key(hex=True):
         """Make an item2kv function that uses a uuid hex as the key.
-        This uses uuid.uuid1() to generate the uuid, so it is not cryptographically 
+        This uses uuid.uuid1() to generate the uuid, so it is not cryptographically
         secure, and it may not be unique if you generate more than 10k uuids per second.
         One advantage though, is that the uuid is time-based, so it can be used to sort
-        the keys in the order they were IDed. 
+        the keys in the order they were IDed.
 
         Returns: an item -> (uuid, item) function
 
@@ -430,9 +430,9 @@ def appendable(store_cls=None, *, item2kv, return_keys=False):
         exhaust(gen)
 
     return type(
-        'Appendable' + store_cls.__name__,
+        "Appendable" + store_cls.__name__,
         (store_cls,),
-        {'append': append, 'extend': extend},
+        {"append": append, "extend": extend},
     )
 
 
@@ -443,7 +443,7 @@ appendable.mk_item2kv_for = mk_item2kv_for  # adding as attribute for convenient
 from collections.abc import Sequence
 from typing import Iterable, Optional
 
-NotAVal = type('NotAVal', (), {})()  # singleton instance to distinguish from None
+NotAVal = type("NotAVal", (), {})()  # singleton instance to distinguish from None
 
 
 from collections.abc import MutableMapping
@@ -452,7 +452,7 @@ from operator import add
 
 
 def read_add_write(store, key, iterable, add_iterables=add):
-    """Retrieves """
+    """Retrieves"""
     if key in store:
         store[key] = add_iterables(store[key], iterable)
     else:
@@ -468,7 +468,7 @@ class Extender:
     Unless a different ``extend_store_value`` function is given,
     the sum of the two iterables must be an iterable.
 
-    The default ``extend_store_value`` is such that if the key is not in the store, 
+    The default ``extend_store_value`` is such that if the key is not in the store,
     the value is simply written in the store.
 
     The default ``append_method`` is ``None``, which means that the ``append`` method
@@ -514,7 +514,7 @@ class Extender:
             self.append = partial(append_method, self)
 
     def extend(self, iterable):
-        """Extend the iterable stored in """
+        """Extend the iterable stored in"""
         return self.extend_store_value(self.store, self.key, iterable)
 
     __iadd__ = extend  # Note: Better to forward dunders to non-dunder-methods
@@ -620,14 +620,14 @@ class FirstAppendOnly(Sequence):
 
     def __getitem__(self, k):
         if len(self) == 0:
-            raise IndexError(f'There are no items in this {self.__class__} instance')
+            raise IndexError(f"There are no items in this {self.__class__} instance")
         elif k == 0:
             return self.val
         elif isinstance(k, slice):
             return [self.val][k]
         else:
             raise IndexError(
-                f'A {self.__class__} instance can only have one value, or none at all.'
+                f"A {self.__class__} instance can only have one value, or none at all."
             )
 
     # @staticmethod

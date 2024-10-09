@@ -11,7 +11,7 @@ from dol.util import max_common_prefix
 from dol.sources import ObjReader  # because it used to be here
 
 
-Source = TypeVar('Source')  # the source of some values
+Source = TypeVar("Source")  # the source of some values
 Getter = Callable[
     [Source, KT], VT
 ]  # a function that gets a value from a source and a key
@@ -86,7 +86,7 @@ class KeysReader(Mapping):
         *,
         key_error_msg: Callable[
             [Source, KT], str
-        ] = 'Key {key} was not found in {src} should be in .key_collection attribute)'.format,
+        ] = "Key {key} was not found in {src} should be in .key_collection attribute)".format,
     ) -> None:
         self.src = src
         self.key_collection = key_collection
@@ -130,14 +130,14 @@ class ExplicitKeys(Collection):
     ['foo', 'bar', 'alice']
     """
 
-    __slots__ = ('_keys_cache',)
+    __slots__ = ("_keys_cache",)
 
     def __init__(
         self, key_collection: CollectionType
     ):  # don't remove this init: Don't. Need for _keys_cache init
         assert isinstance(key_collection, CollectionType), (
-            'key_collection must be a collections.abc.Collection, i.e. have a __len__, __contains__, and __len__.'
-            'The key_collection you gave me was a {}'.format(type(key_collection))
+            "key_collection must be a collections.abc.Collection, i.e. have a __len__, __contains__, and __len__."
+            "The key_collection you gave me was a {}".format(type(key_collection))
         )
         # self._key_collection = key_collection
         self._keys_cache = key_collection
@@ -280,7 +280,7 @@ class ObjDumper(object):
     def __init__(self, save_data_to_key, data_of_obj=None):
         self.save_data_to_key = save_data_to_key
         if data_of_obj is not None or not callable(data_of_obj):
-            raise TypeError('serializer must be None or a callable')
+            raise TypeError("serializer must be None or a callable")
         self.data_of_obj = data_of_obj
 
     def __call__(self, k, v):

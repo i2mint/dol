@@ -39,7 +39,7 @@ ValIter = Iterable[Val]
 ItemIter = Iterable[Item]
 
 # monkey patching WRAPPER_ASSIGNMENTS to get "proper" wrapping (adding defaults and kwdefaults
-wrapper_assignments = (*WRAPPER_ASSIGNMENTS, '__defaults__', '__kwdefaults__')
+wrapper_assignments = (*WRAPPER_ASSIGNMENTS, "__defaults__", "__kwdefaults__")
 
 update_wrapper = partial(_update_wrapper, assigned=wrapper_assignments)
 wraps = partial(_wraps, assigned=wrapper_assignments)
@@ -118,7 +118,7 @@ def add_as_attribute_of(obj, name=None):
 
     def _decorator(f):
         attrname = name or f.__name__
-        if attrname.startswith('_'):
+        if attrname.startswith("_"):
             attrname = attrname[1:]  # remove leading underscore
         setattr(obj, attrname, f)
         return f
@@ -210,7 +210,7 @@ def decorate_callables(decorator, cls=None):
     for name, attr in vars(cls).items():
         if isinstance(attr, LiteralVal):
             setattr(cls, name, attr.get_val())
-        elif not name.startswith('_') and callable(attr):
+        elif not name.startswith("_") and callable(attr):
             setattr(cls, name, decorator(attr))
     return cls
 
@@ -314,7 +314,7 @@ def not_a_mac_junk_path(path: str):
     >>> list(filter(not_a_mac_junk_path, paths))
     ['A/normal/path', 'foo/b']
     """
-    if path.endswith('.DS_Store') or '__MACOSX' in path.split(os.path.sep):
+    if path.endswith(".DS_Store") or "__MACOSX" in path.split(os.path.sep):
         return False  # This is indeed math junk (so filter out)
     return True  # this is not mac junk (you can keep it)
 
@@ -330,10 +330,10 @@ def inject_method(obj, method_function, method_name=None):
         method_name = method_function.__name__
     assert callable(
         method_function
-    ), f'method_function (the second argument) is supposed to be a callable!'
+    ), f"method_function (the second argument) is supposed to be a callable!"
     assert isinstance(
         method_name, str
-    ), f'method_name (the third argument) is supposed to be a string!'
+    ), f"method_name (the third argument) is supposed to be a string!"
     if not isinstance(obj, type):
         method_function = MethodType(method_function, obj)
     setattr(obj, method_name, method_function)
@@ -362,7 +362,7 @@ def _disabled_clear_method(self):
                 pass
 
     """
-    raise NotImplementedError(f'Instance of {type(self)}: {self.clear.__doc__}')
+    raise NotImplementedError(f"Instance of {type(self)}: {self.clear.__doc__}")
 
 
 # to be able to check if clear is disabled (see ensure_clear_method function for example):
@@ -371,8 +371,8 @@ _disabled_clear_method.disabled = True
 
 def has_enabled_clear_method(store):
     """Returns True iff obj has a clear method that is enabled (i.e. not disabled)"""
-    return hasattr(store, 'clear') and (  # has a clear method...
-        not hasattr(store.clear, 'disabled')  # that doesn't have a disabled attribute
+    return hasattr(store, "clear") and (  # has a clear method...
+        not hasattr(store.clear, "disabled")  # that doesn't have a disabled attribute
         or not store.clear.disabled
     )  # ... or if it does, than it must not be == True
 
@@ -398,7 +398,7 @@ _delete_keys_one_by_one_with_keyerror_supressed.disabled = False
 
 # Note: Vendored in i2.multi_objects and lkj.strings
 def truncate_string_with_marker(
-    s, *, left_limit=15, right_limit=15, middle_marker='...'
+    s, *, left_limit=15, right_limit=15, middle_marker="..."
 ):
     """
     Return a string with a limited length.
@@ -443,7 +443,7 @@ def truncate_string_with_marker(
         return s[:left_limit] + middle_marker + s[-right_limit:]
 
 
-def signature_string_or_default(func, default='(-no signature-)'):
+def signature_string_or_default(func, default="(-no signature-)"):
     try:
         return str(signature(func))
     except ValueError:
@@ -451,10 +451,10 @@ def signature_string_or_default(func, default='(-no signature-)'):
 
 
 def function_info_string(func: Callable):
-    func_name = getattr(func, '__name__', str(func))
-    if func_name == '<lambda>':
-        return f'a lambda function on {signature(func)}'
-    return f'{func_name}{signature_string_or_default(func)}'
+    func_name = getattr(func, "__name__", str(func))
+    if func_name == "<lambda>":
+        return f"a lambda function on {signature(func)}"
+    return f"{func_name}{signature_string_or_default(func)}"
 
 
 # Note: Pipe code is completely independent (with inspect imports signature & Signature)
@@ -523,7 +523,7 @@ class Pipe:
         self.funcs = funcs
         n_funcs = len(funcs)
         if n_funcs == 0:
-            raise ValueError('You need to specify at least one function!')
+            raise ValueError("You need to specify at least one function!")
 
         elif n_funcs == 1:
             other_funcs = ()
@@ -537,7 +537,7 @@ class Pipe:
         )
         self.first_func, self.other_funcs = first_func, other_funcs
 
-    _reserved_names = ('__name__', '__doc__')
+    _reserved_names = ("__name__", "__doc__")
 
     def _process_reserved_names(self, named_funcs):
         for name in self._reserved_names:
@@ -555,30 +555,30 @@ class Pipe:
         return out
 
     def _mk_pipe_call_error(self, error_obj, i, out, args, kwargs):
-        msg = f'Error calling function {self._func_info_str(i)}\n'
-        out_str = f'{out}'
-        msg += f'on input {truncate_string_with_marker(out_str)}\n'
-        msg += 'which was the output of previous function'
-        msg += f'{self._func_info_str(i - 1)}\n'
-        args_str = ', '.join(map(str, args))
-        kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
-        msg += f'The error was cause by calling {self} on ({args_str}, {kwargs_str})\n'
-        msg += f'Error was: {error_obj}'
+        msg = f"Error calling function {self._func_info_str(i)}\n"
+        out_str = f"{out}"
+        msg += f"on input {truncate_string_with_marker(out_str)}\n"
+        msg += "which was the output of previous function"
+        msg += f"{self._func_info_str(i - 1)}\n"
+        args_str = ", ".join(map(str, args))
+        kwargs_str = ", ".join(f"{k}={v}" for k, v in kwargs.items())
+        msg += f"The error was cause by calling {self} on ({args_str}, {kwargs_str})\n"
+        msg += f"Error was: {error_obj}"
         new_error_obj = type(error_obj)(msg)
         new_error_obj.error_context = {
-            'Pipe': self,
-            'args': args,
-            'kwargs': kwargs,
-            'func_index': i,
-            'func': self.funcs[i],
-            'func_input': out,
+            "Pipe": self,
+            "args": args,
+            "kwargs": kwargs,
+            "func_index": i,
+            "func": self.funcs[i],
+            "func_input": out,
         }
         return new_error_obj
 
     def _func_info_str(self, i):
         func = self.funcs[i]
         func_info = function_info_string(func)
-        return f'{func_info} (index={i})'
+        return f"{func_info} (index={i})"
 
     def __len__(self):
         return len(self.funcs)
@@ -691,7 +691,7 @@ def partialclass(cls, *args, **kwargs):
 
 
     """
-    assert isinstance(cls, type), f'cls should be a type, was a {type(cls)}: {cls}'
+    assert isinstance(cls, type), f"cls should be a type, was a {type(cls)}: {cls}"
 
     class PartialClass(cls):
         __init__ = partialmethod(cls.__init__, *args, **kwargs)
@@ -750,7 +750,7 @@ def copy_attrs(target, source, attrs, raise_error_if_an_attr_is_missing=True):
 def copy_attrs_from(from_obj, to_obj, attrs):
     from warnings import warn
 
-    warn(f'Deprecated. Use copy_attrs instead.', DeprecationWarning)
+    warn(f"Deprecated. Use copy_attrs instead.", DeprecationWarning)
     copy_attrs(to_obj, from_obj, attrs)
     return to_obj
 
@@ -795,22 +795,22 @@ def norm_kv_filt(kv_filt: Callable[[Any], bool]):
         return None  # because `filter` works with a callable, or None, so we align
 
     raise_msg = (
-        f'kv_filt should be callable (starting with signature (k), (v), or (k, v)),'
-        'and returning  a boolean. What you gave me was {fv_filt}'
+        f"kv_filt should be callable (starting with signature (k), (v), or (k, v)),"
+        "and returning  a boolean. What you gave me was {fv_filt}"
     )
     assert callable(kv_filt), raise_msg
 
     params = list(signature(kv_filt).parameters.values())
     assert len(params), raise_msg
     _kv_filt = kv_filt
-    if params[0].name == 'v':
+    if params[0].name == "v":
 
         def kv_filt(k, v):
             return _kv_filt(v)
 
-    elif params[0].name == 'k':
+    elif params[0].name == "k":
         if len(params) > 1:
-            if params[1].name != 'v':
+            if params[1].name != "v":
                 raise ValueError(raise_msg)
         else:
 
@@ -828,12 +828,12 @@ def norm_kv_filt(kv_filt: Callable[[Any], bool]):
     return __kv_filt
 
 
-var_str_p = re.compile(r'\W|^(?=\d)')
+var_str_p = re.compile(r"\W|^(?=\d)")
 
 Item = Any
 
 
-def add_attrs(remember_added_attrs=True, if_attr_exists='raise', **attrs):
+def add_attrs(remember_added_attrs=True, if_attr_exists="raise", **attrs):
     """Make a function that will add attributes to an obj.
     Originally meant to be used as a decorator of a function, to inject
 
@@ -855,17 +855,17 @@ def add_attrs(remember_added_attrs=True, if_attr_exists='raise', **attrs):
         attrs_added = []
         for attr_name, attr_val in attrs.items():
             if hasattr(obj, attr_name):
-                if if_attr_exists == 'raise':
+                if if_attr_exists == "raise":
                     raise AttributeError(
-                        f'Attribute {attr_name} already exists in {obj}'
+                        f"Attribute {attr_name} already exists in {obj}"
                     )
-                elif if_attr_exists == 'warn':
-                    warn(f'Attribute {attr_name} already exists in {obj}')
-                elif if_attr_exists == 'skip':
+                elif if_attr_exists == "warn":
+                    warn(f"Attribute {attr_name} already exists in {obj}")
+                elif if_attr_exists == "skip":
                     continue
                 else:
                     raise ValueError(
-                        f'Unknown value for if_attr_exists: {if_attr_exists}'
+                        f"Unknown value for if_attr_exists: {if_attr_exists}"
                     )
             setattr(obj, attr_name, attr_val)
             attrs_added.append(attr_name)
@@ -879,7 +879,7 @@ def add_attrs(remember_added_attrs=True, if_attr_exists='raise', **attrs):
 
 
 def fullpath(path):
-    if path.startswith('~'):
+    if path.startswith("~"):
         path = os.path.expanduser(path)
     return os.path.abspath(path)
 
@@ -888,7 +888,7 @@ def attrs_of(obj):
     return set(dir(obj))
 
 
-def format_invocation(name='', args=(), kwargs=None):
+def format_invocation(name="", args=(), kwargs=None):
     """Given a name, positional arguments, and keyword arguments, format
     a basic Python-style function call.
 
@@ -901,19 +901,19 @@ def format_invocation(name='', args=(), kwargs=None):
 
     """
     kwargs = kwargs or {}
-    a_text = ', '.join([repr(a) for a in args])
+    a_text = ", ".join([repr(a) for a in args])
     if isinstance(kwargs, dict):
         kwarg_items = [(k, kwargs[k]) for k in sorted(kwargs)]
     else:
         kwarg_items = kwargs
-    kw_text = ', '.join(['%s=%r' % (k, v) for k, v in kwarg_items])
+    kw_text = ", ".join(["%s=%r" % (k, v) for k, v in kwarg_items])
 
     all_args_text = a_text
     if all_args_text and kw_text:
-        all_args_text += ', '
+        all_args_text += ", "
     all_args_text += kw_text
 
-    return '%s(%s)' % (name, all_args_text)
+    return "%s(%s)" % (name, all_args_text)
 
 
 def groupby(
@@ -985,7 +985,7 @@ def regroupby(items, *key_funcs, **named_key_funcs):
     {3: {'stopwords': ['the'], 'words': ['fox', 'box']}, 2: {'words': ['is'], 'stopwords': ['in']}, 1: {'stopwords': ['a']}}
     """
     key_funcs = list(key_funcs) + list(named_key_funcs.values())
-    assert len(key_funcs) > 0, 'You need to have at least one key_func'
+    assert len(key_funcs) > 0, "You need to have at least one key_func"
     if len(key_funcs) == 1:
         return groupby(items, key=key_funcs[0])
     else:
@@ -1093,15 +1093,15 @@ def igroupby(
     groups = grouper_mapping(group_factory)
 
     assert callable(group_release_cond), (
-        'group_release_cond should be callable (filter boolean function) or False. '
-        f'Was {group_release_cond}'
+        "group_release_cond should be callable (filter boolean function) or False. "
+        f"Was {group_release_cond}"
     )
     n_group_release_cond_args = len(signature(group_release_cond).parameters)
     assert n_group_release_cond_args in {2, 3}, (
-        'group_release_cond should take two or three inputs:\n'
-        ' - (group_key, group_items), or\n'
-        ' - (groups, group_key, group_items)'
-        f'The arguments of the function you gave me are: {signature(group_release_cond)}'
+        "group_release_cond should take two or three inputs:\n"
+        " - (group_key, group_items), or\n"
+        " - (groups, group_key, group_items)"
+        f"The arguments of the function you gave me are: {signature(group_release_cond)}"
     )
 
     if val is None:
@@ -1127,7 +1127,7 @@ def igroupby(
 
 
 def ntup(**kwargs):
-    return namedtuple('NamedTuple', list(kwargs))(**kwargs)
+    return namedtuple("NamedTuple", list(kwargs))(**kwargs)
 
 
 def str_to_var_str(s: str) -> str:
@@ -1141,7 +1141,7 @@ def str_to_var_str(s: str) -> str:
     >>> str_to_var_str('99_ballons')
     '_99_ballons'
     """
-    return var_str_p.sub('_', s)
+    return var_str_p.sub("_", s)
 
 
 def fill_with_dflts(d, dflt_dict=None):
@@ -1227,8 +1227,8 @@ class lazyprop:
     """
 
     def __init__(self, func):
-        self.__doc__ = getattr(func, '__doc__')
-        self.__isabstractmethod__ = getattr(func, '__isabstractmethod__', False)
+        self.__doc__ = getattr(func, "__doc__")
+        self.__isabstractmethod__ = getattr(func, "__isabstractmethod__", False)
         self.func = func
 
     def __get__(self, instance, cls):
@@ -1240,7 +1240,7 @@ class lazyprop:
 
     def __repr__(self):
         cn = self.__class__.__name__
-        return '<%s func=%s>' % (cn, self.func)
+        return "<%s func=%s>" % (cn, self.func)
 
 
 from functools import lru_cache, wraps
@@ -1304,7 +1304,7 @@ class lazyprop_w_sentinel(lazyprop):
     3
     """
 
-    sentinel_prefix = 'sentinel_of__'
+    sentinel_prefix = "sentinel_of__"
 
     def __get__(self, instance, cls):
         if instance is None:
@@ -1332,13 +1332,13 @@ class MutableStruct(Struct):
         for attr in attr_val_dict.keys():
             if hasattr(self, attr):
                 raise AttributeError(
-                    f'The attribute {attr} already exists. Delete it if you want to reuse it!'
+                    f"The attribute {attr} already exists. Delete it if you want to reuse it!"
                 )
         for attr, val in attr_val_dict.items():
             setattr(self, attr, val)
 
 
-def max_common_prefix(a: Sequence, *, default=''):
+def max_common_prefix(a: Sequence, *, default=""):
     """
     Given a list of strings (or other sliceable seq), returns the longest common prefix
 
@@ -1413,13 +1413,13 @@ class DelegatedAttribute:
         return getattr(instance, self.delegate_name)
 
     def __str__(self):
-        return ''
+        return ""
 
     # def __call__(self, instance, *args, **kwargs):
     #     return self.delegate(instance)(*args, **kwargs)
 
 
-def delegate_as(delegate_cls, to='delegate', include=frozenset(), exclude=frozenset()):
+def delegate_as(delegate_cls, to="delegate", include=frozenset(), exclude=frozenset()):
     raise NotImplementedError("Didn't manage to make this work fully")
     # turn include and ignore into sets, if they aren't already
     include = set(include)
@@ -1447,7 +1447,7 @@ class HashableMixin:
 
 class ImmutableMixin:
     def _immutable(self, *args, **kws):
-        raise TypeError('object is immutable')
+        raise TypeError("object is immutable")
 
     __setitem__ = _immutable
     __delitem__ = _immutable
@@ -1468,15 +1468,15 @@ class imdict(ImmutableMixin, dict, HashableMixin):
 
 def move_files_of_folder_to_trash(folder):
     trash_dir = os.path.join(
-        os.getenv('HOME'), '.Trash'
+        os.getenv("HOME"), ".Trash"
     )  # works with mac (perhaps linux too?)
-    assert os.path.isdir(trash_dir), f'{trash_dir} directory not found'
+    assert os.path.isdir(trash_dir), f"{trash_dir} directory not found"
 
     for f in os.listdir(folder):
         src = os.path.join(folder, f)
         if os.path.isfile(src):
             dst = os.path.join(trash_dir, f)
-            print(f'Moving to trash: {src}')
+            print(f"Moving to trash: {src}")
             shutil.move(src, dst)
 
 
@@ -1493,7 +1493,7 @@ class ModuleNotFoundErrorNiceMessage:
                 warn(self.msg)
             else:
                 raise ModuleNotFoundError(
-                    f'''
+                    f"""
 It seems you don't have required `{exc_val.name}` package for this Store.
 Try installing it by running:
 
@@ -1501,7 +1501,7 @@ Try installing it by running:
     
 in your terminal.
 For more information: https://pypi.org/project/{exc_val.name}
-            '''
+            """
                 )
 
 
@@ -1617,7 +1617,7 @@ def _call_writer(
     elif obj_arg_position_in_writer == 1:
         writer(destination, obj)
     else:
-        raise ValueError('obj_arg_position_in_writer must be 0 or 1')
+        raise ValueError("obj_arg_position_in_writer must be 0 or 1")
 
 
 def written_bytes(
@@ -1692,7 +1692,7 @@ def written_bytes(
 
 
 def write_to_file(obj: VT, key: KT):
-    with open(key, 'wb') as f:
+    with open(key, "wb") as f:
         f.write(obj)
 
 
@@ -1794,16 +1794,16 @@ def written_key(
         fd, temp_filepath = tempfile.mkstemp()
         os.close(fd)
         key = temp_filepath
-    elif isinstance(key, str) and '*' in key:
+    elif isinstance(key, str) and "*" in key:
         temp_filepath = tempfile.mktemp()
-        if key.startswith('*'):
+        if key.startswith("*"):
             # Replace * of key with a unique temporary filename
-            key = key.replace('*', temp_filepath)
+            key = key.replace("*", temp_filepath)
         else:
             # separate directory and filename
             dir_name, base_name = os.path.split(temp_filepath)
             # Replace * of key with a unique temporary filename
-            key = key.replace('*', base_name)
+            key = key.replace("*", base_name)
 
     # Write the object to the specified filepath
     _call_writer(writer, obj, key, obj_arg_position_in_writer)

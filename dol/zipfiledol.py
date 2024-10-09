@@ -1,6 +1,7 @@
 """
 Data object layers and other utils to work with zip files.
 """
+
 import os
 from pathlib import Path
 from io import BytesIO
@@ -22,34 +23,34 @@ from dol.util import lazyprop, fullpath
 from dol.sources import FlatReader
 
 __all__ = [
-    'COMPRESSION',
-    'DFLT_COMPRESSION',
-    'compression_methods',
-    'zip_compress',
-    'zip_decompress',
-    'to_zip_file',
-    'file_or_folder_to_zip_file',
-    'if_i_zipped_stats',
-    'ZipReader',
-    'ZipInfoReader',
-    'ZipFilesReader',
-    'ZipFilesReaderAndBytesWriter',
-    'FlatZipFilesReader',
-    'mk_flatzips_store',
-    'FilesOfZip',
-    'FileStreamsOfZip',
-    'ZipFileStreamsReader',
-    'OverwriteNotAllowed',
-    'EmptyZipError',
-    'ZipStore',
-    'remove_some_entries_from_zip',
-    'remove_mac_junk_from_zip',
+    "COMPRESSION",
+    "DFLT_COMPRESSION",
+    "compression_methods",
+    "zip_compress",
+    "zip_decompress",
+    "to_zip_file",
+    "file_or_folder_to_zip_file",
+    "if_i_zipped_stats",
+    "ZipReader",
+    "ZipInfoReader",
+    "ZipFilesReader",
+    "ZipFilesReaderAndBytesWriter",
+    "FlatZipFilesReader",
+    "mk_flatzips_store",
+    "FilesOfZip",
+    "FileStreamsOfZip",
+    "ZipFileStreamsReader",
+    "OverwriteNotAllowed",
+    "EmptyZipError",
+    "ZipStore",
+    "remove_some_entries_from_zip",
+    "remove_mac_junk_from_zip",
 ]
 
 # TODO: Do all systems have this? If not, need to choose dflt carefully
 #  (choose dynamically?)
 DFLT_COMPRESSION = zipfile.ZIP_DEFLATED
-DFLT_ENCODING = 'utf-8'
+DFLT_ENCODING = "utf-8"
 
 
 class COMPRESSION:
@@ -64,10 +65,10 @@ class COMPRESSION:
 
 
 compression_methods = {
-    'stored': zipfile.ZIP_STORED,  # doesn't even compress
-    'deflated': zipfile.ZIP_DEFLATED,  # usual zip compression method
-    'bzip2': zipfile.ZIP_BZIP2,  # BZIP2 compression method.
-    'lzma': zipfile.ZIP_LZMA,  # LZMA compression method
+    "stored": zipfile.ZIP_STORED,  # doesn't even compress
+    "deflated": zipfile.ZIP_DEFLATED,  # usual zip compression method
+    "bzip2": zipfile.ZIP_BZIP2,  # BZIP2 compression method.
+    "lzma": zipfile.ZIP_LZMA,  # LZMA compression method
 }
 
 
@@ -77,7 +78,7 @@ def take_everything(fileinfo):
 
 def zip_compress(
     b: Union[bytes, str],
-    filename='some_bytes',
+    filename="some_bytes",
     *,
     compression=DFLT_COMPRESSION,
     allowZip64=True,
@@ -118,13 +119,17 @@ def zip_compress(
     bytes_buffer = BytesIO()
     if isinstance(b, str):  # if b is a string, need to convert to bytes
         b = b.encode(encoding)
-    with ZipFile(bytes_buffer, 'w', **kwargs) as fp:
+    with ZipFile(bytes_buffer, "w", **kwargs) as fp:
         fp.writestr(filename, b)
     return bytes_buffer.getvalue()
 
 
 def zip_decompress(
-    b: bytes, *, allowZip64=True, compresslevel=None, strict_timestamps=True,
+    b: bytes,
+    *,
+    allowZip64=True,
+    compresslevel=None,
+    strict_timestamps=True,
 ) -> bytes:
     """Decompress input bytes of a single file zip, returning the uncompressed bytes
 
@@ -136,19 +141,19 @@ def zip_decompress(
         strict_timestamps=strict_timestamps,
     )
     bytes_buffer = BytesIO(b)
-    with ZipFile(bytes_buffer, 'r', **kwargs) as zip_file:
+    with ZipFile(bytes_buffer, "r", **kwargs) as zip_file:
         file_list = zip_file.namelist()
         if len(file_list) != 1:
-            raise RuntimeError('zip_decompress only works with single file zips')
+            raise RuntimeError("zip_decompress only works with single file zips")
         filename = file_list[0]
-        with zip_file.open(filename, 'r') as fp:
+        with zip_file.open(filename, "r") as fp:
             file_bytes = fp.read()
     return file_bytes
 
 
 def _filename_from_zip_path(path):
     filename = path  # default
-    if path.endswith('.zip'):
+    if path.endswith(".zip"):
         filename, _ = os.path.splitext(os.path.basename(path))
     return filename
 
@@ -196,7 +201,7 @@ def file_or_folder_to_zip_file(
     """Zip input bytes and save to a single-file zip file."""
 
     if zip_filepath is None:
-        zip_filepath = os.path.basename(src_path) + '.zip'
+        zip_filepath = os.path.basename(src_path) + ".zip"
 
     z = ZipStore(
         zip_filepath,
@@ -213,7 +218,7 @@ def file_or_folder_to_zip_file(
         for k, v in src.items():
             z[k] = v
     else:
-        raise FileNotFoundError(f'{src_path}')
+        raise FileNotFoundError(f"{src_path}")
 
 
 def if_i_zipped_stats(b: bytes):
@@ -238,23 +243,23 @@ def if_i_zipped_stats(b: bytes):
     import time
 
     stats = dict()
-    stats['uncompressed'] = {'bytes': len(b), 'comp_time': 0, 'uncomp_time': 0}
+    stats["uncompressed"] = {"bytes": len(b), "comp_time": 0, "uncomp_time": 0}
     for name, compression in compression_methods.items():
-        if name != 'stored':
+        if name != "stored":
             try:
-                stats[name] = dict.fromkeys(stats['uncompressed'])
+                stats[name] = dict.fromkeys(stats["uncompressed"])
                 tic = time.time()
                 compressed = zip_compress(b, compression=compression)
                 elapsed = time.time() - tic
-                stats[name]['bytes'] = len(compressed)
-                stats[name]['comp_time'] = elapsed
+                stats[name]["bytes"] = len(compressed)
+                stats[name]["comp_time"] = elapsed
                 tic = time.time()
                 uncompressed = zip_decompress(compressed)
                 elapsed = time.time() - tic
                 assert (
                     uncompressed == b
-                ), 'the uncompressed bytes were different than the original'
-                stats[name]['uncomp_time'] = elapsed
+                ), "the uncompressed bytes were different than the original"
+                stats[name]["uncomp_time"] = elapsed
             except Exception:
                 raise
                 pass
@@ -343,7 +348,12 @@ class ZipReader(KvReader):
     """
 
     def __init__(
-        self, zip_file, prefix='', *, open_kws=None, file_info_filt=None,
+        self,
+        zip_file,
+        prefix="",
+        *,
+        open_kws=None,
+        file_info_filt=None,
     ):
         """
 
@@ -372,7 +382,7 @@ class ZipReader(KvReader):
         self.zip_file = zip_file
 
     @classmethod
-    def for_files_only(cls, zip_file, prefix='', open_kws=None, file_info_filt=None):
+    def for_files_only(cls, zip_file, prefix="", open_kws=None, file_info_filt=None):
         if file_info_filt is None:
             file_info_filt = ZipReader.FILES_ONLY
         else:
@@ -419,15 +429,15 @@ class ZipReader(KvReader):
         return True
 
     def __repr__(self):
-        args_str = ', '.join(
+        args_str = ", ".join(
             (
                 f"'{self.zip_file.filename}'",
                 f"'{self.prefix}'",
-                f'{self.open_kws}',
-                f'{self.file_info_filt}',
+                f"{self.open_kws}",
+                f"{self.file_info_filt}",
             )
         )
-        return f'{self.__class__.__name__}({args_str})'
+        return f"{self.__class__.__name__}({args_str})"
 
     # TODO: Unaware of trans (filters, key trans, etc.)
     def get_info_reader(self):
@@ -445,7 +455,7 @@ class ZipInfoReader(ZipReader):
 
 
 class FilesOfZip(ZipReader):
-    def __init__(self, zip_file, prefix='', open_kws=None):
+    def __init__(self, zip_file, prefix="", open_kws=None):
         super().__init__(
             zip_file,
             prefix=prefix,
@@ -480,7 +490,7 @@ class ZipFilesReader(FileCollection, KvReader):
     def __init__(
         self,
         rootdir,
-        subpath=r'.+\.zip',
+        subpath=r".+\.zip",
         pattern_for_field=None,
         max_levels=0,
         zip_reader=ZipReader,
@@ -491,7 +501,11 @@ class ZipFilesReader(FileCollection, KvReader):
         self.zip_reader_kwargs = zip_reader_kwargs
         if self.zip_reader is ZipReader:
             self.zip_reader_kwargs = dict(
-                dict(prefix='', open_kws=None, file_info_filt=ZipReader.FILES_ONLY,),
+                dict(
+                    prefix="",
+                    open_kws=None,
+                    file_info_filt=ZipReader.FILES_ONLY,
+                ),
                 **self.zip_reader_kwargs,
             )
 
@@ -499,7 +513,7 @@ class ZipFilesReader(FileCollection, KvReader):
         try:
             return self.zip_reader(k, **self.zip_reader_kwargs)
         except FileNotFoundError as e:
-            raise KeyError(f'FileNotFoundError: {e}')
+            raise KeyError(f"FileNotFoundError: {e}")
 
 
 class ZipFilesReaderAndBytesWriter(ZipFilesReader):
@@ -508,7 +522,7 @@ class ZipFilesReaderAndBytesWriter(ZipFilesReader):
     """
 
     def __setitem__(self, k, v):
-        with open(k, 'wb') as fp:
+        with open(k, "wb") as fp:
             fp.write(v)
 
 
@@ -615,23 +629,22 @@ from dol.paths import mk_relative_path_store
 from dol.util import partialclass
 
 ZipFileStreamsReader = mk_relative_path_store(
-    partialclass(ZipFilesReader, zip_reader=FileStreamsOfZip), prefix_attr='rootdir',
+    partialclass(ZipFilesReader, zip_reader=FileStreamsOfZip),
+    prefix_attr="rootdir",
 )
-ZipFileStreamsReader.__name__ = 'ZipFileStreamsReader'
-ZipFileStreamsReader.__qualname__ = 'ZipFileStreamsReader'
+ZipFileStreamsReader.__name__ = "ZipFileStreamsReader"
+ZipFileStreamsReader.__qualname__ = "ZipFileStreamsReader"
 ZipFileStreamsReader.__doc__ = (
-    '''Like ZipFilesReader, but objects returned are file streams instead.'''
+    """Like ZipFilesReader, but objects returned are file streams instead."""
 )
 
 from dol.errors import OverWritesNotAllowedError
 
 
-class OverwriteNotAllowed(FileExistsError, OverWritesNotAllowedError):
-    ...
+class OverwriteNotAllowed(FileExistsError, OverWritesNotAllowedError): ...
 
 
-class EmptyZipError(KeyError, FileNotFoundError):
-    ...
+class EmptyZipError(KeyError, FileNotFoundError): ...
 
 
 class _EmptyZipReader(KvReader):
@@ -646,7 +659,7 @@ class _EmptyZipReader(KvReader):
 
     def __getitem__(self, k):
         raise EmptyZipError(
-            'The store is empty: ZipStore(zip_filepath={self.zip_filepath})'
+            "The store is empty: ZipStore(zip_filepath={self.zip_filepath})"
         )
 
     def open(self, *args, **kwargs):
@@ -761,7 +774,7 @@ class ZipStore(KvPersister):
     @property
     def zip_reader(self):
         if os.path.isfile(self.zip_filepath):
-            return ZipFile(self.zip_filepath, mode='r', **self._zipfile_init_kw)
+            return ZipFile(self.zip_filepath, mode="r", **self._zipfile_init_kw)
         else:
             return _EmptyZipReader(self.zip_filepath)
 
@@ -772,18 +785,21 @@ class ZipStore(KvPersister):
         )
 
     def __getitem__(self, k):
-        with self.zip_reader.open(k, **dict(self._open_kw, mode='r')) as fp:
+        with self.zip_reader.open(k, **dict(self._open_kw, mode="r")) as fp:
             return fp.read()
 
     def __repr__(self):
-        args_str = ', '.join(
-            (f"'{self.zip_filepath}'", f"'allow_overwrites={self.allow_overwrites}'",)
+        args_str = ", ".join(
+            (
+                f"'{self.zip_filepath}'",
+                f"'allow_overwrites={self.allow_overwrites}'",
+            )
         )
-        return f'{self.__class__.__name__}({args_str})'
+        return f"{self.__class__.__name__}({args_str})"
 
     def __contains__(self, k):
         try:
-            with self.zip_reader.open(k, **dict(self._open_kw, mode='r')) as fp:
+            with self.zip_reader.open(k, **dict(self._open_kw, mode="r")) as fp:
                 pass
             return True
         except (
@@ -816,7 +832,7 @@ class ZipStore(KvPersister):
                 if self.zip_writer_opened:
                     raise OverwriteNotAllowed(
                         f"When using the context mode, you're not allowed to overwrite an "
-                        f'existing key: {k}'
+                        f"existing key: {k}"
                     )
                 else:
                     raise OverwriteNotAllowed(
@@ -824,25 +840,25 @@ class ZipStore(KvPersister):
                     )
 
         if self.zip_writer_opened:
-            with self.zip_writer.open(k, **dict(self._open_kw, mode='w')) as fp:
+            with self.zip_writer.open(k, **dict(self._open_kw, mode="w")) as fp:
                 return fp.write(v)
         else:
             with ZipFile(
-                self.zip_filepath, mode='a', **self._zipfile_init_kw
+                self.zip_filepath, mode="a", **self._zipfile_init_kw
             ) as zip_writer:
-                with zip_writer.open(k, **dict(self._open_kw, mode='w')) as fp:
+                with zip_writer.open(k, **dict(self._open_kw, mode="w")) as fp:
                     return fp.write(v)
 
     def __delitem__(self, k):
         try:
-            os.system(f'zip -d {self.zip_filepath} {k}')
+            os.system(f"zip -d {self.zip_filepath} {k}")
         except Exception as e:
-            raise KeyError(f'{e.__class__}: {e.args}')
+            raise KeyError(f"{e.__class__}: {e.args}")
         # raise NotImplementedError("zipfile, the backend of ZipStore, doesn't support deletion,
         # so neither will we.")
 
     def open(self):
-        self.zip_writer = ZipFile(self.zip_filepath, mode='a', **self._zipfile_init_kw)
+        self.zip_writer = ZipFile(self.zip_filepath, mode="a", **self._zipfile_init_kw)
         self.zip_writer_opened = True
         return self
 
@@ -873,7 +889,7 @@ def remove_some_entries_from_zip(
     keys_to_be_removed: Union[PathFilterFunc, Iterable[PathString]],
     ask_before_before_deleting=True,
     *,
-    remove_action: Literal['delete', 'filter'] = 'filter',
+    remove_action: Literal["delete", "filter"] = "filter",
 ):
     """Removes specific keys from a zip file.
 
@@ -902,14 +918,14 @@ def remove_some_entries_from_zip(
         keys_to_be_removed = lambda x: x in set(keys_to_be_removed)
     keys_that_will_be_deleted = list(filter(keys_to_be_removed, z))
     if keys_that_will_be_deleted:
-        if remove_action == 'delete':
+        if remove_action == "delete":
             if ask_before_before_deleting:
-                print('These keys will be removed:\n\r')
-                print(*keys_that_will_be_deleted, sep='\n')
+                print("These keys will be removed:\n\r")
+                print(*keys_that_will_be_deleted, sep="\n")
                 n = len(keys_that_will_be_deleted)
-                answer = input(f'\nShould I go ahead and delete these {n} keys? (y/N)')
-                if not answer == 'y':
-                    print('Okay, I will NOT delete these.')
+                answer = input(f"\nShould I go ahead and delete these {n} keys? (y/N)")
+                if not answer == "y":
+                    print("Okay, I will NOT delete these.")
                     return
             for k in keys_that_will_be_deleted:
                 del z[k]
@@ -931,7 +947,7 @@ remove_mac_junk_from_zip = partial(
     keys_to_be_removed=is_a_mac_junk_path,
     ask_before_before_deleting=False,
 )
-remove_mac_junk_from_zip.__doc__ = 'Removes mac junk keys from zip'
+remove_mac_junk_from_zip.__doc__ = "Removes mac junk keys from zip"
 
 # TODO: The way prefix and file_info_filt is handled is not efficient
 # TODO: prefix is silly: less general than filename_filt would be, and not even producing
@@ -950,12 +966,12 @@ remove_mac_junk_from_zip.__doc__ = 'Removes mac junk keys from zip'
 # ----------------------------- Extras -------------------------------------------------
 
 
-def tar_compress(data_bytes, file_name='data.bin'):
+def tar_compress(data_bytes, file_name="data.bin"):
     import tarfile
     import io
 
     with io.BytesIO() as tar_buffer:
-        with tarfile.open(fileobj=tar_buffer, mode='w') as tar:
+        with tarfile.open(fileobj=tar_buffer, mode="w") as tar:
             data_file = io.BytesIO(data_bytes)
             tarinfo = tarfile.TarInfo(name=file_name)
             tarinfo.size = len(data_bytes)
@@ -968,7 +984,7 @@ def tar_decompress(tar_bytes):
     import io
 
     with io.BytesIO(tar_bytes) as tar_buffer:
-        with tarfile.open(fileobj=tar_buffer, mode='r:') as tar:
+        with tarfile.open(fileobj=tar_buffer, mode="r:") as tar:
             for member in tar.getmembers():
                 extracted_file = tar.extractfile(member)
                 if extracted_file:

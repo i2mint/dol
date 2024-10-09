@@ -4,7 +4,7 @@ from dol.trans import wrap_kvs
 
 
 @pytest.mark.parametrize(
-    'value_encoder,value_decoder,persister_args,persister_kwargs,data',
+    "value_encoder,value_decoder,persister_args,persister_kwargs,data",
     [
         (
             # Tuple fan-out store (separate values)
@@ -13,9 +13,9 @@ from dol.trans import wrap_kvs
             (dict(), dict(), dict()),
             dict(get_existing_values_only=True),
             [
-                ('k1', (1, 2, 3), None),
-                ('k2', (1, 2), None),
-                ('k3', (1, 2, 3, 4), ValueError),
+                ("k1", (1, 2, 3), None),
+                ("k2", (1, 2), None),
+                ("k3", (1, 2, 3, 4), ValueError),
             ],
         ),
         (
@@ -24,7 +24,11 @@ from dol.trans import wrap_kvs
             lambda v: sum(v.values()),  # Breakdown to gross
             (),
             dict(net=dict(), tax=dict()),
-            [('Peter', 3000, None), ('Paul', 5000, None), ('Jack', 10000, None),],
+            [
+                ("Peter", 3000, None),
+                ("Paul", 5000, None),
+                ("Jack", 10000, None),
+            ],
         ),
     ],
 )
@@ -32,7 +36,10 @@ def test_mk_custom_fanout_store(
     value_encoder, value_decoder, persister_args, persister_kwargs, data
 ):
     store = wrap_kvs(
-        FanoutPersister.from_variadics(*persister_args, **persister_kwargs,),
+        FanoutPersister.from_variadics(
+            *persister_args,
+            **persister_kwargs,
+        ),
         data_of_obj=value_encoder,
         obj_of_data=value_decoder,
     )
