@@ -20,7 +20,7 @@ def all_folder_paths_under_folder(rootpath: str, include_rootpath=False):
     from pathlib import Path
 
     rootpath = Path(rootpath)
-    folderpaths = (str(p) for p in rootpath.glob('**/') if p.is_dir())
+    folderpaths = (str(p) for p in rootpath.glob("**/") if p.is_dir())
     if not include_rootpath:
         folderpaths = filter(lambda x: x != str(rootpath), folderpaths)
     return folderpaths
@@ -40,14 +40,14 @@ def delete_all_folders_under_folder(rootpath: str, include_rootpath=False):
                 shutil.rmtree(p)
 
 
-def empty_directory(s, path_must_include=('test_mk_dirs_if_missing',)):
+def empty_directory(s, path_must_include=("test_mk_dirs_if_missing",)):
     if isinstance(path_must_include, str):
         path_must_include = (path_must_include,)
 
     if not all(substr in s for substr in path_must_include):
         raise ValueError(
             f"Path '{s}' does not include any of the substrings: {path_must_include}.\n"
-            'This is a safeguard. For your safety, I will delete nothing!'
+            "This is a safeguard. For your safety, I will delete nothing!"
         )
 
     import os, shutil
@@ -75,12 +75,12 @@ def populate_folder(dirpath, contents: Mapping):
             populate_folder(path, content)
         else:
             if isinstance(content, str):
-                data_type = 's'
+                data_type = "s"
             elif isinstance(content, bytes):
-                data_type = 'b'
+                data_type = "b"
             else:
-                raise ValueError(f'Unsupported type: {type(content)}')
-            with open(path, 'w' + data_type) as f:
+                raise ValueError(f"Unsupported type: {type(content)}")
+            with open(path, "w" + data_type) as f:
                 f.write(content)
 
 
@@ -91,7 +91,7 @@ def populate_folder(dirpath, contents: Mapping):
 def test_process_path():
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
-        temp_path = os.path.join(temp_dir, 'foo/bar')
+        temp_path = os.path.join(temp_dir, "foo/bar")
 
         output_path = process_path(temp_path)
         assert output_path == temp_path
@@ -128,36 +128,36 @@ def test_json_files():
     from pathlib import Path
     import os
 
-    t = mk_tmp_local_store('test_mk_dirs_if_missing', make_dirs_if_missing=False)
-    empty_directory(t.rootdir, path_must_include='test_mk_dirs_if_missing')
+    t = mk_tmp_local_store("test_mk_dirs_if_missing", make_dirs_if_missing=False)
+    empty_directory(t.rootdir, path_must_include="test_mk_dirs_if_missing")
     rootdir = t.rootdir
 
     s = JsonFiles(rootdir)
-    s['foo'] = {'bar': 1}
-    assert s['foo'] == {'bar': 1}
-    foo_path = Path(os.path.join(rootdir, 'foo'))
-    assert foo_path.is_file(), 'Should have created a file'
-    assert foo_path.read_text() == '{"bar": 1}', 'Should be json encoded'
+    s["foo"] = {"bar": 1}
+    assert s["foo"] == {"bar": 1}
+    foo_path = Path(os.path.join(rootdir, "foo"))
+    assert foo_path.is_file(), "Should have created a file"
+    assert foo_path.read_text() == '{"bar": 1}', "Should be json encoded"
 
     ss = Jsons(rootdir)
-    assert 'foo' not in ss, 'foo should be filtered out because no .json extension'
-    ss['apple'] = {'crumble': True}
-    assert 'apple' in ss
-    assert 'apple' in set(ss)  # which is different than 'apple' in ss
-    assert ss['apple'] == {'crumble': True}
-    apple_path = Path(os.path.join(rootdir, 'apple.json'))
-    assert apple_path.is_file(), 'Should have created a file (with .json extension)'
-    assert apple_path.read_text() == '{"crumble": true}', 'Should be json encoded'
+    assert "foo" not in ss, "foo should be filtered out because no .json extension"
+    ss["apple"] = {"crumble": True}
+    assert "apple" in ss
+    assert "apple" in set(ss)  # which is different than 'apple' in ss
+    assert ss["apple"] == {"crumble": True}
+    apple_path = Path(os.path.join(rootdir, "apple.json"))
+    assert apple_path.is_file(), "Should have created a file (with .json extension)"
+    assert apple_path.read_text() == '{"crumble": true}', "Should be json encoded"
 
 
 def test_mk_dirs_if_missing():
-    s = mk_tmp_local_store('test_mk_dirs_if_missing', make_dirs_if_missing=False)
-    empty_directory(s.rootdir, path_must_include='test_mk_dirs_if_missing')
+    s = mk_tmp_local_store("test_mk_dirs_if_missing", make_dirs_if_missing=False)
+    empty_directory(s.rootdir, path_must_include="test_mk_dirs_if_missing")
     with pytest.raises(KeyError):
-        s['this/path/does/not/exist'] = 'hello'
+        s["this/path/does/not/exist"] = "hello"
     ss = mk_dirs_if_missing(s)
-    ss['this/path/does/not/exist'] = 'hello'  # this should work now
-    assert ss['this/path/does/not/exist'] == 'hello'
+    ss["this/path/does/not/exist"] = "hello"  # this should work now
+    assert ss["this/path/does/not/exist"] == "hello"
 
     # # It works on classes too:
     # TextFilesWithAutoMkdir = mk_tmp_local_store(TextFiles)
@@ -178,15 +178,15 @@ def test_subfolder_stores():
     with tempfile.TemporaryDirectory() as temp_dir:
         # Define the folder structure and contents
         data = {
-            'folder1': {
-                'subfolder': {
-                    'apple.p': b'pie',
+            "folder1": {
+                "subfolder": {
+                    "apple.p": b"pie",
                 },
-                'day.doc': b'time',
+                "day.doc": b"time",
             },
-            'folder2': {
-                'this.txt': b'that',
-                'over.json': b'there',
+            "folder2": {
+                "this.txt": b"that",
+                "over.json": b"there",
             },
         }
 
@@ -211,32 +211,32 @@ def test_subfolder_stores():
 
         # Expected subfolder paths (relative to temp_dir)
         expected_subfolders = {
-            'folder1',
-            os.path.join('folder1', 'subfolder'),
-            'folder2',
+            "folder1",
+            os.path.join("folder1", "subfolder"),
+            "folder2",
         }
 
         # Assert that the discovered subfolders match the expected ones
         assert (
             store_keys == expected_subfolders
-        ), f'Expected {expected_subfolders}, got {store_keys}'
+        ), f"Expected {expected_subfolders}, got {store_keys}"
 
         # Test that the stores can access the files in their respective folders
         # Testing folder1
-        folder1_store = stores['folder1']
+        folder1_store = stores["folder1"]
         assert isinstance(folder1_store, Files)
-        assert set(folder1_store.keys()) == {'day.doc', 'subfolder/apple.p'}
-        assert folder1_store['day.doc'] == b'time'
+        assert set(folder1_store.keys()) == {"day.doc", "subfolder/apple.p"}
+        assert folder1_store["day.doc"] == b"time"
 
         # Testing folder1/subfolder
-        subfolder_store = stores[os.path.join('folder1', 'subfolder')]
+        subfolder_store = stores[os.path.join("folder1", "subfolder")]
         assert isinstance(subfolder_store, Files)
-        assert set(subfolder_store.keys()) == {'apple.p'}
-        assert subfolder_store['apple.p'] == b'pie'
+        assert set(subfolder_store.keys()) == {"apple.p"}
+        assert subfolder_store["apple.p"] == b"pie"
 
         # Testing folder2
-        folder2_store = stores['folder2']
+        folder2_store = stores["folder2"]
         assert isinstance(folder2_store, Files)
-        assert set(folder2_store.keys()) == {'this.txt', 'over.json'}
-        assert folder2_store['this.txt'] == b'that'
-        assert folder2_store['over.json'] == b'there'
+        assert set(folder2_store.keys()) == {"this.txt", "over.json"}
+        assert folder2_store["this.txt"] == b"that"
+        assert folder2_store["over.json"] == b"there"

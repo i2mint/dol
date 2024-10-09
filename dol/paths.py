@@ -116,26 +116,32 @@ def _path_get(
         except caught_errors as error:
             if callable(on_error):
                 return on_error(
-                    dict(obj=obj, path=path, result=result, k=k, error=error,)
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
                 )
             elif isinstance(on_error, str):
                 # use on_error as a message, raising the same error class
                 raise type(error)(on_error)
             else:
                 raise ValueError(
-                    f'on_error should be a callable (input is a dict) or a string. '
-                    f'Was: {on_error}'
+                    f"on_error should be a callable (input is a dict) or a string. "
+                    f"Was: {on_error}"
                 )
     return result
 
 
-def split_if_str(obj, sep='.'):
+def split_if_str(obj, sep="."):
     if isinstance(obj, str):
         return obj.split(sep)
     return obj
 
 
-def separate_keys_with_separator(obj, sep='.'):
+def separate_keys_with_separator(obj, sep="."):
     return map(cast_to_int_if_numeric_str, split_if_str(obj, sep))
 
 
@@ -172,7 +178,7 @@ def path_get(
     path,
     on_error: OnErrorType = raise_on_error,
     *,
-    sep='.',
+    sep=".",
     key_transformer=None,
     get_value: Callable = get_attr_or_item,
     caught_errors=(Exception,),
@@ -256,7 +262,7 @@ def paths_getter(
     *,
     egress=dict,
     on_error: OnErrorType = raise_on_error,
-    sep='.',
+    sep=".",
     key_transformer=None,
     get_value: Callable = get_attr_or_item,
     caught_errors=(Exception,),
@@ -459,7 +465,7 @@ def path_set(
     key_path: Iterable[KT],
     val: VT,
     *,
-    sep: str = '.',
+    sep: str = ".",
     new_mapping: Callable[[], VT] = dict,
 ):
     """
@@ -573,7 +579,7 @@ def path_edit(d: Mapping, edits: Edits = ()) -> Mapping:
 from dol.base import kv_walk
 
 
-PT = TypeVar('PT')  # Path Type
+PT = TypeVar("PT")  # Path Type
 PkvFilt = Callable[[PT, KT, VT], bool]
 
 
@@ -636,7 +642,7 @@ def path_filter(
     _leaf_yield = partial(_path_matcher_leaf_yield, pkv_filt, None)
     kwargs = dict(leaf_yield=_leaf_yield, breadth_first=breadth_first)
     if not leafs_only:
-        kwargs['branch_yield'] = _leaf_yield
+        kwargs["branch_yield"] = _leaf_yield
     walker = kv_walk(d, **kwargs)
     yield from filter(None, walker)
 
@@ -672,7 +678,7 @@ def _mk_path_matcher(pkv_filt: PkvFilt, sentinel=None):
 
 @add_as_attribute_of(path_filter)
 def _mk_pkv_filt(
-    filt: Callable[[Union[PT, KT, VT]], bool], kind: Literal['path', 'key', 'value']
+    filt: Callable[[Union[PT, KT, VT]], bool], kind: Literal["path", "key", "value"]
 ) -> PkvFilt:
     """pkv_filt based on a ``filt`` that matches EITHER path, key, or value."""
     return partial(_pkv_filt, filt, kind)
@@ -680,21 +686,21 @@ def _mk_pkv_filt(
 
 def _pkv_filt(
     filt: Callable[[Union[PT, KT, VT]], bool],
-    kind: Literal['path', 'key', 'value'],
+    kind: Literal["path", "key", "value"],
     p: PT,
     k: KT,
     v: VT,
 ):
     """Helper to make (picklable) pkv_filt based on a ``filt`` that matches EITHER
     path, key, or value."""
-    if kind == 'path':
+    if kind == "path":
         return filt(p)
-    elif kind == 'key':
+    elif kind == "key":
         return filt(k)
-    elif kind == 'value':
+    elif kind == "value":
         return filt(v)
     else:
-        raise ValueError(f'Invalid kind: {kind}')
+        raise ValueError(f"Invalid kind: {kind}")
 
 
 @dataclass
@@ -820,7 +826,7 @@ class PrefixRelativizationMixin:
     dict_items([('/root/of/data/foo', 'bar'), ('/root/of/data/too', 'much')])
     """
 
-    _prefix_attr_name = '_prefix'
+    _prefix_attr_name = "_prefix"
 
     @lazyprop
     def _prefix_length(self):
@@ -847,7 +853,7 @@ class PrefixRelativization(PrefixRelativizationMixin):
     In fact, not only strings, but any key object that has a __len__, __add__, and subscripting.
     """
 
-    def __init__(self, _prefix=''):
+    def __init__(self, _prefix=""):
         self._prefix = _prefix
 
 
@@ -867,7 +873,7 @@ class ExplicitKeysWithPrefixRelativization(PrefixRelativizationMixin, Store):
     ['of/foo', 'of/bar', 'for/alice']
     """
 
-    __slots__ = ('_key_collection',)
+    __slots__ = ("_key_collection",)
 
     def __init__(self, key_collection, _prefix=None):
         # TODO: Find a better way to avoid the circular import
@@ -882,7 +888,11 @@ class ExplicitKeysWithPrefixRelativization(PrefixRelativizationMixin, Store):
 
 @store_decorator
 def mk_relative_path_store(
-    store_cls=None, *, name=None, with_key_validation=False, prefix_attr='_prefix',
+    store_cls=None,
+    *,
+    name=None,
+    with_key_validation=False,
+    prefix_attr="_prefix",
 ):
     """
 
@@ -934,7 +944,7 @@ def mk_relative_path_store(
         from warnings import warn
 
         warn(
-            f'The use of name argumment is deprecated. Use __name__ instead',
+            f"The use of name argumment is deprecated. Use __name__ instead",
             DeprecationWarning,
         )
 
@@ -943,17 +953,17 @@ def mk_relative_path_store(
     @wraps(store_cls.__init__)
     def __init__(self, *args, **kwargs):
         Store.__init__(self, store=store_cls(*args, **kwargs))
-        prefix = recursive_get_attr(self.store, prefix_attr, '')
+        prefix = recursive_get_attr(self.store, prefix_attr, "")
         setattr(
             self, prefix_attr, prefix
         )  # TODO: Might need descriptor to enable assignment
 
     cls.__init__ = __init__
 
-    if prefix_attr != '_prefix':
-        assert not hasattr(store_cls, '_prefix'), (
-            f'You already have a _prefix attribute, '
-            f'but want the prefix name to be {prefix_attr}. '
+    if prefix_attr != "_prefix":
+        assert not hasattr(store_cls, "_prefix"), (
+            f"You already have a _prefix attribute, "
+            f"but want the prefix name to be {prefix_attr}. "
             f"That's not going to be easy for me."
         )
 
@@ -969,8 +979,8 @@ def mk_relative_path_store(
         cls._prefix = _prefix
 
     if with_key_validation:
-        assert hasattr(store_cls, 'is_valid_key'), (
-            'If you want with_key_validation=True, '
+        assert hasattr(store_cls, "is_valid_key"), (
+            "If you want with_key_validation=True, "
             "you'll need a method called is_valid_key to do the validation job"
         )
 
@@ -980,7 +990,7 @@ def mk_relative_path_store(
                 return _id
             else:
                 raise KeyError(
-                    f'Key not valid (usually because does not exist or access not permitted): {k}'
+                    f"Key not valid (usually because does not exist or access not permitted): {k}"
                 )
 
         cls._id_of_key = _id_of_key
@@ -1102,7 +1112,7 @@ def handle_prefixes(
     prefix=None,
     filter_prefix: bool = True,
     relativize_prefix: bool = True,
-    default_prefix='',
+    default_prefix="",
 ):
     """A store decorator that handles prefixes.
 
@@ -1133,7 +1143,7 @@ def handle_prefixes(
     if prefix is None:
         if isinstance(store, type):
             raise TypeError(
-                f'I can only infer prefix from a store instance, not a type: {store}'
+                f"I can only infer prefix from a store instance, not a type: {store}"
             )
         prefix = max_common_prefix(store, default=default_prefix)
     if filter_prefix:
@@ -1151,10 +1161,10 @@ from enum import Enum
 
 
 class PathKeyTypes(Enum):
-    str = 'str'
-    dict = 'dict'
-    tuple = 'tuple'
-    namedtuple = 'namedtuple'
+    str = "str"
+    dict = "dict"
+    tuple = "tuple"
+    namedtuple = "namedtuple"
 
 
 path_key_type_for_type = {
@@ -1165,20 +1175,20 @@ path_key_type_for_type = {
 
 _method_names_for_path_type = {
     PathKeyTypes.str: {
-        '_id_of_key': StrTupleDict.simple_str_to_str,
-        '_key_of_id': StrTupleDict.str_to_simple_str,
+        "_id_of_key": StrTupleDict.simple_str_to_str,
+        "_key_of_id": StrTupleDict.str_to_simple_str,
     },
     PathKeyTypes.dict: {
-        '_id_of_key': StrTupleDict.dict_to_str,
-        '_key_of_id': StrTupleDict.str_to_dict,
+        "_id_of_key": StrTupleDict.dict_to_str,
+        "_key_of_id": StrTupleDict.str_to_dict,
     },
     PathKeyTypes.tuple: {
-        '_id_of_key': StrTupleDict.tuple_to_str,
-        '_key_of_id': StrTupleDict.str_to_tuple,
+        "_id_of_key": StrTupleDict.tuple_to_str,
+        "_key_of_id": StrTupleDict.str_to_tuple,
     },
     PathKeyTypes.namedtuple: {
-        '_id_of_key': StrTupleDict.namedtuple_to_str,
-        '_key_of_id': StrTupleDict.str_to_namedtuple,
+        "_id_of_key": StrTupleDict.namedtuple_to_str,
+        "_key_of_id": StrTupleDict.str_to_namedtuple,
     },
 }
 
@@ -1199,7 +1209,7 @@ def str_template_key_trans(
     format_dict=None,
     process_kwargs=None,
     process_info_dict=None,
-    named_tuple_type_name='NamedTuple',
+    named_tuple_type_name="NamedTuple",
     sep: str = path_sep,
 ):
     """Make a key trans object that translates from a string _id to a dict, tuple, or namedtuple key (and back)"""
@@ -1208,18 +1218,17 @@ def str_template_key_trans(
         key_type in PathKeyTypes
     ), f"key_type was {key_type}. Needs to be one of these: {', '.join(PathKeyTypes)}"
 
-    class PathKeyMapper(StrTupleDict):
-        ...
+    class PathKeyMapper(StrTupleDict): ...
 
     setattr(
         PathKeyMapper,
-        '_id_of_key',
-        _method_names_for_path_type[key_type]['_id_of_key'],
+        "_id_of_key",
+        _method_names_for_path_type[key_type]["_id_of_key"],
     )
     setattr(
         PathKeyMapper,
-        '_key_of_id',
-        _method_names_for_path_type[key_type]['_key_of_id'],
+        "_key_of_id",
+        _method_names_for_path_type[key_type]["_key_of_id"],
     )
 
     key_trans = PathKeyMapper(
@@ -1342,19 +1351,19 @@ def string_unparse(parsing_result: Iterable[Tuple[str, str, str, str]]):
     >>> string_unparse(formatter.parse('literal{name!c:spec}'))
     'literal{name!c:spec}'
     """
-    reconstructed = ''
+    reconstructed = ""
     for literal_text, field_name, format_spec, conversion in parsing_result:
         reconstructed += literal_text
         if field_name is not None:
-            field = f'{{{field_name}'
+            field = f"{{{field_name}"
             if conversion:
                 assert (
                     len(conversion) == 1
-                ), f'conversion can only be a single character: {conversion=}'
-                field += f'!{conversion}'
+                ), f"conversion can only be a single character: {conversion=}"
+                field += f"!{conversion}"
             if format_spec:
-                field += f':{format_spec}'
-            field += '}'
+                field += f":{format_spec}"
+            field += "}"
             reconstructed += field
     return reconstructed
 
@@ -1380,7 +1389,7 @@ from dol.trans import KeyCodec, filt_iter
 from inspect import signature
 
 # Codec = namedtuple('Codec', 'encoder decoder')
-FieldTypeNames = Literal['str', 'dict', 'tuple', 'namedtuple', 'simple_str', 'single']
+FieldTypeNames = Literal["str", "dict", "tuple", "namedtuple", "simple_str", "single"]
 
 
 # TODO: Make and use _return_none_if_none_input or not?
@@ -1512,10 +1521,10 @@ class KeyTemplate:
         field_patterns: dict = None,
         to_str_funcs: dict = None,
         from_str_funcs: dict = None,
-        simple_str_sep: str = ',',
-        namedtuple_type_name: str = 'NamedTuple',
-        dflt_pattern: str = '.*',
-        dflt_field_name: Callable[[str], str] = 'i{:02.0f}_'.format,
+        simple_str_sep: str = ",",
+        namedtuple_type_name: str = "NamedTuple",
+        dflt_pattern: str = ".*",
+        dflt_field_name: Callable[[str], str] = "i{:02.0f}_".format,
     ):
         self._init_kwargs = dict(
             template=template,
@@ -1560,7 +1569,7 @@ class KeyTemplate:
     clone.__signature__ = signature(__init__)
 
     def key_codec(
-        self, decoded: FieldTypeNames = 'tuple', encoded: FieldTypeNames = 'str'
+        self, decoded: FieldTypeNames = "tuple", encoded: FieldTypeNames = "str"
     ):
         r"""Makes a ``KeyCodec`` for the given source and target types.
 
@@ -1602,13 +1611,13 @@ class KeyTemplate:
         ``st.key_codec``.
 
         """
-        self._assert_field_type(decoded, 'decoded')
-        self._assert_field_type(encoded, 'encoded')
-        coder = getattr(self, f'{decoded}_to_{encoded}')
-        decoder = getattr(self, f'{encoded}_to_{decoded}')
+        self._assert_field_type(decoded, "decoded")
+        self._assert_field_type(encoded, "encoded")
+        coder = getattr(self, f"{decoded}_to_{encoded}")
+        decoder = getattr(self, f"{encoded}_to_{decoded}")
         return KeyCodec(coder, decoder)
 
-    def filt_iter(self, field_type: FieldTypeNames = 'str'):
+    def filt_iter(self, field_type: FieldTypeNames = "str"):
         r"""
         Makes a store decorator that filters out keys that don't match the template
         given field type.
@@ -1627,8 +1636,8 @@ class KeyTemplate:
         if isinstance(field_type, Mapping):
             # The user wants to filter a store with the default
             return self.filt_iter()(field_type)
-        self._assert_field_type(field_type, 'field_type')
-        filt_func = getattr(self, f'match_{field_type}')
+        self._assert_field_type(field_type, "field_type")
+        filt_func = getattr(self, f"match_{field_type}")
         return filt_iter(filt=filt_func)
 
     # @_return_none_if_none_input
@@ -1756,7 +1765,8 @@ class KeyTemplate:
 
     # @_return_none_if_none_input
     def dict_to_namedtuple(
-        self, params: dict,
+        self,
+        params: dict,
     ):
         r"""Generates a namedtuple from the dictionary values based on the template.
 
@@ -1839,8 +1849,8 @@ class KeyTemplate:
         if len(field_values) != self._n_fields:
             raise ValueError(
                 f"String '{ss}' has does not have the right number of field values. "
-                f'Expected {self._n_fields}, got {len(field_values)} '
-                f'(namely: {field_values}.)'
+                f"Expected {self._n_fields}, got {len(field_values)} "
+                f"(namely: {field_values}.)"
             )
         return tuple(f(x) for f, x in zip(self._from_str_funcs.values(), field_values))
 
@@ -1933,24 +1943,24 @@ class KeyTemplate:
                 self._formatter.parse(template), 1
             ):
                 field_name = (
-                    self.dflt_field_name(index) if field_name == '' else field_name
+                    self.dflt_field_name(index) if field_name == "" else field_name
                 )
                 if field_name is not None:
                     field_names.append(field_name)  # remember the field name
                     # extract format and pattern information:
-                    if ':' not in format_spec:
-                        format_spec += ':'
-                    to_str_func_format, pattern = format_spec.split(':')
+                    if ":" not in format_spec:
+                        format_spec += ":"
+                    to_str_func_format, pattern = format_spec.split(":")
                     if to_str_func_format:
                         to_str_funcs[field_name] = (
-                            '{' + f':{to_str_func_format}' + '}'
+                            "{" + f":{to_str_func_format}" + "}"
                         ).format
                     field_patterns_[field_name] = pattern or self.dflt_pattern
                 # At this point you should have a valid field_name and empty format_spec
                 yield (
                     literal_text,
                     field_name,
-                    '',
+                    "",
                     conversion,
                 )
 
@@ -1985,20 +1995,20 @@ class KeyTemplate:
 
         def mk_named_capture_group(field_name):
             if field_name:
-                return f'(?P<{field_name}>{self._field_patterns[field_name]})'
+                return f"(?P<{field_name}>{self._field_patterns[field_name]})"
             else:
-                return ''
+                return ""
 
         def generate_pattern_parts(template):
             parts = self._formatter.parse(template)
             for literal_text, field_name, _, _ in parts:
                 yield re.escape(literal_text) + mk_named_capture_group(field_name)
 
-        return re.compile(''.join(generate_pattern_parts(template)))
+        return re.compile("".join(generate_pattern_parts(template)))
 
     @staticmethod
-    def _assert_field_type(field_type: FieldTypeNames, name='field_type'):
+    def _assert_field_type(field_type: FieldTypeNames, name="field_type"):
         if field_type not in FieldTypeNames.__args__:
             raise ValueError(
-                f'{name} must be one of {FieldTypeNames}. Was: {field_type}'
+                f"{name} must be one of {FieldTypeNames}. Was: {field_type}"
             )

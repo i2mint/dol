@@ -1,6 +1,7 @@
 """
 Functions to read from and write to misc sources
 """
+
 # TODO: Completely redo this, using preset and postget and making it into a plugin
 #  architecture. See
 from functools import partial
@@ -18,7 +19,7 @@ from dol.util import imdict, ModuleNotFoundIgnore
 
 
 def csv_fileobj(csv_data, *args, **kwargs):  # TODO: Use extended wraps func to inject
-    fp = StringIO('')
+    fp = StringIO("")
     writer = csv.writer(fp)
     writer.writerows(csv_data, *args, **kwargs)
     fp.seek(0)
@@ -38,25 +39,25 @@ dflt_dflt_incoming_val_trans = staticmethod(identity_method)
 # TODO: Get rid of lambdas. Use methodcaller and partial instead
 #  Requires solving https://github.com/i2mint/dol/issues/9 first
 dflt_incoming_val_trans_for_key = {
-    '.bin': identity_method,
-    '.csv': lambda v: list(csv.reader(StringIO(v.decode()))),
-    '.txt': lambda v: v.decode(),
-    '.pkl': lambda v: pickle.loads(v),
-    '.pickle': lambda v: pickle.loads(v),
-    '.json': lambda v: json.loads(v),
-    '.zip': FilesOfZip,
-    '.gzip': gzip.decompress,
+    ".bin": identity_method,
+    ".csv": lambda v: list(csv.reader(StringIO(v.decode()))),
+    ".txt": lambda v: v.decode(),
+    ".pkl": lambda v: pickle.loads(v),
+    ".pickle": lambda v: pickle.loads(v),
+    ".json": lambda v: json.loads(v),
+    ".zip": FilesOfZip,
+    ".gzip": gzip.decompress,
 }
 
 dflt_outgoing_val_trans_for_key = {
-    '.bin': identity_method,
-    '.csv': csv_fileobj,
-    '.txt': lambda v: v.encode(),
-    '.pkl': lambda v: pickle.dumps(v),
-    '.pickle': lambda v: pickle.dumps(v),
-    '.json': lambda v: json.dumps(v).encode(),
-    '.gzip': gzip.compress,
-    '.ini': lambda v: ConfigStore(
+    ".bin": identity_method,
+    ".csv": csv_fileobj,
+    ".txt": lambda v: v.encode(),
+    ".pkl": lambda v: pickle.dumps(v),
+    ".pickle": lambda v: pickle.dumps(v),
+    ".json": lambda v: json.dumps(v).encode(),
+    ".gzip": gzip.compress,
+    ".ini": lambda v: ConfigStore(
         v, interpolation=ConfigReader.ExtendedInterpolation()
     ),
 }
@@ -65,16 +66,17 @@ dflt_outgoing_val_trans_for_key = {
 with suppress(ModuleNotFoundError, ImportError):
     from config2py import ConfigReader, ConfigStore
 
-    dflt_incoming_val_trans_for_key['.ini'] = partial(
-        ConfigStore, interpolation=ConfigReader.ExtendedInterpolation(),
+    dflt_incoming_val_trans_for_key[".ini"] = partial(
+        ConfigStore,
+        interpolation=ConfigReader.ExtendedInterpolation(),
     )
 
-    dflt_outgoing_val_trans_for_key['.ini'] = partial(
+    dflt_outgoing_val_trans_for_key[".ini"] = partial(
         ConfigStore, interpolation=ConfigReader.ExtendedInterpolation()
     )
 
 
-synset_of_ext = {'.ini': {'.cnf', '.conf', '.config'}, '.gzip': ['.gz']}
+synset_of_ext = {".ini": {".cnf", ".conf", ".config"}, ".gzip": [".gz"]}
 for _user_this, _for_these_extensions in synset_of_ext.items():
     for _d in [
         dflt_incoming_val_trans_for_key,
@@ -163,12 +165,12 @@ class MiscReaderMixin:
 # import urllib
 import urllib.request
 
-DFLT_USER_AGENT = 'Wget/1.16 (linux-gnu)'
+DFLT_USER_AGENT = "Wget/1.16 (linux-gnu)"
 
 
 def _is_dropbox_url(url):
-    return url.startswith('http://www.dropbox.com') or url.startswith(
-        'https://www.dropbox.com'
+    return url.startswith("http://www.dropbox.com") or url.startswith(
+        "https://www.dropbox.com"
     )
 
 
@@ -178,7 +180,7 @@ def _bytes_from_dropbox(url, chk_size=1024, user_agent=DFLT_USER_AGENT):
     def _download_from_dropbox(url, file, chk_size=1024, user_agent=DFLT_USER_AGENT):
         def iter_content_and_copy_to(file):
             req = urllib.request.Request(url)
-            req.add_header('user-agent', user_agent)
+            req.add_header("user-agent", user_agent)
             with urllib.request.urlopen(req) as response:
                 while True:
                     chk = response.read(chk_size)
@@ -190,7 +192,7 @@ def _bytes_from_dropbox(url, chk_size=1024, user_agent=DFLT_USER_AGENT):
         if not isinstance(file, str):
             iter_content_and_copy_to(file)
         else:
-            with open(file, 'wb') as _target_file:
+            with open(file, "wb") as _target_file:
                 iter_content_and_copy_to(_target_file)
 
     with BytesIO() as file:
@@ -214,22 +216,22 @@ def url_to_bytes(url):
 #   Also, preset and postget (trans.wrap_kvs(...)) now exist. Let's use them here.
 def get_obj(
     k,
-    store=Files(''),
+    store=Files(""),
     incoming_val_trans_for_key=imdict(dflt_incoming_val_trans_for_key),
     dflt_incoming_val_trans=identity_method,
     func_key=lambda k: os.path.splitext(k)[1],
 ):
     """A quick way to get an object, with default... everything (but the key, you know, a clue of what you want)"""
-    if k.startswith('http://') or k.startswith('https://'):
+    if k.startswith("http://") or k.startswith("https://"):
         v = url_to_bytes(k)
     else:
         if isinstance(
             store, Files
         ):  # being extra careful to only do this if default local store
             # preprocessing the key if it starts with '.', '..', or '~'
-            if k.startswith('.') or k.startswith('..'):
+            if k.startswith(".") or k.startswith(".."):
                 k = os.path.abspath(k)
-            elif k.startswith('~'):
+            elif k.startswith("~"):
                 k = os.path.expanduser(k)
         v = store[k]
     trans_func = (incoming_val_trans_for_key or {}).get(
@@ -265,7 +267,7 @@ class MiscGetter:
 
     def __init__(
         self,
-        store=Files(''),
+        store=Files(""),
         incoming_val_trans_for_key=imdict(dflt_incoming_val_trans_for_key),
         dflt_incoming_val_trans=identity_method,
         func_key=lambda k: os.path.splitext(k)[1],
@@ -292,8 +294,8 @@ class MiscGetter:
 
         raise NotImplementedError(
             "By default, there's no iteration in MiscGetter. "
-            'But feel free to subclass if you '
-            'have a particular sense of what the iteration should yield!'
+            "But feel free to subclass if you "
+            "have a particular sense of what the iteration should yield!"
         )
 
 
@@ -355,6 +357,7 @@ class MiscStoreMixin(MiscReaderMixin):
     a.json: b'{"str": "field", "int": 42, "float": 3.14, "array": [1, 2], "nested": {"a": 1, "b": 2}}'
 
     """
+
     _dflt_outgoing_val_trans_for_key = staticmethod(identity_method)
     _outgoing_val_trans_for_key = dflt_outgoing_val_trans_for_key
 
@@ -386,13 +389,13 @@ class MiscStoreMixin(MiscReaderMixin):
 def set_obj(
     k,
     v,
-    store=Files(''),
+    store=Files(""),
     outgoing_val_trans_for_key=imdict(dflt_outgoing_val_trans_for_key),
     func_key=lambda k: os.path.splitext(k)[1],
 ):
     """A quick way to get an object, with default...
     # everything (but the key, you know, a clue of what you want)"""
-    if isinstance(store, Files) and store._prefix in {'', '/'}:
+    if isinstance(store, Files) and store._prefix in {"", "/"}:
         k = os.path.abspath(os.path.expanduser(k))
 
     trans_func = outgoing_val_trans_for_key.get(
@@ -440,7 +443,7 @@ class MiscGetterAndSetter(MiscGetter):
 
     def __init__(
         self,
-        store=Files(''),
+        store=Files(""),
         incoming_val_trans_for_key=imdict(dflt_incoming_val_trans_for_key),
         outgoing_val_trans_for_key=imdict(dflt_outgoing_val_trans_for_key),
         dflt_incoming_val_trans=identity_method,

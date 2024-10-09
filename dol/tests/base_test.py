@@ -36,17 +36,17 @@ class WrappedDict(MappingViewMixin, dict):
 
 
 @pytest.mark.parametrize(
-    'source_dict, key_input_mapper, key_output_mapper, value_input_mapper, value_output_mapper, postget, key_filter',
+    "source_dict, key_input_mapper, key_output_mapper, value_input_mapper, value_output_mapper, postget, key_filter",
     [
-        ({'a': 1, 'b': 2, 'c': 3}, None, None, None, None, None, None),
+        ({"a": 1, "b": 2, "c": 3}, None, None, None, None, None, None),
         (
-            {'a': 3, 'b': 1, 'c': 3},  # source_dict
+            {"a": 3, "b": 1, "c": 3},  # source_dict
             lambda k: k.lower(),  # key_input_mapper
             lambda k: k.upper(),  # key_output_mapper
             lambda v: v // 10,  # value_input_mapper
             lambda v: v * 10,  # value_output_mapper
-            lambda k, v: f'{k}{v}',  # postget
-            lambda k: k in {'a', 'c'},  # key_filter
+            lambda k, v: f"{k}{v}",  # postget
+            lambda k: k in {"a", "c"},  # key_filter
         ),
     ],
 )

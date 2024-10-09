@@ -40,13 +40,13 @@ class NotUnique(ValueError):
     """Raised when an iterator was expected to have only one element, but had more"""
 
 
-NoMoreElements = type('NoMoreElements', (object,), {})()
+NoMoreElements = type("NoMoreElements", (object,), {})()
 
 
 def unique_element(iterator):
     element = next(iterator)
     if next(iterator, NoMoreElements) is not NoMoreElements:
-        raise NotUnique('iterator had more than one element')
+        raise NotUnique("iterator had more than one element")
     return element
 
 
@@ -188,7 +188,7 @@ class FanoutReader(KvReader):
                 stores = dict(enumerate(stores))
             else:
                 raise ValueError(
-                    f'stores must be a Mapping or an Iterable, not {type(stores)}'
+                    f"stores must be a Mapping or an Iterable, not {type(stores)}"
                 )
         self._stores = stores
         self._default = default
@@ -415,14 +415,14 @@ class FanoutPersister(FanoutReader, KvPersister):
         if self._need_to_set_all_stores and not set(self._stores).issubset(set(v)):
             missing_stores = set(self._stores) - set(v)
             raise ValueError(
-                f'All stores must be set when setting a value. Missing stores: {missing_stores}'
+                f"All stores must be set when setting a value. Missing stores: {missing_stores}"
             )
         if not self._ignore_non_existing_store_keys and not set(v).issubset(
             set(self._stores)
         ):
             invalid_store_keys = set(v) - set(self._stores)
             raise ValueError(
-                f'The value contains some invalid store keys: {invalid_store_keys}'
+                f"The value contains some invalid store keys: {invalid_store_keys}"
             )
         for store_key, vv in v.items():
             if store_key in self._stores:
@@ -438,13 +438,13 @@ class FanoutPersister(FanoutReader, KvPersister):
             del store[k]
 
 
-NotFound = type('NotFound', (object,), {})()
+NotFound = type("NotFound", (object,), {})()
 
 
 @wrap_kvs(value_encoder=lambda self, v: {k: v for k in self._stores.keys()})
 class CascadedStores(FanoutPersister):
     """
-    A MutableMapping interface to a collection of stores that will write a value in 
+    A MutableMapping interface to a collection of stores that will write a value in
     all the stores it contains, read it from the first store it finds that has it, and
     write it back to all the stores up to the store where it found it.
 
@@ -452,7 +452,7 @@ class CascadedStores(FanoutPersister):
     and possibly to a remote backup or shared store, but also keep that value in memory.
 
     The name `CascadedStores` comes from "Cascaded Caches", which is a common pattern in
-    caching systems 
+    caching systems
     (e.g. https://philipwalton.com/articles/cascading-cache-invalidation/)
 
     To demo this, let's create a couple of stores that print when they get a value:
@@ -469,8 +469,8 @@ class CascadedStores(FanoutPersister):
     >>> cache = LoggedDict('cache')
     >>> disk = LoggedDict('disk')
     >>> remote = LoggedDict('remote')
-    
-    Now we can create a CascadedStores instance with these stores and write a 
+
+    Now we can create a CascadedStores instance with these stores and write a
     value to it:
 
     >>> stores = CascadedStores([cache, disk, remote])
@@ -518,7 +518,7 @@ class CascadedStores(FanoutPersister):
     >>> remote
     {'f': 42}
 
-    
+
     """
 
     # Note: Need to overwrite FanoutPersister's getitem to not read values from all stores
@@ -681,7 +681,7 @@ class SequenceKvReader(KvReader):
         for kk, vv in self.kv_items():
             if kk == k:
                 return vv
-        raise KeyError(f'Key not found: {k}')
+        raise KeyError(f"Key not found: {k}")
 
     def __iter__(self):
         yield from map(itemgetter(0), self.kv_items())
@@ -772,24 +772,24 @@ import os
 
 psep = os.path.sep
 
-ddir = lambda o: [x for x in dir(o) if not x.startswith('_')]
+ddir = lambda o: [x for x in dir(o) if not x.startswith("_")]
 
 
 def not_underscore_prefixed(x):
-    return not x.startswith('_')
+    return not x.startswith("_")
 
 
 def _path_to_module_str(path, root_path):
-    assert path.endswith('.py')
+    assert path.endswith(".py")
     path = path[:-3]
     if root_path.endswith(psep):
         root_path = root_path[:-1]
     root_path = os.path.dirname(root_path)
     len_root = len(root_path) + 1
     path_parts = path[len_root:].split(psep)
-    if path_parts[-1] == '__init__.py':
+    if path_parts[-1] == "__init__.py":
         path_parts = path_parts[:-1]
-    return '.'.join(path_parts)
+    return ".".join(path_parts)
 
 
 # class SourceReader(KvReader):
@@ -804,7 +804,7 @@ class ObjLoader(object):
     def __init__(self, data_of_key, obj_of_data=None):
         self.data_of_key = data_of_key
         if obj_of_data is not None or not callable(obj_of_data):
-            raise TypeError('serializer must be None or a callable')
+            raise TypeError("serializer must be None or a callable")
         self.obj_of_data = obj_of_data
 
     def __call__(self, k):
@@ -861,7 +861,7 @@ class ObjReader:
             return self._obj_of_key(k)
         except Exception as e:
             raise KeyError(
-                'KeyError in {} when trying to __getitem__({}): {}'.format(
+                "KeyError in {} when trying to __getitem__({}): {}".format(
                     e.__class__.__name__, k, e
                 )
             )
@@ -869,7 +869,7 @@ class ObjReader:
 
 # Pattern: Recursive navigation
 # Note: Moved dev to independent package called "guide"
-@cached_keys(keys_cache=set, name='Attrs')
+@cached_keys(keys_cache=set, name="Attrs")
 class Attrs(ObjReader):
     """A simple recursive KvReader for the attributes of a python object.
     Keys are attr names, values are Attrs(attr_val) instances.
@@ -897,7 +897,7 @@ class Attrs(ObjReader):
                 try:
                     name = _path_to_module_str(path, root_path)
                 except Exception:
-                    name = 'fake.module.name'
+                    name = "fake.module.name"
         spec = importlib.util.spec_from_file_location(name, path)
         foo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(foo)
@@ -910,7 +910,7 @@ class Attrs(ObjReader):
         return self.__class__(getattr(self.src, k), self._key_filt, self.getattrs)
 
     def __repr__(self):
-        return f'{self.__class__.__qualname__}({self.src}, {self._key_filt})'
+        return f"{self.__class__.__qualname__}({self.src}, {self._key_filt})"
 
 
 Ddir = Attrs  # for back-compatibility, temporarily
@@ -919,17 +919,17 @@ import re
 
 
 def _extract_first_identifier(string: str) -> str:
-    m = re.match(r'\w+', string)
+    m = re.match(r"\w+", string)
     if m:
         return m.group(0)
     else:
-        return ''
+        return ""
 
 
-def _dflt_object_namer(obj, dflt_name: str = 'name_not_found'):
+def _dflt_object_namer(obj, dflt_name: str = "name_not_found"):
     return (
-        getattr(obj, '__name__', None)
-        or _extract_first_identifier(getattr(obj, '__doc__'))
+        getattr(obj, "__name__", None)
+        or _extract_first_identifier(getattr(obj, "__doc__"))
         or dflt_name
     )
 
@@ -995,7 +995,7 @@ class AttrContainer:
             self._validate_named_objects(auto_named_objects, named_objects)
             named_objects = dict(auto_named_objects, **named_objects)
 
-        super().__setattr__('_source', {})
+        super().__setattr__("_source", {})
         for k, v in named_objects.items():
             setattr(self, k, v)
 
@@ -1003,13 +1003,13 @@ class AttrContainer:
     def _validate_named_objects(auto_named_objects, named_objects):
         if not all(map(str.isidentifier, auto_named_objects)):
             raise ValueError(
-                'All names produced by _object_namer should be valid python identifiers:'
+                "All names produced by _object_namer should be valid python identifiers:"
                 f" {', '.join(x for x in auto_named_objects if not x.isidentifier())}"
             )
         clashing_names = auto_named_objects.keys() & named_objects.keys()
         if clashing_names:
             raise ValueError(
-                'Some auto named objects clashed with named ones: '
+                "Some auto named objects clashed with named ones: "
                 f"{', '.join(clashing_names)}"
             )
 
