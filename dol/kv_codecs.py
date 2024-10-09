@@ -1,13 +1,21 @@
 """
 Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.
 """
+
 # ------------------------------------ Codecs ------------------------------------------
 
 from functools import partial
 from typing import Callable, Iterable, Any, Optional, KT, VT, Mapping, Union, Dict
 from operator import itemgetter
 
-from dol.trans import Codec, ValueCodec, KeyCodec, KeyValueCodec, affix_key_codec
+from dol.trans import (
+    Codec,
+    ValueCodec,
+    KeyCodec,
+    KeyValueCodec,
+    affix_key_codec,
+    store_decorator,
+)
 from dol.paths import KeyTemplate
 from dol.signatures import Sig
 from dol.util import named_partial, identity_func, single_nest_in_dict, nest_in_dict
@@ -18,8 +26,7 @@ import io
 
 
 @Sig
-def _string(string: str):
-    ...
+def _string(string: str): ...
 
 
 @Sig
@@ -34,15 +41,13 @@ def _csv_rw_sig(
     lineterminator: str = '\r\n',
     quoting=0,
     strict: bool = False,
-):
-    ...
+): ...
 
 
 @Sig
 def _csv_dict_extra_sig(
     fieldnames, restkey=None, restval='', extrasaction='raise', fieldcasts=None
-):
-    ...
+): ...
 
 
 __csv_rw_sig = _string + _csv_rw_sig
@@ -412,6 +417,9 @@ class ValueCodecs(CodecCollection):
         return ValueCodec(partial(nest_in_dict, keys), itemgetter(*keys))
 
 
+from dol.util import invertible_maps
+
+
 @_add_default_codecs
 class KeyCodecs(CodecCollection):
     """
@@ -433,11 +441,58 @@ class KeyCodecs(CodecCollection):
         prefix = max_common_prefix(keys)
         return KeyCodecs.prefixed(prefix)
 
+    def mapped_keys(
+        encoder: Optional[Union[Mapping, Callable]] = None,
+        decoder: Optional[Union[Mapping, Callable]] = None,
+    ):
+        """
+        A factory that creates a key codec that uses "explicit" mappings to encode
+        and decode keys.
+
+        The encoders and decoders can be an explicit mapping of a function.
+        If the encoder is a mapping, the decoder is the inverse of that mapping.
+        If given explicitly, this will be asserted.
+        If not, the decoder will be computed by swapping the keys and values of the
+        encoder and asserting that no values were lost in the process
+        (that is, that the mappings are invertible).
+        The statements above are true if you swap "encoder" and "decoder".
+
+        >>> km = KeyCodecs.mapped_keys({'a': 1, 'b': 2})
+        >>> km.encoder('a')
+        1
+        >>> km.decoder(1)
+        'a'
+
+        If the encoder is a function, the decoder must be an iterable of keys who will
+        be used as arguments of the function to get the encoded key, and the decode
+        will be the inverse of that mapping.
+        The statement above is true if you swap "encoder" and "decoder".
+
+        >>> km = KeyCodecs.mapped_keys(['a', 'b'], str.upper)
+        >>> km.encoder('A')
+        'a'
+        >>> km.decoder('a')
+        'A'
+        """
+        encoder, decoder = invertible_maps(encoder, decoder)
+        return KeyCodec(
+            encoder=encoder.__getitem__,
+            decoder=decoder.__getitem__,
+        )
+
 
 def common_prefix_keys_wrap(s: Mapping):
     """Transforms keys of mapping to omit the longest prefix they have in common"""
     common_prefix_wrap = KeyCodecs.common_prefixed(s)
     return common_prefix_wrap(s)
+
+
+# TODO: Here, I'd like to decorate with store_decorator, but KeyCodecs.mapped_keys
+#  doesn't apply to a Mapping class, only an instance. We have to make the iteration
+#  of keys to be inverted have lazy capabilities (only happen when the instance is made)
+def add_invertible_key_decoder(store: Mapping, *, decoder: Callable):
+    """Add a key decoder to a store (instance)"""
+    return KeyCodecs.mapped_keys(store, decoder=decoder)(store)
 
 
 # --------------------------------- KV Codecs ------------------------------------------
@@ -529,7 +584,9 @@ class KeyValueCodecs(CodecCollection):
         value codec to use."""
 
     def extension_based(
-        ext_mapping: dict = dflt_ext_mapping, *, default: Optional[Callable] = None,
+        ext_mapping: dict = dflt_ext_mapping,
+        *,
+        default: Optional[Callable] = None,
     ):
         """A factory that creates a key-value codec that uses the file extension to
         determine the value codec to use."""

@@ -15,6 +15,9 @@ from typing import (
     Mapping,
     Sequence,
     T,
+    NewType,
+    Tuple,
+    TypeVar,
 )
 from functools import update_wrapper as _update_wrapper
 from functools import wraps as _wraps
@@ -22,6 +25,18 @@ from functools import partialmethod, partial, WRAPPER_ASSIGNMENTS
 from types import MethodType
 from inspect import Signature, signature, Parameter, getsource
 
+Key = TypeVar('Key')
+Key.__doc__ = "The type of the keys used in the interface (outer keys)"
+Id = TypeVar('Id')
+Id.__doc__ = "The type of the keys used in the backend (inner keys)"
+Val = TypeVar('Val')
+Val.__doc__ = "The type of the values used in the interface (outer values)"
+Data = TypeVar('Data')
+Data.__doc__ = "The type of the values used in the backend (inner values)"
+Item = Tuple[Key, Val]
+KeyIter = Iterable[Key]
+ValIter = Iterable[Val]
+ItemIter = Iterable[Item]
 
 # monkey patching WRAPPER_ASSIGNMENTS to get "proper" wrapping (adding defaults and kwdefaults
 wrapper_assignments = (*WRAPPER_ASSIGNMENTS, '__defaults__', '__kwdefaults__')
@@ -682,7 +697,9 @@ def partialclass(cls, *args, **kwargs):
         __init__ = partialmethod(cls.__init__, *args, **kwargs)
 
     copy_attrs(
-        PartialClass, cls, attrs=('__name__', '__qualname__', '__module__', '__doc__'),
+        PartialClass,
+        cls,
+        attrs=('__name__', '__qualname__', '__module__', '__doc__'),
     )
 
     return PartialClass
@@ -1090,7 +1107,10 @@ def igroupby(
     if val is None:
         _append_to_group_items = append_to_group_items
     else:
-        _append_to_group_items = lambda group_items, item: (group_items, val(item),)
+        _append_to_group_items = lambda group_items, item: (
+            group_items,
+            val(item),
+        )
 
     for item in items:
         group_key = key(item)
@@ -1789,3 +1809,84 @@ def written_key(
     _call_writer(writer, obj, key, obj_arg_position_in_writer)
 
     return key
+
+
+# TODO: This function should be symmetric, and if so, the code should use recursion
+def invertible_maps(
+    mapping: Mapping = None, inv_mapping: Mapping = None
+) -> Tuple[Mapping, Mapping]:
+    """Returns two maps that are inverse of each other.
+    Raises an AssertionError iif both maps are None, or if the maps are not inverse of
+    each other.
+
+    Get a pair of invertible maps
+
+    >>> invertible_maps({1: 11, 2: 22})
+    ({1: 11, 2: 22}, {11: 1, 22: 2})
+    >>> invertible_maps(None, {11: 1, 22: 2})
+    ({1: 11, 2: 22}, {11: 1, 22: 2})
+
+    You can specify one argument as an iterable (of keys for the mapping) and the 
+    other as a function (to be applied to the keys to get the inverse mapping).
+    The function acts similarly to a `Mapping.__getitem__`, transforming each key to 
+    its associated value. The iterable defines the keys for the mapping, while the 
+    function is applied to each key to produce the values.
+
+    >>> invertible_maps([1,2,3], lambda x: x * 10)
+    ({10: 1, 20: 2, 30: 3}, {1: 10, 2: 20, 3: 30})
+    >>> invertible_maps(lambda x: x * 10, [1,2,3])
+    ({1: 10, 2: 20, 3: 30}, {10: 1, 20: 2, 30: 3})
+
+    If two maps are given and invertible, you just get them back
+
+    >>> invertible_maps({1: 11, 2: 22}, {11: 1, 22: 2})
+    ({1: 11, 2: 22}, {11: 1, 22: 2})
+
+    Or if they're not invertible
+
+    >>> invertible_maps({1: 11, 2: 22}, {11: 1, 22: 'ha, not what you expected!'})
+    Traceback (most recent call last):
+      ...
+    AssertionError: mapping and inv_mapping are not inverse of each other!
+
+    >>> invertible_maps(None, None)
+    Traceback (most recent call last):
+      ...
+    ValueError: You need to specify one or both maps
+    """
+    if inv_mapping is None and mapping is None:
+        raise ValueError('You need to specify one or both maps')
+    
+    # Take care of the case where one is a function and the other is a list
+    # Here, we apply the function to the list items to get the mappings
+    if callable(mapping):
+        assert isinstance(inv_mapping, Iterable), (
+            f"If one argument is callable, the other one must be an iterable of keys"
+        )
+        mapping = {k: mapping(k) for k in inv_mapping}
+        inv_mapping = {v: k for k, v in mapping.items()}
+    elif callable(inv_mapping):
+        assert isinstance(mapping, Iterable), (
+            f"If one argument is callable, the other one must be an iterable of keys"
+        )
+        inv_mapping = {k: inv_mapping(k) for k in mapping}
+        mapping = {v: k for k, v in inv_mapping.items()}
+    
+    if inv_mapping is None:
+        assert hasattr(mapping, 'items')
+        inv_mapping = {v: k for k, v in mapping.items()}
+        assert len(inv_mapping) == len(
+            mapping
+        ), 'The values of mapping are not unique, so the mapping is not invertible'
+    elif mapping is None:
+        assert hasattr(inv_mapping, 'items')
+        mapping = {v: k for k, v in inv_mapping.items()}
+        assert len(mapping) == len(
+            inv_mapping
+        ), 'The values of inv_mapping are not unique, so the mapping is not invertible'
+    else:
+        assert (len(mapping) == len(inv_mapping)) and (
+            mapping == {v: k for k, v in inv_mapping.items()}
+        ), 'mapping and inv_mapping are not inverse of each other!'
+
+    return mapping, inv_mapping

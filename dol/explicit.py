@@ -210,53 +210,10 @@ class ExplicitKeysStore(ExplicitKeys, Store):
         self._keys_cache = key_collection
 
 
-def invertible_maps(mapping=None, inv_mapping=None):
-    """Returns two maps that are inverse of each other.
-    Raises an AssertionError iif both maps are None, or if the maps are not inverse of each other
-
-    Get a pair of invertible maps
-    >>> invertible_maps({1: 11, 2: 22})
-    ({1: 11, 2: 22}, {11: 1, 22: 2})
-    >>> invertible_maps(None, {11: 1, 22: 2})
-    ({1: 11, 2: 22}, {11: 1, 22: 2})
-
-    If two maps are given and invertible, you just get them back
-    >>> invertible_maps({1: 11, 2: 22}, {11: 1, 22: 2})
-    ({1: 11, 2: 22}, {11: 1, 22: 2})
-
-    Or if they're not invertible
-    >>> invertible_maps({1: 11, 2: 22}, {11: 1, 22: 'ha, not what you expected!'})
-    Traceback (most recent call last):
-      ...
-    AssertionError: mapping and inv_mapping are not inverse of each other!
-
-    >>> invertible_maps(None, None)
-    Traceback (most recent call last):
-      ...
-    ValueError: You need to specify one or both maps
-    """
-    if inv_mapping is None and mapping is None:
-        raise ValueError('You need to specify one or both maps')
-    if inv_mapping is None:
-        assert hasattr(mapping, 'items')
-        inv_mapping = {v: k for k, v in mapping.items()}
-        assert len(inv_mapping) == len(
-            mapping
-        ), 'The values of mapping are not unique, so the mapping is not invertible'
-    elif mapping is None:
-        assert hasattr(inv_mapping, 'items')
-        mapping = {v: k for k, v in inv_mapping.items()}
-        assert len(mapping) == len(
-            inv_mapping
-        ), 'The values of inv_mapping are not unique, so the mapping is not invertible'
-    else:
-        assert (len(mapping) == len(inv_mapping)) and (
-            mapping == {v: k for k, v in inv_mapping.items()}
-        ), 'mapping and inv_mapping are not inverse of each other!'
-
-    return mapping, inv_mapping
+from dol.util import invertible_maps
 
 
+# TODO: Put on the path of deprecation, since KeyCodecs.mapped_keys is a better way to do this.
 class ExplicitKeyMap:
     def __init__(self, *, key_of_id: Mapping = None, id_of_key: Mapping = None):
         """

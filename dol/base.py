@@ -41,17 +41,16 @@ from dol.util import (
     _disabled_clear_method,
     identity_func,
     static_identity_method,
+    Key,
+    Val,
+    Id,
+    Data,
+    Item,
+    KeyIter,
+    ValIter,
+    ItemIter,
 )
 from dol.signatures import Sig
-
-Key = Any
-Val = Any
-Id = Any
-Data = Any
-Item = Tuple[Key, Val]
-KeyIter = Iterable[Key]
-ValIter = Iterable[Val]
-ItemIter = Iterable[Item]
 
 
 class AttrNames:
@@ -326,7 +325,8 @@ def delegate_to(
                 continue
             wrapped_attr = getattr(wrapped, attr)
             delegated_attribute = update_wrapper(
-                wrapper=DelegatedAttribute(delegation_attr, attr), wrapped=wrapped_attr,
+                wrapper=DelegatedAttribute(delegation_attr, attr),
+                wrapped=wrapped_attr,
             )
             setattr(Wrap, attr, delegated_attribute)
 
