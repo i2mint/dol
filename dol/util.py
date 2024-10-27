@@ -558,8 +558,8 @@ class Pipe:
         msg = f"Error calling function {self._func_info_str(i)}\n"
         out_str = f"{out}"
         msg += f"on input {truncate_string_with_marker(out_str)}\n"
-        msg += "which was the output of previous function"
-        msg += f"{self._func_info_str(i - 1)}\n"
+        msg += "which was the output of previous function "
+        msg += f'\t{self._func_info_str(i - 1)}\n'
         args_str = ", ".join(map(str, args))
         kwargs_str = ", ".join(f"{k}={v}" for k, v in kwargs.items())
         msg += f"The error was cause by calling {self} on ({args_str}, {kwargs_str})\n"
