@@ -173,22 +173,22 @@ def test_wrap_kvs_vs_class_and_static_methods():
     try:
         MyFiles.normal_method(instance)
     except Exception as e:
-        print('method normal_method is broken by wrap_kvs decorator')
-        print(f'{type(e).__name__}: {e}')
+        print("method normal_method is broken by wrap_kvs decorator")
+        print(f"{type(e).__name__}: {e}")
         errors.append(e)
 
     try:
         MyFiles.hello()
     except Exception as e:
-        print('classmethod hello is broken by wrap_kvs decorator')
-        print(f'{type(e).__name__}: {e}')
+        print("classmethod hello is broken by wrap_kvs decorator")
+        print(f"{type(e).__name__}: {e}")
         errors.append(e)
 
     try:
         MyFiles.hi()
     except Exception as e:
-        print('staticmethod hi is broken by wrap_kvs decorator')
-        print(f'{type(e).__name__}: {e}')
+        print("staticmethod hi is broken by wrap_kvs decorator")
+        print(f"{type(e).__name__}: {e}")
         errors.append(e)
 
     if errors:

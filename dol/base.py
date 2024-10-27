@@ -261,12 +261,12 @@ class DelegatedAttribute:
             #   self.__wrapped__ would make it hard to debug and
             #   self would fail with unbound methods (why?)
             #   So doing a check here, but would like to find a better solution.
-            wrapped_self = getattr(self, '__wrapped__', None)
+            wrapped_self = getattr(self, "__wrapped__", None)
             if is_classmethod(wrapped_self) or is_unbound_method(wrapped_self):
                 return wrapped_self
             else:
                 return self
-            
+
             # wrapped_self = getattr(self, '__wrapped__', None)
             # if not is_classmethod(wrapped_self):
             #     return self

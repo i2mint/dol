@@ -130,10 +130,10 @@ def is_unbound_method(obj):
     """
     if not isinstance(obj, FunctionType):
         return False
-    qualname = getattr(obj, '__qualname__', '')
+    qualname = getattr(obj, "__qualname__", "")
     # if '<locals>' in qualname:
     #     return False
-    return '.' in qualname
+    return "." in qualname
 
 
 class staticproperty:
