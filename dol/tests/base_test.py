@@ -136,3 +136,61 @@ def test_mapping_views(
     assert wwd._keys_cache == set(source_dict)
     assert isinstance(wwd.values().distinct(), set)
     assert_store_functionality(wwd, collection=sorted)
+
+
+def test_wrap_kvs_vs_class_and_static_methods():
+    """Adding wrap_kvs breaks methods when called from class
+
+    That is, when you call Klass.method() (where method is a normal, class, or static)
+
+    See issue "dol.base.Store.wrap breaks unbound method calls":
+    https://github.com/i2mint/dol/issues/17
+
+    """
+
+    @Store.wrap
+    class MyFiles:
+        y = 2
+
+        def normal_method(self, x=3):
+            return self.y * x
+
+        @classmethod
+        def hello(cls):
+            pass
+
+        @staticmethod
+        def hi():
+            pass
+
+    errors = []
+
+    # This works fine!
+    instance = MyFiles()
+    assert instance.normal_method() == 6
+
+    # But calling the method as a class...
+    try:
+        MyFiles.normal_method(instance)
+    except Exception as e:
+        print('method normal_method is broken by wrap_kvs decorator')
+        print(f'{type(e).__name__}: {e}')
+        errors.append(e)
+
+    try:
+        MyFiles.hello()
+    except Exception as e:
+        print('classmethod hello is broken by wrap_kvs decorator')
+        print(f'{type(e).__name__}: {e}')
+        errors.append(e)
+
+    try:
+        MyFiles.hi()
+    except Exception as e:
+        print('staticmethod hi is broken by wrap_kvs decorator')
+        print(f'{type(e).__name__}: {e}')
+        errors.append(e)
+
+    if errors:
+        first_error, *_ = errors
+        raise first_error

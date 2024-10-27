@@ -49,6 +49,8 @@ from dol.util import (
     KeyIter,
     ValIter,
     ItemIter,
+    is_unbound_method,
+    is_classmethod,
 )
 from dol.signatures import Sig
 
@@ -254,7 +256,22 @@ class DelegatedAttribute:
         if instance is None:
             # return getattr(getattr(owner, self.delegate_name), self.attr_name)
             # return getattr(owner, self.attr_name, None)
-            return self  # .__wrapped__  # TODO: The __wrapped__ would make it hard to debug
+
+            # TODO: Would just return self or self.__wrapped__ here, but
+            #   self.__wrapped__ would make it hard to debug and
+            #   self would fail with unbound methods (why?)
+            #   So doing a check here, but would like to find a better solution.
+            wrapped_self = getattr(self, '__wrapped__', None)
+            if is_classmethod(wrapped_self) or is_unbound_method(wrapped_self):
+                return wrapped_self
+            else:
+                return self
+            
+            # wrapped_self = getattr(self, '__wrapped__', None)
+            # if not is_classmethod(wrapped_self):
+            #     return self
+            # else:
+            #     return wrapped_self
         else:
             # i.e. return instance.delegate.attr
             return getattr(getattr(instance, self.delegate_name), self.attr_name)
