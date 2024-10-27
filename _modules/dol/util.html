@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.77 documentation</title>
+  <title>dol.util &mdash; dol 0.2.78 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c7e8ed0a"></script>
+      <script src="../../_static/documentation_options.js?v=2ff24ec8"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -136,13 +136,13 @@
 <span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">MethodType</span>
 <span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">Signature</span><span class="p">,</span> <span class="n">signature</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">getsource</span>
 
-<span class="n">Key</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;Key&#39;</span><span class="p">)</span>
+<span class="n">Key</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Key&quot;</span><span class="p">)</span>
 <span class="n">Key</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;The type of the keys used in the interface (outer keys)&quot;</span>
-<span class="n">Id</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;Id&#39;</span><span class="p">)</span>
+<span class="n">Id</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Id&quot;</span><span class="p">)</span>
 <span class="n">Id</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;The type of the keys used in the backend (inner keys)&quot;</span>
-<span class="n">Val</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;Val&#39;</span><span class="p">)</span>
+<span class="n">Val</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Val&quot;</span><span class="p">)</span>
 <span class="n">Val</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;The type of the values used in the interface (outer values)&quot;</span>
-<span class="n">Data</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;Data&#39;</span><span class="p">)</span>
+<span class="n">Data</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Data&quot;</span><span class="p">)</span>
 <span class="n">Data</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;The type of the values used in the backend (inner values)&quot;</span>
 <span class="n">Item</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Key</span><span class="p">,</span> <span class="n">Val</span><span class="p">]</span>
 <span class="n">KeyIter</span> <span class="o">=</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Key</span><span class="p">]</span>
@@ -707,8 +707,8 @@
         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error calling function </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_func_info_str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="n">out_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">out</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;on input </span><span class="si">{</span><span class="n">truncate_string_with_marker</span><span class="p">(</span><span class="n">out_str</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;which was the output of previous function&quot;</span>
-        <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_func_info_str</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;which was the output of previous function &quot;</span>
+        <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_func_info_str</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="n">args_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
         <span class="n">kwargs_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
         <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;The error was cause by calling </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2"> on (</span><span class="si">{</span><span class="n">args_str</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">kwargs_str</span><span class="si">}</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -854,7 +854,7 @@
     <span class="n">copy_attrs</span><span class="p">(</span>
         <span class="n">PartialClass</span><span class="p">,</span>
         <span class="bp">cls</span><span class="p">,</span>
-        <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__qualname__&#39;</span><span class="p">,</span> <span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
+        <span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="s2">&quot;__qualname__&quot;</span><span class="p">,</span> <span class="s2">&quot;__module__&quot;</span><span class="p">,</span> <span class="s2">&quot;__doc__&quot;</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PartialClass</span></div>
@@ -2035,10 +2035,10 @@
 <span class="sd">    &gt;&gt;&gt; invertible_maps(None, {11: 1, 22: 2})</span>
 <span class="sd">    ({1: 11, 2: 22}, {11: 1, 22: 2})</span>
 
-<span class="sd">    You can specify one argument as an iterable (of keys for the mapping) and the </span>
+<span class="sd">    You can specify one argument as an iterable (of keys for the mapping) and the</span>
 <span class="sd">    other as a function (to be applied to the keys to get the inverse mapping).</span>
-<span class="sd">    The function acts similarly to a `Mapping.__getitem__`, transforming each key to </span>
-<span class="sd">    its associated value. The iterable defines the keys for the mapping, while the </span>
+<span class="sd">    The function acts similarly to a `Mapping.__getitem__`, transforming each key to</span>
+<span class="sd">    its associated value. The iterable defines the keys for the mapping, while the</span>
 <span class="sd">    function is applied to each key to produce the values.</span>
 
 <span class="sd">    &gt;&gt;&gt; invertible_maps([1,2,3], lambda x: x * 10)</span>
@@ -2064,39 +2064,39 @@
 <span class="sd">    ValueError: You need to specify one or both maps</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">inv_mapping</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mapping</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;You need to specify one or both maps&#39;</span><span class="p">)</span>
-    
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You need to specify one or both maps&quot;</span><span class="p">)</span>
+
     <span class="c1"># Take care of the case where one is a function and the other is a list</span>
     <span class="c1"># Here, we apply the function to the list items to get the mappings</span>
     <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">mapping</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inv_mapping</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;If one argument is callable, the other one must be an iterable of keys&quot;</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">inv_mapping</span><span class="p">,</span> <span class="n">Iterable</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;If one argument is callable, the other one must be an iterable of keys&quot;</span>
         <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">mapping</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">inv_mapping</span><span class="p">}</span>
         <span class="n">inv_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
     <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">inv_mapping</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;If one argument is callable, the other one must be an iterable of keys&quot;</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">mapping</span><span class="p">,</span> <span class="n">Iterable</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;If one argument is callable, the other one must be an iterable of keys&quot;</span>
         <span class="n">inv_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">inv_mapping</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">}</span>
         <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inv_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-    
+
     <span class="k">if</span> <span class="n">inv_mapping</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="s1">&#39;items&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="s2">&quot;items&quot;</span><span class="p">)</span>
         <span class="n">inv_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">inv_mapping</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
             <span class="n">mapping</span>
-        <span class="p">),</span> <span class="s1">&#39;The values of mapping are not unique, so the mapping is not invertible&#39;</span>
+        <span class="p">),</span> <span class="s2">&quot;The values of mapping are not unique, so the mapping is not invertible&quot;</span>
     <span class="k">elif</span> <span class="n">mapping</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">inv_mapping</span><span class="p">,</span> <span class="s1">&#39;items&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">inv_mapping</span><span class="p">,</span> <span class="s2">&quot;items&quot;</span><span class="p">)</span>
         <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inv_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
             <span class="n">inv_mapping</span>
-        <span class="p">),</span> <span class="s1">&#39;The values of inv_mapping are not unique, so the mapping is not invertible&#39;</span>
+        <span class="p">),</span> <span class="s2">&quot;The values of inv_mapping are not unique, so the mapping is not invertible&quot;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">inv_mapping</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span>
             <span class="n">mapping</span> <span class="o">==</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inv_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-        <span class="p">),</span> <span class="s1">&#39;mapping and inv_mapping are not inverse of each other!&#39;</span>
+        <span class="p">),</span> <span class="s2">&quot;mapping and inv_mapping are not inverse of each other!&quot;</span>
 
     <span class="k">return</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">inv_mapping</span></div>
 
