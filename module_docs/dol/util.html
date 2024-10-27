@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.78 documentation</title>
+  <title>dol.util &mdash; dol 0.2.79 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2ff24ec8"></script>
+      <script src="../../_static/documentation_options.js?v=8b8acad1"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -103,6 +103,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.inject_method"><code class="docutils literal notranslate"><span class="pre">inject_method()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.instance_checker"><code class="docutils literal notranslate"><span class="pre">instance_checker()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.invertible_maps"><code class="docutils literal notranslate"><span class="pre">invertible_maps()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.util.is_classmethod"><code class="docutils literal notranslate"><span class="pre">is_classmethod()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.util.is_unbound_method"><code class="docutils literal notranslate"><span class="pre">is_unbound_method()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.lazyprop"><code class="docutils literal notranslate"><span class="pre">lazyprop</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.lazyprop_w_sentinel"><code class="docutils literal notranslate"><span class="pre">lazyprop_w_sentinel</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.max_common_prefix"><code class="docutils literal notranslate"><span class="pre">max_common_prefix()</span></code></a></li>
@@ -350,7 +352,7 @@ If non of the keys are found, <code class="docutils literal notranslate"><span c
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">A</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">wet</span>
 <span class="go">&#39;dry&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">big</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">big</span><span class="p">()</span>  
 <span class="go">&#39;small&#39;</span>
 </pre></div>
 </div>
@@ -631,6 +633,66 @@ function is applied to each key to produce the values.</p>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="w">  </span><span class="c">...</span>
 <span class="gr">ValueError</span>: <span class="n">You need to specify one or both maps</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.util.is_classmethod">
+<span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">is_classmethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#is_classmethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.is_classmethod" title="Link to this definition"></a></dt>
+<dd><p>Checks if an object is a classmethod.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> – The object to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the object is a classmethod, False otherwise.</p>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@classmethod</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">class_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">instance_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj1</span> <span class="o">=</span> <span class="n">MyClass</span><span class="o">.</span><span class="n">class_method</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj2</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span><span class="o">.</span><span class="n">instance_method</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_classmethod</span><span class="p">(</span><span class="n">obj1</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_classmethod</span><span class="p">(</span><span class="n">obj2</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.util.is_unbound_method">
+<span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">is_unbound_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#is_unbound_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.is_unbound_method" title="Link to this definition"></a></dt>
+<dd><p>Determines if the given object is an unbound method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> – The object to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if obj is an unbound method, False otherwise.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">types</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">function</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_unbound_method</span><span class="p">(</span><span class="n">MyClass</span><span class="o">.</span><span class="n">method</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_unbound_method</span><span class="p">(</span><span class="n">MyClass</span><span class="p">()</span><span class="o">.</span><span class="n">method</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_unbound_method</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+<span class="go">False</span>
 </pre></div>
 </div>
 </dd></dl>
