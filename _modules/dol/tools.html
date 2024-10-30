@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.79 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.80 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8b8acad1"></script>
+      <script src="../../_static/documentation_options.js?v=79e3c4f8"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -113,6 +113,7 @@
 <span class="sd">Various tools to add functionality to stores</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">T</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
 
@@ -530,6 +531,51 @@
 
         <span class="k">else</span><span class="p">:</span>  <span class="c1">#   If func is given, we want to return the CachedProperty instance</span>
             <span class="k">return</span> <span class="n">CachedProperty</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">pre_cache</span><span class="o">=</span><span class="n">pre_cache</span><span class="p">)</span></div>
+
+
+
+<span class="n">extsep</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">extsep</span>
+
+
+<div class="viewcode-block" id="add_extension">
+<a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.add_extension">[docs]</a>
+<span class="k">def</span> <span class="nf">add_extension</span><span class="p">(</span><span class="n">ext</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add an extension to a name.</span>
+
+<span class="sd">    If name is None, return a partial function that will add the extension to a</span>
+<span class="sd">    name when called.</span>
+
+<span class="sd">    add_extension is a useful helper for making key functions, namely for cache_this.</span>
+
+<span class="sd">    &gt;&gt;&gt; add_extension(&#39;txt&#39;, &#39;file&#39;)</span>
+<span class="sd">    &#39;file.txt&#39;</span>
+<span class="sd">    &gt;&gt;&gt; add_txt_ext = add_extension(&#39;txt&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; add_txt_ext(&#39;file&#39;)</span>
+<span class="sd">    &#39;file.txt&#39;</span>
+
+<span class="sd">    Note: If you want to add an extension to a name that already has an extension,</span>
+<span class="sd">    you can do that, but it will add the extension to the end of the name,</span>
+<span class="sd">    not replace the existing extension.</span>
+
+<span class="sd">    &gt;&gt;&gt; add_txt_ext(&#39;file.txt&#39;)</span>
+<span class="sd">    &#39;file.txt.txt&#39;</span>
+
+<span class="sd">    Also, bare in mind that if ext starts with the system&#39;s extension separator,</span>
+<span class="sd">    (os.path.extsep), it will be removed.</span>
+
+<span class="sd">    &gt;&gt;&gt; add_extension(&#39;.txt&#39;, &#39;file&#39;) == add_extension(&#39;txt&#39;, &#39;file&#39;) == &#39;file.txt&#39;</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ext</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">extsep</span><span class="p">):</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">add_extension</span><span class="p">,</span> <span class="n">ext</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ext</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}{</span><span class="n">extsep</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">name</span></div>
 
 
 
