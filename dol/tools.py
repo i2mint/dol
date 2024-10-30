@@ -2,6 +2,7 @@
 Various tools to add functionality to stores
 """
 
+import os
 from typing import Optional, Callable, KT, VT, Any, Union, T
 from collections.abc import Mapping
 
@@ -416,7 +417,6 @@ def cache_this(
             return CachedProperty(func, cache=cache, key=key, pre_cache=pre_cache)
 
 
-
 extsep = os.path.extsep
 
 
@@ -457,7 +457,6 @@ def add_extension(ext=None, name=None):
         return f"{name}{extsep}{ext}"
     else:
         return name
-
 
 
 from functools import lru_cache, partial, wraps
