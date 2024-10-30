@@ -44,6 +44,7 @@ def ihead(store, n=1):
 
 from dol.tools import (
     cache_this,  # cache the result of "property" methods in a store
+    add_extension,  # a helper (for cache_this) to make key functions
     lru_cache_method,  # A decorator to cache the result of a method, ignoring the first argument
     store_aggregate,  # aggregate stores keys and values into an aggregate object (e.g. string concatenation)
 )

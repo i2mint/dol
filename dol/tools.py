@@ -416,6 +416,50 @@ def cache_this(
             return CachedProperty(func, cache=cache, key=key, pre_cache=pre_cache)
 
 
+
+extsep = os.path.extsep
+
+
+def add_extension(ext=None, name=None):
+    """
+    Add an extension to a name.
+
+    If name is None, return a partial function that will add the extension to a
+    name when called.
+
+    add_extension is a useful helper for making key functions, namely for cache_this.
+
+    >>> add_extension('txt', 'file')
+    'file.txt'
+    >>> add_txt_ext = add_extension('txt')
+    >>> add_txt_ext('file')
+    'file.txt'
+
+    Note: If you want to add an extension to a name that already has an extension,
+    you can do that, but it will add the extension to the end of the name,
+    not replace the existing extension.
+
+    >>> add_txt_ext('file.txt')
+    'file.txt.txt'
+
+    Also, bare in mind that if ext starts with the system's extension separator,
+    (os.path.extsep), it will be removed.
+
+    >>> add_extension('.txt', 'file') == add_extension('txt', 'file') == 'file.txt'
+    True
+
+    """
+    if ext.startswith(extsep):
+        ext = ext[1:]
+    if name is None:
+        return partial(add_extension, ext)
+    if ext:
+        return f"{name}{extsep}{ext}"
+    else:
+        return name
+
+
+
 from functools import lru_cache, partial, wraps
 
 
