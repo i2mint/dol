@@ -3168,6 +3168,33 @@ class Sig(Signature, Mapping):
             allow_partial=_allow_partial,
             args_limit=_args_limit,
         )
+    
+    @property
+    def inject_into_keyword_variadic(self):
+        """
+        Decorator that uses signature to source the keyword variadic of target function.
+
+        See replace_kwargs_using function for more details, including examples.
+
+        >>> def apple(a, x: int, y=2, *, z=3, **extra_apple_options):
+        ...     return a + x + y + z
+        >>> @Sig(apple).inject_into_keyword_variadic
+        ... def sauce(a, b, c, **sauce_kwargs):
+        ...     return b * c + apple(a, **sauce_kwargs)
+
+        The function will works:
+
+        >>> sauce(1, 2, 3, x=4, z=5)  # func still works? Should be: 1 + 4 + 2 + 5 + 2 * 3
+        18
+
+        But the signature now doesn't have the `**sauce_kwargs`, but more informative
+        signature elements sourced from `apple`:
+
+        >>> Sig(sauce)
+        <Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)>
+
+        """
+        return replace_kwargs_using(self)
 
 
 def _fill_defaults_and_annotations(sig1: Sig, sig2: Sig):
