@@ -3168,7 +3168,7 @@ class Sig(Signature, Mapping):
             allow_partial=_allow_partial,
             args_limit=_args_limit,
         )
-    
+
     @property
     def inject_into_keyword_variadic(self):
         """
