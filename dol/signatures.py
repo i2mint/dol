@@ -4179,6 +4179,10 @@ def replace_kwargs_using(sig: SignatureAble):
     """
     Decorator that replaces the variadic keyword argument of the target function using
     the `sig`, the signature of a source function.
+    It essentially injects the difference between `sig` and the target function's
+    signature into the target function's signature. That is, it replaces the
+    variadic keyword argument (a.k.a. "kwargs") with those parameters that are in `sig`
+    but not in the target function's signature.
 
     This is meant to be used when a `targ_func` (the function you'll apply the
     decorator to) has a variadict keyword argument that is just used to forward "extra"
