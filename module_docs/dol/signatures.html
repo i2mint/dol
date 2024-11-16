@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.81 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.82 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=dd9b40e1"></script>
+      <script src="../../_static/documentation_options.js?v=ea63ca8b"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -91,6 +91,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.has_var_positional"><code class="docutils literal notranslate"><span class="pre">Sig.has_var_positional</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.index_of_var_keyword"><code class="docutils literal notranslate"><span class="pre">Sig.index_of_var_keyword</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.index_of_var_positional"><code class="docutils literal notranslate"><span class="pre">Sig.index_of_var_positional</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.inject_into_keyword_variadic"><code class="docutils literal notranslate"><span class="pre">Sig.inject_into_keyword_variadic</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.is_call_compatible_with"><code class="docutils literal notranslate"><span class="pre">Sig.is_call_compatible_with()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.kwargs_from_args_and_kwargs"><code class="docutils literal notranslate"><span class="pre">Sig.kwargs_from_args_and_kwargs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.signatures.Sig.map_arguments"><code class="docutils literal notranslate"><span class="pre">Sig.map_arguments()</span></code></a></li>
@@ -983,6 +984,31 @@ See also, Sig.index_of_var_positional</p>
 See also, Sig.index_of_var_keyword</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">Sig</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">index_of_var_positional</span> <span class="o">==</span> <span class="mi">1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">Sig</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">z</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">index_of_var_positional</span> <span class="o">==</span> <span class="kc">None</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dol.signatures.Sig.inject_into_keyword_variadic">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inject_into_keyword_variadic</span></span><a class="headerlink" href="#dol.signatures.Sig.inject_into_keyword_variadic" title="Link to this definition"></a></dt>
+<dd><p>Decorator that uses signature to source the keyword variadic of target function.</p>
+<p>See replace_kwargs_using function for more details, including examples.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_apple_options</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="n">z</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@Sig</span><span class="p">(</span><span class="n">apple</span><span class="p">)</span><span class="o">.</span><span class="n">inject_into_keyword_variadic</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The function will works:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sauce</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># func still works? Should be: 1 + 4 + 2 + 5 + 2 * 3</span>
+<span class="go">18</span>
+</pre></div>
+</div>
+<p>But the signature now doesn’t have the <cite>**sauce_kwargs</cite>, but more informative
+signature elements sourced from <cite>apple</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
+<span class="go">&lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
 </pre></div>
 </div>
 </dd></dl>
