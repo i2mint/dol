@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.80 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.81 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=79e3c4f8"></script>
+      <script src="../../_static/documentation_options.js?v=dd9b40e1"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -1605,7 +1605,11 @@ is expected to be a list of Parameter instances.</p>
 <dt class="sig sig-object py" id="dol.signatures.Sig.replace_kwargs_using">
 <span class="sig-name descname"><span class="pre">replace_kwargs_using</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dol.signatures.Sig.replace_kwargs_using" title="Link to this definition"></a></dt>
 <dd><p>Decorator that replaces the variadic keyword argument of the target function using
-the <cite>sig</cite>, the signature of a source function.</p>
+the <cite>sig</cite>, the signature of a source function.
+It essentially injects the difference between <cite>sig</cite> and the target function’s
+signature into the target function’s signature. That is, it replaces the
+variadic keyword argument (a.k.a. “kwargs”) with those parameters that are in <cite>sig</cite>
+but not in the target function’s signature.</p>
 <p>This is meant to be used when a <cite>targ_func</cite> (the function you’ll apply the
 decorator to) has a variadict keyword argument that is just used to forward “extra”
 arguments to another function, and you want to make sure that the signature of the
@@ -3610,7 +3614,11 @@ base param_comparator which requires strict equality (<cite>eq</cite>) for all a
 <dt class="sig sig-object py" id="dol.signatures.replace_kwargs_using">
 <span class="sig-prename descclassname"><span class="pre">dol.signatures.</span></span><span class="sig-name descname"><span class="pre">replace_kwargs_using</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Signature</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/signatures.html#replace_kwargs_using"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.signatures.replace_kwargs_using" title="Link to this definition"></a></dt>
 <dd><p>Decorator that replaces the variadic keyword argument of the target function using
-the <cite>sig</cite>, the signature of a source function.</p>
+the <cite>sig</cite>, the signature of a source function.
+It essentially injects the difference between <cite>sig</cite> and the target function’s
+signature into the target function’s signature. That is, it replaces the
+variadic keyword argument (a.k.a. “kwargs”) with those parameters that are in <cite>sig</cite>
+but not in the target function’s signature.</p>
 <p>This is meant to be used when a <cite>targ_func</cite> (the function you’ll apply the
 decorator to) has a variadict keyword argument that is just used to forward “extra”
 arguments to another function, and you want to make sure that the signature of the
