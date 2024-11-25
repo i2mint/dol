@@ -1697,7 +1697,9 @@ def written_bytes(
     and returns a function that instead of writing to a file, returns the bytes that
     would have been written.
 
-    Note: If obj is not given, write_bytes will return a "bytes writer" function that
+    This is the write version of the `read_from_bytes` function of the same module.
+
+    Note: If obj is not given, `write_bytes` will return a "bytes writer" function that
     takes obj as the first argument, and uses the file_writer to write the bytes.
 
     :param file_writer: A function that writes an object to a file-like object.
@@ -1754,6 +1756,98 @@ def written_bytes(
     # Retrieve the bytes from the buffer
     buffer.seek(0)
     return buffer.read()
+
+
+def _call_reader(
+    reader: Callable,
+    buffer: Buffer,
+    buffer_arg_position: int = 0,
+    buffer_arg_name: str = None,
+    *args,
+    **kwargs,
+):
+    """
+    Helper function to handle reading from the buffer based on buffer_arg_position or buffer_arg_name.
+
+    :param reader: A function that reads from a file-like object.
+    :param buffer: The file-like object to read from.
+    :param buffer_arg_position: Position of the file-like object argument in reader function.
+    :param buffer_arg_name: Name of the file-like object argument in reader function.
+    :raises ValueError: If buffer_arg_position is not valid.
+    """
+    if buffer_arg_name is not None:
+        kwargs[buffer_arg_name] = buffer
+        return reader(*args, **kwargs)
+    else:
+        args = list(args)
+        # Ensure the args list is long enough
+        while len(args) < buffer_arg_position:
+            args.append(None)
+        args.insert(buffer_arg_position, buffer)
+        return reader(*args, **kwargs)
+
+
+def read_from_bytes(
+    file_reader: Callable,
+    obj: bytes = None,
+    *,
+    buffer_arg_position: int = 0,
+    buffer_arg_name: str = None,
+    io_buffer_cls: Buffer = io.BytesIO,
+    **kwargs,
+):
+    """
+    Takes a file reading function that expects a file-like object,
+    and returns a function that instead of reading from a file, reads from bytes.
+
+    This is the read version of the `written_bytes` function of the same module.
+
+    Note: If obj is not given, read_from_bytes will return a "bytes reader" function that
+    takes obj as the first argument, and uses the file_reader to read the bytes.
+
+    :param file_reader: A function that reads from a file-like object.
+    :param obj: The bytes to read.
+    :param buffer_arg_position: The position of the file-like object in file_reader's arguments.
+    :param buffer_arg_name: The name of the file-like object argument in file_reader.
+    :return: The result of reading from the bytes.
+
+    Example usage:
+
+    Using `json.load` to read a JSON object from bytes:
+
+    >>> import json
+    >>> data = {'a': 1, 'b': 2}
+    >>> json_bytes = json.dumps(data).encode('utf-8')
+    >>> read_json_from_bytes = read_from_bytes(json.load)
+    >>> data_loaded = read_json_from_bytes(json_bytes)
+    >>> data_loaded == data
+    True
+
+    Using `pickle.load` to read an object from bytes:
+
+    >>> import pickle
+    >>> obj = {'x': [1, 2, 3], 'y': ('a', 'b')}
+    >>> pickle_bytes = pickle.dumps(obj)
+    >>> read_pickle_from_bytes = read_from_bytes(pickle.load)
+    >>> obj_loaded = read_pickle_from_bytes(pickle_bytes)
+    >>> obj_loaded == obj
+    True
+    """
+    if obj is None:
+        return partial(
+            read_from_bytes,
+            file_reader,
+            buffer_arg_position=buffer_arg_position,
+            buffer_arg_name=buffer_arg_name,
+            io_buffer_cls=io_buffer_cls,
+            **kwargs,
+        )
+
+    buffer = io_buffer_cls(obj)
+
+    return _call_reader(
+        file_reader, buffer, buffer_arg_position, buffer_arg_name, **kwargs
+    )
 
 
 def write_to_file(obj: VT, key: KT):
