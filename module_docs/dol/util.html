@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.82 documentation</title>
+  <title>dol.util &mdash; dol 0.2.83 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=ea63ca8b"></script>
+      <script src="../../_static/documentation_options.js?v=4e1b4e92"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -114,6 +114,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.num_of_args"><code class="docutils literal notranslate"><span class="pre">num_of_args()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.num_of_required_args"><code class="docutils literal notranslate"><span class="pre">num_of_required_args()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.partialclass"><code class="docutils literal notranslate"><span class="pre">partialclass()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.util.read_from_bytes"><code class="docutils literal notranslate"><span class="pre">read_from_bytes()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.regroupby"><code class="docutils literal notranslate"><span class="pre">regroupby()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.staticproperty"><code class="docutils literal notranslate"><span class="pre">staticproperty</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.str_to_var_str"><code class="docutils literal notranslate"><span class="pre">str_to_var_str()</span></code></a></li>
@@ -981,6 +982,50 @@ a useless class.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.util.read_from_bytes">
+<span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">read_from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_reader:</span> <span class="pre">~typing.Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj:</span> <span class="pre">bytes</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_arg_position:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_arg_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">io_buffer_cls:</span> <span class="pre">~_io.BytesIO</span> <span class="pre">|</span> <span class="pre">~_io.StringIO</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'_io.BytesIO'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#read_from_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.read_from_bytes" title="Link to this definition"></a></dt>
+<dd><p>Takes a file reading function that expects a file-like object,
+and returns a function that instead of reading from a file, reads from bytes.</p>
+<p>This is the read version of the <cite>written_bytes</cite> function of the same module.</p>
+<p>Note: If obj is not given, read_from_bytes will return a “bytes reader” function that
+takes obj as the first argument, and uses the file_reader to read the bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_reader</strong> – A function that reads from a file-like object.</p></li>
+<li><p><strong>obj</strong> – The bytes to read.</p></li>
+<li><p><strong>buffer_arg_position</strong> – The position of the file-like object in file_reader’s arguments.</p></li>
+<li><p><strong>buffer_arg_name</strong> – The name of the file-like object argument in file_reader.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The result of reading from the bytes.</p>
+</dd>
+</dl>
+<p>Example usage:</p>
+<p>Using <cite>json.load</cite> to read a JSON object from bytes:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">json</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">json_bytes</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read_json_from_bytes</span> <span class="o">=</span> <span class="n">read_from_bytes</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_loaded</span> <span class="o">=</span> <span class="n">read_json_from_bytes</span><span class="p">(</span><span class="n">json_bytes</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_loaded</span> <span class="o">==</span> <span class="n">data</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Using <cite>pickle.load</cite> to read an object from bytes:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pickle_bytes</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read_pickle_from_bytes</span> <span class="o">=</span> <span class="n">read_from_bytes</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj_loaded</span> <span class="o">=</span> <span class="n">read_pickle_from_bytes</span><span class="p">(</span><span class="n">pickle_bytes</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj_loaded</span> <span class="o">==</span> <span class="n">obj</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.util.regroupby">
 <span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">regroupby</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">key_funcs</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">named_key_funcs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#regroupby"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.regroupby" title="Link to this definition"></a></dt>
 <dd><p>Recursive groupby. Applies the groupby function recursively, using a sequence of key functions.</p>
@@ -1075,7 +1120,8 @@ create a partial function with the desired parameters:</p>
 <dd><p>Takes a file writing function that expects an object and a file-like object,
 and returns a function that instead of writing to a file, returns the bytes that
 would have been written.</p>
-<p>Note: If obj is not given, write_bytes will return a “bytes writer” function that
+<p>This is the write version of the <cite>read_from_bytes</cite> function of the same module.</p>
+<p>Note: If obj is not given, <cite>write_bytes</cite> will return a “bytes writer” function that
 takes obj as the first argument, and uses the file_writer to write the bytes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
