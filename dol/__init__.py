@@ -147,7 +147,7 @@ from dol.caching import (
     mk_write_cached_store,
 )
 
-from dol.appendable import appendable
+from dol.appendable import mk_item2kv_for, appendable
 
 from dol.naming import (
     StrTupleDict,  # convert from and to strings, tuples, and dicts.
