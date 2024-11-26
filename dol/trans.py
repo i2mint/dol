@@ -347,9 +347,9 @@ def store_decorator(func):
 
         return r
 
-    _func_wrapping_store_in_cls_if_not_type.func = (
-        func  # TODO: look for usages, and if not, use __wrapped__
-    )
+    # Two standard attributes for storing the original function are func and __wrapped__
+    _func_wrapping_store_in_cls_if_not_type.func = func
+    _func_wrapping_store_in_cls_if_not_type.__wrapped__ = func
 
     # @wraps(func)
     wrapper_sig = Sig(func).merge_with_sig(
@@ -3344,3 +3344,44 @@ def affix_key_codec(prefix: str = "", suffix: str = ""):
         encoder=partial(_affix_encoder, prefix=prefix, suffix=suffix),
         decoder=partial(_affix_decoder, prefix=prefix, suffix=suffix),
     )
+
+
+@store_decorator
+def redirect_getattr_to_getitem(cls=None, *, keys_have_priority_over_attributes=False):
+    """A mapping decorator that redirects attribute access to __getitem__.
+
+    Warning: This decorator will make your class un-pickleable.
+
+    :param keys_have_priority_over_attributes: If True, keys will have priority over existing attributes.
+
+    >>> @redirect_getattr_to_getitem
+    ... class MyDict(dict):
+    ...     pass
+    >>> d = MyDict(a=1, b=2)
+    >>> d.a
+    1
+    >>> d.b
+    2
+    >>> list(d)
+    ['a', 'b']
+
+    """
+
+    class RidirectGetattrToGetitem(cls):
+        """A class that redirects attribute access to __getitem__"""
+
+        _keys_have_priority_over_attributes = keys_have_priority_over_attributes
+
+        def __getattr__(self, attr):
+            if attr in self:
+                if self._keys_have_priority_over_attributes or attr not in dir(
+                    type(self)
+                ):
+                    return self[attr]
+            # if attr not in self, or if it is in the class, then do normal getattr
+            return super(RidirectGetattrToGetitem, self).__getattr__(attr)
+
+        def __dir__(self) -> Iterable[str]:
+            return list(self)
+
+    return RidirectGetattrToGetitem
