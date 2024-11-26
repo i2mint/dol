@@ -38,14 +38,14 @@ def test_redirect_getattr_to_getitem():
     d1 = MyDict(a=1, b=2)
     assert d1.a == 1
     assert d1.b == 2
-    assert list(d1) == ['a', 'b']
+    assert list(d1) == ["a", "b"]
 
     ## ... as a decorator factory
     D = redirect_getattr_to_getitem()(dict)
     d2 = D(a=1, b=2)
     assert d2.a == 1
     assert d2.b == 2
-    assert list(d2) == ['a', 'b']
+    assert list(d2) == ["a", "b"]
 
     # Applying it to an instance
 
@@ -55,10 +55,10 @@ def test_redirect_getattr_to_getitem():
     d3 = redirect_getattr_to_getitem(backend_d)
     assert d3.a == 1
     assert d3.b == 2
-    assert list(d3) == ['a', 'b']
+    assert list(d3) == ["a", "b"]
 
     ## ... as a decorator factory
     d4 = redirect_getattr_to_getitem()(backend_d)
     assert d4.a == 1
     assert d4.b == 2
-    assert list(d4) == ['a', 'b']
+    assert list(d4) == ["a", "b"]
