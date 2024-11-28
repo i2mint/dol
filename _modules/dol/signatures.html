@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.85 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.86 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=21ea5a46"></script>
+      <script src="../../_static/documentation_options.js?v=1612d02c"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -3400,7 +3400,7 @@
 <span class="sd">        signature elements sourced from `apple`:</span>
 
 <span class="sd">        &gt;&gt;&gt; Sig(sauce)</span>
-<span class="sd">        &lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
+<span class="sd">        &lt;Sig (a, b, c, *, x: int, y=2, z=3, **extra_apple_options)&gt;</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">replace_kwargs_using</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
@@ -4490,7 +4490,7 @@
 <span class="sd">    signature elements sourced from `apple`:</span>
 
 <span class="sd">    &gt;&gt;&gt; Sig(sauce)</span>
-<span class="sd">    &lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
+<span class="sd">    &lt;Sig (a, b, c, *, x: int, y=2, z=3, **extra_apple_options)&gt;</span>
 
 <span class="sd">    One thing to note is that the order of the arguments in the signature of `apple`</span>
 <span class="sd">    may change to accomodate for the python parameter order rules</span>
@@ -4503,13 +4503,13 @@
 <span class="sd">    ... def sauce(a, b=2, c=3, **sauce_kwargs):</span>
 <span class="sd">    ...     return b * c + apple(a, **sauce_kwargs)</span>
 <span class="sd">    &gt;&gt;&gt; Sig(sauce)</span>
-<span class="sd">    &lt;Sig (a, x: int, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
+<span class="sd">    &lt;Sig (a, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)&gt;</span>
 
 <span class="sd">    &gt;&gt;&gt; @Sig.replace_kwargs_using(apple)</span>
 <span class="sd">    ... def sauce(a=1, b=2, c=3, **sauce_kwargs):</span>
 <span class="sd">    ...     return b * c + apple(a, **sauce_kwargs)</span>
 <span class="sd">    &gt;&gt;&gt; Sig(sauce)</span>
-<span class="sd">    &lt;Sig (x: int, a=1, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
+<span class="sd">    &lt;Sig (a=1, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)&gt;</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -4531,6 +4531,22 @@
         <span class="c1"># target arguments, so there&#39;s no conflict: the target kind, default,</span>
         <span class="c1"># and annotation should be used not the source ones.</span>
         <span class="n">src_sig</span> <span class="o">-=</span> <span class="n">targ_func_sig</span>
+
+
+        <span class="c1"># make all parameters of src_sig keyword-only </span>
+        <span class="c1"># (they&#39;re replacing variadic keywords after all!)</span>
+        <span class="c1"># All? No -- a variadic keyword in the src_sig should remain so</span>
+        <span class="n">names_of_all_params_in_src_sig_that_are_not_variadic_keyword</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">src_sig</span><span class="o">.</span><span class="n">params</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
+        <span class="p">]</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">names_of_all_params_in_src_sig_that_are_not_variadic_keyword</span><span class="p">)</span>
+
+        <span class="n">src_sig</span> <span class="o">=</span> <span class="n">src_sig</span><span class="o">.</span><span class="n">ch_kinds</span><span class="p">(</span>
+            <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span>
+                <span class="n">names_of_all_params_in_src_sig_that_are_not_variadic_keyword</span><span class="p">,</span>
+                <span class="p">[</span><span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="n">new_sig</span> <span class="o">=</span> <span class="n">targ_func_sig</span><span class="o">.</span><span class="n">merge_with_sig</span><span class="p">(</span><span class="n">src_sig</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">new_sig</span><span class="p">(</span><span class="n">targ_func</span><span class="p">)</span>

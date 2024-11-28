@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.2.85 documentation</title>
+  <title>dol.signatures &mdash; dol 0.2.86 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=21ea5a46"></script>
+      <script src="../../_static/documentation_options.js?v=1612d02c"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -1008,7 +1008,7 @@ See also, Sig.index_of_var_keyword</p>
 <p>But the signature now doesn’t have the <cite>**sauce_kwargs</cite>, but more informative
 signature elements sourced from <cite>apple</cite>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
-<span class="go">&lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
+<span class="go">&lt;Sig (a, b, c, *, x: int, y=2, z=3, **extra_apple_options)&gt;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1659,7 +1659,7 @@ function).</p>
 <p>But the signature now doesn’t have the <cite>**sauce_kwargs</cite>, but more informative
 signature elements sourced from <cite>apple</cite>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
-<span class="go">&lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
+<span class="go">&lt;Sig (a, b, c, *, x: int, y=2, z=3, **extra_apple_options)&gt;</span>
 </pre></div>
 </div>
 <p>One thing to note is that the order of the arguments in the signature of <cite>apple</cite>
@@ -1672,14 +1672,14 @@ See examples below:</p>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
-<span class="go">&lt;Sig (a, x: int, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
+<span class="go">&lt;Sig (a, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)&gt;</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@Sig</span><span class="o">.</span><span class="n">replace_kwargs_using</span><span class="p">(</span><span class="n">apple</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
-<span class="go">&lt;Sig (x: int, a=1, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
+<span class="go">&lt;Sig (a=1, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)&gt;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3668,7 +3668,7 @@ function).</p>
 <p>But the signature now doesn’t have the <cite>**sauce_kwargs</cite>, but more informative
 signature elements sourced from <cite>apple</cite>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
-<span class="go">&lt;Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)&gt;</span>
+<span class="go">&lt;Sig (a, b, c, *, x: int, y=2, z=3, **extra_apple_options)&gt;</span>
 </pre></div>
 </div>
 <p>One thing to note is that the order of the arguments in the signature of <cite>apple</cite>
@@ -3681,14 +3681,14 @@ See examples below:</p>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
-<span class="go">&lt;Sig (a, x: int, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
+<span class="go">&lt;Sig (a, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)&gt;</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@Sig</span><span class="o">.</span><span class="n">replace_kwargs_using</span><span class="p">(</span><span class="n">apple</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">sauce</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">apple</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">sauce_kwargs</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Sig</span><span class="p">(</span><span class="n">sauce</span><span class="p">)</span>
-<span class="go">&lt;Sig (x: int, a=1, b=2, c=3, y=2, *, z=3, **extra_apple_options)&gt;</span>
+<span class="go">&lt;Sig (a=1, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)&gt;</span>
 </pre></div>
 </div>
 </dd></dl>
