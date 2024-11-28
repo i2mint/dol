@@ -4278,8 +4278,7 @@ def replace_kwargs_using(sig: SignatureAble):
         # and annotation should be used not the source ones.
         src_sig -= targ_func_sig
 
-
-        # make all parameters of src_sig keyword-only 
+        # make all parameters of src_sig keyword-only
         # (they're replacing variadic keywords after all!)
         # All? No -- a variadic keyword in the src_sig should remain so
         names_of_all_params_in_src_sig_that_are_not_variadic_keyword = [
@@ -4288,9 +4287,11 @@ def replace_kwargs_using(sig: SignatureAble):
         n = len(names_of_all_params_in_src_sig_that_are_not_variadic_keyword)
 
         src_sig = src_sig.ch_kinds(
-            **dict(zip(
-                names_of_all_params_in_src_sig_that_are_not_variadic_keyword,
-                [Parameter.KEYWORD_ONLY] * n)
+            **dict(
+                zip(
+                    names_of_all_params_in_src_sig_that_are_not_variadic_keyword,
+                    [Parameter.KEYWORD_ONLY] * n,
+                )
             )
         )
 
