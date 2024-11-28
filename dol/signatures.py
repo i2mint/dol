@@ -3191,7 +3191,7 @@ class Sig(Signature, Mapping):
         signature elements sourced from `apple`:
 
         >>> Sig(sauce)
-        <Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)>
+        <Sig (a, b, c, *, x: int, y=2, z=3, **extra_apple_options)>
 
         """
         return replace_kwargs_using(self)
@@ -4236,7 +4236,7 @@ def replace_kwargs_using(sig: SignatureAble):
     signature elements sourced from `apple`:
 
     >>> Sig(sauce)
-    <Sig (a, b, c, x: int, y=2, *, z=3, **extra_apple_options)>
+    <Sig (a, b, c, *, x: int, y=2, z=3, **extra_apple_options)>
 
     One thing to note is that the order of the arguments in the signature of `apple`
     may change to accomodate for the python parameter order rules
@@ -4249,13 +4249,13 @@ def replace_kwargs_using(sig: SignatureAble):
     ... def sauce(a, b=2, c=3, **sauce_kwargs):
     ...     return b * c + apple(a, **sauce_kwargs)
     >>> Sig(sauce)
-    <Sig (a, x: int, b=2, c=3, y=2, *, z=3, **extra_apple_options)>
+    <Sig (a, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)>
 
     >>> @Sig.replace_kwargs_using(apple)
     ... def sauce(a=1, b=2, c=3, **sauce_kwargs):
     ...     return b * c + apple(a, **sauce_kwargs)
     >>> Sig(sauce)
-    <Sig (x: int, a=1, b=2, c=3, y=2, *, z=3, **extra_apple_options)>
+    <Sig (a=1, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)>
 
     """
 
@@ -4277,6 +4277,22 @@ def replace_kwargs_using(sig: SignatureAble):
         # target arguments, so there's no conflict: the target kind, default,
         # and annotation should be used not the source ones.
         src_sig -= targ_func_sig
+
+
+        # make all parameters of src_sig keyword-only 
+        # (they're replacing variadic keywords after all!)
+        # All? No -- a variadic keyword in the src_sig should remain so
+        names_of_all_params_in_src_sig_that_are_not_variadic_keyword = [
+            p.name for p in src_sig.params if p.kind != Parameter.VAR_KEYWORD
+        ]
+        n = len(names_of_all_params_in_src_sig_that_are_not_variadic_keyword)
+
+        src_sig = src_sig.ch_kinds(
+            **dict(zip(
+                names_of_all_params_in_src_sig_that_are_not_variadic_keyword,
+                [Parameter.KEYWORD_ONLY] * n)
+            )
+        )
 
         new_sig = targ_func_sig.merge_with_sig(src_sig)
         return new_sig(targ_func)

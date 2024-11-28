@@ -1581,6 +1581,14 @@ class FiltIter:
         return filt_iter(filt=filter_suffixes(suffixes))
 
 
+# TODO: Is there a better way to solve the tab-completion problem
+# Here we add attributes to filt_iter via explicit statements assigning to None before
+# looping through FilterIter and adding the actual functions, because Tab-completion
+# wasn't working with the loop alone
+filt_iter.regex = None
+filt_iter.prefixes = None
+filt_iter.suffixes = None
+
 # add all the functions in FiltIter as attributes of filt_iter, so they're ready to use
 for filt_name, filt_func in FiltIter.__dict__.items():
     if not filt_name.startswith("_"):
