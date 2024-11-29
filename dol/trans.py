@@ -1509,7 +1509,7 @@ def filter_suffixes(suffixes):
     """
     if isinstance(suffixes, str):
         suffixes = [suffixes]
-    return filter_regex("|".join(map(re.escape, suffixes)) + "$")
+    return filter_regex("(" + "|".join(map(re.escape, suffixes)) + ")" + "$")
 
 
 def filter_prefixes(prefixes):
