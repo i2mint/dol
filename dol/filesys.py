@@ -563,23 +563,27 @@ import pickle
 import json
 
 # TODO: Want to replace with use of ValueCodecs but need to resolve circular imports
-pickle_bytes_wrap = wrap_kvs(obj_of_data=pickle.loads, data_of_obj=pickle.dumps)
-json_bytes_wrap = wrap_kvs(obj_of_data=json.loads, data_of_obj=json.dumps)
+pickle_bytes_wrap = wrap_kvs(value_decoder=pickle.loads, value_encoder=pickle.dumps)
+json_bytes_wrap = wrap_kvs(value_decoder=json.loads, value_encoder=json.dumps)
 
 
 # And two factories to make the above more configurable:
-def mk_pickle_bytes_wrap(*, loads_kwargs: dict, dumps_kwargs: dict) -> Callable:
+def mk_pickle_bytes_wrap(
+    *, loads_kwargs: Optional[dict] = None, dumps_kwargs: Optional[dict] = None
+) -> Callable:
     """"""
     return wrap_kvs(
-        obj_of_data=partial(pickle.loads, **loads_kwargs),
-        data_of_obj=partial(pickle.dumps, **dumps_kwargs),
+        value_decoder=partial(pickle.loads, **(loads_kwargs or {})),
+        value_encoder=partial(pickle.dumps, **(dumps_kwargs or {})),
     )
 
 
-def mk_json_bytes_wrap(*, loads_kwargs: dict, dumps_kwargs: dict) -> Callable:
+def mk_json_bytes_wrap(
+    *, loads_kwargs: Optional[dict] = None, dumps_kwargs: Optional[dict] = None
+) -> Callable:
     return wrap_kvs(
-        obj_of_data=partial(json.loads, **loads_kwargs),
-        data_of_obj=partial(json.dumps, **dumps_kwargs),
+        value_decoder=partial(json.loads, **(loads_kwargs or {})),
+        value_encoder=partial(json.dumps, **(dumps_kwargs or {})),
     )
 
 
