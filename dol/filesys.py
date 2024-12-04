@@ -567,6 +567,22 @@ pickle_bytes_wrap = wrap_kvs(obj_of_data=pickle.loads, data_of_obj=pickle.dumps)
 json_bytes_wrap = wrap_kvs(obj_of_data=json.loads, data_of_obj=json.dumps)
 
 
+# And two factories to make the above more configurable:
+def mk_pickle_bytes_wrap(*, loads_kwargs: dict, dumps_kwargs: dict) -> Callable:
+    """"""
+    return wrap_kvs(
+        obj_of_data=partial(pickle.loads, **loads_kwargs),
+        data_of_obj=partial(pickle.dumps, **dumps_kwargs),
+    )
+
+
+def mk_json_bytes_wrap(*, loads_kwargs: dict, dumps_kwargs: dict) -> Callable:
+    return wrap_kvs(
+        obj_of_data=partial(json.loads, **loads_kwargs),
+        data_of_obj=partial(json.dumps, **dumps_kwargs),
+    )
+
+
 @pickle_bytes_wrap
 class PickleFiles(Files):
     """A store of pickles"""

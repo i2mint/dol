@@ -113,6 +113,7 @@ from dol.util import (
     chain_get,  # a function to perform chained get operations (i.e. path keys get)
     written_bytes,  # transform a file-writing function into a bytes-writing function
     written_key,  # writes an object to a key and returns the key.
+    read_from_bytes,  # transform a file-reading function into a bytes-reading function
 )
 
 from dol.trans import (
