@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.89 documentation</title>
+  <title>dol.paths &mdash; dol 0.2.90 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fe0873ee"></script>
+      <script src="../../_static/documentation_options.js?v=1d2c14bc"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -160,6 +160,59 @@
     <span class="n">add_missing_key_handling</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">dol.dig</span> <span class="kn">import</span> <span class="n">recursive_get_attr</span>
+
+
+<div class="viewcode-block" id="flattened_dict_items">
+<a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.flattened_dict_items">[docs]</a>
+<span class="k">def</span> <span class="nf">flattened_dict_items</span><span class="p">(</span>
+    <span class="n">d</span><span class="p">,</span>
+    <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">parent_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">),</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Yield flattened key-value pairs from a nested dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stable_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">visit_nested</span><span class="o">=</span><span class="n">visit_nested</span><span class="p">)</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">new_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parent_key</span><span class="si">}{</span><span class="n">sep</span><span class="si">}{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">parent_key</span> <span class="k">else</span> <span class="n">k</span>
+        <span class="k">if</span> <span class="n">visit_nested</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="k">yield from</span> <span class="n">flattened_dict_items</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">parent_key</span><span class="o">=</span><span class="n">new_key</span><span class="p">,</span> <span class="o">**</span><span class="n">stable_kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">new_key</span><span class="p">,</span> <span class="n">v</span>
+
+    <span class="k">return</span> <span class="n">paths</span></div>
+
+
+
+<div class="viewcode-block" id="flatten_dict">
+<a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.flatten_dict">[docs]</a>
+<span class="k">def</span> <span class="nf">flatten_dict</span><span class="p">(</span>
+    <span class="n">d</span><span class="p">,</span>
+    <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">parent_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">),</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flatten a nested dictionary into a flat one.</span>
+
+<span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: {&#39;b&#39;: 2}, &#39;c&#39;: 3}</span>
+<span class="sd">    &gt;&gt;&gt; flatten_dict(d)</span>
+<span class="sd">    {&#39;a.b&#39;: 2, &#39;c&#39;: 3}</span>
+<span class="sd">    &gt;&gt;&gt; flatten_dict(d, sep=&#39;/&#39;)</span>
+<span class="sd">    {&#39;a/b&#39;: 2, &#39;c&#39;: 3}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">flattened_dict_items</span><span class="p">(</span>
+            <span class="n">d</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">parent_key</span><span class="o">=</span><span class="n">parent_key</span><span class="p">,</span> <span class="n">visit_nested</span><span class="o">=</span><span class="n">visit_nested</span>
+        <span class="p">)</span>
+    <span class="p">)</span></div>
+
+
 
 <span class="n">path_sep</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
 
