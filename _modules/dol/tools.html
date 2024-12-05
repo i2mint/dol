@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.88 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.89 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=5a70f7f7"></script>
+      <script src="../../_static/documentation_options.js?v=fe0873ee"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -282,10 +282,11 @@
                     <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">cache</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
                             <span class="sa">f</span><span class="s2">&quot;The cache on </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> instance &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;does not support item assignment for caching </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span><span class="si">!r}</span><span class="s2"> property.&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;does not support item assignment for caching </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span><span class="si">!r}</span><span class="s2"> property.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>
                         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">val</span>

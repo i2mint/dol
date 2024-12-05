@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.88 documentation</title>
+  <title>dol.util &mdash; dol 0.2.89 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=5a70f7f7"></script>
+      <script src="../../_static/documentation_options.js?v=fe0873ee"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -1149,17 +1149,15 @@ function that will act as <cite>json.dumps</cite> like so:</p>
 </pre></div>
 </div>
 <p>Here’s another example with pandas DataFrame.to_parquet:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># import pandas as pd</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>  
+<span class="gp">... </span>    <span class="s1">&#39;column1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;column2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">})</span>
 </pre></div>
 </div>
-<dl class="simple">
-<dt>df = pd.DataFrame({</dt><dd><p>‘column1’: [1, 2, 3],
-‘column2’: [‘A’, ‘B’, ‘C’]</p>
-</dd>
-</dl>
-<p>})</p>
-<p># Get a function that converts DataFrame to Parquet bytes
-df_to_parquet_bytes = written_bytes(pd.DataFrame.to_parquet)</p>
+<p>Get a function that converts DataFrame to Parquet bytes</p>
+<p>df_to_parquet_bytes = written_bytes(pd.DataFrame.to_parquet)</p>
 <p># Get the bytes of the DataFrame in Parquet format
 parquet_bytes = df_to_parquet_bytes(df)
 all(pd.read_parquet(io.BytesIO(parquet_bytes)) == df)</p>
