@@ -50,6 +50,53 @@ from dol.trans import (
 )
 from dol.dig import recursive_get_attr
 
+
+def flattened_dict_items(
+    d,
+    sep='.',
+    *,
+    parent_key='',
+    visit_nested: Callable = lambda obj: isinstance(obj, Mapping),
+):
+    """
+    Yield flattened key-value pairs from a nested dictionary.
+    """
+    stable_kwargs = dict(sep=sep, visit_nested=visit_nested)
+    paths = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if visit_nested(v):
+            yield from flattened_dict_items(v, parent_key=new_key, **stable_kwargs)
+        else:
+            yield new_key, v
+
+    return paths
+
+
+def flatten_dict(
+    d,
+    sep='.',
+    *,
+    parent_key='',
+    visit_nested: Callable = lambda obj: isinstance(obj, Mapping),
+):
+    r"""
+    Flatten a nested dictionary into a flat one.
+
+    >>> d = {'a': {'b': 2}, 'c': 3}
+    >>> flatten_dict(d)
+    {'a.b': 2, 'c': 3}
+    >>> flatten_dict(d, sep='/')
+    {'a/b': 2, 'c': 3}
+
+    """
+    return dict(
+        flattened_dict_items(
+            d, sep=sep, parent_key=parent_key, visit_nested=visit_nested
+        )
+    )
+
+
 path_sep = os.path.sep
 
 
