@@ -53,9 +53,9 @@ from dol.dig import recursive_get_attr
 
 def flattened_dict_items(
     d,
-    sep='.',
+    sep=".",
     *,
-    parent_key='',
+    parent_key="",
     visit_nested: Callable = lambda obj: isinstance(obj, Mapping),
 ):
     """
@@ -75,9 +75,9 @@ def flattened_dict_items(
 
 def flatten_dict(
     d,
-    sep='.',
+    sep=".",
     *,
-    parent_key='',
+    parent_key="",
     visit_nested: Callable = lambda obj: isinstance(obj, Mapping),
 ):
     r"""
