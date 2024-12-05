@@ -1723,14 +1723,14 @@ def written_bytes(
 
     Here's another example with pandas DataFrame.to_parquet:
 
-    >>> # import pandas as pd
+    >>> import pandas as pd  # doctest: +SKIP
+    >>> df = pd.DataFrame({  # doctest: +SKIP
+    ...     'column1': [1, 2, 3],
+    ...     'column2': ['A', 'B', 'C']
+    ... })
 
-    df = pd.DataFrame({
-        'column1': [1, 2, 3],
-        'column2': ['A', 'B', 'C']
-    })
+    Get a function that converts DataFrame to Parquet bytes
 
-    # Get a function that converts DataFrame to Parquet bytes
     df_to_parquet_bytes = written_bytes(pd.DataFrame.to_parquet)
 
     # Get the bytes of the DataFrame in Parquet format

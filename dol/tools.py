@@ -169,10 +169,11 @@ class CachedProperty:
                     val = self.func(instance)
                     try:
                         cache[self.cache_key] = val
-                    except TypeError:
+                    except TypeError as e:
                         msg = (
                             f"The cache on {type(instance).__name__!r} instance "
-                            f"does not support item assignment for caching {self.cache_key!r} property."
+                            f"does not support item assignment for caching {self.cache_key!r} property.\n"
+                            f"Error: {e}"
                         )
                         raise TypeError(msg) from None
         return val
