@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.2.90 documentation</title>
+  <title>dol.paths &mdash; dol 0.2.91 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1d2c14bc"></script>
+      <script src="../../_static/documentation_options.js?v=b95490a5"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -131,6 +131,7 @@
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Optional</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
     <span class="n">Callable</span><span class="p">,</span>
     <span class="n">Any</span><span class="p">,</span>
@@ -142,6 +143,8 @@
     <span class="n">KT</span><span class="p">,</span>
     <span class="n">VT</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">Generator</span><span class="p">,</span>
+    <span class="n">TypeAlias</span><span class="p">,</span>
     <span class="n">List</span><span class="p">,</span>
     <span class="n">Dict</span><span class="p">,</span>
 <span class="p">)</span>
@@ -162,28 +165,58 @@
 <span class="kn">from</span> <span class="nn">dol.dig</span> <span class="kn">import</span> <span class="n">recursive_get_attr</span>
 
 
+<span class="n">KeyValueGenerator</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+<span class="n">Path</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Path&quot;</span><span class="p">)</span>
+<span class="n">PathExtenderFunc</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Path</span><span class="p">,</span> <span class="n">KT</span><span class="p">],</span> <span class="n">Path</span><span class="p">]</span>
+<span class="n">PathExtenderSpec</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PathExtenderFunc</span><span class="p">]</span>
+<span class="n">NestedMapping</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="s2">&quot;NestedMapping[KT, VT]&quot;</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="separator_based_path_extender">
+<a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.separator_based_path_extender">[docs]</a>
+<span class="k">def</span> <span class="nf">separator_based_path_extender</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extends a given path with a new key using the specified separator.</span>
+<span class="sd">    If the path is empty, the key is returned as is.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}{</span><span class="n">sep</span><span class="si">}{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="n">key</span></div>
+
+
+
+<div class="viewcode-block" id="ensure_path_extender_func">
+<a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.ensure_path_extender_func">[docs]</a>
+<span class="k">def</span> <span class="nf">ensure_path_extender_func</span><span class="p">(</span><span class="n">path_extender</span><span class="p">:</span> <span class="n">PathExtenderSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathExtenderFunc</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ensure that the path_extender is a function that takes a path and a key and returns</span>
+<span class="sd">    a new path.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path_extender</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">separator_based_path_extender</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">path_extender</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path_extender</span></div>
+
+
+
 <div class="viewcode-block" id="flattened_dict_items">
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.flattened_dict_items">[docs]</a>
 <span class="k">def</span> <span class="nf">flattened_dict_items</span><span class="p">(</span>
     <span class="n">d</span><span class="p">,</span>
-    <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span>
+    <span class="n">sep</span><span class="p">:</span> <span class="n">PathExtenderSpec</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">parent_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">parent_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">),</span>
-<span class="p">):</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KeyValueGenerator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Yield flattened key-value pairs from a nested dictionary.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">stable_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">visit_nested</span><span class="o">=</span><span class="n">visit_nested</span><span class="p">)</span>
-    <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">new_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parent_key</span><span class="si">}{</span><span class="n">sep</span><span class="si">}{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">parent_key</span> <span class="k">else</span> <span class="n">k</span>
-        <span class="k">if</span> <span class="n">visit_nested</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
-            <span class="k">yield from</span> <span class="n">flattened_dict_items</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">parent_key</span><span class="o">=</span><span class="n">new_key</span><span class="p">,</span> <span class="o">**</span><span class="n">stable_kwargs</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">new_key</span><span class="p">,</span> <span class="n">v</span>
+    <span class="n">path_extender</span> <span class="o">=</span> <span class="n">ensure_path_extender_func</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">paths</span></div>
+    <span class="n">stable_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">visit_nested</span><span class="o">=</span><span class="n">visit_nested</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="n">path_extender</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">visit_nested</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="k">yield from</span> <span class="n">flattened_dict_items</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">parent_path</span><span class="o">=</span><span class="n">new_path</span><span class="p">,</span> <span class="o">**</span><span class="n">stable_kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">new_path</span><span class="p">,</span> <span class="n">v</span></div>
 
 
 
@@ -191,13 +224,24 @@
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.flatten_dict">[docs]</a>
 <span class="k">def</span> <span class="nf">flatten_dict</span><span class="p">(</span>
     <span class="n">d</span><span class="p">,</span>
-    <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span>
+    <span class="n">sep</span><span class="p">:</span> <span class="n">PathExtenderSpec</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">parent_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">parent_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">),</span>
+    <span class="n">egress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">KeyValueGenerator</span><span class="p">],</span> <span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Flatten a nested dictionary into a flat one.</span>
+<span class="sd">    Flatten a nested dictionary into a flat one, using key-paths as keys.</span>
+
+<span class="sd">    See also `leaf_paths` for a related function that returns paths to leaf values.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        d: The dictionary to flatten</span>
+<span class="sd">        sep: The separator to use for joining keys, or a function that takes a path and</span>
+<span class="sd">            a key and returns a new path.</span>
+<span class="sd">        parent_path: The path to the parent of the current dict</span>
+<span class="sd">        visit_nested: A function that returns True if a value should be visited</span>
+<span class="sd">        egress: A function that takes a generator of key-value pairs and returns a mapping</span>
 
 <span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: {&#39;b&#39;: 2}, &#39;c&#39;: 3}</span>
 <span class="sd">    &gt;&gt;&gt; flatten_dict(d)</span>
@@ -206,12 +250,76 @@
 <span class="sd">    {&#39;a/b&#39;: 2, &#39;c&#39;: 3}</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="k">return</span> <span class="n">egress</span><span class="p">(</span>
         <span class="n">flattened_dict_items</span><span class="p">(</span>
-            <span class="n">d</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">parent_key</span><span class="o">=</span><span class="n">parent_key</span><span class="p">,</span> <span class="n">visit_nested</span><span class="o">=</span><span class="n">visit_nested</span>
+            <span class="n">d</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">parent_path</span><span class="o">=</span><span class="n">parent_path</span><span class="p">,</span> <span class="n">visit_nested</span><span class="o">=</span><span class="n">visit_nested</span>
         <span class="p">)</span>
     <span class="p">)</span></div>
 
+
+
+<div class="viewcode-block" id="leaf_paths">
+<a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.leaf_paths">[docs]</a>
+<span class="k">def</span> <span class="nf">leaf_paths</span><span class="p">(</span>
+    <span class="n">d</span><span class="p">:</span> <span class="n">NestedMapping</span><span class="p">,</span>
+    <span class="n">sep</span><span class="p">:</span> <span class="n">PathExtenderSpec</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">parent_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">egress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">KeyValueGenerator</span><span class="p">],</span> <span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a dictionary of leaf paths of a nested dictionary.</span>
+
+<span class="sd">    Given a nested dictionary, returns a similarly structured dictionary where each</span>
+<span class="sd">    leaf value is replaced by its flattened path. The &#39;sep&#39; parameter can be either</span>
+<span class="sd">    a string or a callable.</span>
+
+<span class="sd">    Original use case: You used flatten_dict to flatten a nested dictionary, referencing</span>
+<span class="sd">    your values with paths, but maybe you&#39;d like to know what the paths that your</span>
+<span class="sd">    nested dictionary is going to flatten to are. This function does that.</span>
+<span class="sd">    The output is a dict with the same keys and structure as the input, but the leaf</span>
+<span class="sd">    values are replaced by the paths that would be used to access them in a flat dict.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        d: The nested dictionary to get the leaf paths from</span>
+<span class="sd">        sep: The separator to use for joining keys, or a function that takes a path and</span>
+<span class="sd">            a key and returns a new path.</span>
+<span class="sd">        parent_path: The path to the parent of the current dict</span>
+<span class="sd">        egress: A function that takes a generator of key-value pairs and returns a mapping</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    &gt;&gt;&gt; leaf_paths({&#39;a&#39;: {&#39;b&#39;: 2}, &#39;c&#39;: 3})</span>
+<span class="sd">    {&#39;a&#39;: {&#39;b&#39;: &#39;a.b&#39;}, &#39;c&#39;: &#39;c&#39;}</span>
+
+<span class="sd">    &gt;&gt;&gt; leaf_paths({&#39;a&#39;: {&#39;b&#39;: 2}, &#39;c&#39;: 3}, sep=&quot;/&quot;)</span>
+<span class="sd">    {&#39;a&#39;: {&#39;b&#39;: &#39;a/b&#39;}, &#39;c&#39;: &#39;c&#39;}</span>
+
+<span class="sd">    &gt;&gt;&gt; leaf_paths({&#39;a&#39;: {&#39;b&#39;: 2}, &#39;c&#39;: 3}, sep=lambda p, k: f&quot;{p}-{k}&quot; if p else k)</span>
+<span class="sd">    {&#39;a&#39;: {&#39;b&#39;: &#39;a-b&#39;}, &#39;c&#39;: &#39;c&#39;}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path_extender</span> <span class="o">=</span> <span class="n">ensure_path_extender_func</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">egress</span><span class="p">(</span><span class="n">_leaf_paths_recursive</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">path_extender</span><span class="p">,</span> <span class="n">parent_path</span><span class="o">=</span><span class="n">parent_path</span><span class="p">))</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_leaf_paths_recursive</span><span class="p">(</span>
+    <span class="n">d</span><span class="p">:</span> <span class="n">NestedMapping</span><span class="p">,</span>
+    <span class="n">path_extender</span><span class="p">:</span> <span class="n">PathExtenderFunc</span><span class="p">,</span>
+    <span class="n">parent_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KeyValueGenerator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A recursive generator that yields (key, value) pairs.</span>
+<span class="sd">    A helper for leaf_paths.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">current_path</span> <span class="o">=</span> <span class="n">path_extender</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">visit_nested</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">_leaf_paths_recursive</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">path_extender</span><span class="p">,</span> <span class="n">current_path</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="n">current_path</span>
 
 
 <span class="n">path_sep</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
@@ -332,11 +440,6 @@
 
 <span class="c1"># ------------------------------------------------------------------------------</span>
 <span class="c1"># key-path operations</span>
-
-
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Union</span>
-
-<span class="n">Path</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">KT</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
 
 
 <span class="c1"># TODO: Needs a lot more documentation and tests to show how versatile it is</span>
