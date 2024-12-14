@@ -189,7 +189,7 @@ class CachedProperty:
 
     # TODO: Time-boxed attempt to get a __call__ method to work with the class
     #    (so that you can chain two cache_this decorators, (problem is that the outer
-    #    expects the inner to be a function, not an instance of CachedProperty, so 
+    #    expects the inner to be a function, not an instance of CachedProperty, so
     #    tried to make CachedProperty callable).
     # def __call__(self, instance):
     #     """
