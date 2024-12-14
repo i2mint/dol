@@ -149,6 +149,11 @@ class CachedProperty:
             # If cache is False, always compute the value
             return self.func(instance)
 
+        cache = self._get_cache(instance)
+
+        return self._get_or_compute(instance, cache)
+
+    def _get_cache(self, instance):
         try:
             cache = self.__get_cache(instance)
         except (
@@ -159,7 +164,9 @@ class CachedProperty:
                 f"instance to cache {self.attrname!r} property."
             )
             raise TypeError(msg) from None
+        return cache
 
+    def _get_or_compute(self, instance, cache):
         val = cache.get(self.cache_key, _NOT_FOUND)
         if val is _NOT_FOUND:
             with self.lock:
@@ -179,6 +186,21 @@ class CachedProperty:
         return val
 
     __class_getitem__ = classmethod(GenericAlias)
+
+    # TODO: Time-boxed attempt to get a __call__ method to work with the class
+    #    (so that you can chain two cache_this decorators, (problem is that the outer
+    #    expects the inner to be a function, not an instance of CachedProperty, so 
+    #    tried to make CachedProperty callable).
+    # def __call__(self, instance):
+    #     """
+    #     Call the cached property.
+
+    #     :param func: The function to be called.
+    #     :return: The cached property.
+    #     """
+    #     cache = self._get_cache(instance)
+
+    #     return self._get_or_compute(instance, cache)
 
 
 def cache_this(
