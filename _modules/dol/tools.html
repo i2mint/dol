@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.92 documentation</title>
+  <title>dol.tools &mdash; dol 0.2.93 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8eac1acf"></script>
+      <script src="../../_static/documentation_options.js?v=2ad49ed6"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -262,6 +262,11 @@
             <span class="c1"># If cache is False, always compute the value</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
 
+        <span class="n">cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_compute</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_cache</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span>
@@ -272,7 +277,9 @@
                 <span class="sa">f</span><span class="s2">&quot;instance to cache </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="si">!r}</span><span class="s2"> property.&quot;</span>
             <span class="p">)</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">cache</span>
 
+    <span class="k">def</span> <span class="nf">_get_or_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span><span class="p">,</span> <span class="n">_NOT_FOUND</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="n">_NOT_FOUND</span><span class="p">:</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
@@ -293,6 +300,21 @@
 
     <span class="n">__class_getitem__</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">GenericAlias</span><span class="p">)</span></div>
 
+
+    <span class="c1"># TODO: Time-boxed attempt to get a __call__ method to work with the class</span>
+    <span class="c1">#    (so that you can chain two cache_this decorators, (problem is that the outer</span>
+    <span class="c1">#    expects the inner to be a function, not an instance of CachedProperty, so </span>
+    <span class="c1">#    tried to make CachedProperty callable).</span>
+    <span class="c1"># def __call__(self, instance):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Call the cached property.</span>
+
+    <span class="c1">#     :param func: The function to be called.</span>
+    <span class="c1">#     :return: The cached property.</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     cache = self._get_cache(instance)</span>
+
+    <span class="c1">#     return self._get_or_compute(instance, cache)</span>
 
 
 <div class="viewcode-block" id="cache_this">
