@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.93 documentation</title>
+  <title>dol.util &mdash; dol 0.2.94 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2ad49ed6"></script>
+      <script src="../../_static/documentation_options.js?v=e15d0e1b"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -116,6 +116,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.partialclass"><code class="docutils literal notranslate"><span class="pre">partialclass()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.read_from_bytes"><code class="docutils literal notranslate"><span class="pre">read_from_bytes()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.regroupby"><code class="docutils literal notranslate"><span class="pre">regroupby()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.util.safe_compile"><code class="docutils literal notranslate"><span class="pre">safe_compile()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.staticproperty"><code class="docutils literal notranslate"><span class="pre">staticproperty</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.str_to_var_str"><code class="docutils literal notranslate"><span class="pre">str_to_var_str()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.truncate_string_with_marker"><code class="docutils literal notranslate"><span class="pre">truncate_string_with_marker()</span></code></a></li>
@@ -1046,6 +1047,38 @@ takes obj as the first argument, and uses the file_reader to read the bytes.</p>
 <span class="go">{&#39;stopwords&#39;: {3: [&#39;the&#39;], 2: [&#39;in&#39;], 1: [&#39;a&#39;]}, &#39;words&#39;: {3: [&#39;fox&#39;, &#39;box&#39;], 2: [&#39;is&#39;]}}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">regroupby</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="nb">len</span><span class="p">,</span> <span class="n">word_category</span><span class="p">)</span>
 <span class="go">{3: {&#39;stopwords&#39;: [&#39;the&#39;], &#39;words&#39;: [&#39;fox&#39;, &#39;box&#39;]}, 2: {&#39;words&#39;: [&#39;is&#39;], &#39;stopwords&#39;: [&#39;in&#39;]}, 1: {&#39;stopwords&#39;: [&#39;a&#39;]}}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.util.safe_compile">
+<span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">safe_compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#safe_compile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.safe_compile" title="Link to this definition"></a></dt>
+<dd><p>Safely compiles a file path into a regex pattern, ensuring compatibility
+across different operating systems (Windows, macOS, Linux).</p>
+<p>This function normalizes the input path to use the correct separators
+for the current platform and escapes any special characters to avoid
+invalid regex patterns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The file path to be compiled into a regex pattern.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A compiled regular expression object for the given path.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>re.Pattern</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">safe_compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">what</span><span class="se">\\</span><span class="s2">happens</span><span class="se">\\</span><span class="s2">if</span><span class="se">\\</span><span class="s2">you</span><span class="se">\\</span><span class="s2">escape&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span><span class="o">.</span><span class="n">pattern</span>  <span class="c1"># Windows path is escaped properly</span>
+<span class="go">&#39;C:\\\\what\\\\happens\\\\if\\\\you\\\\escape&#39;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">safe_compile</span><span class="p">(</span><span class="s2">&quot;/fun/paths/are/awesome&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span><span class="o">.</span><span class="n">pattern</span>  <span class="c1"># Unix path is unmodified</span>
+<span class="go">&#39;/fun/paths/are/awesome&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
