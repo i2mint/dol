@@ -49,6 +49,41 @@ wraps = partial(_wraps, assigned=wrapper_assignments)
 exhaust = partial(deque, maxlen=0)
 
 
+import os
+import re
+
+
+def safe_compile(path):
+    r"""
+    Safely compiles a file path into a regex pattern, ensuring compatibility
+    across different operating systems (Windows, macOS, Linux).
+
+    This function normalizes the input path to use the correct separators
+    for the current platform and escapes any special characters to avoid
+    invalid regex patterns.
+
+    Args:
+        path (str): The file path to be compiled into a regex pattern.
+
+    Returns:
+        re.Pattern: A compiled regular expression object for the given path.
+
+    Examples:
+        >>> regex = safe_compile(r"C:\\what\\happens\\if\\you\\escape")
+        >>> regex.pattern  # Windows path is escaped properly
+        'C:\\\\\\\\what\\\\\\\\happens\\\\\\\\if\\\\\\\\you\\\\\\\\escape'
+
+        >>> regex = safe_compile("/fun/paths/are/awesome")
+        >>> regex.pattern  # Unix path is unmodified
+        '/fun/paths/are/awesome'
+    """
+    # Normalize the path to handle cross-platform differences
+    normalized_path = os.path.normpath(path)
+    # Escape backslashes and special characters
+    escaped_path = re.escape(normalized_path)
+    return re.compile(escaped_path)
+
+
 # TODO: Make identity_func "identifiable". If we use the following one, we can use == to detect it's use,
 # TODO: ... but there may be a way to annotate, register, or type any identity function so it can be detected.
 def identity_func(x: T) -> T:

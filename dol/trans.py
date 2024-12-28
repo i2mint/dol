@@ -17,6 +17,7 @@ from collections.abc import (
 from dol.errors import SetattrNotAllowed
 from dol.base import Store, KvReader, AttrNames, kv_walk
 from dol.util import (
+    safe_compile,
     lazyprop,
     attrs_of,
     wraps,
@@ -1481,7 +1482,7 @@ def filter_regex(regex, *, return_search_func=False):
 
     """
     if isinstance(regex, str):
-        regex = re.compile(regex)
+        regex = safe_compile(regex)
     if return_search_func:
         return regex.search
     else:

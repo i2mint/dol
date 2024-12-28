@@ -42,7 +42,7 @@ from operator import getitem
 import os
 
 from dol.base import Store
-from dol.util import lazyprop, add_as_attribute_of, max_common_prefix
+from dol.util import lazyprop, add_as_attribute_of, max_common_prefix, safe_compile
 from dol.trans import (
     store_decorator,
     kv_wrap,
@@ -2145,7 +2145,7 @@ class KeyTemplate:
             for literal_text, field_name, _, _ in parts:
                 yield re.escape(literal_text) + mk_named_capture_group(field_name)
 
-        return re.compile("".join(generate_pattern_parts(template)))
+        return safe_compile("".join(generate_pattern_parts(template)))
 
     @staticmethod
     def _assert_field_type(field_type: FieldTypeNames, name="field_type"):
