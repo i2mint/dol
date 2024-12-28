@@ -3,6 +3,7 @@
 import os
 import shutil
 import re
+import platform
 from collections import deque, namedtuple, defaultdict
 from warnings import warn
 
@@ -49,10 +50,6 @@ wraps = partial(_wraps, assigned=wrapper_assignments)
 exhaust = partial(deque, maxlen=0)
 
 
-import os
-import re
-
-
 def safe_compile(path):
     r"""
     Safely compiles a file path into a regex pattern, ensuring compatibility
@@ -71,7 +68,7 @@ def safe_compile(path):
     Examples:
         >>> regex = safe_compile(r"C:\\what\\happens\\if\\you\\escape")
         >>> regex.pattern  # Windows path is escaped properly
-        'C:\\\\\\\\what\\\\\\\\happens\\\\\\\\if\\\\\\\\you\\\\\\\\escape'
+        'C:\\\\what\\\\happens\\\\if\\\\you\\\\escape'
 
         >>> regex = safe_compile("/fun/paths/are/awesome")
         >>> regex.pattern  # Unix path is unmodified
@@ -79,9 +76,10 @@ def safe_compile(path):
     """
     # Normalize the path to handle cross-platform differences
     normalized_path = os.path.normpath(path)
-    # Escape backslashes and special characters
-    escaped_path = re.escape(normalized_path)
-    return re.compile(escaped_path)
+    if platform.system() == "Windows":
+        # Escape backslashes for Windows paths
+        normalized_path = re.escape(normalized_path)
+    return re.compile(normalized_path)
 
 
 # TODO: Make identity_func "identifiable". If we use the following one, we can use == to detect it's use,
