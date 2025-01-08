@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.2.94 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>dol.caching &mdash; dol 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e15d0e1b"></script>
+      <script src="../../_static/documentation_options.js?v=e259d695"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -135,7 +135,7 @@
 <dt class="sig sig-object py" id="dol.caching.WriteBackChainMap">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">WriteBackChainMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">maps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#WriteBackChainMap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.WriteBackChainMap" title="Link to this definition"></a></dt>
 <dd><p>A collections.ChainMap that also ‘writes back’ when a key is found.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">WriteBackChainMap</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.caching</span><span class="w"> </span><span class="kn">import</span> <span class="n">WriteBackChainMap</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">WriteBackChainMap</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">33</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="mi">444</span><span class="p">})</span>
 </pre></div>
@@ -198,11 +198,11 @@ By default, it will use a dict</p></li>
 </dd>
 </dl>
 <p>Returns: A subclass of the input store, but with caching (to the cache store)</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">cache_vals</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">time</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">SlowDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.caching</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache_vals</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">SlowDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">sleep_s</span> <span class="o">=</span> <span class="mf">0.2</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sleep_s</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 <span class="gp">...</span>
@@ -277,11 +277,11 @@ By default, it will use a dict</p></li>
 </dd>
 </dl>
 <p>Returns: A subclass of the input store, but with caching (to the cache store)</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">cache_vals</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">time</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">SlowDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.caching</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache_vals</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">SlowDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">sleep_s</span> <span class="o">=</span> <span class="mf">0.2</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sleep_s</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 <span class="gp">...</span>
@@ -353,7 +353,7 @@ functions/methods that have the signature (instance, key) and return a value.</p
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@mk_memoizer</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">def</span> <span class="nf">getter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">getter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;getting value for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">k</span> <span class="o">*</span> <span class="mi">10</span>
 <span class="gp">...</span>
@@ -397,15 +397,15 @@ transforms the data in some way.</p></li>
 </dd>
 </dl>
 <p>Here are two stores pretending to be local and remote data stores respectively.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">mk_sourced_store</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.caching</span><span class="w"> </span><span class="kn">import</span> <span class="n">mk_sourced_store</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Local</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Local</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;looking for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> in Local&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Remote</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Remote</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;looking for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> in Remote&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 </pre></div>
@@ -469,13 +469,13 @@ you can do so by calling <code class="docutils literal notranslate"><span class=
 <p>We didn’t add this automatically because the first thing <code class="docutils literal notranslate"><span class="pre">mk_write_cached_store</span></code> will do is call clear,
 to remove all the contents of the store.
 You don’t want to do this unwittingly and delete a bunch of precious data!!</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">mk_write_cached_store</span><span class="p">,</span> <span class="n">ensure_clear_to_kv_store</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.caching</span><span class="w"> </span><span class="kn">import</span> <span class="n">mk_write_cached_store</span><span class="p">,</span> <span class="n">ensure_clear_to_kv_store</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Store</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">print_state</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">print_state</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="n">store</span><span class="si">}</span><span class="s2"> ----- store._w_cache: </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">_w_cache</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="gp">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyStore</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyStore</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span> <span class="o">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">MyCachedStore</span> <span class="o">=</span> <span class="n">mk_write_cached_store</span><span class="p">(</span><span class="n">MyStore</span><span class="p">,</span> <span class="n">w_cache</span><span class="o">=</span><span class="p">{})</span>  <span class="c1"># wrap MyStore with a (dict) write cache</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyCachedStore</span><span class="p">()</span>  <span class="c1"># make a MyCachedStore instance</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># print the contents (both store and cache), see that it&#39;s empty</span>
@@ -515,7 +515,7 @@ You don’t want to do this unwittingly and delete a bunch of precious data!!</p
 <span class="go">store: {&#39;hello&#39;: &#39;world&#39;} ----- store._w_cache: {}</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example of auto-flushing when there&#39;s at least two elements</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyStore</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyStore</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span> <span class="o">...</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">MyCachedStore</span> <span class="o">=</span> <span class="n">mk_write_cached_store</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">MyStore</span><span class="p">,</span> <span class="n">w_cache</span><span class="o">=</span><span class="p">{},</span>
@@ -565,7 +565,7 @@ Note: No, they shouldn’t.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># RAM-memorizer, you should use actual &quot;persisting&quot; stores that store in local files, or DBs, etc.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@store_cached</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">args</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">def</span> <span class="nf">my_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">my_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pretend this is a long computation&quot;</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">my_data</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># note the print below (because the function is called</span>
@@ -610,7 +610,7 @@ Note: No, they shouldn’t.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># RAM-memorizer, you should use actual &quot;persisting&quot; stores that store in local files, or DBs, etc.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@store_cached_with_single_key</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s1">&#39;whatevs&#39;</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">def</span> <span class="nf">my_data</span><span class="p">():</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">my_data</span><span class="p">():</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pretend this is a long computation&quot;</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">my_data</span><span class="p">()</span>  <span class="c1"># note the print below (because the function is called</span>

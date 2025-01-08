@@ -5,8 +5,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.94 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>dol.tools &mdash; dol 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e15d0e1b"></script>
+      <script src="../../_static/documentation_options.js?v=e259d695"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -113,20 +113,20 @@
 <span class="sd">Various tools to add functionality to stores</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">T</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
 
-<span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">Store</span>
-<span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">store_decorator</span>
-<span class="kn">from</span> <span class="nn">dol.caching</span> <span class="kn">import</span> <span class="n">cache_vals</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Store</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">store_decorator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.caching</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache_vals</span>
 
 <span class="n">NoSuchKey</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;NoSuchKey&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})</span>
 
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">RLock</span><span class="p">,</span> <span class="n">cached_property</span>
-<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">GenericAlias</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">MutableMapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">RLock</span><span class="p">,</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericAlias</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MutableMapping</span>
 
 <span class="n">_NOT_FOUND</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
 
@@ -137,13 +137,13 @@
 <span class="n">KeyType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">MethodName</span><span class="p">],</span> <span class="n">KT</span><span class="p">]]</span>
 
 
-<span class="k">def</span> <span class="nf">identity</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">x</span>
 
 
 <div class="viewcode-block" id="CachedProperty">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.CachedProperty">[docs]</a>
-<span class="k">class</span> <span class="nc">CachedProperty</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CachedProperty</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Descriptor that caches the result of the first call to a method.</span>
 
 <span class="sd">    Note: Usually, you&#39;d want to use the convenience decorator `cache_this` instead of</span>
@@ -153,7 +153,7 @@
 <span class="sd">    specify a cache object and a key to store the cache value.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">func</span><span class="p">:</span> <span class="n">PropertyFunc</span><span class="p">,</span>
         <span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Cache</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -195,7 +195,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">wrap_cache</span> <span class="o">=</span> <span class="n">identity</span>
 
-    <span class="k">def</span> <span class="nf">__set_name__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__set_name__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the name of the property.</span>
 
@@ -219,7 +219,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_none_keys</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The key returned by the key function cannot be None.&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the cache for the instance.</span>
 
@@ -244,7 +244,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrap_cache</span><span class="p">(</span><span class="n">__cache</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the value of the cached property.</span>
 
@@ -266,7 +266,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_compute</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_cache</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span>
@@ -276,10 +276,10 @@
                 <span class="sa">f</span><span class="s2">&quot;No &#39;__dict__&#39; attribute on </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;instance to cache </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="si">!r}</span><span class="s2"> property.&quot;</span>
             <span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
         <span class="k">return</span> <span class="n">cache</span>
 
-    <span class="k">def</span> <span class="nf">_get_or_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_or_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span><span class="p">,</span> <span class="n">_NOT_FOUND</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="n">_NOT_FOUND</span><span class="p">:</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
@@ -295,7 +295,7 @@
                             <span class="sa">f</span><span class="s2">&quot;does not support item assignment for caching </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span><span class="si">!r}</span><span class="s2"> property.</span><span class="se">\n</span><span class="s2">&quot;</span>
                             <span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>
-                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
         <span class="k">return</span> <span class="n">val</span>
 
     <span class="n">__class_getitem__</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">GenericAlias</span><span class="p">)</span></div>
@@ -319,7 +319,7 @@
 
 <div class="viewcode-block" id="cache_this">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.cache_this">[docs]</a>
-<span class="k">def</span> <span class="nf">cache_this</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cache_this</span><span class="p">(</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">PropertyFunc</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Cache</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -536,7 +536,7 @@
     <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
                 <span class="k">return</span> <span class="nb">property</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">wrapper</span>
@@ -547,7 +547,7 @@
     <span class="k">else</span><span class="p">:</span>  <span class="c1">#   If func is not given, we want a decorator</span>
         <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">CachedProperty</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">pre_cache</span><span class="o">=</span><span class="n">pre_cache</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">wrapper</span>
@@ -562,7 +562,7 @@
 
 <div class="viewcode-block" id="add_extension">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.add_extension">[docs]</a>
-<span class="k">def</span> <span class="nf">add_extension</span><span class="p">(</span><span class="n">ext</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_extension</span><span class="p">(</span><span class="n">ext</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Add an extension to a name.</span>
 
@@ -602,12 +602,12 @@
 
 
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
 
 
 <div class="viewcode-block" id="cached_method">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.cached_method">[docs]</a>
-<span class="k">def</span> <span class="nf">cached_method</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cached_method</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A decorator to cache the result of a method, ignoring the first argument (usually `self`).</span>
 
@@ -652,7 +652,7 @@
     <span class="p">)</span>
 
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># Call the cache but don&#39;t include `self` in the arguments for caching</span>
         <span class="k">return</span> <span class="n">cache</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -660,12 +660,12 @@
 
 
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
 
 
 <div class="viewcode-block" id="lru_cache_method">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.lru_cache_method">[docs]</a>
-<span class="k">def</span> <span class="nf">lru_cache_method</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">lru_cache_method</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A decorator to cache the result of a method, ignoring the first argument</span>
 <span class="sd">    (usually `self`).</span>
@@ -726,7 +726,7 @@
     <span class="p">)</span>
 
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># Call the cache but don&#39;t include `self` in the arguments for caching</span>
         <span class="k">return</span> <span class="n">cache</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -736,7 +736,7 @@
 
 <div class="viewcode-block" id="cache_property_method">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.cache_property_method">[docs]</a>
-<span class="k">def</span> <span class="nf">cache_property_method</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cache_property_method</span><span class="p">(</span>
     <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="n">MethodName</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache_decorator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">cache_this</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -861,7 +861,7 @@
 <span class="c1"># role: preset</span>
 <div class="viewcode-block" id="confirm_overwrite">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.confirm_overwrite">[docs]</a>
-<span class="k">def</span> <span class="nf">confirm_overwrite</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">confirm_overwrite</span><span class="p">(</span>
     <span class="n">mapping</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">user_input_msg</span><span class="o">=</span><span class="n">_dflt_confirm_overwrite_user_input_msg</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A preset function you can use in wrap_kvs to ask the user to confirm if</span>
@@ -903,7 +903,7 @@
 
 <span class="c1"># -------------------------------- Aggregate a store -----------------------------------</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Callable</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
     <span class="n">KT</span><span class="p">,</span>
@@ -915,28 +915,28 @@
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Iterable</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">wrap_kvs</span>
-<span class="kn">from</span> <span class="nn">dol.filesys</span> <span class="kn">import</span> <span class="n">Files</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.filesys</span><span class="w"> </span><span class="kn">import</span> <span class="n">Files</span>
 
 
-<span class="k">def</span> <span class="nf">decode_as_latin1</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">decode_as_latin1</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;latin1&quot;</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">markdown_section</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">markdown_section</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;## </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
 
 
-<span class="k">def</span> <span class="nf">save_string_to_filepath</span><span class="p">(</span><span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_string_to_filepath</span><span class="p">(</span><span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="n">filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
     <span class="n">filepath</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">string</span>
 
 
-<span class="k">def</span> <span class="nf">identity</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">x</span>
 
 
@@ -948,7 +948,7 @@
 
 <div class="viewcode-block" id="store_aggregate">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.store_aggregate">[docs]</a>
-<span class="k">def</span> <span class="nf">store_aggregate</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">store_aggregate</span><span class="p">(</span>
     <span class="n">content_store</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>  <span class="c1"># Path to the folder or dol store</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">kv_to_item</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
@@ -1067,7 +1067,7 @@
     <span class="n">value_filter</span> <span class="o">=</span> <span class="n">value_filter</span> <span class="ow">or</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">kv_filter</span> <span class="o">=</span> <span class="n">kv_filter</span> <span class="ow">or</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">actual_kv_filter</span><span class="p">(</span><span class="n">kv</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">actual_kv_filter</span><span class="p">(</span><span class="n">kv</span><span class="p">):</span>
         <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">kv</span>
         <span class="k">return</span> <span class="n">key_filter</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value_filter</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">and</span> <span class="n">kv_filter</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span>
 
@@ -1089,7 +1089,7 @@
 
 <div class="viewcode-block" id="convert_to_numerical_if_possible">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.convert_to_numerical_if_possible">[docs]</a>
-<span class="k">def</span> <span class="nf">convert_to_numerical_if_possible</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_to_numerical_if_possible</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;To be used with ``ask_user_for_value_when_missing`` ``value_preprocessor`` arg</span>
 
 <span class="sd">    &gt;&gt;&gt; convert_to_numerical_if_possible(&quot;123&quot;)</span>
@@ -1118,7 +1118,7 @@
 <div class="viewcode-block" id="ask_user_for_value_when_missing">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.ask_user_for_value_when_missing">[docs]</a>
 <span class="nd">@store_decorator</span>
-<span class="k">def</span> <span class="nf">ask_user_for_value_when_missing</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">ask_user_for_value_when_missing</span><span class="p">(</span>
     <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">value_preprocessor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1137,7 +1137,7 @@
 
     <span class="n">store</span> <span class="o">=</span> <span class="n">Store</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__missing__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__missing__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="n">user_value</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">on_missing_msg</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; Value for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">user_value</span><span class="p">:</span>
@@ -1154,7 +1154,7 @@
 
 <div class="viewcode-block" id="iSliceStore">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.iSliceStore">[docs]</a>
-<span class="k">class</span> <span class="nc">iSliceStore</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">iSliceStore</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Wraps a store to make a reader that acts as if the store was a list</span>
 <span class="sd">    (with integer keys, and that can be sliced).</span>
@@ -1204,10 +1204,10 @@
 <span class="sd">    [&#39;bob&#39;, &#39;world&#39;]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">store</span> <span class="o">=</span> <span class="n">store</span>
 
-    <span class="k">def</span> <span class="nf">_get_islice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">slice</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_islice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">slice</span><span class="p">):</span>
         <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">step</span>
 
         <span class="k">assert</span> <span class="p">(</span><span class="n">step</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">&quot;step of slice can&#39;t be negative&quot;</span>
@@ -1222,27 +1222,27 @@
 
         <span class="k">return</span> <span class="n">islice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_islice</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span></div>
 
 
 
-<span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">KvReader</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">islice</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">KvReader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">islice</span>
 
 <span class="n">Src</span> <span class="o">=</span> <span class="n">Any</span>
 <span class="n">Key</span> <span class="o">=</span> <span class="n">Any</span>
@@ -1251,20 +1251,20 @@
 <span class="n">key_error_flag</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;KeyErrorFlag&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>
 
 
-<span class="k">def</span> <span class="nf">_isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Same as builtin isinstance, but without the position only limitation</span>
 <span class="sd">    that prevents from partializing class_or_tuple&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">type_check_if_type</span><span class="p">(</span><span class="n">filt</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">type_check_if_type</span><span class="p">(</span><span class="n">filt</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filt</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filt</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="n">class_or_tuple</span> <span class="o">=</span> <span class="n">filt</span>
         <span class="n">filt</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_isinstance</span><span class="p">,</span> <span class="n">class_or_tuple</span><span class="o">=</span><span class="n">class_or_tuple</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">filt</span>
 
 
-<span class="k">def</span> <span class="nf">return_input</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">return_input</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">x</span>
 
 
@@ -1273,7 +1273,7 @@
 <span class="c1"># @dataclass</span>
 <div class="viewcode-block" id="Forest">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.Forest">[docs]</a>
-<span class="k">class</span> <span class="nc">Forest</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Forest</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides a key-value forest interface to objects.</span>
 
 <span class="sd">    A `&lt;tree https://en.wikipedia.org/wiki/Tree_(data_structure)&gt;`_</span>
@@ -1355,7 +1355,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src</span><span class="p">:</span> <span class="n">Src</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -1395,17 +1395,17 @@
             <span class="n">leaf_trans</span><span class="o">=</span><span class="n">leaf_trans</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">is_forest_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_forest_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_forest</span><span class="p">:</span>
             <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node_keys</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">):</span>
                 <span class="k">yield</span> <span class="n">i</span>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_forest</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;When the src is a forest, you should key with an &quot;</span>
@@ -1423,8 +1423,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forest_maker</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">def</span> <span class="nf">gen</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">gen</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Forest</span><span class="p">):</span>
                     <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
@@ -1433,7 +1433,7 @@
 
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">gen</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 
 </pre></div>

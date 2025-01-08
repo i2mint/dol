@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.2.94 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>dol.tools &mdash; dol 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e15d0e1b"></script>
+      <script src="../../_static/documentation_options.js?v=e259d695"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -182,7 +182,7 @@ interface, so that you can build an ecosystem of tools around it.</p>
 <p>Must of the time, you’ll want to curry <code class="docutils literal notranslate"><span class="pre">Forest</span></code> to make an <code class="docutils literal notranslate"><span class="pre">object_to_forest</span></code>
 constructor for a given class of objects. In the case of dictionaries as the one
 above, this might look like this:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a_forest</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">Forest</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">is_leaf</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span>
@@ -285,13 +285,13 @@ fix the cache and key parameters of <cite>cache_this</cite> and inject that.</p>
 </dl>
 <p>Example:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@cache_property_method</span><span class="p">([</span><span class="s1">&#39;normal_method&#39;</span><span class="p">,</span> <span class="s1">&#39;property_method&#39;</span><span class="p">])</span>
-<span class="gp">... </span><span class="k">class</span> <span class="nc">TestClass</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">normal_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">TestClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">normal_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;normal_method called&#39;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">1</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="nd">@property</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">property_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">property_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;property_method called&#39;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">2</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -309,13 +309,13 @@ fix the cache and key parameters of <cite>cache_this</cite> and inject that.</p>
 </pre></div>
 </div>
 <p>You can also use it like this:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">TestClass</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">normal_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">TestClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">normal_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;normal_method called&#39;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">1</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="nd">@property</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">property_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">property_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;property_method called&#39;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">2</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -367,9 +367,9 @@ access to the method in the same session.</p></li>
 </dl>
 <p>Used with no arguments, <cite>cache_this</cite> will cache just as the builtin
 <cite>cached_property</cite> does – in the instance’s <cite>__dict__</cite> attribute.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">SameAsCachedProperty</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">SameAsCachedProperty</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@cache_this</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In SameAsCachedProperty.foo...&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
 <span class="gp">...</span>
@@ -387,9 +387,9 @@ access to the method in the same session.</p></li>
 </div>
 <p>Not that if you specify <cite>cache=False</cite>, you get a property that is computed
 every time it’s accessed:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">NoCache</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">NoCache</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In NoCache.foo...&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
 <span class="gp">...</span>
@@ -405,9 +405,9 @@ every time it’s accessed:</p>
 <p>Specify the cache as a dictionary that lives outside the instance:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">external_cache</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">CacheWithExternalMapping</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">CacheWithExternalMapping</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="n">external_cache</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In CacheWithExternalMapping.foo...&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
 <span class="gp">...</span>
@@ -424,13 +424,13 @@ every time it’s accessed:</p>
 </pre></div>
 </div>
 <p>Specify the cache as an attribute of the instance, and an explicit key:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">WithCacheInInstanceAttribute</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">WithCacheInInstanceAttribute</span><span class="p">:</span>
 <span class="gp">...</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">my_cache</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">&#39;my_cache&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;key_for_foo&#39;</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In WithCacheInInstanceAttribute.foo...&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
 <span class="gp">...</span>
@@ -466,30 +466,30 @@ use things locally (pre-cache) while sharing them with others by storing them in
 a remote store (main cache).</p>
 <p>Finally, we’ll use a dict that logs any setting and getting of values to show
 how the caches are being used.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol</span> <span class="kn">import</span> <span class="n">cache_this</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache_this</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol</span> <span class="kn">import</span> <span class="n">ValueCodecs</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">UserDict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValueCodecs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserDict</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">LoggedCache</span><span class="p">(</span><span class="n">UserDict</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">LoggedCache</span><span class="p">(</span><span class="n">UserDict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;cache&#39;</span>
 <span class="gp">...</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;In </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: setting </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 <span class="gp">...</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;In </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: getting value of </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">CacheA</span><span class="p">(</span><span class="n">LoggedCache</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">CacheA</span><span class="p">(</span><span class="n">LoggedCache</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CacheA&#39;</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">CacheB</span><span class="p">(</span><span class="n">LoggedCache</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">CacheB</span><span class="p">(</span><span class="n">LoggedCache</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CacheB&#39;</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -501,14 +501,14 @@ how the caches are being used.</p>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">PickleCached</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_store_factory</span><span class="o">=</span><span class="n">CacheA</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">PickleCached</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_store_factory</span><span class="o">=</span><span class="n">CacheA</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="c1"># usually this would be a mapping interface to persistent storage:</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_store</span> <span class="o">=</span> <span class="n">backend_store_factory</span><span class="p">()</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">pickle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_store</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="nd">@cache_with_pickle</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In PickleCached.foo...&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
 <span class="gp">...</span>
@@ -594,7 +594,7 @@ Computing 1.0 + 2.0
 <span class="sig-prename descclassname"><span class="pre">dol.tools.</span></span><span class="sig-name descname"><span class="pre">confirm_overwrite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_input_msg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'The</span> <span class="pre">key</span> <span class="pre">{k}</span> <span class="pre">already</span> <span class="pre">exists</span> <span class="pre">and</span> <span class="pre">has</span> <span class="pre">value</span> <span class="pre">{existing_v}.</span> <span class="pre">If</span> <span class="pre">you</span> <span class="pre">want</span> <span class="pre">to</span> <span class="pre">overwrite</span> <span class="pre">it</span> <span class="pre">with</span> <span class="pre">{v},</span> <span class="pre">confirm</span> <span class="pre">by</span> <span class="pre">typing</span> <span class="pre">{v}</span> <span class="pre">here:</span> <span class="pre">'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/tools.html#confirm_overwrite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tools.confirm_overwrite" title="Link to this definition"></a></dt>
 <dd><p>A preset function you can use in wrap_kvs to ask the user to confirm if
 they’re writing a value in a key that already has a different value under it.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.trans</span> <span class="kn">import</span> <span class="n">wrap_kvs</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;apple&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;banana&#39;</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="n">confirm_overwrite</span><span class="p">)</span>
 </pre></div>
@@ -676,7 +676,7 @@ But if you really wanted “item number 1”, you can do:</p>
 <p>Note that <cite>sliceable_s[i:j]</cite> is an iterable that needs to be consumed
 (here, with list) to actually get the data. If you want your data in a different
 format, you can use <cite>dol.trans.wrap_kvs</cite> for that.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol</span> <span class="kn">import</span> <span class="n">wrap_kvs</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ss</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">sliceable_s</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ss</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
 <span class="go">[&#39;world&#39;, &#39;bob&#39;]</span>
@@ -708,9 +708,9 @@ distinguishing between <cite>1</cite> and <cite>1.0</cite>. Defaults to False.</
 <p>Returns:
 - callable: A wrapped function with LRU caching applied, ignoring the first argument (<cite>self</cite>).</p>
 <p>Example:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyClass</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@lru_cache_method</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
@@ -722,9 +722,9 @@ distinguishing between <cite>1</cite> and <cite>1.0</cite>. Defaults to False.</
 </pre></div>
 </div>
 <p>Like <cite>lru_cache</cite>, you can specify the <cite>maxsize</cite> and <cite>typed</cite> parameters:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyOtherClass</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyOtherClass</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@lru_cache_method</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
 <span class="gp">...</span>

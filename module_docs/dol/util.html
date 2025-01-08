@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.2.94 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>dol.util &mdash; dol 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e15d0e1b"></script>
+      <script src="../../_static/documentation_options.js?v=e259d695"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -182,7 +182,7 @@ get a value.</p>
 <dt class="sig sig-object py" id="dol.util.Pipe">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">Pipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">funcs</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">named_funcs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#Pipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.Pipe" title="Link to this definition"></a></dt>
 <dd><p>Simple function composition. That is, gives you a callable that implements input -&gt; f_1 -&gt; … -&gt; f_n -&gt; output.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;x: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
@@ -242,11 +242,11 @@ names <code class="docutils literal notranslate"><span class="pre">__name__</spa
 leading underscore removed. This is useful for adding helper functions to main
 “container” functions without polluting the namespace of the module, at least
 from the point of view of imports and tab completion.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">():</span>
 <span class="gp">... </span>   <span class="k">pass</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">def</span> <span class="nf">_helper</span><span class="p">():</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">_helper</span><span class="p">():</span>
 <span class="gp">... </span>   <span class="k">pass</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="s1">&#39;helper&#39;</span><span class="p">)</span>
 <span class="go">True</span>
@@ -263,9 +263,9 @@ from the point of view of imports and tab completion.</p>
 <span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">add_attrs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remember_added_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_attr_exists</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#add_attrs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.add_attrs" title="Link to this definition"></a></dt>
 <dd><p>Make a function that will add attributes to an obj.
 Originally meant to be used as a decorator of a function, to inject</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">add_attrs</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_attrs</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@add_attrs</span><span class="p">(</span><span class="n">bar</span><span class="o">=</span><span class="s1">&#39;bituate&#39;</span><span class="p">,</span> <span class="n">hello</span><span class="o">=</span><span class="s1">&#39;world&#39;</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">():</span>
 <span class="gp">... </span>    <span class="k">pass</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
 <span class="go">[&#39;bar&#39;, &#39;hello&#39;]</span>
@@ -307,9 +307,9 @@ If non of the keys are found, <code class="docutils literal notranslate"><span c
 <dt class="sig sig-object py" id="dol.util.copy_attrs">
 <span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">copy_attrs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_error_if_an_attr_is_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#copy_attrs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.copy_attrs" title="Link to this definition"></a></dt>
 <dd><p>Copy attributes from one object to another.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">B</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">B</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="gp">... </span>    <span class="n">yy</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="gp">... </span>    <span class="n">zzz</span> <span class="o">=</span> <span class="mi">3</span>
@@ -343,13 +343,13 @@ If non of the keys are found, <code class="docutils literal notranslate"><span c
 <dt class="sig sig-object py" id="dol.util.decorate_callables">
 <span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">decorate_callables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decorator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#decorate_callables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.decorate_callables" title="Link to this definition"></a></dt>
 <dd><p>Decorate all (non-underscored) callables in a class with a decorator.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">LiteralVal</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">LiteralVal</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@decorate_callables</span><span class="p">(</span><span class="nb">property</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">wet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">wet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="s1">&#39;dry&#39;</span>
 <span class="gp">... </span>    <span class="nd">@LiteralVal</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">big</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">big</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="s1">&#39;small&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">A</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">wet</span>
@@ -408,9 +408,9 @@ value v.</p></li>
 <dt class="sig sig-object py" id="dol.util.flatten_pipe">
 <span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">flatten_pipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipe</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#flatten_pipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.flatten_pipe" title="Link to this definition"></a></dt>
 <dd><p>Unravel nested Pipes to get a flat ‘sequence of functions’ version of input.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">g</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">h</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">x</span> <span class="o">-</span> <span class="mi">3</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">g</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">h</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">x</span> <span class="o">-</span> <span class="mi">3</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">h</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -533,8 +533,8 @@ releasing a list of numbers collected when that list reaches length 3:</p>
 <p># &gt;&gt;&gt; grps = partial(igroupby, group_release_cond=False, release_remainding=True)</p>
 <p>Below we show that, with the default <code class="docutils literal notranslate"><span class="pre">group_release_cond</span> <span class="pre">=</span> <span class="pre">lambda</span> <span class="pre">k,</span> <span class="pre">v:</span> <span class="pre">False</span></code>
 and release_remainding=True`` we have <code class="docutils literal notranslate"><span class="pre">dict(igroupby(...))</span> <span class="pre">==</span> <span class="pre">groupby(...)</span></code></p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol</span> <span class="kn">import</span> <span class="n">groupby</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">groupby</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">kws</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">igroupby</span><span class="p">(</span><span class="o">**</span><span class="n">kws</span><span class="p">))</span> <span class="o">==</span> <span class="n">groupby</span><span class="p">(</span><span class="o">**</span><span class="n">kws</span><span class="p">)</span>
@@ -652,12 +652,12 @@ function is applied to each key to produce the values.</p>
 </dd>
 </dl>
 <p>Example usage:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyClass</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@classmethod</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">class_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">class_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">pass</span>
 <span class="gp">...</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">instance_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">instance_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">pass</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj1</span> <span class="o">=</span> <span class="n">MyClass</span><span class="o">.</span><span class="n">class_method</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj2</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span><span class="o">.</span><span class="n">instance_method</span>
@@ -682,12 +682,12 @@ function is applied to each key to produce the values.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">types</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">function</span><span class="p">():</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">function</span><span class="p">():</span>
 <span class="gp">... </span>    <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyClass</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">pass</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">is_unbound_method</span><span class="p">(</span><span class="n">MyClass</span><span class="o">.</span><span class="n">method</span><span class="p">)</span>
 <span class="go">True</span>
@@ -704,11 +704,11 @@ function is applied to each key to produce the values.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">lazyprop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#lazyprop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.lazyprop" title="Link to this definition"></a></dt>
 <dd><p>A descriptor implementation of lazyprop (cached property).
 Made based on David Beazley’s “Python Cookbook” book and enhanced with boltons.cacheutils ideas.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Test</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Test</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
 <span class="gp">... </span>    <span class="nd">@lazyprop</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;generating &quot;len&quot;&#39;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Test</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
@@ -738,11 +738,11 @@ Made based on David Beazley’s “Python Cookbook” book and enhanced with bol
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">lazyprop_w_sentinel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#lazyprop_w_sentinel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.lazyprop_w_sentinel" title="Link to this definition"></a></dt>
 <dd><p>A descriptor implementation of lazyprop (cached property).
 Inserts a <cite>self.func.__name__ + ‘__cache_active’</cite> attribute</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Test</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Test</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
 <span class="gp">... </span>    <span class="nd">@lazyprop_w_sentinel</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;generating &quot;len&quot;&#39;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Test</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
@@ -800,7 +800,7 @@ Inserts a <cite>self.func.__name__ + ‘__cache_active’</cite> attribute</p>
 </div>
 <p>If you want a different default, you can specify it with the default
 keyword argument.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">my_max_common_prefix</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">max_common_prefix</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">my_max_common_prefix</span><span class="p">([])</span>
 <span class="go">[]</span>
@@ -925,18 +925,18 @@ parameters, including the variadics and defaulted ones.</p>
 </dl>
 <p>The raison d’être of partialclass is that it returns a type, so let’s have a look at that with
 a useless class.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="kn">import</span> <span class="n">signature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">pass</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="o">==</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">partialclass</span><span class="p">(</span><span class="n">A</span><span class="p">),</span> <span class="nb">type</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">mysum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">mysum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(a=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="si">}</span><span class="s2">, b=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="si">}</span><span class="s2">)&quot;</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="o">==</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">partialclass</span><span class="p">(</span><span class="n">A</span><span class="p">),</span> <span class="nb">type</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span>
@@ -1005,7 +1005,7 @@ takes obj as the first argument, and uses the file_reader to read the bytes.</p>
 </dl>
 <p>Example usage:</p>
 <p>Using <cite>json.load</cite> to read a JSON object from bytes:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">json</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">json_bytes</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">read_json_from_bytes</span> <span class="o">=</span> <span class="n">read_from_bytes</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">)</span>
@@ -1015,7 +1015,7 @@ takes obj as the first argument, and uses the file_reader to read the bytes.</p>
 </pre></div>
 </div>
 <p>Using <cite>pickle.load</cite> to read an object from bytes:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pickle</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">)}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pickle_bytes</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">read_pickle_from_bytes</span> <span class="o">=</span> <span class="n">read_from_bytes</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">)</span>
@@ -1087,9 +1087,9 @@ invalid regex patterns.</p>
 <dt class="sig sig-object py" id="dol.util.staticproperty">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">staticproperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#staticproperty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.staticproperty" title="Link to this definition"></a></dt>
 <dd><p>A decorator for defining static properties in classes.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@staticproperty</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">():</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="o">.</span><span class="n">foo</span>
 <span class="go">2</span>
@@ -1137,7 +1137,7 @@ the string is returned as is.</p>
 </div>
 <p>If you’re using a specific parametrization of the function often, you can
 create a partial function with the desired parameters:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">truncate_string</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">truncate_string_with_marker</span><span class="p">,</span> <span class="n">left_limit</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">right_limit</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">middle_marker</span><span class="o">=</span><span class="s1">&#39;---&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">truncate_string</span><span class="p">(</span><span class="s1">&#39;1234567890&#39;</span><span class="p">)</span>
 <span class="go">&#39;12---90&#39;</span>
@@ -1175,14 +1175,14 @@ you need to pipe those bytes to another function).</p>
 (like is often the case) you just have a function that writes to a file-like object,
 like the <cite>json.dump(obj, fp)</cite> function? You can use <cite>written_bytes</cite> to get a
 function that will act as <cite>json.dumps</cite> like so:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">json</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">get_json_bytes</span> <span class="o">=</span> <span class="n">written_bytes</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">,</span> <span class="n">io_buffer_cls</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">get_json_bytes</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
 <span class="go">&#39;{&quot;a&quot;: 1, &quot;b&quot;: 2}&#39;</span>
 </pre></div>
 </div>
 <p>Here’s another example with pandas DataFrame.to_parquet:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>  
 <span class="gp">... </span>    <span class="s1">&#39;column1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="s1">&#39;column2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]</span>
@@ -1268,7 +1268,7 @@ another function that expects a file path.
 What you need to do then is just pipe your written_key function into that
 function that expects to work with a file path, and it’ll be like piping the
 value of your input object into that function (just via a temp file).</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dol.util</span> <span class="kn">import</span> <span class="n">Pipe</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipe</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">store</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">key_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">key</span><span class="p">:</span> <span class="n">store</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pipe_obj_to_reader</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">written_key</span><span class="p">(</span><span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">),</span> <span class="n">key_func</span><span class="p">)</span>

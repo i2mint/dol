@@ -5,8 +5,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.scrap.store_factories &mdash; dol 0.2.94 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+  <title>dol.scrap.store_factories &mdash; dol 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e15d0e1b"></script>
+      <script src="../../../_static/documentation_options.js?v=e259d695"></script>
       <script src="../../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -111,13 +111,13 @@
   <h1>Source code for dol.scrap.store_factories</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Utils to make stores&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">NewType</span><span class="p">,</span> <span class="n">Collection</span>
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">import</span> <span class="nn">operator</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">suppress</span>
-<span class="kn">from</span> <span class="nn">dol.base</span> <span class="kn">import</span> <span class="n">KvReader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">NewType</span><span class="p">,</span> <span class="n">Collection</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">suppress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">KvReader</span>
 
 <span class="n">Getter</span> <span class="o">=</span> <span class="n">NewType</span><span class="p">(</span><span class="s2">&quot;Getter&quot;</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Mapping</span><span class="p">,</span> <span class="n">KT</span><span class="p">],</span> <span class="n">VT</span><span class="p">])</span>
 <span class="n">Lister</span> <span class="o">=</span> <span class="n">NewType</span><span class="p">(</span><span class="s2">&quot;Getter&quot;</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Mapping</span><span class="p">],</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">KT</span><span class="p">]])</span>
@@ -133,7 +133,7 @@
 
 <div class="viewcode-block" id="count_by_iteration">
 <a class="viewcode-back" href="../../../module_docs/dol/scrap/store_factories.html#dol.scrap.store_factories.count_by_iteration">[docs]</a>
-<span class="k">def</span> <span class="nf">count_by_iteration</span><span class="p">(</span><span class="n">collection</span><span class="p">:</span> <span class="n">Collection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">count_by_iteration</span><span class="p">(</span><span class="n">collection</span><span class="p">:</span> <span class="n">Collection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Number of elements in collection of keys.</span>
 <span class="sd">    Note: This method iterates over all elements of the collection and counts them.</span>
@@ -151,7 +151,7 @@
 <span class="c1">#  Should probably be T = TypeVar(&#39;T&#39;)?</span>
 <div class="viewcode-block" id="check_by_iteration">
 <a class="viewcode-back" href="../../../module_docs/dol/scrap/store_factories.html#dol.scrap.store_factories.check_by_iteration">[docs]</a>
-<span class="k">def</span> <span class="nf">check_by_iteration</span><span class="p">(</span><span class="n">collection</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="n">KT</span><span class="p">],</span> <span class="n">x</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_by_iteration</span><span class="p">(</span><span class="n">collection</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="n">KT</span><span class="p">],</span> <span class="n">x</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check if collection of keys contains k.</span>
 <span class="sd">    Note: Method loops through contents of collection to see if query element exists.</span>
@@ -167,7 +167,7 @@
 
 <div class="viewcode-block" id="check_by_trying_to_get">
 <a class="viewcode-back" href="../../../module_docs/dol/scrap/store_factories.html#dol.scrap.store_factories.check_by_trying_to_get">[docs]</a>
-<span class="k">def</span> <span class="nf">check_by_trying_to_get</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">false_on_error</span><span class="o">=</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,))</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_by_trying_to_get</span><span class="p">(</span><span class="n">mapping</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">false_on_error</span><span class="o">=</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,))</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check if mapping contains x.</span>
 <span class="sd">    Note: This method tries to get x from the mapping, returning ``False`` if it fails.</span>
@@ -202,7 +202,7 @@
 <div class="viewcode-block" id="KvReaderShell">
 <a class="viewcode-back" href="../../../module_docs/dol/scrap/store_factories.html#dol.scrap.store_factories.KvReaderShell">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">KvReaderShell</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">KvReaderShell</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps an object with a mapping interface</span>
 
 <span class="sd">    See below how we can wrap a list with a mapping interface, and use it as a store.</span>
@@ -233,16 +233,16 @@
     <span class="n">sizer</span><span class="p">:</span> <span class="n">Sizer</span> <span class="o">=</span> <span class="n">count_by_iteration</span>
     <span class="n">is_contained</span><span class="p">:</span> <span class="n">ContainmentChecker</span> <span class="o">=</span> <span class="n">check_by_iteration</span>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VT</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VT</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">KT</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">KT</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lister</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_contained</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span></div>
 
 
@@ -254,16 +254,16 @@
 <div class="viewcode-block" id="StoreShell">
 <a class="viewcode-back" href="../../../module_docs/dol/scrap/store_factories.html#dol.scrap.store_factories.StoreShell">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">StoreShell</span><span class="p">(</span><span class="n">KvReaderShell</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StoreShell</span><span class="p">(</span><span class="n">KvReaderShell</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps an object with a mapping interface&quot;&quot;&quot;</span>
 
     <span class="n">setter</span><span class="p">:</span> <span class="n">Setter</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">setitem</span>
     <span class="n">deleter</span><span class="p">:</span> <span class="n">Deleter</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">delitem</span>
 
-    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">setter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span></div>
 
 </pre></div>

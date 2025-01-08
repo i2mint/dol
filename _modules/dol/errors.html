@@ -5,8 +5,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.errors &mdash; dol 0.2.94 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>dol.errors &mdash; dol 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e15d0e1b"></script>
+      <script src="../../_static/documentation_options.js?v=e259d695"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -111,8 +111,8 @@
   <h1>Source code for dol.errors</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Error objects and utils&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
-<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="kn">import</span> <span class="n">signature</span>
 
 
 <span class="c1"># TODO: More on wrapped_callback: Handle *args too. Make it work with builtins (no signature!)</span>
@@ -120,7 +120,7 @@
 <span class="c1"># TODO: Make it a more general and useful store decorator. Trans store into an getitem exception catching store.</span>
 <div class="viewcode-block" id="items_with_caught_exceptions">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.items_with_caught_exceptions">[docs]</a>
-<span class="k">def</span> <span class="nf">items_with_caught_exceptions</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">items_with_caught_exceptions</span><span class="p">(</span>
     <span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
     <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">catch_exceptions</span><span class="o">=</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,),</span>
@@ -196,18 +196,18 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">params</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span>
 
-            <span class="k">def</span> <span class="nf">wrapped_callback</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_callback</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
                 <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span><span class="p">}</span>
                 <span class="k">return</span> <span class="n">callback</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">wrapped_callback</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_callback</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">callback</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
 
-        <span class="k">def</span> <span class="nf">wrapped_callback</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_callback</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
             <span class="k">pass</span>  <span class="c1"># do nothing</span>
 
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>  <span class="c1"># iterate over keys of the mapping</span>
@@ -223,105 +223,105 @@
 
 
 
-<span class="k">def</span> <span class="nf">_assert_condition</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">err_msg</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">err_cls</span><span class="o">=</span><span class="ne">AssertionError</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_assert_condition</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">err_msg</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">err_cls</span><span class="o">=</span><span class="ne">AssertionError</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">condition</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">err_cls</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="NotValid">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.NotValid">[docs]</a>
-<span class="k">class</span> <span class="nc">NotValid</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NotValid</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;To use to indicate when an object doesn&#39;t fit expected properties&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="KeyValidationError">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.KeyValidationError">[docs]</a>
-<span class="k">class</span> <span class="nc">KeyValidationError</span><span class="p">(</span><span class="n">NotValid</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">KeyValidationError</span><span class="p">(</span><span class="n">NotValid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Error to raise when a key is not valid&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="NoSuchKeyError">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.NoSuchKeyError">[docs]</a>
-<span class="k">class</span> <span class="nc">NoSuchKeyError</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NoSuchKeyError</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;When a requested key doesn&#39;t exist&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="NotAllowed">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.NotAllowed">[docs]</a>
-<span class="k">class</span> <span class="nc">NotAllowed</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NotAllowed</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;To use to indicate that something is not allowed&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="OperationNotAllowed">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.OperationNotAllowed">[docs]</a>
-<span class="k">class</span> <span class="nc">OperationNotAllowed</span><span class="p">(</span><span class="n">NotAllowed</span><span class="p">,</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OperationNotAllowed</span><span class="p">(</span><span class="n">NotAllowed</span><span class="p">,</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;When a given operation is not allowed (through being disabled, conditioned, or just implemented)&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="ReadsNotAllowed">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.ReadsNotAllowed">[docs]</a>
-<span class="k">class</span> <span class="nc">ReadsNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ReadsNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read OperationNotAllowed&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="WritesNotAllowed">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.WritesNotAllowed">[docs]</a>
-<span class="k">class</span> <span class="nc">WritesNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">WritesNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write OperationNotAllowed&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="DeletionsNotAllowed">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.DeletionsNotAllowed">[docs]</a>
-<span class="k">class</span> <span class="nc">DeletionsNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DeletionsNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete OperationNotAllowed&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="IterationNotAllowed">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.IterationNotAllowed">[docs]</a>
-<span class="k">class</span> <span class="nc">IterationNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IterationNotAllowed</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Iteration OperationNotAllowed&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="OverWritesNotAllowedError">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.OverWritesNotAllowedError">[docs]</a>
-<span class="k">class</span> <span class="nc">OverWritesNotAllowedError</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OverWritesNotAllowedError</span><span class="p">(</span><span class="n">OperationNotAllowed</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Error to raise when a writes to existing keys are not allowed&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="AlreadyExists">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.AlreadyExists">[docs]</a>
-<span class="k">class</span> <span class="nc">AlreadyExists</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AlreadyExists</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;To use if an object already exists (and shouldn&#39;t; for example, to protect overwrites)&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="MethodNameAlreadyExists">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.MethodNameAlreadyExists">[docs]</a>
-<span class="k">class</span> <span class="nc">MethodNameAlreadyExists</span><span class="p">(</span><span class="n">AlreadyExists</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MethodNameAlreadyExists</span><span class="p">(</span><span class="n">AlreadyExists</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;To use when a method name already exists (and shouldn&#39;t)&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="MethodFuncNotValid">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.MethodFuncNotValid">[docs]</a>
-<span class="k">class</span> <span class="nc">MethodFuncNotValid</span><span class="p">(</span><span class="n">NotValid</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MethodFuncNotValid</span><span class="p">(</span><span class="n">NotValid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use when method function is not valid&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="SetattrNotAllowed">
 <a class="viewcode-back" href="../../module_docs/dol/errors.html#dol.errors.SetattrNotAllowed">[docs]</a>
-<span class="k">class</span> <span class="nc">SetattrNotAllowed</span><span class="p">(</span><span class="n">NotAllowed</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SetattrNotAllowed</span><span class="p">(</span><span class="n">NotAllowed</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An attribute was requested to be set, but some conditions didn&#39;t apply&quot;&quot;&quot;</span></div>
 
 </pre></div>

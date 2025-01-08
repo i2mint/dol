@@ -5,8 +5,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.dig &mdash; dol 0.2.94 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>dol.dig &mdash; dol 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e15d0e1b"></script>
+      <script src="../../_static/documentation_options.js?v=e259d695"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -111,7 +111,7 @@
   <h1>Source code for dol.dig</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Layers introspection&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 
 <span class="c1"># TODO: Make a generator and a index getter for keys and vals (and both).</span>
 <span class="c1">#  Point is to be able to get views from any level.</span>
@@ -120,7 +120,7 @@
 <span class="n">no_default</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;NoDefault&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>
 
 
-<span class="k">def</span> <span class="nf">get_first_attr_found</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">no_default</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_first_attr_found</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">no_default</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
         <span class="n">a</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">not_found</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">not_found</span><span class="p">:</span>
@@ -131,7 +131,7 @@
         <span class="k">return</span> <span class="n">default</span>
 
 
-<span class="k">def</span> <span class="nf">recursive_get_attr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">recursive_get_attr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">a</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">a</span>
@@ -145,7 +145,7 @@
 <span class="n">dig_up</span> <span class="o">=</span> <span class="n">recursive_get_attr</span>
 
 
-<span class="k">def</span> <span class="nf">store_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">store_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
     <span class="n">f</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">trans_arg</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
@@ -154,7 +154,7 @@
             <span class="k">yield from</span> <span class="n">unravel_key</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">trans_arg</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">print_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">with_type</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">print_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">with_type</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">gen</span> <span class="o">=</span> <span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="o">*</span><span class="n">store_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">with_type</span><span class="p">:</span>
         <span class="n">gen</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">gen</span><span class="p">)</span>
@@ -163,14 +163,14 @@
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span>
 
 
-<span class="k">def</span> <span class="nf">last_element</span><span class="p">(</span><span class="n">gen</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">last_element</span><span class="p">(</span><span class="n">gen</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gen</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">return</span> <span class="n">x</span>
 
 
-<span class="k">def</span> <span class="nf">inner_most</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">inner_most</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">last_element</span><span class="p">(</span><span class="n">store_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">))</span>
 
 
@@ -184,10 +184,10 @@
 <span class="n">print_val_trans_path</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">print_trans_path</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;_data_of_obj&quot;</span><span class="p">)</span>
 <span class="n">inner_most_val</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">inner_most</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;_data_of_obj&quot;</span><span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 
 
-<span class="k">def</span> <span class="nf">next_layer</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;store&quot;</span><span class="p">,)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">next_layer</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;store&quot;</span><span class="p">,)):</span>
     <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">layer_attrs</span><span class="p">:</span>
         <span class="n">attr_val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">not_found</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">attr_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">not_found</span><span class="p">:</span>
@@ -195,7 +195,7 @@
     <span class="k">return</span> <span class="n">not_found</span>
 
 
-<span class="k">def</span> <span class="nf">recursive_calls</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sentinel</span><span class="o">=</span><span class="n">not_found</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">recursive_calls</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sentinel</span><span class="o">=</span><span class="n">not_found</span><span class="p">):</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="n">sentinel</span><span class="p">:</span>
             <span class="k">break</span>
@@ -204,14 +204,14 @@
             <span class="n">x</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">layers</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;store&quot;</span><span class="p">,)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">layers</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;store&quot;</span><span class="p">,)):</span>
     <span class="n">_next_layer</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">next_layer</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="n">layer_attrs</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">recursive_calls</span><span class="p">(</span><span class="n">_next_layer</span><span class="p">,</span> <span class="n">store</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="trace_getitem">
 <a class="viewcode-back" href="../../module_docs/dol/dig.html#dol.dig.trace_getitem">[docs]</a>
-<span class="k">def</span> <span class="nf">trace_getitem</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;store&quot;</span><span class="p">,)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">trace_getitem</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;store&quot;</span><span class="p">,)):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A generator of layered steps to inspect a store.</span>
 
 <span class="sd">    :param store: An instance that has the base.Store interface</span>
@@ -305,17 +305,17 @@
 
 
 
-<span class="k">def</span> <span class="nf">trace_info</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">item_func</span><span class="o">=</span><span class="nb">print</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">trace_info</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">item_func</span><span class="o">=</span><span class="nb">print</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">trace</span><span class="p">:</span>
         <span class="n">item_func</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_trace_item_info</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_trace_item_info</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
     <span class="n">layer</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
 
 
-<span class="k">def</span> <span class="nf">print_trace_info</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">item_info</span><span class="o">=</span><span class="n">_trace_item_info</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">print_trace_info</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">item_info</span><span class="o">=</span><span class="n">_trace_item_info</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">trace</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">item_info</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
 </pre></div>

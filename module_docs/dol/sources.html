@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.2.94 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+  <title>dol.sources &mdash; dol 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e15d0e1b"></script>
+      <script src="../../_static/documentation_options.js?v=e259d695"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -305,12 +305,12 @@ and possibly to a remote backup or shared store, but also keep that value in mem
 caching systems
 (e.g. <a class="reference external" href="https://philipwalton.com/articles/cascading-cache-invalidation/">https://philipwalton.com/articles/cascading-cache-invalidation/</a>)</p>
 <p>To demo this, let’s create a couple of stores that print when they get a value:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">UserDict</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">LoggedDict</span><span class="p">(</span><span class="n">UserDict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserDict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">LoggedDict</span><span class="p">(</span><span class="n">UserDict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="gp">... </span>       <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 <span class="gp">... </span>       <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Getting </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="n">LoggedDict</span><span class="p">(</span><span class="s1">&#39;cache&#39;</span><span class="p">)</span>
@@ -692,9 +692,9 @@ You can write functions that bare the names you want to give to each dataset,
 and have the function fetch the data from the url, extract the data from the
 response and possibly prepare it (we advise minimally, since you can always
 transform from the raw source, but the opposite can be impossible).</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">():</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="s1">&#39;bar&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">pi</span><span class="p">():</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">pi</span><span class="p">():</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="mf">3.14159</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">FuncReader</span><span class="p">([</span><span class="n">foo</span><span class="p">,</span> <span class="n">pi</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
@@ -730,7 +730,7 @@ iterable.</p>
 <dd><p>A reader that uses a specified function to get the contents for a given key.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># define a contents_of_key that reads stuff from a dict</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;foo&#39;</span><span class="p">:</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="mi">42</span><span class="p">:</span> <span class="s2">&quot;everything&quot;</span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">read_dict</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">read_dict</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pr</span> <span class="o">=</span> <span class="n">ObjReader</span><span class="p">(</span><span class="n">_obj_of_key</span><span class="o">=</span><span class="n">read_dict</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pr</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span>
@@ -739,7 +739,7 @@ iterable.</p>
 <span class="go">&#39;everything&#39;</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># define contents_of_key that reads stuff from a file given it&#39;s path</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">read_file</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pr</span> <span class="o">=</span> <span class="n">ObjReader</span><span class="p">(</span><span class="n">_obj_of_key</span><span class="o">=</span><span class="n">read_file</span><span class="p">)</span>
@@ -819,7 +819,7 @@ element:</p>
 </div>
 <p>We got the whole dict there. What if we just want we didn’t want the _id, which is
 used by the key, in our val?</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">all_but_s</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">exclusive_subdict</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">SequenceKvReader</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;_id&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">all_but_s</span><span class="p">,</span> <span class="n">val_postproc</span><span class="o">=</span><span class="nb">next</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
