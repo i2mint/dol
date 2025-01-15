@@ -76,8 +76,9 @@ def _kv_spec_to_func(kv_spec: KvSpec) -> Callable:
 #   but determined by some rules executed dynamically.
 #   Related DirStore and kv_walk.
 class FlatReader(KvReader):
-    """Get a 'flat view' of a store of stores.
+    """Get a 'flat view' of a store of stores. 
     That is, where keys are `(first_level_key, second_level_key)` pairs.
+    This is useful, for instance, to make a union of stores (you'll get all the values).
 
     >>> readers = {
     ...     'fr': {1: 'un', 2: 'deux'},

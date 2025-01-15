@@ -176,7 +176,7 @@ from dol.explicit import ExplicitKeyMap, invertible_maps, KeysReader
 
 
 from dol.sources import (
-    FlatReader,
+    FlatReader,  # A flat view of a store of stores (a sort of union of stores)
     SequenceKvReader,
     FuncReader,
     Attrs,
