@@ -1884,8 +1884,12 @@ def read_from_bytes(
 
 
 def write_to_file(obj: VT, key: KT):
-    with open(key, "wb") as f:
-        f.write(obj)
+    if isinstance(key, bytes):
+        with open(key, "wb") as f:
+            f.write(obj)
+    else:
+        with open(key, "w") as f:
+            f.write(obj)
 
 
 def written_key(
