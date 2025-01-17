@@ -1896,7 +1896,7 @@ def written_key(
     obj: VT = None,
     writer: Writer = write_to_file,
     *,
-    key: KT = None,
+    key: Optional[Union[KT, Callable]] = None,
     obj_arg_position_in_writer: int = 0,
 ):
     """
@@ -1907,7 +1907,12 @@ def written_key(
     :param writer: A function that writes an object to a file.
     :param key: The key (by default, filepath) to write to.
         If None, a temporary file is created.
-        If a string with a '*', the '*' is replaced with a unique temporary filename.
+        If a string starting with '*', the '*' is replaced with a unique temporary filename.
+        If a string that has a '*' somewhere in the middle, what's on the left of if is used as a directory
+        and the '*' is replaced with a unique temporary filename. For example 
+        '/tmp/*_file.ext' would be replaced with '/tmp/oiu8fj9873_file.ext'.
+        If a callable, it will be called with obj as input to get the key. One use case 
+        is to use a function that generates a key based on the object.
     :param obj_arg_position_in_writer: Position of the object argument in writer function (0 or 1).
 
     :return: The file path where the object was written.
@@ -1990,12 +1995,15 @@ def written_key(
         fd, temp_filepath = tempfile.mkstemp()
         os.close(fd)
         key = temp_filepath
+    elif callable(key):
+        key_func = key
+        key = key_func(obj)
     elif isinstance(key, str) and "*" in key:
         temp_filepath = tempfile.mktemp()
         if key.startswith("*"):
             # Replace * of key with a unique temporary filename
             key = key.replace("*", temp_filepath)
-        else:
+        else:  # only use the name part of the temp_filepath
             # separate directory and filename
             dir_name, base_name = os.path.split(temp_filepath)
             # Replace * of key with a unique temporary filename
