@@ -1884,12 +1884,17 @@ def read_from_bytes(
 
 
 def write_to_file(obj: VT, key: KT):
-    if isinstance(key, bytes):
+    if isinstance(obj, bytes):
         with open(key, "wb") as f:
             f.write(obj)
-    else:
-        with open(key, "w") as f:
+    elif isinstance(obj, str):
+        with open(key, "wt") as f:
             f.write(obj)
+    else:
+        raise ValueError(
+            f"Object of type {type(obj)} cannot be written to a file. "
+            "Use an encoder to encode it to bytes or string."
+        )
 
 
 def written_key(
