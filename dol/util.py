@@ -1898,6 +1898,7 @@ def written_key(
     *,
     key: Optional[Union[KT, Callable]] = None,
     obj_arg_position_in_writer: int = 0,
+    encoder: Callable = identity_func,
 ):
     """
     Writes an object to a key and returns the key.
@@ -1914,6 +1915,7 @@ def written_key(
         If a callable, it will be called with obj as input to get the key. One use case
         is to use a function that generates a key based on the object.
     :param obj_arg_position_in_writer: Position of the object argument in writer function (0 or 1).
+    :param encoder: A function that encodes the object before writing it.
 
     :return: The file path where the object was written.
 
@@ -1981,6 +1983,18 @@ def written_key(
     >>> store  # doctest: +ELLIPSIS
     {...: 45}
 
+    The default writer is `write_to_file`, which can write bytes or strings to a file.
+    If your object is not a bytes or string, you can specify an encoder to encode it
+    before calling the writer.
+
+    >>> import json, pathlib
+    >>> json_written_temp_filepath = written_key(key='*.json', encoder=json.dumps)
+    >>> filepath = json_written_temp_filepath({'a': 1, 'b': 2})
+    >>> filepath  # doctest: +SKIP
+    '/var/folders/mc/c070wfh51kxd9lft8dl74q1r0000gn/T/tmp8yaczd8b.json'
+    >>> json.loads(open(filepath).read())
+    {'a': 1, 'b': 2}
+
     """
     if obj is None:
         return partial(
@@ -1988,6 +2002,7 @@ def written_key(
             writer=writer,
             key=key,
             obj_arg_position_in_writer=obj_arg_position_in_writer,
+            encoder=encoder,
         )
 
     if key is None:
@@ -2009,8 +2024,9 @@ def written_key(
             # Replace * of key with a unique temporary filename
             key = key.replace("*", base_name)
 
+    bytes_or_text = encoder(obj)
     # Write the object to the specified filepath
-    _call_writer(writer, obj, key, obj_arg_position_in_writer)
+    _call_writer(writer, bytes_or_text, key, obj_arg_position_in_writer)
 
     return key
 
