@@ -1909,9 +1909,9 @@ def written_key(
         If None, a temporary file is created.
         If a string starting with '*', the '*' is replaced with a unique temporary filename.
         If a string that has a '*' somewhere in the middle, what's on the left of if is used as a directory
-        and the '*' is replaced with a unique temporary filename. For example 
+        and the '*' is replaced with a unique temporary filename. For example
         '/tmp/*_file.ext' would be replaced with '/tmp/oiu8fj9873_file.ext'.
-        If a callable, it will be called with obj as input to get the key. One use case 
+        If a callable, it will be called with obj as input to get the key. One use case
         is to use a function that generates a key based on the object.
     :param obj_arg_position_in_writer: Position of the object argument in writer function (0 or 1).
 
