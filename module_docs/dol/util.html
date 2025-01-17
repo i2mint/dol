@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.3.3 documentation</title>
+  <title>dol.util &mdash; dol 0.3.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="../../_static/documentation_options.js?v=1e28cc32"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -1198,7 +1198,7 @@ all(pd.read_parquet(io.BytesIO(parquet_bytes)) == df)</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.util.written_key">
-<span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">written_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">obj:</span> <span class="pre">VT</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">writer:</span> <span class="pre">~typing.Callable[[VT,</span> <span class="pre">KT],</span> <span class="pre">~typing.Any]</span> <span class="pre">|</span> <span class="pre">~typing.Callable[[KT,</span> <span class="pre">VT],</span> <span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">write_to_file&gt;,</span> <span class="pre">*,</span> <span class="pre">key:</span> <span class="pre">KT</span> <span class="pre">|</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">obj_arg_position_in_writer:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#written_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.written_key" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">written_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">obj:</span> <span class="pre">VT</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">writer:</span> <span class="pre">~typing.Callable[[VT,</span> <span class="pre">KT],</span> <span class="pre">~typing.Any]</span> <span class="pre">|</span> <span class="pre">~typing.Callable[[KT,</span> <span class="pre">VT],</span> <span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">write_to_file&gt;,</span> <span class="pre">*,</span> <span class="pre">key:</span> <span class="pre">KT</span> <span class="pre">|</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">obj_arg_position_in_writer:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0,</span> <span class="pre">encoder:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">identity_func&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#written_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.written_key" title="Link to this definition"></a></dt>
 <dd><p>Writes an object to a key and returns the key.
 If key is not given, a temporary file is created and its path is returned.</p>
 <dl class="field-list simple">
@@ -1215,6 +1215,7 @@ and the ‘*’ is replaced with a unique temporary filename. For example
 If a callable, it will be called with obj as input to get the key. One use case
 is to use a function that generates a key based on the object.</p></li>
 <li><p><strong>obj_arg_position_in_writer</strong> – Position of the object argument in writer function (0 or 1).</p></li>
+<li><p><strong>encoder</strong> – A function that encodes the object before writing it.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1281,6 +1282,18 @@ value of your input object into that function (just via a temp file).</p>
 <span class="go">450</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">store</span>  
 <span class="go">{...: 45}</span>
+</pre></div>
+</div>
+<p>The default writer is <cite>write_to_file</cite>, which can write bytes or strings to a file.
+If your object is not a bytes or string, you can specify an encoder to encode it
+before calling the writer.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span><span class="o">,</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">json_written_temp_filepath</span> <span class="o">=</span> <span class="n">written_key</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;*.json&#39;</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filepath</span> <span class="o">=</span> <span class="n">json_written_temp_filepath</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filepath</span>  
+<span class="go">&#39;/var/folders/mc/c070wfh51kxd9lft8dl74q1r0000gn/T/tmp8yaczd8b.json&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+<span class="go">{&#39;a&#39;: 1, &#39;b&#39;: 2}</span>
 </pre></div>
 </div>
 </dd></dl>
