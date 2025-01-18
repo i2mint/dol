@@ -925,6 +925,8 @@ def store_aggregate(
 
     if isinstance(egress, str):
         save_filepath = egress
+        if save_filepath.startswith("~"):
+            save_filepath = os.path.expanduser(save_filepath)
         # make an egress that will save the string to a file (then return the string)
         egress = partial(save_string_to_filepath, save_filepath)
 

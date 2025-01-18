@@ -26,6 +26,7 @@ from typing import (
     Any,
     Mapping,
     Iterable,
+    Sequence,
     Tuple,
     Literal,
     Iterator,
@@ -296,17 +297,109 @@ def getitem(obj, k):
 
 
 def get_attr_or_item(obj, k):
-    """If ``k`` is a string, tries to get ``k`` as an attribute of ``obj`` first,
-    and if that fails, gets it as ``obj[k]``"""
+    """
+    If ``k`` is a string, tries to get ``k`` as an attribute of ``obj`` first,
+    and if that fails, gets it as ``obj[k]``
+
+    WARNING: The hardcoded priority choices of this function regarding when to try 
+    k as an item, index, or attribute, don't apply to every case, so you may want to
+    use an explicit value getter to be more robust! 
+
+    # >>> d = {'a': [1, {'items': 2, '3': 33, 3: 42}]}
+    >>> get_attr_or_item({'items': 2}, 'items')
+    2
+
+    But if "items" is not there as a key of the object, the attribute is found:
+
+    >>> get_attr_or_item({'not_items': 2}, 'items')  # doctest: +ELLIPSIS
+    <built-in method items of dict object...>
+    
+    Both integers and string integers will work to get an item if obj is not a Mapping.
+
+    >>> get_attr_or_item([7, 21, 42], 2)
+    42
+    >>> get_attr_or_item([7, 21, 42], '2')
+    42
+
+    If you're dealling with a Mapping, you can get both integer and string keys, and 
+    if you have both types in your Mapping, you'll get the right one!
+
+    >>> get_attr_or_item({2: 'numerical key', '2': 'string key'}, 2)
+    'numerical key'
+    >>> get_attr_or_item({2: 'numerical key', '2': 'string key'}, '2')
+    'string key'
+
+    If you don't have the numerical version, the string version will still find your 
+    numerical key. 
+
+    >>> get_attr_or_item({2: 'numerical key'}, '2')
+    'numerical key'
+
+    The opposite is not true though: If you ask for an integer key, it will not find 
+    a string version of it. 
+
+    >>> get_attr_or_item({'2': 'string key'}, 2) # +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+    ...
+    KeyError: 2
+
+    """
     if isinstance(k, str):
-        try:
-            return getattr(obj, k)
-        except AttributeError:
-            pass
         if str.isnumeric(k) and not isinstance(obj, Mapping):
-            # if obj is not a mapping, and k is numeric, consider it to be int index
+            # if k is the string of an integer and obj is not a Mapping, 
+            # consider k to be int index
             k = int(k)
-    return obj[k]
+        try:
+            return obj[k]  # prioritize getitem (keys and indices)
+        except (TypeError, KeyError, IndexError):
+            if str.isnumeric(k):
+                if isinstance(obj, Mapping):
+                    return obj[int(k)]
+                else:
+                    raise
+            else:
+                return getattr(obj, k)  # try it as an attribute 
+    else:
+        return obj[k]
+
+
+def keys_and_indices_path(str_path, *, sep='.', index_pattern=r'\[(\d+)\]'):
+    """
+    Transforms a string path separated by a specified separator into a tuple
+    of keys and indices. Bracketed indices are extracted as integers.
+
+    This function is meant to be used in as the key_transformer argument of path_get etc.
+
+    Args:
+        path (str): The input path string, e.g., "a21-59c.message[2].user".
+        sep (str): The separator used to split the path, default is '.'.
+        index_pattern (str): The regular expression pattern to match bracketed indices
+
+    Returns:
+        tuple: A tuple representation of the path, e.g., ("a21-59c", "message", 2, "user").
+
+    Example:
+
+    >>> keys_and_indices_path("a21-59c.message[2].user")
+    ('a21-59c', 'message', 2, 'user')
+    """
+    # Split the path by the specified separator
+    parts = str_path.split(sep)
+    search = re.compile(index_pattern).search
+
+    def transformed_parts():
+        for part in parts:
+            # Extract bracketed indices
+            match = search(part)
+            if match:
+                # yield the key (without the index) and the extracted index
+                yield part[: match.start()]  # Key before the index
+                yield int(match.group(1))  # Index as integer
+            else:
+                # yield the key as is if no index is present
+                yield part
+
+    return tuple(transformed_parts())
 
 
 # ------------------------------------------------------------------------------
@@ -319,7 +412,7 @@ def path_get(
     path,
     on_error: OnErrorType = raise_on_error,
     *,
-    sep=".",
+    sep: Optional[Union[str, Callable]] = None,
     key_transformer=None,
     get_value: Callable = get_attr_or_item,
     caught_errors=(Exception,),
@@ -330,15 +423,19 @@ def path_get(
     :param obj: The object to get the path from
     :param path: The path to get
     :param on_error: The error handler to use (default: raise_on_error)
-    :param sep: The separator to use if the path is a string
+    :param sep: Determines a path is transforms into a tuple of keys.
+        If it's a string, ``lambda path: path.split(sep)`` is used.
+        If not, it should be a function which takes in a path object and returns an iterable of keys.
     :param key_transformer: A function to transform the keys of the path
     :param get_value: A function to get the value of a key in a mapping
     :param caught_errors: The errors to catch (default: Exception)
 
     It will
 
-    - split a path into keys if it is a string, using the specified seperator ``sep``
-
+    - split a path into keys (if sep is given, or if path is a string, will use '.' as a separator by default)
+    
+    - if key_transformer is given, apply to each key
+    
     - consider string keys that are numeric as ints (convenient for lists)
 
     - get items also as attributes (attributes are checked for first for string keys)
@@ -371,19 +468,30 @@ def path_get(
     ``path_get.return_none_on_error``, and ``path_get.return_empty_tuple_on_error``.
 
     """
-    if isinstance(path, str) and sep is not None:
-        path_to_keys = lambda x: x.split(sep)
+    if sep is None:
+        if isinstance(path, str):
+            sep = '.'
+        else:
+            sep = lambda x: x
+
+    if isinstance(sep, str):
+        sep_string = sep
+        sep = lambda path: path.split(sep_string)
     else:
-        path_to_keys = lambda x: x
+        assert callable(sep), f"sep should be a separator string, or callable: {sep=}"
+
+    # Transform the path_to_keys further by applying key_transformer to each individual 
+    # key that path_to_keys (should) give(s) you
     if key_transformer is not None:
-        _path_to_keys = path_to_keys
-        path_to_keys = lambda path: map(key_transformer, _path_to_keys(path))
+        # apply key_transformer to each key that sep(path) gives you
+        _sep = sep
+        sep = lambda path: map(key_transformer, _sep(path))
 
     return _path_get(
         obj,
         path,
         on_error=on_error,
-        path_to_keys=path_to_keys,
+        path_to_keys=sep,
         get_value=get_value,
         caught_errors=caught_errors,
     )
@@ -394,8 +502,9 @@ path_get.separate_keys_with_separator = separate_keys_with_separator
 path_get.get_attr_or_item = get_attr_or_item
 path_get.get_item = getitem
 path_get.get_attr = getattr
+path_get.keys_and_indices_path = keys_and_indices_path
 
-
+# TODO: Make a transition plan for inversion of (obj, paths) order (not aligned with path_get!!)
 @add_as_attribute_of(path_get)
 def paths_getter(
     paths,
@@ -403,7 +512,7 @@ def paths_getter(
     *,
     egress=dict,
     on_error: OnErrorType = raise_on_error,
-    sep=".",
+    sep: Optional[Union[str, Callable]] = None,
     key_transformer=None,
     get_value: Callable = get_attr_or_item,
     caught_errors=(Exception,),
@@ -413,6 +522,9 @@ def paths_getter(
     This is the "fan-out" version of ``path_get``, specifically designed to
     get multiple paths, returning the (path, value) pairs in a dict (by default),
     or via any pairs aggregator (``egress``) function.
+
+    Note: For reasons who's clarity is burried in historical legacy, the order of 
+    obj and path are the opposite of path_get. 
 
     :param paths: The paths to get
     :param obj: The object to get the paths from

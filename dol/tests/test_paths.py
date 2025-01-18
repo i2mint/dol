@@ -27,17 +27,22 @@ def test_path_get():
     # with a list.
     path_get({"a": [7, [0, 1, 2, 3, "c"]]}, "a.1.4") == "c"
 
-    # Now, if we happen to use an integer key in a mapping, they'll be a problem though:
+    # Using an integer key in a mapping, is also not a problem:
+    path_get({"a": [7, {4: "c"}]}, "a.1.4")
+
+    # If you specify an integer key (here, 4) and your mapping (here {"4": "c"}) 
+    # doesn't have one, on the other hand, you'll get a KeyError
     with pytest.raises(KeyError):
-        path_get({"a": [7, {4: "c"}]}, "a.1.4")
-    # If you want to allow for integer keys in mappings as well as in lists, and still
-    # maintain the "first try a key as attribute" behavior, you can use the
+        path_get({"a": [7, {"4": "c"}]}, ("a", 1, 4))
+
+    # To get out of such situations, you can either specify a different (functional)
+    # `sep` argument, or specify a different `get_value` function. Here we use 
     # path_get.chain_of_getters function to create a getter that tries a sequence of
     # getters, in order, until one succeeds.
     getter = path_get.chain_of_getters(
         [getattr, lambda obj, k: obj[k], lambda obj, k: obj[int(k)]]
     )
-    path_get({"a": [7, {4: "c"}]}, "a.1.4", get_value=getter)
+    path_get({"a": [7, {4: "c"}]}, ("a", 1, "4"), get_value=getter)
 
 
 def test_string_template_template_construction():
