@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.3.5 documentation</title>
+  <title>dol.paths &mdash; dol 0.3.6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=ba50482b"></script>
+      <script src="../../_static/documentation_options.js?v=8da8c241"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -95,6 +95,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.flattened_dict_items"><code class="docutils literal notranslate"><span class="pre">flattened_dict_items()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.get_attr_or_item"><code class="docutils literal notranslate"><span class="pre">get_attr_or_item()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.handle_prefixes"><code class="docutils literal notranslate"><span class="pre">handle_prefixes()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.paths.keys_and_indices_path"><code class="docutils literal notranslate"><span class="pre">keys_and_indices_path()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.leaf_paths"><code class="docutils literal notranslate"><span class="pre">leaf_paths()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.mk_relative_path_store"><code class="docutils literal notranslate"><span class="pre">mk_relative_path_store()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.path_edit"><code class="docutils literal notranslate"><span class="pre">path_edit()</span></code></a></li>
@@ -817,6 +818,46 @@ a key and returns a new path.</p></li>
 <span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">get_attr_or_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#get_attr_or_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.get_attr_or_item" title="Link to this definition"></a></dt>
 <dd><p>If <code class="docutils literal notranslate"><span class="pre">k</span></code> is a string, tries to get <code class="docutils literal notranslate"><span class="pre">k</span></code> as an attribute of <code class="docutils literal notranslate"><span class="pre">obj</span></code> first,
 and if that fails, gets it as <code class="docutils literal notranslate"><span class="pre">obj[k]</span></code></p>
+<p>WARNING: The hardcoded priority choices of this function regarding when to try
+k as an item, index, or attribute, don’t apply to every case, so you may want to
+use an explicit value getter to be more robust!</p>
+<p># &gt;&gt;&gt; d = {‘a’: [1, {‘items’: 2, ‘3’: 33, 3: 42}]}
+&gt;&gt;&gt; get_attr_or_item({‘items’: 2}, ‘items’)
+2</p>
+<p>But if “items” is not there as a key of the object, the attribute is found:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_attr_or_item</span><span class="p">({</span><span class="s1">&#39;not_items&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s1">&#39;items&#39;</span><span class="p">)</span>  
+<span class="go">&lt;built-in method items of dict object...&gt;</span>
+</pre></div>
+</div>
+<p>Both integers and string integers will work to get an item if obj is not a Mapping.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_attr_or_item</span><span class="p">([</span><span class="mi">7</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_attr_or_item</span><span class="p">([</span><span class="mi">7</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="s1">&#39;2&#39;</span><span class="p">)</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>If you’re dealling with a Mapping, you can get both integer and string keys, and
+if you have both types in your Mapping, you’ll get the right one!</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_attr_or_item</span><span class="p">({</span><span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;numerical key&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">:</span> <span class="s1">&#39;string key&#39;</span><span class="p">},</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">&#39;numerical key&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_attr_or_item</span><span class="p">({</span><span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;numerical key&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">:</span> <span class="s1">&#39;string key&#39;</span><span class="p">},</span> <span class="s1">&#39;2&#39;</span><span class="p">)</span>
+<span class="go">&#39;string key&#39;</span>
+</pre></div>
+</div>
+<p>If you don’t have the numerical version, the string version will still find your
+numerical key.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_attr_or_item</span><span class="p">({</span><span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;numerical key&#39;</span><span class="p">},</span> <span class="s1">&#39;2&#39;</span><span class="p">)</span>
+<span class="go">&#39;numerical key&#39;</span>
+</pre></div>
+</div>
+<p>The opposite is not true though: If you ask for an integer key, it will not find
+a string version of it.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_attr_or_item</span><span class="p">({</span><span class="s1">&#39;2&#39;</span><span class="p">:</span> <span class="s1">&#39;string key&#39;</span><span class="p">},</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># +IGNORE_EXCEPTION_DETAIL</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">KeyError</span>: <span class="n">2</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -848,6 +889,34 @@ is a type (not instance)</p></li>
 <span class="go">{&#39;every/thing&#39;: 42, &#39;this/too&#39;: 0, &#39;foo&#39;: &#39;bar&#39;}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">dd</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>  <span class="c1"># but see where the underlying store actually wrote &#39;bar&#39;:</span>
 <span class="go">{&#39;/ROOT/of/every/thing&#39;: 42, &#39;/ROOT/of/this/too&#39;: 0, &#39;/ROOT/of/foo&#39;: &#39;bar&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.paths.keys_and_indices_path">
+<span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">keys_and_indices_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str_path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'\\[(\\d+)\\]'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#keys_and_indices_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.keys_and_indices_path" title="Link to this definition"></a></dt>
+<dd><p>Transforms a string path separated by a specified separator into a tuple
+of keys and indices. Bracketed indices are extracted as integers.</p>
+<p>This function is meant to be used in as the key_transformer argument of path_get etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The input path string, e.g., “a21-59c.message[2].user”.</p></li>
+<li><p><strong>sep</strong> (<em>str</em>) – The separator used to split the path, default is ‘.’.</p></li>
+<li><p><strong>index_pattern</strong> (<em>str</em>) – The regular expression pattern to match bracketed indices</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple representation of the path, e.g., (“a21-59c”, “message”, 2, “user”).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">keys_and_indices_path</span><span class="p">(</span><span class="s2">&quot;a21-59c.message[2].user&quot;</span><span class="p">)</span>
+<span class="go">(&#39;a21-59c&#39;, &#39;message&#39;, 2, &#39;user&#39;)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1036,7 +1105,7 @@ builtin filter function.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.paths.path_get">
-<span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">path_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">obj:</span> <span class="pre">~typing.Any,</span> <span class="pre">path,</span> <span class="pre">on_error:</span> <span class="pre">~typing.Callable[[dict],</span> <span class="pre">~typing.Any]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">raise_on_error&gt;,</span> <span class="pre">*,</span> <span class="pre">sep='.',</span> <span class="pre">key_transformer=None,</span> <span class="pre">get_value:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">get_attr_or_item&gt;,</span> <span class="pre">caught_errors=(&lt;class</span> <span class="pre">'Exception'&gt;,)</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#path_get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.path_get" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">path_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">obj:</span> <span class="pre">~typing.Any,</span> <span class="pre">path,</span> <span class="pre">on_error:</span> <span class="pre">~typing.Callable[[dict],</span> <span class="pre">~typing.Any]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">raise_on_error&gt;,</span> <span class="pre">*,</span> <span class="pre">sep:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">key_transformer=None,</span> <span class="pre">get_value:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">get_attr_or_item&gt;,</span> <span class="pre">caught_errors=(&lt;class</span> <span class="pre">'Exception'&gt;,)</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#path_get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.path_get" title="Link to this definition"></a></dt>
 <dd><p>Get elements of a mapping through a path to be called recursively.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1044,7 +1113,9 @@ builtin filter function.</p>
 <li><p><strong>obj</strong> – The object to get the path from</p></li>
 <li><p><strong>path</strong> – The path to get</p></li>
 <li><p><strong>on_error</strong> – The error handler to use (default: raise_on_error)</p></li>
-<li><p><strong>sep</strong> – The separator to use if the path is a string</p></li>
+<li><p><strong>sep</strong> – Determines a path is transforms into a tuple of keys.
+If it’s a string, <code class="docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">path:</span> <span class="pre">path.split(sep)</span></code> is used.
+If not, it should be a function which takes in a path object and returns an iterable of keys.</p></li>
 <li><p><strong>key_transformer</strong> – A function to transform the keys of the path</p></li>
 <li><p><strong>get_value</strong> – A function to get the value of a key in a mapping</p></li>
 <li><p><strong>caught_errors</strong> – The errors to catch (default: Exception)</p></li>
@@ -1053,7 +1124,8 @@ builtin filter function.</p>
 </dl>
 <p>It will</p>
 <ul class="simple">
-<li><p>split a path into keys if it is a string, using the specified seperator <code class="docutils literal notranslate"><span class="pre">sep</span></code></p></li>
+<li><p>split a path into keys (if sep is given, or if path is a string, will use ‘.’ as a separator by default)</p></li>
+<li><p>if key_transformer is given, apply to each key</p></li>
 <li><p>consider string keys that are numeric as ints (convenient for lists)</p></li>
 <li><p>get items also as attributes (attributes are checked for first for string keys)</p></li>
 <li><p>catch all exceptions (that are subclasses of <code class="docutils literal notranslate"><span class="pre">Exception</span></code>)</p></li>
@@ -1155,11 +1227,13 @@ create new mappings when a key is missing. The default is <code class="docutils 
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.paths.paths_getter">
-<span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">paths_getter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">paths,</span> <span class="pre">obj=None,</span> <span class="pre">*,</span> <span class="pre">egress=&lt;class</span> <span class="pre">'dict'&gt;,</span> <span class="pre">on_error:</span> <span class="pre">~typing.Callable[[dict],</span> <span class="pre">~typing.Any]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">raise_on_error&gt;,</span> <span class="pre">sep='.',</span> <span class="pre">key_transformer=None,</span> <span class="pre">get_value:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">get_attr_or_item&gt;,</span> <span class="pre">caught_errors=(&lt;class</span> <span class="pre">'Exception'&gt;,)</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#paths_getter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.paths_getter" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">paths_getter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">paths,</span> <span class="pre">obj=None,</span> <span class="pre">*,</span> <span class="pre">egress=&lt;class</span> <span class="pre">'dict'&gt;,</span> <span class="pre">on_error:</span> <span class="pre">~typing.Callable[[dict],</span> <span class="pre">~typing.Any]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">raise_on_error&gt;,</span> <span class="pre">sep:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">key_transformer=None,</span> <span class="pre">get_value:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">get_attr_or_item&gt;,</span> <span class="pre">caught_errors=(&lt;class</span> <span class="pre">'Exception'&gt;,)</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#paths_getter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.paths_getter" title="Link to this definition"></a></dt>
 <dd><p>Returns (path, values) pairs of the given paths in the given object.
 This is the “fan-out” version of <code class="docutils literal notranslate"><span class="pre">path_get</span></code>, specifically designed to
 get multiple paths, returning the (path, value) pairs in a dict (by default),
 or via any pairs aggregator (<code class="docutils literal notranslate"><span class="pre">egress</span></code>) function.</p>
+<p>Note: For reasons who’s clarity is burried in historical legacy, the order of
+obj and path are the opposite of path_get.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
