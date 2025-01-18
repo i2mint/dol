@@ -30,13 +30,13 @@ def test_path_get():
     # Using an integer key in a mapping, is also not a problem:
     path_get({"a": [7, {4: "c"}]}, "a.1.4")
 
-    # If you specify an integer key (here, 4) and your mapping (here {"4": "c"}) 
+    # If you specify an integer key (here, 4) and your mapping (here {"4": "c"})
     # doesn't have one, on the other hand, you'll get a KeyError
     with pytest.raises(KeyError):
         path_get({"a": [7, {"4": "c"}]}, ("a", 1, 4))
 
     # To get out of such situations, you can either specify a different (functional)
-    # `sep` argument, or specify a different `get_value` function. Here we use 
+    # `sep` argument, or specify a different `get_value` function. Here we use
     # path_get.chain_of_getters function to create a getter that tries a sequence of
     # getters, in order, until one succeeds.
     getter = path_get.chain_of_getters(

@@ -301,9 +301,9 @@ def get_attr_or_item(obj, k):
     If ``k`` is a string, tries to get ``k`` as an attribute of ``obj`` first,
     and if that fails, gets it as ``obj[k]``
 
-    WARNING: The hardcoded priority choices of this function regarding when to try 
+    WARNING: The hardcoded priority choices of this function regarding when to try
     k as an item, index, or attribute, don't apply to every case, so you may want to
-    use an explicit value getter to be more robust! 
+    use an explicit value getter to be more robust!
 
     # >>> d = {'a': [1, {'items': 2, '3': 33, 3: 42}]}
     >>> get_attr_or_item({'items': 2}, 'items')
@@ -313,7 +313,7 @@ def get_attr_or_item(obj, k):
 
     >>> get_attr_or_item({'not_items': 2}, 'items')  # doctest: +ELLIPSIS
     <built-in method items of dict object...>
-    
+
     Both integers and string integers will work to get an item if obj is not a Mapping.
 
     >>> get_attr_or_item([7, 21, 42], 2)
@@ -321,7 +321,7 @@ def get_attr_or_item(obj, k):
     >>> get_attr_or_item([7, 21, 42], '2')
     42
 
-    If you're dealling with a Mapping, you can get both integer and string keys, and 
+    If you're dealling with a Mapping, you can get both integer and string keys, and
     if you have both types in your Mapping, you'll get the right one!
 
     >>> get_attr_or_item({2: 'numerical key', '2': 'string key'}, 2)
@@ -329,14 +329,14 @@ def get_attr_or_item(obj, k):
     >>> get_attr_or_item({2: 'numerical key', '2': 'string key'}, '2')
     'string key'
 
-    If you don't have the numerical version, the string version will still find your 
-    numerical key. 
+    If you don't have the numerical version, the string version will still find your
+    numerical key.
 
     >>> get_attr_or_item({2: 'numerical key'}, '2')
     'numerical key'
 
-    The opposite is not true though: If you ask for an integer key, it will not find 
-    a string version of it. 
+    The opposite is not true though: If you ask for an integer key, it will not find
+    a string version of it.
 
     >>> get_attr_or_item({'2': 'string key'}, 2) # +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
@@ -346,7 +346,7 @@ def get_attr_or_item(obj, k):
     """
     if isinstance(k, str):
         if str.isnumeric(k) and not isinstance(obj, Mapping):
-            # if k is the string of an integer and obj is not a Mapping, 
+            # if k is the string of an integer and obj is not a Mapping,
             # consider k to be int index
             k = int(k)
         try:
@@ -358,12 +358,12 @@ def get_attr_or_item(obj, k):
                 else:
                     raise
             else:
-                return getattr(obj, k)  # try it as an attribute 
+                return getattr(obj, k)  # try it as an attribute
     else:
         return obj[k]
 
 
-def keys_and_indices_path(str_path, *, sep='.', index_pattern=r'\[(\d+)\]'):
+def keys_and_indices_path(str_path, *, sep=".", index_pattern=r"\[(\d+)\]"):
     """
     Transforms a string path separated by a specified separator into a tuple
     of keys and indices. Bracketed indices are extracted as integers.
@@ -433,9 +433,9 @@ def path_get(
     It will
 
     - split a path into keys (if sep is given, or if path is a string, will use '.' as a separator by default)
-    
+
     - if key_transformer is given, apply to each key
-    
+
     - consider string keys that are numeric as ints (convenient for lists)
 
     - get items also as attributes (attributes are checked for first for string keys)
@@ -470,7 +470,7 @@ def path_get(
     """
     if sep is None:
         if isinstance(path, str):
-            sep = '.'
+            sep = "."
         else:
             sep = lambda x: x
 
@@ -480,7 +480,7 @@ def path_get(
     else:
         assert callable(sep), f"sep should be a separator string, or callable: {sep=}"
 
-    # Transform the path_to_keys further by applying key_transformer to each individual 
+    # Transform the path_to_keys further by applying key_transformer to each individual
     # key that path_to_keys (should) give(s) you
     if key_transformer is not None:
         # apply key_transformer to each key that sep(path) gives you
@@ -504,6 +504,7 @@ path_get.get_item = getitem
 path_get.get_attr = getattr
 path_get.keys_and_indices_path = keys_and_indices_path
 
+
 # TODO: Make a transition plan for inversion of (obj, paths) order (not aligned with path_get!!)
 @add_as_attribute_of(path_get)
 def paths_getter(
@@ -523,8 +524,8 @@ def paths_getter(
     get multiple paths, returning the (path, value) pairs in a dict (by default),
     or via any pairs aggregator (``egress``) function.
 
-    Note: For reasons who's clarity is burried in historical legacy, the order of 
-    obj and path are the opposite of path_get. 
+    Note: For reasons who's clarity is burried in historical legacy, the order of
+    obj and path are the opposite of path_get.
 
     :param paths: The paths to get
     :param obj: The object to get the paths from
