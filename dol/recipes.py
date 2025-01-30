@@ -1,7 +1,4 @@
-"""Recipes using dol
-
-
-"""
+"""Recipes using dol"""
 
 __all__ = ["search_paths"]
 
