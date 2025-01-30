@@ -275,7 +275,7 @@ def validate_key_and_raise_key_error_on_exception(func):
         try:
             return func(self, k, *args, **kwargs)
         except Exception as e:
-            raise KeyError(e)
+            raise KeyError(str(e))
 
     return wrapped_method
 
