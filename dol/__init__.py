@@ -72,10 +72,11 @@ from dol.zipfiledol import (
     to_zip_file,
     ZipReader,
     ZipInfoReader,
-    FilesOfZip,
+    FilesOfZip,  # read-only access to files in a zip archive
     FileStreamsOfZip,
     FlatZipFilesReader,
-    ZipStore,
+    ZipFiles,  # read-write-delete access to files in a zip archive
+    ZipStore,  # back-compatible alias of ZipFiles
     ZipFileStreamsReader,
     remove_mac_junk_from_zip,
     tar_compress,

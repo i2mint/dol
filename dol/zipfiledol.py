@@ -43,6 +43,7 @@ __all__ = [
     "OverwriteNotAllowed",
     "EmptyZipError",
     "ZipStore",
+    "ZipFiles",
     "remove_some_entries_from_zip",
     "remove_mac_junk_from_zip",
 ]
@@ -177,7 +178,7 @@ def to_zip_file(
     :param encoding: In case the input is str, the encoding to use to convert to bytes
 
     """
-    z = ZipStore(
+    z = ZipFiles(
         zip_filepath,
         compression=compression,
         allow_overwrites=allow_overwrites,
@@ -203,7 +204,7 @@ def file_or_folder_to_zip_file(
     if zip_filepath is None:
         zip_filepath = os.path.basename(src_path) + ".zip"
 
-    z = ZipStore(
+    z = ZipFiles(
         zip_filepath,
         compression=compression,
         allow_overwrites=allow_overwrites,
@@ -659,7 +660,7 @@ class _EmptyZipReader(KvReader):
 
     def __getitem__(self, k):
         raise EmptyZipError(
-            "The store is empty: ZipStore(zip_filepath={self.zip_filepath})"
+            "The store is empty: ZipFiles(zip_filepath={self.zip_filepath})"
         )
 
     def open(self, *args, **kwargs):
@@ -684,28 +685,28 @@ class _EmptyZipReader(KvReader):
         # return OpenedNotExistingFile()
 
 
-# TODO: Revise ZipReader and ZipFilesReader architecture and make ZipStore be a subclass of
+# TODO: Revise ZipReader and ZipFilesReader architecture and make ZipFiles be a subclass of
 #  Reader if poss
 # TODO: What if I just want to zip a (single) file. What does dol offer for that?
 # TODO: How about set_obj (in misc.py)? Make it recognize the .zip extension and subextension (
 #  e.g. .txt.zip) serialize
-class ZipStore(KvPersister):
+class ZipFiles(KvPersister):
     """Zip read and writing.
     When you want to read zips, there's the `FilesOfZip`, `ZipReader`, or `ZipFilesReader` we
     know and love.
 
-    Sometimes though, you want to write to zips too. For this, we have `ZipStore`.
+    Sometimes though, you want to write to zips too. For this, we have `ZipFiles`.
 
-    Since ZipStore can write to a zip, it's read functionality is not going to assume static data,
+    Since ZipFiles can write to a zip, it's read functionality is not going to assume static data,
     and cache things, as your favorite zip readers did.
     This, and the acrobatics need to disguise the weird zipfile into something more... key-value
     natural,
     makes for a not so efficient store, out of the box.
 
     I advise using one of the zip readers if all you need to do is read, or subclassing or
-     wrapping ZipStore with caching layers if it is appropriate to you.
+     wrapping ZipFiles with caching layers if it is appropriate to you.
 
-    Let's verify that a ZipStore can indeed write data. First, we'll set things up!
+    Let's verify that a ZipFiles can indeed write data. First, we'll set things up!
 
     >>> from tempfile import gettempdir
     >>> import os
@@ -720,7 +721,7 @@ class ZipStore(KvPersister):
 
     Okay, test_zipfile doesn't exist (but will soon...)
 
-    >>> z = ZipStore(test_zipfile)
+    >>> z = ZipFiles(test_zipfile)
 
     See that the file still doesn't exist (it will only be created when we start writing)
 
@@ -854,7 +855,7 @@ class ZipStore(KvPersister):
             os.system(f"zip -d {self.zip_filepath} {k}")
         except Exception as e:
             raise KeyError(f"{e.__class__}: {e.args}")
-        # raise NotImplementedError("zipfile, the backend of ZipStore, doesn't support deletion,
+        # raise NotImplementedError("zipfile, the backend of ZipFiles, doesn't support deletion,
         # so neither will we.")
 
     def open(self):
@@ -873,7 +874,7 @@ class ZipStore(KvPersister):
         self.close()
         return False
 
-
+ZipStore = ZipFiles  # back-compatibility alias
 PathString = str
 PathFilterFunc = Callable[[PathString], bool]
 
@@ -893,11 +894,11 @@ def remove_some_entries_from_zip(
 ):
     """Removes specific keys from a zip file.
 
-    :param zip_source: zip filepath, bytes, or whatever a ``ZipStore`` can take
+    :param zip_source: zip filepath, bytes, or whatever a ``ZipFiles`` can take
     :param keys_to_be_removed: An iterable of keys or a boolean filter function
     :param ask_before_before_deleting: True (default) if the user should be
         presented with the keys first, and asked permission to delete.
-    :return: The ZipStore (in case you want to do further work with it)
+    :return: The ZipFiles (in case you want to do further work with it)
 
     Tip: If you want to delete with no questions asked, use currying:
 
@@ -910,7 +911,7 @@ def remove_some_entries_from_zip(
     """
     z = zip_source
     if not isinstance(z, Mapping):
-        z = ZipStore(z)
+        z = ZipFiles(z)
     if not isinstance(keys_to_be_removed, Callable):
         if isinstance(keys_to_be_removed, str):
             keys_to_be_removed = [keys_to_be_removed]
