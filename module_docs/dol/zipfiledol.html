@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.zipfiledol &mdash; dol 0.3.7 documentation</title>
+  <title>dol.zipfiledol &mdash; dol 0.3.8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=29d04658"></script>
+      <script src="../../_static/documentation_options.js?v=c1cae59a"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -89,6 +89,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.FlatZipFilesReader"><code class="docutils literal notranslate"><span class="pre">FlatZipFilesReader</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.OverwriteNotAllowed"><code class="docutils literal notranslate"><span class="pre">OverwriteNotAllowed</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.ZipFileStreamsReader"><code class="docutils literal notranslate"><span class="pre">ZipFileStreamsReader</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.ZipFiles"><code class="docutils literal notranslate"><span class="pre">ZipFiles</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.ZipFilesReader"><code class="docutils literal notranslate"><span class="pre">ZipFilesReader</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.ZipFilesReaderAndBytesWriter"><code class="docutils literal notranslate"><span class="pre">ZipFilesReaderAndBytesWriter</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.ZipInfoReader"><code class="docutils literal notranslate"><span class="pre">ZipInfoReader</span></code></a></li>
@@ -199,6 +200,59 @@ merged”.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="dol.zipfiledol.ZipFiles">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.zipfiledol.</span></span><span class="sig-name descname"><span class="pre">ZipFiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zip_filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_overwrites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/zipfiledol.html#ZipFiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.zipfiledol.ZipFiles" title="Link to this definition"></a></dt>
+<dd><p>Zip read and writing.
+When you want to read zips, there’s the <cite>FilesOfZip</cite>, <cite>ZipReader</cite>, or <cite>ZipFilesReader</cite> we
+know and love.</p>
+<p>Sometimes though, you want to write to zips too. For this, we have <cite>ZipFiles</cite>.</p>
+<p>Since ZipFiles can write to a zip, it’s read functionality is not going to assume static data,
+and cache things, as your favorite zip readers did.
+This, and the acrobatics need to disguise the weird zipfile into something more… key-value
+natural,
+makes for a not so efficient store, out of the box.</p>
+<dl class="simple">
+<dt>I advise using one of the zip readers if all you need to do is read, or subclassing or</dt><dd><p>wrapping ZipFiles with caching layers if it is appropriate to you.</p>
+</dd>
+</dl>
+<p>Let’s verify that a ZipFiles can indeed write data. First, we’ll set things up!</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tempfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">gettempdir</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rootdir</span> <span class="o">=</span> <span class="n">gettempdir</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># preparation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_zipfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="s1">&#39;zipstore_test_file.zip&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Okay, test_zipfile doesn’t exist (but will soon…)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">z</span> <span class="o">=</span> <span class="n">ZipFiles</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See that the file still doesn’t exist (it will only be created when we start writing)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># z &quot;is&quot; empty (which makes sense?)</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+<p>Now let’s write something interesting (notice, it has to be in bytes):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># now we have something in z</span>
+<span class="go">[&#39;foo&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span>  <span class="c1"># and that thing is what we put there</span>
+<span class="go">b&#39;bar&#39;</span>
+</pre></div>
+</div>
+<p>And indeed we have a zip file now:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="dol.zipfiledol.ZipFilesReader">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.zipfiledol.</span></span><span class="sig-name descname"><span class="pre">ZipFilesReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath='.+\\.zip'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern_for_field=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zip_reader=&lt;class</span> <span class="pre">'dol.zipfiledol.ZipReader'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**zip_reader_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/zipfiledol.html#ZipFilesReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.zipfiledol.ZipFilesReader" title="Link to this definition"></a></dt>
 <dd><p>A local file reader whose keys are the zip filepaths of the rootdir and values are
@@ -291,57 +345,10 @@ to get a filtered view of the zips contents. In most cases, this should do the j
 </div>
 </dd></dl>
 
-<dl class="py class">
+<dl class="py attribute">
 <dt class="sig sig-object py" id="dol.zipfiledol.ZipStore">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.zipfiledol.</span></span><span class="sig-name descname"><span class="pre">ZipStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zip_filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_overwrites</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/zipfiledol.html#ZipStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.zipfiledol.ZipStore" title="Link to this definition"></a></dt>
-<dd><p>Zip read and writing.
-When you want to read zips, there’s the <cite>FilesOfZip</cite>, <cite>ZipReader</cite>, or <cite>ZipFilesReader</cite> we
-know and love.</p>
-<p>Sometimes though, you want to write to zips too. For this, we have <cite>ZipStore</cite>.</p>
-<p>Since ZipStore can write to a zip, it’s read functionality is not going to assume static data,
-and cache things, as your favorite zip readers did.
-This, and the acrobatics need to disguise the weird zipfile into something more… key-value
-natural,
-makes for a not so efficient store, out of the box.</p>
-<dl class="simple">
-<dt>I advise using one of the zip readers if all you need to do is read, or subclassing or</dt><dd><p>wrapping ZipStore with caching layers if it is appropriate to you.</p>
-</dd>
-</dl>
-<p>Let’s verify that a ZipStore can indeed write data. First, we’ll set things up!</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tempfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">gettempdir</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">rootdir</span> <span class="o">=</span> <span class="n">gettempdir</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># preparation</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">test_zipfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="s1">&#39;zipstore_test_file.zip&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Okay, test_zipfile doesn’t exist (but will soon…)</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">z</span> <span class="o">=</span> <span class="n">ZipStore</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>See that the file still doesn’t exist (it will only be created when we start writing)</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># z &quot;is&quot; empty (which makes sense?)</span>
-<span class="go">[]</span>
-</pre></div>
-</div>
-<p>Now let’s write something interesting (notice, it has to be in bytes):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;bar&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># now we have something in z</span>
-<span class="go">[&#39;foo&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span>  <span class="c1"># and that thing is what we put there</span>
-<span class="go">b&#39;bar&#39;</span>
-</pre></div>
-</div>
-<p>And indeed we have a zip file now:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
-</pre></div>
-</div>
+<span class="sig-prename descclassname"><span class="pre">dol.zipfiledol.</span></span><span class="sig-name descname"><span class="pre">ZipStore</span></span><a class="headerlink" href="#dol.zipfiledol.ZipStore" title="Link to this definition"></a></dt>
+<dd><p>alias of <a class="reference internal" href="#dol.zipfiledol.ZipFiles" title="dol.zipfiledol.ZipFiles"><code class="xref py py-class docutils literal notranslate"><span class="pre">ZipFiles</span></code></a></p>
 </dd></dl>
 
 <dl class="py function">
@@ -397,14 +404,14 @@ will be used, so one should make <cite>zip_pair_path_preproc</cite> act accordin
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>zip_source</strong> – zip filepath, bytes, or whatever a <code class="docutils literal notranslate"><span class="pre">ZipStore</span></code> can take</p></li>
+<li><p><strong>zip_source</strong> – zip filepath, bytes, or whatever a <code class="docutils literal notranslate"><span class="pre">ZipFiles</span></code> can take</p></li>
 <li><p><strong>keys_to_be_removed</strong> – An iterable of keys or a boolean filter function</p></li>
 <li><p><strong>ask_before_before_deleting</strong> – True (default) if the user should be
 presented with the keys first, and asked permission to delete.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The ZipStore (in case you want to do further work with it)</p>
+<dd class="field-even"><p>The ZipFiles (in case you want to do further work with it)</p>
 </dd>
 </dl>
 <p>Tip: If you want to delete with no questions asked, use currying:</p>

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.zipfiledol &mdash; dol 0.3.7 documentation</title>
+  <title>dol.zipfiledol &mdash; dol 0.3.8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=29d04658"></script>
+      <script src="../../_static/documentation_options.js?v=c1cae59a"></script>
       <script src="../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -154,6 +154,7 @@
     <span class="s2">&quot;OverwriteNotAllowed&quot;</span><span class="p">,</span>
     <span class="s2">&quot;EmptyZipError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ZipStore&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ZipFiles&quot;</span><span class="p">,</span>
     <span class="s2">&quot;remove_some_entries_from_zip&quot;</span><span class="p">,</span>
     <span class="s2">&quot;remove_mac_junk_from_zip&quot;</span><span class="p">,</span>
 <span class="p">]</span>
@@ -296,7 +297,7 @@
 <span class="sd">    :param encoding: In case the input is str, the encoding to use to convert to bytes</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">ZipStore</span><span class="p">(</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">ZipFiles</span><span class="p">(</span>
         <span class="n">zip_filepath</span><span class="p">,</span>
         <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">,</span>
         <span class="n">allow_overwrites</span><span class="o">=</span><span class="n">allow_overwrites</span><span class="p">,</span>
@@ -325,7 +326,7 @@
     <span class="k">if</span> <span class="n">zip_filepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">zip_filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.zip&quot;</span>
 
-    <span class="n">z</span> <span class="o">=</span> <span class="n">ZipStore</span><span class="p">(</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">ZipFiles</span><span class="p">(</span>
         <span class="n">zip_filepath</span><span class="p">,</span>
         <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">,</span>
         <span class="n">allow_overwrites</span><span class="o">=</span><span class="n">allow_overwrites</span><span class="p">,</span>
@@ -815,7 +816,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">EmptyZipError</span><span class="p">(</span>
-            <span class="s2">&quot;The store is empty: ZipStore(zip_filepath=</span><span class="si">{self.zip_filepath}</span><span class="s2">)&quot;</span>
+            <span class="s2">&quot;The store is empty: ZipFiles(zip_filepath=</span><span class="si">{self.zip_filepath}</span><span class="s2">)&quot;</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -840,30 +841,30 @@
         <span class="c1"># return OpenedNotExistingFile()</span>
 
 
-<span class="c1"># TODO: Revise ZipReader and ZipFilesReader architecture and make ZipStore be a subclass of</span>
+<span class="c1"># TODO: Revise ZipReader and ZipFilesReader architecture and make ZipFiles be a subclass of</span>
 <span class="c1">#  Reader if poss</span>
 <span class="c1"># TODO: What if I just want to zip a (single) file. What does dol offer for that?</span>
 <span class="c1"># TODO: How about set_obj (in misc.py)? Make it recognize the .zip extension and subextension (</span>
 <span class="c1">#  e.g. .txt.zip) serialize</span>
-<div class="viewcode-block" id="ZipStore">
-<a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.ZipStore">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ZipStore</span><span class="p">(</span><span class="n">KvPersister</span><span class="p">):</span>
+<div class="viewcode-block" id="ZipFiles">
+<a class="viewcode-back" href="../../module_docs/dol/zipfiledol.html#dol.zipfiledol.ZipFiles">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ZipFiles</span><span class="p">(</span><span class="n">KvPersister</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Zip read and writing.</span>
 <span class="sd">    When you want to read zips, there&#39;s the `FilesOfZip`, `ZipReader`, or `ZipFilesReader` we</span>
 <span class="sd">    know and love.</span>
 
-<span class="sd">    Sometimes though, you want to write to zips too. For this, we have `ZipStore`.</span>
+<span class="sd">    Sometimes though, you want to write to zips too. For this, we have `ZipFiles`.</span>
 
-<span class="sd">    Since ZipStore can write to a zip, it&#39;s read functionality is not going to assume static data,</span>
+<span class="sd">    Since ZipFiles can write to a zip, it&#39;s read functionality is not going to assume static data,</span>
 <span class="sd">    and cache things, as your favorite zip readers did.</span>
 <span class="sd">    This, and the acrobatics need to disguise the weird zipfile into something more... key-value</span>
 <span class="sd">    natural,</span>
 <span class="sd">    makes for a not so efficient store, out of the box.</span>
 
 <span class="sd">    I advise using one of the zip readers if all you need to do is read, or subclassing or</span>
-<span class="sd">     wrapping ZipStore with caching layers if it is appropriate to you.</span>
+<span class="sd">     wrapping ZipFiles with caching layers if it is appropriate to you.</span>
 
-<span class="sd">    Let&#39;s verify that a ZipStore can indeed write data. First, we&#39;ll set things up!</span>
+<span class="sd">    Let&#39;s verify that a ZipFiles can indeed write data. First, we&#39;ll set things up!</span>
 
 <span class="sd">    &gt;&gt;&gt; from tempfile import gettempdir</span>
 <span class="sd">    &gt;&gt;&gt; import os</span>
@@ -878,7 +879,7 @@
 
 <span class="sd">    Okay, test_zipfile doesn&#39;t exist (but will soon...)</span>
 
-<span class="sd">    &gt;&gt;&gt; z = ZipStore(test_zipfile)</span>
+<span class="sd">    &gt;&gt;&gt; z = ZipFiles(test_zipfile)</span>
 
 <span class="sd">    See that the file still doesn&#39;t exist (it will only be created when we start writing)</span>
 
@@ -1012,7 +1013,7 @@
             <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;zip -d </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">zip_filepath</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="c1"># raise NotImplementedError(&quot;zipfile, the backend of ZipStore, doesn&#39;t support deletion,</span>
+        <span class="c1"># raise NotImplementedError(&quot;zipfile, the backend of ZipFiles, doesn&#39;t support deletion,</span>
         <span class="c1"># so neither will we.&quot;)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1032,7 +1033,7 @@
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
-
+<span class="n">ZipStore</span> <span class="o">=</span> <span class="n">ZipFiles</span>  <span class="c1"># back-compatibility alias</span>
 <span class="n">PathString</span> <span class="o">=</span> <span class="nb">str</span>
 <span class="n">PathFilterFunc</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PathString</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
 
@@ -1054,11 +1055,11 @@
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Removes specific keys from a zip file.</span>
 
-<span class="sd">    :param zip_source: zip filepath, bytes, or whatever a ``ZipStore`` can take</span>
+<span class="sd">    :param zip_source: zip filepath, bytes, or whatever a ``ZipFiles`` can take</span>
 <span class="sd">    :param keys_to_be_removed: An iterable of keys or a boolean filter function</span>
 <span class="sd">    :param ask_before_before_deleting: True (default) if the user should be</span>
 <span class="sd">        presented with the keys first, and asked permission to delete.</span>
-<span class="sd">    :return: The ZipStore (in case you want to do further work with it)</span>
+<span class="sd">    :return: The ZipFiles (in case you want to do further work with it)</span>
 
 <span class="sd">    Tip: If you want to delete with no questions asked, use currying:</span>
 
@@ -1071,7 +1072,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">z</span> <span class="o">=</span> <span class="n">zip_source</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">ZipStore</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">ZipFiles</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys_to_be_removed</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys_to_be_removed</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">keys_to_be_removed</span> <span class="o">=</span> <span class="p">[</span><span class="n">keys_to_be_removed</span><span class="p">]</span>
