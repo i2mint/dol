@@ -874,6 +874,7 @@ class ZipFiles(KvPersister):
         self.close()
         return False
 
+
 ZipStore = ZipFiles  # back-compatibility alias
 PathString = str
 PathFilterFunc = Callable[[PathString], bool]
