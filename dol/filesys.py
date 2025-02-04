@@ -625,9 +625,13 @@ class DirReader(DirCollection, KvReader):
         return DirReader(k)
 
 
+# TODO: This, with mk_dirs_if_missing, should replace uses of AutoMkDirsOnSetitemMixin and MakeMissingDirsStoreMixin
 def mk_dirs_if_missing_preset(
     self, k, v, *, max_dirs_to_make: Optional[int] = None, verbose=False
 ):
+    """
+    Preset function that will make the store create directories on write as needed.
+    """
     # TODO: I'm not thrilled in the way I'm doing this; find alternatives
     try:
         super(type(self), self).__setitem__(k, v)
@@ -675,7 +679,7 @@ def mk_dirs_if_missing(
 
 
 # DEPRECATED!!
-# This one really smells.
+# This one really smells. Replace uses with mk_dirs_if_missing
 class MakeMissingDirsStoreMixin:
     """Will make a local file store automatically create the directories needed to create a file.
     Should be placed before the concrete perisister in the mro but in such a manner so that it receives full paths.
