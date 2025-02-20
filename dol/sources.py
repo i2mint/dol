@@ -265,15 +265,19 @@ class FanoutReader(KvReader):
         return ChainMap(*self._stores.values())
 
     def __getitem__(self, k):
-        v = {
+        value_for_key_for_every_store = {
             store_key: store.get(k, self._default)
             for store_key, store in self._stores.items()
         }
-        if all(v == self._default for v in v.values()):
+        if all(v is self._default for v in value_for_key_for_every_store.values()):
             raise KeyError(k)
         if self._get_existing_values_only:
-            v = {k: v for k, v in v.items() if v != self._default}
-        return v
+            value_for_key_for_every_store = {
+                k: v
+                for k, v in value_for_key_for_every_store.items()
+                if v != self._default
+            }
+        return value_for_key_for_every_store
 
     def __iter__(self) -> Iterator:
         return iter(self._keys)
