@@ -3232,20 +3232,22 @@ class CachedInvertibleTrans:
     def egress(self, y):
         return self.egress_map[y]
 
+
 def assert_min_num_of_args(func: Callable, num_of_args: int):
     """Assert that a function can be a store method.
     That is, it should have a signature that takes the store as the first argument
     """
     try:
-        assert len(sig = Sig(func).parameters) >= assert_min_num_of_args, (
-            f"Function {func} doesn't have at least {num_of_args} arguments"
-        )
+        assert (
+            len(sig=Sig(func).parameters) >= assert_min_num_of_args
+        ), f"Function {func} doesn't have at least {num_of_args} arguments"
     except Exception as e:
         warn(
             f"Encountered error checking if {func} can be a store method. "
             "Will return True, to not disrupt process, but you may want to check on "
             f"this : {e}"
         )
+
 
 @store_decorator
 def add_missing_key_handling(store=None, *, missing_key_callback: Callable):
@@ -3275,9 +3277,9 @@ def add_missing_key_handling(store=None, *, missing_key_callback: Callable):
     >>> v = s['a/']
     >>> assert dict(v) == {'a/b': 1, 'a/c': 2}
     """
-    
+
     assert_min_num_of_args(missing_key_callback, 2)
-    
+
     @wraps(store, updated=())
     class StoreWithMissingKeyCallaback(store):
         pass
