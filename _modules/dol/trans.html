@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.3.10 documentation</title>
+  <title>dol.trans &mdash; dol 0.3.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9f76a604"></script>
+      <script src="../../_static/documentation_options.js?v=3b0e221d"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -3439,6 +3439,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">egress_map</span><span class="p">[</span><span class="n">y</span><span class="p">]</span></div>
 
 
+
 <div class="viewcode-block" id="assert_min_num_of_args">
 <a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.trans.assert_min_num_of_args">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">assert_min_num_of_args</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">num_of_args</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
@@ -3446,7 +3447,7 @@
 <span class="sd">    That is, it should have a signature that takes the store as the first argument</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sig</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">assert_min_num_of_args</span><span class="p">,</span> <span class="p">(</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">Sig</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">num_of_args</span><span class="p">,</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Function </span><span class="si">{</span><span class="n">func</span><span class="si">}</span><span class="s2"> doesn&#39;t have at least </span><span class="si">{</span><span class="n">num_of_args</span><span class="si">}</span><span class="s2"> arguments&quot;</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -3455,6 +3456,7 @@
             <span class="s2">&quot;Will return True, to not disrupt process, but you may want to check on &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;this : </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="add_missing_key_handling">
@@ -3487,9 +3489,9 @@
 <span class="sd">    &gt;&gt;&gt; v = s[&#39;a/&#39;]</span>
 <span class="sd">    &gt;&gt;&gt; assert dict(v) == {&#39;a/b&#39;: 1, &#39;a/c&#39;: 2}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="n">assert_min_num_of_args</span><span class="p">(</span><span class="n">missing_key_callback</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-    
+
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">updated</span><span class="o">=</span><span class="p">())</span>
     <span class="k">class</span><span class="w"> </span><span class="nc">StoreWithMissingKeyCallaback</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
         <span class="k">pass</span>
