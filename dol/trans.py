@@ -3238,9 +3238,9 @@ def assert_min_num_of_args(func: Callable, num_of_args: int):
     That is, it should have a signature that takes the store as the first argument
     """
     try:
-        assert len(Sig(func).parameters) >= num_of_args, (
-            f"Function {func} doesn't have at least {num_of_args} arguments"
-        )
+        assert (
+            len(Sig(func).parameters) >= num_of_args
+        ), f"Function {func} doesn't have at least {num_of_args} arguments"
     except Exception as e:
         warn(
             f"Encountered error checking if {func} can be a store method. "
