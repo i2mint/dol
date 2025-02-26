@@ -564,7 +564,9 @@ import json
 
 # TODO: Want to replace with use of ValueCodecs but need to resolve circular imports
 pickle_bytes_wrap = wrap_kvs(value_decoder=pickle.loads, value_encoder=pickle.dumps)
-json_bytes_wrap = wrap_kvs(value_decoder=json.loads, value_encoder=json.dumps)
+json_bytes_wrap = wrap_kvs(
+    value_decoder=json.loads, value_encoder=partial(json.dumps, indent=4)
+)
 
 
 # And two factories to make the above more configurable:
