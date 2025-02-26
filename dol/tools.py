@@ -836,7 +836,7 @@ def store_aggregate(
     ] = Latin1TextFiles,  # Factory function for the local store
 ) -> Any:
     r'''
-    Create an aggregate object of a store's content.
+    Create an aggregate object of a store's (a Mapping of strings) content
 
     The function is written to be able to aggregate the keys and/or values of a store,
     no matter their type, and concatenate them into an object of arbitrary type.
