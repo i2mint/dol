@@ -644,7 +644,10 @@ class Pipe:
         return named_funcs
 
     def __call__(self, *args, **kwargs):
-        out = self.first_func(*args, **kwargs)
+        try:
+            out = self.first_func(*args, **kwargs)
+        except Exception as e:
+            raise self._mk_pipe_call_error(e, 0, None, args, kwargs) from e
         try:  # first call has no exeption handling, but subsequent calls do
             for i, func in enumerate(self.other_funcs, 1):
                 out = func(out)
