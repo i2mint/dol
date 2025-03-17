@@ -70,6 +70,21 @@ class CachedProperty:
         self.key = key if key else lambda name: name
         self.allow_none_keys = allow_none_keys
 
+        # Check if the key function takes an instance parameter - it should have a specific signature
+        # to be considered instance-aware, not just any function with an argument
+        if callable(key) and hasattr(key, '__code__'):
+            # We consider a key function to be "instance-aware" only if it has a parameter
+            # named 'instance' or 'self' - just having an argument isn't enough
+            co_varnames = key.__code__.co_varnames
+            # Check if first param is 'instance' or 'self'
+            self.is_instance_aware_key = (
+                key.__code__.co_argcount > 0
+                and co_varnames
+                and (co_varnames[0] in ('instance', 'self'))
+            )
+        else:
+            self.is_instance_aware_key = False
+
         if pre_cache is not False:
             if pre_cache is True:
                 pre_cache = dict()
@@ -96,15 +111,50 @@ class CachedProperty:
                 "Cannot assign the same CachedProperty to two different names "
                 f"({self.attrname!r} and {name!r})."
             )
+
         if isinstance(self.key, str):
             self.cache_key = self.key
+        elif self.key is None:
+            self.cache_key = self.attrname
+        elif callable(self.key) and self.is_instance_aware_key:
+            # For instance-aware key functions, we'll determine the key at runtime
+            pass  # We'll get the key at runtime in _get_cache_key
         else:
-            assert callable(
-                self.key
-            ), f"The key must be a callable or a string, not {type(self.key).__name__}."
-            self.cache_key = self.key(self.attrname)
-            if self.cache_key is None and not self.allow_none_keys:
-                raise TypeError("The key returned by the key function cannot be None.")
+            # For non-instance-aware functions, compute the key now with the attribute name
+            try:
+                self.cache_key = self.key(self.attrname)
+                if self.cache_key is None and not self.allow_none_keys:
+                    raise TypeError(
+                        "The key returned by the key function cannot be None."
+                    )
+            except Exception as e:
+                raise RuntimeError(f"Error computing cache key: {e}") from e
+
+    def _get_cache_key(self, instance):
+        """
+        Get the cache key for the instance.
+
+        Args:
+            instance: The instance of the class.
+
+        Returns:
+            The cache key to use.
+        """
+        if self.is_instance_aware_key:
+            # If it's instance-aware, pass the instance
+            key = self.key(instance)
+            if key is None and not self.allow_none_keys:
+                raise TypeError(
+                    f"The key returned by the key function for {self.attrname!r} cannot be None."
+                )
+            return key
+
+        # For all other cases, use the pre-computed cache_key
+        if hasattr(self, 'cache_key'):
+            return self.cache_key
+
+        # Fallback to attribute name if no cache_key set (shouldn't happen)
+        return self.attrname
 
     def __get_cache(self, instance):
         """
@@ -150,8 +200,9 @@ class CachedProperty:
             return self.func(instance)
 
         cache = self._get_cache(instance)
+        cache_key = self._get_cache_key(instance)
 
-        return self._get_or_compute(instance, cache)
+        return self._get_or_compute(instance, cache, cache_key)
 
     def _get_cache(self, instance):
         try:
@@ -166,20 +217,20 @@ class CachedProperty:
             raise TypeError(msg) from None
         return cache
 
-    def _get_or_compute(self, instance, cache):
-        val = cache.get(self.cache_key, _NOT_FOUND)
+    def _get_or_compute(self, instance, cache, cache_key):
+        val = cache.get(cache_key, _NOT_FOUND)
         if val is _NOT_FOUND:
             with self.lock:
                 # check if another thread filled cache while we awaited lock
-                val = cache.get(self.cache_key, _NOT_FOUND)
+                val = cache.get(cache_key, _NOT_FOUND)
                 if val is _NOT_FOUND:
                     val = self.func(instance)
                     try:
-                        cache[self.cache_key] = val
+                        cache[cache_key] = val
                     except TypeError as e:
                         msg = (
                             f"The cache on {type(instance).__name__!r} instance "
-                            f"does not support item assignment for caching {self.cache_key!r} property.\n"
+                            f"does not support item assignment for caching {cache_key!r} property.\n"
                             f"Error: {e}"
                         )
                         raise TypeError(msg) from None
