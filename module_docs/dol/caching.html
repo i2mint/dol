@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.3.11 documentation</title>
+  <title>dol.caching &mdash; dol 0.3.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=3b0e221d"></script>
+      <script src="../../_static/documentation_options.js?v=0cf6a877"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -53,14 +53,45 @@
 <li class="toctree-l1"><a class="reference internal" href="appendable.html">dol.appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="base.html">dol.base</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">dol.caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.ApplyToInstance"><code class="docutils literal notranslate"><span class="pre">ApplyToInstance</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.caching.ApplyToInstance.resolve_at_definition"><code class="docutils literal notranslate"><span class="pre">ApplyToInstance.resolve_at_definition()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.caching.ApplyToInstance.resolve_at_runtime"><code class="docutils literal notranslate"><span class="pre">ApplyToInstance.resolve_at_runtime()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.ApplyToMethodName"><code class="docutils literal notranslate"><span class="pre">ApplyToMethodName</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.caching.ApplyToMethodName.resolve_at_definition"><code class="docutils literal notranslate"><span class="pre">ApplyToMethodName.resolve_at_definition()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.CachedProperty"><code class="docutils literal notranslate"><span class="pre">CachedProperty</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.ExplicitKey"><code class="docutils literal notranslate"><span class="pre">ExplicitKey</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.caching.ExplicitKey.resolve_at_definition"><code class="docutils literal notranslate"><span class="pre">ExplicitKey.resolve_at_definition()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.HashableDict"><code class="docutils literal notranslate"><span class="pre">HashableDict</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.InstanceProp"><code class="docutils literal notranslate"><span class="pre">InstanceProp</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.caching.InstanceProp.resolve_at_definition"><code class="docutils literal notranslate"><span class="pre">InstanceProp.resolve_at_definition()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.caching.InstanceProp.resolve_at_runtime"><code class="docutils literal notranslate"><span class="pre">InstanceProp.resolve_at_runtime()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.KeyStrategy"><code class="docutils literal notranslate"><span class="pre">KeyStrategy</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.caching.KeyStrategy.resolve_at_definition"><code class="docutils literal notranslate"><span class="pre">KeyStrategy.resolve_at_definition()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.caching.KeyStrategy.resolve_at_runtime"><code class="docutils literal notranslate"><span class="pre">KeyStrategy.resolve_at_runtime()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.WriteBackChainMap"><code class="docutils literal notranslate"><span class="pre">WriteBackChainMap</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.add_extension"><code class="docutils literal notranslate"><span class="pre">add_extension()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.cache_property_method"><code class="docutils literal notranslate"><span class="pre">cache_property_method()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.cache_this"><code class="docutils literal notranslate"><span class="pre">cache_this()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.cache_vals"><code class="docutils literal notranslate"><span class="pre">cache_vals()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.cached_method"><code class="docutils literal notranslate"><span class="pre">cached_method()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.get_cache"><code class="docutils literal notranslate"><span class="pre">get_cache()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.identity"><code class="docutils literal notranslate"><span class="pre">identity()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.lru_cache_method"><code class="docutils literal notranslate"><span class="pre">lru_cache_method()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.mk_cached_store"><code class="docutils literal notranslate"><span class="pre">mk_cached_store()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.mk_memoizer"><code class="docutils literal notranslate"><span class="pre">mk_memoizer()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.mk_sourced_store"><code class="docutils literal notranslate"><span class="pre">mk_sourced_store()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.mk_write_cached_store"><code class="docutils literal notranslate"><span class="pre">mk_write_cached_store()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.caching.register_key_strategy"><code class="docutils literal notranslate"><span class="pre">register_key_strategy()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.store_cached"><code class="docutils literal notranslate"><span class="pre">store_cached()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.caching.store_cached_with_single_key"><code class="docutils literal notranslate"><span class="pre">store_cached_with_single_key()</span></code></a></li>
 </ul>
@@ -84,6 +115,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_appendable.html">dol.tests.test_appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_caching.html">dol.tests.test_caching</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
@@ -126,9 +158,115 @@
 <span id="dol-caching"></span><h1>dol.caching<a class="headerlink" href="#module-dol.caching" title="Link to this heading"></a></h1>
 <p>Tools to add caching layers to stores.</p>
 <dl class="py class">
+<dt class="sig sig-object py" id="dol.caching.ApplyToInstance">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">ApplyToInstance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#ApplyToInstance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.ApplyToInstance" title="Link to this definition"></a></dt>
+<dd><p>Apply a function to the instance to generate the key.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.caching.ApplyToInstance.resolve_at_definition">
+<span class="sig-name descname"><span class="pre">resolve_at_definition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/dol/caching.html#ApplyToInstance.resolve_at_definition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.ApplyToInstance.resolve_at_definition" title="Link to this definition"></a></dt>
+<dd><p>Cannot resolve at definition time, need the instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.caching.ApplyToInstance.resolve_at_runtime">
+<span class="sig-name descname"><span class="pre">resolve_at_runtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../_modules/dol/caching.html#ApplyToInstance.resolve_at_runtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.ApplyToInstance.resolve_at_runtime" title="Link to this definition"></a></dt>
+<dd><p>Apply the function to the instance at runtime.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.caching.ApplyToMethodName">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">ApplyToMethodName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#ApplyToMethodName"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.ApplyToMethodName" title="Link to this definition"></a></dt>
+<dd><p>Apply a function to the method name to generate the key.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.caching.ApplyToMethodName.resolve_at_definition">
+<span class="sig-name descname"><span class="pre">resolve_at_definition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../_modules/dol/caching.html#ApplyToMethodName.resolve_at_definition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.ApplyToMethodName.resolve_at_definition" title="Link to this definition"></a></dt>
+<dd><p>Apply the function to the method name at definition time.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.caching.CachedProperty">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">CachedProperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">func:</span> <span class="pre">~typing.Callable[[~typing.Any],</span> <span class="pre">~dol.caching.VT],</span> <span class="pre">cache:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~collections.abc.MutableMapping[~dol.caching.KT,</span> <span class="pre">~dol.caching.VT]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">key:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">~dol.caching.KeyStrategy</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">*,</span> <span class="pre">allow_none_keys:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">lock_factory:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'_thread.RLock'&gt;,</span> <span class="pre">pre_cache:</span> <span class="pre">bool</span> <span class="pre">|</span> <span class="pre">~collections.abc.MutableMapping</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#CachedProperty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.CachedProperty" title="Link to this definition"></a></dt>
+<dd><p>Descriptor that caches the result of the first call to a method.</p>
+<p>It generalizes the builtin functools.cached_property class, enabling the user to
+specify a cache object and a key to store the cache value.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.caching.ExplicitKey">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">ExplicitKey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#ExplicitKey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.ExplicitKey" title="Link to this definition"></a></dt>
+<dd><p>Use an explicitly provided key value.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.caching.ExplicitKey.resolve_at_definition">
+<span class="sig-name descname"><span class="pre">resolve_at_definition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../_modules/dol/caching.html#ExplicitKey.resolve_at_definition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.ExplicitKey.resolve_at_definition" title="Link to this definition"></a></dt>
+<dd><p>Return the explicit key value at definition time.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="dol.caching.HashableDict">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">HashableDict</span></span><a class="reference internal" href="../../_modules/dol/caching.html#HashableDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.HashableDict" title="Link to this definition"></a></dt>
 <dd><p>Just a dict, but hashable</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.caching.InstanceProp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">InstanceProp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#InstanceProp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.InstanceProp" title="Link to this definition"></a></dt>
+<dd><p>Get a key from an instance property.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.caching.InstanceProp.resolve_at_definition">
+<span class="sig-name descname"><span class="pre">resolve_at_definition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/dol/caching.html#InstanceProp.resolve_at_definition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.InstanceProp.resolve_at_definition" title="Link to this definition"></a></dt>
+<dd><p>Cannot resolve at definition time, need the instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.caching.InstanceProp.resolve_at_runtime">
+<span class="sig-name descname"><span class="pre">resolve_at_runtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../_modules/dol/caching.html#InstanceProp.resolve_at_runtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.InstanceProp.resolve_at_runtime" title="Link to this definition"></a></dt>
+<dd><p>Get the property value from the instance at runtime.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.caching.KeyStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">KeyStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#KeyStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.KeyStrategy" title="Link to this definition"></a></dt>
+<dd><p>Protocol defining how a key strategy should behave.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.caching.KeyStrategy.resolve_at_definition">
+<span class="sig-name descname"><span class="pre">resolve_at_definition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/dol/caching.html#KeyStrategy.resolve_at_definition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.KeyStrategy.resolve_at_definition" title="Link to this definition"></a></dt>
+<dd><p>Attempt to resolve the key at class definition time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>method_name</strong> – The name of the method being decorated.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resolved key or None if it can’t be resolved at definition time.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.caching.KeyStrategy.resolve_at_runtime">
+<span class="sig-name descname"><span class="pre">resolve_at_runtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../_modules/dol/caching.html#KeyStrategy.resolve_at_runtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.KeyStrategy.resolve_at_runtime" title="Link to this definition"></a></dt>
+<dd><p>Resolve the key at runtime.
+By default, this will call resolve_at_definition on method_name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instance</strong> – The instance the property is being accessed on.</p></li>
+<li><p><strong>method_name</strong> – The name of the method being decorated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resolved key.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -183,6 +321,322 @@ next time.</p>
 </ul>
 <p>configuration files/folders to look through (like a unix search path for command
 resolution) and environment variables.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.caching.add_extension">
+<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">add_extension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#add_extension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.add_extension" title="Link to this definition"></a></dt>
+<dd><p>Add an extension to a name.</p>
+<p>If name is None, return a partial function that will add the extension to a
+name when called.</p>
+<p>add_extension is a useful helper for making key functions, namely for cache_this.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_extension</span><span class="p">(</span><span class="s1">&#39;txt&#39;</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">)</span>
+<span class="go">&#39;file.txt&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add_txt_ext</span> <span class="o">=</span> <span class="n">add_extension</span><span class="p">(</span><span class="s1">&#39;txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add_txt_ext</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>
+<span class="go">&#39;file.txt&#39;</span>
+</pre></div>
+</div>
+<p>Note: If you want to add an extension to a name that already has an extension,
+you can do that, but it will add the extension to the end of the name,
+not replace the existing extension.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_txt_ext</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">)</span>
+<span class="go">&#39;file.txt.txt&#39;</span>
+</pre></div>
+</div>
+<p>Also, bare in mind that if ext starts with the system’s extension separator,
+(os.path.extsep), it will be removed.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_extension</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">add_extension</span><span class="p">(</span><span class="s1">&#39;txt&#39;</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;file.txt&#39;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.caching.cache_property_method">
+<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">cache_property_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_decorator:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">cache_this&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#cache_property_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.cache_property_method" title="Link to this definition"></a></dt>
+<dd><p>Converts a method of a class into a CachedProperty.</p>
+<p>Essentially, it does what <cite>A.method = cache_this(A.method)</cite> would do, taking care of
+the <cite>__set_name__</cite> problem that you’d run into doing it that way.
+Note that here, you need to say <cite>cache_property_method(A, ‘method’)</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls</strong> (<em>type</em>) – The class containing the method.</p></li>
+<li><p><strong>method_name</strong> (<em>str</em>) – The name of the method to convert to a cached property.</p></li>
+<li><p><strong>cache_decorator</strong> (<em>Callable</em>) – The decorator to use to cache the method. Defaults to
+<cite>cache_this</cite>. One frequent use case would be to use <cite>functools.partial</cite> to
+fix the cache and key parameters of <cite>cache_this</cite> and inject that.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@cache_property_method</span><span class="p">([</span><span class="s1">&#39;normal_method&#39;</span><span class="p">,</span> <span class="s1">&#39;property_method&#39;</span><span class="p">])</span>
+<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">TestClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">normal_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;normal_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">1</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@property</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">property_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;property_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">TestClass</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">normal_method</span>
+<span class="go">normal_method called</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">normal_method</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">property_method</span>
+<span class="go">property_method called</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">property_method</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<p>You can also use it like this:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">TestClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">normal_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;normal_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">1</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@property</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">property_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;property_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cache_property_method</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">TestClass</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">[</span>
+<span class="gp">... </span>        <span class="s1">&#39;normal_method&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;property_method&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">],</span>
+<span class="gp">... </span><span class="p">)</span>  
+<span class="go">&lt;class ...TestClass&#39;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">TestClass</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">normal_method</span>
+<span class="go">normal_method called</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">normal_method</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">property_method</span>
+<span class="go">property_method called</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">property_method</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.caching.cache_this">
+<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">cache_this</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">VT</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">MutableMapping</span><span class="p"><span class="pre">[</span></span><span class="pre">KT</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">VT</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">KT</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">KT</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">MutableMapping</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#cache_this"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.cache_this" title="Link to this definition"></a></dt>
+<dd><p>Transforms a method into a cached property with control over cache object and key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> – The function to be decorated (usually left empty).</p></li>
+<li><p><strong>cache</strong> – The cache storage, can be a <cite>MutableMapping</cite> or the name of an
+instance attribute that is a <cite>MutableMapping</cite>.</p></li>
+<li><p><strong>key</strong> – The key to store the cache value, can be a callable that will be
+applied to the method name to make a key, or an explicit string.</p></li>
+<li><p><strong>pre_cache</strong> – Default is False. If True, adds an in-memory cache to the method
+to (also) cache the results in memory. If a MutableMapping is given, it will be
+used as the pre-cache.
+This is useful when you want a persistent cache but also want to speed up
+access to the method in the same session.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The decorated function.</p>
+</dd>
+</dl>
+<p>Used with no arguments, <cite>cache_this</cite> will cache just as the builtin
+<cite>cached_property</cite> does – in the instance’s <cite>__dict__</cite> attribute.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">SameAsCachedProperty</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In SameAsCachedProperty.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">SameAsCachedProperty</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span>  <span class="c1"># the cache is empty</span>
+<span class="go">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>  <span class="c1"># when we access foo, it&#39;s computed and returned...</span>
+<span class="go">In SameAsCachedProperty.foo...</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span>  <span class="c1"># ... but also cached</span>
+<span class="go">{&#39;foo&#39;: 42}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>  <span class="c1"># so that the next time we access foo, it&#39;s returned from the cache.</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>Not that if you specify <cite>cache=False</cite>, you get a property that is computed
+every time it’s accessed:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">NoCache</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In NoCache.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">NoCache</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">In NoCache.foo...</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">In NoCache.foo...</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>Specify the cache as a dictionary that lives outside the instance:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">external_cache</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">CacheWithExternalMapping</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="n">external_cache</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In CacheWithExternalMapping.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">CacheWithExternalMapping</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">external_cache</span>
+<span class="go">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">In CacheWithExternalMapping.foo...</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">external_cache</span>
+<span class="go">{&#39;foo&#39;: 42}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>Specify the cache as an attribute of the instance, and an explicit key:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">WithCacheInInstanceAttribute</span><span class="p">:</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">my_cache</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">&#39;my_cache&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;key_for_foo&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In WithCacheInInstanceAttribute.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">WithCacheInInstanceAttribute</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">my_cache</span>
+<span class="go">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">In WithCacheInInstanceAttribute.foo...</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">my_cache</span>
+<span class="go">{&#39;key_for_foo&#39;: 42}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>Now let’s see a more involved example that exhibits how <cite>cache_this</cite> would be used
+in real life. Note two things in the example below.</p>
+<p>First, that we use <cite>functools.partial</cite> to fix the parameters of our <cite>cache_this</cite>.
+This enables us to reuse the same <cite>cache_this</cite> in multiple places without all
+the verbosity. We fix that the cache is the attribute <cite>cache</cite> of the instance,
+and that the key is a function that will be computed from the name of the method
+adding a <cite>‘.pkl’</cite> extension to it.</p>
+<p>Secondly, we use the <cite>ValueCodecs</cite> from <cite>dol</cite> to provide a pickle codec for storying
+values. The backend store used here is a dictionary, so we don’t really need a
+codec to store values, but in real life you would use a persistent storage that
+would require a codec, such as files or a database.</p>
+<p>Thirdly, we’ll use a <cite>pre_cache</cite> to store the values in a different cache “before”
+(setting and getting) them in the main cache.
+This is useful, for instance, when you want to persist the values (in the main
+cache), but keep them in memory for faster access in the same session
+(the pre-cache, a dict() instance usually). It can also be used to store and
+use things locally (pre-cache) while sharing them with others by storing them in
+a remote store (main cache).</p>
+<p>Finally, we’ll use a dict that logs any setting and getting of values to show
+how the caches are being used.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache_this</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValueCodecs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserDict</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">LoggedCache</span><span class="p">(</span><span class="n">UserDict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;cache&#39;</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;In </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: setting </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;In </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: getting value of </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">CacheA</span><span class="p">(</span><span class="n">LoggedCache</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CacheA&#39;</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">CacheB</span><span class="p">(</span><span class="n">LoggedCache</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CacheB&#39;</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cache_with_pickle</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">cache_this</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">cache</span><span class="o">=</span><span class="s1">&#39;cache&#39;</span><span class="p">,</span>  <span class="c1"># the cache can be found on the instance attribute `cache`</span>
+<span class="gp">... </span>    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">,</span>  <span class="c1"># the key is the method name with a &#39;.pkl&#39; extension</span>
+<span class="gp">... </span>    <span class="n">pre_cache</span><span class="o">=</span><span class="n">CacheB</span><span class="p">(),</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">PickleCached</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_store_factory</span><span class="o">=</span><span class="n">CacheA</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="c1"># usually this would be a mapping interface to persistent storage:</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_store</span> <span class="o">=</span> <span class="n">backend_store_factory</span><span class="p">()</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">pickle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_store</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@cache_with_pickle</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In PickleCached.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">PickleCached</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">)</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">In CacheA: getting value of foo.pkl</span>
+<span class="go">In CacheA: getting value of foo.pkl</span>
+<span class="go">In PickleCached.foo...</span>
+<span class="go">In CacheA: setting foo.pkl to b&#39;\x80\x04K*.&#39;</span>
+<span class="go">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
+<span class="go">In CacheA: getting value of foo.pkl</span>
+<span class="go">In CacheB: setting foo.pkl to 42</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>As usual, it’s because the cache now holds something that has to do with <cite>foo</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">)</span>
+<span class="go">[&#39;foo.pkl&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># == [&#39;foo.pkl&#39;]</span>
+</pre></div>
+</div>
+<p>The value of <cite>‘foo.pkl’</cite> is indeed <cite>42</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="s1">&#39;foo.pkl&#39;</span><span class="p">]</span>
+<span class="go">In CacheA: getting value of foo.pkl</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>But note that the actual way it’s stored in the <cite>_backend_store</cite> is as pickle bytes:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">_backend_store</span><span class="p">[</span><span class="s1">&#39;foo.pkl&#39;</span><span class="p">]</span>
+<span class="go">In CacheA: getting value of foo.pkl</span>
+<span class="go">b&#39;\x80\x04K*.&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># == b&#39;\x80\x04K*.&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -259,9 +713,106 @@ By default, it will use a dict</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.caching.cached_method">
+<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">cached_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#cached_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.cached_method" title="Link to this definition"></a></dt>
+<dd><p>A decorator to cache the result of a method, ignoring the first argument (usually <cite>self</cite>).</p>
+<p>This decorator uses <cite>functools.lru_cache</cite> to cache the method result based on the arguments passed
+to the method, excluding the first argument (typically <cite>self</cite>). This allows methods of a class to
+be cached while ignoring the instance (<cite>self</cite>) in the cache key.</p>
+<p>Parameters:
+- func (callable, optional): The method to be decorated. If not provided, a partially applied decorator</p>
+<blockquote>
+<div><p>will be returned for later application.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>maxsize (int, optional): The maximum size of the cache. Defaults to 128.</p></li>
+<li><p>typed (bool, optional): If True, cache entries will be different based on argument types, such as
+distinguishing between <cite>1</cite> and <cite>1.0</cite>. Defaults to False.</p></li>
+</ul>
+<p>Returns:
+- callable: A wrapped function with LRU caching applied, ignoring the first argument (<cite>self</cite>).</p>
+<p>Example:
+&gt;&gt;&gt; class MyClass:
+…     &#64;cached_method(maxsize=2, typed=True)
+…     def add(self, x, y):
+…         print(f”Computing {x} + {y}”)
+…         return x + y
+…
+&gt;&gt;&gt; obj = MyClass()
+&gt;&gt;&gt; obj.add(1, 2)
+Computing 1 + 2
+3
+&gt;&gt;&gt; obj.add(1, 2)  # Cached result, no recomputation
+3
+&gt;&gt;&gt; obj.add(1.0, 2.0)  # Different types, recomputation occurs
+Computing 1.0 + 2.0
+3.0</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.caching.get_cache">
 <span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">get_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cache</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#get_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.get_cache" title="Link to this definition"></a></dt>
 <dd><p>Convenience function to get a cache (whether it’s already an instance, or needs to be validated)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.caching.identity">
+<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="reference internal" href="../../_modules/dol/caching.html#identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.identity" title="Link to this definition"></a></dt>
+<dd><p>Identity function that returns its input unchanged.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.caching.lru_cache_method">
+<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">lru_cache_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#lru_cache_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.lru_cache_method" title="Link to this definition"></a></dt>
+<dd><p>A decorator to cache the result of a method, ignoring the first argument
+(usually <cite>self</cite>).</p>
+<p>This decorator uses <cite>functools.lru_cache</cite> to cache the method result based on the arguments passed
+to the method, excluding the first argument (typically <cite>self</cite>). This allows methods of a class to
+be cached while ignoring the instance (<cite>self</cite>) in the cache key.</p>
+<p>Parameters:
+- func (callable, optional): The method to be decorated. If not provided, a partially applied decorator</p>
+<blockquote>
+<div><p>will be returned for later application.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>maxsize (int, optional): The maximum size of the cache. Defaults to 128.</p></li>
+<li><p>typed (bool, optional): If True, cache entries will be different based on argument types, such as
+distinguishing between <cite>1</cite> and <cite>1.0</cite>. Defaults to False.</p></li>
+</ul>
+<p>Returns:
+- callable: A wrapped function with LRU caching applied, ignoring the first argument (<cite>self</cite>).</p>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@lru_cache_method</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">Computing 1 + 2</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># Cached result, no recomputation</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<p>Like <cite>lru_cache</cite>, you can specify the <cite>maxsize</cite> and <cite>typed</cite> parameters:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyOtherClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nd">@lru_cache_method</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">MyOtherClass</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">Computing 1 + 2</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># Cached result, no recomputation</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>  <span class="c1"># Different types, recomputation occurs</span>
+<span class="go">Computing 1.0 + 2.0</span>
+<span class="go">3.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -539,6 +1090,12 @@ You don’t want to do this unwittingly and delete a bunch of precious data!!</p
 <span class="go">store: {0: 0, 1: 10, 2: 20, 3: 30, 4: 40, 5: 50, 6: 60} ----- store._w_cache: {}</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.caching.register_key_strategy">
+<span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">register_key_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#register_key_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.register_key_strategy" title="Link to this definition"></a></dt>
+<dd><p>Register a class as a KeyStrategy.</p>
 </dd></dl>
 
 <dl class="py function">

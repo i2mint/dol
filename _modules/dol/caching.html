@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.3.11 documentation</title>
+  <title>dol.caching &mdash; dol 0.3.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=3b0e221d"></script>
+      <script src="../../_static/documentation_options.js?v=0cf6a877"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -69,6 +69,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/pickability_test.html">dol.tests.pickability_test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_appendable.html">dol.tests.test_appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_caching.html">dol.tests.test_caching</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
@@ -111,6 +112,1007 @@
   <h1>Source code for dol.caching</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Tools to add caching layers to stores.&quot;&quot;&quot;</span>
 
+<span class="c1"># -------------------------------------------------------------------------------------</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Store</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">store_decorator</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">RLock</span><span class="p">,</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericAlias</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MutableMapping</span>
+
+<span class="n">Instance</span> <span class="o">=</span> <span class="n">Any</span>
+<span class="n">PropertyFunc</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Instance</span><span class="p">],</span> <span class="n">VT</span><span class="p">]</span>
+<span class="n">MethodName</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="n">Cache</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">MethodName</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]]</span>
+<span class="n">KeyType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">MethodName</span><span class="p">],</span> <span class="n">KT</span><span class="p">]]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">RLock</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericAlias</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MutableMapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Protocol</span>
+
+<span class="c1"># Type variables</span>
+<span class="n">KT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;KT&#39;</span><span class="p">)</span>  <span class="c1"># Key type</span>
+<span class="n">VT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;VT&#39;</span><span class="p">)</span>  <span class="c1"># Value type</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>  <span class="c1"># Generic type</span>
+
+<span class="c1"># Constants</span>
+<span class="n">_NOT_FOUND</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+
+<span class="c1"># Type definitions</span>
+<span class="n">Instance</span> <span class="o">=</span> <span class="n">Any</span>
+<span class="n">PropertyFunc</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Instance</span><span class="p">],</span> <span class="n">VT</span><span class="p">]</span>
+<span class="n">MethodName</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="n">Cache</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">MethodName</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="identity">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.identity">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Identity function that returns its input unchanged.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+
+<div class="viewcode-block" id="KeyStrategy">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.KeyStrategy">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">KeyStrategy</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol defining how a key strategy should behave.&quot;&quot;&quot;</span>
+
+    <span class="n">registered_key_strategies</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<div class="viewcode-block" id="KeyStrategy.resolve_at_definition">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.KeyStrategy.resolve_at_definition">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_at_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attempt to resolve the key at class definition time.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            method_name: The name of the method being decorated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The resolved key or None if it can&#39;t be resolved at definition time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span></div>
+
+
+<div class="viewcode-block" id="KeyStrategy.resolve_at_runtime">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.KeyStrategy.resolve_at_runtime">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_at_runtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resolve the key at runtime.</span>
+<span class="sd">        By default, this will call resolve_at_definition on method_name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            instance: The instance the property is being accessed on.</span>
+<span class="sd">            method_name: The name of the method being decorated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The resolved key.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolve_at_definition</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="register_key_strategy">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.register_key_strategy">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">register_key_strategy</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register a class as a KeyStrategy.&quot;&quot;&quot;</span>
+    <span class="n">KeyStrategy</span><span class="o">.</span><span class="n">registered_key_strategies</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">cls</span></div>
+
+
+
+<div class="viewcode-block" id="ExplicitKey">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.ExplicitKey">[docs]</a>
+<span class="nd">@register_key_strategy</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExplicitKey</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use an explicitly provided key value.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize with an explicit key value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: The explicit key to use.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+
+<div class="viewcode-block" id="ExplicitKey.resolve_at_definition">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.ExplicitKey.resolve_at_definition">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_at_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the explicit key value at definition time.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ApplyToMethodName">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.ApplyToMethodName">[docs]</a>
+<span class="nd">@register_key_strategy</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ApplyToMethodName</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a function to the method name to generate the key.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize with a function to apply to the method name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func: A function that takes a method name and returns a key.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+
+<div class="viewcode-block" id="ApplyToMethodName.resolve_at_definition">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.ApplyToMethodName.resolve_at_definition">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_at_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the function to the method name at definition time.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="InstanceProp">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.InstanceProp">[docs]</a>
+<span class="nd">@register_key_strategy</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">InstanceProp</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a key from an instance property.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize with the name of the instance property to use as a key.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prop_name: The name of the property to get from the instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prop_name</span> <span class="o">=</span> <span class="n">prop_name</span>
+
+<div class="viewcode-block" id="InstanceProp.resolve_at_definition">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.InstanceProp.resolve_at_definition">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_at_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cannot resolve at definition time, need the instance.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="InstanceProp.resolve_at_runtime">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.InstanceProp.resolve_at_runtime">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_at_runtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the property value from the instance at runtime.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop_name</span><span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="ApplyToInstance">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.ApplyToInstance">[docs]</a>
+<span class="nd">@register_key_strategy</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ApplyToInstance</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a function to the instance to generate the key.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize with a function to apply to the instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func: A function that takes an instance and returns a key.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+
+<div class="viewcode-block" id="ApplyToInstance.resolve_at_definition">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.ApplyToInstance.resolve_at_definition">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_at_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cannot resolve at definition time, need the instance.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ApplyToInstance.resolve_at_runtime">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.ApplyToInstance.resolve_at_runtime">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_at_runtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the function to the instance at runtime.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_key_for_cached_prop</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KeyStrategy</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a key specification to a KeyStrategy instance.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        key: The key specification, can be a string, function, or KeyStrategy.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A KeyStrategy instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Default to using the method name as the key</span>
+        <span class="k">return</span> <span class="n">ApplyToMethodName</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">KeyStrategy</span><span class="o">.</span><span class="n">registered_key_strategies</span><span class="p">)):</span>
+        <span class="c1"># Already a KeyStrategy instance</span>
+        <span class="k">return</span> <span class="n">key</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># Explicit string key</span>
+        <span class="k">return</span> <span class="n">ExplicitKey</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+        <span class="c1"># Check the signature to determine the right strategy</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s1">&#39;__code__&#39;</span><span class="p">):</span>
+            <span class="n">co_varnames</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="vm">__code__</span><span class="o">.</span><span class="n">co_varnames</span>
+
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">key</span><span class="o">.</span><span class="vm">__code__</span><span class="o">.</span><span class="n">co_argcount</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="ow">and</span> <span class="n">co_varnames</span>
+                <span class="ow">and</span> <span class="n">co_varnames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;instance&#39;</span><span class="p">,</span> <span class="s1">&#39;self&#39;</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="c1"># Function that takes an instance as first arg</span>
+                <span class="k">return</span> <span class="n">ApplyToInstance</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Function that operates on something else (like method name)</span>
+                <span class="k">return</span> <span class="n">ApplyToMethodName</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Callable without a __code__ attribute (like partial)</span>
+            <span class="k">return</span> <span class="n">ApplyToMethodName</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="c1"># For any other type, treat as an explicit key</span>
+    <span class="k">return</span> <span class="n">ExplicitKey</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CachedProperty">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.CachedProperty">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CachedProperty</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Descriptor that caches the result of the first call to a method.</span>
+
+<span class="sd">    It generalizes the builtin functools.cached_property class, enabling the user to</span>
+<span class="sd">    specify a cache object and a key to store the cache value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">func</span><span class="p">:</span> <span class="n">PropertyFunc</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Cache</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">KeyStrategy</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">allow_none_keys</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">lock_factory</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">RLock</span><span class="p">,</span>
+        <span class="n">pre_cache</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the cached property.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func: The function whose result needs to be cached.</span>
+<span class="sd">            cache: The cache storage, can be a MutableMapping or an attribute name.</span>
+<span class="sd">            key: The key to store the cache value. Can be:</span>
+<span class="sd">                - A string (treated as an explicit key)</span>
+<span class="sd">                - A function (interpreted based on its signature)</span>
+<span class="sd">                - A KeyStrategy instance</span>
+<span class="sd">            allow_none_keys: Whether to allow None as a valid key.</span>
+<span class="sd">            lock_factory: Factory function to create a lock.</span>
+<span class="sd">            pre_cache: If True or a MutableMapping, adds in-memory caching.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="vm">__doc__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">lock_factory</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="n">cache</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key_strategy</span> <span class="o">=</span> <span class="n">_resolve_key_for_cached_prop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allow_none_keys</span> <span class="o">=</span> <span class="n">allow_none_keys</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">None</span>  <span class="c1"># Will be set in __set_name__ if resolvable at definition time</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pre_cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pre_cache</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">pre_cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pre_cache</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">),</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;`pre_cache` must be a bool or a MutableMapping, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Was a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">pre_cache</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">pre_cache</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wrap_cache</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">cache_vals</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">pre_cache</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wrap_cache</span> <span class="o">=</span> <span class="n">identity</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__set_name__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the name of the property.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            owner: The class owning the property.</span>
+<span class="sd">            name: The name of the property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot assign the same CachedProperty to two different names &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="si">!r}</span><span class="s2"> and </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">).&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Try to resolve the key at definition time</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_strategy</span><span class="o">.</span><span class="n">resolve_at_definition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_none_keys</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The key resolved at definition time cannot be None.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span> <span class="o">=</span> <span class="n">key</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_cache_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the cache key for the instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            instance: The instance of the class.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The cache key to use.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If we already have a cache_key from definition time, use it</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_key</span>
+
+        <span class="c1"># Otherwise, resolve at runtime</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_strategy</span><span class="o">.</span><span class="n">resolve_at_runtime</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_none_keys</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The key resolved at runtime for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="si">!r}</span><span class="s2"> cannot be None.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">key</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the cache for the instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            instance: The instance of the class.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The cache storage.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">cache</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;No attribute named &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="si">}</span><span class="s2">&#39; found on </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> instance.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Attribute &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="si">}</span><span class="s2">&#39; on </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> instance is not a MutableMapping.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">__cache</span> <span class="o">=</span> <span class="n">cache</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">):</span>
+            <span class="n">__cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">__cache</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="vm">__dict__</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrap_cache</span><span class="p">(</span><span class="n">__cache</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the value of the cached property.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            instance: The instance of the class.</span>
+<span class="sd">            owner: The owner class.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The cached value or computed value if not cached.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot use CachedProperty instance without calling __set_name__ on it.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="c1"># If cache is False, always compute the value</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+
+        <span class="n">cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+        <span class="n">cache_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache_key</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_compute</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">cache_key</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the cache for the instance, handling potential errors.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_cache</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span>
+            <span class="ne">AttributeError</span>
+        <span class="p">):</span>  <span class="c1"># not all objects have __dict__ (e.g. class defines slots)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No &#39;__dict__&#39; attribute on </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;instance to cache </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="si">!r}</span><span class="s2"> property.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+        <span class="k">return</span> <span class="n">cache</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_or_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">cache_key</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get cached value or compute it if not found.&quot;&quot;&quot;</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cache_key</span><span class="p">,</span> <span class="n">_NOT_FOUND</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="n">_NOT_FOUND</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+                <span class="c1"># check if another thread filled cache while we awaited lock</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cache_key</span><span class="p">,</span> <span class="n">_NOT_FOUND</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="n">_NOT_FOUND</span><span class="p">:</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">cache</span><span class="p">[</span><span class="n">cache_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;The cache on </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> instance &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;does not support item assignment for caching </span><span class="si">{</span><span class="n">cache_key</span><span class="si">!r}</span><span class="s2"> property.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+        <span class="k">return</span> <span class="n">val</span>
+
+    <span class="n">__class_getitem__</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">GenericAlias</span><span class="p">)</span></div>
+
+
+    <span class="c1"># TODO: Time-boxed attempt to get a __call__ method to work with the class</span>
+    <span class="c1">#    (so that you can chain two cache_this decorators, (problem is that the outer</span>
+    <span class="c1">#    expects the inner to be a function, not an instance of CachedProperty, so</span>
+    <span class="c1">#    tried to make CachedProperty callable).</span>
+    <span class="c1"># def __call__(self, instance):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Call the cached property.</span>
+
+    <span class="c1">#     :param func: The function to be called.</span>
+    <span class="c1">#     :return: The cached property.</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     cache = self._get_cache(instance)</span>
+
+    <span class="c1">#     return self._get_or_compute(instance, cache)</span>
+
+
+<div class="viewcode-block" id="cache_this">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.cache_this">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cache_this</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">:</span> <span class="n">PropertyFunc</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Cache</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">KeyType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">pre_cache</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms a method into a cached property with control over cache object and key.</span>
+
+<span class="sd">    :param func: The function to be decorated (usually left empty).</span>
+<span class="sd">    :param cache: The cache storage, can be a `MutableMapping` or the name of an</span>
+<span class="sd">        instance attribute that is a `MutableMapping`.</span>
+<span class="sd">    :param key: The key to store the cache value, can be a callable that will be</span>
+<span class="sd">        applied to the method name to make a key, or an explicit string.</span>
+<span class="sd">    :param pre_cache: Default is False. If True, adds an in-memory cache to the method</span>
+<span class="sd">        to (also) cache the results in memory. If a MutableMapping is given, it will be</span>
+<span class="sd">        used as the pre-cache.</span>
+<span class="sd">        This is useful when you want a persistent cache but also want to speed up</span>
+<span class="sd">        access to the method in the same session.</span>
+<span class="sd">    :return: The decorated function.</span>
+
+<span class="sd">    Used with no arguments, `cache_this` will cache just as the builtin</span>
+<span class="sd">    `cached_property` does -- in the instance&#39;s `__dict__` attribute.</span>
+
+<span class="sd">    &gt;&gt;&gt; class SameAsCachedProperty:</span>
+<span class="sd">    ...     @cache_this</span>
+<span class="sd">    ...     def foo(self):</span>
+<span class="sd">    ...         print(&quot;In SameAsCachedProperty.foo...&quot;)</span>
+<span class="sd">    ...         return 42</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = SameAsCachedProperty()</span>
+<span class="sd">    &gt;&gt;&gt; obj.__dict__  # the cache is empty</span>
+<span class="sd">    {}</span>
+<span class="sd">    &gt;&gt;&gt; obj.foo  # when we access foo, it&#39;s computed and returned...</span>
+<span class="sd">    In SameAsCachedProperty.foo...</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; obj.__dict__  # ... but also cached</span>
+<span class="sd">    {&#39;foo&#39;: 42}</span>
+<span class="sd">    &gt;&gt;&gt; obj.foo  # so that the next time we access foo, it&#39;s returned from the cache.</span>
+<span class="sd">    42</span>
+
+<span class="sd">    Not that if you specify `cache=False`, you get a property that is computed</span>
+<span class="sd">    every time it&#39;s accessed:</span>
+
+<span class="sd">    &gt;&gt;&gt; class NoCache:</span>
+<span class="sd">    ...     @cache_this(cache=False)</span>
+<span class="sd">    ...     def foo(self):</span>
+<span class="sd">    ...         print(&quot;In NoCache.foo...&quot;)</span>
+<span class="sd">    ...         return 42</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = NoCache()</span>
+<span class="sd">    &gt;&gt;&gt; obj.foo</span>
+<span class="sd">    In NoCache.foo...</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; obj.foo</span>
+<span class="sd">    In NoCache.foo...</span>
+<span class="sd">    42</span>
+
+<span class="sd">    Specify the cache as a dictionary that lives outside the instance:</span>
+
+<span class="sd">    &gt;&gt;&gt; external_cache = {}</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; class CacheWithExternalMapping:</span>
+<span class="sd">    ...     @cache_this(cache=external_cache)</span>
+<span class="sd">    ...     def foo(self):</span>
+<span class="sd">    ...         print(&quot;In CacheWithExternalMapping.foo...&quot;)</span>
+<span class="sd">    ...         return 42</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = CacheWithExternalMapping()</span>
+<span class="sd">    &gt;&gt;&gt; external_cache</span>
+<span class="sd">    {}</span>
+<span class="sd">    &gt;&gt;&gt; obj.foo</span>
+<span class="sd">    In CacheWithExternalMapping.foo...</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; external_cache</span>
+<span class="sd">    {&#39;foo&#39;: 42}</span>
+<span class="sd">    &gt;&gt;&gt; obj.foo</span>
+<span class="sd">    42</span>
+
+<span class="sd">    Specify the cache as an attribute of the instance, and an explicit key:</span>
+
+<span class="sd">    &gt;&gt;&gt; class WithCacheInInstanceAttribute:</span>
+<span class="sd">    ...</span>
+<span class="sd">    ...     def __init__(self):</span>
+<span class="sd">    ...         self.my_cache = {}</span>
+<span class="sd">    ...</span>
+<span class="sd">    ...     @cache_this(cache=&#39;my_cache&#39;, key=&#39;key_for_foo&#39;)</span>
+<span class="sd">    ...     def foo(self):</span>
+<span class="sd">    ...         print(&quot;In WithCacheInInstanceAttribute.foo...&quot;)</span>
+<span class="sd">    ...         return 42</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = WithCacheInInstanceAttribute()</span>
+<span class="sd">    &gt;&gt;&gt; obj.my_cache</span>
+<span class="sd">    {}</span>
+<span class="sd">    &gt;&gt;&gt; obj.foo</span>
+<span class="sd">    In WithCacheInInstanceAttribute.foo...</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; obj.my_cache</span>
+<span class="sd">    {&#39;key_for_foo&#39;: 42}</span>
+<span class="sd">    &gt;&gt;&gt; obj.foo</span>
+<span class="sd">    42</span>
+
+<span class="sd">    Now let&#39;s see a more involved example that exhibits how `cache_this` would be used</span>
+<span class="sd">    in real life. Note two things in the example below.</span>
+
+<span class="sd">    First, that we use `functools.partial` to fix the parameters of our `cache_this`.</span>
+<span class="sd">    This enables us to reuse the same `cache_this` in multiple places without all</span>
+<span class="sd">    the verbosity. We fix that the cache is the attribute `cache` of the instance,</span>
+<span class="sd">    and that the key is a function that will be computed from the name of the method</span>
+<span class="sd">    adding a `&#39;.pkl&#39;` extension to it.</span>
+
+<span class="sd">    Secondly, we use the `ValueCodecs` from `dol` to provide a pickle codec for storying</span>
+<span class="sd">    values. The backend store used here is a dictionary, so we don&#39;t really need a</span>
+<span class="sd">    codec to store values, but in real life you would use a persistent storage that</span>
+<span class="sd">    would require a codec, such as files or a database.</span>
+
+<span class="sd">    Thirdly, we&#39;ll use a `pre_cache` to store the values in a different cache &quot;before&quot;</span>
+<span class="sd">    (setting and getting) them in the main cache.</span>
+<span class="sd">    This is useful, for instance, when you want to persist the values (in the main</span>
+<span class="sd">    cache), but keep them in memory for faster access in the same session</span>
+<span class="sd">    (the pre-cache, a dict() instance usually). It can also be used to store and</span>
+<span class="sd">    use things locally (pre-cache) while sharing them with others by storing them in</span>
+<span class="sd">    a remote store (main cache).</span>
+
+<span class="sd">    Finally, we&#39;ll use a dict that logs any setting and getting of values to show</span>
+<span class="sd">    how the caches are being used.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol import cache_this</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">    &gt;&gt;&gt; from dol import ValueCodecs</span>
+<span class="sd">    &gt;&gt;&gt; from collections import UserDict</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; class LoggedCache(UserDict):</span>
+<span class="sd">    ...     name = &#39;cache&#39;</span>
+<span class="sd">    ...</span>
+<span class="sd">    ...     def __setitem__(self, key, value):</span>
+<span class="sd">    ...         print(f&quot;In {self.name}: setting {key} to {value}&quot;)</span>
+<span class="sd">    ...         return super().__setitem__(key, value)</span>
+<span class="sd">    ...</span>
+<span class="sd">    ...     def __getitem__(self, key):</span>
+<span class="sd">    ...         print(f&quot;In {self.name}: getting value of {key}&quot;)</span>
+<span class="sd">    ...         return super().__getitem__(key)</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; class CacheA(LoggedCache):</span>
+<span class="sd">    ...     name = &#39;CacheA&#39;</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; class CacheB(LoggedCache):</span>
+<span class="sd">    ...     name = &#39;CacheB&#39;</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; cache_with_pickle = partial(</span>
+<span class="sd">    ...     cache_this,</span>
+<span class="sd">    ...     cache=&#39;cache&#39;,  # the cache can be found on the instance attribute `cache`</span>
+<span class="sd">    ...     key=lambda x: f&quot;{x}.pkl&quot;,  # the key is the method name with a &#39;.pkl&#39; extension</span>
+<span class="sd">    ...     pre_cache=CacheB(),</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; class PickleCached:</span>
+<span class="sd">    ...     def __init__(self, backend_store_factory=CacheA):</span>
+<span class="sd">    ...         # usually this would be a mapping interface to persistent storage:</span>
+<span class="sd">    ...         self._backend_store = backend_store_factory()</span>
+<span class="sd">    ...         self.cache = ValueCodecs.default.pickle(self._backend_store)</span>
+<span class="sd">    ...</span>
+<span class="sd">    ...     @cache_with_pickle</span>
+<span class="sd">    ...     def foo(self):</span>
+<span class="sd">    ...         print(&quot;In PickleCached.foo...&quot;)</span>
+<span class="sd">    ...         return 42</span>
+<span class="sd">    ...</span>
+
+<span class="sd">    &gt;&gt;&gt; obj = PickleCached()</span>
+<span class="sd">    &gt;&gt;&gt; list(obj.cache)</span>
+<span class="sd">    []</span>
+
+<span class="sd">    &gt;&gt;&gt; obj.foo</span>
+<span class="sd">    In CacheA: getting value of foo.pkl</span>
+<span class="sd">    In CacheA: getting value of foo.pkl</span>
+<span class="sd">    In PickleCached.foo...</span>
+<span class="sd">    In CacheA: setting foo.pkl to b&#39;\x80\x04K*.&#39;</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; obj.foo</span>
+<span class="sd">    In CacheA: getting value of foo.pkl</span>
+<span class="sd">    In CacheB: setting foo.pkl to 42</span>
+<span class="sd">    42</span>
+
+<span class="sd">    As usual, it&#39;s because the cache now holds something that has to do with `foo`:</span>
+
+<span class="sd">    &gt;&gt;&gt; list(obj.cache)</span>
+<span class="sd">    [&#39;foo.pkl&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; # == [&#39;foo.pkl&#39;]</span>
+
+<span class="sd">    The value of `&#39;foo.pkl&#39;` is indeed `42`:</span>
+
+<span class="sd">    &gt;&gt;&gt; obj.cache[&#39;foo.pkl&#39;]</span>
+<span class="sd">    In CacheA: getting value of foo.pkl</span>
+<span class="sd">    42</span>
+
+
+<span class="sd">    But note that the actual way it&#39;s stored in the `_backend_store` is as pickle bytes:</span>
+
+<span class="sd">    &gt;&gt;&gt; obj._backend_store[&#39;foo.pkl&#39;]</span>
+<span class="sd">    In CacheA: getting value of foo.pkl</span>
+<span class="sd">    b&#39;\x80\x04K*.&#39;</span>
+<span class="sd">    &gt;&gt;&gt; # == b&#39;\x80\x04K*.&#39;</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># the cache is False case, where we just want a property, computed by func</span>
+    <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">property</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">wrapper</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">property</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="c1"># The general case</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1">#   If func is not given, we want a decorator</span>
+        <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">CachedProperty</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">pre_cache</span><span class="o">=</span><span class="n">pre_cache</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">wrapper</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1">#   If func is given, we want to return the CachedProperty instance</span>
+            <span class="k">return</span> <span class="n">CachedProperty</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">pre_cache</span><span class="o">=</span><span class="n">pre_cache</span><span class="p">)</span></div>
+
+
+<span class="c1"># add the key strategies as attributes of cache_this to have them easily accessible</span>
+<span class="k">for</span> <span class="n">_key_strategy</span> <span class="ow">in</span> <span class="n">KeyStrategy</span><span class="o">.</span><span class="n">registered_key_strategies</span><span class="p">:</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">cache_this</span><span class="p">,</span> <span class="n">_key_strategy</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">_key_strategy</span><span class="p">)</span>
+
+
+<span class="n">extsep</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">extsep</span>
+
+
+<div class="viewcode-block" id="add_extension">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.add_extension">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_extension</span><span class="p">(</span><span class="n">ext</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add an extension to a name.</span>
+
+<span class="sd">    If name is None, return a partial function that will add the extension to a</span>
+<span class="sd">    name when called.</span>
+
+<span class="sd">    add_extension is a useful helper for making key functions, namely for cache_this.</span>
+
+<span class="sd">    &gt;&gt;&gt; add_extension(&#39;txt&#39;, &#39;file&#39;)</span>
+<span class="sd">    &#39;file.txt&#39;</span>
+<span class="sd">    &gt;&gt;&gt; add_txt_ext = add_extension(&#39;txt&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; add_txt_ext(&#39;file&#39;)</span>
+<span class="sd">    &#39;file.txt&#39;</span>
+
+<span class="sd">    Note: If you want to add an extension to a name that already has an extension,</span>
+<span class="sd">    you can do that, but it will add the extension to the end of the name,</span>
+<span class="sd">    not replace the existing extension.</span>
+
+<span class="sd">    &gt;&gt;&gt; add_txt_ext(&#39;file.txt&#39;)</span>
+<span class="sd">    &#39;file.txt.txt&#39;</span>
+
+<span class="sd">    Also, bare in mind that if ext starts with the system&#39;s extension separator,</span>
+<span class="sd">    (os.path.extsep), it will be removed.</span>
+
+<span class="sd">    &gt;&gt;&gt; add_extension(&#39;.txt&#39;, &#39;file&#39;) == add_extension(&#39;txt&#39;, &#39;file&#39;) == &#39;file.txt&#39;</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ext</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">extsep</span><span class="p">):</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">add_extension</span><span class="p">,</span> <span class="n">ext</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ext</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}{</span><span class="n">extsep</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">name</span></div>
+
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
+
+
+<div class="viewcode-block" id="cached_method">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.cached_method">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cached_method</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A decorator to cache the result of a method, ignoring the first argument (usually `self`).</span>
+
+<span class="sd">    This decorator uses `functools.lru_cache` to cache the method result based on the arguments passed</span>
+<span class="sd">    to the method, excluding the first argument (typically `self`). This allows methods of a class to</span>
+<span class="sd">    be cached while ignoring the instance (`self`) in the cache key.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    - func (callable, optional): The method to be decorated. If not provided, a partially applied decorator</span>
+<span class="sd">      will be returned for later application.</span>
+<span class="sd">    - maxsize (int, optional): The maximum size of the cache. Defaults to 128.</span>
+<span class="sd">    - typed (bool, optional): If True, cache entries will be different based on argument types, such as</span>
+<span class="sd">      distinguishing between `1` and `1.0`. Defaults to False.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    &gt;&gt;&gt; class MyClass:</span>
+<span class="sd">    ...     @cached_method(maxsize=2, typed=True)</span>
+<span class="sd">    ...     def add(self, x, y):</span>
+<span class="sd">    ...         print(f&quot;Computing {x} + {y}&quot;)</span>
+<span class="sd">    ...         return x + y</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = MyClass()</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)</span>
+<span class="sd">    Computing 1 + 2</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)  # Cached result, no recomputation</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1.0, 2.0)  # Different types, recomputation occurs</span>
+<span class="sd">    Computing 1.0 + 2.0</span>
+<span class="sd">    3.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Parametrize cached_method and return a decorator to be applied to a function directly</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">cached_method</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="n">maxsize</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="n">typed</span><span class="p">)</span>
+
+    <span class="c1"># Create a cache, ignoring the first argument (`self`)</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">maxsize</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="n">typed</span><span class="p">)(</span>
+        <span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">func</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Call the cache but don&#39;t include `self` in the arguments for caching</span>
+        <span class="k">return</span> <span class="n">cache</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">wraps</span>
+
+
+<div class="viewcode-block" id="lru_cache_method">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.lru_cache_method">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">lru_cache_method</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A decorator to cache the result of a method, ignoring the first argument</span>
+<span class="sd">    (usually `self`).</span>
+
+<span class="sd">    This decorator uses `functools.lru_cache` to cache the method result based on the arguments passed</span>
+<span class="sd">    to the method, excluding the first argument (typically `self`). This allows methods of a class to</span>
+<span class="sd">    be cached while ignoring the instance (`self`) in the cache key.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    - func (callable, optional): The method to be decorated. If not provided, a partially applied decorator</span>
+<span class="sd">      will be returned for later application.</span>
+<span class="sd">    - maxsize (int, optional): The maximum size of the cache. Defaults to 128.</span>
+<span class="sd">    - typed (bool, optional): If True, cache entries will be different based on argument types, such as</span>
+<span class="sd">      distinguishing between `1` and `1.0`. Defaults to False.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; class MyClass:</span>
+<span class="sd">    ...     @lru_cache_method</span>
+<span class="sd">    ...     def add(self, x, y):</span>
+<span class="sd">    ...         print(f&quot;Computing {x} + {y}&quot;)</span>
+<span class="sd">    ...         return x + y</span>
+<span class="sd">    &gt;&gt;&gt; obj = MyClass()</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)</span>
+<span class="sd">    Computing 1 + 2</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)  # Cached result, no recomputation</span>
+<span class="sd">    3</span>
+
+<span class="sd">    Like `lru_cache`, you can specify the `maxsize` and `typed` parameters:</span>
+
+<span class="sd">    &gt;&gt;&gt; class MyOtherClass:</span>
+<span class="sd">    ...     @lru_cache_method(maxsize=2, typed=True)</span>
+<span class="sd">    ...     def add(self, x, y):</span>
+<span class="sd">    ...         print(f&quot;Computing {x} + {y}&quot;)</span>
+<span class="sd">    ...         return x + y</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; obj = MyOtherClass()</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)</span>
+<span class="sd">    Computing 1 + 2</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1, 2)  # Cached result, no recomputation</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; obj.add(1.0, 2.0)  # Different types, recomputation occurs</span>
+<span class="sd">    Computing 1.0 + 2.0</span>
+<span class="sd">    3.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Parametrize lru_cache_method and return a decorator to be applied to a function directly</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">lru_cache_method</span><span class="p">,</span> <span class="n">maxsize</span><span class="o">=</span><span class="n">maxsize</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="n">typed</span><span class="p">)</span>
+
+    <span class="c1"># Create a cache, ignoring the first argument (`self`)</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">maxsize</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="n">typed</span><span class="p">)(</span>
+        <span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">func</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Call the cache but don&#39;t include `self` in the arguments for caching</span>
+        <span class="k">return</span> <span class="n">cache</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+
+<div class="viewcode-block" id="cache_property_method">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.cache_property_method">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cache_property_method</span><span class="p">(</span>
+    <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="n">MethodName</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache_decorator</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">cache_this</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a method of a class into a CachedProperty.</span>
+
+<span class="sd">    Essentially, it does what `A.method = cache_this(A.method)` would do, taking care of</span>
+<span class="sd">    the `__set_name__` problem that you&#39;d run into doing it that way.</span>
+<span class="sd">    Note that here, you need to say `cache_property_method(A, &#39;method&#39;)`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cls (type): The class containing the method.</span>
+<span class="sd">        method_name (str): The name of the method to convert to a cached property.</span>
+<span class="sd">        cache_decorator (Callable): The decorator to use to cache the method. Defaults to</span>
+<span class="sd">            `cache_this`. One frequent use case would be to use `functools.partial` to</span>
+<span class="sd">            fix the cache and key parameters of `cache_this` and inject that.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; @cache_property_method([&#39;normal_method&#39;, &#39;property_method&#39;])</span>
+<span class="sd">    ... class TestClass:</span>
+<span class="sd">    ...     def normal_method(self):</span>
+<span class="sd">    ...         print(&#39;normal_method called&#39;)</span>
+<span class="sd">    ...         return 1</span>
+<span class="sd">    ...</span>
+<span class="sd">    ...     @property</span>
+<span class="sd">    ...     def property_method(self):</span>
+<span class="sd">    ...         print(&#39;property_method called&#39;)</span>
+<span class="sd">    ...         return 2</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; c = TestClass()</span>
+<span class="sd">    &gt;&gt;&gt; c.normal_method</span>
+<span class="sd">    normal_method called</span>
+<span class="sd">    1</span>
+<span class="sd">    &gt;&gt;&gt; c.normal_method</span>
+<span class="sd">    1</span>
+<span class="sd">    &gt;&gt;&gt; c.property_method</span>
+<span class="sd">    property_method called</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; c.property_method</span>
+<span class="sd">    2</span>
+
+
+<span class="sd">    You can also use it like this:</span>
+
+<span class="sd">    &gt;&gt;&gt; class TestClass:</span>
+<span class="sd">    ...     def normal_method(self):</span>
+<span class="sd">    ...         print(&#39;normal_method called&#39;)</span>
+<span class="sd">    ...         return 1</span>
+<span class="sd">    ...</span>
+<span class="sd">    ...     @property</span>
+<span class="sd">    ...     def property_method(self):</span>
+<span class="sd">    ...         print(&#39;property_method called&#39;)</span>
+<span class="sd">    ...         return 2</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; cache_property_method(</span>
+<span class="sd">    ...     TestClass,</span>
+<span class="sd">    ...     [</span>
+<span class="sd">    ...         &#39;normal_method&#39;,</span>
+<span class="sd">    ...         &#39;property_method&#39;,</span>
+<span class="sd">    ...     ],</span>
+<span class="sd">    ... )  # doctest: +ELLIPSIS</span>
+<span class="sd">    &lt;class ...TestClass&#39;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; c = TestClass()</span>
+<span class="sd">    &gt;&gt;&gt; c.normal_method</span>
+<span class="sd">    normal_method called</span>
+<span class="sd">    1</span>
+<span class="sd">    &gt;&gt;&gt; c.normal_method</span>
+<span class="sd">    1</span>
+<span class="sd">    &gt;&gt;&gt; c.property_method</span>
+<span class="sd">    property_method called</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; c.property_method</span>
+<span class="sd">    2</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">method_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">&quot;If method_name is None, cls (which will play the role of method_name in &quot;</span>
+            <span class="s2">&quot;a decorator factory) must not be None.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">method_name</span> <span class="o">=</span> <span class="bp">cls</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
+            <span class="n">cache_property_method</span><span class="p">,</span>
+            <span class="n">method_name</span><span class="o">=</span><span class="n">method_name</span><span class="p">,</span>
+            <span class="n">cache_decorator</span><span class="o">=</span><span class="n">cache_decorator</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method_name</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">method_name</span><span class="p">:</span>
+            <span class="n">cache_property_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cache_decorator</span><span class="o">=</span><span class="n">cache_decorator</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span>
+
+    <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="nb">property</span><span class="p">):</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">fget</span>  <span class="c1"># Get the original method from the property</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="p">(</span><span class="n">cached_property</span><span class="p">,</span> <span class="n">CachedProperty</span><span class="p">)):</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">func</span>
+    <span class="c1"># not sure we want to handle (staticmethod, classmethod, but in case:</span>
+    <span class="c1"># elif isinstance(method, (staticmethod, classmethod)):</span>
+    <span class="c1">#     method = method.__func__</span>
+
+    <span class="n">cached_method</span> <span class="o">=</span> <span class="n">cache_decorator</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
+    <span class="n">cached_method</span><span class="o">.</span><span class="n">__set_name__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">cached_method</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">cls</span></div>
+
+
+
+<span class="c1"># -------------------------------------------------------------------------------------</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Callable</span>
@@ -139,7 +1141,7 @@
 
 
 
-<span class="c1">########################################################################################################################</span>
+<span class="c1"># -------------------------------------------------------------------------------------</span>
 <span class="c1"># Read caching</span>
 
 
