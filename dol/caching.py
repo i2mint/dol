@@ -30,9 +30,9 @@ from collections.abc import MutableMapping
 from typing import Optional, Callable, TypeVar, Union, Any, Protocol
 
 # Type variables
-KT = TypeVar('KT')  # Key type
-VT = TypeVar('VT')  # Value type
-T = TypeVar('T')  # Generic type
+KT = TypeVar("KT")  # Key type
+VT = TypeVar("VT")  # Value type
+T = TypeVar("T")  # Generic type
 
 # Constants
 _NOT_FOUND = object()
@@ -122,6 +122,7 @@ class ApplyToMethodName:
         """Apply the function to the method name at definition time."""
         return self.func(method_name)
 
+
 @register_key_strategy
 class InstanceProp:
     """Get a key from an instance property."""
@@ -142,6 +143,7 @@ class InstanceProp:
     def resolve_at_runtime(self, instance: Any, method_name: str) -> Any:
         """Get the property value from the instance at runtime."""
         return getattr(instance, self.prop_name)
+
 
 @register_key_strategy
 class ApplyToInstance:
@@ -189,13 +191,13 @@ def _resolve_key_for_cached_prop(key: Any) -> KeyStrategy:
 
     if callable(key):
         # Check the signature to determine the right strategy
-        if hasattr(key, '__code__'):
+        if hasattr(key, "__code__"):
             co_varnames = key.__code__.co_varnames
 
             if (
                 key.__code__.co_argcount > 0
                 and co_varnames
-                and co_varnames[0] in ('instance', 'self')
+                and co_varnames[0] in ("instance", "self")
             ):
                 # Function that takes an instance as first arg
                 return ApplyToInstance(key)
@@ -654,6 +656,7 @@ def cache_this(
 
         else:  #   If func is given, we want to return the CachedProperty instance
             return CachedProperty(func, cache=cache, key=key, pre_cache=pre_cache)
+
 
 # add the key strategies as attributes of cache_this to have them easily accessible
 for _key_strategy in KeyStrategy.registered_key_strategies:

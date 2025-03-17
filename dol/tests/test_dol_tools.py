@@ -15,30 +15,30 @@ class TestConfirmOverwrite:
     def test_confirm_overwrite_no_existing_key(self):
         # When key doesn't exist, should return value unchanged
         mapping = {}
-        result = tools.confirm_overwrite(mapping, 'key', 'value')
-        assert result == 'value'
+        result = tools.confirm_overwrite(mapping, "key", "value")
+        assert result == "value"
 
     def test_confirm_overwrite_same_value(self):
         # When key exists with same value, should return value unchanged
-        mapping = {'key': 'value'}
-        result = tools.confirm_overwrite(mapping, 'key', 'value')
-        assert result == 'value'
+        mapping = {"key": "value"}
+        result = tools.confirm_overwrite(mapping, "key", "value")
+        assert result == "value"
 
-    @mock.patch('builtins.input', return_value='new_value')
+    @mock.patch("builtins.input", return_value="new_value")
     def test_confirm_overwrite_confirmed(self, mock_input):
         # When user confirms overwrite, should return new value
-        mapping = {'key': 'old_value'}
-        result = tools.confirm_overwrite(mapping, 'key', 'new_value')
-        assert result == 'new_value'
+        mapping = {"key": "old_value"}
+        result = tools.confirm_overwrite(mapping, "key", "new_value")
+        assert result == "new_value"
         mock_input.assert_called_once()
 
-    @mock.patch('builtins.input', return_value='wrong_input')
-    @mock.patch('builtins.print')
+    @mock.patch("builtins.input", return_value="wrong_input")
+    @mock.patch("builtins.print")
     def test_confirm_overwrite_rejected(self, mock_print, mock_input):
         # When user doesn't confirm, should return existing value
-        mapping = {'key': 'old_value'}
-        result = tools.confirm_overwrite(mapping, 'key', 'new_value')
-        assert result == 'old_value'
+        mapping = {"key": "old_value"}
+        result = tools.confirm_overwrite(mapping, "key", "new_value")
+        assert result == "old_value"
         mock_input.assert_called_once()
         mock_print.assert_called_once()
 
@@ -46,8 +46,8 @@ class TestConfirmOverwrite:
 class TestStoreAggregate:
     def test_store_aggregate_with_dict(self):
         content_store = {
-            'file1.py': '"""Module docstring."""',
-            'file2.py': 'def foo(): pass',
+            "file1.py": '"""Module docstring."""',
+            "file2.py": "def foo(): pass",
         }
         result = tools.store_aggregate(
             content_store=content_store, kv_to_item=lambda k, v: f"{k}: {v}"
@@ -57,14 +57,14 @@ class TestStoreAggregate:
 
     def test_store_aggregate_with_filters(self):
         content_store = {
-            'file1.py': '"""Module docstring."""',
-            'file2.txt': 'Plain text',
-            'file3.py': 'def foo(): pass',
+            "file1.py": '"""Module docstring."""',
+            "file2.txt": "Plain text",
+            "file3.py": "def foo(): pass",
         }
         result = tools.store_aggregate(
             content_store=content_store,
-            key_filter=lambda k: k.endswith('.py'),
-            aggregator=', '.join,
+            key_filter=lambda k: k.endswith(".py"),
+            aggregator=", ".join,
         )
         assert "file1.py" in result
         assert "file3.py" in result
@@ -72,8 +72,8 @@ class TestStoreAggregate:
 
     def test_store_aggregate_with_custom_aggregator(self):
         content_store = {
-            'file1': 'content1',
-            'file2': 'content2',
+            "file1": "content1",
+            "file2": "content2",
         }
         result = tools.store_aggregate(
             content_store=content_store, aggregator=lambda items: len(list(items))
@@ -82,8 +82,8 @@ class TestStoreAggregate:
 
     def test_store_aggregate_with_file_output(self):
         content_store = {
-            'file1': 'content1',
-            'file2': 'content2',
+            "file1": "content1",
+            "file2": "content2",
         }
         with tempfile.TemporaryDirectory() as tmpdir:
 
@@ -114,7 +114,7 @@ class TestStoreAggregate:
                     assert isinstance(result, float)
 
             class TestAskUserForValueWhenMissing:
-                @mock.patch('builtins.input', return_value='user_value')
+                @mock.patch("builtins.input", return_value="user_value")
                 def test_ask_user_when_missing_with_input(self, mock_input):
                     from dol.base import Store
 
@@ -122,14 +122,14 @@ class TestStoreAggregate:
                     wrapped_store = tools.ask_user_for_value_when_missing(Store(store))
 
                     # Access the key which triggers __missing__
-                    value = wrapped_store['missing_key']
+                    value = wrapped_store["missing_key"]
 
                     # After __missing__ is called, the value should be stored
-                    assert store == {'missing_key': 'user_value'}
-                    assert value == 'user_value'
+                    assert store == {"missing_key": "user_value"}
+                    assert value == "user_value"
                     mock_input.assert_called_once()
 
-                @mock.patch('builtins.input', return_value='123')
+                @mock.patch("builtins.input", return_value="123")
                 def test_ask_user_with_preprocessor(self, mock_input):
                     from dol.base import Store
 
@@ -140,14 +140,14 @@ class TestStoreAggregate:
                     )
 
                     # Access the key which triggers __missing__
-                    value = wrapped_store['missing_key']
+                    value = wrapped_store["missing_key"]
 
                     # After __missing__ is called, the value should be stored
-                    assert store == {'missing_key': 123}
+                    assert store == {"missing_key": 123}
                     assert value == 123
                     mock_input.assert_called_once()
 
-                @mock.patch('builtins.input', return_value='')
+                @mock.patch("builtins.input", return_value="")
                 def test_ask_user_with_empty_input(self, mock_input):
                     from dol.base import Store
 
@@ -161,12 +161,12 @@ class TestStoreAggregate:
 
                     # This should raise KeyError since we're returning empty string
                     with pytest.raises(KeyError):
-                        wrapped_store['missing_key']
+                        wrapped_store["missing_key"]
 
                     # Verify the original __missing__ was called
                     store_obj.__missing__.assert_called_once()
 
-                @mock.patch('builtins.input', return_value='user_value')
+                @mock.patch("builtins.input", return_value="user_value")
                 def test_custom_message(self, mock_input):
                     from dol.base import Store
 
@@ -176,7 +176,7 @@ class TestStoreAggregate:
                         Store(store), on_missing_msg=custom_msg
                     )
 
-                    wrapped_store['missing_key']
+                    wrapped_store["missing_key"]
 
                     # Check that input was called with the custom message
                     mock_input.assert_called_once_with(
@@ -185,14 +185,14 @@ class TestStoreAggregate:
 
             class TestISliceStoreAdvanced:
                 def test_islice_with_step(self):
-                    original = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}
+                    original = {"a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
                     sliceable = tools.iSliceStore(original)
 
                     # With step=2, should get every other value
                     assert list(sliceable[0:5:2]) == [1, 3, 5]
 
                 def test_islice_with_negative_indices(self):
-                    original = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}
+                    original = {"a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
                     sliceable = tools.iSliceStore(original)
 
                     # Test with negative indices
@@ -200,7 +200,7 @@ class TestStoreAggregate:
                     assert list(sliceable[-3:]) == [3, 4, 5]
 
                 def test_islice_single_item_access(self):
-                    original = {'a': 1, 'b': 2, 'c': 3}
+                    original = {"a": 1, "b": 2, "c": 3}
                     sliceable = tools.iSliceStore(original)
 
                     # To get a single item by position
@@ -208,7 +208,7 @@ class TestStoreAggregate:
                     assert item == 2
 
                 def test_islice_out_of_bounds(self):
-                    original = {'a': 1, 'b': 2, 'c': 3}
+                    original = {"a": 1, "b": 2, "c": 3}
                     sliceable = tools.iSliceStore(original)
 
                     # Slicing beyond the end should just stop at the end
@@ -219,8 +219,8 @@ class TestStoreAggregate:
             class TestForestAdvanced:
                 def test_forest_with_custom_filters(self):
                     d = {
-                        'apple': {'kind': 'fruit', 'color': 'red', 'count': 5},
-                        'banana': {'kind': 'fruit', 'color': 'yellow', 'count': 3},
+                        "apple": {"kind": "fruit", "color": "red", "count": 5},
+                        "banana": {"kind": "fruit", "color": "yellow", "count": 3},
                     }
 
                     # Only include keys that don't start with 'c'
@@ -228,20 +228,20 @@ class TestStoreAggregate:
                         d,
                         is_leaf=lambda k, v: not isinstance(v, dict),
                         get_node_keys=lambda v: [
-                            k for k in v.keys() if not k.startswith('c')
+                            k for k in v.keys() if not k.startswith("c")
                         ],
                         get_src_item=lambda src, k: src[k],
                     )
 
-                    assert list(forest['apple']) == ['kind', 'color']
-                    assert 'count' not in list(forest['apple'])
+                    assert list(forest["apple"]) == ["kind", "color"]
+                    assert "count" not in list(forest["apple"])
 
                 def test_forest_with_list_source(self):
                     # Test with a list as the source
                     lst = [
-                        {'name': 'item1', 'value': 10},
-                        {'name': 'item2', 'value': 20},
-                        {'name': 'item3', 'value': 30},
+                        {"name": "item1", "value": 10},
+                        {"name": "item2", "value": 20},
+                        {"name": "item3", "value": 30},
                     ]
 
                     forest = tools.Forest(
@@ -253,12 +253,12 @@ class TestStoreAggregate:
                     )
 
                     # Since it's a list, we access by index
-                    assert forest[0]['name'] == 'item1'
-                    assert forest[1]['value'] == 20
+                    assert forest[0]["name"] == "item1"
+                    assert forest[1]["value"] == 20
                     assert list(forest) == [0, 1, 2]
 
                 def test_forest_with_leaf_transform(self):
-                    d = {'a': '1', 'b': '2', 'c': '3'}
+                    d = {"a": "1", "b": "2", "c": "3"}
 
                     # Apply a transformation to leaf values
                     forest = tools.Forest(
@@ -269,27 +269,27 @@ class TestStoreAggregate:
                         leaf_trans=int,  # Convert string values to integers
                     )
 
-                    assert forest['a'] == 1
-                    assert forest['b'] == 2
-                    assert isinstance(forest['c'], int)
+                    assert forest["a"] == 1
+                    assert forest["b"] == 2
+                    assert isinstance(forest["c"], int)
 
     def test_islice_store_slicing(self):
-        original = {'foo': 'bar', 'hello': 'world', 'alice': 'bob'}
+        original = {"foo": "bar", "hello": "world", "alice": "bob"}
         sliceable = tools.iSliceStore(original)
 
-        assert list(sliceable[0:2]) == ['bar', 'world']
-        assert list(sliceable[-2:]) == ['world', 'bob']
-        assert list(sliceable[:-1]) == ['bar', 'world']
+        assert list(sliceable[0:2]) == ["bar", "world"]
+        assert list(sliceable[-2:]) == ["world", "bob"]
+        assert list(sliceable[:-1]) == ["bar", "world"]
 
 
 class TestForest:
     def test_forest_with_dict(self):
         d = {
-            'apple': {
-                'kind': 'fruit',
-                'types': {'granny': {'color': 'green'}, 'fuji': {'color': 'red'}},
+            "apple": {
+                "kind": "fruit",
+                "types": {"granny": {"color": "green"}, "fuji": {"color": "red"}},
             },
-            'banana': {'kind': 'fruit'},
+            "banana": {"kind": "fruit"},
         }
 
         forest = tools.Forest(
@@ -299,17 +299,17 @@ class TestForest:
             get_src_item=lambda src, k: src[k],
         )
 
-        assert list(forest) == ['apple', 'banana']
-        assert forest['apple']['kind'] == 'fruit'
-        assert list(forest['apple']['types']) == ['granny', 'fuji']
-        assert forest['apple']['types']['granny']['color'] == 'green'
+        assert list(forest) == ["apple", "banana"]
+        assert forest["apple"]["kind"] == "fruit"
+        assert list(forest["apple"]["types"]) == ["granny", "fuji"]
+        assert forest["apple"]["types"]["granny"]["color"] == "green"
 
     def test_forest_to_dict(self):
         d = {
-            'apple': {
-                'kind': 'fruit',
-                'types': {
-                    'granny': {'color': 'green'},
+            "apple": {
+                "kind": "fruit",
+                "types": {
+                    "granny": {"color": "green"},
                 },
             }
         }

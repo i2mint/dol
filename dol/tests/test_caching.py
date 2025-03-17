@@ -97,7 +97,7 @@ def test_cache_property_method(capsys):
 class LoggedCache(UserDict):
     """Cache that logs get/set operations"""
 
-    def __init__(self, name='cache'):
+    def __init__(self, name="cache"):
         super().__init__()
         self.name = name
         self.get_log = []
@@ -130,28 +130,28 @@ class TestClassWithKeyStrategies:
         self.compute_count = 0
 
     # Example using explicit key
-    @cache_this(cache='my_cache', key=ExplicitKey("explicit_key"))
+    @cache_this(cache="my_cache", key=ExplicitKey("explicit_key"))
     def explicit_key_method(self):
         self.compute_count += 1
         return f"explicit_result_{self.compute_count}"
 
     # Example using function applied to method name
     @cache_this(
-        cache='my_cache', key=ApplyToMethodName(lambda name: f"{name}_processed")
+        cache="my_cache", key=ApplyToMethodName(lambda name: f"{name}_processed")
     )
     def method_name_key(self):
         self.compute_count += 1
         return f"method_name_result_{self.compute_count}"
 
     # Example using instance property
-    @cache_this(cache='my_cache', key=InstanceProp('key_name'))
+    @cache_this(cache="my_cache", key=InstanceProp("key_name"))
     def instance_prop_key(self):
         self.compute_count += 1
         return f"instance_prop_result_{self.compute_count}"
 
     # Example using function applied to instance
     @cache_this(
-        cache='my_cache',
+        cache="my_cache",
         key=ApplyToInstance(lambda instance: f"instance_{id(instance)}"),
     )
     def instance_func_key(self):
@@ -159,19 +159,19 @@ class TestClassWithKeyStrategies:
         return f"instance_func_result_{self.compute_count}"
 
     # Example using string (implicit ExplicitKey)
-    @cache_this(cache='my_cache', key="string_key")
+    @cache_this(cache="my_cache", key="string_key")
     def string_key_method(self):
         self.compute_count += 1
         return f"string_key_result_{self.compute_count}"
 
     # Example using function with method name (implicit ApplyToMethodName)
-    @cache_this(cache='my_cache', key=lambda name: f"{name}_func")
+    @cache_this(cache="my_cache", key=lambda name: f"{name}_func")
     def simple_func_key(self):
         self.compute_count += 1
         return f"simple_func_result_{self.compute_count}"
 
     # Example using function with instance (implicit ApplyToInstance)
-    @cache_this(cache='my_cache', key=lambda self: f"self_{self.key_name}")
+    @cache_this(cache="my_cache", key=lambda self: f"self_{self.key_name}")
     def implicit_instance_func(self):
         self.compute_count += 1
         return f"implicit_instance_result_{self.compute_count}"
@@ -180,7 +180,7 @@ class TestClassWithKeyStrategies:
     def set_external_cache(self, external_cache):
         self.external_cache = external_cache
 
-    @cache_this(cache='external_cache', key="external_key")
+    @cache_this(cache="external_cache", key="external_key")
     def external_cache_method(self):
         self.compute_count += 1
         return f"external_result_{self.compute_count}"
@@ -193,7 +193,7 @@ class PickleCached:
         self.cache = MockValueCodecs.default.pickle(self._backend_store)
         self.compute_count = 0
 
-    @cache_this(cache='cache', key=ApplyToMethodName(lambda x: f"{x}.pkl"))
+    @cache_this(cache="cache", key=ApplyToMethodName(lambda x: f"{x}.pkl"))
     def foo(self):
         self.compute_count += 1
         return f"foo_result_{self.compute_count}"
@@ -204,22 +204,22 @@ class Dacc:
     def __init__(self):
         self.text_store = LoggedCache("text_store")
         self.json_store = LoggedCache("json_store")
-        self.schema_description_key = 'schema_description.txt'
-        self.pricing_html_key = 'pricing.html'
-        self.schema_key = 'schema.json'
+        self.schema_description_key = "schema_description.txt"
+        self.pricing_html_key = "pricing.html"
+        self.schema_key = "schema.json"
         self.compute_count = 0
 
-    @cache_this(cache='text_store', key=InstanceProp('schema_description_key'))
+    @cache_this(cache="text_store", key=InstanceProp("schema_description_key"))
     def schema_description(self) -> str:
         self.compute_count += 1
         return f"schema_description_{self.compute_count}"
 
-    @cache_this(cache='text_store', key=InstanceProp('pricing_html_key'))
+    @cache_this(cache="text_store", key=InstanceProp("pricing_html_key"))
     def pricing_page_html(self) -> str:
         self.compute_count += 1
         return f"pricing_html_{self.compute_count}"
 
-    @cache_this(cache='json_store', key=InstanceProp('schema_key'))
+    @cache_this(cache="json_store", key=InstanceProp("schema_key"))
     def schema(self) -> Dict[str, Any]:
         self.compute_count += 1
         return {"version": f"schema_{self.compute_count}"}
@@ -447,20 +447,19 @@ class TestErrorCases:
             def __init__(self):
                 self.my_cache = {}
 
-            @cache_this(cache='my_cache', key=lambda self: None)
+            @cache_this(cache="my_cache", key=lambda self: None)
             def none_key_method(self):
                 return 42
 
         obj = TestNoneKey()
         with pytest.raises(TypeError, match="cannot be None"):
             obj.none_key_method
-            
 
     def test_missing_cache_attribute(self):
         """Test error when cache attribute is missing"""
 
         class TestMissingCache:
-            @cache_this(cache='nonexistent_cache', key="test_key")
+            @cache_this(cache="nonexistent_cache", key="test_key")
             def test_method(self):
                 return 42
 
@@ -475,7 +474,7 @@ class TestErrorCases:
             def __init__(self):
                 self.invalid_cache = "not a mapping"
 
-            @cache_this(cache='invalid_cache', key="test_key")
+            @cache_this(cache="invalid_cache", key="test_key")
             def test_method(self):
                 return 42
 
