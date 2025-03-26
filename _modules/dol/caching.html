@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.3.12 documentation</title>
+  <title>dol.caching &mdash; dol 0.3.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0cf6a877"></script>
+      <script src="../../_static/documentation_options.js?v=a88e2c6e"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -142,9 +142,9 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Protocol</span>
 
 <span class="c1"># Type variables</span>
-<span class="n">KT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;KT&#39;</span><span class="p">)</span>  <span class="c1"># Key type</span>
-<span class="n">VT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;VT&#39;</span><span class="p">)</span>  <span class="c1"># Value type</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>  <span class="c1"># Generic type</span>
+<span class="n">KT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;KT&quot;</span><span class="p">)</span>  <span class="c1"># Key type</span>
+<span class="n">VT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;VT&quot;</span><span class="p">)</span>  <span class="c1"># Value type</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>  <span class="c1"># Generic type</span>
 
 <span class="c1"># Constants</span>
 <span class="n">_NOT_FOUND</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
@@ -261,6 +261,7 @@
 </div>
 
 
+
 <div class="viewcode-block" id="InstanceProp">
 <a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.InstanceProp">[docs]</a>
 <span class="nd">@register_key_strategy</span>
@@ -289,6 +290,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the property value from the instance at runtime.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop_name</span><span class="p">)</span></div>
 </div>
+
 
 
 <div class="viewcode-block" id="ApplyToInstance">
@@ -346,13 +348,13 @@
 
     <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
         <span class="c1"># Check the signature to determine the right strategy</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s1">&#39;__code__&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s2">&quot;__code__&quot;</span><span class="p">):</span>
             <span class="n">co_varnames</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="vm">__code__</span><span class="o">.</span><span class="n">co_varnames</span>
 
             <span class="k">if</span> <span class="p">(</span>
                 <span class="n">key</span><span class="o">.</span><span class="vm">__code__</span><span class="o">.</span><span class="n">co_argcount</span> <span class="o">&gt;</span> <span class="mi">0</span>
                 <span class="ow">and</span> <span class="n">co_varnames</span>
-                <span class="ow">and</span> <span class="n">co_varnames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;instance&#39;</span><span class="p">,</span> <span class="s1">&#39;self&#39;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">co_varnames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;instance&quot;</span><span class="p">,</span> <span class="s2">&quot;self&quot;</span><span class="p">)</span>
             <span class="p">):</span>
                 <span class="c1"># Function that takes an instance as first arg</span>
                 <span class="k">return</span> <span class="n">ApplyToInstance</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
@@ -816,6 +818,7 @@
 
         <span class="k">else</span><span class="p">:</span>  <span class="c1">#   If func is given, we want to return the CachedProperty instance</span>
             <span class="k">return</span> <span class="n">CachedProperty</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">pre_cache</span><span class="o">=</span><span class="n">pre_cache</span><span class="p">)</span></div>
+
 
 
 <span class="c1"># add the key strategies as attributes of cache_this to have them easily accessible</span>

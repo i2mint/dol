@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.3.12 documentation</title>
+  <title>dol.paths &mdash; dol 0.3.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0cf6a877"></script>
+      <script src="../../_static/documentation_options.js?v=a88e2c6e"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -1971,6 +1971,7 @@
         <span class="n">namedtuple_type_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;NamedTuple&quot;</span><span class="p">,</span>
         <span class="n">dflt_pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.*&quot;</span><span class="p">,</span>
         <span class="n">dflt_field_name</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;i</span><span class="si">{:02.0f}</span><span class="s2">_&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+        <span class="n">normalize_paths</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="p">,</span>
@@ -2007,7 +2008,7 @@
             <span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="n">identity</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fields</span><span class="p">},</span> <span class="o">**</span><span class="p">(</span><span class="n">from_str_funcs</span> <span class="ow">or</span> <span class="p">{})</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_fields</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fields</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_regex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_regex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_regex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_regex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">,</span> <span class="n">normalize_path</span><span class="o">=</span><span class="n">normalize_paths</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="o">**</span><span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">})</span>
@@ -2464,7 +2465,7 @@
         <span class="n">normalized_template</span> <span class="o">=</span> <span class="n">string_unparse</span><span class="p">(</span><span class="n">parse_and_transform</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">normalized_template</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">field_names</span><span class="p">),</span> <span class="n">to_str_funcs</span><span class="p">,</span> <span class="n">field_patterns_</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_compile_regex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compile_regex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">normalize_path</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Parses the template, generating regex for matching the template.</span>
 <span class="sd">        Essentially, it weaves together the literal text parts and the format_specs</span>
 <span class="sd">        parts, transformed into name-caputuring regex patterns.</span>
@@ -2501,7 +2502,9 @@
             <span class="k">for</span> <span class="n">literal_text</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">literal_text</span><span class="p">)</span> <span class="o">+</span> <span class="n">mk_named_capture_group</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">safe_compile</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">generate_pattern_parts</span><span class="p">(</span><span class="n">template</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">safe_compile</span><span class="p">(</span>
+            <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">generate_pattern_parts</span><span class="p">(</span><span class="n">template</span><span class="p">)),</span> <span class="n">normalize_path</span><span class="o">=</span><span class="n">normalize_path</span>
+        <span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_assert_field_type</span><span class="p">(</span><span class="n">field_type</span><span class="p">:</span> <span class="n">FieldTypeNames</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;field_type&quot;</span><span class="p">):</span>

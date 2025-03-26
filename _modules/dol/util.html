@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.3.12 documentation</title>
+  <title>dol.util &mdash; dol 0.3.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0cf6a877"></script>
+      <script src="../../_static/documentation_options.js?v=a88e2c6e"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -164,7 +164,7 @@
 
 <div class="viewcode-block" id="safe_compile">
 <a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.safe_compile">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">safe_compile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">safe_compile</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">normalize_path</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Safely compiles a file path into a regex pattern, ensuring compatibility</span>
 <span class="sd">    across different operating systems (Windows, macOS, Linux).</span>
@@ -188,12 +188,13 @@
 <span class="sd">        &gt;&gt;&gt; regex.pattern  # Unix path is unmodified</span>
 <span class="sd">        &#39;/fun/paths/are/awesome&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Normalize the path to handle cross-platform differences</span>
-    <span class="n">normalized_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">normalize_path</span><span class="p">:</span>
+        <span class="c1"># Normalize the path to handle cross-platform differences</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
         <span class="c1"># Escape backslashes for Windows paths</span>
-        <span class="n">normalized_path</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">normalized_path</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">normalized_path</span><span class="p">)</span></div>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
 
 
 
