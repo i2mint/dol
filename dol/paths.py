@@ -1779,6 +1779,7 @@ class KeyTemplate:
         namedtuple_type_name: str = "NamedTuple",
         dflt_pattern: str = ".*",
         dflt_field_name: Callable[[str], str] = "i{:02.0f}_".format,
+        normalize_paths: bool = False,
     ):
         self._init_kwargs = dict(
             template=template,
@@ -1815,7 +1816,7 @@ class KeyTemplate:
             {field: identity for field in self._fields}, **(from_str_funcs or {})
         )
         self._n_fields = len(self._fields)
-        self._regex = self._compile_regex(self.template)
+        self._regex = self._compile_regex(self.template, normalize_path=normalize_paths)
 
     def clone(self, **kwargs):
         return type(self)(**{**self._init_kwargs, **kwargs})
@@ -2221,7 +2222,7 @@ class KeyTemplate:
         normalized_template = string_unparse(parse_and_transform())
         return normalized_template, tuple(field_names), to_str_funcs, field_patterns_
 
-    def _compile_regex(self, template):
+    def _compile_regex(self, template, normalize_path=False):
         r"""Parses the template, generating regex for matching the template.
         Essentially, it weaves together the literal text parts and the format_specs
         parts, transformed into name-caputuring regex patterns.
@@ -2258,7 +2259,9 @@ class KeyTemplate:
             for literal_text, field_name, _, _ in parts:
                 yield re.escape(literal_text) + mk_named_capture_group(field_name)
 
-        return safe_compile("".join(generate_pattern_parts(template)))
+        return safe_compile(
+            "".join(generate_pattern_parts(template)), normalize_path=normalize_path
+        )
 
     @staticmethod
     def _assert_field_type(field_type: FieldTypeNames, name="field_type"):

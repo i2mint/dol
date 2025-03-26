@@ -50,7 +50,7 @@ wraps = partial(_wraps, assigned=wrapper_assignments)
 exhaust = partial(deque, maxlen=0)
 
 
-def safe_compile(path):
+def safe_compile(path, normalize_path=True):
     r"""
     Safely compiles a file path into a regex pattern, ensuring compatibility
     across different operating systems (Windows, macOS, Linux).
@@ -74,12 +74,13 @@ def safe_compile(path):
         >>> regex.pattern  # Unix path is unmodified
         '/fun/paths/are/awesome'
     """
-    # Normalize the path to handle cross-platform differences
-    normalized_path = os.path.normpath(path)
+    if normalize_path:
+        # Normalize the path to handle cross-platform differences
+        path = os.path.normpath(path)
     if platform.system() == "Windows":
         # Escape backslashes for Windows paths
-        normalized_path = re.escape(normalized_path)
-    return re.compile(normalized_path)
+        path = re.escape(path)
+    return re.compile(path)
 
 
 # TODO: Make identity_func "identifiable". If we use the following one, we can use == to detect it's use,
