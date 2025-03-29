@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.3.14 documentation</title>
+  <title>dol.caching &mdash; dol 0.3.15 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=6307bca3"></script>
+      <script src="../../_static/documentation_options.js?v=c77f38ba"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -115,6 +115,7 @@
 <span class="c1"># -------------------------------------------------------------------------------------</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">T</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
 
@@ -1636,15 +1637,69 @@
 
 
 
+
+<div class="viewcode-block" id="ensure_clear_to_kv_store">
+<a class="viewcode-back" href="../../module_docs/dol/caching.html#dol.caching.ensure_clear_to_kv_store">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ensure_clear_to_kv_store</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">&quot;clear&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">store</span><span class="o">.</span><span class="n">clear</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;_disabled_clear_method&#39;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ensures the store has a working clear method.</span>
 
-        <span class="k">def</span><span class="w"> </span><span class="nf">_clear</span><span class="p">(</span><span class="n">kv_store</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kv_store</span><span class="p">:</span>
-                <span class="k">del</span> <span class="n">kv_store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+<span class="sd">    If the store doesn&#39;t have a clear method or has the disabled version,</span>
+<span class="sd">    adds a proper implementation that safely removes all items.</span>
 
-        <span class="n">store</span><span class="o">.</span><span class="n">clear</span> <span class="o">=</span> <span class="n">_clear</span>
-    <span class="k">return</span> <span class="n">store</span>
+<span class="sd">    Args:</span>
+<span class="sd">        store: A Store class or instance</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The same store with guaranteed clear functionality</span>
+
+<span class="sd">    &gt;&gt;&gt; class NoClearing(dict):</span>
+<span class="sd">    ...     clear = None</span>
+<span class="sd">    &gt;&gt;&gt; d = NoClearing({&#39;a&#39;: 1, &#39;b&#39;: 2})</span>
+<span class="sd">    &gt;&gt;&gt; d = ensure_clear_to_kv_store(d)</span>
+<span class="sd">    &gt;&gt;&gt; len(d)</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; d.clear()</span>
+<span class="sd">    &gt;&gt;&gt; len(d)</span>
+<span class="sd">    0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_needs_clear_method</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the object needs a clear method added.&quot;&quot;&quot;</span>
+        <span class="n">has_clear</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;clear&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_clear</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="n">clear_attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;clear&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">clear_attr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="n">clear_attr</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">clear_attr</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;_disabled_clear_method&#39;</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_needs_clear_method</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">store</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_clear_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove all items from the store.&quot;&quot;&quot;</span>
+        <span class="c1"># Create a separate list to avoid modification during iteration</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="c1"># Apply the appropriate clear method</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+        <span class="n">store</span><span class="o">.</span><span class="n">clear</span> <span class="o">=</span> <span class="n">_clear_method</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">store</span><span class="o">.</span><span class="n">clear</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">(</span><span class="n">_clear_method</span><span class="p">,</span> <span class="n">store</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">store</span></div>
+
 
 
 <span class="c1"># TODO: Normalize using store_decorator and add control over flush_cache method name</span>
