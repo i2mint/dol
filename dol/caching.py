@@ -1444,7 +1444,6 @@ def store_cached_with_single_key(store, key):
     return func_wrapper
 
 
-
 def ensure_clear_to_kv_store(store):
     """
     Ensures the store has a working clear method.
@@ -1481,7 +1480,7 @@ def ensure_clear_to_kv_store(store):
 
         if (
             hasattr(clear_attr, "__name__")
-            and clear_attr.__name__ == '_disabled_clear_method'
+            and clear_attr.__name__ == "_disabled_clear_method"
         ):
             return True
 
