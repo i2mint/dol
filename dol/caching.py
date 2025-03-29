@@ -1444,7 +1444,7 @@ def store_cached_with_single_key(store, key):
 
 
 def ensure_clear_to_kv_store(store):
-    if not hasattr(store, "clear") or store.clear.__name__ == '_disabled_clear_method':
+    if not hasattr(store, "clear") or store.clear.__name__ == "_disabled_clear_method":
 
         def _clear(kv_store):
             for k in kv_store:
