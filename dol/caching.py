@@ -3,6 +3,7 @@
 # -------------------------------------------------------------------------------------
 
 import os
+import types
 from typing import Optional, Callable, KT, VT, Any, Union, T
 from collections.abc import Mapping
 
@@ -1443,14 +1444,65 @@ def store_cached_with_single_key(store, key):
     return func_wrapper
 
 
+
 def ensure_clear_to_kv_store(store):
-    if not hasattr(store, "clear") or store.clear.__name__ == '_disabled_clear_method':
+    """
+    Ensures the store has a working clear method.
 
-        def _clear(kv_store):
-            for k in kv_store:
-                del kv_store[k]
+    If the store doesn't have a clear method or has the disabled version,
+    adds a proper implementation that safely removes all items.
 
-        store.clear = _clear
+    Args:
+        store: A Store class or instance
+
+    Returns:
+        The same store with guaranteed clear functionality
+
+    >>> class NoClearing(dict):
+    ...     clear = None
+    >>> d = NoClearing({'a': 1, 'b': 2})
+    >>> d = ensure_clear_to_kv_store(d)
+    >>> len(d)
+    2
+    >>> d.clear()
+    >>> len(d)
+    0
+    """
+
+    def _needs_clear_method(obj):
+        """Check if the object needs a clear method added."""
+        has_clear = hasattr(obj, "clear")
+        if not has_clear:
+            return True
+
+        clear_attr = getattr(obj, "clear")
+        if clear_attr is None:
+            return True
+
+        if (
+            hasattr(clear_attr, "__name__")
+            and clear_attr.__name__ == '_disabled_clear_method'
+        ):
+            return True
+
+        return False
+
+    if not _needs_clear_method(store):
+        return store
+
+    def _clear_method(self):
+        """Remove all items from the store."""
+        # Create a separate list to avoid modification during iteration
+        keys = list(self.keys())
+        for k in keys:
+            del self[k]
+
+    # Apply the appropriate clear method
+    if isinstance(store, type):
+        store.clear = _clear_method
+    else:
+        store.clear = types.MethodType(_clear_method, store)
+
     return store
 
 
