@@ -1954,8 +1954,16 @@ def wrap_kvs(
 
     # TODO: Add tests for outcoming_key_methods etc.
     """
+    # kwargs = dict(
+    #     locals(), wrapper=wrapper or Store, name=store.__qualname__ + "Wrapped"
+    # )
+    # If name is not explicitly provided, use the store's qualname directly
+    # without adding "Wrapped" to preserve the original class name
+    if name is None and store is not None:
+        name = store.__qualname__
+        
     kwargs = dict(
-        locals(), wrapper=wrapper or Store, name=store.__qualname__ + "Wrapped"
+        locals(), wrapper=wrapper or Store
     )
     _handle_codecs(kwargs)
     return _wrap_store(_wrap_kvs, kwargs)
@@ -3412,3 +3420,4 @@ def redirect_getattr_to_getitem(cls=None, *, keys_have_priority_over_attributes=
             return list(self)
 
     return RidirectGetattrToGetitem
+

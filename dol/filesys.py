@@ -636,8 +636,15 @@ def mk_json_bytes_wrap(
     )
 
 
-@pickle_bytes_wrap
-class PickleFiles(Files):
+class ReprMixin:
+    def __repr__(self):
+        input_str = ", ".join(
+            f"{k}={_for_repr(v)}" for k, v in getattr(self, "_init_kwargs", {}).items()
+        )
+        return f"{type(self).__name__}({input_str})"
+
+
+class PickleFiles(ReprMixin, Files):
     """A store of pickles"""
 
 
@@ -645,7 +652,7 @@ PickleStore = PickleFiles  # back-compatibility alias
 
 
 @json_bytes_wrap
-class JsonFiles(TextFiles):
+class JsonFiles(ReprMixin, TextFiles):
     """A store of json files"""
 
 
@@ -654,7 +661,7 @@ from dol.trans import affix_key_codec
 
 @affix_key_codec(suffix=".json")
 @filt_iter.suffixes(".json")
-class Jsons(JsonFiles):
+class Jsons(ReprMixin, JsonFiles):
     """Like JsonFiles, but with added .json extension handling
     Namely: filtering for `.json` extensions but not showing the extension in keys"""
 
