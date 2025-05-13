@@ -262,16 +262,16 @@ def sort_params(params):
     return sorted(params, key=_param_sort_key)
 
 
-def _return_none(o: object) -> None:
+def return_none(*args, **kwargs) -> None:
     return None
 
-
+# duplicated from i2.util to keep signatures.py standalone
 def name_of_obj(
     o: object,
     *,
     base_name_of_obj: Callable = attrgetter("__name__"),
     caught_exceptions: Tuple = (AttributeError,),
-    default_factory: Callable = _return_none,
+    default_factory: Callable = return_none,
 ) -> Union[str, None]:
     """
     Tries to find the (or "a") name for an object, even if `__name__` doesn't exist.

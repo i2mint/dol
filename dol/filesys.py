@@ -236,11 +236,58 @@ def ensure_dir(
 
 
 def temp_dir(dirname="", make_it_if_necessary=True, verbose=False):
-    from tempfile import gettempdir
+    """
+    Create and return a path to a temporary directory that's guaranteed to be
+    accessible to the user.
 
-    tmpdir = os.path.join(gettempdir(), dirname)
+    Parameters:
+    ----------
+    dirname : str
+        Optional subdirectory name to append to the temporary directory path
+    make_it_if_necessary : bool
+        Whether to create the directory if it doesn't exist
+    verbose : bool, str, or callable
+        Controls verbosity when creating directories
+
+    Returns:
+    -------
+    str
+        Path to a temporary directory that the user has access to
+
+    Notes:
+    -----
+    This function creates a user-specific temporary directory to avoid permission
+    issues with system-wide temporary directories. The directory is guaranteed to
+    be accessible to the current user.
+    """
+    from tempfile import mkdtemp, gettempdir
+    import uuid
+
+    # Create a unique user-specific directory under the system temp dir
+    user_temp_base = os.path.join(gettempdir(), f"user_{os.getuid()}")
+
+    if dirname:
+        # If a specific dirname is provided, use it
+        tmpdir = os.path.join(user_temp_base, dirname)
+    else:
+        # Otherwise create a unique directory with uuid
+        unique_id = str(uuid.uuid4())[:8]
+        tmpdir = os.path.join(user_temp_base, f"dol_temp_{unique_id}")
+
     if make_it_if_necessary:
-        ensure_dir(tmpdir, verbose=verbose)
+        try:
+            ensure_dir(tmpdir, verbose=verbose)
+            # Verify we have write access
+            test_file = os.path.join(tmpdir, ".write_test")
+            with open(test_file, 'w') as f:
+                f.write("test")
+            os.remove(test_file)
+        except (PermissionError, OSError):
+            # Fallback: create a truly temporary directory with mkdtemp
+            if verbose:
+                print(f"Could not access {tmpdir}, falling back to mkdtemp()")
+            tmpdir = mkdtemp(prefix=f"dol_temp_")
+
     return tmpdir
 
 
