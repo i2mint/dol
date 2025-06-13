@@ -23,15 +23,18 @@ def ensure_slash_suffix(path: str):
 
 
 def paths_in_dir(rootdir, include_hidden=False):
-    for name in os.listdir(rootdir):
-        if include_hidden or not name.startswith(
-            "."
-        ):  # TODO: is dot a platform independent marker for hidden file?
-            filepath = os.path.join(rootdir, name)
-            if os.path.isdir(filepath):
-                yield ensure_slash_suffix(filepath)
-            else:
-                yield filepath
+    try:
+        for name in os.listdir(rootdir):
+            if include_hidden or not name.startswith(
+                "."
+            ):  # TODO: is dot a platform independent marker for hidden file?
+                filepath = os.path.join(rootdir, name)
+                if os.path.isdir(filepath):
+                    yield ensure_slash_suffix(filepath)
+                else:
+                    yield filepath
+    except FileNotFoundError:
+        pass 
 
 
 def iter_filepaths_in_folder_recursively(
