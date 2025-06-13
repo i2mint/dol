@@ -179,10 +179,10 @@ def process_path(
     if abspath:
         path = os.path.abspath(path)
     if ensure_endswith_slash:
-        if not path.endswith("/"):
-            path = path + "/"
+        if not path.endswith(os.path.sep):
+            path = path + os.path.sep
     if ensure_does_not_end_with_slash:
-        if path.endswith("/"):
+        if path.endswith(os.path.sep):
             path = path[:-1]
     if ensure_dir_exists:
         if ensure_dir_exists is True:
