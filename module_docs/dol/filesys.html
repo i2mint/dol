@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.filesys &mdash; dol 0.3.15 documentation</title>
+  <title>dol.filesys &mdash; dol 0.3.16 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c77f38ba"></script>
+      <script src="../../_static/documentation_options.js?v=f087b2d0"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -91,10 +91,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.iter_filepaths_in_folder_recursively"><code class="docutils literal notranslate"><span class="pre">iter_filepaths_in_folder_recursively()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.mk_dirs_if_missing"><code class="docutils literal notranslate"><span class="pre">mk_dirs_if_missing()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.mk_dirs_if_missing_preset"><code class="docutils literal notranslate"><span class="pre">mk_dirs_if_missing_preset()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.filesys.mk_tmp_dol_dir"><code class="docutils literal notranslate"><span class="pre">mk_tmp_dol_dir()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.process_path"><code class="docutils literal notranslate"><span class="pre">process_path()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.resolve_dir"><code class="docutils literal notranslate"><span class="pre">resolve_dir()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.resolve_path"><code class="docutils literal notranslate"><span class="pre">resolve_path()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.filesys.subfolder_stores"><code class="docutils literal notranslate"><span class="pre">subfolder_stores()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.filesys.temp_dir"><code class="docutils literal notranslate"><span class="pre">temp_dir()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="kv_codecs.html">dol.kv_codecs</a></li>
@@ -392,6 +394,37 @@ ensured to exist separatedly.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.filesys.mk_tmp_dol_dir">
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">mk_tmp_dol_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_it_if_necessary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.filesys.mk_tmp_dol_dir" title="Link to this definition"></a></dt>
+<dd><p>Create and return a path to a temporary directory that’s guaranteed to be
+accessible to the user.</p>
+<section id="parameters">
+<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>dirname<span class="classifier">str</span></dt><dd><p>Optional subdirectory name to append to the temporary directory path</p>
+</dd>
+<dt>make_it_if_necessary<span class="classifier">bool</span></dt><dd><p>Whether to create the directory if it doesn’t exist</p>
+</dd>
+<dt>verbose<span class="classifier">bool, str, or callable</span></dt><dd><p>Controls verbosity when creating directories</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>str</dt><dd><p>Path to a temporary directory that the user has access to</p>
+</dd>
+</dl>
+</section>
+<section id="notes">
+<h2>Notes:<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<p>This function creates a user-specific temporary directory to avoid permission
+issues with system-wide temporary directories. The directory is guaranteed to
+be accessible to the current user.</p>
+</section>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.filesys.process_path">
 <span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">process_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_dir_exists</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assert_exists</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_endswith_slash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_does_not_end_with_slash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expanduser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expandvars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abspath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rootdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/dol/filesys.html#process_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.process_path" title="Link to this definition"></a></dt>
 <dd><p>Process a path string, ensuring it exists, and optionally expanding user.</p>
@@ -446,6 +479,37 @@ paths (by default, relative and slash-less) and the values are stores of these
 subfolders.</p>
 <p>By default, all subfolders will be taken, recursively, but this can be controlled by
 the <cite>max_levels</cite> parameter.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.filesys.temp_dir">
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">temp_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_it_if_necessary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/filesys.html#temp_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.temp_dir" title="Link to this definition"></a></dt>
+<dd><p>Create and return a path to a temporary directory that’s guaranteed to be
+accessible to the user.</p>
+<section id="id1">
+<h2>Parameters:<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>dirname<span class="classifier">str</span></dt><dd><p>Optional subdirectory name to append to the temporary directory path</p>
+</dd>
+<dt>make_it_if_necessary<span class="classifier">bool</span></dt><dd><p>Whether to create the directory if it doesn’t exist</p>
+</dd>
+<dt>verbose<span class="classifier">bool, str, or callable</span></dt><dd><p>Controls verbosity when creating directories</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h2>Returns:<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>str</dt><dd><p>Path to a temporary directory that the user has access to</p>
+</dd>
+</dl>
+</section>
+<section id="id3">
+<h2>Notes:<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<p>This function creates a user-specific temporary directory to avoid permission
+issues with system-wide temporary directories. The directory is guaranteed to
+be accessible to the current user.</p>
+</section>
 </dd></dl>
 
 </section>

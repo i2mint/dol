@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.filesys &mdash; dol 0.3.15 documentation</title>
+  <title>dol.filesys &mdash; dol 0.3.16 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c77f38ba"></script>
+      <script src="../../_static/documentation_options.js?v=f087b2d0"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -138,15 +138,18 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">paths_in_dir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">include_hidden</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">include_hidden</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
-            <span class="s2">&quot;.&quot;</span>
-        <span class="p">):</span>  <span class="c1"># TODO: is dot a platform independent marker for hidden file?</span>
-            <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
-                <span class="k">yield</span> <span class="n">ensure_slash_suffix</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">filepath</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">include_hidden</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
+                <span class="s2">&quot;.&quot;</span>
+            <span class="p">):</span>  <span class="c1"># TODO: is dot a platform independent marker for hidden file?</span>
+                <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">ensure_slash_suffix</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">filepath</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="k">pass</span> 
 
 
 <div class="viewcode-block" id="iter_filepaths_in_folder_recursively">
@@ -305,10 +308,10 @@
     <span class="k">if</span> <span class="n">abspath</span><span class="p">:</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ensure_endswith_slash</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
     <span class="k">if</span> <span class="n">ensure_does_not_end_with_slash</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">):</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">ensure_dir_exists</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">ensure_dir_exists</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
@@ -365,13 +368,63 @@
 
 
 
+<div class="viewcode-block" id="temp_dir">
+<a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.temp_dir">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">temp_dir</span><span class="p">(</span><span class="n">dirname</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">make_it_if_necessary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">tempfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">gettempdir</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create and return a path to a temporary directory that&#39;s guaranteed to be</span>
+<span class="sd">    accessible to the user.</span>
 
-    <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="n">dirname</span><span class="p">)</span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dirname : str</span>
+<span class="sd">        Optional subdirectory name to append to the temporary directory path</span>
+<span class="sd">    make_it_if_necessary : bool</span>
+<span class="sd">        Whether to create the directory if it doesn&#39;t exist</span>
+<span class="sd">    verbose : bool, str, or callable</span>
+<span class="sd">        Controls verbosity when creating directories</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Path to a temporary directory that the user has access to</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function creates a user-specific temporary directory to avoid permission</span>
+<span class="sd">    issues with system-wide temporary directories. The directory is guaranteed to</span>
+<span class="sd">    be accessible to the current user.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tempfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">mkdtemp</span><span class="p">,</span> <span class="n">gettempdir</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+
+    <span class="c1"># Create a unique user-specific directory under the system temp dir</span>
+    <span class="n">user_temp_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;user_</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getuid</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">dirname</span><span class="p">:</span>
+        <span class="c1"># If a specific dirname is provided, use it</span>
+        <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">user_temp_base</span><span class="p">,</span> <span class="n">dirname</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Otherwise create a unique directory with uuid</span>
+        <span class="n">unique_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())[:</span><span class="mi">8</span><span class="p">]</span>
+        <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">user_temp_base</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;dol_temp_</span><span class="si">{</span><span class="n">unique_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">make_it_if_necessary</span><span class="p">:</span>
-        <span class="n">ensure_dir</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">tmpdir</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ensure_dir</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+            <span class="c1"># Verify we have write access</span>
+            <span class="n">test_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">&quot;.write_test&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">test_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">test_file</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">PermissionError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+            <span class="c1"># Fallback: create a truly temporary directory with mkdtemp</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not access </span><span class="si">{</span><span class="n">tmpdir</span><span class="si">}</span><span class="s2">, falling back to mkdtemp()&quot;</span><span class="p">)</span>
+            <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;dol_temp_&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tmpdir</span></div>
+
 
 
 <span class="n">mk_tmp_dol_dir</span> <span class="o">=</span> <span class="n">temp_dir</span>  <span class="c1"># for backward compatibility</span>
@@ -767,10 +820,17 @@
     <span class="p">)</span>
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">ReprMixin</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">input_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">_for_repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_init_kwargs&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">input_str</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+
 <div class="viewcode-block" id="PickleFiles">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.PickleFiles">[docs]</a>
-<span class="nd">@pickle_bytes_wrap</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">PickleFiles</span><span class="p">(</span><span class="n">Files</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PickleFiles</span><span class="p">(</span><span class="n">ReprMixin</span><span class="p">,</span> <span class="n">Files</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A store of pickles&quot;&quot;&quot;</span></div>
 
 
@@ -781,7 +841,7 @@
 <div class="viewcode-block" id="JsonFiles">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.JsonFiles">[docs]</a>
 <span class="nd">@json_bytes_wrap</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">JsonFiles</span><span class="p">(</span><span class="n">TextFiles</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">JsonFiles</span><span class="p">(</span><span class="n">ReprMixin</span><span class="p">,</span> <span class="n">TextFiles</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A store of json files&quot;&quot;&quot;</span></div>
 
 
@@ -793,7 +853,7 @@
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.Jsons">[docs]</a>
 <span class="nd">@affix_key_codec</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.json&quot;</span><span class="p">)</span>
 <span class="nd">@filt_iter</span><span class="o">.</span><span class="n">suffixes</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Jsons</span><span class="p">(</span><span class="n">JsonFiles</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Jsons</span><span class="p">(</span><span class="n">ReprMixin</span><span class="p">,</span> <span class="n">JsonFiles</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Like JsonFiles, but with added .json extension handling</span>
 <span class="sd">    Namely: filtering for `.json` extensions but not showing the extension in keys&quot;&quot;&quot;</span></div>
 
