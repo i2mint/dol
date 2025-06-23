@@ -1961,10 +1961,8 @@ def wrap_kvs(
     # without adding "Wrapped" to preserve the original class name
     if name is None and store is not None:
         name = store.__qualname__
-        
-    kwargs = dict(
-        locals(), wrapper=wrapper or Store
-    )
+
+    kwargs = dict(locals(), wrapper=wrapper or Store)
     _handle_codecs(kwargs)
     return _wrap_store(_wrap_kvs, kwargs)
 
@@ -3420,4 +3418,3 @@ def redirect_getattr_to_getitem(cls=None, *, keys_have_priority_over_attributes=
             return list(self)
 
     return RidirectGetattrToGetitem
-

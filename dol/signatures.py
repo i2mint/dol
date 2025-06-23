@@ -265,6 +265,7 @@ def sort_params(params):
 def return_none(*args, **kwargs) -> None:
     return None
 
+
 # duplicated from i2.util to keep signatures.py standalone
 def name_of_obj(
     o: object,

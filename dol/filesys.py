@@ -34,7 +34,7 @@ def paths_in_dir(rootdir, include_hidden=False):
                 else:
                     yield filepath
     except FileNotFoundError:
-        pass 
+        pass
 
 
 def iter_filepaths_in_folder_recursively(
@@ -282,7 +282,7 @@ def temp_dir(dirname="", make_it_if_necessary=True, verbose=False):
             ensure_dir(tmpdir, verbose=verbose)
             # Verify we have write access
             test_file = os.path.join(tmpdir, ".write_test")
-            with open(test_file, 'w') as f:
+            with open(test_file, "w") as f:
                 f.write("test")
             os.remove(test_file)
         except (PermissionError, OSError):
