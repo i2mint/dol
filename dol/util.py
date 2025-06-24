@@ -2125,3 +2125,107 @@ def invertible_maps(
         ), "mapping and inv_mapping are not inverse of each other!"
 
     return mapping, inv_mapping
+
+
+# -------------------------------------------------------------------------------------
+# Attribute Mapping Classes
+# (Vendored in dol)
+
+from types import SimpleNamespace
+from typing import MutableMapping
+
+
+class AttributeMapping(SimpleNamespace, Mapping[str, Any]):
+    """
+    A read-only mapping with attribute access.
+
+    Useful when you want mapping interface but don't need mutation.
+
+    Examples:
+
+    >>> ns = AttributeMapping(x=10, y=20)
+    >>> ns.x
+    10
+    >>> ns['y']
+    20
+    >>> list(ns)
+    ['x', 'y']
+    """
+
+    @classmethod
+    def from_mapping(self, mapping: Mapping[str, Any]) -> "AttributeMapping":
+        """
+        Create an AttributeMapping from a regular mapping.
+
+        This is useful when you want to convert a dictionary or other mapping
+        into an AttributeMapping for attribute-style access.
+        """
+        return self(**mapping)
+
+    def __getitem__(self, key: str) -> Any:
+        """Get item with proper KeyError on missing keys."""
+        return _get_attr_or_key_error(self, key)
+
+    def __iter__(self) -> Iterator[str]:
+        """Iterate over attribute names."""
+        return iter(self.__dict__)
+
+    def __len__(self) -> int:
+        """Return number of attributes."""
+        return len(self.__dict__)
+
+
+class AttributeMutableMapping(AttributeMapping, MutableMapping[str, Any]):
+    """
+    A mutable mapping that provides both attribute and dictionary-style access.
+
+    Extends AttributeMapping with mutation capabilities,
+    ensuring proper error handling and protocol compliance.
+
+    Examples:
+
+    >>> ns = AttributeMutableMapping(apple=1, banana=2)
+    >>> ns.apple
+    1
+    >>> ns['banana']
+    2
+    >>> ns['cherry'] = 3
+    >>> ns.cherry
+    3
+    >>> list(ns)
+    ['apple', 'banana', 'cherry']
+    >>> len(ns)
+    3
+    >>> 'apple' in ns
+    True
+    >>> del ns['banana']
+    >>> 'banana' in ns
+    False
+    """
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        """Set item via attribute assignment."""
+        setattr(self, key, value)
+
+    def __delitem__(self, key: str) -> None:
+        """Delete item with proper KeyError on missing keys."""
+        try:
+            delattr(self, key)
+        except AttributeError:
+            raise KeyError(key)
+
+
+def _get_attr_or_key_error(obj: object, key: str) -> Any:
+    """
+    Get attribute or raise KeyError if not found.
+
+    Helper function to maintain consistent error handling across
+    mapping implementations.
+    """
+    try:
+        return getattr(obj, key)
+    except AttributeError:
+        raise KeyError(key)
+
+
+# -------------------------------------------------------------------------------------

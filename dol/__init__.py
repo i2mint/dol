@@ -100,6 +100,8 @@ from dol.filesys import (
 )
 
 from dol.util import (
+    AttributeMapping,  # a mapping that provides attribute-access to the keys that are valid attribute names
+    AttributeMutableMapping,  # a mutable mapping version of AttributeMapping
     Pipe,  # chain functions
     lazyprop,  # lazy evaluation of properties
     partialclass,  # partial class instantiation
