@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.3.17 documentation</title>
+  <title>dol.util &mdash; dol 0.3.18 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=54ff36c9"></script>
+      <script src="../../_static/documentation_options.js?v=bce5950b"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -2348,6 +2348,119 @@
 
     <span class="k">return</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">inv_mapping</span></div>
 
+
+
+<span class="c1"># -------------------------------------------------------------------------------------</span>
+<span class="c1"># Attribute Mapping Classes</span>
+<span class="c1"># (Vendored in dol)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleNamespace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Iterator</span>
+
+
+<div class="viewcode-block" id="AttributeMapping">
+<a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.AttributeMapping">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AttributeMapping</span><span class="p">(</span><span class="n">SimpleNamespace</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A read-only mapping with attribute access.</span>
+
+<span class="sd">    Useful when you want mapping interface but don&#39;t need mutation.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    &gt;&gt;&gt; ns = AttributeMapping(x=10, y=20)</span>
+<span class="sd">    &gt;&gt;&gt; ns.x</span>
+<span class="sd">    10</span>
+<span class="sd">    &gt;&gt;&gt; ns[&#39;y&#39;]</span>
+<span class="sd">    20</span>
+<span class="sd">    &gt;&gt;&gt; list(ns)</span>
+<span class="sd">    [&#39;x&#39;, &#39;y&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AttributeMapping.from_mapping">
+<a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.AttributeMapping.from_mapping">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapping</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;AttributeMapping&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an AttributeMapping from a regular mapping.</span>
+
+<span class="sd">        This is useful when you want to convert a dictionary or other mapping</span>
+<span class="sd">        into an AttributeMapping for attribute-style access.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">(</span><span class="o">**</span><span class="n">mapping</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get item with proper KeyError on missing keys.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_get_attr_or_key_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterate over attribute names.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return number of attributes.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="AttributeMutableMapping">
+<a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.AttributeMutableMapping">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AttributeMutableMapping</span><span class="p">(</span><span class="n">AttributeMapping</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A mutable mapping that provides both attribute and dictionary-style access.</span>
+
+<span class="sd">    Extends AttributeMapping with mutation capabilities,</span>
+<span class="sd">    ensuring proper error handling and protocol compliance.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    &gt;&gt;&gt; ns = AttributeMutableMapping(apple=1, banana=2)</span>
+<span class="sd">    &gt;&gt;&gt; ns.apple</span>
+<span class="sd">    1</span>
+<span class="sd">    &gt;&gt;&gt; ns[&#39;banana&#39;]</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; ns[&#39;cherry&#39;] = 3</span>
+<span class="sd">    &gt;&gt;&gt; ns.cherry</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; list(ns)</span>
+<span class="sd">    [&#39;apple&#39;, &#39;banana&#39;, &#39;cherry&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; len(ns)</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; &#39;apple&#39; in ns</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; del ns[&#39;banana&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; &#39;banana&#39; in ns</span>
+<span class="sd">    False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set item via attribute assignment.&quot;&quot;&quot;</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete item with proper KeyError on missing keys.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_attr_or_key_error</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get attribute or raise KeyError if not found.</span>
+
+<span class="sd">    Helper function to maintain consistent error handling across</span>
+<span class="sd">    mapping implementations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+
+<span class="c1"># -------------------------------------------------------------------------------------</span>
 </pre></div>
 
            </div>

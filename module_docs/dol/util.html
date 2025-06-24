@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.3.17 documentation</title>
+  <title>dol.util &mdash; dol 0.3.18 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=54ff36c9"></script>
+      <script src="../../_static/documentation_options.js?v=bce5950b"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -84,6 +84,11 @@
 <li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">dol.util</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dol.util.AttributeMapping"><code class="docutils literal notranslate"><span class="pre">AttributeMapping</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.util.AttributeMapping.from_mapping"><code class="docutils literal notranslate"><span class="pre">AttributeMapping.from_mapping()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.util.AttributeMutableMapping"><code class="docutils literal notranslate"><span class="pre">AttributeMutableMapping</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.util.LiteralVal"><code class="docutils literal notranslate"><span class="pre">LiteralVal</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dol.util.LiteralVal.get_val"><code class="docutils literal notranslate"><span class="pre">LiteralVal.get_val()</span></code></a></li>
 </ul>
@@ -155,6 +160,59 @@
   <section id="module-dol.util">
 <span id="dol-util"></span><h1>dol.util<a class="headerlink" href="#module-dol.util" title="Link to this heading"></a></h1>
 <p>General util objects</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.util.AttributeMapping">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">AttributeMapping</span></span><a class="reference internal" href="../../_modules/dol/util.html#AttributeMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.AttributeMapping" title="Link to this definition"></a></dt>
+<dd><p>A read-only mapping with attribute access.</p>
+<p>Useful when you want mapping interface but don’t need mutation.</p>
+<p>Examples:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span> <span class="o">=</span> <span class="n">AttributeMapping</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="o">.</span><span class="n">x</span>
+<span class="go">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+<span class="go">20</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+<span class="go">[&#39;x&#39;, &#39;y&#39;]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.util.AttributeMapping.from_mapping">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dol.util.AttributeMapping" title="dol.util.AttributeMapping"><span class="pre">AttributeMapping</span></a></span></span><a class="reference internal" href="../../_modules/dol/util.html#AttributeMapping.from_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.AttributeMapping.from_mapping" title="Link to this definition"></a></dt>
+<dd><p>Create an AttributeMapping from a regular mapping.</p>
+<p>This is useful when you want to convert a dictionary or other mapping
+into an AttributeMapping for attribute-style access.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.util.AttributeMutableMapping">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">AttributeMutableMapping</span></span><a class="reference internal" href="../../_modules/dol/util.html#AttributeMutableMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.AttributeMutableMapping" title="Link to this definition"></a></dt>
+<dd><p>A mutable mapping that provides both attribute and dictionary-style access.</p>
+<p>Extends AttributeMapping with mutation capabilities,
+ensuring proper error handling and protocol compliance.</p>
+<p>Examples:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span> <span class="o">=</span> <span class="n">AttributeMutableMapping</span><span class="p">(</span><span class="n">apple</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">banana</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="o">.</span><span class="n">apple</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="p">[</span><span class="s1">&#39;banana&#39;</span><span class="p">]</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="p">[</span><span class="s1">&#39;cherry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="o">.</span><span class="n">cherry</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+<span class="go">[&#39;apple&#39;, &#39;banana&#39;, &#39;cherry&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;apple&#39;</span> <span class="ow">in</span> <span class="n">ns</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">ns</span><span class="p">[</span><span class="s1">&#39;banana&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;banana&#39;</span> <span class="ow">in</span> <span class="n">ns</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.util.LiteralVal">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">LiteralVal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#LiteralVal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.LiteralVal" title="Link to this definition"></a></dt>
