@@ -2132,7 +2132,7 @@ def invertible_maps(
 # (Vendored in dol)
 
 from types import SimpleNamespace
-from typing import MutableMapping
+from typing import MutableMapping, Iterator
 
 
 class AttributeMapping(SimpleNamespace, Mapping[str, Any]):
