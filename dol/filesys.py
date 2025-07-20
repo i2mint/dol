@@ -647,6 +647,7 @@ class ReprMixin:
         return f"{type(self).__name__}({input_str})"
 
 
+@pickle_bytes_wrap
 class PickleFiles(ReprMixin, Files):
     """A store of pickles"""
 
