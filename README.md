@@ -103,89 +103,13 @@ so that you can purify your code from implementation details, and therefore be
 create more robust and flexible code as far as data operations are concerned. 
 
 
-## Historical note
-
-Note: This project started as [`py2store`](https://github.com/i2mint/py2store). 
-`dol` is the core of py2store has now been factored out 
-and many of the specialized data object layers moved to separate packages. 
-`py2store` is acting more as an aggregator package -- a shoping mall where you can quickly access many (but not all)
-functionalities that use `dol`. 
-
-It's advised to use `dol` (and/or its specialized spin-off packages) directly when the core functionality is all you need.
-
-# A few highlights of py2store's README
-
-## What is this?
-Storage CRUD how and where you want it.
-
-List, read, write, and delete data in a structured data source/target, 
-as if manipulating simple python builtins (dicts, lists), or through the interface **you** want to interact with, 
-with configuration or physical particularities out of the way. 
-Also, being able to change these particularities without having to change the business-logic code. 
-
-If you're not a "read from top to bottom" kinda person, here are some tips: 
-[Quick peek](#quick-peek) will show you a simple example of how it looks and feels. 
-[Use cases](#use-cases) will give you an idea of how py2store can be useful to you, if at all. 
-
-The section with the best bang for the buck is probably 
-[remove (much of the) data access entropy](#remove-data-access-entropy). 
-It will give you simple (but real) examples of how to use `py2store` tooling 
-to bend your interface with data to your will. 
-
-[How it works](#a-few-words-about-design) will give you a sense of how it works.
-[More examples](https://github.com/i2mint/py2store#more-examples) 
-will give you a taste of how you can adapt the three main aspects of 
-storage (persistence, serialization, and indexing) to your needs.
-
-Install it (e.g. `pip install py2store`).
-
-## Quick peek
-
-Think of type of storage you want to use and just go ahead, like you're using a dict.
-Here's an example for local storage (you must you string keys only here).
-
-```pydocstring
->>> from py2store import QuickStore
->>>
->>> store = QuickStore()  # will print what (tmp) rootdir it is choosing
->>> # Write something and then read it out again
->>> store['foo'] = 'baz'
->>> 'foo' in store  # do you have the key 'foo' in your store?
-True
->>> store['foo']  # what is the value for 'foo'?
-'baz'
->>>
->>> # Okay, it behaves like a dict, but go have a look in your file system,  
->>> # and see that there is now a file in the rootdir, named 'foo'!
->>> 
->>> # Write something more complicated
->>> store['hello/world'] = [1, 'flew', {'over': 'a', "cuckoo's": map}]
->>> stored_val = store['hello/world']
->>> stored_val == [1, 'flew', {'over': 'a', "cuckoo's": map}]  # was it retrieved correctly?
-True
->>>
->>> # how many items do you have now?
->>> assert len(store) >= 2  # can't be sure there were no elements before, so can't assert == 2
->>> 
->>> # delete the stuff you've written
->>> del store['foo']
->>> del store['hello/world']
-```
-
-`QuickStore` will by default store things in local files, using pickle as the serializer.
-If a root directory is not specified, 
-it will use a tmp directory it will create (the first time you try to store something) 
-It will create any directories that need to be created to satisfy any/key/that/contains/slashes.
-Of course, everything is configurable.
-
-## A list of stores for various uses
+## A list various packages that use dol
 
 `py2store` provides tools to create the dict-like interface to data you need. 
 If you want to just use existing interfaces, build on it, or find examples of how to make such 
 interfaces, check out the ever-growing list of `py2store`-using projects:
 
 - [mongodol](https://github.com/i2mint/mongodol): For MongoDB
-- [hear](https://github.com/otosense/hear): Read/write audio data flexibly. 
 - [tabled](https://github.com/i2mint/tabled): Data as `pandas.DataFrame` from various sources
 - [msword](https://pypi.org/project/msword/): Simple mapping view to docx (Word Doc) elements
 - [sshdol](https://github.com/i2mint/sshdol): Remote (ssh) files access
@@ -194,16 +118,21 @@ interfaces, check out the ever-growing list of `py2store`-using projects:
 - [hubcap](https://pypi.org/project/hubcap/): Dict-like interface to github.
 - [graze](https://github.com/thorwhalen/graze): Cache the internet.
 - [grub](https://github.com/thorwhalen/grub): A ridiculously simple search engine maker. 
+- [hear](https://github.com/otosense/hear): Read/write audio data flexibly. 
 
 Just for fun projects:
 - [cult](https://github.com/thorwhalen/cult): Religious texts search engine. 18mn application of `grub`.
 - [laugh](https://github.com/thorwhalen/laugh): A (py2store-based) joke finder.
 
 
+# Caching
 
-## Use cases
 
-### Interfacing reads
+
+
+# Use cases
+
+## Interfacing reads
 
 How many times did someone share some data with you in the form of a zip of some nested folders 
 whose structure and naming choices are fascinatingly obscure? And how much time do you then spend to write code 
@@ -211,7 +140,7 @@ to interface with that freak of nature? Well, one of the intents of py2store is 
 You still need to understand the structure of the data store and how to deserialize these datas into python 
 objects you can manipulate. But with the proper tool, you shouldn't have to do much more than that.
 
-### Changing where and how things are stored
+## Changing where and how things are stored
 
 Ever have to switch where you persist things (say from file system to S3), or change the way key into your data, 
 or the way that data is serialized? If you use py2store tools to separate the different storage concerns, 
@@ -222,7 +151,7 @@ more easily give the new system a facade that makes it look like the old one.
 All of this can also be applied to data bases as well, in-so-far as the CRUD operations you're using 
 are covered by the base methods.
 
-### Adapters: When the learning curve is in the way of learning
+## Adapters: When the learning curve is in the way of learning
 
 Shinny new storage mechanisms (DBs etc.) are born constantly, and some folks start using them, and we are eventually lead to use them 
 as well if we need to work with those folks' systems. And though we'd love to learn the wonderful new 
@@ -237,7 +166,7 @@ is a life saver.
 py2store would like to make it easier for you roll out an adapter to be able to talk 
 to the new system in the way **you** are familiar with.
  
-### Thinking about storage later, if ever
+## Thinking about storage later, if ever
 
 You have a new project or need to write a new app. You'll need to store stuff and read stuff back. 
 Stuff: Different kinds of resources that your app will need to function. Some people enjoy thinking 
@@ -407,8 +336,24 @@ Here are few...
 >>> test_store(s)
 ```
 
-# Why the name?
+
+# And more...
+
+## Why the name?
+
 - because it's short
 - because it's cute
 - because it reminds one of "russian dolls" (one way to think of wrappers)
 - because we can come up with an acronym the contains "Data Object" in it. 
+
+
+## Historical note
+
+Note: This project started as [`py2store`](https://github.com/i2mint/py2store). 
+`dol` is the core of py2store has now been factored out 
+and many of the specialized data object layers moved to separate packages. 
+`py2store` is acting more as an aggregator package -- a shoping mall where you can quickly access many (but not all)
+functionalities that use `dol`. 
+
+It's advised to use `dol` (and/or its specialized spin-off packages) directly when the core functionality is all you need.
+

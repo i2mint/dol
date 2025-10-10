@@ -1,4 +1,66 @@
-"""Tools to add caching layers to stores."""
+"""
+Tools to add caching layers to stores and methods.
+
+This module provides comprehensive caching functionality for Python applications,
+offering flexible and powerful caching solutions for both data stores and method calls.
+
+Main Use Cases:
+- Property caching: Cache expensive computations that only need to be run once
+- Method caching: Cache method results based on arguments, with smart key generation
+- Store caching: Add caching layers to data stores for improved performance
+- Custom caching strategies: Flexible key generation and cache storage options
+
+Key Tools:
+
+cache_this:
+    The main decorator for caching properties and methods. Automatically detects
+    whether to use property or method caching based on function signature.
+    Supports custom cache storage, key functions, parameter ignoring, and
+    serialization hooks.
+
+CachedProperty:
+    A descriptor for caching property values with flexible cache storage and
+    key generation strategies.
+
+CachedMethod:
+    A descriptor for caching method results based on arguments, with support
+    for parameter filtering and custom key functions.
+
+KeyStrategy Protocol:
+    Extensible system for defining how cache keys are generated, including
+    strategies for explicit keys, instance properties, method arguments, and
+    composite keys.
+
+Store Decorators:
+    Tools like cache_vals, mk_sourced_store, and store_cached for adding
+    caching layers to data stores.
+
+Examples:
+
+    Basic property caching:
+
+    >>> class MyClass:
+    ...     @cache_this
+    ...     def expensive_computation(self):
+    ...         return sum(range(1000000))
+
+    Method caching with argument-based keys:
+
+    >>> class Calculator:
+    ...     @cache_this(cache={})
+    ...     def multiply(self, x, y):
+    ...         return x * y
+
+    Custom cache storage and key functions:
+
+    >>> class DataProcessor:
+    ...     def __init__(self):
+    ...         self.cache = {}
+    ...     @cache_this(cache='cache', ignore={'verbose'})
+    ...     def process(self, data, mode='fast', verbose=False):
+    ...         return len(data) if mode == 'fast' else sum(data)
+
+"""
 
 # -------------------------------------------------------------------------------------
 
@@ -22,6 +84,15 @@ KeyType = Union[KT, Callable[[MethodName], KT]]
 
 
 def identity(x: T) -> T:
+    """Identity function that returns its input unchanged.
+
+    >>> identity(42)
+    42
+    >>> identity("hello")
+    'hello'
+    >>> identity([1, 2, 3])
+    [1, 2, 3]
+    """
     return x
 
 
@@ -90,7 +161,12 @@ def register_key_strategy(cls):
 
 @register_key_strategy
 class ExplicitKey:
-    """Use an explicitly provided key value."""
+    """Use an explicitly provided key value.
+
+    >>> strategy = ExplicitKey("my_key")
+    >>> strategy.resolve_at_definition("method_name")
+    'my_key'
+    """
 
     def __init__(self, key: Any):
         """
@@ -108,7 +184,12 @@ class ExplicitKey:
 
 @register_key_strategy
 class ApplyToMethodName:
-    """Apply a function to the method name to generate the key."""
+    """Apply a function to the method name to generate the key.
+
+    >>> strategy = ApplyToMethodName(lambda name: f"{name}.cache")
+    >>> strategy.resolve_at_definition("my_method")
+    'my_method.cache'
+    """
 
     def __init__(self, func: Callable[[str], Any]):
         """
@@ -168,6 +249,107 @@ class ApplyToInstance:
         return self.func(instance)
 
 
+@register_key_strategy
+class FromMethodArgs:
+    """
+    Apply a function to method arguments to generate the key.
+
+    The function receives (self, *args, **kwargs) and should return a cache key.
+    """
+
+    def __init__(self, func: Callable):
+        """
+        Initialize with a function to apply to method arguments.
+
+        Args:
+            func: A function that takes (self, *args, **kwargs) and returns a key.
+                  Example: lambda self, x, y: f'{x}_{y}'
+        """
+        self.func = func
+
+    def resolve_at_definition(self, method_name: str) -> None:
+        """Cannot resolve at definition time, need the arguments."""
+        return None
+
+    def resolve_at_runtime(
+        self, instance: Any, method_name: str, *args, **kwargs
+    ) -> Any:
+        """Apply the function to the instance and method arguments at runtime."""
+        return self.func(instance, *args, **kwargs)
+
+
+@register_key_strategy
+class CompositeKey:
+    """
+    Combine multiple key strategies into a single composite key.
+
+    Useful for creating keys that depend on both instance properties and method arguments.
+    """
+
+    def __init__(self, *strategies, separator: str = '_'):
+        """
+        Initialize with multiple key strategies to combine.
+
+        Args:
+            *strategies: KeyStrategy instances to combine
+            separator: String to use when joining key parts (default: '_')
+        """
+        self.strategies = strategies
+        self.separator = separator
+
+    def resolve_at_definition(self, method_name: str) -> Optional[Any]:
+        """Try to resolve all strategies at definition time."""
+        parts = []
+        any_unresolved = False
+
+        for strategy in self.strategies:
+            part = strategy.resolve_at_definition(method_name)
+            if part is None:
+                any_unresolved = True
+            else:
+                parts.append(str(part))
+
+        # If any strategy can't be resolved at definition time, return None
+        if any_unresolved:
+            return None
+
+        return self.separator.join(parts) if parts else None
+
+    def resolve_at_runtime(
+        self, instance: Any, method_name: str, *args, **kwargs
+    ) -> Any:
+        """Resolve all strategies at runtime and combine them."""
+        import inspect
+
+        parts = []
+
+        for strategy in self.strategies:
+            # Try runtime resolution first (works for both property and method strategies)
+            if hasattr(strategy, 'resolve_at_runtime'):
+                try:
+                    # Check if it's a method-aware strategy by inspecting signature
+                    sig = inspect.signature(strategy.resolve_at_runtime)
+                    if len(sig.parameters) > 2:
+                        # Method-aware strategy - pass args and kwargs
+                        part = strategy.resolve_at_runtime(
+                            instance, method_name, *args, **kwargs
+                        )
+                    else:
+                        # Property strategy - only pass instance and method_name
+                        part = strategy.resolve_at_runtime(instance, method_name)
+                except TypeError:
+                    # Fallback to definition-time resolution
+                    part = strategy.resolve_at_definition(method_name)
+            else:
+                # Fallback to definition-time resolution
+                part = strategy.resolve_at_definition(method_name)
+
+            if part is not None:
+                parts.append(str(part))
+
+        return self.separator.join(parts) if parts else None
+
+
 def _resolve_key_for_cached_prop(key: Any) -> KeyStrategy:
     """
     Convert a key specification to a KeyStrategy instance.
@@ -213,6 +395,70 @@ def _resolve_key_for_cached_prop(key: Any) -> KeyStrategy:
     return ExplicitKey(key)
 
 
+def _resolve_key_for_cached_method(
+    key: Any, ignore: set = None, func: Callable = None
+) -> KeyStrategy:
+    """
+    Convert a key specification to a KeyStrategy instance for methods.
+    
+    This function is the heart of the flexible key generation system. It takes
+    various types of key specifications and converts them into a standardized
+    KeyStrategy object that knows how to generate cache keys.
+
+    Args:
+        key: The key specification, can be a string, function, or KeyStrategy.
+        ignore: Set of parameter names to ignore when using default key function.
+        func: The function being cached (needed for default key function).
+
+    Returns:
+        A KeyStrategy instance suitable for methods with arguments.
+    """
+    ignore = ignore or set()
+
+    if key is None:
+        # Default case: Auto-generate keys from method arguments
+        # This creates keys like "x=1;y=2;mode=fast" from method arguments
+        def default_key_func(inst, *args, **kwargs):
+            return _default_method_key(func, inst, *args, ignore=ignore, **kwargs)
+
+        return FromMethodArgs(default_key_func)
+
+    if isinstance(key, tuple(KeyStrategy.registered_key_strategies)):
+        # User provided a pre-built KeyStrategy instance - use it directly
+        return key
+
+    if isinstance(key, str):
+        # User provided a fixed string - all method calls use the same cache key
+        # Useful when you want to cache only the latest call result
+        return ExplicitKey(key)
+
+    if callable(key):
+        # User provided a custom function to generate keys from method arguments
+        # We need to inspect the function to understand how to use it
+        import inspect
+
+        if hasattr(key, "__code__"):
+            sig = inspect.signature(key)
+            params = list(sig.parameters.keys())
+
+            # Check what the callable expects
+            if len(params) == 0:
+                # No parameters - use as explicit key
+                return ExplicitKey(key())
+            elif len(params) == 1 and params[0] in ("self", "instance"):
+                # Only takes instance - wrap in ApplyToInstance
+                return ApplyToInstance(key)
+            else:
+                # Takes arguments - use FromMethodArgs
+                return FromMethodArgs(key)
+        else:
+            # Callable without __code__ (like partial) - assume it takes full args
+            return FromMethodArgs(key)
+
+    # For any other type, treat as an explicit key
+    return ExplicitKey(key)
+
+
 class CachedProperty:
     """
     Descriptor that caches the result of the first call to a method.
@@ -230,13 +476,20 @@ class CachedProperty:
         allow_none_keys: bool = False,
         lock_factory: Callable = RLock,
         pre_cache: Union[bool, MutableMapping] = False,
+        serialize: Optional[Callable[[Any], Any]] = None,
+        deserialize: Optional[Callable[[Any], Any]] = None,
     ):
         """
         Initialize the cached property.
 
         Args:
             func: The function whose result needs to be cached.
-            cache: The cache storage, can be a MutableMapping or an attribute name.
+            cache: The cache storage. Can be:
+                - A MutableMapping instance (shared across all instances)
+                - A string naming an instance attribute that is a MutableMapping
+                - A callable that takes the instance and returns a MutableMapping
+                  (allows per-instance cache customization)
+                Example: cache=lambda self: Files(f'/tmp/cache_{self.user_id}/')
             key: The key to store the cache value. Can be:
                 - A string (treated as an explicit key)
                 - A function (interpreted based on its signature)
@@ -244,6 +497,12 @@ class CachedProperty:
             allow_none_keys: Whether to allow None as a valid key.
             lock_factory: Factory function to create a lock.
             pre_cache: If True or a MutableMapping, adds in-memory caching.
+            serialize: Optional function to serialize values before storing in cache.
+                       Signature: (value) -> serialized_value
+                       Example: serialize=pickle.dumps
+            deserialize: Optional function to deserialize values retrieved from cache.
+                         Signature: (serialized_value) -> value
+                         Example: deserialize=pickle.loads
         """
         self.func = func
         self.attrname = None
@@ -255,6 +514,8 @@ class CachedProperty:
         self.cache_key = (
             None  # Will be set in __set_name__ if resolvable at definition time
         )
+        self.serialize = serialize if serialize is not None else identity
+        self.deserialize = deserialize if deserialize is not None else identity
 
         if pre_cache is not False:
             if pre_cache is True:
@@ -319,6 +580,11 @@ class CachedProperty:
     def __get_cache(self, instance):
         """
         Get the cache for the instance.
+        
+        This method handles the three main cache specification patterns:
+        1. Cache factories (functions that create cache instances)
+        2. Attribute names (strings referring to instance attributes)  
+        3. Direct cache objects (MutableMapping instances)
 
         Args:
             instance: The instance of the class.
@@ -326,7 +592,29 @@ class CachedProperty:
         Returns:
             The cache storage.
         """
-        if isinstance(self.cache, str):
+        # Pattern 1: Callable cache factories
+        # These enable dynamic, instance-specific cache creation
+        # Example: cache=lambda self: Files(f'/cache/{self.user_id}/')
+        if callable(self.cache) and not isinstance(self.cache, type):
+            # It's a factory function - call it with the instance
+            import inspect
+
+            sig = inspect.signature(self.cache)
+
+            if len(sig.parameters) >= 1:
+                # Factory expects the instance
+                cache = self.cache(instance)
+            else:
+                # No-argument factory
+                cache = self.cache()
+
+            if not isinstance(cache, MutableMapping):
+                raise TypeError(
+                    f"Cache factory must return a MutableMapping, got {type(cache)}"
+                )
+            __cache = cache
+
+        elif isinstance(self.cache, str):
             cache = getattr(instance, self.cache, None)
             if cache is None:
                 raise TypeError(
@@ -365,6 +653,7 @@ class CachedProperty:
             # If cache is False, always compute the value
             return self.func(instance)
 
+        # Main caching flow: get cache storage, compute key, then get or compute value
         cache = self._get_cache(instance)
         cache_key = self._get_cache_key(instance)
 
@@ -389,12 +678,14 @@ class CachedProperty:
         val = cache.get(cache_key, _NOT_FOUND)
         if val is _NOT_FOUND:
             with self.lock:
-                # check if another thread filled cache while we awaited lock
+                # Double-check pattern: verify cache is still empty after acquiring lock
+                # This prevents multiple threads from computing the same value simultaneously
                 val = cache.get(cache_key, _NOT_FOUND)
                 if val is _NOT_FOUND:
                     val = self.func(instance)
                     try:
-                        cache[cache_key] = val
+                        # Serialize before storing
+                        cache[cache_key] = self.serialize(val)
                     except TypeError as e:
                         msg = (
                             f"The cache on {type(instance).__name__!r} instance "
@@ -402,7 +693,13 @@ class CachedProperty:
                             f"Error: {e}"
                         )
                         raise TypeError(msg) from None
-        return val
+                    return val  # Return the unserialized value
+                else:
+                    # Deserialize when retrieving from cache
+                    return self.deserialize(val)
+        else:
+            # Deserialize when retrieving from cache
+            return self.deserialize(val)
 
     __class_getitem__ = classmethod(GenericAlias)
 
@@ -422,27 +719,472 @@ class CachedProperty:
     #     return self._get_or_compute(instance, cache)
 
 
+def _default_method_key(func, self, *args, ignore=None, **kwargs):
+    """
+    Default key function for CachedMethod.
+
+    Uses inspect.signature to bind all arguments to their parameter names,
+    then creates a semicolon-separated string of param_name=value pairs.
+
+    Args:
+        func: The function being cached
+        self: The instance (first argument of the method)
+        *args: Positional arguments passed to the method
+        **kwargs: Keyword arguments passed to the method
+        ignore: Set of parameter names to exclude from the key
+
+    Returns:
+        A string like "x=1;y=2;mode=fast" representing all arguments
+
+    Examples:
+        >>> def sample_method(self, x, y, mode='fast'): pass
+        >>> _default_method_key(sample_method, None, 1, 2)
+        'x=1;y=2;mode=fast'
+        >>> _default_method_key(sample_method, None, 1, y=3, mode='slow')
+        'x=1;y=3;mode=slow'
+        >>> _default_method_key(sample_method, None, 1, 2, ignore={'mode'})
+        'x=1;y=2'
+    """
+    import inspect
+
+    ignore = ignore or set()
+
+    # Get the signature of the wrapped function
+    sig = inspect.signature(func)
+
+    # Bind the arguments (excluding 'self')
+    # We pass args and kwargs as if calling the function without self
+    try:
+        bound = sig.bind(self, *args, **kwargs)
+        bound.apply_defaults()
+    except TypeError:
+        # Fallback if binding fails - shouldn't happen but be defensive
+        key_parts = [str(arg) for arg in args]
+        key_parts.extend(
+            f"{k}={v}" for k, v in sorted(kwargs.items()) if k not in ignore
+        )
+        return ";".join(key_parts) if key_parts else ""
+
+    # Build key from bound arguments
+    key_parts = []
+    for param_name, param_value in bound.arguments.items():
+        # Skip 'self' and any ignored parameters
+        if param_name == 'self' or param_name in ignore:
+            continue
+
+        # Handle VAR_POSITIONAL (*args)
+        if sig.parameters[param_name].kind == inspect.Parameter.VAR_POSITIONAL:
+            if param_value:  # Only include if non-empty
+                key_parts.append(f"{param_name}={param_value}")
+
+        # Handle VAR_KEYWORD (**kwargs)
+        elif sig.parameters[param_name].kind == inspect.Parameter.VAR_KEYWORD:
+            # Add each kwarg as a separate key=value pair
+            for k, v in sorted(param_value.items()):
+                if k not in ignore:
+                    key_parts.append(f"{k}={v}")
+
+        # Handle regular parameters
+        else:
+            key_parts.append(f"{param_name}={param_value}")
+
+    return ";".join(key_parts) if key_parts else ""
+
+
+class CachedMethod:
+    """
+    Descriptor that caches the result of method calls based on their arguments.
+
+    Similar to CachedProperty but handles methods with arguments, caching results
+    based on unique combinations of arguments (excluding self).
+    """
+
+    def __init__(
+        self,
+        func: Callable,
+        cache: Optional[Cache] = None,
+        key: Optional[Callable] = None,
+        *,
+        ignore: Optional[Union[str, list[str]]] = None,
+        allow_none_keys: bool = False,
+        lock_factory: Callable = RLock,
+        pre_cache: Union[bool, MutableMapping] = False,
+        serialize: Optional[Callable[[Any], Any]] = None,
+        deserialize: Optional[Callable[[Any], Any]] = None,
+    ):
+        """
+        Initialize the cached method.
+
+        Args:
+            func: The function whose results need to be cached.
+            cache: The cache storage. Can be:
+                - A MutableMapping instance (shared across instances)
+                - A string naming an instance attribute containing a MutableMapping
+                - A callable taking (instance) and returning a MutableMapping
+                  This enables instance-specific caching, e.g.:
+                  cache=lambda self: Files(f'/cache/{self.user_id}/')
+            key: Callable that takes (self, *args, **kwargs) and returns a cache key.
+                 Defaults to a function that converts args/kwargs to a string.
+            ignore: Parameter name(s) to exclude from cache key computation.
+                Can be a string (single parameter) or list of strings (multiple parameters).
+                Commonly used to ignore 'self' or parameters like 'verbose' that don't
+                affect the result.
+            allow_none_keys: Whether to allow None as a valid key.
+            lock_factory: Factory function to create a lock.
+            pre_cache: If True or a MutableMapping, adds in-memory caching.
+            serialize: Optional function to serialize values before storing in cache.
+                       Signature: (value) -> serialized_value
+                       Example: serialize=pickle.dumps
+            deserialize: Optional function to deserialize values retrieved from cache.
+                         Signature: (serialized_value) -> value
+                         Example: deserialize=pickle.loads
+        """
+        self.func = func
+        self.attrname = None
+        self.__doc__ = func.__doc__
+        self.lock = lock_factory()
+        self.cache = cache
+
+        # Handle ignore parameter
+        if isinstance(ignore, str):
+            ignore = [ignore]
+        self.ignore = set(ignore or [])
+
+        # Set up key strategy
+        self.key_strategy = _resolve_key_for_cached_method(
+            key, ignore=self.ignore, func=self.func
+        )
+        self.allow_none_keys = allow_none_keys
+        self.serialize = serialize if serialize is not None else identity
+        self.deserialize = deserialize if deserialize is not None else identity
+
+        if pre_cache is not False:
+            if pre_cache is True:
+                pre_cache = dict()
+            else:
+                assert isinstance(pre_cache, MutableMapping), (
+                    f"`pre_cache` must be a bool or a MutableMapping, "
+                    f"Was a {type(pre_cache)}: {pre_cache}"
+                )
+            self.wrap_cache = partial(cache_vals, cache=pre_cache)
+        else:
+            self.wrap_cache = identity
+
+    def __set_name__(self, owner, name):
+        """
+        Set the name of the method.
+
+        Args:
+            owner: The class owning the method.
+            name: The name of the method.
+        """
+        if self.attrname is None:
+            self.attrname = name
+        elif name != self.attrname:
+            raise TypeError(
+                "Cannot assign the same CachedMethod to two different names "
+                f"({self.attrname!r} and {name!r})."
+            )
+
+    def _get_cache_key(self, instance, *args, **kwargs):
+        """
+        Get the cache key for the method call.
+
+        Args:
+            instance: The instance of the class.
+            *args: Arguments passed to the method.
+            **kwargs: Keyword arguments passed to the method.
+
+        Returns:
+            The cache key to use.
+        """
+        # Resolve key using the strategy
+        if hasattr(self.key_strategy, 'resolve_at_runtime'):
+            # Check if it's a method-aware strategy
+            try:
+                key = self.key_strategy.resolve_at_runtime(
+                    instance, self.attrname, *args, **kwargs
+                )
+            except TypeError:
+                # Fallback for property-style strategies
+                key = self.key_strategy.resolve_at_runtime(instance, self.attrname)
+        else:
+            key = self.key_strategy.resolve_at_definition(self.attrname)
+
+        if key is None and not self.allow_none_keys:
+            raise TypeError(f"The key resolved for {self.attrname!r} cannot be None.")
+
+        return key
+
+    def __get_cache(self, instance):
+        """
+        Get the cache for the instance.
+
+        Args:
+            instance: The instance of the class.
+
+        Returns:
+            The cache storage.
+        """
+        # Handle callable cache factories
+        if callable(self.cache) and not isinstance(self.cache, type):
+            # It's a factory function - call it with the instance
+            import inspect
+
+            sig = inspect.signature(self.cache)
+
+            if len(sig.parameters) >= 1:
+                # Factory expects the instance
+                cache = self.cache(instance)
+            else:
+                # No-argument factory
+                cache = self.cache()
+
+            if not isinstance(cache, MutableMapping):
+                raise TypeError(
+                    f"Cache factory must return a MutableMapping, got {type(cache)}"
+                )
+            __cache = cache
+
+        elif isinstance(self.cache, str):
+            cache = getattr(instance, self.cache, None)
+            if cache is None:
+                raise TypeError(
+                    f"No attribute named '{self.cache}' found on {type(instance).__name__!r} instance."
+                )
+            if not isinstance(cache, MutableMapping):
+                raise TypeError(
+                    f"Attribute '{self.cache}' on {type(instance).__name__!r} instance is not a MutableMapping."
+                )
+            __cache = cache
+        elif isinstance(self.cache, MutableMapping):
+            __cache = self.cache
+        else:
+            __cache = instance.__dict__
+
+        return self.wrap_cache(__cache)
+
+    def __get__(self, instance, owner=None):
+        """
+        Get the bound method wrapper that provides caching.
+
+        Args:
+            instance: The instance of the class.
+            owner: The owner class.
+
+        Returns:
+            A bound wrapper function that caches method results.
+        """
+        if instance is None:
+            return self
+        if self.attrname is None:
+            raise TypeError(
+                "Cannot use CachedMethod instance without calling __set_name__ on it."
+            )
+
+        if self.cache is False:
+            # If cache is False, always compute the value
+            return partial(self.func, instance)
+
+        cache = self._get_cache(instance)
+
+        @wraps(self.func)
+        def cached_method_wrapper(*args, **kwargs):
+            cache_key = self._get_cache_key(instance, *args, **kwargs)
+            return self._get_or_compute(instance, cache, cache_key, args, kwargs)
+
+        return cached_method_wrapper
+
+    def _get_cache(self, instance):
+        """Get the cache for the instance, handling potential errors."""
+        try:
+            cache = self.__get_cache(instance)
+        except (
+            AttributeError
+        ):  # not all objects have __dict__ (e.g. class defines slots)
+            msg = (
+                f"No '__dict__' attribute on {type(instance).__name__!r} "
+                f"instance to cache {self.attrname!r} method."
+            )
+            raise TypeError(msg) from None
+        return cache
+
+    def _get_or_compute(self, instance, cache, cache_key, args, kwargs):
+        """Get cached value or compute it if not found."""
+        val = cache.get(cache_key, _NOT_FOUND)
+        if val is _NOT_FOUND:
+            with self.lock:
+                # check if another thread filled cache while we awaited lock
+                val = cache.get(cache_key, _NOT_FOUND)
+                if val is _NOT_FOUND:
+                    val = self.func(instance, *args, **kwargs)
+                    try:
+                        # Serialize before storing
+                        cache[cache_key] = self.serialize(val)
+                    except TypeError as e:
+                        msg = (
+                            f"The cache on {type(instance).__name__!r} instance "
+                            f"does not support item assignment for caching {cache_key!r} method.\n"
+                            f"Error: {e}"
+                        )
+                        raise TypeError(msg) from None
+                    return val  # Return the unserialized value
+                else:
+                    # Deserialize when retrieving from cache
+                    return self.deserialize(val)
+        else:
+            # Deserialize when retrieving from cache
+            return self.deserialize(val)
+
+    __class_getitem__ = classmethod(GenericAlias)
+
+
 def cache_this(
     func: PropertyFunc = None,
     *,
     cache: Optional[Cache] = None,
     key: Optional[KeyType] = None,
     pre_cache: Union[bool, MutableMapping] = False,
+    as_property: Optional[bool] = None,
+    ignore: Optional[Union[str, list[str]]] = None,
+    serialize: Optional[Callable[[Any], Any]] = None,
+    deserialize: Optional[Callable[[Any], Any]] = None,
 ):
     r"""
-    Transforms a method into a cached property with control over cache object and key.
+    Unified caching decorator for properties and methods with persistent storage support.
+
+    `cache_this` extends the capabilities of Python's built-in `functools.cached_property`
+    and `functools.lru_cache` by providing:
+    
+    - **Persistent caching**: Store cached values in files, databases, or any MutableMapping
+    - **Flexible cache backends**: Use instance attributes, external stores, or cache factories
+    - **Smart key generation**: Automatic argument-based keys for methods with parameter filtering
+    - **Serialization support**: Custom serialize/deserialize functions for complex data
+    - **Auto-detection**: Automatically chooses property vs method caching based on signature
+    - **No LRU eviction**: Unlike lru_cache, values persist until explicitly removed
+    
+    Unlike functools.cached_property (properties only) and lru_cache (memory-only with eviction),
+    cache_this provides a unified interface for both use cases with persistent storage options.
 
     :param func: The function to be decorated (usually left empty).
-    :param cache: The cache storage, can be a `MutableMapping` or the name of an
-        instance attribute that is a `MutableMapping`.
-    :param key: The key to store the cache value, can be a callable that will be
-        applied to the method name to make a key, or an explicit string.
+    :param cache: The cache storage. Can be:
+        - A MutableMapping instance (shared across instances)
+        - A string naming an instance attribute containing a MutableMapping
+        - A callable taking (instance) and returning a MutableMapping
+          This enables instance-specific caching, e.g.:
+          cache=lambda self: Files(f'/cache/{self.user_id}/')
+    :param key: For properties: the key to store the cache value, can be a callable
+        that will be applied to the method name to make a key, or an explicit string.
+        For methods: a callable that takes (self, *args, **kwargs) and returns a cache key.
     :param pre_cache: Default is False. If True, adds an in-memory cache to the method
         to (also) cache the results in memory. If a MutableMapping is given, it will be
         used as the pre-cache.
         This is useful when you want a persistent cache but also want to speed up
         access to the method in the same session.
+    :param as_property: If True, force use of CachedProperty. If False, force use of
+        CachedMethod. If None (default), auto-detect based on function signature.
+    :param ignore: Parameter name(s) to exclude from cache key computation.
+        Can be a string (single parameter) or list of strings (multiple parameters).
+        Commonly used to ignore 'self' or parameters like 'verbose' that don't
+        affect the result.
+    :param serialize: Optional function to serialize values before caching.
+        Example: serialize=pickle.dumps for binary file storage
+    :param deserialize: Optional function to deserialize cached values.
+        Example: deserialize=pickle.loads
     :return: The decorated function.
+
+    ## Comprehensive Example
+
+    Here's a complete example showcasing all major features of cache_this:
+
+    >>> import tempfile
+    >>> import os
+    >>> from pathlib import Path
+    >>> 
+    >>> class DataProcessor:
+    ...     def __init__(self, user_id="user123"):
+    ...         self.user_id = user_id
+    ...         self.memory_cache = {}  # In-memory cache
+    ...         self.call_counts = {}   # Track function calls for demo
+    ...     
+    ...     # 1. Basic property caching (like functools.cached_property)
+    ...     @cache_this
+    ...     def basic_property(self):
+    ...         '''Cached in instance.__dict__ by default'''
+    ...         self.call_counts['basic_property'] = self.call_counts.get('basic_property', 0) + 1
+    ...         return f"computed_value_{self.call_counts['basic_property']}"
+    ...     
+    ...     # 2. Property with custom cache and key
+    ...     @cache_this(cache='memory_cache', key='custom_prop_key')
+    ...     def custom_cached_property(self):
+    ...         '''Cached in instance.memory_cache with custom key'''
+    ...         self.call_counts['custom_cached_property'] = self.call_counts.get('custom_cached_property', 0) + 1
+    ...         return f"custom_value_{self.call_counts['custom_cached_property']}"
+    ...     
+    ...     # 3. Method caching with argument-based keys
+    ...     @cache_this(cache='memory_cache')
+    ...     def compute_result(self, x, y, mode='fast'):
+    ...         '''Cached based on arguments (x, y, mode)'''
+    ...         key = ('compute_result', x, y, mode)
+    ...         self.call_counts[key] = self.call_counts.get(key, 0) + 1
+    ...         return x * y * (2 if mode == 'fast' else 3)
+    ...     
+    ...     # 4. Method caching with ignored parameters
+    ...     @cache_this(cache='memory_cache', ignore={'verbose', 'debug'})
+    ...     def process_data(self, data, algorithm='default', verbose=False, debug=False):
+    ...         '''Cache ignores verbose and debug parameters'''
+    ...         key = ('process_data', tuple(data), algorithm)
+    ...         self.call_counts[key] = self.call_counts.get(key, 0) + 1
+    ...         if verbose: print(f"Processing {data} with {algorithm}")
+    ...         return sum(data) * (2 if algorithm == 'default' else 3)
+    ...     
+    ...     # 5. Instance-specific cache factory
+    ...     @cache_this(cache=lambda self: {f'{self.user_id}_cache': {}}.get(f'{self.user_id}_cache'))
+    ...     def user_specific_computation(self, value):
+    ...         '''Each instance gets its own cache based on user_id'''
+    ...         key = ('user_specific_computation', value)
+    ...         self.call_counts[key] = self.call_counts.get(key, 0) + 1
+    ...         return value ** 2
+
+    Now let's test all the features:
+
+    >>> processor = DataProcessor("alice")
+    >>> 
+    >>> # Test basic property caching
+    >>> result1 = processor.basic_property
+    >>> result2 = processor.basic_property  # Should use cache
+    >>> assert result1 == result2 == "computed_value_1"
+    >>> assert 'basic_property' in processor.__dict__  # Cached in instance dict
+    >>> 
+    >>> # Test custom cache and key
+    >>> result1 = processor.custom_cached_property
+    >>> result2 = processor.custom_cached_property  # Should use cache
+    >>> assert result1 == result2 == "custom_value_1"
+    >>> assert 'custom_prop_key' in processor.memory_cache
+    >>> 
+    >>> # Test method caching with arguments
+    >>> result1 = processor.compute_result(3, 4, 'fast')
+    >>> result2 = processor.compute_result(3, 4, 'fast')  # Should use cache
+    >>> result3 = processor.compute_result(3, 4, 'slow')  # Different args, new computation
+    >>> assert result1 == result2 == 24  # 3 * 4 * 2
+    >>> assert result3 == 36  # 3 * 4 * 3
+    >>> 
+    >>> # Test parameter ignoring
+    >>> result1 = processor.process_data([1, 2, 3], verbose=True)
+    Processing [1, 2, 3] with default
+    >>> result2 = processor.process_data([1, 2, 3], verbose=False)  # Should use same cache
+    >>> result3 = processor.process_data([1, 2, 3], debug=True)     # Should use same cache
+    >>> assert result1 == result2 == result3 == 12  # sum([1,2,3]) * 2
+    >>> 
+    >>> # Test instance-specific caching
+    >>> result1 = processor.user_specific_computation(5)
+    >>> result2 = processor.user_specific_computation(5)  # Should use cache
+    >>> assert result1 == result2 == 25  # 5 ** 2
+    >>> 
+    >>> # Different instance should have separate cache
+    >>> processor2 = DataProcessor("bob")
+    >>> result3 = processor2.user_specific_computation(5)  # Fresh computation
+    >>> assert result3 == 25
 
     Used with no arguments, `cache_this` will cache just as the builtin
     `cached_property` does -- in the instance's `__dict__` attribute.
@@ -635,28 +1377,97 @@ def cache_this(
 
     """
 
-    # the cache is False case, where we just want a property, computed by func
+    import inspect
+
+    def _should_use_property(func, as_property):
+        """
+        Determine whether to use CachedProperty or CachedMethod based on function signature.
+        
+        This is the core auto-detection logic that makes cache_this work seamlessly
+        for both properties (no arguments) and methods (with arguments).
+        """
+        # Explicit override takes precedence
+        if as_property is not None:
+            return as_property
+
+        # Auto-detect based on function signature
+        try:
+            sig = inspect.signature(func)
+            # Count all parameters except 'self', including variadic ones (*args, **kwargs)
+            non_self_params = [
+                p for name, p in sig.parameters.items() if name != 'self'
+            ]
+
+            # Key insight: If there are any parameters beyond 'self', it's a method 
+            # that takes arguments and needs argument-based cache keys.
+            # If only 'self' parameter exists, it's a property-like function.
+            return len(non_self_params) == 0
+        except (ValueError, TypeError):
+            # If we can't get signature, default to property behavior for backward compatibility
+            return True
+
+    # Special case: cache=False means disable caching entirely (compute every time)
     if cache is False:
         if func is None:
-
+            # Decorator factory: @cache_this(cache=False)
             def wrapper(f):
-                return property(f)
+                return property(f)  # Just a plain property, no caching
 
             return wrapper
         else:
+            # Direct decoration: cache_this(some_func, cache=False)
             return property(func)
 
-    # The general case
-    else:  #   If func is not given, we want a decorator
+    # The main case: cache is enabled (default or explicitly set)
+    else:  
         if func is None:
-
+            # Decorator factory case: @cache_this() or @cache_this(cache=..., key=...)
             def wrapper(f):
-                return CachedProperty(f, cache=cache, key=key, pre_cache=pre_cache)
+                # This is where the magic happens: auto-detect property vs method
+                if _should_use_property(f, as_property):
+                    # Function has no arguments beyond 'self' -> use property caching
+                    return CachedProperty(
+                        f,
+                        cache=cache,
+                        key=key,
+                        pre_cache=pre_cache,
+                        serialize=serialize,
+                        deserialize=deserialize,
+                    )
+                else:
+                    # Function has arguments beyond 'self' -> use method caching
+                    return CachedMethod(
+                        f,
+                        cache=cache,
+                        key=key,
+                        pre_cache=pre_cache,
+                        ignore=ignore,
+                        serialize=serialize,
+                        deserialize=deserialize,
+                    )
 
             return wrapper
 
-        else:  #   If func is given, we want to return the CachedProperty instance
-            return CachedProperty(func, cache=cache, key=key, pre_cache=pre_cache)
+        else:  #   If func is given, we want to return the appropriate cached instance
+            if _should_use_property(func, as_property):
+                return CachedProperty(
+                    func,
+                    cache=cache,
+                    key=key,
+                    pre_cache=pre_cache,
+                    serialize=serialize,
+                    deserialize=deserialize,
+                )
+            else:
+                return CachedMethod(
+                    func,
+                    cache=cache,
+                    key=key,
+                    pre_cache=pre_cache,
+                    ignore=ignore,
+                    serialize=serialize,
+                    deserialize=deserialize,
+                )
 
 
 # add the key strategies as attributes of cache_this to have them easily accessible
@@ -951,6 +1762,17 @@ from dol.trans import store_decorator
 
 
 def is_a_cache(obj):
+    """Check if an object implements the cache interface.
+
+    A cache object must have __contains__, __getitem__, and __setitem__ methods.
+
+    >>> is_a_cache({})  # dict is a valid cache
+    True
+    >>> is_a_cache([])  # list has these methods but for indexed access
+    True
+    >>> is_a_cache("string")  # string is not (immutable)
+    False
+    """
     return all(
         map(
             partial(hasattr, obj),
@@ -960,7 +1782,13 @@ def is_a_cache(obj):
 
 
 def get_cache(cache):
-    """Convenience function to get a cache (whether it's already an instance, or needs to be validated)"""
+    """Convenience function to get a cache (whether it's already an instance, or needs to be validated).
+
+    >>> get_cache({'a': 1})  # Return existing cache instance
+    {'a': 1}
+    >>> get_cache(dict)()  # Return result of calling cache factory
+    {}
+    """
     if is_a_cache(cache):
         return cache
     elif callable(cache) and len(signature(cache).parameters) == 0:
