@@ -545,6 +545,10 @@ class CachedProperty:
                 f"({self.attrname!r} and {name!r})."
             )
 
+        # If func is a descriptor (stacked cache_this), propagate __set_name__ to it
+        if isinstance(self.func, (CachedProperty, CachedMethod)):
+            self.func.__set_name__(owner, name)
+
         # Try to resolve the key at definition time
         key = self.key_strategy.resolve_at_definition(self.attrname)
 
@@ -682,7 +686,14 @@ class CachedProperty:
                 # This prevents multiple threads from computing the same value simultaneously
                 val = cache.get(cache_key, _NOT_FOUND)
                 if val is _NOT_FOUND:
-                    val = self.func(instance)
+                    # Check if func is actually a descriptor (e.g., another CachedProperty)
+                    # This enables stacking of cache_this decorators
+                    if isinstance(self.func, (CachedProperty, CachedMethod)):
+                        # Use descriptor protocol to get the value
+                        val = self.func.__get__(instance, type(instance))
+                    else:
+                        # Normal function call
+                        val = self.func(instance)
                     try:
                         # Serialize before storing
                         cache[cache_key] = self.serialize(val)
@@ -1389,6 +1400,11 @@ def cache_this(
         # Explicit override takes precedence
         if as_property is not None:
             return as_property
+
+        # If func is already a CachedProperty or CachedMethod, treat it as a property
+        # (since these are descriptors that work like properties)
+        if isinstance(func, (CachedProperty, CachedMethod)):
+            return True
 
         # Auto-detect based on function signature
         try:
