@@ -286,7 +286,7 @@ class CompositeKey:
     Useful for creating keys that depend on both instance properties and method arguments.
     """
 
-    def __init__(self, *strategies, separator: str = '_'):
+    def __init__(self, *strategies, separator: str = "_"):
         """
         Initialize with multiple key strategies to combine.
 
@@ -325,7 +325,7 @@ class CompositeKey:
 
         for strategy in self.strategies:
             # Try runtime resolution first (works for both property and method strategies)
-            if hasattr(strategy, 'resolve_at_runtime'):
+            if hasattr(strategy, "resolve_at_runtime"):
                 try:
                     # Check if it's a method-aware strategy by inspecting signature
                     sig = inspect.signature(strategy.resolve_at_runtime)
@@ -400,7 +400,7 @@ def _resolve_key_for_cached_method(
 ) -> KeyStrategy:
     """
     Convert a key specification to a KeyStrategy instance for methods.
-    
+
     This function is the heart of the flexible key generation system. It takes
     various types of key specifications and converts them into a standardized
     KeyStrategy object that knows how to generate cache keys.
@@ -580,10 +580,10 @@ class CachedProperty:
     def __get_cache(self, instance):
         """
         Get the cache for the instance.
-        
+
         This method handles the three main cache specification patterns:
         1. Cache factories (functions that create cache instances)
-        2. Attribute names (strings referring to instance attributes)  
+        2. Attribute names (strings referring to instance attributes)
         3. Direct cache objects (MutableMapping instances)
 
         Args:
@@ -769,7 +769,7 @@ def _default_method_key(func, self, *args, ignore=None, **kwargs):
     key_parts = []
     for param_name, param_value in bound.arguments.items():
         # Skip 'self' and any ignored parameters
-        if param_name == 'self' or param_name in ignore:
+        if param_name == "self" or param_name in ignore:
             continue
 
         # Handle VAR_POSITIONAL (*args)
@@ -899,7 +899,7 @@ class CachedMethod:
             The cache key to use.
         """
         # Resolve key using the strategy
-        if hasattr(self.key_strategy, 'resolve_at_runtime'):
+        if hasattr(self.key_strategy, "resolve_at_runtime"):
             # Check if it's a method-aware strategy
             try:
                 key = self.key_strategy.resolve_at_runtime(
@@ -1055,14 +1055,14 @@ def cache_this(
 
     `cache_this` extends the capabilities of Python's built-in `functools.cached_property`
     and `functools.lru_cache` by providing:
-    
+
     - **Persistent caching**: Store cached values in files, databases, or any MutableMapping
     - **Flexible cache backends**: Use instance attributes, external stores, or cache factories
     - **Smart key generation**: Automatic argument-based keys for methods with parameter filtering
     - **Serialization support**: Custom serialize/deserialize functions for complex data
     - **Auto-detection**: Automatically chooses property vs method caching based on signature
     - **No LRU eviction**: Unlike lru_cache, values persist until explicitly removed
-    
+
     Unlike functools.cached_property (properties only) and lru_cache (memory-only with eviction),
     cache_this provides a unified interface for both use cases with persistent storage options.
 
@@ -1100,27 +1100,27 @@ def cache_this(
     >>> import tempfile
     >>> import os
     >>> from pathlib import Path
-    >>> 
+    >>>
     >>> class DataProcessor:
     ...     def __init__(self, user_id="user123"):
     ...         self.user_id = user_id
     ...         self.memory_cache = {}  # In-memory cache
     ...         self.call_counts = {}   # Track function calls for demo
-    ...     
+    ...
     ...     # 1. Basic property caching (like functools.cached_property)
     ...     @cache_this
     ...     def basic_property(self):
     ...         '''Cached in instance.__dict__ by default'''
     ...         self.call_counts['basic_property'] = self.call_counts.get('basic_property', 0) + 1
     ...         return f"computed_value_{self.call_counts['basic_property']}"
-    ...     
+    ...
     ...     # 2. Property with custom cache and key
     ...     @cache_this(cache='memory_cache', key='custom_prop_key')
     ...     def custom_cached_property(self):
     ...         '''Cached in instance.memory_cache with custom key'''
     ...         self.call_counts['custom_cached_property'] = self.call_counts.get('custom_cached_property', 0) + 1
     ...         return f"custom_value_{self.call_counts['custom_cached_property']}"
-    ...     
+    ...
     ...     # 3. Method caching with argument-based keys
     ...     @cache_this(cache='memory_cache')
     ...     def compute_result(self, x, y, mode='fast'):
@@ -1128,7 +1128,7 @@ def cache_this(
     ...         key = ('compute_result', x, y, mode)
     ...         self.call_counts[key] = self.call_counts.get(key, 0) + 1
     ...         return x * y * (2 if mode == 'fast' else 3)
-    ...     
+    ...
     ...     # 4. Method caching with ignored parameters
     ...     @cache_this(cache='memory_cache', ignore={'verbose', 'debug'})
     ...     def process_data(self, data, algorithm='default', verbose=False, debug=False):
@@ -1137,7 +1137,7 @@ def cache_this(
     ...         self.call_counts[key] = self.call_counts.get(key, 0) + 1
     ...         if verbose: print(f"Processing {data} with {algorithm}")
     ...         return sum(data) * (2 if algorithm == 'default' else 3)
-    ...     
+    ...
     ...     # 5. Instance-specific cache factory
     ...     @cache_this(cache=lambda self: {f'{self.user_id}_cache': {}}.get(f'{self.user_id}_cache'))
     ...     def user_specific_computation(self, value):
@@ -1149,38 +1149,38 @@ def cache_this(
     Now let's test all the features:
 
     >>> processor = DataProcessor("alice")
-    >>> 
+    >>>
     >>> # Test basic property caching
     >>> result1 = processor.basic_property
     >>> result2 = processor.basic_property  # Should use cache
     >>> assert result1 == result2 == "computed_value_1"
     >>> assert 'basic_property' in processor.__dict__  # Cached in instance dict
-    >>> 
+    >>>
     >>> # Test custom cache and key
     >>> result1 = processor.custom_cached_property
     >>> result2 = processor.custom_cached_property  # Should use cache
     >>> assert result1 == result2 == "custom_value_1"
     >>> assert 'custom_prop_key' in processor.memory_cache
-    >>> 
+    >>>
     >>> # Test method caching with arguments
     >>> result1 = processor.compute_result(3, 4, 'fast')
     >>> result2 = processor.compute_result(3, 4, 'fast')  # Should use cache
     >>> result3 = processor.compute_result(3, 4, 'slow')  # Different args, new computation
     >>> assert result1 == result2 == 24  # 3 * 4 * 2
     >>> assert result3 == 36  # 3 * 4 * 3
-    >>> 
+    >>>
     >>> # Test parameter ignoring
     >>> result1 = processor.process_data([1, 2, 3], verbose=True)
     Processing [1, 2, 3] with default
     >>> result2 = processor.process_data([1, 2, 3], verbose=False)  # Should use same cache
     >>> result3 = processor.process_data([1, 2, 3], debug=True)     # Should use same cache
     >>> assert result1 == result2 == result3 == 12  # sum([1,2,3]) * 2
-    >>> 
+    >>>
     >>> # Test instance-specific caching
     >>> result1 = processor.user_specific_computation(5)
     >>> result2 = processor.user_specific_computation(5)  # Should use cache
     >>> assert result1 == result2 == 25  # 5 ** 2
-    >>> 
+    >>>
     >>> # Different instance should have separate cache
     >>> processor2 = DataProcessor("bob")
     >>> result3 = processor2.user_specific_computation(5)  # Fresh computation
@@ -1382,7 +1382,7 @@ def cache_this(
     def _should_use_property(func, as_property):
         """
         Determine whether to use CachedProperty or CachedMethod based on function signature.
-        
+
         This is the core auto-detection logic that makes cache_this work seamlessly
         for both properties (no arguments) and methods (with arguments).
         """
@@ -1395,10 +1395,10 @@ def cache_this(
             sig = inspect.signature(func)
             # Count all parameters except 'self', including variadic ones (*args, **kwargs)
             non_self_params = [
-                p for name, p in sig.parameters.items() if name != 'self'
+                p for name, p in sig.parameters.items() if name != "self"
             ]
 
-            # Key insight: If there are any parameters beyond 'self', it's a method 
+            # Key insight: If there are any parameters beyond 'self', it's a method
             # that takes arguments and needs argument-based cache keys.
             # If only 'self' parameter exists, it's a property-like function.
             return len(non_self_params) == 0
@@ -1419,7 +1419,7 @@ def cache_this(
             return property(func)
 
     # The main case: cache is enabled (default or explicitly set)
-    else:  
+    else:
         if func is None:
             # Decorator factory case: @cache_this() or @cache_this(cache=..., key=...)
             def wrapper(f):

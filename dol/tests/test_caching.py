@@ -495,7 +495,7 @@ class TestCachedMethodFunctionality:
                 self.cache = {}
                 self.call_count = 0
 
-            @cache_this(cache='cache')
+            @cache_this(cache="cache")
             def process(self, x, y):
                 self.call_count += 1
                 return x * y
@@ -506,8 +506,8 @@ class TestCachedMethodFunctionality:
         result1 = obj.process(2, 3)
         assert result1 == 6
         assert obj.call_count == 1
-        assert 'x=2;y=3' in obj.cache
-        assert obj.cache['x=2;y=3'] == 6
+        assert "x=2;y=3" in obj.cache
+        assert obj.cache["x=2;y=3"] == 6
 
         # Second call with same args should use cache
         result2 = obj.process(2, 3)
@@ -518,8 +518,8 @@ class TestCachedMethodFunctionality:
         result3 = obj.process(4, 5)
         assert result3 == 20
         assert obj.call_count == 2
-        assert 'x=4;y=5' in obj.cache
-        assert obj.cache['x=4;y=5'] == 20
+        assert "x=4;y=5" in obj.cache
+        assert obj.cache["x=4;y=5"] == 20
 
     def test_method_caching_with_kwargs(self):
         """Test method caching with keyword arguments"""
@@ -529,7 +529,7 @@ class TestCachedMethodFunctionality:
                 self.cache = {}
                 self.call_count = 0
 
-            @cache_this(cache='cache')
+            @cache_this(cache="cache")
             def compute(self, x, y=10, z=None):
                 self.call_count += 1
                 return x + y + (z or 0)
@@ -540,7 +540,7 @@ class TestCachedMethodFunctionality:
         result1 = obj.compute(1, y=2, z=3)
         assert result1 == 6
         assert obj.call_count == 1
-        assert 'x=1;y=2;z=3' in obj.cache
+        assert "x=1;y=2;z=3" in obj.cache
 
         # Same call should use cache
         result2 = obj.compute(1, y=2, z=3)
@@ -551,7 +551,7 @@ class TestCachedMethodFunctionality:
         result3 = obj.compute(1, y=5, z=3)
         assert result3 == 9
         assert obj.call_count == 2
-        assert 'x=1;y=5;z=3' in obj.cache
+        assert "x=1;y=5;z=3" in obj.cache
 
     def test_custom_key_function_for_methods(self):
         """Test method caching with custom key function"""
@@ -561,7 +561,7 @@ class TestCachedMethodFunctionality:
                 self.cache = {}
                 self.call_count = 0
 
-            @cache_this(cache='cache', key=lambda self, x, y: f'method__{x},{y}.pkl')
+            @cache_this(cache="cache", key=lambda self, x, y: f"method__{x},{y}.pkl")
             def multiply(self, x, y):
                 self.call_count += 1
                 return x * y
@@ -572,7 +572,7 @@ class TestCachedMethodFunctionality:
         result1 = obj.multiply(3, 4)
         assert result1 == 12
         assert obj.call_count == 1
-        assert 'method__3,4.pkl' in obj.cache
+        assert "method__3,4.pkl" in obj.cache
 
         # Second call should use cache
         result2 = obj.multiply(3, 4)
@@ -588,25 +588,25 @@ class TestCachedMethodFunctionality:
                 self.property_calls = 0
                 self.method_calls = 0
 
-            @cache_this(cache='cache')
+            @cache_this(cache="cache")
             def no_args_property(self):
                 """This should be detected as a property"""
                 self.property_calls += 1
                 return "property_value"
 
-            @cache_this(cache='cache')
+            @cache_this(cache="cache")
             def with_args_method(self, x, y=5):
                 """This should be detected as a method"""
                 self.method_calls += 1
                 return x + y
 
-            @cache_this(cache='cache')
+            @cache_this(cache="cache")
             def with_varargs(self, *args):
                 """This should be detected as a method"""
                 self.method_calls += 1
                 return sum(args)
 
-            @cache_this(cache='cache')
+            @cache_this(cache="cache")
             def with_kwargs(self, **kwargs):
                 """This should be detected as a method"""
                 self.method_calls += 1
@@ -618,7 +618,7 @@ class TestCachedMethodFunctionality:
         result1 = obj.no_args_property
         assert result1 == "property_value"
         assert obj.property_calls == 1
-        assert 'no_args_property' in obj.cache
+        assert "no_args_property" in obj.cache
 
         # Second access should use cache
         result1_again = obj.no_args_property
@@ -629,7 +629,7 @@ class TestCachedMethodFunctionality:
         result2 = obj.with_args_method(10, y=15)
         assert result2 == 25
         assert obj.method_calls == 1
-        assert 'x=10;y=15' in obj.cache
+        assert "x=10;y=15" in obj.cache
 
         # Test method detection with varargs
         method_func = obj.with_varargs
@@ -651,7 +651,7 @@ class TestCachedMethodFunctionality:
                 self.cache = {}
                 self.call_count = 0
 
-            @cache_this(cache='cache', as_property=False)
+            @cache_this(cache="cache", as_property=False)
             def property_as_method(self):
                 # This has no args but we're forcing it to be treated as a method
                 self.call_count += 1
@@ -691,8 +691,8 @@ class TestCachedMethodFunctionality:
         result1 = obj.process(2, 3)
         assert result1 == 6
         assert obj.call_count == 1
-        assert 'x=2;y=3' in external_cache
-        assert external_cache['x=2;y=3'] == 6
+        assert "x=2;y=3" in external_cache
+        assert external_cache["x=2;y=3"] == 6
 
         # Second call should use external cache
         result2 = obj.process(2, 3)
@@ -709,7 +709,7 @@ class TestCachedMethodFunctionality:
                 self.cache = {}
                 self.call_count = 0
 
-            @cache_this(cache='cache', pre_cache=pre_cache_dict)
+            @cache_this(cache="cache", pre_cache=pre_cache_dict)
             def process(self, x, y):
                 self.call_count += 1
                 return x * y
@@ -720,7 +720,7 @@ class TestCachedMethodFunctionality:
         result1 = obj.process(2, 3)
         assert result1 == 6
         assert obj.call_count == 1
-        assert 'x=2;y=3' in obj.cache
+        assert "x=2;y=3" in obj.cache
 
         # Second call should use pre-cache
         result2 = obj.process(2, 3)
@@ -735,7 +735,7 @@ class TestCachedMethodFunctionality:
                 self.cache = {}
                 self.call_count = 0
 
-            @cache_this(cache='cache')
+            @cache_this(cache="cache")
             def expensive_property(self):
                 self.call_count += 1
                 return 42
@@ -746,7 +746,7 @@ class TestCachedMethodFunctionality:
         result1 = obj.expensive_property
         assert result1 == 42
         assert obj.call_count == 1
-        assert 'expensive_property' in obj.cache
+        assert "expensive_property" in obj.cache
 
         # Second access should use cached value
         result2 = obj.expensive_property
@@ -761,23 +761,23 @@ class TestCachedMethodFunctionality:
                 self.cache = {}
                 self.call_count = 0
 
-            @cache_this(cache='cache')
+            @cache_this(cache="cache")
             def process_data(self, data_list, multiplier=1, options=None):
                 self.call_count += 1
                 total = sum(data_list) * multiplier
-                if options and options.get('double'):
+                if options and options.get("double"):
                     total *= 2
                 return total
 
         obj = DataProcessor()
 
         # Test with list and dict arguments
-        result1 = obj.process_data([1, 2, 3], multiplier=2, options={'double': True})
+        result1 = obj.process_data([1, 2, 3], multiplier=2, options={"double": True})
         assert result1 == 24  # (1+2+3) * 2 * 2 = 24
         assert obj.call_count == 1
 
         # Same call should use cache
-        result2 = obj.process_data([1, 2, 3], multiplier=2, options={'double': True})
+        result2 = obj.process_data([1, 2, 3], multiplier=2, options={"double": True})
         assert result2 == 24
         assert obj.call_count == 1
 
@@ -789,7 +789,7 @@ class TestCachedMethodFunctionality:
                 self.cache = {}
                 self.call_count = 0
 
-            @cache_this(cache='cache')
+            @cache_this(cache="cache")
             def compute(self, x):
                 # Simulate computation that might be called from multiple threads
                 self.call_count += 1
@@ -836,11 +836,11 @@ class TestCachedMethodFunctionality:
             def __init__(self):
                 self.invalid_cache = "not a mapping"
 
-            @cache_this(cache='invalid_cache')
+            @cache_this(cache="invalid_cache")
             def method_with_invalid_cache(self, x):
                 return x
 
-            @cache_this(cache='nonexistent_cache')
+            @cache_this(cache="nonexistent_cache")
             def method_with_missing_cache(self, x):
                 return x
 
@@ -864,7 +864,7 @@ class TestCachedMethodFunctionality:
 
             # Force a method with args to be treated as property (edge case)
             @cache_this(
-                cache='cache', key=ExplicitKey('forced_property'), as_property=True
+                cache="cache", key=ExplicitKey("forced_property"), as_property=True
             )
             def forced_property_method(self):
                 # This method will be treated as property despite having the potential for args
@@ -877,7 +877,7 @@ class TestCachedMethodFunctionality:
         result1 = obj.forced_property_method
         assert result1 == "forced_property_result"
         assert obj.call_count == 1
-        assert 'forced_property' in obj.cache
+        assert "forced_property" in obj.cache
 
         # Second access should use cache
         result2 = obj.forced_property_method
@@ -892,17 +892,17 @@ class TestCachedMethodFunctionality:
                 self.cache = {}
 
             # This should work as before (property)
-            @cache_this(cache='cache')
+            @cache_this(cache="cache")
             def expensive_property(self):
                 return "compute_once_result"
 
             # This should now work (method with args)
-            @cache_this(cache='cache')
+            @cache_this(cache="cache")
             def process(self, x, y):
                 return x * y
 
             # With custom key function
-            @cache_this(cache='cache', key=lambda self, x, y: f'method__{x},{y}.pkl')
+            @cache_this(cache="cache", key=lambda self, x, y: f"method__{x},{y}.pkl")
             def multiply(self, x, y):
                 return x * y
 
@@ -925,7 +925,7 @@ class TestCachedMethodFunctionality:
         assert result4 == 6
 
         # Verify cache contents and keys
-        expected_keys = ['expensive_property', 'x=3;y=4', 'x=5;y=6', 'method__2,3.pkl']
+        expected_keys = ["expensive_property", "x=3;y=4", "x=5;y=6", "method__2,3.pkl"]
         for key in expected_keys:
             assert key in obj.cache
 
