@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.3.20 documentation</title>
+  <title>dol.caching &mdash; dol 0.3.21 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=3226d6c8"></script>
+      <script src="../../_static/documentation_options.js?v=965e52d1"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -454,7 +454,7 @@
 <span class="sd">    Useful for creating keys that depend on both instance properties and method arguments.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">strategies</span><span class="p">,</span> <span class="n">separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">strategies</span><span class="p">,</span> <span class="n">separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize with multiple key strategies to combine.</span>
 
@@ -498,7 +498,7 @@
 
         <span class="k">for</span> <span class="n">strategy</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategies</span><span class="p">:</span>
             <span class="c1"># Try runtime resolution first (works for both property and method strategies)</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">strategy</span><span class="p">,</span> <span class="s1">&#39;resolve_at_runtime&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">strategy</span><span class="p">,</span> <span class="s2">&quot;resolve_at_runtime&quot;</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="c1"># Check if it&#39;s a method-aware strategy by inspecting signature</span>
                     <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">resolve_at_runtime</span><span class="p">)</span>
@@ -575,7 +575,7 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KeyStrategy</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert a key specification to a KeyStrategy instance for methods.</span>
-<span class="sd">    </span>
+
 <span class="sd">    This function is the heart of the flexible key generation system. It takes</span>
 <span class="sd">    various types of key specifications and converts them into a standardized</span>
 <span class="sd">    KeyStrategy object that knows how to generate cache keys.</span>
@@ -722,6 +722,10 @@
                 <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="si">!r}</span><span class="s2"> and </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">).&quot;</span>
             <span class="p">)</span>
 
+        <span class="c1"># If func is a descriptor (stacked cache_this), propagate __set_name__ to it</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="p">(</span><span class="n">CachedProperty</span><span class="p">,</span> <span class="n">CachedMethod</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">__set_name__</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
         <span class="c1"># Try to resolve the key at definition time</span>
         <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_strategy</span><span class="o">.</span><span class="n">resolve_at_definition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="p">)</span>
 
@@ -757,10 +761,10 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">__get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the cache for the instance.</span>
-<span class="sd">        </span>
+
 <span class="sd">        This method handles the three main cache specification patterns:</span>
 <span class="sd">        1. Cache factories (functions that create cache instances)</span>
-<span class="sd">        2. Attribute names (strings referring to instance attributes)  </span>
+<span class="sd">        2. Attribute names (strings referring to instance attributes)</span>
 <span class="sd">        3. Direct cache objects (MutableMapping instances)</span>
 
 <span class="sd">        Args:</span>
@@ -859,7 +863,14 @@
                 <span class="c1"># This prevents multiple threads from computing the same value simultaneously</span>
                 <span class="n">val</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cache_key</span><span class="p">,</span> <span class="n">_NOT_FOUND</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="n">_NOT_FOUND</span><span class="p">:</span>
-                    <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+                    <span class="c1"># Check if func is actually a descriptor (e.g., another CachedProperty)</span>
+                    <span class="c1"># This enables stacking of cache_this decorators</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="p">(</span><span class="n">CachedProperty</span><span class="p">,</span> <span class="n">CachedMethod</span><span class="p">)):</span>
+                        <span class="c1"># Use descriptor protocol to get the value</span>
+                        <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="fm">__get__</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">instance</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Normal function call</span>
+                        <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="c1"># Serialize before storing</span>
                         <span class="n">cache</span><span class="p">[</span><span class="n">cache_key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
@@ -947,7 +958,7 @@
     <span class="n">key_parts</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">param_value</span> <span class="ow">in</span> <span class="n">bound</span><span class="o">.</span><span class="n">arguments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="c1"># Skip &#39;self&#39; and any ignored parameters</span>
-        <span class="k">if</span> <span class="n">param_name</span> <span class="o">==</span> <span class="s1">&#39;self&#39;</span> <span class="ow">or</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="n">ignore</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">param_name</span> <span class="o">==</span> <span class="s2">&quot;self&quot;</span> <span class="ow">or</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="n">ignore</span><span class="p">:</span>
             <span class="k">continue</span>
 
         <span class="c1"># Handle VAR_POSITIONAL (*args)</span>
@@ -1079,7 +1090,7 @@
 <span class="sd">            The cache key to use.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Resolve key using the strategy</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key_strategy</span><span class="p">,</span> <span class="s1">&#39;resolve_at_runtime&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key_strategy</span><span class="p">,</span> <span class="s2">&quot;resolve_at_runtime&quot;</span><span class="p">):</span>
             <span class="c1"># Check if it&#39;s a method-aware strategy</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_strategy</span><span class="o">.</span><span class="n">resolve_at_runtime</span><span class="p">(</span>
@@ -1238,14 +1249,14 @@
 
 <span class="sd">    `cache_this` extends the capabilities of Python&#39;s built-in `functools.cached_property`</span>
 <span class="sd">    and `functools.lru_cache` by providing:</span>
-<span class="sd">    </span>
+
 <span class="sd">    - **Persistent caching**: Store cached values in files, databases, or any MutableMapping</span>
 <span class="sd">    - **Flexible cache backends**: Use instance attributes, external stores, or cache factories</span>
 <span class="sd">    - **Smart key generation**: Automatic argument-based keys for methods with parameter filtering</span>
 <span class="sd">    - **Serialization support**: Custom serialize/deserialize functions for complex data</span>
 <span class="sd">    - **Auto-detection**: Automatically chooses property vs method caching based on signature</span>
 <span class="sd">    - **No LRU eviction**: Unlike lru_cache, values persist until explicitly removed</span>
-<span class="sd">    </span>
+
 <span class="sd">    Unlike functools.cached_property (properties only) and lru_cache (memory-only with eviction),</span>
 <span class="sd">    cache_this provides a unified interface for both use cases with persistent storage options.</span>
 
@@ -1283,27 +1294,27 @@
 <span class="sd">    &gt;&gt;&gt; import tempfile</span>
 <span class="sd">    &gt;&gt;&gt; import os</span>
 <span class="sd">    &gt;&gt;&gt; from pathlib import Path</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; class DataProcessor:</span>
 <span class="sd">    ...     def __init__(self, user_id=&quot;user123&quot;):</span>
 <span class="sd">    ...         self.user_id = user_id</span>
 <span class="sd">    ...         self.memory_cache = {}  # In-memory cache</span>
 <span class="sd">    ...         self.call_counts = {}   # Track function calls for demo</span>
-<span class="sd">    ...     </span>
+<span class="sd">    ...</span>
 <span class="sd">    ...     # 1. Basic property caching (like functools.cached_property)</span>
 <span class="sd">    ...     @cache_this</span>
 <span class="sd">    ...     def basic_property(self):</span>
 <span class="sd">    ...         &#39;&#39;&#39;Cached in instance.__dict__ by default&#39;&#39;&#39;</span>
 <span class="sd">    ...         self.call_counts[&#39;basic_property&#39;] = self.call_counts.get(&#39;basic_property&#39;, 0) + 1</span>
 <span class="sd">    ...         return f&quot;computed_value_{self.call_counts[&#39;basic_property&#39;]}&quot;</span>
-<span class="sd">    ...     </span>
+<span class="sd">    ...</span>
 <span class="sd">    ...     # 2. Property with custom cache and key</span>
 <span class="sd">    ...     @cache_this(cache=&#39;memory_cache&#39;, key=&#39;custom_prop_key&#39;)</span>
 <span class="sd">    ...     def custom_cached_property(self):</span>
 <span class="sd">    ...         &#39;&#39;&#39;Cached in instance.memory_cache with custom key&#39;&#39;&#39;</span>
 <span class="sd">    ...         self.call_counts[&#39;custom_cached_property&#39;] = self.call_counts.get(&#39;custom_cached_property&#39;, 0) + 1</span>
 <span class="sd">    ...         return f&quot;custom_value_{self.call_counts[&#39;custom_cached_property&#39;]}&quot;</span>
-<span class="sd">    ...     </span>
+<span class="sd">    ...</span>
 <span class="sd">    ...     # 3. Method caching with argument-based keys</span>
 <span class="sd">    ...     @cache_this(cache=&#39;memory_cache&#39;)</span>
 <span class="sd">    ...     def compute_result(self, x, y, mode=&#39;fast&#39;):</span>
@@ -1311,7 +1322,7 @@
 <span class="sd">    ...         key = (&#39;compute_result&#39;, x, y, mode)</span>
 <span class="sd">    ...         self.call_counts[key] = self.call_counts.get(key, 0) + 1</span>
 <span class="sd">    ...         return x * y * (2 if mode == &#39;fast&#39; else 3)</span>
-<span class="sd">    ...     </span>
+<span class="sd">    ...</span>
 <span class="sd">    ...     # 4. Method caching with ignored parameters</span>
 <span class="sd">    ...     @cache_this(cache=&#39;memory_cache&#39;, ignore={&#39;verbose&#39;, &#39;debug&#39;})</span>
 <span class="sd">    ...     def process_data(self, data, algorithm=&#39;default&#39;, verbose=False, debug=False):</span>
@@ -1320,7 +1331,7 @@
 <span class="sd">    ...         self.call_counts[key] = self.call_counts.get(key, 0) + 1</span>
 <span class="sd">    ...         if verbose: print(f&quot;Processing {data} with {algorithm}&quot;)</span>
 <span class="sd">    ...         return sum(data) * (2 if algorithm == &#39;default&#39; else 3)</span>
-<span class="sd">    ...     </span>
+<span class="sd">    ...</span>
 <span class="sd">    ...     # 5. Instance-specific cache factory</span>
 <span class="sd">    ...     @cache_this(cache=lambda self: {f&#39;{self.user_id}_cache&#39;: {}}.get(f&#39;{self.user_id}_cache&#39;))</span>
 <span class="sd">    ...     def user_specific_computation(self, value):</span>
@@ -1332,38 +1343,38 @@
 <span class="sd">    Now let&#39;s test all the features:</span>
 
 <span class="sd">    &gt;&gt;&gt; processor = DataProcessor(&quot;alice&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # Test basic property caching</span>
 <span class="sd">    &gt;&gt;&gt; result1 = processor.basic_property</span>
 <span class="sd">    &gt;&gt;&gt; result2 = processor.basic_property  # Should use cache</span>
 <span class="sd">    &gt;&gt;&gt; assert result1 == result2 == &quot;computed_value_1&quot;</span>
 <span class="sd">    &gt;&gt;&gt; assert &#39;basic_property&#39; in processor.__dict__  # Cached in instance dict</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # Test custom cache and key</span>
 <span class="sd">    &gt;&gt;&gt; result1 = processor.custom_cached_property</span>
 <span class="sd">    &gt;&gt;&gt; result2 = processor.custom_cached_property  # Should use cache</span>
 <span class="sd">    &gt;&gt;&gt; assert result1 == result2 == &quot;custom_value_1&quot;</span>
 <span class="sd">    &gt;&gt;&gt; assert &#39;custom_prop_key&#39; in processor.memory_cache</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # Test method caching with arguments</span>
 <span class="sd">    &gt;&gt;&gt; result1 = processor.compute_result(3, 4, &#39;fast&#39;)</span>
 <span class="sd">    &gt;&gt;&gt; result2 = processor.compute_result(3, 4, &#39;fast&#39;)  # Should use cache</span>
 <span class="sd">    &gt;&gt;&gt; result3 = processor.compute_result(3, 4, &#39;slow&#39;)  # Different args, new computation</span>
 <span class="sd">    &gt;&gt;&gt; assert result1 == result2 == 24  # 3 * 4 * 2</span>
 <span class="sd">    &gt;&gt;&gt; assert result3 == 36  # 3 * 4 * 3</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # Test parameter ignoring</span>
 <span class="sd">    &gt;&gt;&gt; result1 = processor.process_data([1, 2, 3], verbose=True)</span>
 <span class="sd">    Processing [1, 2, 3] with default</span>
 <span class="sd">    &gt;&gt;&gt; result2 = processor.process_data([1, 2, 3], verbose=False)  # Should use same cache</span>
 <span class="sd">    &gt;&gt;&gt; result3 = processor.process_data([1, 2, 3], debug=True)     # Should use same cache</span>
 <span class="sd">    &gt;&gt;&gt; assert result1 == result2 == result3 == 12  # sum([1,2,3]) * 2</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # Test instance-specific caching</span>
 <span class="sd">    &gt;&gt;&gt; result1 = processor.user_specific_computation(5)</span>
 <span class="sd">    &gt;&gt;&gt; result2 = processor.user_specific_computation(5)  # Should use cache</span>
 <span class="sd">    &gt;&gt;&gt; assert result1 == result2 == 25  # 5 ** 2</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # Different instance should have separate cache</span>
 <span class="sd">    &gt;&gt;&gt; processor2 = DataProcessor(&quot;bob&quot;)</span>
 <span class="sd">    &gt;&gt;&gt; result3 = processor2.user_specific_computation(5)  # Fresh computation</span>
@@ -1565,7 +1576,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_should_use_property</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">as_property</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Determine whether to use CachedProperty or CachedMethod based on function signature.</span>
-<span class="sd">        </span>
+
 <span class="sd">        This is the core auto-detection logic that makes cache_this work seamlessly</span>
 <span class="sd">        for both properties (no arguments) and methods (with arguments).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1573,15 +1584,20 @@
         <span class="k">if</span> <span class="n">as_property</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">as_property</span>
 
+        <span class="c1"># If func is already a CachedProperty or CachedMethod, treat it as a property</span>
+        <span class="c1"># (since these are descriptors that work like properties)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">(</span><span class="n">CachedProperty</span><span class="p">,</span> <span class="n">CachedMethod</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
         <span class="c1"># Auto-detect based on function signature</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
             <span class="c1"># Count all parameters except &#39;self&#39;, including variadic ones (*args, **kwargs)</span>
             <span class="n">non_self_params</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">p</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;self&#39;</span>
+                <span class="n">p</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;self&quot;</span>
             <span class="p">]</span>
 
-            <span class="c1"># Key insight: If there are any parameters beyond &#39;self&#39;, it&#39;s a method </span>
+            <span class="c1"># Key insight: If there are any parameters beyond &#39;self&#39;, it&#39;s a method</span>
             <span class="c1"># that takes arguments and needs argument-based cache keys.</span>
             <span class="c1"># If only &#39;self&#39; parameter exists, it&#39;s a property-like function.</span>
             <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_self_params</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
@@ -1602,7 +1618,7 @@
             <span class="k">return</span> <span class="nb">property</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
 
     <span class="c1"># The main case: cache is enabled (default or explicitly set)</span>
-    <span class="k">else</span><span class="p">:</span>  
+    <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Decorator factory case: @cache_this() or @cache_this(cache=..., key=...)</span>
             <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
