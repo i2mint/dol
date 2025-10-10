@@ -930,5 +930,192 @@ class TestCachedMethodFunctionality:
             assert key in obj.cache
 
 
+class TestStackingCacheDecorators:
+    """Test stacking multiple cache_this decorators for cascaded caching"""
+
+    def test_basic_stacking(self):
+        """Test basic stacking of two cache_this decorators"""
+        trace = []
+        cache = dict()
+        disk = dict()
+
+        class A:
+            @cache_this(cache=cache)
+            @cache_this(cache=disk)
+            def f(self):
+                trace.append('In f method')
+                return 42
+
+        a = A()
+
+        # First access: should compute the value
+        result = a.f
+        assert result == 42
+        assert trace == ['In f method'], "Method should be called once"
+        assert 'f' in cache, "Outer cache should have the value"
+        assert 'f' in disk, "Inner cache should also have the value"
+
+        # Second access: should use the outer cache
+        result2 = a.f
+        assert result2 == 42
+        assert trace == ['In f method'], "Method should not be called again"
+
+    def test_pre_existing_value_in_inner_cache(self):
+        """Test that pre-existing values in inner cache are propagated to outer cache"""
+        trace = []
+        cache = dict()
+        disk = dict(g=99)  # Pre-existing value in disk
+
+        class B:
+            @cache_this(cache=cache)
+            @cache_this(cache=disk)
+            def g(self):
+                trace.append('In g method')
+                return 1  # Would return 1 if computed
+
+        b = B()
+
+        # First access: should get value from disk, not compute
+        result = b.g
+        assert result == 99, "Should get value from inner cache (disk)"
+        assert trace == [], "Method should not be called (got value from disk)"
+        assert 'g' in cache, "Outer cache should be populated with value from disk"
+        assert cache['g'] == 99, "Outer cache should have the value from disk"
+
+        # Second access: should use outer cache
+        result2 = b.g
+        assert result2 == 99
+        assert trace == [], "Method still should not be called"
+
+    def test_triple_stacking(self):
+        """Test stacking three levels of caching"""
+        trace = []
+        memory = dict()
+        disk = dict()
+        remote = dict()
+
+        class C:
+            @cache_this(cache=memory)
+            @cache_this(cache=disk)
+            @cache_this(cache=remote)
+            def compute(self):
+                trace.append('Computing')
+                return 'result'
+
+        c = C()
+
+        # First access: should compute and populate all caches
+        result = c.compute
+        assert result == 'result'
+        assert trace == ['Computing']
+        assert 'compute' in memory
+        assert 'compute' in disk
+        assert 'compute' in remote
+
+        # Second access: should use memory (outermost cache)
+        trace.clear()
+        result2 = c.compute
+        assert result2 == 'result'
+        assert trace == [], "Should use memory cache"
+
+    def test_stacking_with_instance_specific_caches(self):
+        """Test stacking with instance-specific cache attributes"""
+        trace = []
+        shared_disk = dict()
+
+        class D:
+            def __init__(self, name):
+                self.name = name
+                self.cache = dict()
+
+            @cache_this(cache='cache')
+            @cache_this(cache=shared_disk)
+            def process(self):
+                trace.append(f'Processing {self.name}')
+                return f'{self.name}_result'
+
+        d1 = D('d1')
+        d2 = D('d2')
+
+        # First instance
+        result1 = d1.process
+        assert result1 == 'd1_result'
+        assert trace == ['Processing d1']
+        assert 'process' in d1.cache
+        assert 'process' in shared_disk
+
+        # Second instance: gets value from shared disk cache
+        # This is correct cascading behavior - the shared cache has it
+        result2 = d2.process
+        assert result2 == 'd1_result', "Gets value from shared disk cache"
+        assert len(trace) == 1, "Method not called again (got from shared disk)"
+        assert 'process' in d2.cache, "Value propagated to d2's instance cache"
+
+    def test_stacking_with_methods(self):
+        """Test that stacking works with methods that take arguments"""
+        cache = dict()
+        disk = dict()
+        
+        class E:
+            @cache_this(cache=cache)
+            @cache_this(cache=disk)
+            def multiply(self, x, y):
+                return x * y
+        
+        e = E()
+        
+        # First call with arguments
+        result1 = e.multiply(3, 4)
+        assert result1 == 12
+        
+        # Cache should have the result with argument-based key
+        assert len(cache) > 0
+        assert len(disk) > 0
+        
+        # Second call with same arguments should use cache
+        result2 = e.multiply(3, 4)
+        assert result2 == 12
+        
+        # Different arguments should compute again
+        result3 = e.multiply(5, 6)
+        assert result3 == 30
+
+    def test_issue_example(self):
+        """Test the exact example from the issue description"""
+        trace = []
+        cache = dict()
+        disk = dict(g=8)  # Pre-existing value
+
+        class A:
+            @cache_this(cache=cache)
+            @cache_this(cache=disk)
+            def f(self):
+                trace.append('In f method')
+                return 42
+
+            @cache_this(cache=cache)
+            @cache_this(cache=disk)
+            def g(self):
+                trace.append('In g method')
+                return 99  # Would return 99 if computed
+
+        a = A()
+
+        # Test f (not in any cache)
+        assert a.f == 42
+        assert trace == ['In f method']
+        assert cache['f'] == 42
+        assert disk['f'] == 42
+
+        # Access f again
+        assert a.f == 42
+        assert trace == ['In f method'], "f method should not be called again"
+
+        # Test g (pre-existing in disk)
+        assert a.g == 8
+        assert trace == ['In f method'], "g method should NEVER be called"
+        assert cache['g'] == 8, "Value from disk should be in cache"
+
+
 if __name__ == "__main__":
     pytest.main(["-xvs", __file__])
