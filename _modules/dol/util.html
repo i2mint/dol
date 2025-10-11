@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.3.25 documentation</title>
+  <title>dol.util &mdash; dol 0.3.26 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=6a2f4876"></script>
+      <script src="../../_static/documentation_options.js?v=5dd7c21c"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -237,35 +237,6 @@
         <span class="n">parts</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">attempt</span><span class="si">}</span><span class="s2">).</span><span class="si">{</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">string</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">attempt</span><span class="si">}</span><span class="s2">)&quot;</span>
-
-
-<div class="viewcode-block" id="get_app_config_folder">
-<a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.get_app_config_folder">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_app_config_folder</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns the full path of a directory suitable for storing application-specific data.</span>
-
-<span class="sd">    On Windows, this is typically %APPDATA%.</span>
-<span class="sd">    On macOS, this is typically ~/.config.</span>
-<span class="sd">    On Linux, this is typically ~/.config.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        str: The full path of the app data folder.</span>
-
-<span class="sd">    See https://github.com/i2mint/i2mint/issues/1.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nt&quot;</span><span class="p">:</span>
-        <span class="c1"># Windows</span>
-        <span class="n">app_data_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;APPDATA&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;darwin&quot;</span><span class="p">:</span>
-        <span class="c1"># macOS</span>
-        <span class="n">app_data_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~/.config&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># Linux/Unix</span>
-        <span class="n">app_data_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~/.config&quot;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">app_data_folder</span></div>
-
 
 
 <div class="viewcode-block" id="safe_compile">
@@ -2566,7 +2537,71 @@
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 
 
-<span class="c1"># -------------------------------------------------------------------------------------</span>
+<span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
+<span class="c1"># More or less vendored from config2py</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
+
+<span class="n">FolderSpec</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;FolderSpec&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;env_var&quot;</span><span class="p">,</span> <span class="s2">&quot;default_path&quot;</span><span class="p">])</span>
+
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nt&quot;</span><span class="p">:</span>
+    <span class="n">APP_FOLDER_STANDARDS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">config</span><span class="o">=</span><span class="n">FolderSpec</span><span class="p">(</span><span class="s2">&quot;APPDATA&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;APPDATA&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)),</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">FolderSpec</span><span class="p">(</span><span class="s2">&quot;LOCALAPPDATA&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;LOCALAPPDATA&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)),</span>
+        <span class="n">cache</span><span class="o">=</span><span class="n">FolderSpec</span><span class="p">(</span>
+            <span class="s2">&quot;LOCALAPPDATA&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;LOCALAPPDATA&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="s2">&quot;Temp&quot;</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">state</span><span class="o">=</span><span class="n">FolderSpec</span><span class="p">(</span><span class="s2">&quot;LOCALAPPDATA&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;LOCALAPPDATA&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)),</span>
+        <span class="n">runtime</span><span class="o">=</span><span class="n">FolderSpec</span><span class="p">(</span><span class="s2">&quot;TEMP&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;TEMP&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)),</span>
+    <span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">APP_FOLDER_STANDARDS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">config</span><span class="o">=</span><span class="n">FolderSpec</span><span class="p">(</span><span class="s2">&quot;XDG_CONFIG_HOME&quot;</span><span class="p">,</span> <span class="s2">&quot;~/.config&quot;</span><span class="p">),</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">FolderSpec</span><span class="p">(</span><span class="s2">&quot;XDG_DATA_HOME&quot;</span><span class="p">,</span> <span class="s2">&quot;~/.local/share&quot;</span><span class="p">),</span>
+        <span class="n">cache</span><span class="o">=</span><span class="n">FolderSpec</span><span class="p">(</span><span class="s2">&quot;XDG_CACHE_HOME&quot;</span><span class="p">,</span> <span class="s2">&quot;~/.cache&quot;</span><span class="p">),</span>
+        <span class="n">state</span><span class="o">=</span><span class="n">FolderSpec</span><span class="p">(</span><span class="s2">&quot;XDG_STATE_HOME&quot;</span><span class="p">,</span> <span class="s2">&quot;~/.local/state&quot;</span><span class="p">),</span>
+        <span class="n">runtime</span><span class="o">=</span><span class="n">FolderSpec</span><span class="p">(</span><span class="s2">&quot;XDG_RUNTIME_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+
+<span class="n">AppFolderKind</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;cache&quot;</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="s2">&quot;runtime&quot;</span><span class="p">]</span>
+<span class="n">DFLT_APP_FOLDER_KIND</span> <span class="o">=</span> <span class="s1">&#39;config&#39;</span>
+
+
+<div class="viewcode-block" id="get_app_folder">
+<a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.get_app_folder">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_app_folder</span><span class="p">(</span><span class="n">folder_kind</span><span class="p">:</span> <span class="n">AppFolderKind</span> <span class="o">=</span> <span class="n">DFLT_APP_FOLDER_KIND</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the full path of a directory suitable for storing application-specific configs,</span>
+<span class="sd">    (or data, or cache, or state or runtime)</span>
+
+<span class="sd">    On Windows, this is typically %APPDATA%.</span>
+<span class="sd">    On macOS, this is typically ~/.config.</span>
+<span class="sd">    On Linux, this is typically ~/.config.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        folder_kind (str): The kind of folder to get. One of &#39;config&#39;, &#39;data&#39;, &#39;cache&#39;, &#39;state&#39;, &#39;runtime&#39;.</span>
+<span class="sd">            Defaults to &#39;config&#39;.</span>
+<span class="sd">            Here are concise explanations for each folder kind:</span>
+<span class="sd">            **config**: User preferences and settings files (e.g., API keys, theme preferences, editor settings). Files users might edit manually or that define how the app behaves.</span>
+<span class="sd">            **data**: Essential user-created content and application state (e.g., databases, saved games, user documents, session files). Data that should be backed up and persists across updates.</span>
+<span class="sd">            **cache**: Temporary, regeneratable files (e.g., downloaded images, compiled assets, web cache). Can be safely deleted to free space without losing user work.</span>
+<span class="sd">            **state**: Application state and logs that persist between sessions but aren&#39;t critical user data (e.g., command history, undo history, recently opened files, log files). Unlike cache, shouldn&#39;t be auto-deleted.</span>
+<span class="sd">            **runtime**: Temporary runtime files that only exist while the app runs (e.g., PID files, Unix sockets, lock files, named pipes). Typically cleared on logout/reboot.</span>
+<span class="sd">            **TL;DR**: config = settings, data = user files, cache = disposable, state = logs/history, runtime = process files.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The full path of the app data folder.</span>
+
+<span class="sd">    See https://github.com/i2mint/i2mint/issues/1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">env_var</span><span class="p">,</span> <span class="n">default</span> <span class="o">=</span> <span class="n">APP_FOLDER_STANDARDS</span><span class="p">[</span><span class="n">folder_kind</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="n">env_var</span><span class="p">,</span> <span class="n">default</span><span class="p">))</span></div>
+
+
+
+<span class="n">get_app_config_folder</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">get_app_folder</span><span class="p">,</span> <span class="n">folder_kind</span><span class="o">=</span><span class="s2">&quot;config&quot;</span><span class="p">)</span>
+<span class="n">get_app_data_folder</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">get_app_folder</span><span class="p">,</span> <span class="n">folder_kind</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 </pre></div>
 
            </div>

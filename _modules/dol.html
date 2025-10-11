@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol &mdash; dol 0.3.25 documentation</title>
+  <title>dol &mdash; dol 0.3.26 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=6a2f4876"></script>
+      <script src="../_static/documentation_options.js?v=5dd7c21c"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -218,7 +218,8 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.util</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">non_colliding_key</span><span class="p">,</span>  <span class="c1"># make a key that does not collide with existing keys</span>
-    <span class="n">get_app_config_folder</span><span class="p">,</span>  <span class="c1"># get the path to a folder for application data</span>
+    <span class="n">get_app_folder</span><span class="p">,</span>  <span class="c1"># get the path to a folder for application data</span>
+    <span class="n">get_app_config_folder</span><span class="p">,</span>  <span class="c1"># get the path to a folder for application config</span>
     <span class="n">AttributeMapping</span><span class="p">,</span>  <span class="c1"># a mapping that provides attribute-access to the keys that are valid attribute names</span>
     <span class="n">AttributeMutableMapping</span><span class="p">,</span>  <span class="c1"># a mutable mapping version of AttributeMapping</span>
     <span class="n">Pipe</span><span class="p">,</span>  <span class="c1"># chain functions</span>
@@ -307,6 +308,20 @@
     <span class="n">FanoutPersister</span><span class="p">,</span>
     <span class="n">CascadedStores</span><span class="p">,</span>  <span class="c1"># multi-store writes to all stores and reads from first store.</span>
 <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle deprecated imports at module level.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;get_app_data_folder&quot;</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;`get_app_data_folder` is deprecated. Use `get_app_config_folder` instead.&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">get_app_config_folder</span>
+    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;module &#39;</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; has no attribute &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 </pre></div>
 
            </div>
