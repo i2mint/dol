@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.3.22 documentation</title>
+  <title>dol.util &mdash; dol 0.3.23 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a1a6d8bb"></script>
+      <script src="../../_static/documentation_options.js?v=05de5ca2"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -128,7 +128,9 @@
     <span class="n">Union</span><span class="p">,</span>
     <span class="n">Mapping</span><span class="p">,</span>
     <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Container</span><span class="p">,</span>
     <span class="n">T</span><span class="p">,</span>
+    <span class="n">KT</span><span class="p">,</span>
     <span class="n">NewType</span><span class="p">,</span>
     <span class="n">Tuple</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
@@ -160,6 +162,81 @@
 <span class="n">wraps</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_wraps</span><span class="p">,</span> <span class="n">assigned</span><span class="o">=</span><span class="n">wrapper_assignments</span><span class="p">)</span>
 
 <span class="n">exhaust</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">deque</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="non_colliding_key">
+<a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.non_colliding_key">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">non_colliding_key</span><span class="p">(</span>
+    <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span>
+    <span class="n">exclude</span><span class="p">:</span> <span class="n">Container</span><span class="p">[</span><span class="n">KT</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">collision_handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">KT</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">KT</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KT</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a key not present in the exclude container.</span>
+
+<span class="sd">    If the input key is already unique, it&#39;s returned as-is.</span>
+<span class="sd">    Otherwise, applies a collision_handler until a unique key is found.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        key: The candidate key to check/modify</span>
+<span class="sd">        exclude: Container of keys to avoid</span>
+<span class="sd">        collision_handler: Function taking (key, attempt_number) and returning a modified key.</span>
+<span class="sd">                          For strings, defaults to appending &quot; (N)&quot; suffix before extension.</span>
+<span class="sd">                          For other types, must be provided.</span>
+<span class="sd">        max_attempts: Maximum number of transformation attempts</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A key not present in the exclude container</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If no unique key found within max_attempts, or if collision_handler</span>
+<span class="sd">                   is None for non-string keys</span>
+
+<span class="sd">    &gt;&gt;&gt; non_colliding_key(&quot;file.txt&quot;, set())</span>
+<span class="sd">    &#39;file.txt&#39;</span>
+<span class="sd">    &gt;&gt;&gt; non_colliding_key(&quot;file.txt&quot;, {&quot;file.txt&quot;})</span>
+<span class="sd">    &#39;file (1).txt&#39;</span>
+<span class="sd">    &gt;&gt;&gt; non_colliding_key(&quot;file.txt&quot;, {&quot;file.txt&quot;, &quot;file (1).txt&quot;})</span>
+<span class="sd">    &#39;file (2).txt&#39;</span>
+<span class="sd">    &gt;&gt;&gt; non_colliding_key(42, {42}, collision_handler=lambda k, n: k + n)</span>
+<span class="sd">    43</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">key</span>
+
+    <span class="k">if</span> <span class="n">collision_handler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">collision_handler</span> <span class="o">=</span> <span class="n">_default_string_collision_handler</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;collision_handler must be provided for non-string keys (got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_attempts</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">candidate</span> <span class="o">=</span> <span class="n">collision_handler</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">attempt</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">candidate</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">candidate</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find unique key after </span><span class="si">{</span><span class="n">max_attempts</span><span class="si">}</span><span class="s2"> attempts&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_string_collision_handler</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attempt</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Default collision handler for strings: insert &quot; (N)&quot; before the file extension.</span>
+
+<span class="sd">    &gt;&gt;&gt; _default_string_collision_handler(&quot;file.txt&quot;, 1)</span>
+<span class="sd">    &#39;file (1).txt&#39;</span>
+<span class="sd">    &gt;&gt;&gt; _default_string_collision_handler(&quot;no_extension&quot;, 2)</span>
+<span class="sd">    &#39;no_extension (2)&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">attempt</span><span class="si">}</span><span class="s2">).</span><span class="si">{</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">string</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">attempt</span><span class="si">}</span><span class="s2">)&quot;</span>
 
 
 <div class="viewcode-block" id="get_app_data_folder">
