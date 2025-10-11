@@ -50,6 +50,32 @@ wraps = partial(_wraps, assigned=wrapper_assignments)
 exhaust = partial(deque, maxlen=0)
 
 
+def get_app_data_folder():
+    """
+    Returns the full path of a directory suitable for storing application-specific data.
+
+    On Windows, this is typically %APPDATA%.
+    On macOS, this is typically ~/.config.
+    On Linux, this is typically ~/.config.
+
+    Returns:
+        str: The full path of the app data folder.
+
+    See https://github.com/i2mint/i2mint/issues/1.
+    """
+    if os.name == "nt":
+        # Windows
+        app_data_folder = os.getenv("APPDATA")
+    elif os.name == "darwin":
+        # macOS
+        app_data_folder = os.path.expanduser("~/.config")
+    else:
+        # Linux/Unix
+        app_data_folder = os.path.expanduser("~/.config")
+
+    return app_data_folder
+
+
 def safe_compile(path, normalize_path=True):
     r"""
     Safely compiles a file path into a regex pattern, ensuring compatibility
