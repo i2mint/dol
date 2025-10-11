@@ -88,7 +88,7 @@ def non_colliding_key(
     'file (2).txt'
     >>> non_colliding_key(42, {42}, collision_handler=lambda k, n: k + n)
     43
-    
+
     """
     if key not in exclude:
         return key
@@ -118,8 +118,8 @@ def _default_string_collision_handler(string: str, attempt: int) -> str:
     >>> _default_string_collision_handler("no_extension", 2)
     'no_extension (2)'
     """
-    if '.' in string:
-        parts = string.rsplit('.', 1)
+    if "." in string:
+        parts = string.rsplit(".", 1)
         return f"{parts[0]} ({attempt}).{parts[1]}"
     return f"{string} ({attempt})"
 
