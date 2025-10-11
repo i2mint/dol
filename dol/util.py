@@ -124,32 +124,6 @@ def _default_string_collision_handler(string: str, attempt: int) -> str:
     return f"{string} ({attempt})"
 
 
-def get_app_config_folder():
-    """
-    Returns the full path of a directory suitable for storing application-specific data.
-
-    On Windows, this is typically %APPDATA%.
-    On macOS, this is typically ~/.config.
-    On Linux, this is typically ~/.config.
-
-    Returns:
-        str: The full path of the app data folder.
-
-    See https://github.com/i2mint/i2mint/issues/1.
-    """
-    if os.name == "nt":
-        # Windows
-        app_data_folder = os.getenv("APPDATA")
-    elif os.name == "darwin":
-        # macOS
-        app_data_folder = os.path.expanduser("~/.config")
-    else:
-        # Linux/Unix
-        app_data_folder = os.path.expanduser("~/.config")
-
-    return app_data_folder
-
-
 def safe_compile(path, normalize_path=True):
     r"""
     Safely compiles a file path into a regex pattern, ensuring compatibility
@@ -2328,4 +2302,65 @@ def _get_attr_or_key_error(obj: object, key: str) -> Any:
         raise KeyError(key)
 
 
-# -------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# More or less vendored from config2py
+
+from typing import Literal, Optional, Sequence, Tuple
+from collections import namedtuple
+
+FolderSpec = namedtuple("FolderSpec", ["env_var", "default_path"])
+
+if os.name == "nt":
+    APP_FOLDER_STANDARDS = dict(
+        config=FolderSpec("APPDATA", os.getenv("APPDATA", "")),
+        data=FolderSpec("LOCALAPPDATA", os.getenv("LOCALAPPDATA", "")),
+        cache=FolderSpec(
+            "LOCALAPPDATA", os.path.join(os.getenv("LOCALAPPDATA", ""), "Temp")
+        ),
+        state=FolderSpec("LOCALAPPDATA", os.getenv("LOCALAPPDATA", "")),
+        runtime=FolderSpec("TEMP", os.getenv("TEMP", "")),
+    )
+else:
+    APP_FOLDER_STANDARDS = dict(
+        config=FolderSpec("XDG_CONFIG_HOME", "~/.config"),
+        data=FolderSpec("XDG_DATA_HOME", "~/.local/share"),
+        cache=FolderSpec("XDG_CACHE_HOME", "~/.cache"),
+        state=FolderSpec("XDG_STATE_HOME", "~/.local/state"),
+        runtime=FolderSpec("XDG_RUNTIME_DIR", "/tmp"),
+    )
+
+AppFolderKind = Literal["config", "data", "cache", "state", "runtime"]
+DFLT_APP_FOLDER_KIND = 'config'
+
+
+def get_app_folder(folder_kind: AppFolderKind = DFLT_APP_FOLDER_KIND):
+    """
+    Get the full path of a directory suitable for storing application-specific configs,
+    (or data, or cache, or state or runtime)
+
+    On Windows, this is typically %APPDATA%.
+    On macOS, this is typically ~/.config.
+    On Linux, this is typically ~/.config.
+
+    Parameters:
+        folder_kind (str): The kind of folder to get. One of 'config', 'data', 'cache', 'state', 'runtime'.
+            Defaults to 'config'.
+            Here are concise explanations for each folder kind:
+            **config**: User preferences and settings files (e.g., API keys, theme preferences, editor settings). Files users might edit manually or that define how the app behaves.
+            **data**: Essential user-created content and application state (e.g., databases, saved games, user documents, session files). Data that should be backed up and persists across updates.
+            **cache**: Temporary, regeneratable files (e.g., downloaded images, compiled assets, web cache). Can be safely deleted to free space without losing user work.
+            **state**: Application state and logs that persist between sessions but aren't critical user data (e.g., command history, undo history, recently opened files, log files). Unlike cache, shouldn't be auto-deleted.
+            **runtime**: Temporary runtime files that only exist while the app runs (e.g., PID files, Unix sockets, lock files, named pipes). Typically cleared on logout/reboot.
+            **TL;DR**: config = settings, data = user files, cache = disposable, state = logs/history, runtime = process files.
+
+    Returns:
+        str: The full path of the app data folder.
+
+    See https://github.com/i2mint/i2mint/issues/1.
+    """
+    env_var, default = APP_FOLDER_STANDARDS[folder_kind]
+    return os.path.expanduser(os.getenv(env_var, default))
+
+
+get_app_config_folder = partial(get_app_folder, folder_kind="config")
+get_app_data_folder = partial(get_app_folder, folder_kind="data")

@@ -101,7 +101,8 @@ from dol.filesys import (
 
 from dol.util import (
     non_colliding_key,  # make a key that does not collide with existing keys
-    get_app_config_folder,  # get the path to a folder for application data
+    get_app_folder,  # get the path to a folder for application data
+    get_app_config_folder,  # get the path to a folder for application config
     AttributeMapping,  # a mapping that provides attribute-access to the keys that are valid attribute names
     AttributeMutableMapping,  # a mutable mapping version of AttributeMapping
     Pipe,  # chain functions
@@ -190,3 +191,17 @@ from dol.sources import (
     FanoutPersister,
     CascadedStores,  # multi-store writes to all stores and reads from first store.
 )
+
+
+def __getattr__(name):
+    """Handle deprecated imports at module level."""
+    if name == "get_app_data_folder":
+        import warnings
+
+        warnings.warn(
+            "`get_app_data_folder` is deprecated. Use `get_app_config_folder` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return get_app_config_folder
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
