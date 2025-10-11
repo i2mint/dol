@@ -124,7 +124,7 @@ def _default_string_collision_handler(string: str, attempt: int) -> str:
     return f"{string} ({attempt})"
 
 
-def get_app_data_folder():
+def get_app_config_folder():
     """
     Returns the full path of a directory suitable for storing application-specific data.
 

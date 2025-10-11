@@ -101,7 +101,7 @@ from dol.filesys import (
 
 from dol.util import (
     non_colliding_key,  # make a key that does not collide with existing keys
-    get_app_data_folder,  # get the path to a folder for application data
+    get_app_config_folder,  # get the path to a folder for application data
     AttributeMapping,  # a mapping that provides attribute-access to the keys that are valid attribute names
     AttributeMutableMapping,  # a mutable mapping version of AttributeMapping
     Pipe,  # chain functions
