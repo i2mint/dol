@@ -16,7 +16,9 @@ from typing import (
     Union,
     Mapping,
     Sequence,
+    Container,
     T,
+    KT,
     NewType,
     Tuple,
     TypeVar,
@@ -48,6 +50,78 @@ update_wrapper = partial(_update_wrapper, assigned=wrapper_assignments)
 wraps = partial(_wraps, assigned=wrapper_assignments)
 
 exhaust = partial(deque, maxlen=0)
+
+
+def non_colliding_key(
+    key: KT,
+    exclude: Container[KT],
+    *,
+    collision_handler: Callable[[KT, int], KT] = None,
+    max_attempts: int = 10000,
+) -> KT:
+    """
+    Return a key not present in the exclude container.
+
+    If the input key is already unique, it's returned as-is.
+    Otherwise, applies a collision_handler until a unique key is found.
+
+    Args:
+        key: The candidate key to check/modify
+        exclude: Container of keys to avoid
+        collision_handler: Function taking (key, attempt_number) and returning a modified key.
+                          For strings, defaults to appending " (N)" suffix before extension.
+                          For other types, must be provided.
+        max_attempts: Maximum number of transformation attempts
+
+    Returns:
+        A key not present in the exclude container
+
+    Raises:
+        ValueError: If no unique key found within max_attempts, or if collision_handler
+                   is None for non-string keys
+
+    >>> non_colliding_key("file.txt", set())
+    'file.txt'
+    >>> non_colliding_key("file.txt", {"file.txt"})
+    'file (1).txt'
+    >>> non_colliding_key("file.txt", {"file.txt", "file (1).txt"})
+    'file (2).txt'
+    >>> non_colliding_key(42, {42}, collision_handler=lambda k, n: k + n)
+    43
+    
+    """
+    if key not in exclude:
+        return key
+
+    if collision_handler is None:
+        if isinstance(key, str):
+            collision_handler = _default_string_collision_handler
+        else:
+            raise ValueError(
+                f"collision_handler must be provided for non-string keys (got {type(key).__name__})"
+            )
+
+    for attempt in range(1, max_attempts + 1):
+        candidate = collision_handler(key, attempt)
+        if candidate not in exclude:
+            return candidate
+
+    raise ValueError(f"Could not find unique key after {max_attempts} attempts")
+
+
+def _default_string_collision_handler(string: str, attempt: int) -> str:
+    """
+    Default collision handler for strings: insert " (N)" before the file extension.
+
+    >>> _default_string_collision_handler("file.txt", 1)
+    'file (1).txt'
+    >>> _default_string_collision_handler("no_extension", 2)
+    'no_extension (2)'
+    """
+    if '.' in string:
+        parts = string.rsplit('.', 1)
+        return f"{parts[0]} ({attempt}).{parts[1]}"
+    return f"{string} ({attempt})"
 
 
 def get_app_data_folder():
