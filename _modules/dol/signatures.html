@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.3.28 documentation</title>
+  <title>dol.signatures &mdash; dol 0.3.29 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=11b5e5c7"></script>
+      <script src="../../_static/documentation_options.js?v=b5cd61de"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -199,18 +199,15 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Union</span><span class="p">,</span>
-    <span class="n">Callable</span><span class="p">,</span>
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Dict</span><span class="p">,</span>
-    <span class="n">Iterable</span><span class="p">,</span>
     <span class="n">Tuple</span><span class="p">,</span>
-    <span class="n">Iterator</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
-    <span class="n">Mapping</span> <span class="k">as</span> <span class="n">MappingType</span><span class="p">,</span>
     <span class="n">Literal</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
     <span class="n">get_args</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span> <span class="k">as</span> <span class="n">MappingType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">,</span> <span class="n">T</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">FunctionType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
@@ -403,9 +400,9 @@
     <span class="n">o</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">base_name_of_obj</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">attrgetter</span><span class="p">(</span><span class="s2">&quot;__name__&quot;</span><span class="p">),</span>
-    <span class="n">caught_exceptions</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,),</span>
+    <span class="n">caught_exceptions</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,),</span>
     <span class="n">default_factory</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">_return_none</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Tries to find the (or &quot;a&quot;) name for an object, even if `__name__` doesn&#39;t exist.</span>
 
@@ -691,7 +688,7 @@
 
 <div class="viewcode-block" id="MissingArgValFor">
 <a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.MissingArgValFor">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">MissingArgValFor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MissingArgValFor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A simple class to wrap an argument name, indicating that it was missing somewhere.</span>
 
 <span class="sd">    &gt;&gt;&gt; MissingArgValFor(&quot;argname&quot;)</span>
@@ -937,7 +934,8 @@
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">function_caller</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
@@ -1328,7 +1326,7 @@
         <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
         <span class="n">ignore_incompatible_signatures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">copy_function</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy_function</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gives the input function the signature.</span>
 
@@ -2816,8 +2814,8 @@
         <span class="n">allow_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">allow_excess</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">ignore_kind</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">args_limit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">args_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract args and kwargs such that func(*args, **kwargs) can be called,</span>
 <span class="sd">        where func has instance&#39;s signature.</span>
 
@@ -3663,7 +3661,7 @@
 <div class="viewcode-block" id="call_somewhat_forgivingly">
 <a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.call_somewhat_forgivingly">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">call_somewhat_forgivingly</span><span class="p">(</span>
-    <span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">enforce_sig</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SignatureAble</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">enforce_sig</span><span class="p">:</span> <span class="n">SignatureAble</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Call function on given args and kwargs, but with controllable argument leniency.</span>
 <span class="sd">    By default, the function will only pick from args and kwargs what matches it&#39;s</span>
@@ -3885,7 +3883,7 @@
 <span class="c1">#   Is the goal to remove positional? Remove variadics? Normalize the signature?</span>
 <div class="viewcode-block" id="all_pk_signature">
 <a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.all_pk_signature">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">all_pk_signature</span><span class="p">(</span><span class="n">callable_or_signature</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">Signature</span><span class="p">]):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">all_pk_signature</span><span class="p">(</span><span class="n">callable_or_signature</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="n">Signature</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.</span>
 
 <span class="sd">    Wrapping a function with the resulting signature doesn&#39;t make that function callable</span>
@@ -4578,7 +4576,7 @@
 <span class="sd">    &gt;&gt;&gt; _robust_signature_of_callable(</span>
 <span class="sd">    ...     _robust_signature_of_callable</span>
 <span class="sd">    ... )  # has a normal signature</span>
-<span class="sd">    &lt;Signature (callable_obj: Callable) -&gt; inspect.Signature&gt;</span>
+<span class="sd">    &lt;Signature (callable_obj: ...Callable) -&gt; inspect.Signature&gt;</span>
 <span class="sd">    &gt;&gt;&gt; s = _robust_signature_of_callable(print)  # has one that this module provides</span>
 <span class="sd">    &gt;&gt;&gt; assert isinstance(s, Signature)</span>
 <span class="sd">    &gt;&gt;&gt; # Will be: &lt;Signature (*value, sep=&#39; &#39;, end=&#39;\n&#39;, file=&lt;_io.TextIOWrapper</span>
@@ -4609,7 +4607,7 @@
 
 <div class="viewcode-block" id="resolve_function">
 <a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.resolve_function">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">resolve_function</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_function</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the underlying function of a property or cached_property</span>
 
 <span class="sd">    Note that if all conditions fail, the object itself is returned.</span>
@@ -4673,7 +4671,7 @@
 
 <div class="viewcode-block" id="dict_of_attribute_signatures">
 <a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.dict_of_attribute_signatures">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">dict_of_attribute_signatures</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Signature</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dict_of_attribute_signatures</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Signature</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A function that extracts the signatures of all callable attributes of a class.</span>
 
@@ -4873,10 +4871,10 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;self.__delitem__(key) &lt;==&gt; del self[key]&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">itemgetter</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">]],</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">itemgetter</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">]],</span> <span class="n">VT</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;itemgetter(item, ...) --&gt; itemgetter object,&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">attrgetter</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">attrs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">]],</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">attrgetter</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">attrs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">]],</span> <span class="n">VT</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;attrgetter(item, ...) --&gt; attrgetter object,&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">methodcaller</span><span class="p">(</span>
@@ -4904,9 +4902,9 @@
 <span class="sd">    signatures (through ``inspect.signature``),</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">itemgetter</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">itemgetter</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VT</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]:</span> <span class="o">...</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">attrgetter</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">attrgetter</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VT</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]:</span> <span class="o">...</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">methodcaller</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span> <span class="o">...</span>
 
@@ -4995,7 +4993,7 @@
 
 <span class="n">CT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;CT&quot;</span><span class="p">)</span>  <span class="c1"># some other Compared type (used to define KeyFunction</span>
 <span class="n">KeyFunction</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">CT</span><span class="p">],</span> <span class="n">Compared</span><span class="p">]</span>
-<span class="n">KeyFunction</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;Function that transforms one compared type to another&quot;</span>
+<span class="c1"># KeyFunction.__doc__ = &quot;Function that transforms one compared type to another&quot;</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">compare_signatures</span><span class="p">(</span><span class="n">func1</span><span class="p">,</span> <span class="n">func2</span><span class="p">,</span> <span class="n">signature_comparator</span><span class="p">:</span> <span class="n">SignatureComparator</span> <span class="o">=</span> <span class="n">eq</span><span class="p">):</span>
@@ -5288,7 +5286,7 @@
     <span class="n">sig1</span><span class="p">:</span> <span class="n">Sig</span><span class="p">,</span>
     <span class="n">sig2</span><span class="p">:</span> <span class="n">Sig</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">param_comparator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ParamComparator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">param_comparator</span><span class="p">:</span> <span class="n">ParamComparator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if ``sig1`` is compatible with ``sig2``. Meaning that all valid ways</span>
 <span class="sd">    to call ``sig1`` are valid for ``sig2``.</span>
@@ -5527,8 +5525,8 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">sig1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">Sig</span><span class="p">]</span>
-    <span class="n">sig2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">Sig</span><span class="p">]</span>
+    <span class="n">sig1</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="n">Sig</span>
+    <span class="n">sig2</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="n">Sig</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sig1</span> <span class="o">=</span> <span class="n">Sig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sig1</span><span class="p">)</span>

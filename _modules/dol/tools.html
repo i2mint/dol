@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.3.28 documentation</title>
+  <title>dol.tools &mdash; dol 0.3.29 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=11b5e5c7"></script>
+      <script src="../../_static/documentation_options.js?v=b5cd61de"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -176,17 +176,15 @@
 <span class="c1"># -------------------------------- Aggregate a store -----------------------------------</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Callable</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
     <span class="n">KT</span><span class="p">,</span>
     <span class="n">VT</span><span class="p">,</span>
     <span class="n">Tuple</span><span class="p">,</span>
-    <span class="n">Mapping</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">Any</span><span class="p">,</span>
-    <span class="n">Iterable</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -221,7 +219,7 @@
 <div class="viewcode-block" id="store_aggregate">
 <a class="viewcode-back" href="../../module_docs/dol/tools.html#dol.tools.store_aggregate">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">store_aggregate</span><span class="p">(</span>
-    <span class="n">content_store</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>  <span class="c1"># Path to the folder or dol store</span>
+    <span class="n">content_store</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>  <span class="c1"># Path to the folder or dol store</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">kv_to_item</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
         <span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="n">Item</span>
@@ -229,14 +227,14 @@
     <span class="n">aggregator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
         <span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Item</span><span class="p">]],</span> <span class="n">Aggregate</span>
     <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">,</span>  <span class="c1"># How to aggregate the item&#39;s into an aggregate</span>
-    <span class="n">egress</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
-        <span class="n">Callable</span><span class="p">[[</span><span class="n">Aggregate</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">str</span>
-    <span class="p">]</span> <span class="o">=</span> <span class="n">identity</span><span class="p">,</span>  <span class="c1"># function to apply to the aggregate before returning</span>
-    <span class="n">key_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">KT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Filter function for keys</span>
-    <span class="n">value_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">VT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Filter function for values</span>
-    <span class="n">kv_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
-        <span class="n">Callable</span><span class="p">[[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">]</span>
-    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Filter function for key-value pairs</span>
+    <span class="n">egress</span><span class="p">:</span> <span class="p">(</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">Aggregate</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">identity</span><span class="p">,</span>  <span class="c1"># function to apply to the aggregate before returning</span>
+    <span class="n">key_filter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">KT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Filter function for keys</span>
+    <span class="n">value_filter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">VT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Filter function for values</span>
+    <span class="n">kv_filter</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="p">(</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Filter function for key-value pairs</span>
     <span class="n">local_store_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
         <span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]</span>
     <span class="p">]</span> <span class="o">=</span> <span class="n">Latin1TextFiles</span><span class="p">,</span>  <span class="c1"># Factory function for the local store</span>
@@ -357,7 +355,8 @@
 
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">islice</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">KvReader</span>
@@ -403,7 +402,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">ask_user_for_value_when_missing</span><span class="p">(</span>
     <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">value_preprocessor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">value_preprocessor</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">on_missing_msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_dflt_ask_user_for_value_when_missing_msg</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap a store so if a value is missing when the user asks for it, they will be</span>
@@ -639,7 +638,7 @@
         <span class="n">get_node_keys</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Src</span><span class="p">],</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Key</span><span class="p">]],</span>
         <span class="n">get_src_item</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Src</span><span class="p">,</span> <span class="n">Key</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
         <span class="n">is_leaf</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Key</span><span class="p">,</span> <span class="n">Val</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
-        <span class="n">forest_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">,</span>
+        <span class="n">forest_type</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="n">Callable</span> <span class="o">=</span> <span class="nb">list</span><span class="p">,</span>
         <span class="n">leaf_trans</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Val</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_input</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a ``Forest``</span>

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.naming &mdash; dol 0.3.28 documentation</title>
+  <title>dol.naming &mdash; dol 0.3.29 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=11b5e5c7"></script>
+      <script src="../../_static/documentation_options.js?v=b5cd61de"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -221,7 +221,7 @@
                 <span class="p">):</span>  <span class="c1"># if you have a validation check for it</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">validation_funs</span><span class="p">[</span><span class="n">check</span><span class="p">](</span><span class="n">val</span><span class="p">,</span> <span class="n">check_val</span><span class="p">):</span>  <span class="c1"># check it&#39;s valid</span>
                         <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
-                            <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> must </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">check</span><span class="p">,</span> <span class="n">check_val</span><span class="p">)</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> must </span><span class="si">{</span><span class="n">check</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">check_val</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>  <span class="c1"># and raise an error if not</span>
                 <span class="k">elif</span> <span class="p">(</span>
                     <span class="ow">not</span> <span class="n">ignore_misunderstood_validation_instructions</span>
@@ -545,10 +545,10 @@
 <span class="c1"># from dol.trans import add_wrapper_method</span>
 <span class="c1">#</span>
 <span class="c1"># # @add_wrapper_method</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">StrTupleDict</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StrTupleDict</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">template</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span>
+        <span class="n">template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span><span class="p">,</span>
         <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">process_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">process_info_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -789,7 +789,7 @@
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kv</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s2">&quot;pattern&quot;</span><span class="p">):</span>
                 <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">pattern</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;  * </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;  * </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
 
         <span class="k">return</span> <span class="n">s</span>
 
