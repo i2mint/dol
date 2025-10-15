@@ -65,6 +65,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # Necessary for 3.12, since setuptools was removed there
+      - name: Install setuptools
+        run: python -m pip install setuptools
+        
       - name: Format Source Code
         uses: i2mint/isee/actions/format-source-code@master
 
