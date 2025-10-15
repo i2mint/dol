@@ -4,7 +4,7 @@ import os
 from functools import partial
 import tempfile
 from pathlib import Path
-from typing import Mapping
+from collections.abc import Mapping
 import pytest
 
 from dol.tests.utils_for_tests import mk_test_store_from_keys, mk_tmp_local_store

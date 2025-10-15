@@ -3,7 +3,8 @@
 import os
 from os import stat as os_stat
 from functools import wraps, partial
-from typing import Union, Callable, Iterable, Optional
+from typing import Union, Optional
+from collections.abc import Callable, Iterable
 
 from dol.base import Collection, KvReader, KvPersister
 from dol.trans import wrap_kvs, store_decorator, filt_iter
@@ -46,10 +47,9 @@ def iter_filepaths_in_folder_recursively(
     for full_path in paths_in_dir(root_folder, include_hidden):
         if os.path.isdir(full_path):
             if _current_level < max_levels:
-                for entry in iter_filepaths_in_folder_recursively(
+                yield from iter_filepaths_in_folder_recursively(
                     full_path, max_levels, _current_level + 1, include_hidden
-                ):
-                    yield entry
+                )
         else:
             if os.path.isfile(full_path):
                 yield full_path
@@ -65,13 +65,12 @@ def iter_dirpaths_in_folder_recursively(
         if os.path.isdir(full_path):
             yield full_path
             if _current_level < max_levels:
-                for entry in iter_dirpaths_in_folder_recursively(
+                yield from iter_dirpaths_in_folder_recursively(
                     full_path, max_levels, _current_level + 1, include_hidden
-                ):
-                    yield entry
+                )
 
 
-def create_directories(dirpath, max_dirs_to_make: Optional[int] = None):
+def create_directories(dirpath, max_dirs_to_make: int | None = None):
     """
     Create directories up to a specified limit.
 
@@ -135,7 +134,7 @@ def create_directories(dirpath, max_dirs_to_make: Optional[int] = None):
 
 def process_path(
     *path: Iterable[str],
-    ensure_dir_exists: Union[int, bool] = False,
+    ensure_dir_exists: int | bool = False,
     assert_exists: bool = False,
     ensure_endswith_slash: bool = False,
     ensure_does_not_end_with_slash: bool = False,
@@ -199,8 +198,8 @@ def process_path(
 def ensure_dir(
     dirpath,
     *,
-    max_dirs_to_make: Optional[int] = None,
-    verbose: Union[bool, str, Callable] = False,
+    max_dirs_to_make: int | None = None,
+    verbose: bool | str | Callable = False,
 ):
     """Ensure that a directory exists, creating it if necessary.
 
@@ -621,7 +620,7 @@ json_bytes_wrap = wrap_kvs(
 
 # And two factories to make the above more configurable:
 def mk_pickle_bytes_wrap(
-    *, loads_kwargs: Optional[dict] = None, dumps_kwargs: Optional[dict] = None
+    *, loads_kwargs: dict | None = None, dumps_kwargs: dict | None = None
 ) -> Callable:
     """"""
     return wrap_kvs(
@@ -631,7 +630,7 @@ def mk_pickle_bytes_wrap(
 
 
 def mk_json_bytes_wrap(
-    *, loads_kwargs: Optional[dict] = None, dumps_kwargs: Optional[dict] = None
+    *, loads_kwargs: dict | None = None, dumps_kwargs: dict | None = None
 ) -> Callable:
     return wrap_kvs(
         value_decoder=partial(json.loads, **(loads_kwargs or {})),
@@ -687,7 +686,7 @@ class DirReader(DirCollection, KvReader):
 
 # TODO: This, with mk_dirs_if_missing, should replace uses of AutoMkDirsOnSetitemMixin and MakeMissingDirsStoreMixin
 def mk_dirs_if_missing_preset(
-    self, k, v, *, max_dirs_to_make: Optional[int] = None, verbose=False
+    self, k, v, *, max_dirs_to_make: int | None = None, verbose=False
 ):
     """
     Preset function that will make the store create directories on write as needed.
@@ -722,8 +721,8 @@ def mk_dirs_if_missing_preset(
 def mk_dirs_if_missing(
     store_cls=None,
     *,
-    max_dirs_to_make: Optional[int] = None,
-    verbose: Union[bool, str, Callable] = False,
+    max_dirs_to_make: int | None = None,
+    verbose: bool | str | Callable = False,
     key_condition=None,  # TODO: not used! Should use! Add to ensure_dir
 ):
     """Store decorator that will make the store create directories on write as
@@ -745,7 +744,7 @@ class MakeMissingDirsStoreMixin:
     Should be placed before the concrete perisister in the mro but in such a manner so that it receives full paths.
     """
 
-    _verbose: Union[bool, str, Callable] = False  # eek! Can't set in init.
+    _verbose: bool | str | Callable = False  # eek! Can't set in init.
 
     def __setitem__(self, k, v):
         print(
@@ -780,7 +779,7 @@ from dol.kv_codecs import KeyCodecs
 def subfolder_stores(
     root_folder,
     *,
-    max_levels: Optional[int] = None,
+    max_levels: int | None = None,
     include_hidden: bool = False,
     relative_paths: bool = True,
     slash_suffix: bool = False,

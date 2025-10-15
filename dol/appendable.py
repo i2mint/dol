@@ -9,7 +9,8 @@ See add_append_functionality_to_store_cls docs for examples.
 
 import time
 import types
-from typing import Callable, Optional
+from typing import Optional
+from collections.abc import Callable
 
 from dol.trans import store_decorator
 from dol.util import exhaust
@@ -187,7 +188,7 @@ class mk_item2kv_for:
         return item2kv
 
     @staticmethod
-    def utc_key(offset_s=0, factor=1, *, time_postproc: Optional[Callable] = None):
+    def utc_key(offset_s=0, factor=1, *, time_postproc: Callable | None = None):
         """Make an item2kv function that uses the current time as the key, and the unchanged item as a value.
         The offset_s, which is added to the output key, can be used, for example, to align to another system's clock,
         or to get a more accurate timestamp of an event.
@@ -441,7 +442,8 @@ add_append_functionality_to_store_cls = appendable  # for back compatibility
 appendable.mk_item2kv_for = mk_item2kv_for  # adding as attribute for convenient access
 
 from collections.abc import Sequence
-from typing import Iterable, Optional
+from typing import Optional
+from collections.abc import Iterable
 
 NotAVal = type("NotAVal", (), {})()  # singleton instance to distinguish from None
 

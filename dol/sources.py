@@ -2,7 +2,8 @@
 This module contains key-value views of disparate sources.
 """
 
-from typing import Iterator, Mapping, Iterable, Callable, Union, Any
+from typing import Union, Any
+from collections.abc import Iterator, Mapping, Iterable, Callable
 from operator import itemgetter
 from itertools import groupby as itertools_groupby
 
@@ -111,7 +112,8 @@ from collections import ChainMap
 
 
 from collections import ChainMap
-from typing import Callable, Iterable, Iterator, Mapping, TypedDict, Union
+from typing import TypedDict, Union
+from collections.abc import Callable, Iterable, Iterator, Mapping
 
 from dol.base import KvPersister, KvReader
 from dol.trans import wrap_kvs
@@ -739,7 +741,7 @@ class FuncReader(KvReader):
 
     """
 
-    def __init__(self, funcs: Union[Mapping[str, Callable], Iterable[Callable]]):
+    def __init__(self, funcs: Mapping[str, Callable] | Iterable[Callable]):
         # TODO: assert no free arguments (arguments are allowed but must all have
         #  defaults)
         if isinstance(funcs, Mapping):
@@ -802,7 +804,7 @@ def _path_to_module_str(path, root_path):
 #     def __init__(self, obj, src_to_key, key_filt=None, ):
 
 
-class ObjLoader(object):
+class ObjLoader:
     def __init__(self, data_of_key, obj_of_data=None):
         self.data_of_key = data_of_key
         if obj_of_data is not None or not callable(obj_of_data):

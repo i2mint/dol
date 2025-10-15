@@ -87,18 +87,15 @@ import re
 import sys
 from typing import (
     Union,
-    Callable,
     Any,
     Dict,
-    Iterable,
     Tuple,
-    Iterator,
     TypeVar,
-    Mapping as MappingType,
     Literal,
     Optional,
     get_args,
 )
+from collections.abc import Callable, Iterable, Iterator, Mapping as MappingType
 from typing import KT, VT, T
 from types import FunctionType
 from collections import defaultdict
@@ -271,9 +268,9 @@ def name_of_obj(
     o: object,
     *,
     base_name_of_obj: Callable = attrgetter("__name__"),
-    caught_exceptions: Tuple = (AttributeError,),
+    caught_exceptions: tuple = (AttributeError,),
     default_factory: Callable = _return_none,
-) -> Union[str, None]:
+) -> str | None:
     """
     Tries to find the (or "a") name for an object, even if `__name__` doesn't exist.
 
@@ -553,7 +550,7 @@ def ensure_params(obj: ParamsAble = None):
 assure_params = ensure_params  # alias for backcompatibility
 
 
-class MissingArgValFor(object):
+class MissingArgValFor:
     """A simple class to wrap an argument name, indicating that it was missing somewhere.
 
     >>> MissingArgValFor("argname")
@@ -795,7 +792,8 @@ extract_arguments_asserting_no_remainder = partial(
 )
 
 from collections.abc import Mapping
-from typing import Optional, Iterable
+from typing import Optional
+from collections.abc import Iterable
 
 
 def function_caller(func, args, kwargs):
@@ -1179,7 +1177,7 @@ class Sig(Signature, Mapping):
         func: Callable,
         ignore_incompatible_signatures: bool = True,
         *,
-        copy_function: Union[bool, Callable] = False,
+        copy_function: bool | Callable = False,
     ):
         """Gives the input function the signature.
 
@@ -2619,8 +2617,8 @@ class Sig(Signature, Mapping):
         allow_partial=False,
         allow_excess=False,
         ignore_kind=False,
-        args_limit: Union[int, None] = 0,
-    ) -> Tuple[tuple, dict]:
+        args_limit: int | None = 0,
+    ) -> tuple[tuple, dict]:
         """Extract args and kwargs such that func(*args, **kwargs) can be called,
         where func has instance's signature.
 
@@ -3444,7 +3442,7 @@ def _call_forgivingly(func, args, kwargs):
 
 
 def call_somewhat_forgivingly(
-    func, args, kwargs, enforce_sig: Optional[SignatureAble] = None
+    func, args, kwargs, enforce_sig: SignatureAble | None = None
 ):
     """Call function on given args and kwargs, but with controllable argument leniency.
     By default, the function will only pick from args and kwargs what matches it's
@@ -3654,7 +3652,7 @@ def has_signature(obj, robust=False):
 
 # TODO: Need to define and use this function more carefully.
 #   Is the goal to remove positional? Remove variadics? Normalize the signature?
-def all_pk_signature(callable_or_signature: Union[Callable, Signature]):
+def all_pk_signature(callable_or_signature: Callable | Signature):
     """Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.
 
     Wrapping a function with the resulting signature doesn't make that function callable
@@ -4351,7 +4349,7 @@ def _robust_signature_of_callable(callable_obj: Callable) -> Signature:
         return DFLT_SIGNATURE
 
 
-def resolve_function(obj: T) -> Union[T, Callable]:
+def resolve_function(obj: T) -> T | Callable:
     """Get the underlying function of a property or cached_property
 
     Note that if all conditions fail, the object itself is returned.
@@ -4412,7 +4410,7 @@ def resolve_function(obj: T) -> Union[T, Callable]:
         return obj
 
 
-def dict_of_attribute_signatures(cls: type) -> Dict[str, Signature]:
+def dict_of_attribute_signatures(cls: type) -> dict[str, Signature]:
     """
     A function that extracts the signatures of all callable attributes of a class.
 
@@ -4611,10 +4609,10 @@ class sigs_for_builtin_modules:
     def __delitem__(self, key: KT, /) -> Any:
         """self.__delitem__(key) <==> del self[key]"""
 
-    def itemgetter(item, /, *items) -> Callable[[Iterable[VT]], Union[VT, Tuple[VT]]]:
+    def itemgetter(item, /, *items) -> Callable[[Iterable[VT]], VT | tuple[VT]]:
         """itemgetter(item, ...) --> itemgetter object,"""
 
-    def attrgetter(attr, /, *attrs) -> Callable[[Iterable[VT]], Union[VT, Tuple[VT]]]:
+    def attrgetter(attr, /, *attrs) -> Callable[[Iterable[VT]], VT | tuple[VT]]:
         """attrgetter(item, ...) --> attrgetter object,"""
 
     def methodcaller(
@@ -4642,9 +4640,9 @@ class sigs_for_type_name:
     signatures (through ``inspect.signature``),
     """
 
-    def itemgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]: ...
+    def itemgetter(iterable: Iterable[VT], /) -> VT | tuple[VT]: ...
 
-    def attrgetter(iterable: Iterable[VT], /) -> Union[VT, Tuple[VT]]: ...
+    def attrgetter(iterable: Iterable[VT], /) -> VT | tuple[VT]: ...
 
     def methodcaller(obj: Any) -> Any: ...
 
@@ -4730,7 +4728,7 @@ ComparisonAggreg = Callable[[Iterable[Comparison]], Any]
 
 CT = TypeVar("CT")  # some other Compared type (used to define KeyFunction
 KeyFunction = Callable[[CT], Compared]
-KeyFunction.__doc__ = "Function that transforms one compared type to another"
+# KeyFunction.__doc__ = "Function that transforms one compared type to another"
 
 
 def compare_signatures(func1, func2, signature_comparator: SignatureComparator = eq):
@@ -5003,7 +5001,7 @@ def is_call_compatible_with(
     sig1: Sig,
     sig2: Sig,
     *,
-    param_comparator: Optional[ParamComparator] = None,
+    param_comparator: ParamComparator | None = None,
 ) -> bool:
     """Return True if ``sig1`` is compatible with ``sig2``. Meaning that all valid ways
     to call ``sig1`` are valid for ``sig2``.
@@ -5239,8 +5237,8 @@ class SigPair:
 
     """
 
-    sig1: Union[Callable, Sig]
-    sig2: Union[Callable, Sig]
+    sig1: Callable | Sig
+    sig2: Callable | Sig
 
     def __post_init__(self):
         self.sig1 = Sig(self.sig1)

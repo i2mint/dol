@@ -5,7 +5,8 @@ Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library too
 # ------------------------------------ Codecs ------------------------------------------
 
 from functools import partial
-from typing import Callable, Iterable, Any, Optional, KT, VT, Mapping, Union, Dict
+from typing import Any, Optional, KT, VT, Union, Dict
+from collections.abc import Callable, Iterable, Mapping
 from operator import itemgetter
 
 from dol.trans import (
@@ -34,8 +35,8 @@ def _csv_rw_sig(
     dialect: str = "excel",
     *,
     delimiter: str = ",",
-    quotechar: Optional[str] = '"',
-    escapechar: Optional[str] = None,
+    quotechar: str | None = '"',
+    escapechar: str | None = None,
     doublequote: bool = True,
     skipinitialspace: bool = False,
     lineterminator: str = "\r\n",
@@ -365,7 +366,7 @@ class ValueCodecs(CodecCollection):
     # TODO: Review value_wrap so it works with non-class functions like below
     #   See: https://github.com/i2mint/dol/discussions/41#discussioncomment-8015800
 
-    single_nested_value: Codec[KT, Dict[KT, VT]]
+    single_nested_value: Codec[KT, dict[KT, VT]]
 
     def single_nested_value(key):
         """
@@ -383,7 +384,7 @@ class ValueCodecs(CodecCollection):
         """
         return ValueCodec(partial(single_nest_in_dict, key), itemgetter(key))
 
-    tuple_of_dict: Codec[Iterable[VT], Dict[KT, VT]]
+    tuple_of_dict: Codec[Iterable[VT], dict[KT, VT]]
 
     def tuple_of_dict(keys):
         """Get a tuple-view of dict values.
@@ -442,8 +443,8 @@ class KeyCodecs(CodecCollection):
         return KeyCodecs.prefixed(prefix)
 
     def mapped_keys(
-        encoder: Optional[Union[Mapping, Callable]] = None,
-        decoder: Optional[Union[Mapping, Callable]] = None,
+        encoder: Mapping | Callable | None = None,
+        decoder: Mapping | Callable | None = None,
     ):
         """
         A factory that creates a key codec that uses "explicit" mappings to encode
@@ -578,7 +579,7 @@ class KeyValueCodecs(CodecCollection):
         key_mapping: dict,
         key_func: Callable = identity_func,
         *,
-        default: Optional[Callable] = None,
+        default: Callable | None = None,
     ):
         """A factory that creates a key-value codec that uses the key to determine the
         value codec to use."""
@@ -586,7 +587,7 @@ class KeyValueCodecs(CodecCollection):
     def extension_based(
         ext_mapping: dict = dflt_ext_mapping,
         *,
-        default: Optional[Callable] = None,
+        default: Callable | None = None,
     ):
         """A factory that creates a key-value codec that uses the file extension to
         determine the value codec to use."""

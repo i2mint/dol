@@ -220,7 +220,7 @@ class Dacc:
         return f"pricing_html_{self.compute_count}"
 
     @cache_this(cache="json_store", key=InstanceProp("schema_key"))
-    def schema(self) -> Dict[str, Any]:
+    def schema(self) -> dict[str, Any]:
         self.compute_count += 1
         return {"version": f"schema_{self.compute_count}"}
 

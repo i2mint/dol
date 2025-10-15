@@ -1,6 +1,7 @@
 """Utils to make stores"""
 
-from typing import Mapping, Callable, KT, VT, Iterator, Any, NewType, Collection
+from typing import KT, VT, Any, NewType
+from collections.abc import Mapping, Callable, Iterator, Collection
 import dataclasses
 from dataclasses import dataclass
 import operator
@@ -15,9 +16,9 @@ ContainmentChecker = NewType("ContainmentChecker", Callable[[Mapping], bool])
 Setter = NewType("Setter", Callable[[Mapping, KT, VT], Any])
 Deleter = NewType("Deleter", Callable[[Mapping, KT], Any])
 
-count_by_iteration: Sizer
-check_by_iteration: ContainmentChecker
-check_by_trying_to_get: ContainmentChecker
+# count_by_iteration: Sizer
+# check_by_iteration: ContainmentChecker
+# check_by_trying_to_get: ContainmentChecker
 
 
 def count_by_iteration(collection: Collection) -> int:

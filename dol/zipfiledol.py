@@ -6,7 +6,8 @@ import os
 from pathlib import Path
 from io import BytesIO
 from functools import partial, wraps
-from typing import Callable, Union, Iterable, Mapping, Literal
+from typing import Union, Literal
+from collections.abc import Callable, Iterable, Mapping
 import zipfile
 from zipfile import (
     ZipFile,
@@ -78,7 +79,7 @@ def take_everything(fileinfo):
 
 
 def zip_compress(
-    b: Union[bytes, str],
+    b: bytes | str,
     filename="some_bytes",
     *,
     compression=DFLT_COMPRESSION,
@@ -161,7 +162,7 @@ def _filename_from_zip_path(path):
 
 # TODO: Look into pwd: Should we use it for setting pwd when pwd doesn't exist?
 def to_zip_file(
-    b: Union[bytes, str],
+    b: bytes | str,
     zip_filepath,
     filename=None,
     *,
@@ -888,7 +889,7 @@ def _not_in(excluded, obj=None):
 
 def remove_some_entries_from_zip(
     zip_source,
-    keys_to_be_removed: Union[PathFilterFunc, Iterable[PathString]],
+    keys_to_be_removed: PathFilterFunc | Iterable[PathString],
     ask_before_before_deleting=True,
     *,
     remove_action: Literal["delete", "filter"] = "filter",

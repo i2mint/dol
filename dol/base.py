@@ -34,7 +34,8 @@ from collections.abc import (
     ItemsView as BaseItemsView,
     Set,
 )
-from typing import Any, Iterable, Tuple, Callable, Union, Optional
+from typing import Any, Tuple, Union, Optional
+from collections.abc import Iterable, Callable
 
 from dol.util import (
     wraps,
@@ -289,7 +290,7 @@ Decorator = Callable[[Callable], Any]  # TODO: Look up typing protocols
 
 def delegate_to(
     wrapped: type,
-    class_trans: Optional[Callable] = None,
+    class_trans: Callable | None = None,
     delegation_attr: str = "store",
     include=frozenset(),
     ignore=frozenset(),
@@ -364,7 +365,7 @@ def wrapped_delegator_reconstruct(wrapped_cls, wrapped, class_trans, delegation_
 
 def delegator_wrap(
     delegator: Callable,
-    obj: Union[type, Any],
+    obj: type | Any,
     class_trans=None,
     delegation_attr: str = "store",
 ):
@@ -738,7 +739,8 @@ KvStore = Store  # alias with explict name
 ########################################################################################################################
 # walking in trees
 
-from typing import Callable, KT, VT, Any, TypeVar, Iterator
+from typing import KT, VT, Any, TypeVar
+from collections.abc import Callable, Iterator
 from collections import deque
 
 PT = TypeVar("PT")  # Path Type
@@ -753,7 +755,7 @@ def asis(p: PT, k: KT, v: VT) -> Any:
     return p, k, v
 
 
-def tuple_keypath_and_val(p: PT, k: KT, v: VT) -> Tuple[PT, VT]:
+def tuple_keypath_and_val(p: PT, k: KT, v: VT) -> tuple[PT, VT]:
     if p == ():  # we're just begining (the root),
         p = (k,)  # so begin the path with the first key.
     else:
@@ -767,7 +769,7 @@ def kv_walk(
     v: Mapping,
     leaf_yield: Callable[[PT, KT, VT], Any] = asis,
     walk_filt: Callable[[PT, KT, VT], bool] = val_is_mapping,
-    pkv_to_pv: Callable[[PT, KT, VT], Tuple[PT, VT]] = tuple_keypath_and_val,
+    pkv_to_pv: Callable[[PT, KT, VT], tuple[PT, VT]] = tuple_keypath_and_val,
     *,
     branch_yield: Callable[[PT, KT, VT], Any] = None,
     breadth_first: bool = False,
@@ -988,7 +990,7 @@ class KeyValidationABC(metaclass=ABCMeta):
 
     def check_key_is_valid(self, k):
         if not self.is_valid_key(k):
-            raise KeyValidationError("key is not valid: {}".format(k))
+            raise KeyValidationError(f"key is not valid: {k}")
 
     @classmethod
     def __subclasshook__(cls, C):

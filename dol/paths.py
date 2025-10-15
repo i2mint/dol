@@ -22,22 +22,17 @@ from dataclasses import dataclass
 from typing import (
     Optional,
     Union,
-    Callable,
     Any,
-    Mapping,
-    Iterable,
-    Sequence,
     Tuple,
     Literal,
-    Iterator,
     KT,
     VT,
     TypeVar,
-    Generator,
     TypeAlias,
     List,
     Dict,
 )
+from collections.abc import Callable, Mapping, Iterable, Sequence, Iterator, Generator
 
 from operator import getitem
 import os
@@ -83,7 +78,7 @@ def flattened_dict_items(
     d,
     sep: PathExtenderSpec = ".",
     *,
-    parent_path: Optional[Path] = None,
+    parent_path: Path | None = None,
     visit_nested: Callable = lambda obj: isinstance(obj, Mapping),
 ) -> KeyValueGenerator:
     """
@@ -105,7 +100,7 @@ def flatten_dict(
     d,
     sep: PathExtenderSpec = ".",
     *,
-    parent_path: Optional[Path] = None,
+    parent_path: Path | None = None,
     visit_nested: Callable = lambda obj: isinstance(obj, Mapping),
     egress: Callable[[KeyValueGenerator], Mapping] = dict,
 ):
@@ -140,9 +135,9 @@ def leaf_paths(
     d: NestedMapping,
     sep: PathExtenderSpec = ".",
     *,
-    parent_path: Optional[Path] = None,
+    parent_path: Path | None = None,
     egress: Callable[[KeyValueGenerator], Mapping] = dict,
-) -> Dict[KT, Union[KT, Path]]:
+) -> dict[KT, KT | Path]:
     """
     Get a dictionary of leaf paths of a nested dictionary.
 
@@ -181,7 +176,7 @@ def leaf_paths(
 def _leaf_paths_recursive(
     d: NestedMapping,
     path_extender: PathExtenderFunc,
-    parent_path: Optional[Path] = None,
+    parent_path: Path | None = None,
     *,
     visit_nested: Callable[[Any], bool] = lambda x: isinstance(x, dict),
 ) -> KeyValueGenerator:
@@ -412,7 +407,7 @@ def path_get(
     path,
     on_error: OnErrorType = raise_on_error,
     *,
-    sep: Optional[Union[str, Callable]] = None,
+    sep: str | Callable | None = None,
     key_transformer=None,
     get_value: Callable = get_attr_or_item,
     caught_errors=(Exception,),
@@ -513,7 +508,7 @@ def paths_getter(
     *,
     egress=dict,
     on_error: OnErrorType = raise_on_error,
-    sep: Optional[Union[str, Callable]] = None,
+    sep: str | Callable | None = None,
     key_transformer=None,
     get_value: Callable = get_attr_or_item,
     caught_errors=(Exception,),
@@ -793,7 +788,7 @@ def path_set(
 
 
 # TODO: Nice to have: Edits can be a nested dict, not necessarily a flat path-value one.
-Edits = Union[Mapping[Path, VT], Iterable[Tuple[Path, VT]]]
+Edits = Union[Mapping[Path, VT], Iterable[tuple[Path, VT]]]
 
 
 def path_edit(d: Mapping, edits: Edits = ()) -> Mapping:
@@ -932,14 +927,14 @@ def _mk_path_matcher(pkv_filt: PkvFilt, sentinel=None):
 
 @add_as_attribute_of(path_filter)
 def _mk_pkv_filt(
-    filt: Callable[[Union[PT, KT, VT]], bool], kind: Literal["path", "key", "value"]
+    filt: Callable[[PT | KT | VT], bool], kind: Literal["path", "key", "value"]
 ) -> PkvFilt:
     """pkv_filt based on a ``filt`` that matches EITHER path, key, or value."""
     return partial(_pkv_filt, filt, kind)
 
 
 def _pkv_filt(
-    filt: Callable[[Union[PT, KT, VT]], bool],
+    filt: Callable[[PT | KT | VT], bool],
     kind: Literal["path", "key", "value"],
     p: PT,
     k: KT,
@@ -1019,7 +1014,7 @@ class KeyPath:
     """
 
     path_sep: str = path_sep
-    _path_type: Union[type, callable] = tuple
+    _path_type: type | Callable = tuple
 
     def _key_of_id(self, _id):
         if not isinstance(_id, str):
@@ -1459,7 +1454,7 @@ _method_names_for_path_type = {
 # TODO: Add key and id type validation
 def str_template_key_trans(
     template: str,
-    key_type: Union[PathKeyTypes, type],
+    key_type: PathKeyTypes | type,
     format_dict=None,
     process_kwargs=None,
     process_info_dict=None,
@@ -1590,12 +1585,13 @@ def _return_none_if_none_input(func):
     return _func
 
 
-from typing import Iterable, Tuple
+from typing import Tuple
+from collections.abc import Iterable
 
 string_formatter = string.Formatter()
 
 
-def string_unparse(parsing_result: Iterable[Tuple[str, str, str, str]]):
+def string_unparse(parsing_result: Iterable[tuple[str, str, str, str]]):
     """The inverse of string.Formatter.parse
 
     Will ravel

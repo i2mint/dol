@@ -1,6 +1,7 @@
 """Testing base.py objects"""
 
-from typing import Iterable, KT, VT, Tuple
+from typing import KT, VT, Tuple
+from collections.abc import Iterable
 import pytest
 from dol import (
     MappingViewMixin,
@@ -31,7 +32,7 @@ class WrappedDict(MappingViewMixin, dict):
     class ItemsView(BaseItemsView):
         """Just like BaseKeysView, but yields the [key,val] pairs as lists instead of tuples"""
 
-        def __iter__(self) -> Iterable[Tuple[KT, VT]]:
+        def __iter__(self) -> Iterable[tuple[KT, VT]]:
             return map(list, super().__iter__())
 
 

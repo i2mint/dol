@@ -66,7 +66,8 @@ Examples:
 
 import os
 import types
-from typing import Optional, Callable, KT, VT, Any, Union, T
+from typing import Optional, KT, VT, Any, Union, T
+from collections.abc import Callable
 from collections.abc import Mapping
 
 from dol.base import Store
@@ -99,7 +100,8 @@ def identity(x: T) -> T:
 from functools import RLock, partial, wraps
 from types import GenericAlias
 from collections.abc import MutableMapping
-from typing import Optional, Callable, TypeVar, Union, Any, Protocol
+from typing import Optional, TypeVar, Union, Any, Protocol
+from collections.abc import Callable
 
 # Type variables
 KT = TypeVar("KT")  # Key type
@@ -126,7 +128,7 @@ class KeyStrategy(Protocol):
 
     registered_key_strategies = set()
 
-    def resolve_at_definition(self, method_name: str) -> Optional[Any]:
+    def resolve_at_definition(self, method_name: str) -> Any | None:
         """
         Attempt to resolve the key at class definition time.
 
@@ -297,7 +299,7 @@ class CompositeKey:
         self.strategies = strategies
         self.separator = separator
 
-    def resolve_at_definition(self, method_name: str) -> Optional[Any]:
+    def resolve_at_definition(self, method_name: str) -> Any | None:
         """Try to resolve all strategies at definition time."""
         parts = []
         any_unresolved = False
@@ -470,14 +472,14 @@ class CachedProperty:
     def __init__(
         self,
         func: PropertyFunc,
-        cache: Optional[Cache] = None,
-        key: Optional[Union[str, Callable, KeyStrategy]] = None,
+        cache: Cache | None = None,
+        key: str | Callable | KeyStrategy | None = None,
         *,
         allow_none_keys: bool = False,
         lock_factory: Callable = RLock,
-        pre_cache: Union[bool, MutableMapping] = False,
-        serialize: Optional[Callable[[Any], Any]] = None,
-        deserialize: Optional[Callable[[Any], Any]] = None,
+        pre_cache: bool | MutableMapping = False,
+        serialize: Callable[[Any], Any] | None = None,
+        deserialize: Callable[[Any], Any] | None = None,
     ):
         """
         Initialize the cached property.
@@ -813,15 +815,15 @@ class CachedMethod:
     def __init__(
         self,
         func: Callable,
-        cache: Optional[Cache] = None,
-        key: Optional[Callable] = None,
+        cache: Cache | None = None,
+        key: Callable | None = None,
         *,
-        ignore: Optional[Union[str, list[str]]] = None,
+        ignore: str | list[str] | None = None,
         allow_none_keys: bool = False,
         lock_factory: Callable = RLock,
-        pre_cache: Union[bool, MutableMapping] = False,
-        serialize: Optional[Callable[[Any], Any]] = None,
-        deserialize: Optional[Callable[[Any], Any]] = None,
+        pre_cache: bool | MutableMapping = False,
+        serialize: Callable[[Any], Any] | None = None,
+        deserialize: Callable[[Any], Any] | None = None,
     ):
         """
         Initialize the cached method.
@@ -1053,13 +1055,13 @@ class CachedMethod:
 def cache_this(
     func: PropertyFunc = None,
     *,
-    cache: Optional[Cache] = None,
-    key: Optional[KeyType] = None,
-    pre_cache: Union[bool, MutableMapping] = False,
-    as_property: Optional[bool] = None,
-    ignore: Optional[Union[str, list[str]]] = None,
-    serialize: Optional[Callable[[Any], Any]] = None,
-    deserialize: Optional[Callable[[Any], Any]] = None,
+    cache: Cache | None = None,
+    key: KeyType | None = None,
+    pre_cache: bool | MutableMapping = False,
+    as_property: bool | None = None,
+    ignore: str | list[str] | None = None,
+    serialize: Callable[[Any], Any] | None = None,
+    deserialize: Callable[[Any], Any] | None = None,
 ):
     r"""
     Unified caching decorator for properties and methods with persistent storage support.
@@ -1771,7 +1773,7 @@ def cache_property_method(
 # -------------------------------------------------------------------------------------
 import os
 from functools import wraps, partial
-from typing import Iterable, Callable
+from collections.abc import Iterable, Callable
 from inspect import signature
 
 from dol.trans import store_decorator

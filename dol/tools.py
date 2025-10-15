@@ -61,17 +61,15 @@ def confirm_overwrite(
 # -------------------------------- Aggregate a store -----------------------------------
 
 from typing import (
-    Callable,
     Optional,
     KT,
     VT,
     Tuple,
-    Mapping,
     Union,
     TypeVar,
     Any,
-    Iterable,
 )
+from collections.abc import Callable, Mapping, Iterable
 import os
 from functools import partial
 from pathlib import Path
@@ -104,7 +102,7 @@ Aggregate = TypeVar("Aggregate")
 
 
 def store_aggregate(
-    content_store: Union[Mapping[KT, VT], str],  # Path to the folder or dol store
+    content_store: Mapping[KT, VT] | str,  # Path to the folder or dol store
     *,
     kv_to_item: Callable[
         [KT, VT], Item
@@ -112,14 +110,14 @@ def store_aggregate(
     aggregator: Callable[
         [Iterable[Item]], Aggregate
     ] = "\n\n".join,  # How to aggregate the item's into an aggregate
-    egress: Union[
-        Callable[[Aggregate], Any], str
-    ] = identity,  # function to apply to the aggregate before returning
-    key_filter: Optional[Callable[[KT], bool]] = None,  # Filter function for keys
-    value_filter: Optional[Callable[[VT], bool]] = None,  # Filter function for values
-    kv_filter: Optional[
-        Callable[[Tuple[KT, VT]], bool]
-    ] = None,  # Filter function for key-value pairs
+    egress: (
+        Callable[[Aggregate], Any] | str
+    ) = identity,  # function to apply to the aggregate before returning
+    key_filter: Callable[[KT], bool] | None = None,  # Filter function for keys
+    value_filter: Callable[[VT], bool] | None = None,  # Filter function for values
+    kv_filter: None | (
+        Callable[[tuple[KT, VT]], bool]
+    ) = None,  # Filter function for key-value pairs
     local_store_factory: Callable[
         [str], Mapping[KT, VT]
     ] = Latin1TextFiles,  # Factory function for the local store
@@ -239,7 +237,8 @@ def store_aggregate(
 
 
 from functools import partial
-from typing import Any, Iterable, Union, Callable
+from typing import Any, Union
+from collections.abc import Iterable, Callable
 from itertools import islice
 
 from dol.base import KvReader
@@ -280,7 +279,7 @@ def convert_to_numerical_if_possible(s: str):
 def ask_user_for_value_when_missing(
     store=None,
     *,
-    value_preprocessor: Optional[Callable] = None,
+    value_preprocessor: Callable | None = None,
     on_missing_msg: str = _dflt_ask_user_for_value_when_missing_msg,
 ):
     """Wrap a store so if a value is missing when the user asks for it, they will be
@@ -510,7 +509,7 @@ class Forest(KvReader):
         get_node_keys: Callable[[Src], Iterable[Key]],
         get_src_item: Callable[[Src, Key], bool],
         is_leaf: Callable[[Key, Val], bool],
-        forest_type: Union[type, Callable] = list,
+        forest_type: type | Callable = list,
         leaf_trans: Callable[[Val], Any] = return_input,
     ):
         """Initialize a ``Forest``

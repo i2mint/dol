@@ -3,7 +3,8 @@ utils to make stores based on a the input data itself
 """
 
 from collections.abc import Mapping
-from typing import Callable, Collection as CollectionType, KT, VT, TypeVar, Iterator
+from typing import KT, VT, TypeVar
+from collections.abc import Callable, Collection as CollectionType, Iterator
 
 from dol.base import Collection, KvReader, Store
 from dol.trans import kv_wrap
@@ -276,7 +277,7 @@ class ExplicitKeymapReader(ExplicitKeys, Store):
 # ExplicitKeysWithPrefixRelativization: Moved to dol.paths
 
 
-class ObjDumper(object):
+class ObjDumper:
     def __init__(self, save_data_to_key, data_of_obj=None):
         self.save_data_to_key = save_data_to_key
         if data_of_obj is not None or not callable(data_of_obj):

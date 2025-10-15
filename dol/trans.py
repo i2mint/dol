@@ -4,7 +4,8 @@ from functools import wraps, partial, reduce
 import types
 import re
 from inspect import signature, Parameter
-from typing import Union, Iterable, Optional, Collection, Callable, Any, Generic
+from typing import Union, Optional, Any, Generic
+from collections.abc import Iterable, Collection, Callable
 from dataclasses import dataclass
 from warnings import warn
 from collections.abc import Iterable
@@ -729,12 +730,12 @@ def _insert_hash_method(store, hash_method):
 def cached_keys(
     store=None,
     *,
-    keys_cache: Union[callable, Collection] = list,
+    keys_cache: Callable | Collection = list,
     iter_to_container=None,  # deprecated: use keys_cache instead
     cache_update_method="update",
     name: str = None,  # TODO: might be able to be deprecated since included in store_decorator
     __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
-) -> Union[callable, KvReader]:
+) -> Callable | KvReader:
     """Make a class that wraps input class's __iter__ becomes cached.
 
     Quite often we have a lot of keys, that we get from a remote data source, and don't want to have to ask for
@@ -971,7 +972,7 @@ def cached_keys(
 
 def _cached_keys(
     store,
-    keys_cache: Union[callable, Collection] = list,
+    keys_cache: Callable | Collection = list,
     iter_to_container=None,  # deprecated: use keys_cache instead
     cache_update_method="update",
     name: str = None,  # TODO: might be able to be deprecated since included in store_decorator
@@ -1348,7 +1349,7 @@ FiltFunc = Callable[[Any], bool]
 def filt_iter(
     store=None,
     *,
-    filt: Union[callable, Iterable] = take_everything,
+    filt: Callable | Iterable = take_everything,
     name=None,
     __module__=None,  # TODO: might be able to be deprecated since included in store_decorator
 ):
@@ -1710,7 +1711,7 @@ def kv_wrap_persister_cls(persister_cls, name=None):
 
 
 def _wrap_outcoming(
-    store_cls: type, wrapped_method: str, trans_func: Optional[callable] = None
+    store_cls: type, wrapped_method: str, trans_func: Callable | None = None
 ):
     """Output-transforming wrapping of the wrapped_method of store_cls.
     The transformation is given by trans_func, which could be a one (trans_func(x)
@@ -1777,7 +1778,7 @@ def _wrap_outcoming(
 
 
 def _wrap_ingoing(
-    store_cls, wrapped_method: str, trans_func: Optional[callable] = None
+    store_cls, wrapped_method: str, trans_func: Callable | None = None
 ):
     if trans_func is not None:
         wrapped_func = getattr(store_cls, wrapped_method)
@@ -3098,7 +3099,8 @@ def insert_load_dump_aliases(store=None, *, delete=None, list=None, count=None):
     return store
 
 
-from typing import TypeVar, Any, Callable
+from typing import TypeVar, Any
+from collections.abc import Callable
 
 FuncInput = TypeVar("FuncInput")
 FuncOutput = TypeVar("FuncOutput")
@@ -3136,7 +3138,8 @@ def condition_function_call(
     return wrapped_func
 
 
-from typing import Callable, MutableMapping, Any
+from typing import Any
+from collections.abc import Callable, MutableMapping
 
 Key = Any
 Val = Any
@@ -3173,7 +3176,7 @@ def add_store_method(
     *,
     method_func,
     method_name=None,
-    validator: Optional[InjectionValidator] = None,
+    validator: InjectionValidator | None = None,
 ):
     """Add methods to store classes or instances
 
@@ -3412,7 +3415,7 @@ def redirect_getattr_to_getitem(cls=None, *, keys_have_priority_over_attributes=
                 ):
                     return self[attr]
             # if attr not in self, or if it is in the class, then do normal getattr
-            return super(RidirectGetattrToGetitem, self).__getattr__(attr)
+            return super().__getattr__(attr)
 
         def __dir__(self) -> Iterable[str]:
             return list(self)

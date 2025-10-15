@@ -1,6 +1,7 @@
 """Ideas for a new store wrapping setup"""
 
-from typing import MutableMapping, Mapping, KT, VT, Iterable, Callable
+from typing import KT, VT
+from collections.abc import MutableMapping, Mapping, Iterable, Callable
 from dol.util import inject_method
 
 

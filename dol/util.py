@@ -9,20 +9,15 @@ from warnings import warn
 
 from typing import (
     Any,
-    Hashable,
-    Callable,
-    Iterable,
     Optional,
     Union,
-    Mapping,
-    Sequence,
-    Container,
     T,
     KT,
     NewType,
     Tuple,
     TypeVar,
 )
+from collections.abc import Hashable, Callable, Iterable, Mapping, Sequence, Container
 from functools import update_wrapper as _update_wrapper
 from functools import wraps as _wraps
 from functools import partialmethod, partial, WRAPPER_ASSIGNMENTS
@@ -38,7 +33,7 @@ Val = TypeVar("Val")
 Val.__doc__ = "The type of the values used in the interface (outer values)"
 Data = TypeVar("Data")
 Data.__doc__ = "The type of the values used in the backend (inner values)"
-Item = Tuple[Key, Val]
+Item = tuple[Key, Val]
 KeyIter = Iterable[Key]
 ValIter = Iterable[Val]
 ItemIter = Iterable[Item]
@@ -1082,20 +1077,20 @@ def format_invocation(name="", args=(), kwargs=None):
         kwarg_items = [(k, kwargs[k]) for k in sorted(kwargs)]
     else:
         kwarg_items = kwargs
-    kw_text = ", ".join(["%s=%r" % (k, v) for k, v in kwarg_items])
+    kw_text = ", ".join(["{}={!r}".format(k, v) for k, v in kwarg_items])
 
     all_args_text = a_text
     if all_args_text and kw_text:
         all_args_text += ", "
     all_args_text += kw_text
 
-    return "%s(%s)" % (name, all_args_text)
+    return "{}({})".format(name, all_args_text)
 
 
 def groupby(
     items: Iterable[Item],
     key: Callable[[Item], Hashable],
-    val: Optional[Callable[[Item], Any]] = None,
+    val: Callable[[Item], Any] | None = None,
     group_factory=list,
 ) -> dict:
     """Groups items according to group keys updated from those items through the given
@@ -1185,7 +1180,7 @@ GroupReleaseCond = Union[
 def igroupby(
     items: Iterable[Item],
     key: Callable[[Item], GroupKey],
-    val: Optional[Callable[[Item], Any]] = None,
+    val: Callable[[Item], Any] | None = None,
     group_factory: Callable[[], GroupItems] = list,
     group_release_cond: GroupReleaseCond = lambda k, v: False,
     release_remainding=True,
@@ -1416,7 +1411,7 @@ class lazyprop:
 
     def __repr__(self):
         cn = self.__class__.__name__
-        return "<%s func=%s>" % (cn, self.func)
+        return "<{} func={}>".format(cn, self.func)
 
 
 from functools import lru_cache, wraps
@@ -1555,7 +1550,7 @@ def max_common_prefix(a: Sequence, *, default=""):
     return s1
 
 
-class SimpleProperty(object):
+class SimpleProperty:
     def __get__(self, obj, objtype=None):
         return obj.d
 
@@ -1763,7 +1758,8 @@ def nest_in_dict(keys, values):
 
 
 import io
-from typing import Callable, Any, VT, Union, KT
+from typing import Any, VT, Union, KT
+from collections.abc import Callable
 from functools import partial
 import tempfile
 
@@ -1775,7 +1771,7 @@ Writer = Union[Callable[[VT, KT], Any], Callable[[KT, VT], Any]]
 def _call_writer(
     writer: Writer,
     obj: VT,
-    destination: Union[KT, Buffer],
+    destination: KT | Buffer,
     obj_arg_position_in_writer: int = 0,
 ):
     """
@@ -1966,7 +1962,7 @@ def write_to_file(obj: VT, key: KT):
         with open(key, "wb") as f:
             f.write(obj)
     elif isinstance(obj, str):
-        with open(key, "wt") as f:
+        with open(key, "w") as f:
             f.write(obj)
     else:
         raise ValueError(
@@ -1979,7 +1975,7 @@ def written_key(
     obj: VT = None,
     writer: Writer = write_to_file,
     *,
-    key: Optional[Union[KT, Callable]] = None,
+    key: KT | Callable | None = None,
     obj_arg_position_in_writer: int = 0,
     encoder: Callable = identity_func,
 ):
@@ -2123,7 +2119,7 @@ written_key.write_to_file = write_to_file
 # TODO: This function should be symmetric, and if so, the code should use recursion
 def invertible_maps(
     mapping: Mapping = None, inv_mapping: Mapping = None
-) -> Tuple[Mapping, Mapping]:
+) -> tuple[Mapping, Mapping]:
     """Returns two maps that are inverse of each other.
     Raises an AssertionError iif both maps are None, or if the maps are not inverse of
     each other.
@@ -2206,7 +2202,7 @@ def invertible_maps(
 # (Vendored in dol)
 
 from types import SimpleNamespace
-from typing import MutableMapping, Iterator
+from collections.abc import MutableMapping, Iterator
 
 
 class AttributeMapping(SimpleNamespace, Mapping[str, Any]):
@@ -2305,7 +2301,8 @@ def _get_attr_or_key_error(obj: object, key: str) -> Any:
 # ----------------------------------------------------------------------------------------------------------------------
 # More or less vendored from config2py
 
-from typing import Literal, Optional, Sequence, Tuple
+from typing import Literal, Optional, Tuple
+from collections.abc import Sequence
 from collections import namedtuple
 
 FolderSpec = namedtuple("FolderSpec", ["env_var", "default_path"])
