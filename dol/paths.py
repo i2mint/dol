@@ -776,8 +776,8 @@ def path_set(
     >>> from collections import OrderedDict
     >>> input_dict = {}
     >>> path_set(input_dict, 'new.key', 42, new_mapping=OrderedDict)
-    >>> input_dict  # doctest: +NORMALIZE_WHITESPACE
-    {'new': OrderedDict([('key', 42)])}
+    >>> input_dict  # doctest: +ELLIPSIS
+    {'new': OrderedDict(...'key'...: 42...)}
 
     """
     if isinstance(key_path, str) and sep is not None:
@@ -1900,7 +1900,7 @@ class KeyTemplate:
         r"""Parses the input string and returns a dictionary of extracted values.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json',
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json',
         ...     from_str_funcs={'ver': int},
         ... )
         >>> st.str_to_dict('root/life/v_30.json')
@@ -1920,7 +1920,7 @@ class KeyTemplate:
         r"""Generates a string from the dictionary values based on the template.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> st.dict_to_str({'i01_': 'life', 'ver': 42})
         'root/life/v_042.json'
@@ -1936,7 +1936,7 @@ class KeyTemplate:
         r"""Generates a tuple from the dictionary values based on the template.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> st.str_to_tuple('root/life/v_42.json')
         ('life', 42)
@@ -1951,7 +1951,7 @@ class KeyTemplate:
         r"""Generates a dictionary from the tuple values based on the template.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> st.tuple_to_dict(('life', 42))
         {'i01_': 'life', 'ver': 42}
@@ -1967,7 +1967,7 @@ class KeyTemplate:
         r"""Parses the input string and returns a tuple of extracted values.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> st.str_to_tuple('root/life/v_42.json')
         ('life', 42)
@@ -1981,7 +1981,7 @@ class KeyTemplate:
         r"""Generates a string from the tuple values based on the template.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> st.tuple_to_str(('life', 42))
         'root/life/v_042.json'
@@ -1995,7 +1995,7 @@ class KeyTemplate:
         r"""Parses the input string and returns a single value.
 
         >>> st = KeyTemplate(
-        ...     'root/life/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/life/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> st.str_to_single('root/life/v_42.json')
         42
@@ -2009,7 +2009,7 @@ class KeyTemplate:
         r"""Generates a string from the single value based on the template.
 
         >>> st = KeyTemplate(
-        ...     'root/life/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/life/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> st.single_to_str(42)
         'root/life/v_042.json'
@@ -2026,7 +2026,7 @@ class KeyTemplate:
         r"""Generates a namedtuple from the dictionary values based on the template.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> App = st.dict_to_namedtuple({'i01_': 'life', 'ver': 42})
         >>> App
@@ -2041,7 +2041,7 @@ class KeyTemplate:
         r"""Converts a namedtuple to a dictionary.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> App = st.dict_to_namedtuple({'i01_': 'life', 'ver': 42})
         >>> st.namedtuple_to_dict(App)
@@ -2055,7 +2055,7 @@ class KeyTemplate:
         r"""Converts a string to a namedtuple.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> App = st.str_to_namedtuple('root/life/v_042.json')
         >>> App
@@ -2070,7 +2070,7 @@ class KeyTemplate:
         r"""Converts a string to a simple string (i.e. a simple character-delimited string).
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> st.str_to_simple_str('root/life/v_042.json')
         'life,042'
@@ -2089,7 +2089,7 @@ class KeyTemplate:
         r"""Converts a simple character-delimited string to a dict.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ...     simple_str_sep='-',
         ... )
         >>> st.simple_str_to_tuple('life-042')
@@ -2114,7 +2114,7 @@ class KeyTemplate:
         r"""Converts a simple character-delimited string to a string.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ...     simple_str_sep='-',
         ... )
         >>> st.simple_str_to_str('life-042')
@@ -2129,7 +2129,7 @@ class KeyTemplate:
         Returns True iff the string matches the template.
 
         >>> st = KeyTemplate(
-        ...     'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
+        ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
         ... )
         >>> st.match_str('root/life/v_042.json')
         True
@@ -2172,7 +2172,7 @@ class KeyTemplate:
         These four values are used in the init to compute the parameters of the
         instance.
 
-        >>> st = KeyTemplate('{:03.0f}/{name::\w+}')
+        >>> st = KeyTemplate(r'{:03.0f}/{name::\w+}')
         >>> st.template
         '{i01_}/{name}'
         >>> st._fields
@@ -2238,13 +2238,13 @@ class KeyTemplate:
         '(?P<i01_>.*)\\.ext'
         >>> KeyTemplate('{name}.ext')._regex.pattern
         '(?P<name>.*)\\.ext'
-        >>> KeyTemplate('{::\w+}.ext')._regex.pattern
+        >>> KeyTemplate(r'{::\w+}.ext')._regex.pattern
         '(?P<i01_>\\w+)\\.ext'
-        >>> KeyTemplate('{name::\w+}.ext')._regex.pattern
+        >>> KeyTemplate(r'{name::\w+}.ext')._regex.pattern
         '(?P<name>\\w+)\\.ext'
-        >>> KeyTemplate('{:0.02f:\w+}.ext')._regex.pattern
+        >>> KeyTemplate(r'{:0.02f:\w+}.ext')._regex.pattern
         '(?P<i01_>\\w+)\\.ext'
-        >>> KeyTemplate('{name:0.02f:\w+}.ext')._regex.pattern
+        >>> KeyTemplate(r'{name:0.02f:\w+}.ext')._regex.pattern
         '(?P<name>\\w+)\\.ext'
         """
 

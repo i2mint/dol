@@ -2963,7 +2963,7 @@ class Sig(Signature, Mapping):
         >>> Sig(foo).extract_args_and_kwargs(x=3, y=2)
         Traceback (most recent call last):
           ...
-        TypeError: missing a required argument: 'w'
+        TypeError: missing a required keyword-only argument: 'w'
 
         But if you specify `_allow_partial=True`...
 
@@ -3040,7 +3040,7 @@ class Sig(Signature, Mapping):
         >>> Sig(foo).source_arguments(x=3, y=2, extra="keywords", are="ignored")
         Traceback (most recent call last):
           ...
-        TypeError: missing a required argument: 'w'
+        TypeError: missing a required keyword-only argument: 'w'
 
         But if you specify `_allow_partial=True`...
 
@@ -3129,7 +3129,7 @@ class Sig(Signature, Mapping):
         >>> Sig(foo).source_args_and_kwargs(x=3, y=2, extra="keywords", are="ignored")
         Traceback (most recent call last):
           ...
-        TypeError: missing a required argument: 'w'
+        TypeError: missing a required keyword-only argument: 'w'
 
         But if you specify `_allow_partial=True`...
 
