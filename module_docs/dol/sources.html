@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.3.26 documentation</title>
+  <title>dol.sources &mdash; dol 0.3.28 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=5dd7c21c"></script>
+      <script src="../../_static/documentation_options.js?v=11b5e5c7"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -289,7 +289,7 @@ In either case, this is followed by: for k, v in F.items(): D[k] = v</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.sources.CachedSequenceKvReader">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.sources.</span></span><span class="sig-name descname"><span class="pre">CachedSequenceKvReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key:</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">~typing.Iterable[str</span> <span class="pre">|</span> <span class="pre">int]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val:</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">~typing.Iterable[str</span> <span class="pre">|</span> <span class="pre">int]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_postproc=&lt;class</span> <span class="pre">'list'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#CachedSequenceKvReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.sources.CachedSequenceKvReader" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.sources.</span></span><span class="sig-name descname"><span class="pre">CachedSequenceKvReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence:</span> <span class="pre">~typing.Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key:</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">~typing.Iterable[str</span> <span class="pre">|</span> <span class="pre">int]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val:</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">~typing.Iterable[str</span> <span class="pre">|</span> <span class="pre">int]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_postproc=&lt;class</span> <span class="pre">'list'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#CachedSequenceKvReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.sources.CachedSequenceKvReader" title="Link to this definition"></a></dt>
 <dd><p>SequenceKvReader but with the whole mapping cached as a dict. Use this one if
 you will perform multiple accesses to the store</p>
 </dd></dl>
@@ -348,11 +348,8 @@ value to it:</p>
 </pre></div>
 </div>
 <p>Now if you ask for <cite>g</cite>, it won’t find it in cache, but will find it in <cite>disk</cite>
-and return it. The reason you see the “Getting g from cache” message is because
-the <cite>stores</cite> object first tries to get it in <cite>cache</cite>, and only if it doesn’t find
-it there, it tries to get it from <cite>disk</cite>.</p>
+and return it.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stores</span><span class="p">[</span><span class="s1">&#39;g&#39;</span><span class="p">]</span>
-<span class="go">Getting g from cache</span>
 <span class="go">Getting g from disk</span>
 <span class="go">43</span>
 </pre></div>

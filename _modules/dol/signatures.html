@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.signatures &mdash; dol 0.3.26 documentation</title>
+  <title>dol.signatures &mdash; dol 0.3.28 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=5dd7c21c"></script>
+      <script src="../../_static/documentation_options.js?v=11b5e5c7"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -392,11 +392,11 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">return_none</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_return_none</span><span class="p">(</span><span class="n">o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">return</span> <span class="kc">None</span>
 
 
-<span class="c1"># duplicated from i2.util to keep signatures.py standalone</span>
+<span class="c1"># (approximately) duplicated from i2.util to keep signatures.py standalone</span>
 <div class="viewcode-block" id="name_of_obj">
 <a class="viewcode-back" href="../../module_docs/dol/signatures.html#dol.signatures.name_of_obj">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">name_of_obj</span><span class="p">(</span>
@@ -404,7 +404,7 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">base_name_of_obj</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">attrgetter</span><span class="p">(</span><span class="s2">&quot;__name__&quot;</span><span class="p">),</span>
     <span class="n">caught_exceptions</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,),</span>
-    <span class="n">default_factory</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">return_none</span><span class="p">,</span>
+    <span class="n">default_factory</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">_return_none</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Tries to find the (or &quot;a&quot;) name for an object, even if `__name__` doesn&#39;t exist.</span>
@@ -645,7 +645,7 @@
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Signature</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="k">try</span><span class="p">:</span>  <span class="c1"># to get params from the builtin signature function</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">_robust_signature_of_callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -1484,7 +1484,11 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># (try to) return cls(obj) if obj is callable:</span>
             <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-                <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+                <span class="n">sig</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+                <span class="c1"># Check if we got our default signature (which means no real signature exists)</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">DFLT_SIGNATURE</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">Sig</span><span class="p">(</span><span class="n">default_signature</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">sig</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Object is not callable: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -1511,7 +1515,7 @@
 <span class="sd">        But here&#39;s where it get&#39;s interesting. `print`, a builtin, doesn&#39;t have a</span>
 <span class="sd">        signature through inspect.signature.</span>
 
-<span class="sd">        &gt;&gt;&gt; has_signature(print)</span>
+<span class="sd">        &gt;&gt;&gt; has_signature(print)  # doctest: +SKIP</span>
 <span class="sd">        False</span>
 
 <span class="sd">        But we do get one with robust_has_signature</span>
@@ -2747,7 +2751,7 @@
 <span class="sd">        &gt;&gt;&gt; sig.map_arguments(args=(), kwargs=dict(w=1, x=2, y=3, z=4))</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
-<span class="sd">        TypeError: &#39;w&#39; parameter is positional only, but was passed as a keyword</span>
+<span class="sd">        TypeError:...&#39;w&#39;...</span>
 
 <span class="sd">        But if you want to ignore the kind of parameter, just say so:</span>
 
@@ -3157,7 +3161,7 @@
 <span class="sd">        &gt;&gt;&gt; Sig(foo).extract_args_and_kwargs(w=4, x=3, y=2, _ignore_kind=False)</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
-<span class="sd">        TypeError: &#39;w&#39; parameter is positional only, but was passed as a keyword</span>
+<span class="sd">        TypeError:...&#39;w&#39;...</span>
 
 <span class="sd">        You can use `_allow_partial` that will allow you, if</span>
 <span class="sd">        set to `True`, to underspecify the params of a function (in view of being</span>
@@ -3166,7 +3170,7 @@
 <span class="sd">        &gt;&gt;&gt; Sig(foo).extract_args_and_kwargs(x=3, y=2)</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
-<span class="sd">        TypeError: missing a required argument: &#39;w&#39;</span>
+<span class="sd">        TypeError:...&#39;w&#39;...</span>
 
 <span class="sd">        But if you specify `_allow_partial=True`...</span>
 
@@ -3237,7 +3241,7 @@
 <span class="sd">        ... )</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
-<span class="sd">        TypeError: &#39;w&#39; parameter is positional only, but was passed as a keyword</span>
+<span class="sd">        TypeError: ...&#39;w&#39;...</span>
 
 <span class="sd">        You can use `_allow_partial` that will allow you, if</span>
 <span class="sd">        set to `True`, to underspecify the params of a function (in view of being</span>
@@ -3246,7 +3250,7 @@
 <span class="sd">        &gt;&gt;&gt; Sig(foo).source_arguments(x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;)</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
-<span class="sd">        TypeError: missing a required argument: &#39;w&#39;</span>
+<span class="sd">        TypeError: ...&#39;w&#39;...</span>
 
 <span class="sd">        But if you specify `_allow_partial=True`...</span>
 
@@ -3329,7 +3333,7 @@
 <span class="sd">        ... )</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
-<span class="sd">        TypeError: &#39;w&#39; parameter is positional only, but was passed as a keyword</span>
+<span class="sd">        TypeError: ...&#39;w&#39;...</span>
 
 <span class="sd">        You can use `_allow_partial` that will allow you, if</span>
 <span class="sd">        set to `True`, to underspecify the params of a function (in view of being</span>
@@ -3338,7 +3342,7 @@
 <span class="sd">        &gt;&gt;&gt; Sig(foo).source_args_and_kwargs(x=3, y=2, extra=&quot;keywords&quot;, are=&quot;ignored&quot;)</span>
 <span class="sd">        Traceback (most recent call last):</span>
 <span class="sd">          ...</span>
-<span class="sd">        TypeError: missing a required argument: &#39;w&#39;</span>
+<span class="sd">        TypeError:...&#39;w&#39;...</span>
 
 <span class="sd">        But if you specify `_allow_partial=True`...</span>
 
@@ -3860,7 +3864,7 @@
 <span class="sd">    ...             ),</span>
 <span class="sd">    ...         )</span>
 <span class="sd">    ...     )</span>
-<span class="sd">    ... )</span>
+<span class="sd">    ... )  # doctest: +SKIP</span>
 <span class="sd">    2</span>
 
 <span class="sd">    If robust is set to True, `has_signature` will use `Sig` to get the signature,</span>
@@ -4585,19 +4589,22 @@
 <span class="sd">    &lt;Signature (*no_sig_args, **no_sig_kwargs)&gt;</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># First check if we have a custom signature for this type/object</span>
+    <span class="c1"># This is important for operator instances that might have generic signatures in Python 3.12+</span>
+    <span class="n">obj_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">callable_obj</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">obj_name</span> <span class="ow">in</span> <span class="n">sigs_for_sigless_builtin_name</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">sigs_for_sigless_builtin_name</span><span class="p">[</span><span class="n">obj_name</span><span class="p">]</span> <span class="ow">or</span> <span class="n">DFLT_SIGNATURE</span>
+
+    <span class="n">type_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">callable_obj</span><span class="p">),</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">type_name</span> <span class="ow">in</span> <span class="n">sigs_for_type_name</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">sigs_for_type_name</span><span class="p">[</span><span class="n">type_name</span><span class="p">]</span> <span class="ow">or</span> <span class="n">DFLT_SIGNATURE</span>
+
+    <span class="c1"># Try to get the signature normally</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">signature</span><span class="p">(</span><span class="n">callable_obj</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="c1"># if isinstance(callable_obj, partial):</span>
-        <span class="c1">#     callable_obj = callable_obj.func</span>
-        <span class="n">obj_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">callable_obj</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">obj_name</span> <span class="ow">in</span> <span class="n">sigs_for_sigless_builtin_name</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">sigs_for_sigless_builtin_name</span><span class="p">[</span><span class="n">obj_name</span><span class="p">]</span> <span class="ow">or</span> <span class="n">DFLT_SIGNATURE</span>
-        <span class="n">type_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">callable_obj</span><span class="p">),</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">type_name</span> <span class="ow">in</span> <span class="n">sigs_for_type_name</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">sigs_for_type_name</span><span class="p">[</span><span class="n">type_name</span><span class="p">]</span> <span class="ow">or</span> <span class="n">DFLT_SIGNATURE</span>
-        <span class="c1"># if all attempts fail, raise the original error</span>
-        <span class="k">raise</span>
+        <span class="c1"># if all attempts fail, return the default signature</span>
+        <span class="k">return</span> <span class="n">DFLT_SIGNATURE</span>
 
 
 <div class="viewcode-block" id="resolve_function">
@@ -4866,14 +4873,10 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;self.__delitem__(key) &lt;==&gt; del self[key]&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">itemgetter</span><span class="p">(</span>
-        <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">KT</span><span class="p">]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">]],</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">itemgetter</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">]],</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;itemgetter(item, ...) --&gt; itemgetter object,&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">attrgetter</span><span class="p">(</span>
-        <span class="n">key</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">KT</span><span class="p">]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">]],</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">attrgetter</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">attrs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">VT</span><span class="p">]],</span> <span class="n">Union</span><span class="p">[</span><span class="n">VT</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">VT</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;attrgetter(item, ...) --&gt; attrgetter object,&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">methodcaller</span><span class="p">(</span>

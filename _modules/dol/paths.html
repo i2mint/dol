@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.3.26 documentation</title>
+  <title>dol.paths &mdash; dol 0.3.28 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=5dd7c21c"></script>
+      <script src="../../_static/documentation_options.js?v=11b5e5c7"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -923,8 +923,8 @@
 <span class="sd">    &gt;&gt;&gt; from collections import OrderedDict</span>
 <span class="sd">    &gt;&gt;&gt; input_dict = {}</span>
 <span class="sd">    &gt;&gt;&gt; path_set(input_dict, &#39;new.key&#39;, 42, new_mapping=OrderedDict)</span>
-<span class="sd">    &gt;&gt;&gt; input_dict  # doctest: +NORMALIZE_WHITESPACE</span>
-<span class="sd">    {&#39;new&#39;: OrderedDict([(&#39;key&#39;, 42)])}</span>
+<span class="sd">    &gt;&gt;&gt; input_dict  # doctest: +ELLIPSIS</span>
+<span class="sd">    {&#39;new&#39;: OrderedDict(...&#39;key&#39;...: 42...)}</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1852,7 +1852,7 @@
 <div class="viewcode-block" id="KeyTemplate">
 <a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.KeyTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">KeyTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for parsing and generating keys based on a template.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;A class for parsing and generating keys based on a template.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        template: A template string with fields to be extracted or filled in.</span>
@@ -2100,7 +2100,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Parses the input string and returns a dictionary of extracted values.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;,</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;,</span>
 <span class="sd">        ...     from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.str_to_dict(&#39;root/life/v_30.json&#39;)</span>
@@ -2123,7 +2123,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a string from the dictionary values based on the template.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.dict_to_str({&#39;i01_&#39;: &#39;life&#39;, &#39;ver&#39;: 42})</span>
 <span class="sd">        &#39;root/life/v_042.json&#39;</span>
@@ -2142,7 +2142,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a tuple from the dictionary values based on the template.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.str_to_tuple(&#39;root/life/v_42.json&#39;)</span>
 <span class="sd">        (&#39;life&#39;, 42)</span>
@@ -2160,7 +2160,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a dictionary from the tuple values based on the template.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.tuple_to_dict((&#39;life&#39;, 42))</span>
 <span class="sd">        {&#39;i01_&#39;: &#39;life&#39;, &#39;ver&#39;: 42}</span>
@@ -2179,7 +2179,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Parses the input string and returns a tuple of extracted values.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.str_to_tuple(&#39;root/life/v_42.json&#39;)</span>
 <span class="sd">        (&#39;life&#39;, 42)</span>
@@ -2196,7 +2196,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a string from the tuple values based on the template.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.tuple_to_str((&#39;life&#39;, 42))</span>
 <span class="sd">        &#39;root/life/v_042.json&#39;</span>
@@ -2213,7 +2213,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Parses the input string and returns a single value.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/life/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/life/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.str_to_single(&#39;root/life/v_42.json&#39;)</span>
 <span class="sd">        42</span>
@@ -2230,7 +2230,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a string from the single value based on the template.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/life/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/life/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.single_to_str(42)</span>
 <span class="sd">        &#39;root/life/v_042.json&#39;</span>
@@ -2250,7 +2250,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generates a namedtuple from the dictionary values based on the template.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; App = st.dict_to_namedtuple({&#39;i01_&#39;: &#39;life&#39;, &#39;ver&#39;: 42})</span>
 <span class="sd">        &gt;&gt;&gt; App</span>
@@ -2268,7 +2268,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts a namedtuple to a dictionary.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; App = st.dict_to_namedtuple({&#39;i01_&#39;: &#39;life&#39;, &#39;ver&#39;: 42})</span>
 <span class="sd">        &gt;&gt;&gt; st.namedtuple_to_dict(App)</span>
@@ -2285,7 +2285,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts a string to a namedtuple.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; App = st.str_to_namedtuple(&#39;root/life/v_042.json&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; App</span>
@@ -2303,7 +2303,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts a string to a simple string (i.e. a simple character-delimited string).</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.str_to_simple_str(&#39;root/life/v_042.json&#39;)</span>
 <span class="sd">        &#39;life,042&#39;</span>
@@ -2325,7 +2325,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts a simple character-delimited string to a dict.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ...     simple_str_sep=&#39;-&#39;,</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.simple_str_to_tuple(&#39;life-042&#39;)</span>
@@ -2353,7 +2353,7 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts a simple character-delimited string to a string.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ...     simple_str_sep=&#39;-&#39;,</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.simple_str_to_str(&#39;life-042&#39;)</span>
@@ -2371,7 +2371,7 @@
 <span class="sd">        Returns True iff the string matches the template.</span>
 
 <span class="sd">        &gt;&gt;&gt; st = KeyTemplate(</span>
-<span class="sd">        ...     &#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
+<span class="sd">        ...     r&#39;root/{}/v_{ver:03.0f:\d+}.json&#39;, from_str_funcs={&#39;ver&#39;: int},</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.match_str(&#39;root/life/v_042.json&#39;)</span>
 <span class="sd">        True</span>
@@ -2415,7 +2415,7 @@
 <span class="sd">        These four values are used in the init to compute the parameters of the</span>
 <span class="sd">        instance.</span>
 
-<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(&#39;{:03.0f}/{name::\w+}&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; st = KeyTemplate(r&#39;{:03.0f}/{name::\w+}&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; st.template</span>
 <span class="sd">        &#39;{i01_}/{name}&#39;</span>
 <span class="sd">        &gt;&gt;&gt; st._fields</span>
@@ -2481,13 +2481,13 @@
 <span class="sd">        &#39;(?P&lt;i01_&gt;.*)\\.ext&#39;</span>
 <span class="sd">        &gt;&gt;&gt; KeyTemplate(&#39;{name}.ext&#39;)._regex.pattern</span>
 <span class="sd">        &#39;(?P&lt;name&gt;.*)\\.ext&#39;</span>
-<span class="sd">        &gt;&gt;&gt; KeyTemplate(&#39;{::\w+}.ext&#39;)._regex.pattern</span>
+<span class="sd">        &gt;&gt;&gt; KeyTemplate(r&#39;{::\w+}.ext&#39;)._regex.pattern</span>
 <span class="sd">        &#39;(?P&lt;i01_&gt;\\w+)\\.ext&#39;</span>
-<span class="sd">        &gt;&gt;&gt; KeyTemplate(&#39;{name::\w+}.ext&#39;)._regex.pattern</span>
+<span class="sd">        &gt;&gt;&gt; KeyTemplate(r&#39;{name::\w+}.ext&#39;)._regex.pattern</span>
 <span class="sd">        &#39;(?P&lt;name&gt;\\w+)\\.ext&#39;</span>
-<span class="sd">        &gt;&gt;&gt; KeyTemplate(&#39;{:0.02f:\w+}.ext&#39;)._regex.pattern</span>
+<span class="sd">        &gt;&gt;&gt; KeyTemplate(r&#39;{:0.02f:\w+}.ext&#39;)._regex.pattern</span>
 <span class="sd">        &#39;(?P&lt;i01_&gt;\\w+)\\.ext&#39;</span>
-<span class="sd">        &gt;&gt;&gt; KeyTemplate(&#39;{name:0.02f:\w+}.ext&#39;)._regex.pattern</span>
+<span class="sd">        &gt;&gt;&gt; KeyTemplate(r&#39;{name:0.02f:\w+}.ext&#39;)._regex.pattern</span>
 <span class="sd">        &#39;(?P&lt;name&gt;\\w+)\\.ext&#39;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
