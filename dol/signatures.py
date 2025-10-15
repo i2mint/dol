@@ -1353,15 +1353,15 @@ class Sig(Signature, Mapping):
         ... )  # another easy one: This time, a type/class (which is callable, yes)
         True
 
-        But here's where it get's interesting. `print`, a builtin, doesn't have a
+        But here's where it get's interesting. `map`, a builtin, doesn't have a
         signature through inspect.signature.
 
-        >>> has_signature(print)
+        >>> has_signature(map)
         False
 
         But we do get one with robust_has_signature
 
-        >>> robust_has_signature(print)
+        >>> robust_has_signature(map)
         True
 
         """
@@ -2963,7 +2963,7 @@ class Sig(Signature, Mapping):
         >>> Sig(foo).extract_args_and_kwargs(x=3, y=2)
         Traceback (most recent call last):
           ...
-        TypeError: missing a required argument: 'w'
+        TypeError: missing a required keyword-only argument: 'w'
 
         But if you specify `_allow_partial=True`...
 
@@ -3040,7 +3040,7 @@ class Sig(Signature, Mapping):
         >>> Sig(foo).source_arguments(x=3, y=2, extra="keywords", are="ignored")
         Traceback (most recent call last):
           ...
-        TypeError: missing a required argument: 'w'
+        TypeError: missing a required keyword-only argument: 'w'
 
         But if you specify `_allow_partial=True`...
 
@@ -3129,7 +3129,7 @@ class Sig(Signature, Mapping):
         >>> Sig(foo).source_args_and_kwargs(x=3, y=2, extra="keywords", are="ignored")
         Traceback (most recent call last):
           ...
-        TypeError: missing a required argument: 'w'
+        TypeError: missing a required keyword-only argument: 'w'
 
         But if you specify `_allow_partial=True`...
 
@@ -3633,7 +3633,7 @@ def has_signature(obj, robust=False):
     ...         )
     ...     )
     ... )
-    2
+    3
 
     If robust is set to True, `has_signature` will use `Sig` to get the signature,
     so will return True in most cases.

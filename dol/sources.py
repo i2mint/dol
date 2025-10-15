@@ -504,12 +504,9 @@ class CascadedStores(FanoutPersister):
     >>> disk['g'] = 43
 
     Now if you ask for `g`, it won't find it in cache, but will find it in `disk`
-    and return it. The reason you see the "Getting g from cache" message is because
-    the `stores` object first tries to get it in `cache`, and only if it doesn't find
-    it there, it tries to get it from `disk`.
+    and return it.
 
     >>> stores['g']
-    Getting g from cache
     Getting g from disk
     43
 

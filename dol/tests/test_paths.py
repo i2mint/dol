@@ -48,21 +48,21 @@ def test_path_get():
 def test_string_template_template_construction():
     assert KeyTemplate("{}.ext").template == "{i01_}.ext"
     assert KeyTemplate("{name}.ext").template == "{name}.ext"
-    assert KeyTemplate("{::\w+}.ext").template == "{i01_}.ext"
-    assert KeyTemplate("{name::\w+}.ext").template == "{name}.ext"
-    assert KeyTemplate("{name::\w+}.ext").template == "{name}.ext"
+    assert KeyTemplate(r"{::\w+}.ext").template == "{i01_}.ext"
+    assert KeyTemplate(r"{name::\w+}.ext").template == "{name}.ext"
+    assert KeyTemplate(r"{name::\w+}.ext").template == "{name}.ext"
     assert KeyTemplate("{name:0.02f}.ext").template == "{name}.ext"
-    assert KeyTemplate("{name:0.02f:\w+}.ext").template == "{name}.ext"
-    assert KeyTemplate("{:0.02f:\w+}.ext").template == "{i01_}.ext"
+    assert KeyTemplate(r"{name:0.02f:\w+}.ext").template == "{name}.ext"
+    assert KeyTemplate(r"{:0.02f:\w+}.ext").template == "{i01_}.ext"
 
 
 def test_string_template_regex():
-    assert KeyTemplate("{}.ext")._regex.pattern == "(?P<i01_>.*)\\.ext"
-    assert KeyTemplate("{name}.ext")._regex.pattern == "(?P<name>.*)\\.ext"
-    assert KeyTemplate("{::\w+}.ext")._regex.pattern == "(?P<i01_>\\w+)\\.ext"
-    assert KeyTemplate("{name::\w+}.ext")._regex.pattern == "(?P<name>\\w+)\\.ext"
-    assert KeyTemplate("{:0.02f:\w+}.ext")._regex.pattern == "(?P<i01_>\\w+)\\.ext"
-    assert KeyTemplate("{name:0.02f:\w+}.ext")._regex.pattern == "(?P<name>\\w+)\\.ext"
+    assert KeyTemplate("{}.ext")._regex.pattern == r"(?P<i01_>.*)\.ext"
+    assert KeyTemplate("{name}.ext")._regex.pattern == r"(?P<name>.*)\.ext"
+    assert KeyTemplate(r"{::\w+}.ext")._regex.pattern == r"(?P<i01_>\w+)\.ext"
+    assert KeyTemplate(r"{name::\w+}.ext")._regex.pattern == r"(?P<name>\w+)\.ext"
+    assert KeyTemplate(r"{:0.02f:\w+}.ext")._regex.pattern == r"(?P<i01_>\w+)\.ext"
+    assert KeyTemplate(r"{name:0.02f:\w+}.ext")._regex.pattern == r"(?P<name>\w+)\.ext"
 
 
 def test_string_template_simple():
@@ -70,7 +70,7 @@ def test_string_template_simple():
     from collections import namedtuple
 
     st = KeyTemplate(
-        "root/{}/v_{version:03.0f:\d+}.json",
+        r"root/{}/v_{version:03.0f:\d+}.json",
         from_str_funcs={"version": int},
     )
 
