@@ -1777,9 +1777,7 @@ def _wrap_outcoming(
         setattr(store_cls, wrapped_method, new_method)
 
 
-def _wrap_ingoing(
-    store_cls, wrapped_method: str, trans_func: Callable | None = None
-):
+def _wrap_ingoing(store_cls, wrapped_method: str, trans_func: Callable | None = None):
     if trans_func is not None:
         wrapped_func = getattr(store_cls, wrapped_method)
 
