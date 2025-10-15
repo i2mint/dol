@@ -4320,7 +4320,7 @@ def _robust_signature_of_callable(callable_obj: Callable) -> Signature:
     >>> _robust_signature_of_callable(
     ...     _robust_signature_of_callable
     ... )  # has a normal signature
-    <Signature (callable_obj: Callable) -> inspect.Signature>
+    <Signature (callable_obj: ...Callable) -> inspect.Signature>
     >>> s = _robust_signature_of_callable(print)  # has one that this module provides
     >>> assert isinstance(s, Signature)
     >>> # Will be: <Signature (*value, sep=' ', end='\n', file=<_io.TextIOWrapper
