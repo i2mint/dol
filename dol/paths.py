@@ -772,7 +772,7 @@ def path_set(
     >>> input_dict = {}
     >>> path_set(input_dict, 'new.key', 42, new_mapping=OrderedDict)
     >>> input_dict  # doctest: +ELLIPSIS
-    {'new': OrderedDict(...'key'...: 42...)}
+    {'new': OrderedDict(...'key'...42...)}
 
     """
     if isinstance(key_path, str) and sep is not None:

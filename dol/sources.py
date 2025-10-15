@@ -529,11 +529,12 @@ class CascadedStores(FanoutPersister):
     def __getitem__(self, k):
         """Returns the value of the first store for that key"""
         for store_ref, store in self._stores.items():
-            if (v := store.get(k, NotFound)) is not NotFound:
+            if k in store:  # Check existence first, without triggering __getitem__
+                v = store[k]  # Now get the value (will trigger logging)
                 # value found, now let's write it to all the stores up to the store_ref
-                for _store_ref, store in self._stores.items():
+                for _store_ref, _store in self._stores.items():
                     if _store_ref != store_ref:
-                        store[k] = v
+                        _store[k] = v
                     else:
                         break
                 # now return the value
