@@ -1971,7 +1971,7 @@ def cache_vals(store=None, *, cache=dict):
     ), f"store should be a type, was a {type(store)}: {store}"
 
     class CachedStore(store):
-        @wraps(store)
+        @wraps(store.__init__)
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self._cache = _mk_cache_instance(

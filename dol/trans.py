@@ -1472,7 +1472,7 @@ def _filt_iter(store_cls: type, filt, name, __module__):
 
 
 def filter_regex(regex, *, return_search_func=False):
-    """Make a filter that returns True if a string matches the given regex
+    r"""Make a filter that returns True if a string matches the given regex
 
     >>> is_txt = filter_regex(r'.*\.txt')
     >>> is_txt("test.txt")

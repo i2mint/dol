@@ -1660,7 +1660,7 @@ FieldTypeNames = Literal["str", "dict", "tuple", "namedtuple", "simple_str", "si
 #  and have classmethods specialized for short-hand versions that use `name:regex` or
 #  `name:format`, ...
 class KeyTemplate:
-    """A class for parsing and generating keys based on a template.
+    r"""A class for parsing and generating keys based on a template.
 
     Args:
         template: A template string with fields to be extracted or filled in.

@@ -1353,15 +1353,15 @@ class Sig(Signature, Mapping):
         ... )  # another easy one: This time, a type/class (which is callable, yes)
         True
 
-        But here's where it get's interesting. `print`, a builtin, doesn't have a
+        But here's where it get's interesting. `map`, a builtin, doesn't have a
         signature through inspect.signature.
 
-        >>> has_signature(print)
+        >>> has_signature(map)
         False
 
         But we do get one with robust_has_signature
 
-        >>> robust_has_signature(print)
+        >>> robust_has_signature(map)
         True
 
         """
@@ -3633,7 +3633,7 @@ def has_signature(obj, robust=False):
     ...         )
     ...     )
     ... )
-    2
+    3
 
     If robust is set to True, `has_signature` will use `Sig` to get the signature,
     so will return True in most cases.
