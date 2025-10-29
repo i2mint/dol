@@ -108,6 +108,28 @@ class mk_item2kv_for:
     """
 
     @staticmethod
+    def attr(attr_name):
+        """Make item2kv from an attribute name (the value will be the item itself).
+
+        Args:
+            attr_name: The attribute name to use as the key
+        Returns: an item -> (key, val) function
+
+        >>> ref_getter =mk_item2kv_for.attr("ref")
+        >>> from collections import namedtuple
+        >>> A = namedtuple('A', ['ref'])
+        >>> a = A(ref='some_ref')
+        >>> ref_getter(a)
+        ('some_ref', A(ref='some_ref'))
+
+        """
+
+        def item2kv(item):
+            return getattr(item, attr_name), item
+
+        return item2kv
+
+    @staticmethod
     def kv_pairs():
         """
         Essentially, the identity. Is used when the items are already (key, val) pairs.
