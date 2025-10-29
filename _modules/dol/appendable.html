@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.appendable &mdash; dol 0.3.29 documentation</title>
+  <title>dol.appendable &mdash; dol 0.3.30 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=b5cd61de"></script>
+      <script src="../../_static/documentation_options.js?v=56e9068c"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -223,6 +223,31 @@
 <span class="sd">    &gt;&gt;&gt; item_to_kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
 <span class="sd">    ((&#39;go&#39;, &#39;let&#39;), {&#39;I&#39;: &#39;it&#39;})</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="mk_item2kv_for.attr">
+<a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for.attr">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">attr</span><span class="p">(</span><span class="n">attr_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make item2kv from an attribute name (the value will be the item itself).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            attr_name: The attribute name to use as the key</span>
+<span class="sd">        Returns: an item -&gt; (key, val) function</span>
+
+<span class="sd">        &gt;&gt;&gt; ref_getter =mk_item2kv_for.attr(&quot;ref&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; from collections import namedtuple</span>
+<span class="sd">        &gt;&gt;&gt; A = namedtuple(&#39;A&#39;, [&#39;ref&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; a = A(ref=&#39;some_ref&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; ref_getter(a)</span>
+<span class="sd">        (&#39;some_ref&#39;, A(ref=&#39;some_ref&#39;))</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">item2kv</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">),</span> <span class="n">item</span>
+
+        <span class="k">return</span> <span class="n">item2kv</span></div>
+
 
 <div class="viewcode-block" id="mk_item2kv_for.kv_pairs">
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for.kv_pairs">[docs]</a>

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.appendable &mdash; dol 0.3.29 documentation</title>
+  <title>dol.appendable &mdash; dol 0.3.30 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=b5cd61de"></script>
+      <script src="../../_static/documentation_options.js?v=56e9068c"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -60,6 +60,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.appendable.appendable"><code class="docutils literal notranslate"><span class="pre">appendable()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.appendable.define_extend_as_seq_of_appends"><code class="docutils literal notranslate"><span class="pre">define_extend_as_seq_of_appends()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.appendable.mk_item2kv_for"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.appendable.mk_item2kv_for.attr"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for.attr()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.appendable.mk_item2kv_for.field"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for.field()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.appendable.mk_item2kv_for.fields"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for.fields()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.appendable.mk_item2kv_for.item_to_key"><code class="docutils literal notranslate"><span class="pre">mk_item2kv_for.item_to_key()</span></code></a></li>
@@ -392,6 +393,26 @@ using the “return_keys” flag.</p>
 <span class="go">((&#39;go&#39;, &#39;let&#39;), {&#39;I&#39;: &#39;it&#39;})</span>
 </pre></div>
 </div>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.appendable.mk_item2kv_for.attr">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">attr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#mk_item2kv_for.attr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.mk_item2kv_for.attr" title="Link to this definition"></a></dt>
+<dd><p>Make item2kv from an attribute name (the value will be the item itself).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>attr_name</strong> – The attribute name to use as the key</p>
+</dd>
+</dl>
+<p>Returns: an item -&gt; (key, val) function</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ref_getter</span> <span class="o">=</span><span class="n">mk_item2kv_for</span><span class="o">.</span><span class="n">attr</span><span class="p">(</span><span class="s2">&quot;ref&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">A</span><span class="p">(</span><span class="n">ref</span><span class="o">=</span><span class="s1">&#39;some_ref&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref_getter</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="go">(&#39;some_ref&#39;, A(ref=&#39;some_ref&#39;))</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="dol.appendable.mk_item2kv_for.field">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_field_in_value=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dflt_if_missing=&lt;class</span> <span class="pre">'dol.appendable.NotSpecified'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/appendable.html#mk_item2kv_for.field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.appendable.mk_item2kv_for.field" title="Link to this definition"></a></dt>
