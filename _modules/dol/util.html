@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.3.32 documentation</title>
+  <title>dol.util &mdash; dol 0.3.33 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c56908ff"></script>
+      <script src="../../_static/documentation_options.js?v=61118ce6"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -70,8 +70,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_appendable.html">dol.tests.test_appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_caching.html">dol.tests.test_caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_dig.html">dol.tests.test_dig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_errors.html">dol.tests.test_errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
@@ -134,7 +136,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span> <span class="k">as</span> <span class="n">_wraps</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partialmethod</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">WRAPPER_ASSIGNMENTS</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MethodType</span><span class="p">,</span> <span class="n">FunctionType</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="kn">import</span> <span class="n">Signature</span><span class="p">,</span> <span class="n">signature</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">getsource</span><span class="p">,</span> <span class="n">ismethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="kn">import</span> <span class="n">Signature</span><span class="p">,</span> <span class="n">signature</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">ismethod</span>
 
 
 <span class="n">Key</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Key&quot;</span><span class="p">)</span>
@@ -1796,24 +1798,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">delegate_as</span><span class="p">(</span><span class="n">delegate_cls</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;delegate&quot;</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">()):</span>
+    <span class="c1"># TODO: Complete this implementation - currently raises NotImplementedError</span>
+    <span class="c1"># The intended implementation would:</span>
+    <span class="c1"># 1. Turn include and exclude into sets</span>
+    <span class="c1"># 2. Get delegate_attrs from delegate_cls.__dict__.keys()</span>
+    <span class="c1"># 3. Create a decorator that adds delegated attributes to the target class</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Didn&#39;t manage to make this work fully&quot;</span><span class="p">)</span>
-    <span class="c1"># turn include and ignore into sets, if they aren&#39;t already</span>
-    <span class="n">include</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">include</span><span class="p">)</span>
-    <span class="n">exclude</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">exclude</span><span class="p">)</span>
-    <span class="n">delegate_attrs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">delegate_cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-    <span class="n">attributes</span> <span class="o">=</span> <span class="n">include</span> <span class="o">|</span> <span class="n">delegate_attrs</span> <span class="o">-</span> <span class="n">exclude</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">inner</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="c1"># create property for storing the delegate</span>
-        <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">to</span><span class="p">,</span> <span class="nb">property</span><span class="p">())</span>
-        <span class="c1"># don&#39;t bother adding attributes that the class already has</span>
-        <span class="n">attrs</span> <span class="o">=</span> <span class="n">attributes</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="c1"># set all the attributes</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">DelegatedAttribute</span><span class="p">(</span><span class="n">to</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">cls</span>
-
-    <span class="k">return</span> <span class="n">inner</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">HashableMixin</span><span class="p">:</span>
