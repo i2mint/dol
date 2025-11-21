@@ -22,7 +22,7 @@ from functools import update_wrapper as _update_wrapper
 from functools import wraps as _wraps
 from functools import partialmethod, partial, WRAPPER_ASSIGNMENTS
 from types import MethodType, FunctionType
-from inspect import Signature, signature, Parameter, getsource, ismethod
+from inspect import Signature, signature, Parameter, ismethod
 
 
 Key = TypeVar("Key")
@@ -1591,24 +1591,12 @@ class DelegatedAttribute:
 
 
 def delegate_as(delegate_cls, to="delegate", include=frozenset(), exclude=frozenset()):
+    # TODO: Complete this implementation - currently raises NotImplementedError
+    # The intended implementation would:
+    # 1. Turn include and exclude into sets
+    # 2. Get delegate_attrs from delegate_cls.__dict__.keys()
+    # 3. Create a decorator that adds delegated attributes to the target class
     raise NotImplementedError("Didn't manage to make this work fully")
-    # turn include and ignore into sets, if they aren't already
-    include = set(include)
-    exclude = set(exclude)
-    delegate_attrs = set(delegate_cls.__dict__.keys())
-    attributes = include | delegate_attrs - exclude
-
-    def inner(cls):
-        # create property for storing the delegate
-        setattr(cls, to, property())
-        # don't bother adding attributes that the class already has
-        attrs = attributes - set(cls.__dict__.keys())
-        # set all the attributes
-        for attr in attrs:
-            setattr(cls, attr, DelegatedAttribute(to, attr))
-        return cls
-
-    return inner
 
 
 class HashableMixin:

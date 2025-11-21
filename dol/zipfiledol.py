@@ -264,7 +264,6 @@ def if_i_zipped_stats(b: bytes):
                 stats[name]["uncomp_time"] = elapsed
             except Exception:
                 raise
-                pass
     return stats
 
 

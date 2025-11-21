@@ -1014,6 +1014,7 @@ class stream_util:
         instance.seek(0)
 
     def skip_lines(self, instance, n_lines_to_skip=0):
+        # TODO: Implement line skipping - n_lines_to_skip parameter is currently unused
         instance.seek(0)
 
 
