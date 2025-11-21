@@ -1887,9 +1887,9 @@ def _mk_cache_instance(cache=None, assert_attrs=()):
             cache()
         )  # ... assume it's a no-argument callable that makes the instance
     for method in assert_attrs or ():
-        assert hasattr(
-            cache, method
-        ), f"cache should have the {method} method, but does not: {cache}"
+        assert hasattr(cache, method), (
+            f"cache should have the {method} method, but does not: {cache}"
+        )
     return cache
 
 
@@ -1968,9 +1968,9 @@ def cache_vals(store=None, *, cache=dict):
     """
 
     # cache = _mk_cache_instance(cache, assert_attrs=('__getitem__', '__setitem__'))
-    assert isinstance(
-        store, type
-    ), f"store should be a type, was a {type(store)}: {store}"
+    assert isinstance(store, type), (
+        f"store should be a type, was a {type(store)}: {store}"
+    )
 
     class CachedStore(store):
         @wraps(store.__init__)
@@ -2072,9 +2072,9 @@ def mk_sourced_store(store=None, *, source=None, return_source_data=True):
 
     source = _mk_cache_instance(source, assert_attrs=("__getitem__",))
 
-    assert isinstance(
-        store, type
-    ), f"store should be a type, was a {type(store)}: {store}"
+    assert isinstance(store, type), (
+        f"store should be a type, was a {type(store)}: {store}"
+    )
 
     if return_source_data:
 

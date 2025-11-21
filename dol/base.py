@@ -317,9 +317,9 @@ def delegate_to(
             def __init__(self, *args, **kwargs):
                 delegate = wrapped(*args, **kwargs)
                 super().__init__(delegate)
-                assert isinstance(
-                    getattr(self, delegation_attr, None), wrapped
-                ), f"The wrapper instance has no (expected) {delegation_attr!r} attribute"
+                assert isinstance(getattr(self, delegation_attr, None), wrapped), (
+                    f"The wrapper instance has no (expected) {delegation_attr!r} attribute"
+                )
 
             def __reduce__(self):
                 return (

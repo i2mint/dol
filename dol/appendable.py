@@ -50,9 +50,9 @@ def define_extend_as_seq_of_appends(obj):
     [1, 2, 3, 10, 20]
 
     """
-    assert hasattr(
-        obj, "append"
-    ), f"Your object needs to have an append method! Object was: {obj}"
+    assert hasattr(obj, "append"), (
+        f"Your object needs to have an append method! Object was: {obj}"
+    )
 
     def extend(self, items):
         for item in items:

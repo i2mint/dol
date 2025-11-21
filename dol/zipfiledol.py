@@ -258,9 +258,9 @@ def if_i_zipped_stats(b: bytes):
                 tic = time.time()
                 uncompressed = zip_decompress(compressed)
                 elapsed = time.time() - tic
-                assert (
-                    uncompressed == b
-                ), "the uncompressed bytes were different than the original"
+                assert uncompressed == b, (
+                    "the uncompressed bytes were different than the original"
+                )
                 stats[name]["uncomp_time"] = elapsed
             except Exception:
                 raise

@@ -769,18 +769,18 @@ def extract_arguments(
         missing_argnames = tuple(
             x.argname for x in param_args if isinstance(x, MissingArgValFor)
         )
-        assert (
-            not missing_argnames
-        ), f"There were some missing positional only argnames: {missing_argnames}"
+        assert not missing_argnames, (
+            f"There were some missing positional only argnames: {missing_argnames}"
+        )
 
     if what_to_do_with_remainding == "return":
         return param_args, param_kwargs, remaining_kwargs
     elif what_to_do_with_remainding == "ignore":
         return param_args, param_kwargs
     elif what_to_do_with_remainding == "assert_empty":
-        assert (
-            len(remaining_kwargs) == 0
-        ), f"remaining_kwargs not empty: remaining_kwargs={remaining_kwargs}"
+        assert len(remaining_kwargs) == 0, (
+            f"remaining_kwargs not empty: remaining_kwargs={remaining_kwargs}"
+        )
         return param_args, param_kwargs
 
 
@@ -1264,9 +1264,9 @@ class Sig(Signature, Mapping):
             if isinstance(copy_function, bool):
                 from i2.util import copy_func as copy_function
             else:
-                assert callable(
-                    copy_function
-                ), f"copy_function must be a callable. This is not: {copy_function}"
+                assert callable(copy_function), (
+                    f"copy_function must be a callable. This is not: {copy_function}"
+                )
             func = copy_function(func)
 
         # Analyze self and func signature to validate sanity
@@ -2121,8 +2121,7 @@ class Sig(Signature, Mapping):
         # Check if default_conflict_method is a valid SigMergeOption
         if default_conflict_method not in get_args(SigMergeOptions):
             errors["invalid_conflict_method"] = (
-                "default_conflict_method should be one of: "
-                f"{get_args(SigMergeOptions)}"
+                f"default_conflict_method should be one of: {get_args(SigMergeOptions)}"
             )
 
         if errors:
@@ -3271,7 +3270,6 @@ def _validate_sanity_of_signature_change(
 
 
 def _signature_differences_str_for_error_msg(sig1, sig2):
-
     from pprint import pformat
 
     sig_diff = sig1.pair_with(sig2)
@@ -3296,9 +3294,9 @@ def mk_sig_from_args(*args_without_default, **args_with_defaults):
     >>> mk_sig_from_args("a", "b", c=1, d="bar")
     <Signature (a, b, c=1, d='bar')>
     """
-    assert all(
-        isinstance(x, str) for x in args_without_default
-    ), "all default-less arguments must be strings"
+    assert all(isinstance(x, str) for x in args_without_default), (
+        "all default-less arguments must be strings"
+    )
     return Sig.from_objs(
         *args_without_default, **args_with_defaults
     ).to_simple_signature()
@@ -4026,9 +4024,9 @@ def params_of(obj: HasParams):
         obj = list(obj.values())
     elif callable(obj):
         obj = list(signature(obj).parameters.values())
-    assert all(
-        isinstance(p, Parameter) for p in obj
-    ), "obj needs to be a Iterable[Parameter] at this point"
+    assert all(isinstance(p, Parameter) for p in obj), (
+        "obj needs to be a Iterable[Parameter] at this point"
+    )
     return obj  # as is
 
 

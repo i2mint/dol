@@ -388,9 +388,9 @@ class FileSysCollection(Collection):
         if max_levels is None:
             max_levels = inf
         subpath_implied_min_levels = len(subpath.split(os.path.sep)) - 1
-        assert (
-            max_levels >= subpath_implied_min_levels
-        ), f"max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}"
+        assert max_levels >= subpath_implied_min_levels, (
+            f"max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}"
+        )
         pattern_for_field = pattern_for_field or {}
         self.rootdir = ensure_slash_suffix(rootdir)
         self.subpath = subpath

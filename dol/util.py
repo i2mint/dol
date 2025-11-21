@@ -496,12 +496,12 @@ def inject_method(obj, method_function, method_name=None):
     """
     if method_name is None:
         method_name = method_function.__name__
-    assert callable(
-        method_function
-    ), f"method_function (the second argument) is supposed to be a callable!"
-    assert isinstance(
-        method_name, str
-    ), f"method_name (the third argument) is supposed to be a string!"
+    assert callable(method_function), (
+        f"method_function (the second argument) is supposed to be a callable!"
+    )
+    assert isinstance(method_name, str), (
+        f"method_name (the third argument) is supposed to be a string!"
+    )
     if not isinstance(obj, type):
         method_function = MethodType(method_function, obj)
     setattr(obj, method_name, method_function)
@@ -2165,30 +2165,30 @@ def invertible_maps(
     # Take care of the case where one is a function and the other is a list
     # Here, we apply the function to the list items to get the mappings
     if callable(mapping):
-        assert isinstance(
-            inv_mapping, Iterable
-        ), f"If one argument is callable, the other one must be an iterable of keys"
+        assert isinstance(inv_mapping, Iterable), (
+            f"If one argument is callable, the other one must be an iterable of keys"
+        )
         mapping = {k: mapping(k) for k in inv_mapping}
         inv_mapping = {v: k for k, v in mapping.items()}
     elif callable(inv_mapping):
-        assert isinstance(
-            mapping, Iterable
-        ), f"If one argument is callable, the other one must be an iterable of keys"
+        assert isinstance(mapping, Iterable), (
+            f"If one argument is callable, the other one must be an iterable of keys"
+        )
         inv_mapping = {k: inv_mapping(k) for k in mapping}
         mapping = {v: k for k, v in inv_mapping.items()}
 
     if inv_mapping is None:
         assert hasattr(mapping, "items")
         inv_mapping = {v: k for k, v in mapping.items()}
-        assert len(inv_mapping) == len(
-            mapping
-        ), "The values of mapping are not unique, so the mapping is not invertible"
+        assert len(inv_mapping) == len(mapping), (
+            "The values of mapping are not unique, so the mapping is not invertible"
+        )
     elif mapping is None:
         assert hasattr(inv_mapping, "items")
         mapping = {v: k for k, v in inv_mapping.items()}
-        assert len(mapping) == len(
-            inv_mapping
-        ), "The values of inv_mapping are not unique, so the mapping is not invertible"
+        assert len(mapping) == len(inv_mapping), (
+            "The values of inv_mapping are not unique, so the mapping is not invertible"
+        )
     else:
         assert (len(mapping) == len(inv_mapping)) and (
             mapping == {v: k for k, v in inv_mapping.items()}

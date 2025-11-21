@@ -1463,9 +1463,9 @@ def str_template_key_trans(
 ):
     """Make a key trans object that translates from a string _id to a dict, tuple, or namedtuple key (and back)"""
 
-    assert (
-        key_type in PathKeyTypes
-    ), f"key_type was {key_type}. Needs to be one of these: {', '.join(PathKeyTypes)}"
+    assert key_type in PathKeyTypes, (
+        f"key_type was {key_type}. Needs to be one of these: {', '.join(PathKeyTypes)}"
+    )
 
     class PathKeyMapper(StrTupleDict): ...
 
@@ -1607,9 +1607,9 @@ def string_unparse(parsing_result: Iterable[tuple[str, str, str, str]]):
         if field_name is not None:
             field = f"{{{field_name}"
             if conversion:
-                assert (
-                    len(conversion) == 1
-                ), f"conversion can only be a single character: {conversion=}"
+                assert len(conversion) == 1, (
+                    f"conversion can only be a single character: {conversion=}"
+                )
                 field += f"!{conversion}"
             if format_spec:
                 field += f":{format_spec}"

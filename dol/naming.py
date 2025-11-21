@@ -223,9 +223,9 @@ def get_fields_from_template(template):
     ['is', 'example', 'a']
     """
     # TODO: Need to use the string module, and need to auto-name the fields instead of refusing unnamed
-    assert not empty_field_p.search(
-        template
-    ), "All fields must be named: That is, no empty {} allowed"
+    assert not empty_field_p.search(template), (
+        "All fields must be named: That is, no empty {} allowed"
+    )
     return fields_re.findall(template)
 
 
@@ -330,8 +330,7 @@ def mk_pattern_from_template_and_format_dict(template, format_dict=None, sep=pat
         return safe_compile(pattern)
     except Exception as e:
         raise ValueError(
-            f"Got an error when attempting to re.compile('{pattern}'): "
-            f"{type(e)}({e})"
+            f"Got an error when attempting to re.compile('{pattern}'): {type(e)}({e})"
         )
 
 
@@ -372,9 +371,9 @@ def mk_kwargs_trans(**trans_func_for_key):
     """Make a dict transformer from functions that depends solely on keys (of the dict to be transformed)
     Used to easily make process_kwargs and process_info_dict arguments for LinearNaming.
     """
-    assert all(
-        map(callable, trans_func_for_key.values())
-    ), "all argument values must be callable"
+    assert all(map(callable, trans_func_for_key.values())), (
+        "all argument values must be callable"
+    )
 
     def key_based_val_trans(**kwargs):
         for k, v in kwargs.items():
@@ -732,9 +731,9 @@ class StrTupleDictWithPrefix(StrTupleDict):
             Make a prefix for an uploads name that has has the path up to the first None argument.
             :return: A string that is the prefix of a valid name
             """
-            assert (
-                len(args) + len(kwargs) <= self.n_fields
-            ), "You have too many arguments"
+            assert len(args) + len(kwargs) <= self.n_fields, (
+                "You have too many arguments"
+            )
             kwargs = dict({k: v for k, v in zip(self.fields, args)}, **kwargs)
             if self.process_kwargs is not None:
                 kwargs = self.process_kwargs(**kwargs)

@@ -93,9 +93,9 @@ def double_up_as_factory(decorator_func):
             f"First argument of the decorator function needs to default to None. "
             f"Was {first_param.default}"
         )
-        assert all(
-            p.kind in {p.KEYWORD_ONLY, p.VAR_KEYWORD} for p in other_params
-        ), f"All arguments (besides the first) need to be keyword-only"
+        assert all(p.kind in {p.KEYWORD_ONLY, p.VAR_KEYWORD} for p in other_params), (
+            f"All arguments (besides the first) need to be keyword-only"
+        )
         return True
 
     validate_decorator_func(decorator_func)
@@ -986,9 +986,9 @@ def _cached_keys(
         )
         # assert keys_cache == iter_to_container
 
-    assert isinstance(
-        store, type
-    ), f"store_cls must be a type, was a {type(store)}: {store}"
+    assert isinstance(store, type), (
+        f"store_cls must be a type, was a {type(store)}: {store}"
+    )
 
     # name = name or 'IterCached' + get_class_name(store_cls)
     name = name or get_class_name(store)
@@ -1220,9 +1220,9 @@ def catch_and_cache_error_keys(
 
     """
 
-    assert isinstance(
-        store, type
-    ), f"store_cls must be a type, was a {type(store)}: {store}"
+    assert isinstance(store, type), (
+        f"store_cls must be a type, was a {type(store)}: {store}"
+    )
 
     # assert isinstance(store, Mapping), f"store_cls must be a Mapping.
     #  Was not. mro is {store.mro()}: {store}"
@@ -3245,9 +3245,9 @@ def assert_min_num_of_args(func: Callable, num_of_args: int):
     That is, it should have a signature that takes the store as the first argument
     """
     try:
-        assert (
-            len(Sig(func).parameters) >= num_of_args
-        ), f"Function {func} doesn't have at least {num_of_args} arguments"
+        assert len(Sig(func).parameters) >= num_of_args, (
+            f"Function {func} doesn't have at least {num_of_args} arguments"
+        )
     except Exception as e:
         warn(
             f"Encountered error checking if {func} can be a store method. "
