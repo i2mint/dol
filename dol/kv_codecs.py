@@ -30,6 +30,8 @@ import io
 def _string(string: str): ...
 
 
+# Signature template functions - not meant to be called, only used for signature composition
+# via @Sig decorator. Parameters appear "unused" but are actually captured for later use.
 @Sig
 def _csv_rw_sig(
     dialect: str = "excel",
@@ -591,3 +593,4 @@ class KeyValueCodecs(CodecCollection):
     ):
         """A factory that creates a key-value codec that uses the file extension to
         determine the value codec to use."""
+        # TODO: Implement this function - ext_mapping parameter is currently unused
