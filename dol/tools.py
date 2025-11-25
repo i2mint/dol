@@ -115,9 +115,8 @@ def store_aggregate(
     ) = identity,  # function to apply to the aggregate before returning
     key_filter: Callable[[KT], bool] | None = None,  # Filter function for keys
     value_filter: Callable[[VT], bool] | None = None,  # Filter function for values
-    kv_filter: None | (
-        Callable[[tuple[KT, VT]], bool]
-    ) = None,  # Filter function for key-value pairs
+    kv_filter: None
+    | (Callable[[tuple[KT, VT]], bool]) = None,  # Filter function for key-value pairs
     local_store_factory: Callable[
         [str], Mapping[KT, VT]
     ] = Latin1TextFiles,  # Factory function for the local store
