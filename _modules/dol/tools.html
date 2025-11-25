@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tools &mdash; dol 0.3.34 documentation</title>
+  <title>dol.tools &mdash; dol 0.3.35 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=aa981c2b"></script>
+      <script src="../../_static/documentation_options.js?v=0ee09832"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -234,8 +234,9 @@
     <span class="p">)</span> <span class="o">=</span> <span class="n">identity</span><span class="p">,</span>  <span class="c1"># function to apply to the aggregate before returning</span>
     <span class="n">key_filter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">KT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Filter function for keys</span>
     <span class="n">value_filter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">VT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Filter function for values</span>
-    <span class="n">kv_filter</span><span class="p">:</span> <span class="kc">None</span>
-    <span class="o">|</span> <span class="p">(</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">])</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Filter function for key-value pairs</span>
+    <span class="n">kv_filter</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="p">(</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]],</span> <span class="nb">bool</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Filter function for key-value pairs</span>
     <span class="n">local_store_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
         <span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]</span>
     <span class="p">]</span> <span class="o">=</span> <span class="n">Latin1TextFiles</span><span class="p">,</span>  <span class="c1"># Factory function for the local store</span>
@@ -346,7 +347,9 @@
 
     <span class="c1"># Create the string by applying filters and kv_to_text conversion</span>
     <span class="n">filtered_kv_pairs</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">actual_kv_filter</span><span class="p">,</span> <span class="n">content_store</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-    <span class="n">aggregate</span> <span class="o">=</span> <span class="n">aggregator</span><span class="p">(</span><span class="n">kv_to_item</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">filtered_kv_pairs</span><span class="p">)</span>
+    <span class="n">aggregate</span> <span class="o">=</span> <span class="n">aggregator</span><span class="p">(</span>
+        <span class="n">kv_to_item</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">filtered_kv_pairs</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">egress</span><span class="p">(</span><span class="n">aggregate</span><span class="p">)</span></div>
 
