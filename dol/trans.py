@@ -93,9 +93,9 @@ def double_up_as_factory(decorator_func):
             f"First argument of the decorator function needs to default to None. "
             f"Was {first_param.default}"
         )
-        assert all(p.kind in {p.KEYWORD_ONLY, p.VAR_KEYWORD} for p in other_params), (
-            f"All arguments (besides the first) need to be keyword-only"
-        )
+        assert all(
+            p.kind in {p.KEYWORD_ONLY, p.VAR_KEYWORD} for p in other_params
+        ), f"All arguments (besides the first) need to be keyword-only"
         return True
 
     validate_decorator_func(decorator_func)
@@ -986,9 +986,9 @@ def _cached_keys(
         )
         # assert keys_cache == iter_to_container
 
-    assert isinstance(store, type), (
-        f"store_cls must be a type, was a {type(store)}: {store}"
-    )
+    assert isinstance(
+        store, type
+    ), f"store_cls must be a type, was a {type(store)}: {store}"
 
     # name = name or 'IterCached' + get_class_name(store_cls)
     name = name or get_class_name(store)
@@ -1220,9 +1220,9 @@ def catch_and_cache_error_keys(
 
     """
 
-    assert isinstance(store, type), (
-        f"store_cls must be a type, was a {type(store)}: {store}"
-    )
+    assert isinstance(
+        store, type
+    ), f"store_cls must be a type, was a {type(store)}: {store}"
 
     # assert isinstance(store, Mapping), f"store_cls must be a Mapping.
     #  Was not. mro is {store.mro()}: {store}"
@@ -3245,9 +3245,9 @@ def assert_min_num_of_args(func: Callable, num_of_args: int):
     That is, it should have a signature that takes the store as the first argument
     """
     try:
-        assert len(Sig(func).parameters) >= num_of_args, (
-            f"Function {func} doesn't have at least {num_of_args} arguments"
-        )
+        assert (
+            len(Sig(func).parameters) >= num_of_args
+        ), f"Function {func} doesn't have at least {num_of_args} arguments"
     except Exception as e:
         warn(
             f"Encountered error checking if {func} can be a store method. "
@@ -3256,11 +3256,24 @@ def assert_min_num_of_args(func: Callable, num_of_args: int):
         )
 
 
+# --------------------------------------------------------------------------------------
+# Missing key handling
+
 @store_decorator
-def add_missing_key_handling(store=None, *, missing_key_callback: Callable):
+def add_missing_key_handling(
+    store=None,
+    *,
+    missing_key_callback: Callable,
+    errors_that_trigger_missing=(KeyError,),
+):
     """Overrides the ``__missing__`` method of a store with a custom callback.
 
-    The callback must have two arguments: the store and the key.
+    Note: The callback must have two arguments: the store and the key.
+
+    Args:
+        store: The store class to wrap.
+        missing_key_callback: Function(store, key) -> value for missing keys.
+        errors_that_trigger_missing: Tuple of exceptions that trigger __missing__.
 
     In the following example, we endow a store to return a sub-store when a key is
     missing. This substore will contain only keys that start with that missing key.
@@ -3284,15 +3297,59 @@ def add_missing_key_handling(store=None, *, missing_key_callback: Callable):
     >>> v = s['a/']
     >>> assert dict(v) == {'a/b': 1, 'a/c': 2}
     """
+    if isinstance(errors_that_trigger_missing, BaseException):
+        errors_that_trigger_missing = (errors_that_trigger_missing,)
 
     assert_min_num_of_args(missing_key_callback, 2)
 
     @wraps(store, updated=())
-    class StoreWithMissingKeyCallaback(store):
+    class StoreWithMissingKeyCallback(store):
         pass
 
-    StoreWithMissingKeyCallaback.__missing__ = missing_key_callback
-    return StoreWithMissingKeyCallaback
+    StoreWithMissingKeyCallback.__missing__ = missing_key_callback
+    StoreWithMissingKeyCallback._errors_that_trigger_missing = (
+        errors_that_trigger_missing
+    )
+    return StoreWithMissingKeyCallback
+
+
+def ignore_if_error(store=None, *, errors=(KeyError,)):
+    def _ignore(store, k):
+        pass
+
+    return add_missing_key_handling(
+        store, missing_key_callback=_ignore, errors_that_trigger_missing=errors
+    )
+
+
+def warn_and_ignore_if_error(
+    store=None,
+    *,
+    errors=(KeyError,),
+    warn_msg='Ignoring error in __getitem__ for key {k}: {e}',
+):
+    def _warn(store, k):
+        import sys
+
+        exc_type, exc_value, _ = sys.exc_info()
+        e = exc_value
+        warn(warn_msg.format(k=k, e=e))
+
+    return add_missing_key_handling(
+        store, missing_key_callback=_warn, errors_that_trigger_missing=errors
+    )
+
+
+def return_default_if_error(store=None, *, default=None, errors=(KeyError,)):
+    def _default(store, k):
+        return default
+
+    return add_missing_key_handling(
+        store, missing_key_callback=_default, errors_that_trigger_missing=errors
+    )
+
+# --------------------------------------------------------------------------------------
+# Codecs
 
 
 EncodedType = TypeVar("EncodedType")
