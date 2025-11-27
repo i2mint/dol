@@ -531,12 +531,41 @@ class FileBytesReader(FileCollection, KvReader):
 
 
 class LocalFileDeleteMixin:
+    """Mixin providing configurable file deletion.
+
+    The deletion function can be configured either at class level by setting
+    the _delete_func class attribute, or at instance level by setting the
+    _delete_func instance attribute.
+
+    By default, uses safe deletion that tries to move to trash with fallback
+    to os.remove (with warning).
+
+    See dol.trash module for available deletion strategies:
+    - default_delete_func: Safe trash with warning on fallback
+    - permanent_delete: Direct os.remove (no warnings)
+    - trash_only: Error if trash unavailable
+    """
+    _delete_func = None  # Will be set to default_delete_func after import
+
     @validate_key_and_raise_key_error_on_exception
     def __delitem__(self, k):
-        os.remove(k)
+        # Import here to avoid circular import issues
+        if self._delete_func is None:
+            from dol.trash import default_delete_func
+            delete_func = default_delete_func
+        else:
+            delete_func = self._delete_func
+        delete_func(k)
 
 
-class FileBytesPersister(FileBytesReader, KvPersister):
+class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
+    """File persistence with configurable deletion.
+
+    Supports custom deletion functions via delete_func parameter in __init__.
+
+    By default, tries to move files to trash with fallback to os.remove.
+    See dol.trash module for deletion strategies: permanent_delete, trash_only, etc.
+    """
     _write_open_kwargs = dict(
         mode="wb",
         buffering=-1,
@@ -548,6 +577,23 @@ class FileBytesPersister(FileBytesReader, KvPersister):
     )
     # _make_dirs_if_missing = False
 
+    def __init__(self, *args, delete_func=None, **kwargs):
+        """Initialize FileBytesPersister.
+
+        Args:
+            *args: Passed to parent classes
+            delete_func: Optional custom deletion function.
+                If None, uses class default (safe trash with fallback).
+                Common options from dol.trash:
+                - default_delete_func (safe trash, warning on fallback)
+                - permanent_delete (os.remove, no warnings)
+                - trash_only (error if trash unavailable)
+            **kwargs: Passed to parent classes
+        """
+        super().__init__(*args, **kwargs)
+        if delete_func is not None:
+            self._delete_func = delete_func
+
     @validate_key_and_raise_key_error_on_exception
     def __setitem__(self, k, v):
         # TODO: Make this work with validate_key_and_raise_key_error_on_exception
@@ -556,10 +602,6 @@ class FileBytesPersister(FileBytesReader, KvPersister):
         #     os.makedirs(dirname, exist_ok=True)
         with open(k, **self._write_open_kwargs) as fp:
             return fp.write(v)
-
-    @validate_key_and_raise_key_error_on_exception
-    def __delitem__(self, k):
-        os.remove(k)
 
 
 # ---------------------------------------------------------------------------------------
