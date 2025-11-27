@@ -41,16 +41,17 @@ def get_platform_trash_func() -> Optional[DeleteFunc]:
     # Try send2trash first (cross-platform library)
     try:
         from send2trash import send2trash
+
         return send2trash
     except ImportError:
         pass
 
     # Platform-specific fallbacks
-    if sys.platform == 'darwin':  # macOS
+    if sys.platform == "darwin":  # macOS
         return _macos_trash
-    elif sys.platform == 'win32':  # Windows
+    elif sys.platform == "win32":  # Windows
         return _windows_trash
-    elif sys.platform.startswith('linux'):  # Linux
+    elif sys.platform.startswith("linux"):  # Linux
         return _linux_trash
 
     return None
@@ -66,6 +67,7 @@ def _macos_trash(filepath: str) -> None:
         OSError: If trash directory not found or move fails
     """
     import shutil
+
     trash_dir = os.path.join(os.path.expanduser("~"), ".Trash")
     if not os.path.isdir(trash_dir):
         raise OSError(f"Trash directory not found: {trash_dir}")
@@ -95,9 +97,17 @@ def _windows_trash(filepath: str) -> None:
     """
     try:
         from win32com.shell import shell, shellcon
+
         result = shell.SHFileOperation(
-            (0, shellcon.FO_DELETE, filepath, None,
-             shellcon.FOF_ALLOWUNDO | shellcon.FOF_NOCONFIRMATION, None, None)
+            (
+                0,
+                shellcon.FO_DELETE,
+                filepath,
+                None,
+                shellcon.FOF_ALLOWUNDO | shellcon.FOF_NOCONFIRMATION,
+                None,
+                None,
+            )
         )
         if result[0] != 0:
             raise OSError(f"Failed to move to recycle bin: error code {result[0]}")
@@ -117,9 +127,11 @@ def _linux_trash(filepath: str) -> None:
         OSError: If trash operation fails
     """
     import shutil
+
     trash_dir = os.path.join(
-        os.getenv('XDG_DATA_HOME', os.path.expanduser('~/.local/share')),
-        'Trash', 'files'
+        os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share")),
+        "Trash",
+        "files",
     )
     os.makedirs(trash_dir, exist_ok=True)
 
@@ -137,8 +149,7 @@ def _linux_trash(filepath: str) -> None:
 
 
 def make_safe_delete_func(
-    permanent_delete_func: DeleteFunc = os.remove,
-    warn_on_fallback: bool = True
+    permanent_delete_func: DeleteFunc = os.remove, warn_on_fallback: bool = True
 ) -> DeleteFunc:
     """
     Create a deletion function that tries trash first, falls back to permanent delete.
@@ -162,7 +173,7 @@ def make_safe_delete_func(
                 "  - OR use permanent deletion explicitly: "
                 "Files(path, delete_func=permanent_delete)",
                 UserWarning,
-                stacklevel=3
+                stacklevel=3,
             )
         return permanent_delete_func
 
@@ -180,7 +191,7 @@ def make_safe_delete_func(
                     "  - OR use permanent deletion explicitly: "
                     "Files(path, delete_func=permanent_delete)",
                     UserWarning,
-                    stacklevel=4
+                    stacklevel=4,
                 )
             permanent_delete_func(filepath)
 

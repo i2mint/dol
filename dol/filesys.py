@@ -545,6 +545,7 @@ class LocalFileDeleteMixin:
     - permanent_delete: Direct os.remove (no warnings)
     - trash_only: Error if trash unavailable
     """
+
     _delete_func = None  # Will be set to default_delete_func after import
 
     @validate_key_and_raise_key_error_on_exception
@@ -552,6 +553,7 @@ class LocalFileDeleteMixin:
         # Import here to avoid circular import issues
         if self._delete_func is None:
             from dol.trash import default_delete_func
+
             delete_func = default_delete_func
         else:
             delete_func = self._delete_func
@@ -566,6 +568,7 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
     By default, tries to move files to trash with fallback to os.remove.
     See dol.trash module for deletion strategies: permanent_delete, trash_only, etc.
     """
+
     _write_open_kwargs = dict(
         mode="wb",
         buffering=-1,
