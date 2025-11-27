@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.filesys &mdash; dol 0.3.35 documentation</title>
+  <title>dol.filesys &mdash; dol 0.3.36 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0ee09832"></script>
+      <script src="../../_static/documentation_options.js?v=39181258"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -82,6 +82,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trans.html">dol.trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/trash.html">dol.trash</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/util.html">dol.util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/zipfiledol.html">dol.zipfiledol</a></li>
 </ul>
@@ -692,15 +693,47 @@
 
 
 
+<div class="viewcode-block" id="LocalFileDeleteMixin">
+<a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.LocalFileDeleteMixin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LocalFileDeleteMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixin providing configurable file deletion.</span>
+
+<span class="sd">    The deletion function can be configured either at class level by setting</span>
+<span class="sd">    the _delete_func class attribute, or at instance level by setting the</span>
+<span class="sd">    _delete_func instance attribute.</span>
+
+<span class="sd">    By default, uses safe deletion that tries to move to trash with fallback</span>
+<span class="sd">    to os.remove (with warning).</span>
+
+<span class="sd">    See dol.trash module for available deletion strategies:</span>
+<span class="sd">    - default_delete_func: Safe trash with warning on fallback</span>
+<span class="sd">    - permanent_delete: Direct os.remove (no warnings)</span>
+<span class="sd">    - trash_only: Error if trash unavailable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_delete_func</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Will be set to default_delete_func after import</span>
+
     <span class="nd">@validate_key_and_raise_key_error_on_exception</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="c1"># Import here to avoid circular import issues</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delete_func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">dol.trash</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_delete_func</span>
+            <span class="n">delete_func</span> <span class="o">=</span> <span class="n">default_delete_func</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">delete_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delete_func</span>
+        <span class="n">delete_func</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="FileBytesPersister">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.FileBytesPersister">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">FileBytesPersister</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="p">,</span> <span class="n">KvPersister</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FileBytesPersister</span><span class="p">(</span><span class="n">LocalFileDeleteMixin</span><span class="p">,</span> <span class="n">FileBytesReader</span><span class="p">,</span> <span class="n">KvPersister</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;File persistence with configurable deletion.</span>
+
+<span class="sd">    Supports custom deletion functions via delete_func parameter in __init__.</span>
+
+<span class="sd">    By default, tries to move files to trash with fallback to os.remove.</span>
+<span class="sd">    See dol.trash module for deletion strategies: permanent_delete, trash_only, etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_write_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
         <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;wb&quot;</span><span class="p">,</span>
         <span class="n">buffering</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
@@ -712,6 +745,23 @@
     <span class="p">)</span>
     <span class="c1"># _make_dirs_if_missing = False</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">delete_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize FileBytesPersister.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: Passed to parent classes</span>
+<span class="sd">            delete_func: Optional custom deletion function.</span>
+<span class="sd">                If None, uses class default (safe trash with fallback).</span>
+<span class="sd">                Common options from dol.trash:</span>
+<span class="sd">                - default_delete_func (safe trash, warning on fallback)</span>
+<span class="sd">                - permanent_delete (os.remove, no warnings)</span>
+<span class="sd">                - trash_only (error if trash unavailable)</span>
+<span class="sd">            **kwargs: Passed to parent classes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">delete_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_delete_func</span> <span class="o">=</span> <span class="n">delete_func</span>
+
     <span class="nd">@validate_key_and_raise_key_error_on_exception</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="c1"># TODO: Make this work with validate_key_and_raise_key_error_on_exception</span>
@@ -719,11 +769,7 @@
         <span class="c1">#     dirname = os.path.dirname(k)</span>
         <span class="c1">#     os.makedirs(dirname, exist_ok=True)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_write_open_kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-
-    <span class="nd">@validate_key_and_raise_key_error_on_exception</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div>
 
 
 
