@@ -1,0 +1,47 @@
+# dol
+
+> `dol` (Data Object Layer) is a pure-Python toolkit for wrapping any storage backend — files, S3, databases, dicts — behind a uniform dict-like (`Mapping`/`MutableMapping`) interface. Use it to separate domain logic from storage implementation, add key/value transform layers, and build composable data pipelines with no dependencies.
+
+## Key concepts
+
+- **All stores are `Mapping` or `MutableMapping`**. You interact with any backend the same way you use a Python dict: `store[k]`, `store[k] = v`, `del store[k]`, `for k in store`.
+- **`wrap_kvs` is the core function**. It wraps a store class or instance with key/value transforms. Stack multiple `wrap_kvs` calls to build transform pipelines ("Russian dolls").
+- **Transforms come in pairs**: `key_of_id`/`id_of_key` for keys; `obj_of_data`/`data_of_obj` for values. Use `postget`/`preset` when the transform depends on the key.
+- **Test with `dict`, deploy with real storage**. All dol stores accept a `dict` as the backend; swap it for `Files`, `ZipFiles`, a DB store, etc. when ready.
+- **Pure Python, zero dependencies**. The core package (`dol`) has no external requirements.
+
+## What dol is NOT
+
+- Not a query engine — no filter-by-field, join, or aggregation. Use the backend's query API directly.
+- Not an ORM — no schema definition, migration, or relationship management.
+- Not domain-driven — stores are key-value only; domain meaning lives in the code that uses them.
+
+## Core API
+
+- [dol/trans.py](dol/trans.py) — `wrap_kvs` (the most important function), `store_decorator`, `filt_iter`, `cached_keys`, `flatten`, `Codec`, `ValueCodec`, `KeyCodec`
+- [dol/base.py](dol/base.py) — `KvReader`, `KvPersister`, `Store`, `Collection`, `MappingViewMixin`
+- [dol/kv_codecs.py](dol/kv_codecs.py) — `ValueCodecs`, `KeyCodecs` (ready-made codec namespaces)
+- [dol/caching.py](dol/caching.py) — `cache_this`, `cache_vals`, `store_cached`, `WriteBackChainMap`
+- [dol/paths.py](dol/paths.py) — `KeyTemplate`, `mk_relative_path_store`, `KeyPath`, `path_get`, `path_set`
+- [dol/filesys.py](dol/filesys.py) — `Files`, `TextFiles`, `JsonFiles`, `PickleFiles`
+- [dol/sources.py](dol/sources.py) — `FlatReader`, `FanoutReader`, `FanoutPersister`, `CascadedStores`
+- [dol/signatures.py](dol/signatures.py) — `Sig` (signature arithmetic)
+
+## Examples
+
+- [README.md](README.md) — copy data between backends, add serialization layers
+- [dol/tests/test_trans.py](dol/tests/test_trans.py) — wrap_kvs tests
+- [dol/tests/test_caching.py](dol/tests/test_caching.py) — caching patterns
+- [dol/tests/test_paths.py](dol/tests/test_paths.py) — path key patterns
+- [dol/tests/test_filesys.py](dol/tests/test_filesys.py) — file store usage
+
+## Optional
+
+- [misc/docs/general_design.md](misc/docs/general_design.md) — language-agnostic design concepts (middleware orientation, KV transform pipeline, layered composition)
+- [misc/docs/python_design.md](misc/docs/python_design.md) — Python-specific architecture, class hierarchy, all `wrap_kvs` params, design critique
+- [misc/docs/issues_and_discussions.md](misc/docs/issues_and_discussions.md) — open design questions and known limitations
+- [dol/trans.py](dol/trans.py) — `store_decorator`, `double_up_as_factory`, `kv_wrap` (alternative interface to `wrap_kvs`)
+- [dol/appendable.py](dol/appendable.py) — append semantics on stores
+- [dol/naming.py](dol/naming.py) — `StrTupleDict` for tuple↔string key conversion
+- [dol/zipfiledol.py](dol/zipfiledol.py) — `ZipFiles`, `ZipReader` (zip archive stores)
+- [dol/explicit.py](dol/explicit.py) — `ExplicitKeyMap`, `KeysReader`
