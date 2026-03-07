@@ -1,0 +1,743 @@
+# dol
+
+> `dol` (Data Object Layer) is a pure-Python toolkit for wrapping any storage backend — files, S3, databases, dicts — behind a uniform dict-like (`Mapping`/`MutableMapping`) interface. Use it to separate domain logic from storage implementation, add key/value transform layers, and build composable data pipelines with no dependencies.
+
+## Key concepts
+
+- **All stores are `Mapping` or `MutableMapping`**. You interact with any backend the same way you use a Python dict: `store[k]`, `store[k] = v`, `del store[k]`, `for k in store`.
+- **`wrap_kvs` is the core function**. It wraps a store class or instance with key/value transforms. Stack multiple `wrap_kvs` calls to build transform pipelines ("Russian dolls").
+- **Transforms come in pairs**: `key_of_id`/`id_of_key` for keys; `obj_of_data`/`data_of_obj` for values. Use `postget`/`preset` when the transform depends on the key.
+- **Test with `dict`, deploy with real storage**. All dol stores accept a `dict` as the backend; swap it for `Files`, `ZipFiles`, a DB store, etc. when ready.
+- **Pure Python, zero dependencies**. The core package (`dol`) has no external requirements.
+
+## What dol is NOT
+
+- Not a query engine — no filter-by-field, join, or aggregation. Use the backend's query API directly.
+- Not an ORM — no schema definition, migration, or relationship management.
+- Not domain-driven — stores are key-value only; domain meaning lives in the code that uses them.
+
+## Core API
+
+- [dol/trans.py](dol/trans.py) — `wrap_kvs` (the most important function), `store_decorator`, `filt_iter`, `cached_keys`, `flatten`, `Codec`, `ValueCodec`, `KeyCodec`
+- [dol/base.py](dol/base.py) — `KvReader`, `KvPersister`, `Store`, `Collection`, `MappingViewMixin`
+- [dol/kv_codecs.py](dol/kv_codecs.py) — `ValueCodecs`, `KeyCodecs` (ready-made codec namespaces)
+- [dol/caching.py](dol/caching.py) — `cache_this`, `cache_vals`, `store_cached`, `WriteBackChainMap`
+- [dol/paths.py](dol/paths.py) — `KeyTemplate`, `mk_relative_path_store`, `KeyPath`, `path_get`, `path_set`
+- [dol/filesys.py](dol/filesys.py) — `Files`, `TextFiles`, `JsonFiles`, `PickleFiles`
+- [dol/sources.py](dol/sources.py) — `FlatReader`, `FanoutReader`, `FanoutPersister`, `CascadedStores`
+- [dol/signatures.py](dol/signatures.py) — `Sig` (signature arithmetic)
+
+## Examples
+
+- [README.md](README.md) — copy data between backends, add serialization layers
+- [dol/tests/test_trans.py](dol/tests/test_trans.py) — wrap_kvs tests
+- [dol/tests/test_caching.py](dol/tests/test_caching.py) — caching patterns
+- [dol/tests/test_paths.py](dol/tests/test_paths.py) — path key patterns
+- [dol/tests/test_filesys.py](dol/tests/test_filesys.py) — file store usage
+
+## Optional
+
+- [misc/docs/general_design.md](misc/docs/general_design.md) — language-agnostic design concepts (middleware orientation, KV transform pipeline, layered composition)
+- [misc/docs/python_design.md](misc/docs/python_design.md) — Python-specific architecture, class hierarchy, all `wrap_kvs` params, design critique
+- [misc/docs/issues_and_discussions.md](misc/docs/issues_and_discussions.md) — open design questions and known limitations
+
+---
+
+## module: dol.base
+
+Base classes for the store hierarchy.
+
+### Collection
+
+```python
+class Collection(collections.abc.Collection):
+```
+
+Extends `collections.abc.Collection` with a `head()` method. Default `__len__` and `__contains__` work by iteration (override for efficiency).
+
+```python
+def head(self):
+    """Get first element (or (k,v) if has .items())."""
+```
+
+### KvReader
+
+```python
+class KvReader(MappingViewMixin, Collection, Mapping):
+```
+
+Read-only key-value store. Extends `Mapping` with `head()`. `__reversed__` raises `NotImplementedError` by design.
+
+```python
+# Usage: any class implementing __getitem__ and __iter__ can subclass KvReader
+class MyReader(KvReader):
+    def __getitem__(self, k): ...
+    def __iter__(self): ...
+    def __len__(self): ...
+```
+
+### KvPersister
+
+```python
+class KvPersister(KvReader, MutableMapping):
+```
+
+Read-write store. Adds `__setitem__` and `__delitem__`. **`clear()` is disabled** (raises if called — too destructive for persistent backends).
+
+### Store
+
+```python
+class Store(KvPersister):
+    def __init__(self, store=dict): ...
+```
+
+The central class. Wraps an inner `store` with 4 transform hooks (all default to identity):
+
+```python
+_id_of_key(self, k)     # outer key → inner key (called on reads, writes, deletes)
+_key_of_id(self, _id)   # inner key → outer key (called on iteration)
+_data_of_obj(self, obj) # outer value → stored data (called on writes)
+_obj_of_data(self, data)# stored data → outer value (called on reads)
+```
+
+Data flow:
+```
+read:   k → _id_of_key → store[_id] → _obj_of_data → return obj
+write:  k → _id_of_key, obj → _data_of_obj → store[_id] = data
+iter:   for _id in store → _key_of_id → yield k
+```
+
+```python
+# Example: Store with key/value transforms
+class MyStore(Store):
+    def _id_of_key(self, k): return k.upper()
+    def _key_of_id(self, _id): return _id.lower()
+    def _data_of_obj(self, obj): return chr(obj)
+    def _obj_of_data(self, data): return ord(data)
+
+s = MyStore()
+s['foo'] = 65   # stores 'A' under 'FOO'
+s['foo']        # returns 65
+list(s)         # ['foo']
+```
+
+---
+
+## module: dol.trans
+
+Transformation and wrapping tools. The most important module.
+
+### wrap_kvs
+
+```python
+@store_decorator
+def wrap_kvs(
+    store=None,
+    *,
+    key_of_id=None,        # outgoing key transform: inner_id → outer_key
+    id_of_key=None,        # incoming key transform: outer_key → inner_id
+    obj_of_data=None,      # outgoing value transform: stored_data → python_obj
+    data_of_obj=None,      # incoming value transform: python_obj → stored_data
+    preset=None,           # (key, obj) → data  [write, key-aware]
+    postget=None,          # (key, data) → obj  [read, key-aware]
+    key_codec=None,        # Codec(encoder=id_of_key, decoder=key_of_id)
+    value_codec=None,      # Codec(encoder=data_of_obj, decoder=obj_of_data)
+    key_encoder=None,      # alias for id_of_key
+    key_decoder=None,      # alias for key_of_id
+    value_encoder=None,    # alias for data_of_obj
+    value_decoder=None,    # alias for obj_of_data
+    name=None,
+    wrapper=None,          # wrapper class, defaults to Store
+    outcoming_key_methods=(),
+    outcoming_value_methods=(),
+    ingoing_key_methods=(),
+    ingoing_value_methods=(),
+) -> type | object:
+```
+
+Make a Store with the given key/value transforms applied. Can wrap a class (returns new class) or an instance (returns wrapped instance).
+
+**`@store_decorator` makes it work in 4 modes:**
+```python
+# 1. Class decorator (no parens)
+@wrap_kvs(obj_of_data=json.loads, data_of_obj=json.dumps)
+class MyStore(dict): ...
+
+# 2. Type wrapping
+JsonDict = wrap_kvs(dict, obj_of_data=json.loads, data_of_obj=json.dumps)
+
+# 3. Instance wrapping
+d = {}
+d = wrap_kvs(d, obj_of_data=json.loads, data_of_obj=json.dumps)
+
+# 4. Partial (factory)
+json_wrap = wrap_kvs(obj_of_data=json.loads, data_of_obj=json.dumps)
+MyStore = json_wrap(dict)
+```
+
+**`obj_of_data` vs `postget`:**
+- `obj_of_data(data) → obj` — value transform, no key context
+- `postget(key, data) → obj` — value transform with key context (e.g., choose deserializer by file extension)
+
+```python
+# Key transform: strip prefix
+s = wrap_kvs(dict,
+    id_of_key=lambda k: f"user:{k}",
+    key_of_id=lambda _id: _id[len("user:"):],
+)
+
+# Value transform: JSON serialization
+s = wrap_kvs(dict, obj_of_data=json.loads, data_of_obj=json.dumps)
+
+# Key-conditioned value transform
+s = wrap_kvs(dict,
+    postget=lambda k, v: json.loads(v) if k.endswith('.json') else pickle.loads(v),
+    preset=lambda k, v: json.dumps(v) if k.endswith('.json') else pickle.dumps(v),
+)
+
+# Stacking layers
+s = dict()
+s = wrap_kvs(s, id_of_key=lambda k: k + '.pkl', key_of_id=lambda _id: _id[:-4])
+s = wrap_kvs(s, obj_of_data=pickle.loads, data_of_obj=pickle.dumps)
+```
+
+### filt_iter
+
+```python
+@store_decorator
+def filt_iter(store=None, *, filt: Callable | Iterable = take_everything) -> type | object:
+```
+
+Filter the keys visible in a store. `filt` can be a boolean function or an explicit collection of keys to include.
+
+```python
+# Keep only keys ending in '.json'
+s = filt_iter(my_store, filt=lambda k: k.endswith('.json'))
+
+# Keep only specific keys
+s = filt_iter(my_store, filt=['key1', 'key2'])
+
+# As class decorator
+@filt_iter(filt=lambda k: not k.startswith('_'))
+class PublicStore(dict): ...
+```
+
+### cached_keys
+
+```python
+@store_decorator
+def cached_keys(store=None, *, keys_cache: Callable | Collection = list) -> type | object:
+```
+
+Cache the result of `__iter__`. Use when iterating is expensive (remote API, large filesystem).
+
+```python
+# Cache keys as a list (preserves order)
+s = cached_keys(remote_store)
+
+# Cache as sorted list
+s = cached_keys(remote_store, keys_cache=sorted)
+
+# Cache as set (faster __contains__)
+s = cached_keys(remote_store, keys_cache=set)
+
+# Refresh cache
+del s._keys_cache
+```
+
+### flatten
+
+```python
+@store_decorator
+def flatten(store=None, *, levels=None, cache_keys=False) -> type | object:
+```
+
+Flatten a nested store (store of stores) into a single-level store.
+
+### store_decorator
+
+```python
+def store_decorator(func) -> Callable:
+```
+
+Meta-decorator that makes a class-transforming function work in 4 modes: class decorator, class decorator factory, instance decorator, instance decorator factory.
+
+```python
+@store_decorator
+def my_deco(store=None, *, param='default'):
+    # always receives a class; transforms it
+    store.some_method = lambda self: param
+    return store
+
+# 4 equivalent ways to use:
+@my_deco                     # class decorator, defaults
+@my_deco(param='x')         # class decorator factory
+s = my_deco(instance)        # instance decorator, defaults
+s = my_deco(param='x')(inst) # instance decorator factory
+```
+
+### Codec / ValueCodec / KeyCodec / KeyValueCodec
+
+```python
+@dataclass
+class Codec(Generic[DecodedType, EncodedType]):
+    encoder: Callable
+    decoder: Callable
+
+    def compose_with(self, other) -> Codec: ...  # chain codecs
+    def invert(self) -> Codec: ...               # swap encoder/decoder
+    __add__ = compose_with
+    __invert__ = invert
+
+class ValueCodec(Codec):
+    def __call__(self, store):  # wraps store with value codec
+        return wrap_kvs(store, data_of_obj=self.encoder, obj_of_data=self.decoder)
+
+class KeyCodec(Codec):
+    def __call__(self, store):  # wraps store with key codec
+        return wrap_kvs(store, id_of_key=self.encoder, key_of_id=self.decoder)
+
+class KeyValueCodec(Codec):
+    def __call__(self, store):  # wraps store with key-conditioned codec
+        return wrap_kvs(store, preset=self.encoder, postget=self.decoder)
+```
+
+```python
+# Codec composition
+from dol.trans import ValueCodec
+import json, gzip
+
+json_codec = ValueCodec(encoder=json.dumps, decoder=json.loads)
+gzip_codec = ValueCodec(encoder=gzip.compress, decoder=gzip.decompress)
+
+json_gzip_codec = json_codec + gzip_codec  # json → gzip on write; gunzip → json on read
+MyStore = json_gzip_codec(dict)
+```
+
+---
+
+## module: dol.kv_codecs
+
+Ready-made codec namespaces.
+
+### ValueCodecs
+
+Namespace class with factory methods returning `ValueCodec` instances:
+
+```python
+from dol import ValueCodecs
+
+ValueCodecs.pickle()        # pickle.dumps / pickle.loads
+ValueCodecs.json()          # json.dumps / json.loads
+ValueCodecs.gzip()          # gzip.compress / gzip.decompress
+ValueCodecs.csv()           # csv encode/decode (list of lists ↔ csv string)
+ValueCodecs.str_to_bytes()  # str.encode / bytes.decode
+
+# Compose with +
+ValueCodecs.pickle() + ValueCodecs.gzip()  # pickle then gzip
+```
+
+### KeyCodecs
+
+```python
+from dol import KeyCodecs
+
+KeyCodecs.suffixed('.json')  # add/strip '.json' suffix
+KeyCodecs.prefixed('user:') # add/strip 'user:' prefix
+```
+
+### Using with Pipe
+
+```python
+from dol import ValueCodecs, KeyCodecs, Pipe
+
+# Chain key and value wrappers into a single store factory
+MyStore = Pipe(
+    KeyCodecs.suffixed('.pkl'),
+    ValueCodecs.pickle(),
+)(dict)
+
+s = MyStore()
+s['mykey'] = {'data': 42}   # stored as 'mykey.pkl' with pickle bytes
+s['mykey']                   # returns {'data': 42}
+```
+
+---
+
+## module: dol.filesys
+
+File system stores. All use relative paths as keys and bytes as values (unless otherwise noted).
+
+```python
+from dol import Files, TextFiles, JsonFiles, PickleFiles
+
+# Files: bytes values
+s = Files('/path/to/folder')
+s['data.bin'] = b'raw bytes'
+data = s['data.bin']   # bytes
+
+# TextFiles: string values, UTF-8
+t = TextFiles('/path/to/folder')
+t['notes.txt'] = 'some text'
+
+# JsonFiles: JSON-serialized values
+j = JsonFiles('/path/to/folder')
+j['config.json'] = {'key': 'value'}   # auto-serializes to JSON on write
+
+# PickleFiles: pickle-serialized values
+p = PickleFiles('/path/to/folder')
+p['model.pkl'] = my_sklearn_model
+
+# DirReader: recursively lists subdirectories
+from dol import DirReader
+d = DirReader('/path/to/root')
+list(d)   # ['subdir1', 'subdir2', ...]
+```
+
+Key helpers:
+```python
+from dol import ensure_dir, mk_dirs_if_missing, resolve_path, temp_dir
+
+path = resolve_path('~/data')    # expands ~
+with temp_dir() as td:           # temporary directory context manager
+    s = Files(td)
+    s['test.bin'] = b'data'
+```
+
+---
+
+## module: dol.caching
+
+### cache_this
+
+```python
+def cache_this(
+    method=None,
+    *,
+    cache=None,          # where to store: dict, 'attr_name', or a Mapping
+    key=None,            # key function or explicit key
+    ignore=frozenset(),  # parameter names to ignore in cache key
+) -> property | descriptor:
+```
+
+Cache property or method results. Auto-detects property vs method based on signature.
+
+```python
+class MyClass:
+    @cache_this
+    def expensive_property(self):   # zero non-self args → cached_property
+        return sum(range(1_000_000))
+
+    @cache_this(cache={})           # shared dict cache across all instances
+    def expensive_method(self, x, y):
+        return compute(x, y)
+
+    def __init__(self):
+        self._cache = {}
+
+    @cache_this(cache='_cache')     # use instance attribute as cache
+    def instance_cached(self, data):
+        return process(data)
+```
+
+### cache_vals
+
+```python
+def cache_vals(store, *, cache=dict) -> object:
+```
+
+Add an in-memory cache layer in front of a store. Reads are cached after first fetch.
+
+```python
+from dol import cache_vals
+
+fast_store = cache_vals(slow_remote_store)
+fast_store['key']   # fetches from remote and caches
+fast_store['key']   # returns from cache
+```
+
+### store_cached
+
+```python
+def store_cached(store, key_func=None) -> Callable:
+```
+
+Decorator to memoize a function using a dol store as memory.
+
+```python
+from dol import store_cached, PickleFiles
+
+@store_cached(PickleFiles('/path/to/cache'))
+def expensive_computation(x, y):
+    return very_slow_compute(x, y)
+
+# Result is persisted to disk across process restarts
+result = expensive_computation(1, 2)
+```
+
+---
+
+## module: dol.paths
+
+### path_get / path_set / path_filter
+
+```python
+def path_get(d: Mapping, path: tuple) -> Any: ...
+def path_set(d: Mapping, path: tuple, value: Any) -> None: ...
+def path_filter(condition: Callable, d: Mapping) -> Iterator[tuple]: ...
+```
+
+Navigate nested mappings via tuple paths.
+
+```python
+from dol import path_get, path_set
+
+d = {'a': {'b': {'c': 42}}}
+path_get(d, ('a', 'b', 'c'))      # 42
+path_set(d, ('a', 'b', 'd'), 99)
+list(path_filter(lambda p, k, v: v == 42, d))  # [('a', 'b', 'c')]
+```
+
+### KeyTemplate
+
+```python
+class KeyTemplate:
+    def __init__(self, template: str): ...
+    def key_to_dict(self, key: str) -> dict: ...
+    def dict_to_key(self, d: dict) -> str: ...
+```
+
+Parse and format structured string keys.
+
+```python
+from dol.paths import KeyTemplate
+
+kt = KeyTemplate('{user}/{year}/{month}.json')
+kt.key_to_dict('alice/2024/01.json')
+# {'user': 'alice', 'year': '2024', 'month': '01'}
+kt.dict_to_key({'user': 'alice', 'year': '2024', 'month': '01'})
+# 'alice/2024/01.json'
+```
+
+### mk_relative_path_store
+
+```python
+def mk_relative_path_store(store_cls, *, prefix='', sep='/') -> type:
+```
+
+Turn a store that uses absolute paths into one that uses paths relative to a root.
+
+```python
+from dol.paths import mk_relative_path_store
+from dol import Files
+
+RelFiles = mk_relative_path_store(Files)
+s = RelFiles('/data/users')
+s['alice/profile.json']   # reads /data/users/alice/profile.json
+```
+
+---
+
+## module: dol.sources
+
+Multi-store composition.
+
+### FlatReader
+
+```python
+class FlatReader(KvReader):
+```
+
+Flatten a store-of-stores into a single-level store. Keys are generated by combining outer and inner keys.
+
+```python
+from dol.sources import FlatReader
+
+outer = {'A': {'x': 1, 'y': 2}, 'B': {'z': 3}}
+flat = FlatReader(outer)
+list(flat)   # [('A', 'x'), ('A', 'y'), ('B', 'z')]
+```
+
+### FanoutReader / FanoutPersister
+
+Broadcast reads to all stores, aggregate results; broadcast writes to all stores.
+
+```python
+from dol.sources import FanoutPersister
+
+s = FanoutPersister(store1, store2)
+s['key'] = value   # writes to both store1 and store2
+```
+
+### CascadedStores
+
+Writes to all stores; reads from first store that has the key.
+
+```python
+from dol.sources import CascadedStores
+
+s = CascadedStores(fast_cache, slow_backend)
+s['key']          # reads from fast_cache first, falls through to slow_backend
+s['key'] = value  # writes to both
+```
+
+### FuncReader
+
+A read-only store where keys are names of callables and values are their results.
+
+```python
+from dol.sources import FuncReader
+
+s = FuncReader(len=len, max=max, min=min)
+s['len']([1, 2, 3])   # 3
+```
+
+---
+
+## module: dol.signatures
+
+### Sig
+
+Rich signature manipulation for composing function interfaces.
+
+```python
+from dol.signatures import Sig
+
+sig = Sig(func)
+sig.names        # ['a', 'b', 'c']
+sig.defaults     # {'b': 2, 'c': 3}
+sig.annotations  # {'a': int}
+
+# Arithmetic
+new_sig = Sig(f) + Sig(g)          # merge signatures
+new_sig = Sig(f) + ['extra']       # add parameter
+new_sig = Sig(f) - ['verbose']     # remove parameter
+
+# Apply to function
+@Sig(['x', 'y'])
+def my_func(*args, **kwargs): ...  # now has signature (x, y)
+```
+
+---
+
+## module: dol.util
+
+### Pipe
+
+```python
+class Pipe:
+    def __init__(self, *funcs): ...
+    def __call__(self, x): ...   # apply funcs left to right
+```
+
+Left-to-right function composition.
+
+```python
+from dol import Pipe
+
+f = Pipe(str.encode, gzip.compress)
+# f(s) == gzip.compress(s.encode())
+
+# Use as store factory chain
+MyStore = Pipe(KeyCodecs.suffixed('.pkl'), ValueCodecs.pickle())(dict)
+```
+
+### lazyprop
+
+```python
+def lazyprop(func) -> property:
+```
+
+Lazy-evaluated property: computed once on first access, cached on the instance.
+
+```python
+class MyStore:
+    @lazyprop
+    def index(self):
+        return {k: i for i, k in enumerate(self)}
+```
+
+---
+
+## Common Patterns
+
+### Pattern 1: Add serialization to any store
+
+```python
+from dol import wrap_kvs
+import json
+
+JsonStore = wrap_kvs(dict, obj_of_data=json.loads, data_of_obj=json.dumps)
+s = JsonStore()
+s['config'] = {'debug': True}   # stored as JSON string
+s['config']                      # returns {'debug': True}
+```
+
+### Pattern 2: Build a namespaced file store
+
+```python
+from dol import Files, wrap_kvs
+
+def make_user_store(username):
+    return wrap_kvs(
+        Files('/data'),
+        id_of_key=lambda k: f"{username}/{k}",
+        key_of_id=lambda _id: _id[len(username)+1:],
+        obj_of_data=lambda b: b.decode(),
+        data_of_obj=lambda s: s.encode(),
+    )
+
+store = make_user_store('alice')
+store['notes.txt'] = 'Hello'   # writes to /data/alice/notes.txt
+```
+
+### Pattern 3: Persist a function's results
+
+```python
+from dol import store_cached, JsonFiles
+
+@store_cached(JsonFiles('/path/to/cache'))
+def fetch_data(url):
+    import urllib.request
+    return json.loads(urllib.request.urlopen(url).read())
+```
+
+### Pattern 4: Filter a store to a subset of keys
+
+```python
+from dol import wrap_kvs, filt_iter, Files
+
+# Only show .json files
+json_store = filt_iter(Files('/data'), filt=lambda k: k.endswith('.json'))
+```
+
+### Pattern 5: Test with dict, deploy with files
+
+```python
+def make_store(backend=None):
+    if backend is None:
+        backend = {}   # use dict for testing
+    return wrap_kvs(
+        backend,
+        obj_of_data=json.loads,
+        data_of_obj=json.dumps,
+    )
+
+# In tests:
+s = make_store()
+
+# In production:
+from dol import Files
+s = make_store(Files('/data'))
+```
+
+### Pattern 6: Copy data between backends
+
+```python
+from dol import ValueCodecs, KeyCodecs, Pipe
+
+src = Pipe(KeyCodecs.suffixed('.pkl'), ValueCodecs.pickle())(src_backend)
+tgt = Pipe(KeyCodecs.suffixed('.json'), ValueCodecs.json())(tgt_backend)
+
+tgt.update(src)   # copy all items, re-encoding key format and serialization
+```
