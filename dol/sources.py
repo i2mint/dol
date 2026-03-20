@@ -542,6 +542,67 @@ class CascadedStores(FanoutPersister):
         raise KeyError(k)
 
 
+class MultiSource(Mapping):
+    """A read-only Mapping that composes multiple sources, tried in order.
+
+    On key lookup, sources are tried left-to-right until one has the key.
+    On iteration, keys are yielded from all sources (deduplicated, order-preserved).
+
+    This is useful as the ``source`` argument to :func:`dol.caching.mk_sourced_store`
+    when you need fallback across multiple read-only backends.
+
+    >>> s1 = {'a': 1, 'b': 2}
+    >>> s2 = {'b': 20, 'c': 3}
+    >>> ms = MultiSource(s1, s2)
+    >>> ms['a']
+    1
+    >>> ms['b']
+    2
+    >>> ms['c']
+    3
+    >>> sorted(ms)
+    ['a', 'b', 'c']
+    >>> len(ms)
+    3
+    >>> 'c' in ms
+    True
+    >>> 'z' in ms
+    False
+    >>> ms['z']
+    Traceback (most recent call last):
+        ...
+    KeyError: 'z'
+    """
+
+    def __init__(self, *sources):
+        self.sources = sources
+
+    def __getitem__(self, k):
+        for src in self.sources:
+            try:
+                return src[k]
+            except KeyError:
+                continue
+        raise KeyError(k)
+
+    def __contains__(self, k):
+        return any(k in src for src in self.sources)
+
+    def __iter__(self):
+        seen = set()
+        for src in self.sources:
+            for k in src:
+                if k not in seen:
+                    seen.add(k)
+                    yield k
+
+    def __len__(self):
+        return sum(1 for _ in self)
+
+    def __repr__(self):
+        return f"{type(self).__name__}({', '.join(type(s).__name__ for s in self.sources)})"
+
+
 class SequenceKvReader(KvReader):
     """
     A KvReader that sources itself in an iterable of elements from which keys and values

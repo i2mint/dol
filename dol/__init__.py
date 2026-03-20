@@ -190,6 +190,7 @@ from dol.sources import (
     FanoutReader,
     FanoutPersister,
     CascadedStores,  # multi-store writes to all stores and reads from first store.
+    MultiSource,  # read-only Mapping composing multiple sources, tried in order.
 )
 
 
