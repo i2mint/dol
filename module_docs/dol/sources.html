@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.3.38 documentation</title>
+  <title>dol.sources &mdash; dol 0.3.39 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=757a3583"></script>
+      <script src="../../_static/documentation_options.js?v=d102b19a"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -94,6 +94,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.FlatReader"><code class="docutils literal notranslate"><span class="pre">FlatReader</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.FuncDag"><code class="docutils literal notranslate"><span class="pre">FuncDag</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.FuncReader"><code class="docutils literal notranslate"><span class="pre">FuncReader</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.sources.MultiSource"><code class="docutils literal notranslate"><span class="pre">MultiSource</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.NotUnique"><code class="docutils literal notranslate"><span class="pre">NotUnique</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.ObjReader"><code class="docutils literal notranslate"><span class="pre">ObjReader</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.sources.SequenceKvReader"><code class="docutils literal notranslate"><span class="pre">SequenceKvReader</span></code></a></li>
@@ -716,6 +717,39 @@ iterable.</p>
 <span class="go">[&#39;FU&#39;, &#39;Pie&#39;]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;FU&#39;</span><span class="p">]</span>
 <span class="go">&#39;bar&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.sources.MultiSource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dol.sources.</span></span><span class="sig-name descname"><span class="pre">MultiSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">sources</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/sources.html#MultiSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.sources.MultiSource" title="Link to this definition"></a></dt>
+<dd><p>A read-only Mapping that composes multiple sources, tried in order.</p>
+<p>On key lookup, sources are tried left-to-right until one has the key.
+On iteration, keys are yielded from all sources (deduplicated, order-preserved).</p>
+<p>This is useful as the <code class="docutils literal notranslate"><span class="pre">source</span></code> argument to <a class="reference internal" href="caching.html#dol.caching.mk_sourced_store" title="dol.caching.mk_sourced_store"><code class="xref py py-func docutils literal notranslate"><span class="pre">dol.caching.mk_sourced_store()</span></code></a>
+when you need fallback across multiple read-only backends.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s1</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s2</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ms</span> <span class="o">=</span> <span class="n">MultiSource</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ms</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ms</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ms</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">ms</span><span class="p">)</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">ms</span><span class="p">)</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;c&#39;</span> <span class="ow">in</span> <span class="n">ms</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;z&#39;</span> <span class="ow">in</span> <span class="n">ms</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ms</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">KeyError</span>: <span class="n">&#39;z&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
