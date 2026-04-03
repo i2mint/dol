@@ -140,7 +140,7 @@ The name "dol" evokes Russian dolls: layers of wrappers, each adding a transform
 
 Each layer is independent and composable. You can add, remove, or swap layers without touching domain code or the backend.
 
-The primary tool for adding layers is `wrap_kvs` (see [python_design.md](python_design.md) for details):
+The primary tool for adding layers is `wrap_kvs` (see [dol_design.md](dol_design.md) for details):
 
 ```python
 from dol import wrap_kvs

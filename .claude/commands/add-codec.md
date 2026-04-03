@@ -48,4 +48,4 @@ compressed_msgpack = msgpack_codec + ValueCodecs.gzip()
 
 - Use `Codec.compose_with` / `+` operator to chain codecs
 - See `dol/kv_codecs.py` for real examples of `ValueCodecs.*` factories
-- See `misc/docs/python_design.md` section "Codec Abstraction" for details
+- See `misc/docs/dol_design.md` section "Codec Abstraction" for details

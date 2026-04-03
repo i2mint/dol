@@ -43,4 +43,4 @@ Iteration:
 ## Notes
 
 - See `dol/base.py:Store.__getitem__` for the actual implementation
-- See `misc/docs/python_design.md` for the full class hierarchy
+- See `misc/docs/dol_design.md` for the full class hierarchy

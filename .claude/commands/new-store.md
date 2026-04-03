@@ -49,4 +49,4 @@ def make_<name>_store(root_path, ...):
 
 - Always include a working doctest using `dict` as the backend
 - Follow the `X_of_Y` naming convention for transforms
-- See `CLAUDE.md` and `misc/docs/python_design.md` for full context
+- See `CLAUDE.md` and `misc/docs/dol_design.md` for full context

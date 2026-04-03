@@ -184,7 +184,7 @@ Run tests: `pytest dol/tests/`
 | Document | Contents |
 |----------|----------|
 | [general_design.md](misc/docs/general_design.md) | Language-agnostic design: what dol is, the KV pipeline, layered composition, patterns |
-| [python_design.md](misc/docs/python_design.md) | Python architecture: class hierarchy, `wrap_kvs` deep dive, `Codec`/`Sig`/`Pipe`, critique |
+| [dol_design.md](misc/docs/dol_design.md) | Python architecture: class hierarchy, `wrap_kvs` deep dive, `Codec`/`Sig`/`Pipe`, critique |
 | [issues_and_discussions.md](misc/docs/issues_and_discussions.md) | GitHub issues/discussions themes, known limitations, open design questions |
 | [frontend_dol_ideas.md](misc/docs/frontend_dol_ideas.md) | `zoddal` design: TypeScript KV interface, adapters, Zod bridge, zod-collection-ui integration |
 
