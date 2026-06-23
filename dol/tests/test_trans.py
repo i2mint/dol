@@ -1,6 +1,38 @@
 """Test trans.py functionality."""
 
-from dol.trans import filt_iter, redirect_getattr_to_getitem
+import dol.util
+from dol.trans import (
+    filt_iter,
+    filter_prefixes,
+    filter_regex,
+    filter_suffixes,
+    redirect_getattr_to_getitem,
+)
+
+
+def test_filter_regex_is_os_independent():
+    """Regex filters must compile as REGEXES, not as path templates.
+
+    Regression for a Windows-only bug: ``filter_regex`` used the path-oriented
+    ``safe_compile``, which ``re.escape``s its input on Windows. That turned a
+    pattern like ``(\\.json)$`` into a literal matcher, so ``filter_suffixes('.json')``
+    rejected every ``*.json`` key on Windows and ``dol.Jsons`` raised
+    ``KeyError: 'Key not in store: <key>.json'`` on write.
+    """
+    real_system = dol.util.platform.system
+    try:
+        # Simulate every platform, including Windows (the broken one).
+        for system in ("Linux", "Darwin", "Windows"):
+            dol.util.platform.system = lambda system=system: system
+            assert bool(filter_regex(r"(\.json)$")("doc-001.json")) is True
+            assert bool(filter_regex(r"(\.json)$")("doc-001.txt")) is False
+            assert bool(filter_suffixes(".json")("doc-001.json")) is True
+            assert bool(filter_suffixes([".txt", ".doc"])("report.doc")) is True
+            assert bool(filter_suffixes(".json")("doc-001.txt")) is False
+            assert bool(filter_prefixes("test")("test_image.jpg")) is True
+            assert bool(filter_prefixes("test")("report.doc")) is False
+    finally:
+        dol.util.platform.system = real_system
 
 
 def test_filt_iter():
