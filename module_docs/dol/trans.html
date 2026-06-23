@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.3.43 documentation</title>
+  <title>dol.trans &mdash; dol 0.3.44 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=840fbb7b"></script>
+      <script src="../../_static/documentation_options.js?v=4f862bb6"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -1346,6 +1346,19 @@ iterable: The collection of keys you want to filter “in”</p></li>
 <span class="go">False</span>
 </pre></div>
 </div>
+<p>The argument is a <em>regular expression</em>, so it is compiled with <code class="docutils literal notranslate"><span class="pre">re.compile</span></code>
+– NOT <code class="docutils literal notranslate"><span class="pre">safe_compile</span></code> (which is for file-path templates and <code class="docutils literal notranslate"><span class="pre">re.escape``s</span> <span class="pre">its</span>
+<span class="pre">input</span> <span class="pre">on</span> <span class="pre">Windows).</span> <span class="pre">Using</span> <span class="pre">``safe_compile</span></code> here silently broke every regex filter
+on Windows: e.g. <code class="docutils literal notranslate"><span class="pre">filter_suffixes('.json')</span></code> (used by <code class="docutils literal notranslate"><span class="pre">Jsons</span></code>) had its
+<code class="docutils literal notranslate"><span class="pre">(\.json)$</span></code> pattern escaped into a literal string matcher, so no <code class="docutils literal notranslate"><span class="pre">*.json</span></code> key
+matched and the store raised <code class="docutils literal notranslate"><span class="pre">KeyError:</span> <span class="pre">'Key</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">store:</span> <span class="pre">&lt;key&gt;.json'</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_json</span> <span class="o">=</span> <span class="n">filter_regex</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\.json)$&quot;</span><span class="p">)</span>  <span class="c1"># works identically on every OS</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_json</span><span class="p">(</span><span class="s2">&quot;doc-001.json&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_json</span><span class="p">(</span><span class="s2">&quot;doc-001.txt&quot;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -2156,7 +2169,7 @@ Forms are <cite>obj = postget(k, data)</cite> or <cite>obj = postget(self, k, da
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

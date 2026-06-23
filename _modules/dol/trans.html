@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.3.43 documentation</title>
+  <title>dol.trans &mdash; dol 0.3.44 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=840fbb7b"></script>
+      <script src="../../_static/documentation_options.js?v=4f862bb6"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -1625,9 +1625,21 @@
 <span class="sd">    &gt;&gt;&gt; is_txt(&quot;report.doc&quot;)</span>
 <span class="sd">    False</span>
 
+<span class="sd">    The argument is a *regular expression*, so it is compiled with ``re.compile``</span>
+<span class="sd">    -- NOT ``safe_compile`` (which is for file-path templates and ``re.escape``s its</span>
+<span class="sd">    input on Windows). Using ``safe_compile`` here silently broke every regex filter</span>
+<span class="sd">    on Windows: e.g. ``filter_suffixes(&#39;.json&#39;)`` (used by ``Jsons``) had its</span>
+<span class="sd">    ``(\.json)$`` pattern escaped into a literal string matcher, so no ``*.json`` key</span>
+<span class="sd">    matched and the store raised ``KeyError: &#39;Key not in store: &lt;key&gt;.json&#39;``.</span>
+
+<span class="sd">    &gt;&gt;&gt; is_json = filter_regex(r&quot;(\.json)$&quot;)  # works identically on every OS</span>
+<span class="sd">    &gt;&gt;&gt; is_json(&quot;doc-001.json&quot;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; is_json(&quot;doc-001.txt&quot;)</span>
+<span class="sd">    False</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">regex</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">regex</span> <span class="o">=</span> <span class="n">safe_compile</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
+        <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_search_func</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">regex</span><span class="o">.</span><span class="n">search</span>
     <span class="k">else</span><span class="p">:</span>
@@ -3725,7 +3737,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

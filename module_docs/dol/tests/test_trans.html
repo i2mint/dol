@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tests.test_trans &mdash; dol 0.3.43 documentation</title>
+  <title>dol.tests.test_trans &mdash; dol 0.3.44 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=840fbb7b"></script>
+      <script src="../../../_static/documentation_options.js?v=4f862bb6"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -81,7 +81,10 @@
 <li class="toctree-l1"><a class="reference internal" href="test_filesys.html">dol.tests.test_filesys</a></li>
 <li class="toctree-l1"><a class="reference internal" href="test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="test_paths.html">dol.tests.test_paths</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">dol.tests.test_trans</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dol.tests.test_trans</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dol.tests.test_trans.test_filter_regex_is_os_independent"><code class="docutils literal notranslate"><span class="pre">test_filter_regex_is_os_independent()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="utils_for_tests.html">dol.tests.utils_for_tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">dol.tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../trans.html">dol.trans</a></li>
@@ -117,6 +120,17 @@
   <section id="module-dol.tests.test_trans">
 <span id="dol-tests-test-trans"></span><h1>dol.tests.test_trans<a class="headerlink" href="#module-dol.tests.test_trans" title="Link to this heading"></a></h1>
 <p>Test trans.py functionality.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.tests.test_trans.test_filter_regex_is_os_independent">
+<span class="sig-prename descclassname"><span class="pre">dol.tests.test_trans.</span></span><span class="sig-name descname"><span class="pre">test_filter_regex_is_os_independent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dol/tests/test_trans.html#test_filter_regex_is_os_independent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.tests.test_trans.test_filter_regex_is_os_independent" title="Link to this definition"></a></dt>
+<dd><p>Regex filters must compile as REGEXES, not as path templates.</p>
+<p>Regression for a Windows-only bug: <code class="docutils literal notranslate"><span class="pre">filter_regex</span></code> used the path-oriented
+<code class="docutils literal notranslate"><span class="pre">safe_compile</span></code>, which <code class="docutils literal notranslate"><span class="pre">re.escape``s</span> <span class="pre">its</span> <span class="pre">input</span> <span class="pre">on</span> <span class="pre">Windows.</span> <span class="pre">That</span> <span class="pre">turned</span> <span class="pre">a</span>
+<span class="pre">pattern</span> <span class="pre">like</span> <span class="pre">``(\.json)$</span></code> into a literal matcher, so <code class="docutils literal notranslate"><span class="pre">filter_suffixes('.json')</span></code>
+rejected every <code class="docutils literal notranslate"><span class="pre">*.json</span></code> key on Windows and <code class="docutils literal notranslate"><span class="pre">dol.Jsons</span></code> raised
+<code class="docutils literal notranslate"><span class="pre">KeyError:</span> <span class="pre">'Key</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">store:</span> <span class="pre">&lt;key&gt;.json'</span></code> on write.</p>
+</dd></dl>
+
 </section>
 
 
@@ -130,7 +144,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
