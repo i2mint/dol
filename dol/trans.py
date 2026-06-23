@@ -1481,9 +1481,21 @@ def filter_regex(regex, *, return_search_func=False):
     >>> is_txt("report.doc")
     False
 
+    The argument is a *regular expression*, so it is compiled with ``re.compile``
+    -- NOT ``safe_compile`` (which is for file-path templates and ``re.escape``s its
+    input on Windows). Using ``safe_compile`` here silently broke every regex filter
+    on Windows: e.g. ``filter_suffixes('.json')`` (used by ``Jsons``) had its
+    ``(\.json)$`` pattern escaped into a literal string matcher, so no ``*.json`` key
+    matched and the store raised ``KeyError: 'Key not in store: <key>.json'``.
+
+    >>> is_json = filter_regex(r"(\.json)$")  # works identically on every OS
+    >>> is_json("doc-001.json")
+    True
+    >>> is_json("doc-001.txt")
+    False
     """
     if isinstance(regex, str):
-        regex = safe_compile(regex)
+        regex = re.compile(regex)
     if return_search_func:
         return regex.search
     else:
