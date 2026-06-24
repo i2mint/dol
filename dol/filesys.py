@@ -854,9 +854,12 @@ def subfolder_stores(
     the `max_levels` parameter.
     """
     root_folder = ensure_slash_suffix(root_folder)
+    # Strip the native trailing separator (os.sep), NOT a hardcoded "/": the dir
+    # paths end with os.sep ('\\' on Windows), so a literal "/" would not match and
+    # the affix codec would re-add a "/" -> mixed-separator KeyError on Windows.
     wrap = KeyCodecs.affixed(
         prefix=root_folder if relative_paths else "",
-        suffix="/" if not slash_suffix else "",
+        suffix=os.path.sep if not slash_suffix else "",
     )
     folders = iter_dirpaths_in_folder_recursively(
         root_folder, max_levels=max_levels, include_hidden=include_hidden

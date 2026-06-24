@@ -232,7 +232,7 @@ def test_subfolder_stores():
         # Testing folder1
         folder1_store = stores["folder1"]
         assert isinstance(folder1_store, Files)
-        assert set(folder1_store.keys()) == {"day.doc", "subfolder/apple.p"}
+        assert set(folder1_store.keys()) == {"day.doc", os.path.join("subfolder", "apple.p")}
         assert folder1_store["day.doc"] == b"time"
 
         # Testing folder1/subfolder
