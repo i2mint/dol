@@ -38,7 +38,7 @@ from operator import getitem
 import os
 
 from dol.base import Store
-from dol.util import lazyprop, add_as_attribute_of, max_common_prefix, safe_compile
+from dol.util import lazyprop, add_as_attribute_of, max_common_prefix
 from dol.trans import (
     store_decorator,
     kv_wrap,
@@ -2255,9 +2255,12 @@ class KeyTemplate:
             for literal_text, field_name, _, _ in parts:
                 yield re.escape(literal_text) + mk_named_capture_group(field_name)
 
-        return safe_compile(
-            "".join(generate_pattern_parts(template)), normalize_path=normalize_path
-        )
+        # Literal text is already re.escape'd above, and field separators are
+        # escaped in the capture groups, so this is a valid regex on every OS --
+        # compile it as a regex (NOT via safe_compile, which re.escape's the whole
+        # pattern on Windows and corrupts the named groups). normalize_path is a
+        # path-template concern, not a regex-compile flag, so it does not apply here.
+        return re.compile("".join(generate_pattern_parts(template)))
 
     @staticmethod
     def _assert_field_type(field_type: FieldTypeNames, name="field_type"):

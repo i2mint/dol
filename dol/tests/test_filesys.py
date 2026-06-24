@@ -91,7 +91,10 @@ def populate_folder(dirpath, contents: Mapping):
 def test_process_path():
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
-        temp_path = os.path.join(temp_dir, "foo/bar")
+        # Separate components (not "foo/bar"): process_path normalizes separators
+        # (abspath), so a literal "/" would become "\\" on Windows and break the
+        # equality assertions below.
+        temp_path = os.path.join(temp_dir, "foo", "bar")
 
         output_path = process_path(temp_path)
         assert output_path == temp_path
@@ -229,7 +232,7 @@ def test_subfolder_stores():
         # Testing folder1
         folder1_store = stores["folder1"]
         assert isinstance(folder1_store, Files)
-        assert set(folder1_store.keys()) == {"day.doc", "subfolder/apple.p"}
+        assert set(folder1_store.keys()) == {"day.doc", os.path.join("subfolder", "apple.p")}
         assert folder1_store["day.doc"] == b"time"
 
         # Testing folder1/subfolder

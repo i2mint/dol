@@ -16,8 +16,15 @@ inf = float("infinity")
 
 
 def ensure_slash_suffix(path: str):
-    r"""Add a file separation (/ or \) at the end of path str, if not already present."""
-    if not path.endswith(file_sep):
+    r"""Add a file separation (/ or \) at the end of path str, if not already present.
+
+    An empty path stays empty: an empty prefix has no slash to "ensure", and turning
+    it into a bare separator anchors otherwise-absolute keys to the filesystem root.
+    On Windows that produces invalid paths like ``\C:\Users\...`` (a separator before
+    the drive letter -> ``OSError: [Errno 22]``); e.g. ``Files("")`` used with
+    absolute keys, as in ``dol.misc.get_obj``.
+    """
+    if path and not path.endswith(file_sep):
         return path + file_sep
     else:
         return path
@@ -160,11 +167,18 @@ def process_path(
     Returns:
         str: The processed path.
 
-    >>> process_path('a', 'b', 'c')  # doctest: +ELLIPSIS
-    '...a/b/c'
-    >>> from functools import partial
-    >>> process_path('a', 'b', 'c', rootdir='/root/dir/', ensure_endswith_slash=True)
-    '/root/dir/a/b/c/'
+    The result uses the running OS's native separator, so these examples assert
+    OS-independently (the literal forward-slash form is what you get on POSIX):
+
+    >>> import os
+    >>> process_path('a', 'b', 'c').endswith(os.path.join('a', 'b', 'c'))
+    True
+    >>> p = process_path(
+    ...     'a', 'b', 'c', rootdir='root_dir',
+    ...     ensure_endswith_slash=True, abspath=False, expanduser=False, expandvars=False,
+    ... )
+    >>> p == os.path.join('root_dir', 'a', 'b', 'c') + os.sep
+    True
 
     """
     path = os.path.join(*path)
@@ -264,9 +278,10 @@ def temp_dir(dirname="", make_it_if_necessary=True, verbose=False):
     """
     from tempfile import mkdtemp, gettempdir
     import uuid
+    import getpass
 
     # Create a unique user-specific directory under the system temp dir
-    user_temp_base = os.path.join(gettempdir(), f"user_{os.getuid()}")
+    user_temp_base = os.path.join(gettempdir(), f"user_{getpass.getuser()}")
 
     if dirname:
         # If a specific dirname is provided, use it
@@ -839,9 +854,12 @@ def subfolder_stores(
     the `max_levels` parameter.
     """
     root_folder = ensure_slash_suffix(root_folder)
+    # Strip the native trailing separator (os.sep), NOT a hardcoded "/": the dir
+    # paths end with os.sep ('\\' on Windows), so a literal "/" would not match and
+    # the affix codec would re-add a "/" -> mixed-separator KeyError on Windows.
     wrap = KeyCodecs.affixed(
         prefix=root_folder if relative_paths else "",
-        suffix="/" if not slash_suffix else "",
+        suffix=os.path.sep if not slash_suffix else "",
     )
     folders = iter_dirpaths_in_folder_recursively(
         root_folder, max_levels=max_levels, include_hidden=include_hidden

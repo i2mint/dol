@@ -121,12 +121,16 @@ def _default_string_collision_handler(string: str, attempt: int) -> str:
 
 def safe_compile(path, normalize_path=True):
     r"""
-    Safely compiles a file path into a regex pattern, ensuring compatibility
-    across different operating systems (Windows, macOS, Linux).
+    Compile a *literal file path* into a regex pattern that matches that path,
+    normalizing separators and escaping regex-special characters on Windows.
 
-    This function normalizes the input path to use the correct separators
-    for the current platform and escapes any special characters to avoid
-    invalid regex patterns.
+    .. warning::
+        This is for **path templates only**, NOT for general regexes. It
+        ``re.escape``-s its argument on Windows, which turns any regex into a
+        literal-string matcher there. To compile an actual regex, use
+        ``re.compile`` (see ``dol.trans.filter_regex``, fixed to do exactly that).
+        Its output is intentionally platform-dependent (Windows paths get escaped),
+        so callers must not rely on a specific ``.pattern`` across OSes.
 
     Args:
         path (str): The file path to be compiled into a regex pattern.
@@ -135,13 +139,11 @@ def safe_compile(path, normalize_path=True):
         re.Pattern: A compiled regular expression object for the given path.
 
     Examples:
-        >>> regex = safe_compile(r"C:\\what\\happens\\if\\you\\escape")
-        >>> regex.pattern  # Windows path is escaped properly
-        'C:\\\\what\\\\happens\\\\if\\\\you\\\\escape'
-
-        >>> regex = safe_compile("/fun/paths/are/awesome")
-        >>> regex.pattern  # Unix path is unmodified
-        '/fun/paths/are/awesome'
+        >>> import re
+        >>> isinstance(safe_compile("/fun/paths/are/awesome"), re.Pattern)
+        True
+        >>> isinstance(safe_compile(r"C:\folder\file.txt"), re.Pattern)
+        True
     """
     if normalize_path:
         # Normalize the path to handle cross-platform differences
@@ -482,8 +484,11 @@ def not_a_mac_junk_path(path: str):
     >>> list(filter(not_a_mac_junk_path, paths))
     ['A/normal/path', 'foo/b']
     """
-    if path.endswith(".DS_Store") or "__MACOSX" in path.split(os.path.sep):
-        return False  # This is indeed math junk (so filter out)
+    # Split on BOTH separators: these paths usually come from zip files (always
+    # '/'), but os.path.sep is '\\' on Windows, so splitting on os.path.sep alone
+    # would miss '__MACOSX' there.
+    if path.endswith(".DS_Store") or "__MACOSX" in re.split(r"[/\\]", path):
+        return False  # This is indeed mac junk (so filter out)
     return True  # this is not mac junk (you can keep it)
 
 
