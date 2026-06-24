@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.naming &mdash; dol 0.3.44 documentation</title>
+  <title>dol.naming &mdash; dol 0.3.45 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4f862bb6"></script>
+      <script src="../../_static/documentation_options.js?v=ebfeafaf"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -85,6 +85,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.naming.mk_store_from_path_format_store_cls"><code class="docutils literal notranslate"><span class="pre">mk_store_from_path_format_store_cls()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.naming.mk_tupled_store_from_path_format_store_cls"><code class="docutils literal notranslate"><span class="pre">mk_tupled_store_from_path_format_store_cls()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.naming.namedtuple_to_dict"><code class="docutils literal notranslate"><span class="pre">namedtuple_to_dict()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.naming.template_to_pattern"><code class="docutils literal notranslate"><span class="pre">template_to_pattern()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.naming.update_fields_of_namedtuple"><code class="docutils literal notranslate"><span class="pre">update_fields_of_namedtuple()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.naming.validate_kwargs"><code class="docutils literal notranslate"><span class="pre">validate_kwargs()</span></code></a></li>
 </ul>
@@ -418,21 +419,19 @@ Used to easily make process_kwargs and process_info_dict arguments for LinearNam
 :param template: A format string
 :param format_dict: A dict whose keys are template fields and values are regex strings to capture them</p>
 <p>Returns: a compiled regex</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;nt&#39;</span><span class="p">:</span>  <span class="c1"># for windows</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;here&gt;[^</span><span class="se">\\\\</span><span class="s1">]+)/and/(?P&lt;there&gt;[^</span><span class="se">\\\\</span><span class="s1">]+)&#39;</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;here&gt;[^/]+)/and/(?P&lt;there&gt;[^/]+)&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;there&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;nt&#39;</span><span class="p">:</span>  <span class="c1"># for windows</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;here&gt;[^</span><span class="se">\\\\</span><span class="s1">]+)/and/(?P&lt;there&gt;\d+)&#39;</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">else</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="n">p</span> <span class="o">==</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;here&gt;[^/]+)/and/(?P&lt;there&gt;\d+)&#39;</span><span class="p">)</span>
+<p>Assert on <em>behavior</em> (matching) rather than the exact pattern string, so the
+examples hold on every OS (the field separator – and therefore the default
+capture class – is <code class="docutils literal notranslate"><span class="pre">/</span></code> on POSIX and <code class="docutils literal notranslate"><span class="pre">\</span></code> on Windows):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 <span class="go">&lt;class &#39;re.Pattern&#39;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;HERE/and/1234&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
 <span class="go">{&#39;here&#39;: &#39;HERE&#39;, &#39;there&#39;: &#39;1234&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;there&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;HERE/and/1234&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+<span class="go">{&#39;here&#39;: &#39;HERE&#39;, &#39;there&#39;: &#39;1234&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;HERE/and/not_digits&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>  <span class="c1"># &#39;there&#39; must be digits</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -512,6 +511,20 @@ keymap_kwargs=dict(process_info_dict={‘session’: int, ‘bt’: int}))</p>
 <span class="go">{&#39;foo&#39;: 1, &#39;hello&#39;: 42}</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.naming.template_to_pattern">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">template_to_pattern</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#template_to_pattern"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.template_to_pattern" title="Link to this definition"></a></dt>
+<dd><p>Weave a <code class="docutils literal notranslate"><span class="pre">{field}</span></code> template into a regex, substituting each field with its
+capture pattern and <strong>regex-escaping the literal text between fields</strong>.</p>
+<p>Escaping the literals is what makes this OS-independent: a template that is (or
+contains) a real filesystem path has backslashes on Windows (<code class="docutils literal notranslate"><span class="pre">C:\Users\...</span></code>),
+which are regex metacharacters – compiling them unescaped raises
+<code class="docutils literal notranslate"><span class="pre">re.error:</span> <span class="pre">incomplete</span> <span class="pre">escape</span> <span class="pre">\U</span></code>. Escaping also makes a literal <code class="docutils literal notranslate"><span class="pre">.</span></code> match a
+literal dot rather than any character. (This mirrors <code class="docutils literal notranslate"><span class="pre">KeyTemplate._compile_regex</span></code>
+and is why the result is never routed through <code class="docutils literal notranslate"><span class="pre">safe_compile</span></code>, which would
+re.escape the <em>whole</em> pattern on Windows and corrupt the capture groups.)</p>
 </dd></dl>
 
 <dl class="py function">

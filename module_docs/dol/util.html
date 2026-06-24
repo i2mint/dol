@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.3.44 documentation</title>
+  <title>dol.util &mdash; dol 0.3.45 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4f862bb6"></script>
+      <script src="../../_static/documentation_options.js?v=ebfeafaf"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -1269,11 +1269,17 @@ takes obj as the first argument, and uses the file_reader to read the bytes.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.util.safe_compile">
 <span class="sig-prename descclassname"><span class="pre">dol.util.</span></span><span class="sig-name descname"><span class="pre">safe_compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/util.html#safe_compile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.util.safe_compile" title="Link to this definition"></a></dt>
-<dd><p>Safely compiles a file path into a regex pattern, ensuring compatibility
-across different operating systems (Windows, macOS, Linux).</p>
-<p>This function normalizes the input path to use the correct separators
-for the current platform and escapes any special characters to avoid
-invalid regex patterns.</p>
+<dd><p>Compile a <em>literal file path</em> into a regex pattern that matches that path,
+normalizing separators and escaping regex-special characters on Windows.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is for <strong>path templates only</strong>, NOT for general regexes. It
+<code class="docutils literal notranslate"><span class="pre">re.escape</span></code>-s its argument on Windows, which turns any regex into a
+literal-string matcher there. To compile an actual regex, use
+<code class="docutils literal notranslate"><span class="pre">re.compile</span></code> (see <code class="docutils literal notranslate"><span class="pre">dol.trans.filter_regex</span></code>, fixed to do exactly that).
+Its output is intentionally platform-dependent (Windows paths get escaped),
+so callers must not rely on a specific <code class="docutils literal notranslate"><span class="pre">.pattern</span></code> across OSes.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The file path to be compiled into a regex pattern.</p>
@@ -1286,14 +1292,11 @@ invalid regex patterns.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">safe_compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">what</span><span class="se">\\</span><span class="s2">happens</span><span class="se">\\</span><span class="s2">if</span><span class="se">\\</span><span class="s2">you</span><span class="se">\\</span><span class="s2">escape&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span><span class="o">.</span><span class="n">pattern</span>  <span class="c1"># Windows path is escaped properly</span>
-<span class="go">&#39;C:\\\\what\\\\happens\\\\if\\\\you\\\\escape&#39;</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span> <span class="o">=</span> <span class="n">safe_compile</span><span class="p">(</span><span class="s2">&quot;/fun/paths/are/awesome&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">regex</span><span class="o">.</span><span class="n">pattern</span>  <span class="c1"># Unix path is unmodified</span>
-<span class="go">&#39;/fun/paths/are/awesome&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">safe_compile</span><span class="p">(</span><span class="s2">&quot;/fun/paths/are/awesome&quot;</span><span class="p">),</span> <span class="n">re</span><span class="o">.</span><span class="n">Pattern</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">safe_compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;C:\folder\file.txt&quot;</span><span class="p">),</span> <span class="n">re</span><span class="o">.</span><span class="n">Pattern</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>

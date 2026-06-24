@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.filesys &mdash; dol 0.3.44 documentation</title>
+  <title>dol.filesys &mdash; dol 0.3.45 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4f862bb6"></script>
+      <script src="../../_static/documentation_options.js?v=ebfeafaf"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -133,8 +133,15 @@
 <div class="viewcode-block" id="ensure_slash_suffix">
 <a class="viewcode-back" href="../../module_docs/dol/filesys.html#dol.filesys.ensure_slash_suffix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ensure_slash_suffix</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Add a file separation (/ or \) at the end of path str, if not already present.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">file_sep</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Add a file separation (/ or \) at the end of path str, if not already present.</span>
+
+<span class="sd">    An empty path stays empty: an empty prefix has no slash to &quot;ensure&quot;, and turning</span>
+<span class="sd">    it into a bare separator anchors otherwise-absolute keys to the filesystem root.</span>
+<span class="sd">    On Windows that produces invalid paths like ``\C:\Users\...`` (a separator before</span>
+<span class="sd">    the drive letter -&gt; ``OSError: [Errno 22]``); e.g. ``Files(&quot;&quot;)`` used with</span>
+<span class="sd">    absolute keys, as in ``dol.misc.get_obj``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">file_sep</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">path</span> <span class="o">+</span> <span class="n">file_sep</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">path</span></div>
@@ -289,11 +296,18 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        str: The processed path.</span>
 
-<span class="sd">    &gt;&gt;&gt; process_path(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;)  # doctest: +ELLIPSIS</span>
-<span class="sd">    &#39;...a/b/c&#39;</span>
-<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
-<span class="sd">    &gt;&gt;&gt; process_path(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, rootdir=&#39;/root/dir/&#39;, ensure_endswith_slash=True)</span>
-<span class="sd">    &#39;/root/dir/a/b/c/&#39;</span>
+<span class="sd">    The result uses the running OS&#39;s native separator, so these examples assert</span>
+<span class="sd">    OS-independently (the literal forward-slash form is what you get on POSIX):</span>
+
+<span class="sd">    &gt;&gt;&gt; import os</span>
+<span class="sd">    &gt;&gt;&gt; process_path(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;).endswith(os.path.join(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;))</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; p = process_path(</span>
+<span class="sd">    ...     &#39;a&#39;, &#39;b&#39;, &#39;c&#39;, rootdir=&#39;root_dir&#39;,</span>
+<span class="sd">    ...     ensure_endswith_slash=True, abspath=False, expanduser=False, expandvars=False,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; p == os.path.join(&#39;root_dir&#39;, &#39;a&#39;, &#39;b&#39;, &#39;c&#39;) + os.sep</span>
+<span class="sd">    True</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">)</span>
@@ -399,9 +413,10 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">tempfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">mkdtemp</span><span class="p">,</span> <span class="n">gettempdir</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">getpass</span>
 
     <span class="c1"># Create a unique user-specific directory under the system temp dir</span>
-    <span class="n">user_temp_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;user_</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getuid</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">user_temp_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;user_</span><span class="si">{</span><span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">dirname</span><span class="p">:</span>
         <span class="c1"># If a specific dirname is provided, use it</span>
@@ -1052,9 +1067,12 @@
 <span class="sd">    the `max_levels` parameter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">root_folder</span> <span class="o">=</span> <span class="n">ensure_slash_suffix</span><span class="p">(</span><span class="n">root_folder</span><span class="p">)</span>
+    <span class="c1"># Strip the native trailing separator (os.sep), NOT a hardcoded &quot;/&quot;: the dir</span>
+    <span class="c1"># paths end with os.sep (&#39;\\&#39; on Windows), so a literal &quot;/&quot; would not match and</span>
+    <span class="c1"># the affix codec would re-add a &quot;/&quot; -&gt; mixed-separator KeyError on Windows.</span>
     <span class="n">wrap</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">affixed</span><span class="p">(</span>
         <span class="n">prefix</span><span class="o">=</span><span class="n">root_folder</span> <span class="k">if</span> <span class="n">relative_paths</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;/&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">slash_suffix</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">suffix</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">slash_suffix</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">folders</span> <span class="o">=</span> <span class="n">iter_dirpaths_in_folder_recursively</span><span class="p">(</span>
         <span class="n">root_folder</span><span class="p">,</span> <span class="n">max_levels</span><span class="o">=</span><span class="n">max_levels</span><span class="p">,</span> <span class="n">include_hidden</span><span class="o">=</span><span class="n">include_hidden</span>

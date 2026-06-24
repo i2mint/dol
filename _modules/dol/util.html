@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.util &mdash; dol 0.3.44 documentation</title>
+  <title>dol.util &mdash; dol 0.3.45 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4f862bb6"></script>
+      <script src="../../_static/documentation_options.js?v=ebfeafaf"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -241,12 +241,16 @@
 <a class="viewcode-back" href="../../module_docs/dol/util.html#dol.util.safe_compile">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">safe_compile</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">normalize_path</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Safely compiles a file path into a regex pattern, ensuring compatibility</span>
-<span class="sd">    across different operating systems (Windows, macOS, Linux).</span>
+<span class="sd">    Compile a *literal file path* into a regex pattern that matches that path,</span>
+<span class="sd">    normalizing separators and escaping regex-special characters on Windows.</span>
 
-<span class="sd">    This function normalizes the input path to use the correct separators</span>
-<span class="sd">    for the current platform and escapes any special characters to avoid</span>
-<span class="sd">    invalid regex patterns.</span>
+<span class="sd">    .. warning::</span>
+<span class="sd">        This is for **path templates only**, NOT for general regexes. It</span>
+<span class="sd">        ``re.escape``-s its argument on Windows, which turns any regex into a</span>
+<span class="sd">        literal-string matcher there. To compile an actual regex, use</span>
+<span class="sd">        ``re.compile`` (see ``dol.trans.filter_regex``, fixed to do exactly that).</span>
+<span class="sd">        Its output is intentionally platform-dependent (Windows paths get escaped),</span>
+<span class="sd">        so callers must not rely on a specific ``.pattern`` across OSes.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        path (str): The file path to be compiled into a regex pattern.</span>
@@ -255,13 +259,11 @@
 <span class="sd">        re.Pattern: A compiled regular expression object for the given path.</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; regex = safe_compile(r&quot;C:\\what\\happens\\if\\you\\escape&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; regex.pattern  # Windows path is escaped properly</span>
-<span class="sd">        &#39;C:\\\\what\\\\happens\\\\if\\\\you\\\\escape&#39;</span>
-
-<span class="sd">        &gt;&gt;&gt; regex = safe_compile(&quot;/fun/paths/are/awesome&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; regex.pattern  # Unix path is unmodified</span>
-<span class="sd">        &#39;/fun/paths/are/awesome&#39;</span>
+<span class="sd">        &gt;&gt;&gt; import re</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(safe_compile(&quot;/fun/paths/are/awesome&quot;), re.Pattern)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(safe_compile(r&quot;C:\folder\file.txt&quot;), re.Pattern)</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">normalize_path</span><span class="p">:</span>
         <span class="c1"># Normalize the path to handle cross-platform differences</span>
@@ -635,8 +637,11 @@
 <span class="sd">    &gt;&gt;&gt; list(filter(not_a_mac_junk_path, paths))</span>
 <span class="sd">    [&#39;A/normal/path&#39;, &#39;foo/b&#39;]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.DS_Store&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;__MACOSX&quot;</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># This is indeed math junk (so filter out)</span>
+    <span class="c1"># Split on BOTH separators: these paths usually come from zip files (always</span>
+    <span class="c1"># &#39;/&#39;), but os.path.sep is &#39;\\&#39; on Windows, so splitting on os.path.sep alone</span>
+    <span class="c1"># would miss &#39;__MACOSX&#39; there.</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.DS_Store&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;__MACOSX&quot;</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[/</span><span class="se">\\</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># This is indeed mac junk (so filter out)</span>
     <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># this is not mac junk (you can keep it)</span></div>
 
 
