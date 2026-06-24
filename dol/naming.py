@@ -258,18 +258,38 @@ def mk_named_capture_patterns(mapping_dict):
 
 
 def template_to_pattern(mapping_dict, template):
-    if mapping_dict:
-        p = re.compile(
-            "{}".format(
-                "|".join(["{" + re.escape(x) + "}" for x in list(mapping_dict.keys())])
-            )
-        )
-        return p.sub(
-            lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]],
-            template,
-        )
-    else:
-        return template
+    r"""Weave a ``{field}`` template into a regex, substituting each field with its
+    capture pattern and **regex-escaping the literal text between fields**.
+
+    Escaping the literals is what makes this OS-independent: a template that is (or
+    contains) a real filesystem path has backslashes on Windows (``C:\Users\...``),
+    which are regex metacharacters -- compiling them unescaped raises
+    ``re.error: incomplete escape \U``. Escaping also makes a literal ``.`` match a
+    literal dot rather than any character. (This mirrors ``KeyTemplate._compile_regex``
+    and is why the result is never routed through ``safe_compile``, which would
+    re.escape the *whole* pattern on Windows and corrupt the capture groups.)
+    """
+    import string
+
+    out = []
+    for literal_text, field_name, format_spec, conversion in string.Formatter().parse(
+        template
+    ):
+        if literal_text:
+            out.append(re.escape(literal_text))
+        if field_name is not None:
+            if field_name in mapping_dict:
+                out.append(mapping_dict[field_name])
+            else:
+                # Not a captured field: re-emit the placeholder as an escaped literal.
+                placeholder = "{" + field_name
+                if conversion:
+                    placeholder += "!" + conversion
+                if format_spec:
+                    placeholder += ":" + format_spec
+                placeholder += "}"
+                out.append(re.escape(placeholder))
+    return "".join(out)
 
 
 def mk_extract_pattern(
@@ -303,21 +323,20 @@ def mk_pattern_from_template_and_format_dict(template, format_dict=None, sep=pat
         format_dict: A dict whose keys are template fields and values are regex strings to capture them
     Returns: a compiled regex
 
-    >>> import os
+    Assert on *behavior* (matching) rather than the exact pattern string, so the
+    examples hold on every OS (the field separator -- and therefore the default
+    capture class -- is ``/`` on POSIX and ``\`` on Windows):
+
     >>> p = mk_pattern_from_template_and_format_dict('{here}/and/{there}')
-    >>> if os.name == 'nt':  # for windows
-    ...     assert p == re.compile('(?P<here>[^\\\\]+)/and/(?P<there>[^\\\\]+)')
-    ... else:
-    ...     assert p == re.compile('(?P<here>[^/]+)/and/(?P<there>[^/]+)')
-    >>> p = mk_pattern_from_template_and_format_dict('{here}/and/{there}', {'there': r'\d+'})
-    >>> if os.name == 'nt':  # for windows
-    ...     assert p == re.compile(r'(?P<here>[^\\\\]+)/and/(?P<there>\d+)')
-    ... else:
-    ...     assert p == re.compile(r'(?P<here>[^/]+)/and/(?P<there>\d+)')
     >>> type(p)
     <class 're.Pattern'>
     >>> p.match('HERE/and/1234').groupdict()
     {'here': 'HERE', 'there': '1234'}
+    >>> p = mk_pattern_from_template_and_format_dict('{here}/and/{there}', {'there': r'\d+'})
+    >>> p.match('HERE/and/1234').groupdict()
+    {'here': 'HERE', 'there': '1234'}
+    >>> p.match('HERE/and/not_digits') is None  # 'there' must be digits
+    True
     """
     format_dict = format_dict or {}
 

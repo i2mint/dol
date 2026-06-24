@@ -16,8 +16,15 @@ inf = float("infinity")
 
 
 def ensure_slash_suffix(path: str):
-    r"""Add a file separation (/ or \) at the end of path str, if not already present."""
-    if not path.endswith(file_sep):
+    r"""Add a file separation (/ or \) at the end of path str, if not already present.
+
+    An empty path stays empty: an empty prefix has no slash to "ensure", and turning
+    it into a bare separator anchors otherwise-absolute keys to the filesystem root.
+    On Windows that produces invalid paths like ``\C:\Users\...`` (a separator before
+    the drive letter -> ``OSError: [Errno 22]``); e.g. ``Files("")`` used with
+    absolute keys, as in ``dol.misc.get_obj``.
+    """
+    if path and not path.endswith(file_sep):
         return path + file_sep
     else:
         return path

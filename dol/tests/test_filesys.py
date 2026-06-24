@@ -91,7 +91,10 @@ def populate_folder(dirpath, contents: Mapping):
 def test_process_path():
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
-        temp_path = os.path.join(temp_dir, "foo/bar")
+        # Separate components (not "foo/bar"): process_path normalizes separators
+        # (abspath), so a literal "/" would become "\\" on Windows and break the
+        # equality assertions below.
+        temp_path = os.path.join(temp_dir, "foo", "bar")
 
         output_path = process_path(temp_path)
         assert output_path == temp_path
