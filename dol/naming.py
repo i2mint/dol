@@ -8,7 +8,6 @@ from functools import partial, wraps
 from types import MethodType
 from typing import Union
 
-from dol.util import safe_compile
 from dol.signatures import set_signature_of_func
 from dol.errors import KeyValidationError, _assert_condition
 
@@ -260,7 +259,7 @@ def mk_named_capture_patterns(mapping_dict):
 
 def template_to_pattern(mapping_dict, template):
     if mapping_dict:
-        p = safe_compile(
+        p = re.compile(
             "{}".format(
                 "|".join(["{" + re.escape(x) + "}" for x in list(mapping_dict.keys())])
             )
@@ -282,13 +281,13 @@ def mk_extract_pattern(
     )
     assert name is not None
     mapping_dict = dict(format_dict, **{name: named_capture_patterns[name]})
-    p = safe_compile(
+    p = re.compile(
         "{}".format(
             "|".join(["{" + re.escape(x) + "}" for x in list(mapping_dict.keys())])
         )
     )
 
-    return safe_compile(
+    return re.compile(
         p.sub(
             lambda x: mapping_dict[x.string[(x.start() + 1) : (x.end() - 1)]],
             template,
@@ -327,7 +326,7 @@ def mk_pattern_from_template_and_format_dict(template, format_dict=None, sep=pat
     named_capture_patterns = mk_named_capture_patterns(format_dict)
     pattern = template_to_pattern(named_capture_patterns, template)
     try:
-        return safe_compile(pattern)
+        return re.compile(pattern)
     except Exception as e:
         raise ValueError(
             f"Got an error when attempting to re.compile('{pattern}'): {type(e)}({e})"
@@ -488,7 +487,7 @@ class StrTupleDict:
 
         pattern = template_to_pattern(named_capture_patterns, self.template)
         pattern += "$"
-        pattern = safe_compile(pattern)
+        pattern = re.compile(pattern)
 
         extract_pattern = {}
         for name in fields:
@@ -724,7 +723,7 @@ class StrTupleDictWithPrefix(StrTupleDict):
             ]
         )
         _prefix_pattern += "$"
-        self.prefix_pattern = safe_compile(_prefix_pattern)
+        self.prefix_pattern = re.compile(_prefix_pattern)
 
         def _mk_prefix(self, *args, **kwargs):
             """

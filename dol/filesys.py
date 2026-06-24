@@ -160,11 +160,18 @@ def process_path(
     Returns:
         str: The processed path.
 
-    >>> process_path('a', 'b', 'c')  # doctest: +ELLIPSIS
-    '...a/b/c'
-    >>> from functools import partial
-    >>> process_path('a', 'b', 'c', rootdir='/root/dir/', ensure_endswith_slash=True)
-    '/root/dir/a/b/c/'
+    The result uses the running OS's native separator, so these examples assert
+    OS-independently (the literal forward-slash form is what you get on POSIX):
+
+    >>> import os
+    >>> process_path('a', 'b', 'c').endswith(os.path.join('a', 'b', 'c'))
+    True
+    >>> p = process_path(
+    ...     'a', 'b', 'c', rootdir='root_dir',
+    ...     ensure_endswith_slash=True, abspath=False, expanduser=False, expandvars=False,
+    ... )
+    >>> p == os.path.join('root_dir', 'a', 'b', 'c') + os.sep
+    True
 
     """
     path = os.path.join(*path)
@@ -264,9 +271,10 @@ def temp_dir(dirname="", make_it_if_necessary=True, verbose=False):
     """
     from tempfile import mkdtemp, gettempdir
     import uuid
+    import getpass
 
     # Create a unique user-specific directory under the system temp dir
-    user_temp_base = os.path.join(gettempdir(), f"user_{os.getuid()}")
+    user_temp_base = os.path.join(gettempdir(), f"user_{getpass.getuser()}")
 
     if dirname:
         # If a specific dirname is provided, use it
