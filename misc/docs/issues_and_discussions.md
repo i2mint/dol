@@ -10,9 +10,9 @@ Sources: GitHub issues and discussions.
 > `wrap_kvs` machinery referenced throughout, see
 > [dol_architecture_map.md](dol_architecture_map.md).
 >
-> **Resolved since last revision (should be / now closed):** #40 (Windows regex escape —
-> fixed in `naming.py`), #50 (stacking `cache_this` — merged PR #57), #52 & #58 (Windows
-> tests — CI green as of 2026-07-02).
+> **Resolved & now closed:** #40 (Windows regex escape — fixed in `naming.py`), #52 & #58
+> (Windows tests — CI green as of 2026-07-02). Already-closed and worth noting as done:
+> #50 (stacking `cache_this` — merged PR #57).
 
 ---
 

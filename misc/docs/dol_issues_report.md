@@ -14,8 +14,9 @@
 
 ## TL;DR
 
-- **Close now (verified resolved): #40, #50, #52, #58.** Four of the 18 open issues are
-  already fixed by merged PRs — they were never closed. Closing them cuts the backlog to 14.
+- **Close now (verified resolved): #40, #52, #58.** Three open issues were already fixed by
+  merged PRs but never closed. (A fourth, #50, was already closed 2025-10-10.) Closing these
+  leaves **14 legacy issues** to work through — plus #67–#70 filed by this study.
 - **The single highest-leverage cluster is `wrap_kvs`'s signature conditioning: #9 → #12
   → #18 (+ #5, #6).** One root cause (guessing a transform's calling convention from its
   first *parameter name*) spawns a whole bug class. Fixing it is a **breaking change** and
@@ -26,12 +27,12 @@
 
 ---
 
-## 1. Reconcile first — close these (verified resolved)
+## 1. Reconcile first — close/confirm these (verified resolved)
 
 | # | Title | Evidence | Action |
 |---|-------|----------|--------|
 | **#40** | `re.error: incomplete escape \U` | Root-cause fixed: `naming.py:265–291` now `re.escape`s literal template text and explicitly handles Windows `C:\Users\…` backslash paths (the exact traceback site). Fixed via PR #64/#65. | **Close** (fixed) |
-| **#50** | Stacking `cache_this` decorators | Implemented in `caching.py` (stacking-aware `__set_name__` propagation, `:550`, `:692`) + 4 regression tests (`test_caching.py::…test_basic_stacking/test_triple_stacking/…`). Merged PR #57. | **Close** (fixed) |
+| **#50** | Stacking `cache_this` decorators | Implemented in `caching.py` (stacking-aware `__set_name__` propagation, `:550`, `:692`) + 4 regression tests (`test_caching.py::…test_basic_stacking/test_triple_stacking/…`). Merged PR #57. | Already closed 2025-10-10 — listed for completeness |
 | **#52** | Make dol tests windows compatible | Duplicate of #58; superseded by the cross-platform PRs #64/#65. | **Close** (duplicate of #58) |
 | **#58** | Make dol tests work on windows | **Windows CI re-run 2026-07-02 → green** (run `28614299483`). 28 failures → 0. Code fixes in `naming.py`, `filesys.py`, `filt_iter`/`filter_regex`. | **Close** (resolved) — see caveat → new issue for auto-trigger |
 
