@@ -2,7 +2,17 @@
 
 This document summarizes the major themes from GitHub issues and discussions in the [i2mint/dol](https://github.com/i2mint/dol) repository. The emphasis is on **design and architecture** themes, since many issues are dev/design discussions rather than bug reports.
 
-Sources: GitHub issues (as of early 2026) and GitHub discussions.
+Sources: GitHub issues and discussions.
+
+> **Updated 2026-07-02.** For an actionable, prioritized *tackle-order* view (which
+> issues to close, and in what order to fix the rest), see the companion
+> [dol_issues_report.md](dol_issues_report.md). For code-verified mechanics of the
+> `wrap_kvs` machinery referenced throughout, see
+> [dol_architecture_map.md](dol_architecture_map.md).
+>
+> **Resolved since last revision (should be / now closed):** #40 (Windows regex escape —
+> fixed in `naming.py`), #50 (stacking `cache_this` — merged PR #57), #52 & #58 (Windows
+> tests — CI green as of 2026-07-02).
 
 ---
 
@@ -20,7 +30,16 @@ wrap_kvs(store, obj_of_data=lambda x: bytes.decode(x))   # works
 wrap_kvs(store, obj_of_data=bytes.decode)                  # fails!
 ```
 
-**Root cause**: The code checks whether `obj_of_data` has 1 or 2+ required args, and applies it as `obj_of_data(data)` or `obj_of_data(self, data)` accordingly. This "Postelization" (being liberal in what you accept) leads to bugs.
+**Root cause** (code-verified 2026-07): dol decides whether to call the transform as
+`obj_of_data(data)` or `obj_of_data(self, data)` by inspecting the transform's **first
+parameter *name***, not its argument *count*. If that name is in
+`self_names = frozenset(["self", "store", "mapping"])` (`trans.py:1617`; logic in
+`_first_param_is_an_instance_param` `:419` and `_has_unbound_self` `:424`), dol assumes the
+function wants the store as its first argument. `bytes.decode`'s first parameter is literally
+named `self`, so it misfires — dol calls `bytes.decode(store, data)` and gets
+*"descriptor 'decode' for 'bytes' objects doesn't apply to a 'Store' object"*. This
+"Postelization" (being liberal in what you accept) leads to bugs. *(An earlier version of
+this doc mis-stated the root cause as an arg-count check — corrected here.)*
 
 **Discussion #34** ("Clean way of Postelizing callbacks") proposes a more principled solution: use an explicit marker (e.g., a `Literal` type or wrapper class) to signal "this function takes `self`", instead of inferring it from the signature.
 
@@ -224,12 +243,16 @@ Proposals for improving AI agent assistance with dol — relevant to the `CLAUDE
 
 ## Theme 10: Cross-Platform and Compatibility
 
-### Issue #58, #52: Windows compatibility
+### Issue #58, #52, #40: Windows compatibility — RESOLVED (2026-07)
 
-Several tests fail on Windows due to:
-- Path separator differences (`/` vs `\`)
-- Temp file handling
-- Regex patterns with backslashes (Issue #40: `re.error: incomplete escape \U at position 2`)
+Historically several tests failed on Windows due to path-separator differences (`/` vs `\`),
+temp-file handling, and regex patterns with backslashes (`re.error: incomplete escape \U`).
+Fixed across PRs #60 (Py3.12 escapes), #64 (`filter_regex` compiled as regex, not path
+template), and #65 (cross-platform path/regex/separator fixes: 28 failures → 0). A fresh
+`windows_ci.yml` run on `master` (2026-07-02) is **green**.
+
+**Residual:** `windows_ci.yml` is `workflow_dispatch` (manual) only, so nothing guards
+against future Windows regressions — tracked as a new issue (make it run on push/PR).
 
 ### Issue #59 (CLOSED): Python 3.12 compatibility
 
@@ -261,3 +284,7 @@ Fixed. dol now works with Python 3.12.
 | #8  | `FlatReader` refactored and stabilized |
 | #47 | Simpler affix codecs (partially addressed) |
 | #59 | Python 3.12 compatibility fixed |
+| #40 | Windows regex-escape crash fixed in `naming.py` (PR #64/#65) |
+| #50 | Stacking `cache_this` decorators enabled (PR #57, + 4 tests) |
+| #52 | Windows test compatibility (duplicate of #58) |
+| #58 | Windows tests pass; CI green 2026-07-02 (PR #64/#65) |
