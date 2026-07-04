@@ -27,6 +27,23 @@
 
 ---
 
+## Update (2026-07): Wave 1 progress
+
+- **#9 + #12 — FIXED** (branch `study/dol-tightening`). `_has_unbound_self` now requires
+  first-param-name ∈ `self_names` **AND** ≥2 required positional params, so unary builtins
+  like `bytes.decode` are correctly treated as `f(data)`; the previously-dead
+  `FirstArgIsMapping` marker is wired in via `_resolve_self_convention` (all 4 call sites)
+  and exported. Validated backward-compatible by AST scan (0 breaking sites across dol + 76
+  dependents), recall-gap scan (0 more), a baseline-vs-modified dependents test-gate (0
+  pass→fail across 25 repos), and a 6-lens adversarial review (CLEAN). Regression tests +
+  doctests added. See `dol_architecture_map.md` §5.4 and the `dol-dev-wrap-kvs` skill.
+- **#18, #6 — assessed, still open.** Confirmed to be *distinct* mechanisms from #9 (the
+  #9 fix does not touch them): #18 is the delegation/has-a architecture (`self` inside a
+  wrapped class's methods is the inner store); #6 is `Store.wrap` setting an inherited
+  `__signature__`. Both need separate, more invasive fixes — deferred.
+
+---
+
 ## 1. Reconcile first — close/confirm these (verified resolved)
 
 | # | Title | Evidence | Action |

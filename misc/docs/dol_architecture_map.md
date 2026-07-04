@@ -28,11 +28,11 @@ It **complements, does not repeat** the existing `misc/docs`:
 
 ### Staleness / inaccuracies found in existing docs
 
-- **`issues_and_discussions.md` §1a states the wrong root cause for Issue #9.** It says
-  `wrap_kvs` "checks whether `obj_of_data` has 1 or 2+ required args". It does **not**.
-  The `(data)` vs `(self, data)` decision is made by inspecting whether the transform's
-  **first parameter *name*** is one of `{"self", "store", "mapping"}` (`self_names`,
-  `dol/trans.py:1617`). See §5.4 for the verified mechanism and why `bytes.decode` breaks.
+- **`issues_and_discussions.md` §1a stated the wrong root cause for Issue #9** (now
+  corrected in that doc). It said `wrap_kvs` "checks whether `obj_of_data` has 1 or 2+
+  required args". The real (pre-fix) decision was the transform's **first parameter
+  *name*** ∈ `{"self","store","mapping"}` (`self_names`). Issue #9/#12 is now **FIXED**
+  (name **and** ≥2 required params + the `FirstArgIsMapping` marker) — see §5.4.
 - **`dol_design.md` cites `wrap_kvs` at `trans.py:1801` and `store_decorator` at
   `trans.py:130`.** `store_decorator` is still `:130`; `wrap_kvs` is now `:1813`
   (decorator) / `:1814` (def). `Codec` is now `:3374` (doc says `:3362`).
@@ -183,8 +183,9 @@ removed `get_app_data_folder` → `get_app_config_folder` with a `DeprecationWar
   factories `key_based`/`extension_based` are **unimplemented stubs** (§6, §11).
 - **`Stream`** (`base.py:1021`) — a layer-able stream interface — is public-quality but not
   exported anywhere.
-- **`FirstArgIsMapping`** (`trans.py:2113`) is defined but unused (`# TODO: Use this for
-  it's intent!`, `:2121`) — the intended clean fix for Issue #9/#12 that was never wired in.
+- ~~**`FirstArgIsMapping`** is defined but unused~~ — **wired in as of the Issue #9/#12 fix**
+  (2026-07): consumed via `_resolve_self_convention` at all four call sites and exported
+  from `dol`. (Historical: it was dead code with `# TODO: Use this for it's intent!`.)
 
 ---
 
@@ -290,48 +291,55 @@ For each of the four canonical transforms it wraps the corresponding hook method
 `postget`/`preset` are special-cased (`:2156–2190`): they replace `__getitem__`/
 `__setitem__` directly so the transform receives `(k, data)`.
 
-### 5.4 The signature-based conditioning — EXACTLY how `(data)` vs `(self, data)` is decided
+### 5.4 The signature-based conditioning — how `(data)` vs `(self, data)` is decided
 
-This is the crux of Issue #9/#12. There are **two different mechanisms** in play:
+This was the crux of Issue #9/#12. **Status: RESOLVED (2026-07)** — the mechanism below is
+the *current* (fixed) behavior; the historical bug is preserved for context.
 
 **(A) For the four canonical transforms** (`key_of_id`, `id_of_key`, `obj_of_data`,
-`data_of_obj`), `_wrap_outcoming` (`:1725`) and `_wrap_ingoing` (`:1792`) branch on
-`_has_unbound_self(trans_func)`:
-- If `False` → the wrapped method calls `trans_func(<value>)` (`:1768`, `:1799`).
-- If `True` → it calls `trans_func(self, <value>)` (`:1779`, `:1805`).
+`data_of_obj`), `_wrap_outcoming` and `_wrap_ingoing` branch on a single resolver
+**`_resolve_self_convention(trans_func) -> (func, wants_self)`**:
+- `wants_self == False` → the wrapped method calls `trans_func(<value>)`.
+- `wants_self == True` → it calls `trans_func(self, <value>)`.
 
-`_has_unbound_self` (`:424`) returns `True` iff the function is not a type, is not a
-bound method, **and** `_first_param_is_an_instance_param(params)` (`:418`) — which is
-literally `list(params)[0] in self_names` where
-**`self_names = frozenset(["self", "store", "mapping"])`** (`trans.py:1617`).
+`_resolve_self_convention` (a) unwraps an explicit `FirstArgIsMapping` marker and forces
+`wants_self=True`, else (b) falls back to `_has_unbound_self`. The **fixed** rule is:
 
-**So the decision is made by the *name of the first parameter*, not by argument count.**
-This directly contradicts `issues_and_discussions.md`'s "1 or 2+ required args" claim.
+> `wants_self ⟺ first parameter name ∈ self_names = {"self","store","mapping"}`
+> **AND `_num_required_positional_params(params) >= 2`**.
 
-Verified empirically:
+The arity clause is the fix. **Before**, the decision was name-only — so a unary callable
+whose first param merely *happened* to be named `self` (e.g. `bytes.decode`) was mis-called
+as `trans_func(store, data)`:
 ```
-signature(bytes.decode) == (self, /, encoding='utf-8', errors='strict')
-_has_unbound_self(bytes.decode)  # True  (first param is named 'self')
+# OLD (buggy): _has_unbound_self(bytes.decode) -> True  (first param named 'self')
 wrap_kvs(dict, obj_of_data=bytes.decode)()['k']
 #   → TypeError: descriptor 'decode' for 'bytes' objects doesn't apply to a 'dict' object
-wrap_kvs(dict, obj_of_data=lambda x: bytes.decode(x))()['k']  # works: first param is 'x'
+# NOW (fixed): bytes.decode has only 1 required positional -> treated as unary -> works.
 ```
-`bytes.decode` breaks purely because its first parameter is *named* `self`, so dol
-mis-calls it as `bytes.decode(store_instance, data)`. Renaming the lambda parameter to
-`self`/`store`/`mapping` would likewise flip the behavior. If `signature()` raises
-`ValueError` (a signature-less builtin), `_has_unbound_self` returns `False` (`:458–460`).
+A genuine self-aware transform `def f(self, data)` (2 required) is unaffected. If
+`signature()` raises `ValueError` (a signature-less builtin), `_has_unbound_self` returns
+`False`. The old note that this was an "arg-count check" was wrong; it is now name **and**
+arity.
 
-**(B) For `postget`/`preset`**, `_wrap_kvs` uses a *hybrid*: `num_of_args(postget) < 2`
-raises a `ValueError` for arity validation (`:2157`, `:2175`), and self-passing is again
-decided by `_has_unbound_self` (`:2162`, `:2180`). So arity is validated but the
-self-vs-no-self choice is still name-based.
+**(B) For `postget`/`preset`**, `_wrap_kvs` resolves the marker first, then does its
+`num_of_args(...) < 2` arity validation on the *unwrapped* function, then branches on the
+resolved `wants_self`.
 
-**Why this is fragile (for redesign):**
-- Behavior depends on an author's incidental parameter *name*, not intent.
-- `functools.partial`, `Sig`-rewritten funcs, and C-builtins interact unpredictably.
-- The intended clean fix — an explicit `FirstArgIsMapping` marker (a `LiteralVal`
-  subclass, `trans.py:2113`) — exists but is **never consumed** anywhere in the code
-  (`# TODO: Use this for it's intent!`). This is Issue #12's proposed solution, unwired.
+**The explicit escape hatch — now wired in:** `FirstArgIsMapping(f)` (a `LiteralVal`
+subclass in `trans.py`) forces the `(self, data)` convention regardless of names/arity.
+It was dead code (`# TODO: Use this for it's intent!`); the fix consumes it via
+`_resolve_self_convention` at all four call sites and exports it from `dol`. This realizes
+Issue #12's proposed solution.
+
+**Backward-compat evidence:** an AST scan of dol + all 76 dependents found **0**
+behavior-changing call sites (12 genuine self-convention transforms, all ≥2 required, are
+preserved); a recall-gap scan of attribute/imported-name transforms across 13 heavy users
+found 0 more; and a baseline-vs-modified dependents test-gate across 25 repos showed 0
+pass→fail regressions. See `dol_issues_report.md` and the `dol-dev-wrap-kvs` skill.
+
+**Remaining redesign note:** the name-based fallback is kept for compatibility; the clean
+long-term direction is explicit-marker-only (drop `self_names`), a future breaking change.
 
 ### 5.5 Related: Issue #18 ("`self` is unwrapped")
 
