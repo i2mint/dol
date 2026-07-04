@@ -121,7 +121,6 @@ from dol.util import (
 
 from dol.trans import (
     wrap_kvs,  # transform store key and/or value
-    FirstArgIsMapping,  # mark a transform whose first arg is the store (self), not data
     filt_iter,  # filter store keys (and contains ready to use filters as attributes)
     cached_keys,  # cache store keys
     add_decoder,  # add a decoder (i.e. outcomming value transformer) to a store
