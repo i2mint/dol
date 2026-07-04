@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tests.test_trans &mdash; dol 0.3.45 documentation</title>
+  <title>dol.tests.test_trans &mdash; dol 0.3.46 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ebfeafaf"></script>
+      <script src="../../../_static/documentation_options.js?v=dc0625c5"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -122,7 +122,122 @@
     <span class="n">filter_regex</span><span class="p">,</span>
     <span class="n">filter_suffixes</span><span class="p">,</span>
     <span class="n">redirect_getattr_to_getitem</span><span class="p">,</span>
+    <span class="n">wrap_kvs</span><span class="p">,</span>
+    <span class="n">FirstArgIsMapping</span><span class="p">,</span>
+    <span class="n">_has_unbound_self</span><span class="p">,</span>
+    <span class="n">_resolve_self_convention</span><span class="p">,</span>
 <span class="p">)</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Signature-based conditioning of wrap_kvs transforms (Issues #9, #12, #18)</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="test_wrap_kvs_unary_builtin_transform_issue_9">
+<a class="viewcode-back" href="../../../module_docs/dol/tests/test_trans.html#dol.tests.test_trans.test_wrap_kvs_unary_builtin_transform_issue_9">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_wrap_kvs_unary_builtin_transform_issue_9</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A unary callable whose first param happens to be named ``self`` must be</span>
+<span class="sd">    applied as ``f(data)``, not ``f(self, data)`` (Issue #9).</span>
+
+<span class="sd">    ``bytes.decode`` is the canonical case: it is effectively unary (one required</span>
+<span class="sd">    positional), but its first parameter is named ``self``. The old name-only</span>
+<span class="sd">    heuristic mis-called it as ``bytes.decode(store, data)`` -&gt; TypeError.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="nb">bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">({</span><span class="s2">&quot;k&quot;</span><span class="p">:</span> <span class="sa">b</span><span class="s2">&quot;hello&quot;</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s2">&quot;k&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;hello&quot;</span>
+
+    <span class="c1"># str.upper, str.split — same shape, must also be treated as unary</span>
+    <span class="k">assert</span> <span class="n">wrap_kvs</span><span class="p">({</span><span class="s2">&quot;k&quot;</span><span class="p">:</span> <span class="s2">&quot;hi&quot;</span><span class="p">},</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">upper</span><span class="p">)[</span><span class="s2">&quot;k&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;HI&quot;</span>
+
+    <span class="c1"># The lambda form, which always worked, must keep working</span>
+    <span class="k">assert</span> <span class="n">wrap_kvs</span><span class="p">({</span><span class="s2">&quot;k&quot;</span><span class="p">:</span> <span class="sa">b</span><span class="s2">&quot;hi&quot;</span><span class="p">},</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">decode</span><span class="p">())[</span><span class="s2">&quot;k&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;hi&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="test_wrap_kvs_self_convention_still_works">
+<a class="viewcode-back" href="../../../module_docs/dol/tests/test_trans.html#dol.tests.test_trans.test_wrap_kvs_self_convention_still_works">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_wrap_kvs_self_convention_still_works</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transforms genuinely using the ``(self, data)`` convention (&gt;=2 required</span>
+<span class="sd">    positional params, first named self/store/mapping) must keep receiving the</span>
+<span class="sd">    store instance. Must not regress the ~12 real ecosystem usages.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;p&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;?&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">S</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">obj_of_data</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="s2">&quot;x&quot;</span><span class="p">})</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="s2">&quot;ns&quot;</span>
+    <span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ns:x&quot;</span>
+
+    <span class="c1"># first param named &#39;store&#39; works too</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">key_of_id</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_id</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="n">key_of_id</span><span class="o">=</span><span class="n">key_of_id</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="test_first_arg_is_mapping_explicit_marker_issue_12">
+<a class="viewcode-back" href="../../../module_docs/dol/tests/test_trans.html#dol.tests.test_trans.test_first_arg_is_mapping_explicit_marker_issue_12">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_first_arg_is_mapping_explicit_marker_issue_12</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;FirstArgIsMapping forces the ``(self, data)`` convention regardless of the</span>
+<span class="sd">    transform&#39;s parameter names, and unwraps to the underlying callable.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">needs_store</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>  <span class="c1"># first param &#39;x&#39; -&gt; heuristic alone says no-self</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;p&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;?&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">S</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">FirstArgIsMapping</span><span class="p">(</span><span class="n">needs_store</span><span class="p">))</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="s2">&quot;v&quot;</span><span class="p">})</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="s2">&quot;NS&quot;</span>
+    <span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;NS/v&quot;</span>
+
+    <span class="c1"># Marker resolves to (underlying_func, wants_self=True)</span>
+    <span class="n">func</span><span class="p">,</span> <span class="n">wants_self</span> <span class="o">=</span> <span class="n">_resolve_self_convention</span><span class="p">(</span><span class="n">FirstArgIsMapping</span><span class="p">(</span><span class="n">needs_store</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">func</span> <span class="ow">is</span> <span class="n">needs_store</span> <span class="ow">and</span> <span class="n">wants_self</span> <span class="ow">is</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="test_postget_preset_self_conventions">
+<a class="viewcode-back" href="../../../module_docs/dol/tests/test_trans.html#dol.tests.test_trans.test_postget_preset_self_conventions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_postget_preset_self_conventions</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;postget/preset honor both the no-self and self conventions, and the</span>
+<span class="sd">    FirstArgIsMapping marker.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">postget_self</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">assert</span> <span class="n">wrap_kvs</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="n">postget</span><span class="o">=</span><span class="n">postget_self</span><span class="p">)[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;a=1&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">postget_plain</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">v</span> <span class="o">*</span> <span class="mi">2</span>
+
+    <span class="k">assert</span> <span class="n">wrap_kvs</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span> <span class="n">postget</span><span class="o">=</span><span class="n">postget_plain</span><span class="p">)[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">10</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">preset_self</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">v</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">S</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="n">preset_self</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">()</span>
+    <span class="n">s</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="k">assert</span> <span class="nb">dict</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">11</span><span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="test_has_unbound_self_heuristic_units">
+<a class="viewcode-back" href="../../../module_docs/dol/tests/test_trans.html#dol.tests.test_trans.test_has_unbound_self_heuristic_units">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_has_unbound_self_heuristic_units</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unit-level checks of the (name AND &gt;=2 required) heuristic.&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">_has_unbound_self</span><span class="p">(</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span>
+    <span class="k">assert</span> <span class="n">_has_unbound_self</span><span class="p">(</span><span class="k">lambda</span> <span class="n">store</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span>
+    <span class="k">assert</span> <span class="n">_has_unbound_self</span><span class="p">(</span><span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">_has_unbound_self</span><span class="p">(</span><span class="nb">bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span>  <span class="c1"># first param &#39;self&#39;, 1 required</span>
+    <span class="k">assert</span> <span class="n">_has_unbound_self</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span>
+    <span class="c1"># first param self-ish but 2nd is optional -&gt; only 1 required -&gt; no-self</span>
+    <span class="k">assert</span> <span class="n">_has_unbound_self</span><span class="p">(</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">:</span> <span class="n">data</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span></div>
+
 
 
 <div class="viewcode-block" id="test_filter_regex_is_os_independent">

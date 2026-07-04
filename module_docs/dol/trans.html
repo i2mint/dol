@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.3.45 documentation</title>
+  <title>dol.trans &mdash; dol 0.3.46 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=ebfeafaf"></script>
+      <script src="../../_static/documentation_options.js?v=dc0625c5"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -194,11 +194,21 @@ That is, encoder and decoder will be swapped.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.trans.FirstArgIsMapping">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">FirstArgIsMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#FirstArgIsMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.FirstArgIsMapping" title="Link to this definition"></a></dt>
-<dd><p>A Literal class to mark a function as being one where the first argument is
-a mapping (store). This is intended to be used in wrappers such as <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code>
-to indicate when the first argument of a transformer function <code class="docutils literal notranslate"><span class="pre">trans</span></code> like
-<code class="docutils literal notranslate"><span class="pre">key_of_id</span></code>, <code class="docutils literal notranslate"><span class="pre">preset</span></code>, etc. is the store itself, therefore should be applied as
-<code class="docutils literal notranslate"><span class="pre">trans(store,</span> <span class="pre">...)</span></code> instead of <code class="docutils literal notranslate"><span class="pre">trans(...)</span></code>.</p>
+<dd><p>Mark a transform so its first argument is the store (mapping), not the data.</p>
+<p>Use this to explicitly opt a transform function into the <code class="docutils literal notranslate"><span class="pre">f(self,</span> <span class="pre">data)</span></code>
+calling convention in wrappers such as <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> – instead of relying on the
+name/arity heuristic (<code class="xref py py-func docutils literal notranslate"><span class="pre">_has_unbound_self()</span></code>). This is the escape hatch for
+functions the heuristic can’t (or shouldn’t) infer, and the recommended, explicit
+alternative to naming a transform’s first parameter <code class="docutils literal notranslate"><span class="pre">self</span></code>/<code class="docutils literal notranslate"><span class="pre">store</span></code>/<code class="docutils literal notranslate"><span class="pre">mapping</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span><span class="p">,</span> <span class="n">FirstArgIsMapping</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">prefix_with_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;?&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">S</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">FirstArgIsMapping</span><span class="p">(</span><span class="n">prefix_with_name</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;x&#39;</span><span class="p">});</span> <span class="n">s</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;ns&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">&#39;ns:x&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py class">
