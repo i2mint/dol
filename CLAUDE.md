@@ -185,15 +185,38 @@ Run tests: `pytest dol/tests/`
 |----------|----------|
 | [general_design.md](misc/docs/general_design.md) | Language-agnostic design: what dol is, the KV pipeline, layered composition, patterns |
 | [dol_design.md](misc/docs/dol_design.md) | Python architecture: class hierarchy, `wrap_kvs` deep dive, `Codec`/`Sig`/`Pipe`, critique |
+| [dol_architecture_map.md](misc/docs/dol_architecture_map.md) | Code-verified structural map: module/dependency graph, public API, class hierarchy, `wrap_kvs`/codec machinery deep dive, ranked tech debt. **Start here for refactors.** |
 | [issues_and_discussions.md](misc/docs/issues_and_discussions.md) | GitHub issues/discussions themes, known limitations, open design questions |
+| [dol_issues_report.md](misc/docs/dol_issues_report.md) | Prioritized issue triage + wave-by-wave tackle order |
 | [frontend_dol_ideas.md](misc/docs/frontend_dol_ideas.md) | `zoddal` design: TypeScript KV interface, adapters, Zod bridge, zod-collection-ui integration |
+
+> A **local-only** ecosystem inventory (gitignored) lives in `misc/data/`: dol's 76
+> dependents, their usages (file:line), a pre-PR test-gate order + runner, and the
+> `wrap_kvs` blast-radius scan. Regenerate with the scripts there.
+
+---
+
+## Agent Skills & Commands (`.claude/`)
+
+**Dev skills** (`.claude/skills/`, for working *on* dol):
+- `dol-dev-wrap-kvs` — the `wrap_kvs`/`store_decorator`/`Store.wrap` machinery: the
+  signature-conditioning rule, `FirstArgIsMapping`, the delegation architecture + `self`/
+  signature traps (#18/#6), and the mandatory dependents test-gate. Read before touching
+  `trans.py`/`base.py`.
+- `dol-dev-portability` — Windows/POSIX landmines for path/key code.
+
+**Consumer skills** (`.claude/skills/`, for *using* dol):
+- `dol-store-building` — wrap any backend behind a dict interface: `wrap_kvs`, codecs, the
+  ready-made file stores, `filt_iter`, caching, and self-aware transforms.
+
+**Commands** (`.claude/commands/`): `/new-store`, `/add-codec`, `/explain-store` — interactive scaffolds.
 
 ---
 
 ## Known Limitations / Gotchas
 
-- **`wrap_kvs` + `self` inside methods**: When a `wrap_kvs`-decorated class uses `self[k]` in its own methods, `self` is the unwrapped instance. Re-apply the wrapper to `self` if transforms are needed (Issue #18).
+- **`wrap_kvs` + `self` inside methods**: When a `wrap_kvs`-decorated class uses `self[k]` in its own methods, `self` is the unwrapped instance. Re-apply the wrapper to `self` if transforms are needed (Issue #18, still open — delegation architecture).
 - **`clear()` is disabled** on `KvPersister`. Call `ensure_clear_to_kv_store(store)` to re-enable.
 - **No async support** in core. Use synchronous wrappers for async backends (thread pool, etc.).
-- **`bytes.decode` as `obj_of_data`** causes issues — use `lambda b: b.decode()` instead (Issue #9).
-- **Windows paths**: Some path-related code has Unix assumptions. Issues #52, #58 track this.
+- **Transforms wanting the store**: a transform is called `f(self, data)` only if its first param is named `self`/`store`/`mapping` **and** it has ≥2 required params; otherwise `f(data)`. Mark explicitly with `FirstArgIsMapping(f)`. (`bytes.decode` as `obj_of_data` now works — Issue #9 fixed.)
+- **Windows paths**: cross-platform fixes landed (Issues #40/#52/#58 resolved, CI green). See the `dol-dev-portability` skill before touching path/key code.

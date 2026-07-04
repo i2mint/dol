@@ -7,7 +7,107 @@ from dol.trans import (
     filter_regex,
     filter_suffixes,
     redirect_getattr_to_getitem,
+    wrap_kvs,
+    FirstArgIsMapping,
+    _has_unbound_self,
+    _resolve_self_convention,
 )
+
+
+# ---------------------------------------------------------------------------
+# Signature-based conditioning of wrap_kvs transforms (Issues #9, #12, #18)
+# ---------------------------------------------------------------------------
+
+
+def test_wrap_kvs_unary_builtin_transform_issue_9():
+    """A unary callable whose first param happens to be named ``self`` must be
+    applied as ``f(data)``, not ``f(self, data)`` (Issue #9).
+
+    ``bytes.decode`` is the canonical case: it is effectively unary (one required
+    positional), but its first parameter is named ``self``. The old name-only
+    heuristic mis-called it as ``bytes.decode(store, data)`` -> TypeError.
+    """
+    S = wrap_kvs(dict, obj_of_data=bytes.decode)
+    s = S({"k": b"hello"})
+    assert s["k"] == "hello"
+
+    # str.upper, str.split — same shape, must also be treated as unary
+    assert wrap_kvs({"k": "hi"}, obj_of_data=str.upper)["k"] == "HI"
+
+    # The lambda form, which always worked, must keep working
+    assert wrap_kvs({"k": b"hi"}, obj_of_data=lambda x: x.decode())["k"] == "hi"
+
+
+def test_wrap_kvs_self_convention_still_works():
+    """Transforms genuinely using the ``(self, data)`` convention (>=2 required
+    positional params, first named self/store/mapping) must keep receiving the
+    store instance. Must not regress the ~12 real ecosystem usages."""
+
+    def obj_of_data(self, data):
+        return f"{getattr(self, 'p', '?')}:{data}"
+
+    S = wrap_kvs(dict, obj_of_data=obj_of_data)
+    s = S({"a": "x"})
+    s.p = "ns"
+    assert s["a"] == "ns:x"
+
+    # first param named 'store' works too
+    def key_of_id(store, _id):
+        return _id.upper()
+
+    s2 = wrap_kvs({"a": 1, "b": 2}, key_of_id=key_of_id)
+    assert sorted(s2) == ["A", "B"]
+
+
+def test_first_arg_is_mapping_explicit_marker_issue_12():
+    """FirstArgIsMapping forces the ``(self, data)`` convention regardless of the
+    transform's parameter names, and unwraps to the underlying callable."""
+
+    def needs_store(x, data):  # first param 'x' -> heuristic alone says no-self
+        return f"{getattr(x, 'p', '?')}/{data}"
+
+    S = wrap_kvs(dict, obj_of_data=FirstArgIsMapping(needs_store))
+    s = S({"a": "v"})
+    s.p = "NS"
+    assert s["a"] == "NS/v"
+
+    # Marker resolves to (underlying_func, wants_self=True)
+    func, wants_self = _resolve_self_convention(FirstArgIsMapping(needs_store))
+    assert func is needs_store and wants_self is True
+
+
+def test_postget_preset_self_conventions():
+    """postget/preset honor both the no-self and self conventions, and the
+    FirstArgIsMapping marker."""
+
+    def postget_self(self, k, v):
+        return f"{k}={v}"
+
+    assert wrap_kvs({"a": 1}, postget=postget_self)["a"] == "a=1"
+
+    def postget_plain(k, v):
+        return v * 2
+
+    assert wrap_kvs({"a": 5}, postget=postget_plain)["a"] == 10
+
+    def preset_self(self, k, v):
+        return v + 1
+
+    S = wrap_kvs(dict, preset=preset_self)
+    s = S()
+    s["a"] = 10
+    assert dict(s) == {"a": 11}
+
+
+def test_has_unbound_self_heuristic_units():
+    """Unit-level checks of the (name AND >=2 required) heuristic."""
+    assert _has_unbound_self(lambda self, data: data) is True
+    assert _has_unbound_self(lambda store, data: data) is True
+    assert _has_unbound_self(lambda data: data) is False
+    assert _has_unbound_self(bytes.decode) is False  # first param 'self', 1 required
+    assert _has_unbound_self(str.upper) is False
+    # first param self-ish but 2nd is optional -> only 1 required -> no-self
+    assert _has_unbound_self(lambda self, data=None: data) is False
 
 
 def test_filter_regex_is_os_independent():
