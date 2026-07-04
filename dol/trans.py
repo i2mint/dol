@@ -419,15 +419,41 @@ def _first_param_is_an_instance_param(params):
     return len(params) > 0 and list(params)[0] in self_names
 
 
-# TODO: Add validation of func: That all but perhaps 1 argument (not counting self)
-#  has a default
-def _has_unbound_self(func):
+def _num_required_positional_params(params):
+    """Number of positional parameters with no default value.
+
+    >>> from inspect import signature
+    >>> _num_required_positional_params(signature(lambda a, b, c=1: 0).parameters)
+    2
     """
+    return sum(
+        1
+        for p in params.values()
+        if p.default is Parameter.empty
+        and p.kind in (Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD)
+    )
+
+
+def _has_unbound_self(func):
+    """Guess whether ``func`` expects the store instance as its first argument.
+
+    A transform passed to ``wrap_kvs`` (and friends) may take either the form
+    ``f(data)`` or ``f(self, data)``. We decide by two conditions that must *both*
+    hold: the first parameter is named like an instance param
+    (``self``/``store``/``mapping`` -- see ``self_names``) **and** the function has at
+    least two required (no-default) positional parameters.
+
+    The second condition avoids misclassifying *unary* callables whose first
+    parameter merely happens to be named ``self`` -- e.g. builtin method descriptors
+    such as ``bytes.decode`` -- which was the root cause of Issue #9. When the
+    heuristic can't infer intent, wrap the function in :class:`FirstArgIsMapping` to
+    opt in explicitly (see :func:`_resolve_self_convention`).
 
     Args:
-        func:
+        func: a candidate transform callable
 
     Returns:
+        bool: True iff ``func`` should be called as ``func(self, ...)``.
 
     >>> def f1(x): ...
     >>> assert _has_unbound_self(f1) == 0
@@ -452,6 +478,13 @@ def _has_unbound_self(func):
     >>> _has_unbound_self(A.foo)
     0
     >>>
+
+    Issue #9 regression: a unary callable whose first parameter is named ``self``
+    (only one required positional) is NOT treated as wanting the store:
+
+    >>> assert _has_unbound_self(bytes.decode) is False
+    >>> assert _has_unbound_self(str.upper) is False
+    >>> assert _has_unbound_self(lambda self, data=None: data) is False
     """
     try:
         params = signature(func).parameters
@@ -467,10 +500,52 @@ def _has_unbound_self(func):
         not isinstance(func, type)
         and not _is_bound(func)
         and _first_param_is_an_instance_param(params)
+        and _num_required_positional_params(params) >= 2
     ):
         return True
     else:
         return False
+
+
+def _resolve_self_convention(trans_func):
+    """Resolve how a transform wants to be called: ``(func, wants_self)``.
+
+    An explicit :class:`FirstArgIsMapping` marker always wins (unwrapped, wants_self
+    True); otherwise fall back to the :func:`_has_unbound_self` heuristic. This is the
+    single source of truth used by every wrap_kvs call site (Issues #9, #12).
+
+    >>> _resolve_self_convention(bytes.decode)[1]
+    False
+    >>> f = lambda self, data: data
+    >>> _resolve_self_convention(f)[1]
+    True
+    >>> g = FirstArgIsMapping(bytes.decode)  # opt in explicitly
+    >>> func, wants_self = _resolve_self_convention(g)
+    >>> wants_self, func is bytes.decode
+    (True, True)
+    """
+    if isinstance(trans_func, FirstArgIsMapping):
+        return trans_func.get_val(), True
+    return trans_func, _has_unbound_self(trans_func)
+
+
+class FirstArgIsMapping(LiteralVal):
+    """Mark a transform so its first argument is the store (mapping), not the data.
+
+    Use this to explicitly opt a transform function into the ``f(self, data)``
+    calling convention in wrappers such as ``wrap_kvs`` -- instead of relying on the
+    name/arity heuristic (:func:`_has_unbound_self`). This is the escape hatch for
+    functions the heuristic can't (or shouldn't) infer, and the recommended, explicit
+    alternative to naming a transform's first parameter ``self``/``store``/``mapping``.
+
+    >>> from dol import wrap_kvs, FirstArgIsMapping
+    >>> def prefix_with_name(self, data):
+    ...     return f"{getattr(self, 'name', '?')}:{data}"
+    >>> S = wrap_kvs(dict, obj_of_data=FirstArgIsMapping(prefix_with_name))
+    >>> s = S({'a': 'x'}); s.name = 'ns'
+    >>> s['a']
+    'ns:x'
+    """
 
 
 def transparent_key_method(self, k):
@@ -1760,9 +1835,10 @@ def _wrap_outcoming(
     [7, 14]
     """
     if trans_func is not None:
+        trans_func, wants_self = _resolve_self_convention(trans_func)
         wrapped_func = getattr(store_cls, wrapped_method)
 
-        if not _has_unbound_self(trans_func):
+        if not wants_self:
             # print(f"00000: {store_cls}: {wrapped_method}, {trans_func}, {wrapped_func}, {wrap_arg_idx}")
             @wraps(wrapped_func)
             def new_method(self, x):
@@ -1791,9 +1867,10 @@ def _wrap_outcoming(
 
 def _wrap_ingoing(store_cls, wrapped_method: str, trans_func: Callable | None = None):
     if trans_func is not None:
+        trans_func, wants_self = _resolve_self_convention(trans_func)
         wrapped_func = getattr(store_cls, wrapped_method)
 
-        if not _has_unbound_self(trans_func):
+        if not wants_self:
 
             @wraps(wrapped_func)
             def new_method(self, x):
@@ -2110,17 +2187,6 @@ def add_decoder(store_cls=None, *, decoder: Callable = None, name=None):
     return wrap_kvs(store_cls, obj_of_data=decoder, name=name)
 
 
-class FirstArgIsMapping(LiteralVal):
-    """A Literal class to mark a function as being one where the first argument is
-    a mapping (store). This is intended to be used in wrappers such as ``wrap_kvs``
-    to indicate when the first argument of a transformer function ``trans`` like
-    ``key_of_id``, ``preset``, etc. is the store itself, therefore should be applied as
-    ``trans(store, ...)`` instead of ``trans(...)``.
-    """
-
-    # TODO: Use this for it's intent!
-
-
 def _wrap_kvs(
     store_cls: type,
     *,
@@ -2154,12 +2220,13 @@ def _wrap_kvs(
     #  Should only count args with no defaults or partial won't be able to be used to make postget/preset funcs
     # TODO: Extract postget and preset patterns?
     if postget is not None:
+        postget, postget_wants_self = _resolve_self_convention(postget)
         if num_of_args(postget) < 2:
             raise ValueError(
                 "A postget function needs to have (key, value) or (self, key, value) arguments"
             )
 
-        if not _has_unbound_self(postget):
+        if not postget_wants_self:
 
             def __getitem__(self, k):
                 return postget(k, super(store_cls, self).__getitem__(k))
@@ -2172,12 +2239,13 @@ def _wrap_kvs(
         store_cls.__getitem__ = __getitem__
 
     if preset is not None:
+        preset, preset_wants_self = _resolve_self_convention(preset)
         if num_of_args(preset) < 2:
             raise ValueError(
                 "A preset function needs to have (key, value) or (self, key, value) arguments"
             )
 
-        if not _has_unbound_self(preset):
+        if not preset_wants_self:
 
             def __setitem__(self, k, v):
                 return super(store_cls, self).__setitem__(k, preset(k, v))
