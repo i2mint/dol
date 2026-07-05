@@ -2444,6 +2444,71 @@ class SimpleDelegator:
             raise TypeError(f"{self._obj=} is not callable")
 
 
+def _dflt_overwrite_prompt(k, existing, new):
+    return (
+        f"The key {k} already exists and has value {existing}. "
+        f"If you want to overwrite it with {new}, confirm by typing {new} here: "
+    )
+
+
+def mk_confirm_overwrite_preset(
+    *,
+    get_input: Callable[[str], str] | None = None,
+    prompt: Callable = _dflt_overwrite_prompt,
+):
+    """Make a ``wrap_kvs`` ``preset`` that asks for confirmation before overwriting an
+    existing key that holds a *different* value.
+
+    The returned preset writes ``v`` unchanged unless ``k`` already maps to a different
+    value; in that case it asks ``get_input`` to confirm (by typing the new value), and
+    keeps the existing value if the confirmation doesn't match. Use ``get_input`` to
+    customize how confirmation is obtained (``None`` -> the builtin ``input``, resolved at
+    call time), e.g. for testing or for a non-interactive policy. See
+    :func:`confirm_overwrite`.
+
+    >>> store = dict(a='apple', b='banana')
+    >>> # simulate a user who always types the exact new value (confirms every overwrite)
+    >>> always_yes = wrap_kvs(
+    ...     store, preset=mk_confirm_overwrite_preset(get_input=lambda prompt: 'alligator')
+    ... )
+    >>> always_yes['a'] = 'alligator'   # confirmation matches -> overwrites
+    >>> store['a']
+    'alligator'
+    >>> # simulate a user who declines (types something that doesn't match)
+    >>> always_no = wrap_kvs(
+    ...     store, preset=mk_confirm_overwrite_preset(get_input=lambda prompt: 'nope')
+    ... )
+    >>> always_no['a'] = 'anteater'     # declined -> existing value kept
+    >>> store['a']
+    'alligator'
+    """
+
+    def confirm_overwrite(self, k, v):
+        _sentinel = object()
+        existing = self.get(k, _sentinel)
+        if existing is not _sentinel and existing != v:
+            # resolve ``input`` at call time (not capture) so monkeypatching works
+            ask = get_input if get_input is not None else input
+            if ask(prompt(k, existing, v)) != str(v):
+                return existing  # not confirmed: keep the existing value (no change)
+        return v
+
+    return confirm_overwrite
+
+
+#: A ready-to-use ``wrap_kvs`` ``preset`` that asks (via the builtin ``input``) to confirm
+#: before overwriting an existing key with a different value (Issue #13). For customization
+#: (e.g. a non-interactive confirmation policy), use :func:`mk_confirm_overwrite_preset`.
+#:
+#: >>> from dol import wrap_kvs, confirm_overwrite
+#: >>> d = wrap_kvs(dict(a='apple', b='banana'), preset=confirm_overwrite)
+#: >>> d['a'] = 'apple'      # same value -> no prompt, no change
+#: >>> d['c'] = 'coconut'    # new key   -> no prompt, written
+#: >>> dict(d) == {'a': 'apple', 'b': 'banana', 'c': 'coconut'}
+#: True
+confirm_overwrite = mk_confirm_overwrite_preset()
+
+
 def add_aliases(obj, **aliases):
     """A function that wraps the object instance and adds aliases.
 
