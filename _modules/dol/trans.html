@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.3.50 documentation</title>
+  <title>dol.trans &mdash; dol 0.3.52 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d738e155"></script>
+      <script src="../../_static/documentation_options.js?v=44b8ef26"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_appendable.html">dol.tests.test_appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_caching.html">dol.tests.test_caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_confirm_overwrite.html">dol.tests.test_confirm_overwrite</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_dig.html">dol.tests.test_dig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
@@ -2610,6 +2611,74 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="si">=}</span><span class="s2"> is not callable&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dflt_overwrite_prompt</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">existing</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;The key </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> already exists and has value </span><span class="si">{</span><span class="n">existing</span><span class="si">}</span><span class="s2">. &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;If you want to overwrite it with </span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">, confirm by typing </span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2"> here: &quot;</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="mk_confirm_overwrite_preset">
+<a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.trans.mk_confirm_overwrite_preset">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mk_confirm_overwrite_preset</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">get_input</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">prompt</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">_dflt_overwrite_prompt</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a ``wrap_kvs`` ``preset`` that asks for confirmation before overwriting an</span>
+<span class="sd">    existing key that holds a *different* value.</span>
+
+<span class="sd">    The returned preset writes ``v`` unchanged unless ``k`` already maps to a different</span>
+<span class="sd">    value; in that case it asks ``get_input`` to confirm (by typing the new value), and</span>
+<span class="sd">    keeps the existing value if the confirmation doesn&#39;t match. Use ``get_input`` to</span>
+<span class="sd">    customize how confirmation is obtained (``None`` -&gt; the builtin ``input``, resolved at</span>
+<span class="sd">    call time), e.g. for testing or for a non-interactive policy. See</span>
+<span class="sd">    :func:`confirm_overwrite`.</span>
+
+<span class="sd">    &gt;&gt;&gt; store = dict(a=&#39;apple&#39;, b=&#39;banana&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; # simulate a user who always types the exact new value (confirms every overwrite)</span>
+<span class="sd">    &gt;&gt;&gt; always_yes = wrap_kvs(</span>
+<span class="sd">    ...     store, preset=mk_confirm_overwrite_preset(get_input=lambda prompt: &#39;alligator&#39;)</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; always_yes[&#39;a&#39;] = &#39;alligator&#39;   # confirmation matches -&gt; overwrites</span>
+<span class="sd">    &gt;&gt;&gt; store[&#39;a&#39;]</span>
+<span class="sd">    &#39;alligator&#39;</span>
+<span class="sd">    &gt;&gt;&gt; # simulate a user who declines (types something that doesn&#39;t match)</span>
+<span class="sd">    &gt;&gt;&gt; always_no = wrap_kvs(</span>
+<span class="sd">    ...     store, preset=mk_confirm_overwrite_preset(get_input=lambda prompt: &#39;nope&#39;)</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; always_no[&#39;a&#39;] = &#39;anteater&#39;     # declined -&gt; existing value kept</span>
+<span class="sd">    &gt;&gt;&gt; store[&#39;a&#39;]</span>
+<span class="sd">    &#39;alligator&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">confirm_overwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="n">_sentinel</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">_sentinel</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">existing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_sentinel</span> <span class="ow">and</span> <span class="n">existing</span> <span class="o">!=</span> <span class="n">v</span><span class="p">:</span>
+            <span class="c1"># resolve ``input`` at call time (not capture) so monkeypatching works</span>
+            <span class="n">ask</span> <span class="o">=</span> <span class="n">get_input</span> <span class="k">if</span> <span class="n">get_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">input</span>
+            <span class="k">if</span> <span class="n">ask</span><span class="p">(</span><span class="n">prompt</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">existing</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">existing</span>  <span class="c1"># not confirmed: keep the existing value (no change)</span>
+        <span class="k">return</span> <span class="n">v</span>
+
+    <span class="k">return</span> <span class="n">confirm_overwrite</span></div>
+
+
+
+<span class="c1">#: A ready-to-use ``wrap_kvs`` ``preset`` that asks (via the builtin ``input``) to confirm</span>
+<span class="c1">#: before overwriting an existing key with a different value (Issue #13). For customization</span>
+<span class="c1">#: (e.g. a non-interactive confirmation policy), use :func:`mk_confirm_overwrite_preset`.</span>
+<span class="c1">#:</span>
+<span class="c1">#: &gt;&gt;&gt; from dol import wrap_kvs, confirm_overwrite</span>
+<span class="c1">#: &gt;&gt;&gt; d = wrap_kvs(dict(a=&#39;apple&#39;, b=&#39;banana&#39;), preset=confirm_overwrite)</span>
+<span class="c1">#: &gt;&gt;&gt; d[&#39;a&#39;] = &#39;apple&#39;      # same value -&gt; no prompt, no change</span>
+<span class="c1">#: &gt;&gt;&gt; d[&#39;c&#39;] = &#39;coconut&#39;    # new key   -&gt; no prompt, written</span>
+<span class="c1">#: &gt;&gt;&gt; dict(d) == {&#39;a&#39;: &#39;apple&#39;, &#39;b&#39;: &#39;banana&#39;, &#39;c&#39;: &#39;coconut&#39;}</span>
+<span class="c1">#: True</span>
+<span class="n">confirm_overwrite</span> <span class="o">=</span> <span class="n">mk_confirm_overwrite_preset</span><span class="p">()</span>
 
 
 <div class="viewcode-block" id="add_aliases">

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.kv_codecs &mdash; dol 0.3.50 documentation</title>
+  <title>dol.kv_codecs &mdash; dol 0.3.52 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d738e155"></script>
+      <script src="../../_static/documentation_options.js?v=44b8ef26"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -63,11 +63,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.KeyCodecs.mapped_keys"><code class="docutils literal notranslate"><span class="pre">KeyCodecs.mapped_keys()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.KeyValueCodecs"><code class="docutils literal notranslate"><span class="pre">KeyValueCodecs</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.KeyValueCodecs.extension_based"><code class="docutils literal notranslate"><span class="pre">KeyValueCodecs.extension_based()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.KeyValueCodecs.key_based"><code class="docutils literal notranslate"><span class="pre">KeyValueCodecs.key_based()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.KeyValueCodecs"><code class="docutils literal notranslate"><span class="pre">KeyValueCodecs</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.NotGiven"><code class="docutils literal notranslate"><span class="pre">NotGiven</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.kv_codecs.ValueCodecs"><code class="docutils literal notranslate"><span class="pre">ValueCodecs</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dol.kv_codecs.ValueCodecs.b64"><code class="docutils literal notranslate"><span class="pre">ValueCodecs.b64</span></code></a></li>
@@ -103,6 +99,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_appendable.html">dol.tests.test_appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_caching.html">dol.tests.test_caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_confirm_overwrite.html">dol.tests.test_confirm_overwrite</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_dig.html">dol.tests.test_dig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
@@ -199,20 +196,6 @@ The statement above is true if you swap “encoder” and “decoder”.</p>
 <dt class="sig sig-object py" id="dol.kv_codecs.KeyValueCodecs">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">KeyValueCodecs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#KeyValueCodecs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.KeyValueCodecs" title="Link to this definition"></a></dt>
 <dd><p>A collection of key-value codecs that can be used with postget and preset kv_wraps.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="dol.kv_codecs.KeyValueCodecs.extension_based">
-<span class="sig-name descname"><span class="pre">extension_based</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#KeyValueCodecs.extension_based"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.KeyValueCodecs.extension_based" title="Link to this definition"></a></dt>
-<dd><p>A factory that creates a key-value codec that uses the file extension to
-determine the value codec to use.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dol.kv_codecs.KeyValueCodecs.key_based">
-<span class="sig-name descname"><span class="pre">key_based</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">identity_func&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#KeyValueCodecs.key_based"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.KeyValueCodecs.key_based" title="Link to this definition"></a></dt>
-<dd><p>A factory that creates a key-value codec that uses the key to determine the
-value codec to use.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">

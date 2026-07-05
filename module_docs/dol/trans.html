@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.3.50 documentation</title>
+  <title>dol.trans &mdash; dol 0.3.52 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d738e155"></script>
+      <script src="../../_static/documentation_options.js?v=44b8ef26"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -73,6 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_appendable.html">dol.tests.test_appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_caching.html">dol.tests.test_caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_confirm_overwrite.html">dol.tests.test_confirm_overwrite</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_dig.html">dol.tests.test_dig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
@@ -111,6 +112,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.cache_iter"><code class="docutils literal notranslate"><span class="pre">cache_iter()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.cached_keys"><code class="docutils literal notranslate"><span class="pre">cached_keys()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.catch_and_cache_error_keys"><code class="docutils literal notranslate"><span class="pre">catch_and_cache_error_keys()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.trans.confirm_overwrite"><code class="docutils literal notranslate"><span class="pre">confirm_overwrite()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.constant_output"><code class="docutils literal notranslate"><span class="pre">constant_output()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.double_up_as_factory"><code class="docutils literal notranslate"><span class="pre">double_up_as_factory()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.ensure_clear_method"><code class="docutils literal notranslate"><span class="pre">ensure_clear_method()</span></code></a></li>
@@ -124,6 +126,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.insert_load_dump_aliases"><code class="docutils literal notranslate"><span class="pre">insert_load_dump_aliases()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.kv_wrap"><code class="docutils literal notranslate"><span class="pre">kv_wrap()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.kv_wrap_persister_cls"><code class="docutils literal notranslate"><span class="pre">kv_wrap_persister_cls()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.trans.mk_confirm_overwrite_preset"><code class="docutils literal notranslate"><span class="pre">mk_confirm_overwrite_preset()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.mk_kv_reader_from_kv_collection"><code class="docutils literal notranslate"><span class="pre">mk_kv_reader_from_kv_collection()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.mk_level_walk_filt"><code class="docutils literal notranslate"><span class="pre">mk_level_walk_filt()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.trans.mk_trans_obj"><code class="docutils literal notranslate"><span class="pre">mk_trans_obj()</span></code></a></li>
@@ -1205,6 +1208,22 @@ VALUE-PRODUCING iteration (i.e. entirely consuming <cite>items()</cite> or <cite
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.confirm_overwrite">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">confirm_overwrite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.trans.confirm_overwrite" title="Link to this definition"></a></dt>
+<dd><p>A ready-to-use <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> <code class="docutils literal notranslate"><span class="pre">preset</span></code> that asks (via the builtin <code class="docutils literal notranslate"><span class="pre">input</span></code>) to confirm
+before overwriting an existing key with a different value (Issue #13). For customization
+(e.g. a non-interactive confirmation policy), use <a class="reference internal" href="#dol.trans.mk_confirm_overwrite_preset" title="dol.trans.mk_confirm_overwrite_preset"><code class="xref py py-func docutils literal notranslate"><span class="pre">mk_confirm_overwrite_preset()</span></code></a>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span><span class="p">,</span> <span class="n">confirm_overwrite</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="s1">&#39;apple&#39;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s1">&#39;banana&#39;</span><span class="p">),</span> <span class="n">preset</span><span class="o">=</span><span class="n">confirm_overwrite</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;apple&#39;</span>      <span class="c1"># same value -&gt; no prompt, no change</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;coconut&#39;</span>    <span class="c1"># new key   -&gt; no prompt, written</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;apple&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;banana&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="s1">&#39;coconut&#39;</span><span class="p">}</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.constant_output">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">constant_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#constant_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.constant_output" title="Link to this definition"></a></dt>
 <dd><p>Function that returns a constant value no matter what the inputs are.
@@ -1748,6 +1767,36 @@ when that’s what you need.</p>
 <span class="go">{&#39;one&#39;: 1, &#39;two&#39;: 2, &#39;three&#39;: 3}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Thus is because when you construct a D with the dict, it initializes the dicts data with it directly</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># before the key/val transformers are in place to do their jobs.</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.mk_confirm_overwrite_preset">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">mk_confirm_overwrite_preset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">*,</span> <span class="pre">get_input:</span> <span class="pre">~collections.abc.Callable[[str],</span> <span class="pre">str]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">prompt:</span> <span class="pre">~collections.abc.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_dflt_overwrite_prompt&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/trans.html#mk_confirm_overwrite_preset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.mk_confirm_overwrite_preset" title="Link to this definition"></a></dt>
+<dd><p>Make a <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> <code class="docutils literal notranslate"><span class="pre">preset</span></code> that asks for confirmation before overwriting an
+existing key that holds a <em>different</em> value.</p>
+<p>The returned preset writes <code class="docutils literal notranslate"><span class="pre">v</span></code> unchanged unless <code class="docutils literal notranslate"><span class="pre">k</span></code> already maps to a different
+value; in that case it asks <code class="docutils literal notranslate"><span class="pre">get_input</span></code> to confirm (by typing the new value), and
+keeps the existing value if the confirmation doesn’t match. Use <code class="docutils literal notranslate"><span class="pre">get_input</span></code> to
+customize how confirmation is obtained (<code class="docutils literal notranslate"><span class="pre">None</span></code> -&gt; the builtin <code class="docutils literal notranslate"><span class="pre">input</span></code>, resolved at
+call time), e.g. for testing or for a non-interactive policy. See
+<a class="reference internal" href="#dol.trans.confirm_overwrite" title="dol.trans.confirm_overwrite"><code class="xref py py-func docutils literal notranslate"><span class="pre">confirm_overwrite()</span></code></a>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="s1">&#39;apple&#39;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s1">&#39;banana&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># simulate a user who always types the exact new value (confirms every overwrite)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">always_yes</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">store</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="n">mk_confirm_overwrite_preset</span><span class="p">(</span><span class="n">get_input</span><span class="o">=</span><span class="k">lambda</span> <span class="n">prompt</span><span class="p">:</span> <span class="s1">&#39;alligator&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">always_yes</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;alligator&#39;</span>   <span class="c1"># confirmation matches -&gt; overwrites</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">store</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">&#39;alligator&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># simulate a user who declines (types something that doesn&#39;t match)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">always_no</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">store</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="n">mk_confirm_overwrite_preset</span><span class="p">(</span><span class="n">get_input</span><span class="o">=</span><span class="k">lambda</span> <span class="n">prompt</span><span class="p">:</span> <span class="s1">&#39;nope&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">always_no</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;anteater&#39;</span>     <span class="c1"># declined -&gt; existing value kept</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">store</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">&#39;alligator&#39;</span>
 </pre></div>
 </div>
 </dd></dl>

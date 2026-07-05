@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.kv_codecs &mdash; dol 0.3.50 documentation</title>
+  <title>dol.kv_codecs &mdash; dol 0.3.52 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d738e155"></script>
+      <script src="../../_static/documentation_options.js?v=44b8ef26"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/scrap.html">dol.tests.scrap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_appendable.html">dol.tests.test_appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_caching.html">dol.tests.test_caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_confirm_overwrite.html">dol.tests.test_confirm_overwrite</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_dig.html">dol.tests.test_dig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
@@ -736,32 +737,13 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">KeyValueCodecs</span><span class="p">(</span><span class="n">CodecCollection</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A collection of key-value codecs that can be used with postget and preset kv_wraps.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="KeyValueCodecs.key_based">
-<a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyValueCodecs.key_based">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">key_based</span><span class="p">(</span>
-        <span class="n">key_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-        <span class="n">key_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">identity_func</span><span class="p">,</span>
-        <span class="o">*</span><span class="p">,</span>
-        <span class="n">default</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A factory that creates a key-value codec that uses the key to determine the</span>
-<span class="sd">        value codec to use.&quot;&quot;&quot;</span></div>
+<span class="sd">    &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="KeyValueCodecs.extension_based">
-<a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyValueCodecs.extension_based">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">extension_based</span><span class="p">(</span>
-        <span class="n">ext_mapping</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">dflt_ext_mapping</span><span class="p">,</span>
-        <span class="o">*</span><span class="p">,</span>
-        <span class="n">default</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A factory that creates a key-value codec that uses the file extension to</span>
-<span class="sd">        determine the value codec to use.&quot;&quot;&quot;</span></div>
-</div>
-
-        <span class="c1"># TODO: Implement this function - ext_mapping parameter is currently unused</span>
+    <span class="c1"># Note: ``key_based`` / ``extension_based`` factories were removed here (Issue #68):</span>
+    <span class="c1"># they were empty stubs that silently returned ``None``. The building blocks live as</span>
+    <span class="c1"># module-level functions (:func:`key_based_codec_factory`, :func:`key_based_value_trans`)</span>
+    <span class="c1"># if/when a key/extension-dispatching value codec is implemented for real.</span>
 </pre></div>
 
            </div>
