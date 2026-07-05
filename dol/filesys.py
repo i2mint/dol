@@ -41,7 +41,11 @@ def paths_in_dir(rootdir, include_hidden=False):
                     yield ensure_slash_suffix(filepath)
                 else:
                     yield filepath
-    except FileNotFoundError:
+    except (FileNotFoundError, NotADirectoryError, PermissionError):
+        # Skip directories that vanished, aren't directories, or aren't readable rather
+        # than crashing the (recursive) walk. Notably, OS-protected directories such as
+        # macOS's ``.../com.apple.*/TemporaryItems/`` under the temp dir raise
+        # PermissionError from ``os.listdir`` (Issue #3).
         pass
 
 
