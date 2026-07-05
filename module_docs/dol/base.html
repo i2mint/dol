@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.base &mdash; dol 0.3.46 documentation</title>
+  <title>dol.base &mdash; dol 0.3.48 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=dc0625c5"></script>
+      <script src="../../_static/documentation_options.js?v=9064021e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -78,6 +78,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.base.delegator_wrap"><code class="docutils literal notranslate"><span class="pre">delegator_wrap()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.base.has_kv_store_interface"><code class="docutils literal notranslate"><span class="pre">has_kv_store_interface()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.base.kv_walk"><code class="docutils literal notranslate"><span class="pre">kv_walk()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.base.wrapped_self"><code class="docutils literal notranslate"><span class="pre">wrapped_self()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="caching.html">dol.caching</a></li>
@@ -835,6 +836,46 @@ traversal, just say it:</p>
 <p>So now, you can get the first apple path by doing:
 &gt;&gt;&gt; next(filter(None, walker3(d)))
 (‘apple’,)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.base.wrapped_self">
+<span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">wrapped_self</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../_modules/dol/base.html#wrapped_self"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.wrapped_self" title="Link to this definition"></a></dt>
+<dd><p>Return the outermost transform-applying store wrapping <code class="docutils literal notranslate"><span class="pre">obj</span></code>, else <code class="docutils literal notranslate"><span class="pre">obj</span></code> itself.</p>
+<p>Use this inside a method DEFINED ON a class that was wrapped by dol’s delegation
+machinery (<code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> / <code class="docutils literal notranslate"><span class="pre">filt_iter</span></code> / <code class="docutils literal notranslate"><span class="pre">cached_keys</span></code> / <code class="docutils literal notranslate"><span class="pre">mk_relative_path_store</span></code> /
+<code class="docutils literal notranslate"><span class="pre">Store.wrap</span></code> applied to the <em>class</em>). There, <code class="docutils literal notranslate"><span class="pre">self</span></code> is bound to the inner, unwrapped
+store, so <code class="docutils literal notranslate"><span class="pre">self[k]</span></code> bypasses the transforms (Issue #18). Writing
+<code class="docutils literal notranslate"><span class="pre">wrapped_self(self)[k]</span></code> recovers the outer, transform-applying view.</p>
+<p>On a direct <code class="docutils literal notranslate"><span class="pre">Store</span></code>/<code class="docutils literal notranslate"><span class="pre">KvReader</span></code> subclass, or a plain object that never went through
+the delegation machinery, there is no registered wrapper and <code class="docutils literal notranslate"><span class="pre">obj</span></code> is returned
+unchanged – a safe no-op. If the store was wrapped in several layers (e.g. via
+<code class="docutils literal notranslate"><span class="pre">Pipe</span></code>), this climbs to the OUTERMOST wrapper.</p>
+<p>Limitation: if the <em>same inner store instance</em> is wrapped by several live wrappers with
+different transforms (e.g. calling <code class="docutils literal notranslate"><span class="pre">wrap_kvs(shared_instance,</span> <span class="pre">...)</span></code> twice), a method
+bound to that shared inner cannot know which wrapper it was reached through, so one of
+the wrappers is returned (ambiguous but never raw/None). This does not arise for
+class-wraps (each construction builds its own inner) nor for <code class="docutils literal notranslate"><span class="pre">copy.copy</span></code> (whose copies
+are transform-equivalent, so either answer is correct).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span><span class="p">,</span> <span class="n">wrapped_self</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sq</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">data_of_obj</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@sq</span>
+<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">S</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">via_self</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>                 <span class="c1"># self is the INNER store: NOT transformed</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">via_wrapped_self</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">wrapped_self</span><span class="p">(</span><span class="bp">self</span><span class="p">)[</span><span class="n">k</span><span class="p">]</span>    <span class="c1"># outer store: transform applied</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;2&#39;</span><span class="p">]</span>                                 <span class="c1"># external access is transformed</span>
+<span class="go">2.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">via_self</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">)</span>                        <span class="c1"># Issue #18: bypasses the transform</span>
+<span class="go">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">via_wrapped_self</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">)</span>                <span class="c1"># wrapped_self recovers the transformed value</span>
+<span class="go">2.0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

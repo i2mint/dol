@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.base &mdash; dol 0.3.46 documentation</title>
+  <title>dol.base &mdash; dol 0.3.48 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=dc0625c5"></script>
+      <script src="../../_static/documentation_options.js?v=9064021e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -141,6 +141,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">update_wrapper</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copyreg</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">weakref</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Collection</span> <span class="k">as</span> <span class="n">CollectionABC</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -389,17 +390,17 @@
             <span class="c1">#   self.__wrapped__ would make it hard to debug and</span>
             <span class="c1">#   self would fail with unbound methods (why?)</span>
             <span class="c1">#   So doing a check here, but would like to find a better solution.</span>
-            <span class="n">wrapped_self</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;__wrapped__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">is_classmethod</span><span class="p">(</span><span class="n">wrapped_self</span><span class="p">)</span> <span class="ow">or</span> <span class="n">is_unbound_method</span><span class="p">(</span><span class="n">wrapped_self</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">wrapped_self</span>
+            <span class="n">wrapped_callable</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;__wrapped__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_classmethod</span><span class="p">(</span><span class="n">wrapped_callable</span><span class="p">)</span> <span class="ow">or</span> <span class="n">is_unbound_method</span><span class="p">(</span><span class="n">wrapped_callable</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">wrapped_callable</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span>
 
-            <span class="c1"># wrapped_self = getattr(self, &#39;__wrapped__&#39;, None)</span>
-            <span class="c1"># if not is_classmethod(wrapped_self):</span>
+            <span class="c1"># wrapped_callable = getattr(self, &#39;__wrapped__&#39;, None)</span>
+            <span class="c1"># if not is_classmethod(wrapped_callable):</span>
             <span class="c1">#     return self</span>
             <span class="c1"># else:</span>
-            <span class="c1">#     return wrapped_self</span>
+            <span class="c1">#     return wrapped_callable</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># i.e. return instance.delegate.attr</span>
             <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delegate_name</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_name</span><span class="p">)</span>
@@ -410,6 +411,133 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__delete__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
         <span class="nb">delattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delegate_name</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_name</span><span class="p">)</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------------------</span>
+<span class="c1"># wrapped_self: recover the outer (transform-applying) store from inside a wrapped</span>
+<span class="c1"># class&#39;s own method. See Issue #18 and misc/docs/dol_issue18_design.md.</span>
+<span class="c1">#</span>
+<span class="c1"># dol wraps by delegation (has-a): ``wrap_kvs(SomeClass)`` returns a ``Store`` subclass</span>
+<span class="c1"># ``Wrap`` that HOLDS an instance of ``SomeClass`` in ``self.store``. A method defined on</span>
+<span class="c1"># ``SomeClass`` is copied onto ``Wrap`` as a ``DelegatedAttribute`` and runs bound to the</span>
+<span class="c1"># INNER, unwrapped ``self.store`` -- so ``self[k]`` inside such a method bypasses the</span>
+<span class="c1"># transform pipeline (Issue #18). ``wrapped_self(self)`` maps that inner store back to the</span>
+<span class="c1"># outer wrapper so ``self[k]`` can be routed through the transforms as</span>
+<span class="c1"># ``wrapped_self(self)[k]``.</span>
+<span class="c1">#</span>
+<span class="c1"># The mapping is kept in a module-global registry of weak references, keyed by ``id`` of</span>
+<span class="c1"># the inner store, populated in ``Store.__init__`` and re-populated in ``Store.__setstate__``</span>
+<span class="c1"># (unpickling bypasses ``__init__``). We key by ``id`` -- rather than setting an attribute on</span>
+<span class="c1"># the inner store -- because inner stores are often plain ``dict``/C backends that reject</span>
+<span class="c1"># instance attributes and whose pickling a stray weakref would break.</span>
+<span class="c1">#</span>
+<span class="c1"># Each id maps to a *list* of weakrefs, not a single one, so that objects legitimately</span>
+<span class="c1"># sharing an inner store (most importantly a shallow ``copy.copy`` of a wrapped store, whose</span>
+<span class="c1"># copy shares ``self.store`` with the original) coexist: a finalizer removes only its own</span>
+<span class="c1"># weakref, never a live sibling&#39;s. ``wrapped_self`` then picks a live wrapper that still</span>
+<span class="c1"># actually holds the queried object as its ``.store`` (an identity guard).</span>
+<span class="n">_wrapper_backrefs</span><span class="p">:</span> <span class="s2">&quot;dict[int, list[weakref.ReferenceType]]&quot;</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_register_wrapper_backref</span><span class="p">(</span><span class="n">inner</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">:</span> <span class="s2">&quot;Store&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Record that ``wrapper`` holds ``inner`` as its delegated store.</span>
+
+<span class="sd">    Appends ``weakref(wrapper)`` to the list registered under ``id(inner)`` (idempotent for</span>
+<span class="sd">    an already-registered live wrapper). When ``wrapper`` is garbage-collected the weakref</span>
+<span class="sd">    callback removes *only its own* entry from that list, and drops the ``id(inner)`` key once</span>
+<span class="sd">    the list is empty -- so garbage-collecting one wrapper (e.g. a transient ``copy.copy``)</span>
+<span class="sd">    never evicts a still-live sibling that shares the same inner.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">inner_id</span> <span class="o">=</span> <span class="nb">id</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span>
+
+    <span class="n">existing</span> <span class="o">=</span> <span class="n">_wrapper_backrefs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">inner_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">existing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">ref</span><span class="p">()</span> <span class="ow">is</span> <span class="n">wrapper</span> <span class="k">for</span> <span class="n">ref</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">):</span>
+        <span class="k">return</span>  <span class="c1"># this live wrapper is already registered for this inner</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cleanup</span><span class="p">(</span><span class="n">dead_ref</span><span class="p">:</span> <span class="s2">&quot;weakref.ReferenceType&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">refs</span> <span class="o">=</span> <span class="n">_wrapper_backrefs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">inner_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">refs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">refs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">dead_ref</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">refs</span><span class="p">:</span>
+            <span class="n">_wrapper_backrefs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">inner_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">wrapper</span><span class="p">,</span> <span class="n">_cleanup</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="c1"># wrapper not weak-referenceable (not expected for a Store) -- skip silently:</span>
+        <span class="c1"># wrapped_self simply falls back to returning the inner store unchanged.</span>
+        <span class="k">return</span>
+    <span class="n">_wrapper_backrefs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">inner_id</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="wrapped_self">
+<a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.wrapped_self">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">wrapped_self</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the outermost transform-applying store wrapping ``obj``, else ``obj`` itself.</span>
+
+<span class="sd">    Use this inside a method DEFINED ON a class that was wrapped by dol&#39;s delegation</span>
+<span class="sd">    machinery (``wrap_kvs`` / ``filt_iter`` / ``cached_keys`` / ``mk_relative_path_store`` /</span>
+<span class="sd">    ``Store.wrap`` applied to the *class*). There, ``self`` is bound to the inner, unwrapped</span>
+<span class="sd">    store, so ``self[k]`` bypasses the transforms (Issue #18). Writing</span>
+<span class="sd">    ``wrapped_self(self)[k]`` recovers the outer, transform-applying view.</span>
+
+<span class="sd">    On a direct ``Store``/``KvReader`` subclass, or a plain object that never went through</span>
+<span class="sd">    the delegation machinery, there is no registered wrapper and ``obj`` is returned</span>
+<span class="sd">    unchanged -- a safe no-op. If the store was wrapped in several layers (e.g. via</span>
+<span class="sd">    ``Pipe``), this climbs to the OUTERMOST wrapper.</span>
+
+<span class="sd">    Limitation: if the *same inner store instance* is wrapped by several live wrappers with</span>
+<span class="sd">    different transforms (e.g. calling ``wrap_kvs(shared_instance, ...)`` twice), a method</span>
+<span class="sd">    bound to that shared inner cannot know which wrapper it was reached through, so one of</span>
+<span class="sd">    the wrappers is returned (ambiguous but never raw/None). This does not arise for</span>
+<span class="sd">    class-wraps (each construction builds its own inner) nor for ``copy.copy`` (whose copies</span>
+<span class="sd">    are transform-equivalent, so either answer is correct).</span>
+
+<span class="sd">    &gt;&gt;&gt; import math</span>
+<span class="sd">    &gt;&gt;&gt; from dol import wrap_kvs, wrapped_self</span>
+<span class="sd">    &gt;&gt;&gt; sq = wrap_kvs(data_of_obj=lambda x: x * x, obj_of_data=lambda x: math.sqrt(x))</span>
+<span class="sd">    &gt;&gt;&gt; @sq</span>
+<span class="sd">    ... class S(dict):</span>
+<span class="sd">    ...     def via_self(self, k):</span>
+<span class="sd">    ...         return self[k]                 # self is the INNER store: NOT transformed</span>
+<span class="sd">    ...     def via_wrapped_self(self, k):</span>
+<span class="sd">    ...         return wrapped_self(self)[k]    # outer store: transform applied</span>
+<span class="sd">    &gt;&gt;&gt; s = S()</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;2&#39;] = 2</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;2&#39;]                                 # external access is transformed</span>
+<span class="sd">    2.0</span>
+<span class="sd">    &gt;&gt;&gt; s.via_self(&#39;2&#39;)                        # Issue #18: bypasses the transform</span>
+<span class="sd">    4</span>
+<span class="sd">    &gt;&gt;&gt; s.via_wrapped_self(&#39;2&#39;)                # wrapped_self recovers the transformed value</span>
+<span class="sd">    2.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="n">obj</span><span class="p">)}</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">obj</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">nxt</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">ref</span> <span class="ow">in</span> <span class="n">_wrapper_backrefs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">cur</span><span class="p">),</span> <span class="p">()):</span>
+            <span class="n">candidate</span> <span class="o">=</span> <span class="n">ref</span><span class="p">()</span>
+            <span class="c1"># Identity guard: only follow a back-reference whose wrapper STILL holds ``cur``</span>
+            <span class="c1"># as its ``.store``. This rejects stale entries left by a post-construction</span>
+            <span class="c1"># ``.store`` reassignment (and the id-reuse false positives they enable), and</span>
+            <span class="c1"># picks a genuinely-wrapping candidate when several are registered for one id.</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">candidate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="nb">id</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen</span>
+                <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">candidate</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="n">cur</span>
+            <span class="p">):</span>
+                <span class="n">nxt</span> <span class="o">=</span> <span class="n">candidate</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">nxt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">nxt</span><span class="p">))</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="n">nxt</span>
+    <span class="k">return</span> <span class="n">cur</span></div>
+
 
 
 <span class="n">Decorator</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span>  <span class="c1"># TODO: Look up typing protocols</span>
@@ -720,6 +848,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">store</span> <span class="o">=</span> <span class="n">store</span>
 
+        <span class="c1"># Record inner-store -&gt; self, so wrapped_self(inner) can recover this wrapper from</span>
+        <span class="c1"># inside a delegated method whose ``self`` is the inner store (Issue #18).</span>
+        <span class="n">_register_wrapper_backref</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="s2">&quot;KeysView&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">KeysView</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">KeysView</span>
 
@@ -868,7 +1000,13 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">Store</span><span class="o">.</span><span class="n">_state_attrs</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">state</span><span class="p">[</span><span class="n">attr</span><span class="p">])</span></div>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">state</span><span class="p">[</span><span class="n">attr</span><span class="p">])</span>
+        <span class="c1"># Unpickling reconstructs via copyreg (bypassing __init__), so re-register the</span>
+        <span class="c1"># inner-store -&gt; self back-reference here too (else wrapped_self would silently</span>
+        <span class="c1"># revert to the Issue #18 raw behavior after a pickle round-trip).</span>
+        <span class="n">inner</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">inner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_register_wrapper_backref</span><span class="p">(</span><span class="n">inner</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
 
 
 
