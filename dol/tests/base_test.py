@@ -315,3 +315,60 @@ def test_wrapped_self_registration_is_zero_behavior_change():
     assert list(s) == ["FOO", "BAR"]
     assert "foo" in s and "nope" not in s  # __contains__ lowercases the key on lookup
     assert len(s) == 2
+
+
+def test_wrapped_self_copy_copy_preserves_original():
+    """A shallow copy shares the inner store; GC of the copy must NOT break the original.
+
+    Regression for the single-slot id-registry clobber found in adversarial review: the
+    copy re-registered id(inner) then its finalizer popped the entry, silently reverting the
+    still-alive original to raw Issue #18 behavior.
+    """
+    import copy
+    import gc
+
+    s = _SquareStore()
+    s["2"] = 2
+    c = copy.copy(s)
+    assert c.store is s.store  # shallow copy shares the inner store
+    assert c.via_wrapped_self("2") == 2.0
+    assert s.via_wrapped_self("2") == 2.0
+    del c
+    gc.collect()
+    assert s.via_wrapped_self("2") == 2.0  # would have been 4 before the multi-valued fix
+
+
+def test_wrapped_self_deepcopy_is_independent():
+    import copy
+
+    s = _SquareStore()
+    s["2"] = 2
+    d = copy.deepcopy(s)
+    assert d.store is not s.store  # deepcopy builds a fresh inner
+    assert d.via_wrapped_self("2") == 2.0
+    assert s.via_wrapped_self("2") == 2.0
+
+
+def test_wrapped_self_registry_does_not_leak():
+    import gc
+    from dol.base import _wrapper_backrefs
+
+    gc.collect()
+    before = len(_wrapper_backrefs)
+    for _ in range(1000):
+        t = _SquareStore()
+        t["1"] = 1
+        assert t.via_wrapped_self("1") == 1.0
+    gc.collect()
+    after = len(_wrapper_backrefs)
+    assert after - before <= 5  # short-lived wrappers' entries are cleaned up
+
+
+def test_wrapped_self_shared_inner_returns_a_valid_wrapper():
+    """Two live wrappers over one shared inner: ambiguous, but never returns the raw inner."""
+    base = {}
+    a = wrap_kvs(base, obj_of_data=lambda x: x * 2, data_of_obj=lambda x: x // 2)
+    b = wrap_kvs(base, obj_of_data=lambda x: x * 3, data_of_obj=lambda x: x // 3)
+    resolved = wrapped_self(base)
+    assert resolved is a or resolved is b  # a real wrapper...
+    assert resolved is not base  # ...never the raw inner

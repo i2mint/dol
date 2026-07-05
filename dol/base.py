@@ -263,17 +263,17 @@ class DelegatedAttribute:
             #   self.__wrapped__ would make it hard to debug and
             #   self would fail with unbound methods (why?)
             #   So doing a check here, but would like to find a better solution.
-            wrapped_self = getattr(self, "__wrapped__", None)
-            if is_classmethod(wrapped_self) or is_unbound_method(wrapped_self):
-                return wrapped_self
+            wrapped_callable = getattr(self, "__wrapped__", None)
+            if is_classmethod(wrapped_callable) or is_unbound_method(wrapped_callable):
+                return wrapped_callable
             else:
                 return self
 
-            # wrapped_self = getattr(self, '__wrapped__', None)
-            # if not is_classmethod(wrapped_self):
+            # wrapped_callable = getattr(self, '__wrapped__', None)
+            # if not is_classmethod(wrapped_callable):
             #     return self
             # else:
-            #     return wrapped_self
+            #     return wrapped_callable
         else:
             # i.e. return instance.delegate.attr
             return getattr(getattr(instance, self.delegate_name), self.attr_name)
@@ -299,34 +299,52 @@ class DelegatedAttribute:
 # ``wrapped_self(self)[k]``.
 #
 # The mapping is kept in a module-global registry of weak references, keyed by ``id`` of
-# the inner store, and populated once per ``Store`` construction (in ``Store.__init__`` and
-# re-populated in ``Store.__setstate__``, since unpickling bypasses ``__init__``). We key by
-# ``id`` -- rather than setting an attribute on the inner store -- because inner stores are
-# often plain ``dict``/C backends that reject instance attributes and whose pickling a stray
-# weakref would break.
-_wrapper_backrefs: "dict[int, weakref.ReferenceType]" = {}
+# the inner store, populated in ``Store.__init__`` and re-populated in ``Store.__setstate__``
+# (unpickling bypasses ``__init__``). We key by ``id`` -- rather than setting an attribute on
+# the inner store -- because inner stores are often plain ``dict``/C backends that reject
+# instance attributes and whose pickling a stray weakref would break.
+#
+# Each id maps to a *list* of weakrefs, not a single one, so that objects legitimately
+# sharing an inner store (most importantly a shallow ``copy.copy`` of a wrapped store, whose
+# copy shares ``self.store`` with the original) coexist: a finalizer removes only its own
+# weakref, never a live sibling's. ``wrapped_self`` then picks a live wrapper that still
+# actually holds the queried object as its ``.store`` (an identity guard).
+_wrapper_backrefs: "dict[int, list[weakref.ReferenceType]]" = {}
 
 
 def _register_wrapper_backref(inner: Any, wrapper: "Store") -> None:
     """Record that ``wrapper`` holds ``inner`` as its delegated store.
 
-    Registers ``id(inner) -> weakref(wrapper)``. When ``wrapper`` is garbage-collected the
-    weakref callback removes the entry, but only if it still points at *this* wrapper
-    (guarded compare-and-pop) -- so a later registration for a reused ``id`` is never
-    clobbered by an earlier wrapper's finalizer.
+    Appends ``weakref(wrapper)`` to the list registered under ``id(inner)`` (idempotent for
+    an already-registered live wrapper). When ``wrapper`` is garbage-collected the weakref
+    callback removes *only its own* entry from that list, and drops the ``id(inner)`` key once
+    the list is empty -- so garbage-collecting one wrapper (e.g. a transient ``copy.copy``)
+    never evicts a still-live sibling that shares the same inner.
     """
     inner_id = id(inner)
 
+    existing = _wrapper_backrefs.get(inner_id)
+    if existing is not None and any(ref() is wrapper for ref in existing):
+        return  # this live wrapper is already registered for this inner
+
     def _cleanup(dead_ref: "weakref.ReferenceType") -> None:
-        if _wrapper_backrefs.get(inner_id) is dead_ref:
+        refs = _wrapper_backrefs.get(inner_id)
+        if refs is None:
+            return
+        try:
+            refs.remove(dead_ref)
+        except ValueError:
+            pass
+        if not refs:
             _wrapper_backrefs.pop(inner_id, None)
 
     try:
-        _wrapper_backrefs[inner_id] = weakref.ref(wrapper, _cleanup)
+        ref = weakref.ref(wrapper, _cleanup)
     except TypeError:
         # wrapper not weak-referenceable (not expected for a Store) -- skip silently:
         # wrapped_self simply falls back to returning the inner store unchanged.
-        pass
+        return
+    _wrapper_backrefs.setdefault(inner_id, []).append(ref)
 
 
 def wrapped_self(obj: Any) -> Any:
@@ -342,6 +360,13 @@ def wrapped_self(obj: Any) -> Any:
     the delegation machinery, there is no registered wrapper and ``obj`` is returned
     unchanged -- a safe no-op. If the store was wrapped in several layers (e.g. via
     ``Pipe``), this climbs to the OUTERMOST wrapper.
+
+    Limitation: if the *same inner store instance* is wrapped by several live wrappers with
+    different transforms (e.g. calling ``wrap_kvs(shared_instance, ...)`` twice), a method
+    bound to that shared inner cannot know which wrapper it was reached through, so one of
+    the wrappers is returned (ambiguous but never raw/None). This does not arise for
+    class-wraps (each construction builds its own inner) nor for ``copy.copy`` (whose copies
+    are transform-equivalent, so either answer is correct).
 
     >>> import math
     >>> from dol import wrap_kvs, wrapped_self
@@ -361,12 +386,24 @@ def wrapped_self(obj: Any) -> Any:
     >>> s.via_wrapped_self('2')                # wrapped_self recovers the transformed value
     2.0
     """
-    seen = set()
+    seen = {id(obj)}
     cur = obj
     while True:
-        ref = _wrapper_backrefs.get(id(cur))
-        nxt = ref() if ref is not None else None
-        if nxt is None or id(nxt) in seen:
+        nxt = None
+        for ref in _wrapper_backrefs.get(id(cur), ()):
+            candidate = ref()
+            # Identity guard: only follow a back-reference whose wrapper STILL holds ``cur``
+            # as its ``.store``. This rejects stale entries left by a post-construction
+            # ``.store`` reassignment (and the id-reuse false positives they enable), and
+            # picks a genuinely-wrapping candidate when several are registered for one id.
+            if (
+                candidate is not None
+                and id(candidate) not in seen
+                and getattr(candidate, "store", None) is cur
+            ):
+                nxt = candidate
+                break
+        if nxt is None:
             break
         seen.add(id(nxt))
         cur = nxt
