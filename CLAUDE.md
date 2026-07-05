@@ -215,7 +215,7 @@ Run tests: `pytest dol/tests/`
 
 ## Known Limitations / Gotchas
 
-- **`wrap_kvs` + `self` inside methods**: When a `wrap_kvs`-decorated class uses `self[k]` in its own methods, `self` is the unwrapped instance. Re-apply the wrapper to `self` if transforms are needed (Issue #18, still open — delegation architecture).
+- **`wrap_kvs` + `self` inside methods**: When a `wrap_kvs`-decorated class uses `self[k]` in its own methods, `self` is the unwrapped inner store, so transforms are bypassed (Issue #18 — delegation architecture). Blessed fix: `from dol import wrapped_self` and write `wrapped_self(self)[k]` to reach the outer, transform-applying store (climbs to the outermost wrapper for stacked/`Pipe` wraps; a safe no-op on direct `Store` subclasses). The older `sq(self)[k]` re-wrap still works. A structural fix (is-a wrapping) is proposed in `misc/docs/dol_issue18_design.md`.
 - **`clear()` is disabled** on `KvPersister`. Call `ensure_clear_to_kv_store(store)` to re-enable.
 - **No async support** in core. Use synchronous wrappers for async backends (thread pool, etc.).
 - **Transforms wanting the store**: a transform is called `f(self, data)` only if its first param is named `self`/`store`/`mapping` **and** it has ≥2 required params; otherwise `f(data)`. Mark explicitly with `FirstArgIsMapping(f)`. (`bytes.decode` as `obj_of_data` now works — Issue #9 fixed.)

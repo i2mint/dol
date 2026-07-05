@@ -26,6 +26,7 @@ the storage methods themselves.
 
 from functools import partial, update_wrapper
 import copyreg
+import weakref
 from collections.abc import Collection as CollectionABC
 from collections.abc import Mapping, MutableMapping
 from collections.abc import (
@@ -283,6 +284,93 @@ class DelegatedAttribute:
 
     def __delete__(self, instance):
         delattr(getattr(instance, self.delegate_name), self.attr_name)
+
+
+# ---------------------------------------------------------------------------------------
+# wrapped_self: recover the outer (transform-applying) store from inside a wrapped
+# class's own method. See Issue #18 and misc/docs/dol_issue18_design.md.
+#
+# dol wraps by delegation (has-a): ``wrap_kvs(SomeClass)`` returns a ``Store`` subclass
+# ``Wrap`` that HOLDS an instance of ``SomeClass`` in ``self.store``. A method defined on
+# ``SomeClass`` is copied onto ``Wrap`` as a ``DelegatedAttribute`` and runs bound to the
+# INNER, unwrapped ``self.store`` -- so ``self[k]`` inside such a method bypasses the
+# transform pipeline (Issue #18). ``wrapped_self(self)`` maps that inner store back to the
+# outer wrapper so ``self[k]`` can be routed through the transforms as
+# ``wrapped_self(self)[k]``.
+#
+# The mapping is kept in a module-global registry of weak references, keyed by ``id`` of
+# the inner store, and populated once per ``Store`` construction (in ``Store.__init__`` and
+# re-populated in ``Store.__setstate__``, since unpickling bypasses ``__init__``). We key by
+# ``id`` -- rather than setting an attribute on the inner store -- because inner stores are
+# often plain ``dict``/C backends that reject instance attributes and whose pickling a stray
+# weakref would break.
+_wrapper_backrefs: "dict[int, weakref.ReferenceType]" = {}
+
+
+def _register_wrapper_backref(inner: Any, wrapper: "Store") -> None:
+    """Record that ``wrapper`` holds ``inner`` as its delegated store.
+
+    Registers ``id(inner) -> weakref(wrapper)``. When ``wrapper`` is garbage-collected the
+    weakref callback removes the entry, but only if it still points at *this* wrapper
+    (guarded compare-and-pop) -- so a later registration for a reused ``id`` is never
+    clobbered by an earlier wrapper's finalizer.
+    """
+    inner_id = id(inner)
+
+    def _cleanup(dead_ref: "weakref.ReferenceType") -> None:
+        if _wrapper_backrefs.get(inner_id) is dead_ref:
+            _wrapper_backrefs.pop(inner_id, None)
+
+    try:
+        _wrapper_backrefs[inner_id] = weakref.ref(wrapper, _cleanup)
+    except TypeError:
+        # wrapper not weak-referenceable (not expected for a Store) -- skip silently:
+        # wrapped_self simply falls back to returning the inner store unchanged.
+        pass
+
+
+def wrapped_self(obj: Any) -> Any:
+    """Return the outermost transform-applying store wrapping ``obj``, else ``obj`` itself.
+
+    Use this inside a method DEFINED ON a class that was wrapped by dol's delegation
+    machinery (``wrap_kvs`` / ``filt_iter`` / ``cached_keys`` / ``mk_relative_path_store`` /
+    ``Store.wrap`` applied to the *class*). There, ``self`` is bound to the inner, unwrapped
+    store, so ``self[k]`` bypasses the transforms (Issue #18). Writing
+    ``wrapped_self(self)[k]`` recovers the outer, transform-applying view.
+
+    On a direct ``Store``/``KvReader`` subclass, or a plain object that never went through
+    the delegation machinery, there is no registered wrapper and ``obj`` is returned
+    unchanged -- a safe no-op. If the store was wrapped in several layers (e.g. via
+    ``Pipe``), this climbs to the OUTERMOST wrapper.
+
+    >>> import math
+    >>> from dol import wrap_kvs, wrapped_self
+    >>> sq = wrap_kvs(data_of_obj=lambda x: x * x, obj_of_data=lambda x: math.sqrt(x))
+    >>> @sq
+    ... class S(dict):
+    ...     def via_self(self, k):
+    ...         return self[k]                 # self is the INNER store: NOT transformed
+    ...     def via_wrapped_self(self, k):
+    ...         return wrapped_self(self)[k]    # outer store: transform applied
+    >>> s = S()
+    >>> s['2'] = 2
+    >>> s['2']                                 # external access is transformed
+    2.0
+    >>> s.via_self('2')                        # Issue #18: bypasses the transform
+    4
+    >>> s.via_wrapped_self('2')                # wrapped_self recovers the transformed value
+    2.0
+    """
+    seen = set()
+    cur = obj
+    while True:
+        ref = _wrapper_backrefs.get(id(cur))
+        nxt = ref() if ref is not None else None
+        if nxt is None or id(nxt) in seen:
+            break
+        seen.add(id(nxt))
+        cur = nxt
+    return cur
 
 
 Decorator = Callable[[Callable], Any]  # TODO: Look up typing protocols
@@ -588,6 +676,10 @@ class Store(KvPersister):
 
         self.store = store
 
+        # Record inner-store -> self, so wrapped_self(inner) can recover this wrapper from
+        # inside a delegated method whose ``self`` is the inner store (Issue #18).
+        _register_wrapper_backref(store, self)
+
         if hasattr(self.store, "KeysView"):
             self.KeysView = self.store.KeysView
 
@@ -731,6 +823,12 @@ class Store(KvPersister):
         for attr in Store._state_attrs:
             if attr in state:
                 setattr(self, attr, state[attr])
+        # Unpickling reconstructs via copyreg (bypassing __init__), so re-register the
+        # inner-store -> self back-reference here too (else wrapped_self would silently
+        # revert to the Issue #18 raw behavior after a pickle round-trip).
+        inner = getattr(self, "store", None)
+        if inner is not None:
+            _register_wrapper_backref(inner, self)
 
 
 # Store.register(dict)  # TODO: Would this be a good idea? To make isinstance({}, Store) be True (though missing head())
