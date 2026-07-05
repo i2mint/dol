@@ -57,6 +57,7 @@ from dol.base import (
     Persister,  # TODO: deprecate? (now KvPersister)
     kv_walk,  # walk a kv store
     Store,  # base class for stores (adds hooks for key and value transforms)
+    wrapped_self,  # recover the outer (transform-applying) store inside a wrapped method
 )
 
 
