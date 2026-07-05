@@ -12,6 +12,8 @@ These documents describe **dol**, a Python library for building uniform `dict`-l
 
 - **`dol_issues_report.md`** (~150 lines) — Actionable triage: which open issues are already resolved (close them) and a wave-by-wave **tackle order** for the rest, with an inter-issue dependency graph. The "what to work on next" companion to `issues_and_discussions.md`.
 
+- **`dol_issue18_design.md`** (~250 lines) — Decision-ready design for Issue #18 (`self` is the unwrapped inner store inside a delegation-wrapped class's own methods). Mechanism, a 26-site ecosystem blast-radius classification (0 break, 6 latent bugs), four fix designs with adversarial judging, an empirical verification log, and the staged recommendation: ship `wrapped_self()` now (Phase 1, backward-compatible), commit to is-a wrapping later (closes #18 + #6), reject method-rebinding.
+
 - **`dol_content_metadata_bifurcation.md`** (~450 lines) — Design study of the content/metadata split-store problem (a store whose values carry both payload and metadata).
 
 - **`code-quality-improvements.md`** (~230 lines) — Technical debt tracker for dol: dead code, unused parameters, incomplete implementations, test coverage gaps. Operational/maintenance reference.

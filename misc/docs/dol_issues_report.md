@@ -37,10 +37,18 @@
   dependents), recall-gap scan (0 more), a baseline-vs-modified dependents test-gate (0
   pass→fail across 25 repos), and a 6-lens adversarial review (CLEAN). Regression tests +
   doctests added. See `dol_architecture_map.md` §5.4 and the `dol-dev-wrap-kvs` skill.
-- **#18, #6 — assessed, still open.** Confirmed to be *distinct* mechanisms from #9 (the
-  #9 fix does not touch them): #18 is the delegation/has-a architecture (`self` inside a
-  wrapped class's methods is the inner store); #6 is `Store.wrap` setting an inherited
-  `__signature__`. Both need separate, more invasive fixes — deferred.
+- **#18 — Phase 1 fix shipped (`wrapped_self`).** Confirmed *distinct* from #9 (the #9 fix
+  doesn't touch it): #18 is the delegation/has-a architecture — `self` inside a wrapped
+  class's own method is the inner, unwrapped store, so `self[k]` bypasses transforms. A
+  26-site ecosystem blast-radius pass found **0 sites that break** and **6 latent bugs** a fix
+  would resolve (e.g. `xdol` filter/relativization bypass). Four fix designs were adversarially
+  judged; **method-rebinding was rejected** (silently corrupts stacked/`Pipe` writes;
+  `super()`/dict-native crashes). Shipped **`wrapped_self(self)[k]`** — additive, zero default
+  behavior change, climbs to the outermost wrapper, covers instance-wraps, survives pickle.
+  The structural fix (**is-a wrapping**, which would also close **#6**) is the deferred
+  terminal direction. Full analysis: [`dol_issue18_design.md`](dol_issue18_design.md).
+- **#6 — still open**, deferred to the is-a restructure (Phase 3 of the #18 design), which
+  removes the `Store.wrap` `__signature__` graft that #6 is about.
 
 ---
 
