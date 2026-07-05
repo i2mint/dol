@@ -577,20 +577,7 @@ class KeyValueCodecs(CodecCollection):
     A collection of key-value codecs that can be used with postget and preset kv_wraps.
     """
 
-    def key_based(
-        key_mapping: dict,
-        key_func: Callable = identity_func,
-        *,
-        default: Callable | None = None,
-    ):
-        """A factory that creates a key-value codec that uses the key to determine the
-        value codec to use."""
-
-    def extension_based(
-        ext_mapping: dict = dflt_ext_mapping,
-        *,
-        default: Callable | None = None,
-    ):
-        """A factory that creates a key-value codec that uses the file extension to
-        determine the value codec to use."""
-        # TODO: Implement this function - ext_mapping parameter is currently unused
+    # Note: ``key_based`` / ``extension_based`` factories were removed here (Issue #68):
+    # they were empty stubs that silently returned ``None``. The building blocks live as
+    # module-level functions (:func:`key_based_codec_factory`, :func:`key_based_value_trans`)
+    # if/when a key/extension-dispatching value codec is implemented for real.
