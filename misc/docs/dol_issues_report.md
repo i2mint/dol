@@ -101,7 +101,7 @@ on a sound core.
 | # | P | Type | Note |
 |---|---|------|------|
 | **#10** | medium | enhancement | Recursively applying wrappers to nested stores (`conditional_data_trans`); the "store of stores" DNA-propagation problem. Overlaps #2 (both want `kv_walk`-driven traversal). |
-| **#16** | medium | enhancement / paths | `KeyPath` write-through / autovivification (`s[1][2][3] = v` when intermediate keys don't exist). Needs contextual per-level factories. |
+| **#16** | medium | enhancement / paths | `KeyPath` write-through / autovivification (`s[1][2][3] = v` when intermediate keys don't exist). Needs contextual per-level factories. Full design (opt-in `create_missing`, `path_set_writeback` boundary engine, the persistent-store write-back protocol): [`dol_issue16_design.md`](dol_issue16_design.md). |
 | **#56** | low | enhancement | Fast `update`/sync between heterogeneous stores (avoid item-by-item copy). Needs a duck-typed "fast-sync" protocol negotiation; clean design open. |
 | **#2**  | medium | documentation / enhancement | `kv_walk`: docs, tests, and a `store_decorator` that surfaces walk-paths as a flat `KvReader`/`KvPersister`. Pairs with #10. |
 

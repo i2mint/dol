@@ -188,6 +188,8 @@ Run tests: `pytest dol/tests/`
 | [dol_architecture_map.md](misc/docs/dol_architecture_map.md) | Code-verified structural map: module/dependency graph, public API, class hierarchy, `wrap_kvs`/codec machinery deep dive, ranked tech debt. **Start here for refactors.** |
 | [issues_and_discussions.md](misc/docs/issues_and_discussions.md) | GitHub issues/discussions themes, known limitations, open design questions |
 | [dol_issues_report.md](misc/docs/dol_issues_report.md) | Prioritized issue triage + wave-by-wave tackle order |
+| [dol_issue16_design.md](misc/docs/dol_issue16_design.md) | Issue #16 design: optional key-path write-through / autovivification — opt-in `create_missing`, contextual per-level factory, the `path_set_writeback` boundary engine + persistent-store write-back protocol, scoped plan. Design-only (no code yet). |
+| [dol_issue18_design.md](misc/docs/dol_issue18_design.md) | Issue #18 design: `self`-not-wrapped delegation trap — `wrapped_self` (shipped) now, is-a wrapping (deferred, major) later. |
 | [frontend_dol_ideas.md](misc/docs/frontend_dol_ideas.md) | `zoddal` design: TypeScript KV interface, adapters, Zod bridge, zod-collection-ui integration |
 
 > A **local-only** ecosystem inventory (gitignored) lives in `misc/data/`: dol's 76
