@@ -1,0 +1,352 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dol._paths_core &mdash; dol 0.3.54 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=2b49fbf2"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="dol.appendable" href="appendable.html" />
+    <link rel="prev" title="dol" href="../dol.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dol.html">dol</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dol._paths_core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dol._paths_core.PathContext"><code class="docutils literal notranslate"><span class="pre">PathContext</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol._paths_core.PathContext.depth"><code class="docutils literal notranslate"><span class="pre">PathContext.depth</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol._paths_core.PathContext.key"><code class="docutils literal notranslate"><span class="pre">PathContext.key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol._paths_core.PathContext.prev_path"><code class="docutils literal notranslate"><span class="pre">PathContext.prev_path</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._paths_core.PathCreationError"><code class="docutils literal notranslate"><span class="pre">PathCreationError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._paths_core.PathWritebackError"><code class="docutils literal notranslate"><span class="pre">PathWritebackError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._paths_core.path_del_writeback"><code class="docutils literal notranslate"><span class="pre">path_del_writeback()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._paths_core.path_set"><code class="docutils literal notranslate"><span class="pre">path_set()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._paths_core.path_set_writeback"><code class="docutils literal notranslate"><span class="pre">path_set_writeback()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="appendable.html">dol.appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">dol.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">dol.caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dig.html">dol.dig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">dol.errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explicit.html">dol.explicit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kv_codecs.html">dol.kv_codecs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">dol.misc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.html">dol.recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap.html">dol.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/new_store_wrap.html">dol.scrap.new_store_wrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/store_factories.html">dol.scrap.store_factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_appendable.html">dol.tests.test_appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_caching.html">dol.tests.test_caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_confirm_overwrite.html">dol.tests.test_confirm_overwrite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_dig.html">dol.tests.test_dig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_errors.html">dol.tests.test_errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_mk_dirs_if_missing.html">dol.tests.test_mk_dirs_if_missing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_path_writethrough.html">dol.tests.test_path_writethrough</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_trans.html">dol.tests.test_trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_walk_permissions.html">dol.tests.test_walk_permissions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trash.html">dol.trash</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zipfiledol.html">dol.zipfiledol</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">dol._paths_core</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/dol/_paths_core.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dol._paths_core">
+<span id="dol-paths-core"></span><h1>dol._paths_core<a class="headerlink" href="#module-dol._paths_core" title="Link to this heading"></a></h1>
+<p>Dependency-free core of dol’s key-path <em>write</em> machinery.</p>
+<p>This leaf module holds the pieces that both <a class="reference internal" href="paths.html#module-dol.paths" title="dol.paths"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dol.paths</span></code></a> and <a class="reference internal" href="trans.html#module-dol.trans" title="dol.trans"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dol.trans</span></code></a>
+need for setting (and deleting) values through key-paths, including optional
+<em>write-through autovivification</em> — creating missing intermediate levels on write
+(GitHub issue #16). It deliberately imports nothing from <code class="docutils literal notranslate"><span class="pre">dol.paths</span></code> or
+<code class="docutils literal notranslate"><span class="pre">dol.trans</span></code> (only the standard library), so <code class="docutils literal notranslate"><span class="pre">trans.py</span></code> can use the engine
+without recreating the <code class="docutils literal notranslate"><span class="pre">trans</span> <span class="pre">-&gt;</span> <span class="pre">paths</span></code> import cycle. It also pre-stages the
+<code class="docutils literal notranslate"><span class="pre">paths.py</span></code> module split (issue #70).</p>
+<p>Two layers live here:</p>
+<ul class="simple">
+<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">_inplace_build()</span></code> — the single in-memory splicer that walks/creates nested
+levels of a plain <code class="docutils literal notranslate"><span class="pre">MutableMapping</span></code>. It is also the body of the public
+<a class="reference internal" href="#dol._paths_core.path_set" title="dol._paths_core.path_set"><code class="xref py py-func docutils literal notranslate"><span class="pre">path_set()</span></code></a> (fixing the historical bug where the <code class="docutils literal notranslate"><span class="pre">new_mapping</span></code> factory was
+not propagated past the top level).</p></li>
+<li><p><a class="reference internal" href="#dol._paths_core.path_set_writeback" title="dol._paths_core.path_set_writeback"><code class="xref py py-func docutils literal notranslate"><span class="pre">path_set_writeback()</span></code></a> / <a class="reference internal" href="#dol._paths_core.path_del_writeback" title="dol._paths_core.path_del_writeback"><code class="xref py py-func docutils literal notranslate"><span class="pre">path_del_writeback()</span></code></a> — the <em>store-aware</em> engine
+that descends by <strong>persistence boundary</strong> and does a single write-back at the
+boundary, so a deep write persists correctly through copy-semantics / persistent
+stores (<code class="docutils literal notranslate"><span class="pre">Files</span></code>, <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code>-wrapped stores) instead of silently mutating a
+detached copy. Every unsafe situation raises a loud, informative error
+(<a class="reference internal" href="#dol._paths_core.PathCreationError" title="dol._paths_core.PathCreationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathCreationError</span></code></a> / <a class="reference internal" href="#dol._paths_core.PathWritebackError" title="dol._paths_core.PathWritebackError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathWritebackError</span></code></a>), never silent data loss.</p></li>
+</ul>
+<p>The contextual per-level factory has a single signature:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mk_missing</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">PathContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MutableMapping</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">ctx</span> <span class="pre">=</span> <span class="pre">PathContext(prev_path,</span> <span class="pre">key,</span> <span class="pre">depth)</span></code> lets a caller choose a different
+container type at each level (the core issue-#16 ask).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol._paths_core.PathContext">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol._paths_core.</span></span><span class="sig-name descname"><span class="pre">PathContext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prev_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol._paths_core.PathContext" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="dol._paths_core.PathContext.depth">
+<span class="sig-name descname"><span class="pre">depth</span></span><a class="headerlink" href="#dol._paths_core.PathContext.depth" title="Link to this definition"></a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dol._paths_core.PathContext.key">
+<span class="sig-name descname"><span class="pre">key</span></span><a class="headerlink" href="#dol._paths_core.PathContext.key" title="Link to this definition"></a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dol._paths_core.PathContext.prev_path">
+<span class="sig-name descname"><span class="pre">prev_path</span></span><a class="headerlink" href="#dol._paths_core.PathContext.prev_path" title="Link to this definition"></a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="dol._paths_core.PathCreationError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol._paths_core.</span></span><span class="sig-name descname"><span class="pre">PathCreationError</span></span><a class="reference internal" href="../../_modules/dol/_paths_core.html#PathCreationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._paths_core.PathCreationError" title="Link to this definition"></a></dt>
+<dd><p>Autovivification was blocked or forbidden.</p>
+<p>Raised when a missing intermediate cannot (or should not) be created: an
+existing non-mapping blocks descent, a <code class="docutils literal notranslate"><span class="pre">may_create</span></code> predicate vetoed the key,
+a <code class="docutils literal notranslate"><span class="pre">max_created</span></code> / <code class="docutils literal notranslate"><span class="pre">max_levels</span></code> guard was exceeded, or an autoviv path would
+shadow a genuine literal key.</p>
+<p>Subclasses <code class="xref py py-class docutils literal notranslate"><span class="pre">KeyError</span></code> so that legacy <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">KeyError</span></code> handlers still
+catch it; it is only ever raised on the opt-in write-through path.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="dol._paths_core.PathWritebackError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol._paths_core.</span></span><span class="sig-name descname"><span class="pre">PathWritebackError</span></span><a class="reference internal" href="../../_modules/dol/_paths_core.html#PathWritebackError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._paths_core.PathWritebackError" title="Link to this definition"></a></dt>
+<dd><p>A boundary write-back could not be persisted.</p>
+<p>Raised when re-serializing an intermediate branch back to its store fails (the
+value or a live sub-store won’t serialize), or when <code class="docutils literal notranslate"><span class="pre">verify_writeback</span></code> detects
+that a persisted branch reads back differently than it was written.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol._paths_core.path_del_writeback">
+<span class="sig-prename descclassname"><span class="pre">dol._paths_core.</span></span><span class="sig-name descname"><span class="pre">path_del_writeback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">writeback_lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/dol/_paths_core.html#path_del_writeback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._paths_core.path_del_writeback" title="Link to this definition"></a></dt>
+<dd><p>Delete the value at <code class="docutils literal notranslate"><span class="pre">path</span></code> of <code class="docutils literal notranslate"><span class="pre">store</span></code>, writing the mutated branch back.</p>
+<p>Delete never vivifies: a missing intermediate or leaf raises <code class="xref py py-class docutils literal notranslate"><span class="pre">KeyError</span></code>
+(matching plain nested-mapping behavior). For a deep path on a copy-semantics /
+persistent store, the top branch is read, the leaf deleted in memory, and the
+branch written back — so the deletion actually persists (closing the delete-side
+silent-loss). Now-empty auto-created intermediates are left in place.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol._paths_core.path_set">
+<span class="sig-prename descclassname"><span class="pre">dol._paths_core.</span></span><span class="sig-name descname"><span class="pre">path_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">d:</span> <span class="pre">~collections.abc.MutableMapping,</span> <span class="pre">key_path,</span> <span class="pre">val:</span> <span class="pre">~typing.Any,</span> <span class="pre">*,</span> <span class="pre">sep:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'.',</span> <span class="pre">new_mapping:</span> <span class="pre">~typing.Callable[[],</span> <span class="pre">~collections.abc.MutableMapping]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'dict'&gt;,</span> <span class="pre">mk_missing:</span> <span class="pre">~typing.Callable[[~dol._paths_core.PathContext],</span> <span class="pre">~collections.abc.MutableMapping]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/dol/_paths_core.html#path_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._paths_core.path_set" title="Link to this definition"></a></dt>
+<dd><p>Set <code class="docutils literal notranslate"><span class="pre">val</span></code> at <code class="docutils literal notranslate"><span class="pre">key_path</span></code> in the (nested) mapping <code class="docutils literal notranslate"><span class="pre">d</span></code>, creating levels as needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> – The mapping to set the value in (mutated in place).</p></li>
+<li><p><strong>key_path</strong> – The path of keys. If a string, it is split on <code class="docutils literal notranslate"><span class="pre">sep</span></code>.</p></li>
+<li><p><strong>val</strong> – The value to set.</p></li>
+<li><p><strong>sep</strong> – The separator used to split a string <code class="docutils literal notranslate"><span class="pre">key_path</span></code> (default <code class="docutils literal notranslate"><span class="pre">&quot;.&quot;</span></code>).</p></li>
+<li><p><strong>new_mapping</strong> – Zero-argument factory for missing intermediate mappings
+(default <code class="docutils literal notranslate"><span class="pre">dict</span></code>). Used at <strong>every</strong> created level.</p></li>
+<li><p><strong>mk_missing</strong> – Optional contextual per-level factory
+<code class="docutils literal notranslate"><span class="pre">mk_missing(ctx:</span> <span class="pre">PathContext)</span> <span class="pre">-&gt;</span> <span class="pre">MutableMapping</span></code>. When given it supersedes
+<code class="docutils literal notranslate"><span class="pre">new_mapping</span></code> (so different depths can use different container types).</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">],</span> <span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2, &#39;e&#39;: 42}}</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>  <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;val of a.c&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="p">},</span>
+<span class="gp">... </span>  <span class="s2">&quot;10&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>      <span class="s2">&quot;AA&quot;</span><span class="p">:</span> <span class="mi">3</span>
+<span class="gp">... </span>    <span class="p">}</span>
+<span class="gp">... </span>  <span class="p">}</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;new&#39;</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;path&#39;</span><span class="p">),</span> <span class="mi">7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>
+<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
+<span class="go">&#39;new&#39;: {&#39;key&#39;: {&#39;path&#39;: 7}}}</span>
+</pre></div>
+</div>
+<p>You can also use a string as a path, with a separator:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="s1">&#39;new/key/old/path&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>
+<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
+<span class="go">&#39;new&#39;: {&#39;key&#39;: {&#39;path&#39;: 7, &#39;old&#39;: {&#39;path&#39;: 8}}}}</span>
+</pre></div>
+</div>
+<p>If you specify a string path and a non-None separator, the separator will be used
+to split the string into a list of keys. The default separator is <code class="docutils literal notranslate"><span class="pre">sep='.'</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="s1">&#39;new.key&#39;</span><span class="p">,</span> <span class="s1">&#39;new val&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>
+<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
+<span class="go">&#39;new&#39;: {&#39;key&#39;: &#39;new val&#39;}}</span>
+</pre></div>
+</div>
+<p>You can also specify a different <code class="docutils literal notranslate"><span class="pre">new_mapping</span></code> factory, which will be used to
+create new mappings when a key is missing. The default is <code class="docutils literal notranslate"><span class="pre">dict</span></code>. Unlike older
+versions, the factory now applies at <strong>every</strong> created level, not just the first:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s1">&#39;a.b.c&#39;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="n">new_mapping</span><span class="o">=</span><span class="n">OrderedDict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">])</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">])</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">(&#39;OrderedDict&#39;, &#39;OrderedDict&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">][</span><span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<p>For full control, pass a contextual <code class="docutils literal notranslate"><span class="pre">mk_missing</span></code> factory (the <code class="docutils literal notranslate"><span class="pre">ctx</span></code> carries
+<code class="docutils literal notranslate"><span class="pre">prev_path</span></code>, <code class="docutils literal notranslate"><span class="pre">key</span></code> and <code class="docutils literal notranslate"><span class="pre">depth</span></code>), so different depths can use different
+container types:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>         <span class="n">mk_missing</span><span class="o">=</span><span class="k">lambda</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">OrderedDict</span><span class="p">()</span> <span class="k">if</span> <span class="n">ctx</span><span class="o">.</span><span class="n">depth</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">{})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">])</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">(&#39;OrderedDict&#39;, &#39;dict&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol._paths_core.path_set_writeback">
+<span class="sig-prename descclassname"><span class="pre">dol._paths_core.</span></span><span class="sig-name descname"><span class="pre">path_set_writeback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">store,</span> <span class="pre">path,</span> <span class="pre">val:</span> <span class="pre">~typing.Any,</span> <span class="pre">*,</span> <span class="pre">mk_missing:</span> <span class="pre">~typing.Callable[[~dol._paths_core.PathContext],</span> <span class="pre">~collections.abc.MutableMapping]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">explore_further:</span> <span class="pre">~typing.Callable[[~typing.Any,</span> <span class="pre">tuple],</span> <span class="pre">bool]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">may_create:</span> <span class="pre">~typing.Callable[[~dol._paths_core.PathContext],</span> <span class="pre">bool]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">on_create:</span> <span class="pre">~typing.Callable[[~dol._paths_core.PathContext],</span> <span class="pre">None]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_warn_on_create&gt;,</span> <span class="pre">max_created:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">max_levels:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">20,</span> <span class="pre">verify_writeback:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">writeback_lock=None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/dol/_paths_core.html#path_set_writeback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._paths_core.path_set_writeback" title="Link to this definition"></a></dt>
+<dd><p>Set <code class="docutils literal notranslate"><span class="pre">val</span></code> at <code class="docutils literal notranslate"><span class="pre">path</span></code> of <code class="docutils literal notranslate"><span class="pre">store</span></code>, creating missing levels and writing back.</p>
+<p>Descends by <strong>persistence boundary</strong> (the outer store, plus any sub-store flagged
+by <code class="docutils literal notranslate"><span class="pre">explore_further</span></code>). For an ordinary value branch it reads the top node once,
+splices the missing suffix in memory via <code class="xref py py-func docutils literal notranslate"><span class="pre">_inplace_build()</span></code>, then does a
+single write-back at the boundary — the protocol that persists correctly through
+copy-semantics / persistent stores (see the module docstring and
+<code class="docutils literal notranslate"><span class="pre">misc/docs/dol_issue16_design.md</span></code> §7).</p>
+<p>All keyword arguments after <code class="docutils literal notranslate"><span class="pre">val</span></code> are keyword-only; <code class="docutils literal notranslate"><span class="pre">_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">_budget</span></code>
+are internal recursion state. Unsafe situations raise <a class="reference internal" href="#dol._paths_core.PathCreationError" title="dol._paths_core.PathCreationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathCreationError</span></code></a>
+or <a class="reference internal" href="#dol._paths_core.PathWritebackError" title="dol._paths_core.PathWritebackError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathWritebackError</span></code></a> — never a silent no-op.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../dol.html" class="btn btn-neutral float-left" title="dol" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="appendable.html" class="btn btn-neutral float-right" title="dol.appendable" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

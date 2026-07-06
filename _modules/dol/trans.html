@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.trans &mdash; dol 0.3.53 documentation</title>
+  <title>dol.trans &mdash; dol 0.3.54 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e0c06b3f"></script>
+      <script src="../../_static/documentation_options.js?v=2b49fbf2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,6 +47,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol.html">dol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/_paths_core.html">dol._paths_core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/appendable.html">dol.appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/base.html">dol.base</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/caching.html">dol.caching</a></li>
@@ -79,6 +80,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_mk_dirs_if_missing.html">dol.tests.test_mk_dirs_if_missing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_path_writethrough.html">dol.tests.test_path_writethrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_trans.html">dol.tests.test_trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_walk_permissions.html">dol.tests.test_walk_permissions</a></li>
@@ -135,6 +137,14 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SetattrNotAllowed</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Store</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">,</span> <span class="n">AttrNames</span><span class="p">,</span> <span class="n">kv_walk</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol._paths_core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PathContext</span><span class="p">,</span>
+    <span class="n">PathCreationError</span><span class="p">,</span>
+    <span class="n">PathWritebackError</span><span class="p">,</span>
+    <span class="n">path_set_writeback</span><span class="p">,</span>
+    <span class="n">path_del_writeback</span><span class="p">,</span>
+    <span class="n">_warn_on_create</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.util</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">safe_compile</span><span class="p">,</span>
     <span class="n">lazyprop</span><span class="p">,</span>
@@ -3013,7 +3023,21 @@
 <div class="viewcode-block" id="add_path_access">
 <a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.trans.add_path_access">[docs]</a>
 <span class="nd">@store_decorator</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_path_access</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path_type</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_path_access</span><span class="p">(</span>
+    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">path_type</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">,</span>
+    <span class="n">create_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">mk_missing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">explore_further</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">may_create</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">on_create</span><span class="o">=</span><span class="n">_warn_on_create</span><span class="p">,</span>
+    <span class="n">max_created</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_levels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">verify_writeback</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">writeback_lock</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make nested stores (read/write) accessible through key paths (iterable of keys).</span>
 
 <span class="sd">    Like ``add_path_get``, but with write and delete accessible through key paths.</span>
@@ -3163,19 +3187,67 @@
     <span class="n">store_cls</span> <span class="o">=</span> <span class="n">kv_wrap_persister_cls</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">store_cls</span> <span class="o">=</span> <span class="n">add_path_get</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">path_type</span><span class="o">=</span><span class="n">path_type</span><span class="p">)</span>
 
+    <span class="c1"># Any callable write-through option (or verify_writeback) implies create_missing.</span>
+    <span class="n">_create_missing</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">create_missing</span>
+        <span class="ow">or</span> <span class="n">verify_writeback</span>
+        <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">opt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="p">(</span><span class="n">mk_missing</span><span class="p">,</span> <span class="n">explore_further</span><span class="p">,</span> <span class="n">may_create</span><span class="p">,</span> <span class="n">writeback_lock</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="c1"># Stash the scalar flag on the class for introspection / dispatch. The *callables*</span>
+    <span class="c1"># are closure-captured below (NOT stashed as attributes), so they are never invoked</span>
+    <span class="c1"># as bound methods (which would inject `self` as an extra positional argument).</span>
+    <span class="n">store_cls</span><span class="o">.</span><span class="n">_create_missing</span> <span class="o">=</span> <span class="n">_create_missing</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_type</span><span class="p">):</span>
-            <span class="o">*</span><span class="n">path_head</span><span class="p">,</span> <span class="n">last_key</span> <span class="o">=</span> <span class="n">k</span>
-            <span class="n">penultimate_level</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">path_head</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-            <span class="n">penultimate_level</span><span class="p">[</span><span class="n">last_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;empty key path&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_create_missing&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="c1"># Collision guard: don&#39;t silently shadow a genuine literal key that</span>
+                <span class="c1"># happens to equal this path (stores whose real keys are tuples/paths).</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">_is_literal_key</span> <span class="o">=</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">,</span> <span class="p">())</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">_is_literal_key</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">_is_literal_key</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">PathCreationError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;refusing to autoviv path </span><span class="si">{</span><span class="n">k</span><span class="si">!r}</span><span class="s2">: a literal key </span><span class="si">{</span><span class="n">k</span><span class="si">!r}</span><span class="s2"> already &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;exists (create_missing is unsafe on stores whose real keys &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;are tuples/paths).&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">path_set_writeback</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span>
+                    <span class="nb">list</span><span class="p">(</span><span class="n">k</span><span class="p">),</span>
+                    <span class="n">v</span><span class="p">,</span>
+                    <span class="n">mk_missing</span><span class="o">=</span><span class="n">mk_missing</span><span class="p">,</span>
+                    <span class="n">explore_further</span><span class="o">=</span><span class="n">explore_further</span><span class="p">,</span>
+                    <span class="n">may_create</span><span class="o">=</span><span class="n">may_create</span><span class="p">,</span>
+                    <span class="n">on_create</span><span class="o">=</span><span class="n">on_create</span><span class="p">,</span>
+                    <span class="n">max_created</span><span class="o">=</span><span class="n">max_created</span><span class="p">,</span>
+                    <span class="n">max_levels</span><span class="o">=</span><span class="n">max_levels</span><span class="p">,</span>
+                    <span class="n">verify_writeback</span><span class="o">=</span><span class="n">verify_writeback</span><span class="p">,</span>
+                    <span class="n">writeback_lock</span><span class="o">=</span><span class="n">writeback_lock</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># backward-compatible legacy walk (unchanged behavior)</span>
+                <span class="o">*</span><span class="n">path_head</span><span class="p">,</span> <span class="n">last_key</span> <span class="o">=</span> <span class="n">k</span>
+                <span class="n">penultimate_level</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">path_head</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+                <span class="n">penultimate_level</span><span class="p">[</span><span class="n">last_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># do things normally if the key is not a _path_type</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_type</span><span class="p">):</span>
-            <span class="o">*</span><span class="n">path_head</span><span class="p">,</span> <span class="n">last_key</span> <span class="o">=</span> <span class="n">k</span>
-            <span class="n">penultimate_level</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">path_head</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-            <span class="k">del</span> <span class="n">penultimate_level</span><span class="p">[</span><span class="n">last_key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;empty key path&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_create_missing&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">path_del_writeback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">writeback_lock</span><span class="o">=</span><span class="n">writeback_lock</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># backward-compatible legacy walk (unchanged behavior)</span>
+                <span class="o">*</span><span class="n">path_head</span><span class="p">,</span> <span class="n">last_key</span> <span class="o">=</span> <span class="n">k</span>
+                <span class="n">penultimate_level</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">path_head</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+                <span class="k">del</span> <span class="n">penultimate_level</span><span class="p">[</span><span class="n">last_key</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># do things normally if the key is not a _path_type</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__delitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
@@ -3183,6 +3255,39 @@
     <span class="n">store_cls</span><span class="o">.</span><span class="fm">__delitem__</span> <span class="o">=</span> <span class="fm">__delitem__</span>
 
     <span class="k">return</span> <span class="n">store_cls</span></div>
+
+
+
+<div class="viewcode-block" id="autoviv">
+<a class="viewcode-back" href="../../module_docs/dol/trans.html#dol.trans.autoviv">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">autoviv</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Opt-in write-through autovivification for key-paths.</span>
+
+<span class="sd">    Shorthand for ``add_path_access(store, create_missing=True, **kwargs)``: writing</span>
+<span class="sd">    through a key-path (e.g. ``s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;] = v``) creates any missing intermediate</span>
+<span class="sd">    levels on the way, and the change persists correctly even through persistent /</span>
+<span class="sd">    copy-semantics stores (``Files``, ``wrap_kvs``-wrapped stores). See</span>
+<span class="sd">    ``add_path_access`` for the full set of options (``mk_missing``, ``may_create``,</span>
+<span class="sd">    ``max_created``, ``on_create``, ...). Missing-key creation is announced via</span>
+<span class="sd">    ``warnings.warn`` by default, so a typo is never silent.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol import autoviv</span>
+<span class="sd">    &gt;&gt;&gt; s = autoviv({})</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;] = 42</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;][&#39;b&#39;][&#39;c&#39;]</span>
+<span class="sd">    42</span>
+
+<span class="sd">    Like ``add_path_access``, it also works as a class decorator / factory:</span>
+
+<span class="sd">    &gt;&gt;&gt; S = autoviv(dict)</span>
+<span class="sd">    &gt;&gt;&gt; s = S()</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;x&#39;, &#39;y&#39;] = 1</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;x&#39;, &#39;y&#39;]</span>
+<span class="sd">    1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">add_path_access</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">create_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 

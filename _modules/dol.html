@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol &mdash; dol 0.3.53 documentation</title>
+  <title>dol &mdash; dol 0.3.54 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=e0c06b3f"></script>
+      <script src="../_static/documentation_options.js?v=2b49fbf2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,6 +47,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol.html">dol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/_paths_core.html">dol._paths_core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/appendable.html">dol.appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/base.html">dol.base</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/caching.html">dol.caching</a></li>
@@ -79,6 +80,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_mk_dirs_if_missing.html">dol.tests.test_mk_dirs_if_missing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_path_writethrough.html">dol.tests.test_path_writethrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_trans.html">dol.tests.test_trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_walk_permissions.html">dol.tests.test_walk_permissions</a></li>
@@ -255,6 +257,7 @@
     <span class="n">insert_hash_method</span><span class="p">,</span>  <span class="c1"># add a hash method to store</span>
     <span class="n">add_path_get</span><span class="p">,</span>  <span class="c1"># add a path_get method to store</span>
     <span class="n">add_path_access</span><span class="p">,</span>  <span class="c1"># add path_get and path_set methods to store</span>
+    <span class="n">autoviv</span><span class="p">,</span>  <span class="c1"># opt-in write-through autovivification (add_path_access + create_missing)</span>
     <span class="n">flatten</span><span class="p">,</span>  <span class="c1"># flatten a nested store</span>
     <span class="n">kv_wrap</span><span class="p">,</span>  <span class="c1"># different interface to wrap_kvs</span>
     <span class="n">disable_delitem</span><span class="p">,</span>  <span class="c1"># disable ability to delete</span>
@@ -297,7 +300,12 @@
     <span class="n">KeyPath</span><span class="p">,</span>  <span class="c1"># a class to represent a path to a key</span>
     <span class="n">paths_getter</span><span class="p">,</span>  <span class="c1"># to make mapping extractors that use path_get</span>
     <span class="n">path_get</span><span class="p">,</span>  <span class="c1"># get a value from a path</span>
-    <span class="n">path_set</span><span class="p">,</span>  <span class="c1"># set a value from a path</span>
+    <span class="n">path_set</span><span class="p">,</span>  <span class="c1"># set a value from a path (creating missing intermediate mappings)</span>
+    <span class="n">path_set_writeback</span><span class="p">,</span>  <span class="c1"># store-aware deep set with write-back (autovivification engine)</span>
+    <span class="n">path_del_writeback</span><span class="p">,</span>  <span class="c1"># store-aware deep delete with write-back</span>
+    <span class="n">PathContext</span><span class="p">,</span>  <span class="c1"># (prev_path, key, depth) handed to a contextual mk_missing factory</span>
+    <span class="n">PathCreationError</span><span class="p">,</span>  <span class="c1"># raised when autoviv is blocked/forbidden</span>
+    <span class="n">PathWritebackError</span><span class="p">,</span>  <span class="c1"># raised when a boundary write-back cannot be persisted</span>
     <span class="n">path_filter</span><span class="p">,</span>  <span class="c1"># search through paths of a Mapping</span>
     <span class="n">add_prefix_filtering</span><span class="p">,</span>  <span class="c1"># add a prefix filtering method to a store</span>
     <span class="c1"># PathMappedData,  # A mapping that extracts data from a mapping according to paths</span>

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.3.53 documentation</title>
+  <title>dol.paths &mdash; dol 0.3.54 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e0c06b3f"></script>
+      <script src="../../_static/documentation_options.js?v=2b49fbf2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -50,6 +50,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../dol.html">dol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_paths_core.html">dol._paths_core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="appendable.html">dol.appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="base.html">dol.base</a></li>
 <li class="toctree-l1"><a class="reference internal" href="caching.html">dol.caching</a></li>
@@ -63,7 +64,10 @@
 <li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">dol.paths</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.ExplicitKeysWithPrefixRelativization"><code class="docutils literal notranslate"><span class="pre">ExplicitKeysWithPrefixRelativization</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dol.paths.KeyPath"><code class="docutils literal notranslate"><span class="pre">KeyPath</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.paths.KeyPath"><code class="docutils literal notranslate"><span class="pre">KeyPath</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.paths.KeyPath.on_create"><code class="docutils literal notranslate"><span class="pre">KeyPath.on_create()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.KeyTemplate"><code class="docutils literal notranslate"><span class="pre">KeyTemplate</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dol.paths.KeyTemplate.dict_to_namedtuple"><code class="docutils literal notranslate"><span class="pre">KeyTemplate.dict_to_namedtuple()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dol.paths.KeyTemplate.dict_to_str"><code class="docutils literal notranslate"><span class="pre">KeyTemplate.dict_to_str()</span></code></a></li>
@@ -101,7 +105,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.path_edit"><code class="docutils literal notranslate"><span class="pre">path_edit()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.path_filter"><code class="docutils literal notranslate"><span class="pre">path_filter()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.path_get"><code class="docutils literal notranslate"><span class="pre">path_get()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dol.paths.path_set"><code class="docutils literal notranslate"><span class="pre">path_set()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.paths_getter"><code class="docutils literal notranslate"><span class="pre">paths_getter()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.rel_path_wrap"><code class="docutils literal notranslate"><span class="pre">rel_path_wrap()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.paths.search_paths"><code class="docutils literal notranslate"><span class="pre">search_paths()</span></code></a></li>
@@ -130,6 +133,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_mk_dirs_if_missing.html">dol.tests.test_mk_dirs_if_missing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_path_writethrough.html">dol.tests.test_path_writethrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_trans.html">dol.tests.test_trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tests/test_walk_permissions.html">dol.tests.test_walk_permissions</a></li>
@@ -202,7 +206,7 @@ The key_collection must be a collections.abc.Collection (such as list, tuple, se
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.paths.KeyPath">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">KeyPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_sep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_path_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'tuple'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#KeyPath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.KeyPath" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">KeyPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_sep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_path_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'tuple'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_missing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mk_missing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explore_further</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">may_create</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_create</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_warn_on_create&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_created</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verify_writeback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writeback_lock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#KeyPath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.KeyPath" title="Link to this definition"></a></dt>
 <dd><p>A key mapper that converts from an iterable key (default tuple) to a string
 (given a path-separator str)</p>
 <dl class="field-list simple">
@@ -256,10 +260,28 @@ it.</p>
 <span class="go">{&#39;a&#39;: {&#39;b&#39;: {}}}</span>
 </pre></div>
 </div>
-<p>Note: <code class="docutils literal notranslate"><span class="pre">KeyPath</span></code> enables you to read with paths when all the keys of the paths
-are valid (i.e. have a value), but just as with a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, it will not create
-intermediate nested values for you (as for example, you could make for yourself
-using  <code class="docutils literal notranslate"><span class="pre">collections.defaultdict</span></code>).</p>
+<p>Note: By default <code class="docutils literal notranslate"><span class="pre">KeyPath</span></code> reads with paths only when all the keys of the path
+are valid (i.e. have a value), and, just like a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, will <em>not</em> create
+intermediate nested values for you on write. Pass <code class="docutils literal notranslate"><span class="pre">create_missing=True</span></code> to opt
+into write-through autovivification: missing intermediates are created on write
+(like <code class="docutils literal notranslate"><span class="pre">collections.defaultdict</span></code>, but with an optional contextual per-level
+<code class="docutils literal notranslate"><span class="pre">mk_missing(ctx)</span></code> factory), and the change persists correctly even through
+persistent / copy-semantics stores. See <code class="docutils literal notranslate"><span class="pre">misc/docs/dol_issue16_design.md</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">KeyPath</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">create_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">)({})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a.b.c&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">42</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a.b.c&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.paths.KeyPath.on_create">
+<span class="sig-name descname"><span class="pre">on_create</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dol.paths.KeyPath.on_create" title="Link to this definition"></a></dt>
+<dd><p>Default <code class="docutils literal notranslate"><span class="pre">on_create</span></code> hook: announce a fabricated intermediate.</p>
+<p>A structurally-valid <em>typo</em> on write would otherwise silently create a bogus
+branch; warning keeps opted-in creation from being silent. Pass
+<code class="docutils literal notranslate"><span class="pre">on_create=None</span></code> to silence (e.g. bulk tree building).</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1160,75 +1182,6 @@ as <code class="docutils literal notranslate"><span class="pre">dict.get</span><
 </div>
 <p>For example, <code class="docutils literal notranslate"><span class="pre">path_get.raise_on_error</span></code>,
 <code class="docutils literal notranslate"><span class="pre">path_get.return_none_on_error</span></code>, and <code class="docutils literal notranslate"><span class="pre">path_get.return_empty_tuple_on_error</span></code>.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.paths.path_set">
-<span class="sig-prename descclassname"><span class="pre">dol.paths.</span></span><span class="sig-name descname"><span class="pre">path_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">VT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable[[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">VT]</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'dict'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/paths.html#path_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.paths.path_set" title="Link to this definition"></a></dt>
-<dd><p>Sets a val to a path of keys.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>d</strong> – The mapping to set the value in</p></li>
-<li><p><strong>key_path</strong> – The path of keys to set the value to</p></li>
-<li><p><strong>val</strong> – The value to set</p></li>
-<li><p><strong>sep</strong> – The separator to use if the path is a string</p></li>
-<li><p><strong>new_mapping</strong> – callable that returns a new mapping to use when key is not found</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
-</dd>
-</dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">],</span> <span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
-<span class="go">{&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2, &#39;e&#39;: 42}}</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>  <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span>
-<span class="gp">... </span>    <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;val of a.c&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-<span class="gp">... </span>  <span class="p">},</span>
-<span class="gp">... </span>  <span class="s2">&quot;10&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-<span class="gp">... </span>  <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span>
-<span class="gp">... </span>    <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">{</span>
-<span class="gp">... </span>      <span class="s2">&quot;AA&quot;</span><span class="p">:</span> <span class="mi">3</span>
-<span class="gp">... </span>    <span class="p">}</span>
-<span class="gp">... </span>  <span class="p">}</span>
-<span class="gp">... </span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;new&#39;</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;path&#39;</span><span class="p">),</span> <span class="mi">7</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>
-<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
-<span class="go">&#39;new&#39;: {&#39;key&#39;: {&#39;path&#39;: 7}}}</span>
-</pre></div>
-</div>
-<p>You can also use a string as a path, with a separator:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="s1">&#39;new/key/old/path&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>
-<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
-<span class="go">&#39;new&#39;: {&#39;key&#39;: {&#39;path&#39;: 7, &#39;old&#39;: {&#39;path&#39;: 8}}}}</span>
-</pre></div>
-</div>
-<p>If you specify a string path and a non-None separator, the separator will be used
-to split the string into a list of keys. The default separator is <code class="docutils literal notranslate"><span class="pre">sep='.'</span></code>.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="s1">&#39;new.key&#39;</span><span class="p">,</span> <span class="s1">&#39;new val&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>
-<span class="go">{&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
-<span class="go">&#39;new&#39;: {&#39;key&#39;: &#39;new val&#39;}}</span>
-</pre></div>
-</div>
-<p>You can also specify a different <code class="docutils literal notranslate"><span class="pre">new_mapping</span></code> factory, which will be used to
-create new mappings when a key is missing. The default is <code class="docutils literal notranslate"><span class="pre">dict</span></code>.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">path_set</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="s1">&#39;new.key&#39;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="n">new_mapping</span><span class="o">=</span><span class="n">OrderedDict</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">input_dict</span>
-<span class="go">{&#39;new&#39;: OrderedDict(...&#39;key&#39;...42...)}</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="py function">

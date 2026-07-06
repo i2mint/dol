@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.3.53 documentation</title>
+  <title>dol.paths &mdash; dol 0.3.54 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e0c06b3f"></script>
+      <script src="../../_static/documentation_options.js?v=2b49fbf2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,6 +47,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol.html">dol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/_paths_core.html">dol._paths_core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/appendable.html">dol.appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/base.html">dol.base</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/caching.html">dol.caching</a></li>
@@ -79,6 +80,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_filesys.html">dol.tests.test_filesys</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_mk_dirs_if_missing.html">dol.tests.test_mk_dirs_if_missing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_path_writethrough.html">dol.tests.test_path_writethrough</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_paths.html">dol.tests.test_paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_trans.html">dol.tests.test_trans</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/dol/tests/test_walk_permissions.html">dol.tests.test_walk_permissions</a></li>
@@ -136,7 +138,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">KW_ONLY</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Optional</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
@@ -166,6 +168,15 @@
     <span class="n">add_missing_key_handling</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.dig</span><span class="w"> </span><span class="kn">import</span> <span class="n">recursive_get_attr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol._paths_core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PathContext</span><span class="p">,</span>
+    <span class="n">PathCreationError</span><span class="p">,</span>
+    <span class="n">PathWritebackError</span><span class="p">,</span>
+    <span class="n">path_set</span><span class="p">,</span>
+    <span class="n">path_set_writeback</span><span class="p">,</span>
+    <span class="n">path_del_writeback</span><span class="p">,</span>
+    <span class="n">_warn_on_create</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <span class="n">KeyValueGenerator</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
@@ -850,95 +861,13 @@
     <span class="c1">#     return path in self.paths</span>
 
 
-<span class="c1"># Note: Purposely didn&#39;t include any path validation to favor efficiency.</span>
-<span class="c1"># Validation such as:</span>
-<span class="c1"># if not key_path or not isinstance(key_path, Iterable):</span>
-<span class="c1">#     raise ValueError(</span>
-<span class="c1">#         f&quot;Not a valid key path (should be an iterable with at least one element:&quot;</span>
-<span class="c1">#         f&quot; {key_path}&quot;</span>
-<span class="c1">#     )</span>
-<span class="c1"># TODO: Add possibility of producing different mappings according to the path/level.</span>
-<span class="c1">#  For example, the new_mapping factory could be a list of factories, one for each</span>
-<span class="c1">#  level, and/or take a path as an argument.</span>
-<div class="viewcode-block" id="path_set">
-<a class="viewcode-back" href="../../module_docs/dol/paths.html#dol.paths.path_set">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">path_set</span><span class="p">(</span>
-    <span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
-    <span class="n">key_path</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">KT</span><span class="p">],</span>
-    <span class="n">val</span><span class="p">:</span> <span class="n">VT</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span>
-    <span class="n">new_mapping</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">VT</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">,</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Sets a val to a path of keys.</span>
-
-<span class="sd">    :param d: The mapping to set the value in</span>
-<span class="sd">    :param key_path: The path of keys to set the value to</span>
-<span class="sd">    :param val: The value to set</span>
-<span class="sd">    :param sep: The separator to use if the path is a string</span>
-<span class="sd">    :param new_mapping: callable that returns a new mapping to use when key is not found</span>
-<span class="sd">    :return:</span>
-
-<span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2}}</span>
-<span class="sd">    &gt;&gt;&gt; path_set(d, [&#39;b&#39;, &#39;e&#39;], 42)</span>
-<span class="sd">    &gt;&gt;&gt; d</span>
-<span class="sd">    {&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2, &#39;e&#39;: 42}}</span>
-
-<span class="sd">    &gt;&gt;&gt; input_dict = {</span>
-<span class="sd">    ...   &quot;a&quot;: {</span>
-<span class="sd">    ...     &quot;c&quot;: &quot;val of a.c&quot;,</span>
-<span class="sd">    ...     &quot;b&quot;: 1,</span>
-<span class="sd">    ...   },</span>
-<span class="sd">    ...   &quot;10&quot;: 10,</span>
-<span class="sd">    ...   &quot;b&quot;: {</span>
-<span class="sd">    ...     &quot;B&quot;: {</span>
-<span class="sd">    ...       &quot;AA&quot;: 3</span>
-<span class="sd">    ...     }</span>
-<span class="sd">    ...   }</span>
-<span class="sd">    ... }</span>
-<span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; path_set(input_dict, (&#39;new&#39;, &#39;key&#39;, &#39;path&#39;), 7)</span>
-<span class="sd">    &gt;&gt;&gt; input_dict  # doctest: +NORMALIZE_WHITESPACE</span>
-<span class="sd">    {&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
-<span class="sd">    &#39;new&#39;: {&#39;key&#39;: {&#39;path&#39;: 7}}}</span>
-
-<span class="sd">    You can also use a string as a path, with a separator:</span>
-
-<span class="sd">    &gt;&gt;&gt; path_set(input_dict, &#39;new/key/old/path&#39;, 8, sep=&#39;/&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; input_dict  # doctest: +NORMALIZE_WHITESPACE</span>
-<span class="sd">    {&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
-<span class="sd">    &#39;new&#39;: {&#39;key&#39;: {&#39;path&#39;: 7, &#39;old&#39;: {&#39;path&#39;: 8}}}}</span>
-
-<span class="sd">    If you specify a string path and a non-None separator, the separator will be used</span>
-<span class="sd">    to split the string into a list of keys. The default separator is ``sep=&#39;.&#39;``.</span>
-
-<span class="sd">    &gt;&gt;&gt; path_set(input_dict, &#39;new.key&#39;, &#39;new val&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; input_dict  # doctest: +NORMALIZE_WHITESPACE</span>
-<span class="sd">    {&#39;a&#39;: {&#39;c&#39;: &#39;val of a.c&#39;, &#39;b&#39;: 1}, &#39;10&#39;: 10, &#39;b&#39;: {&#39;B&#39;: {&#39;AA&#39;: 3}},</span>
-<span class="sd">    &#39;new&#39;: {&#39;key&#39;: &#39;new val&#39;}}</span>
-
-<span class="sd">    You can also specify a different ``new_mapping`` factory, which will be used to</span>
-<span class="sd">    create new mappings when a key is missing. The default is ``dict``.</span>
-
-<span class="sd">    &gt;&gt;&gt; from collections import OrderedDict</span>
-<span class="sd">    &gt;&gt;&gt; input_dict = {}</span>
-<span class="sd">    &gt;&gt;&gt; path_set(input_dict, &#39;new.key&#39;, 42, new_mapping=OrderedDict)</span>
-<span class="sd">    &gt;&gt;&gt; input_dict  # doctest: +ELLIPSIS</span>
-<span class="sd">    {&#39;new&#39;: OrderedDict(...&#39;key&#39;...42...)}</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">key_path</span> <span class="o">=</span> <span class="n">key_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
-
-    <span class="n">first_key</span><span class="p">,</span> <span class="o">*</span><span class="n">remaining_keys</span> <span class="o">=</span> <span class="n">key_path</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key_path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># base case</span>
-        <span class="n">d</span><span class="p">[</span><span class="n">first_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">first_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
-            <span class="n">d</span><span class="p">[</span><span class="n">first_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_mapping</span><span class="p">()</span>
-        <span class="n">path_set</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">first_key</span><span class="p">],</span> <span class="n">remaining_keys</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span></div>
-
+<span class="c1"># ``path_set`` (and the write-through engine ``path_set_writeback`` /</span>
+<span class="c1"># ``path_del_writeback``) now live in the dependency-free leaf module</span>
+<span class="c1"># ``dol._paths_core`` (imported at the top of this module and re-exported here for</span>
+<span class="c1"># backward compatibility). Relocating them lets ``dol.trans`` use the write-through</span>
+<span class="c1"># engine without recreating the ``trans -&gt; paths`` import cycle, fixes the historical</span>
+<span class="c1"># bug where ``new_mapping`` was not propagated past the top level, and pre-stages the</span>
+<span class="c1"># ``paths.py`` module split (issue #70). See ``misc/docs/dol_issue16_design.md``.</span>
 
 
 <span class="c1"># TODO: Nice to have: Edits can be a nested dict, not necessarily a flat path-value one.</span>
@@ -1171,15 +1100,36 @@
 <span class="sd">    &gt;&gt;&gt; s</span>
 <span class="sd">    {&#39;a&#39;: {&#39;b&#39;: {}}}</span>
 
-<span class="sd">    Note: ``KeyPath`` enables you to read with paths when all the keys of the paths</span>
-<span class="sd">    are valid (i.e. have a value), but just as with a ``dict``, it will not create</span>
-<span class="sd">    intermediate nested values for you (as for example, you could make for yourself</span>
-<span class="sd">    using  ``collections.defaultdict``).</span>
+<span class="sd">    Note: By default ``KeyPath`` reads with paths only when all the keys of the path</span>
+<span class="sd">    are valid (i.e. have a value), and, just like a ``dict``, will *not* create</span>
+<span class="sd">    intermediate nested values for you on write. Pass ``create_missing=True`` to opt</span>
+<span class="sd">    into write-through autovivification: missing intermediates are created on write</span>
+<span class="sd">    (like ``collections.defaultdict``, but with an optional contextual per-level</span>
+<span class="sd">    ``mk_missing(ctx)`` factory), and the change persists correctly even through</span>
+<span class="sd">    persistent / copy-semantics stores. See ``misc/docs/dol_issue16_design.md``.</span>
+
+<span class="sd">    &gt;&gt;&gt; s = KeyPath(&#39;.&#39;, create_missing=True)({})</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a.b.c&#39;] = 42</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a.b.c&#39;]</span>
+<span class="sd">    42</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">path_sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">path_sep</span>
     <span class="n">_path_type</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="n">Callable</span> <span class="o">=</span> <span class="nb">tuple</span>
+    <span class="c1"># Everything below is keyword-only and opt-in; the defaults reproduce today&#39;s</span>
+    <span class="c1"># behavior (missing intermediate on write raises KeyError). Forwarded verbatim to</span>
+    <span class="c1"># ``add_path_access`` in ``__call__``.</span>
+    <span class="n">_</span><span class="p">:</span> <span class="n">KW_ONLY</span>
+    <span class="n">create_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">mk_missing</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">explore_further</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">may_create</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">on_create</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">_warn_on_create</span>
+    <span class="n">max_created</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">max_levels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">verify_writeback</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">writeback_lock</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_key_of_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_id</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -1191,7 +1141,19 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_type</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path_sep</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="p">):</span>
-        <span class="n">path_accessible_store</span> <span class="o">=</span> <span class="n">add_path_access</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">path_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_path_type</span><span class="p">)</span>
+        <span class="n">path_accessible_store</span> <span class="o">=</span> <span class="n">add_path_access</span><span class="p">(</span>
+            <span class="n">store</span><span class="p">,</span>
+            <span class="n">path_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_path_type</span><span class="p">,</span>
+            <span class="n">create_missing</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">create_missing</span><span class="p">,</span>
+            <span class="n">mk_missing</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mk_missing</span><span class="p">,</span>
+            <span class="n">explore_further</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">explore_further</span><span class="p">,</span>
+            <span class="n">may_create</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">may_create</span><span class="p">,</span>
+            <span class="n">on_create</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">on_create</span><span class="p">,</span>
+            <span class="n">max_created</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_created</span><span class="p">,</span>
+            <span class="n">max_levels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_levels</span><span class="p">,</span>
+            <span class="n">verify_writeback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verify_writeback</span><span class="p">,</span>
+            <span class="n">writeback_lock</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">writeback_lock</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">kv_wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">path_accessible_store</span><span class="p">)</span></div>
 
 
