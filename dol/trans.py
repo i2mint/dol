@@ -17,6 +17,14 @@ from collections.abc import (
 
 from dol.errors import SetattrNotAllowed
 from dol.base import Store, KvReader, AttrNames, kv_walk
+from dol._paths_core import (
+    PathContext,
+    PathCreationError,
+    PathWritebackError,
+    path_set_writeback,
+    path_del_writeback,
+    _warn_on_create,
+)
 from dol.util import (
     safe_compile,
     lazyprop,
@@ -2824,7 +2832,21 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
 # TODO: Should we keep add_path_get, or add "read_only" flag to add_path_access?
 # TODO: See https://github.com/i2mint/dol/issues/10
 @store_decorator
-def add_path_access(store=None, *, name=None, path_type: type = tuple):
+def add_path_access(
+    store=None,
+    *,
+    name=None,
+    path_type: type = tuple,
+    create_missing: bool = False,
+    mk_missing=None,
+    explore_further=None,
+    may_create=None,
+    on_create=_warn_on_create,
+    max_created=None,
+    max_levels=20,
+    verify_writeback: bool = False,
+    writeback_lock=None,
+):
     """Make nested stores (read/write) accessible through key paths (iterable of keys).
 
     Like ``add_path_get``, but with write and delete accessible through key paths.
@@ -2974,19 +2996,67 @@ def add_path_access(store=None, *, name=None, path_type: type = tuple):
     store_cls = kv_wrap_persister_cls(store, name=name)
     store_cls = add_path_get(store_cls, name=name, path_type=path_type)
 
+    # Any callable write-through option (or verify_writeback) implies create_missing.
+    _create_missing = (
+        create_missing
+        or verify_writeback
+        or any(
+            opt is not None
+            for opt in (mk_missing, explore_further, may_create, writeback_lock)
+        )
+    )
+    # Stash the scalar flag on the class for introspection / dispatch. The *callables*
+    # are closure-captured below (NOT stashed as attributes), so they are never invoked
+    # as bound methods (which would inject `self` as an extra positional argument).
+    store_cls._create_missing = _create_missing
+
     def __setitem__(self, k, v):
         if isinstance(k, self._path_type):
-            *path_head, last_key = k
-            penultimate_level = reduce(lambda s, key: s[key], path_head, self)
-            penultimate_level[last_key] = v
+            if not k:
+                raise ValueError("empty key path")
+            if getattr(self, "_create_missing", False):
+                # Collision guard: don't silently shadow a genuine literal key that
+                # happens to equal this path (stores whose real keys are tuples/paths).
+                try:
+                    _is_literal_key = k in getattr(self, "store", ())
+                except Exception:
+                    _is_literal_key = False
+                if _is_literal_key:
+                    raise PathCreationError(
+                        f"refusing to autoviv path {k!r}: a literal key {k!r} already "
+                        f"exists (create_missing is unsafe on stores whose real keys "
+                        f"are tuples/paths)."
+                    )
+                path_set_writeback(
+                    self,
+                    list(k),
+                    v,
+                    mk_missing=mk_missing,
+                    explore_further=explore_further,
+                    may_create=may_create,
+                    on_create=on_create,
+                    max_created=max_created,
+                    max_levels=max_levels,
+                    verify_writeback=verify_writeback,
+                    writeback_lock=writeback_lock,
+                )
+            else:  # backward-compatible legacy walk (unchanged behavior)
+                *path_head, last_key = k
+                penultimate_level = reduce(lambda s, key: s[key], path_head, self)
+                penultimate_level[last_key] = v
         else:  # do things normally if the key is not a _path_type
             return super(store_cls, self).__setitem__(k, v)
 
     def __delitem__(self, k):
         if isinstance(k, self._path_type):
-            *path_head, last_key = k
-            penultimate_level = reduce(lambda s, key: s[key], path_head, self)
-            del penultimate_level[last_key]
+            if not k:
+                raise ValueError("empty key path")
+            if getattr(self, "_create_missing", False):
+                path_del_writeback(self, list(k), writeback_lock=writeback_lock)
+            else:  # backward-compatible legacy walk (unchanged behavior)
+                *path_head, last_key = k
+                penultimate_level = reduce(lambda s, key: s[key], path_head, self)
+                del penultimate_level[last_key]
         else:  # do things normally if the key is not a _path_type
             return super(store_cls, self).__delitem__(k)
 
@@ -2994,6 +3064,36 @@ def add_path_access(store=None, *, name=None, path_type: type = tuple):
     store_cls.__delitem__ = __delitem__
 
     return store_cls
+
+
+def autoviv(store=None, **kwargs):
+    """Opt-in write-through autovivification for key-paths.
+
+    Shorthand for ``add_path_access(store, create_missing=True, **kwargs)``: writing
+    through a key-path (e.g. ``s['a', 'b', 'c'] = v``) creates any missing intermediate
+    levels on the way, and the change persists correctly even through persistent /
+    copy-semantics stores (``Files``, ``wrap_kvs``-wrapped stores). See
+    ``add_path_access`` for the full set of options (``mk_missing``, ``may_create``,
+    ``max_created``, ``on_create``, ...). Missing-key creation is announced via
+    ``warnings.warn`` by default, so a typo is never silent.
+
+    >>> from dol import autoviv
+    >>> s = autoviv({})
+    >>> s['a', 'b', 'c'] = 42
+    >>> s['a', 'b', 'c']
+    42
+    >>> s['a']['b']['c']
+    42
+
+    Like ``add_path_access``, it also works as a class decorator / factory:
+
+    >>> S = autoviv(dict)
+    >>> s = S()
+    >>> s['x', 'y'] = 1
+    >>> s['x', 'y']
+    1
+    """
+    return add_path_access(store, create_missing=True, **kwargs)
 
 
 @store_decorator

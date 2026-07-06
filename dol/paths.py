@@ -18,7 +18,7 @@ Examples::
 """
 
 from functools import wraps, partial
-from dataclasses import dataclass
+from dataclasses import dataclass, KW_ONLY
 from typing import (
     Optional,
     Union,
@@ -48,6 +48,15 @@ from dol.trans import (
     add_missing_key_handling,
 )
 from dol.dig import recursive_get_attr
+from dol._paths_core import (
+    PathContext,
+    PathCreationError,
+    PathWritebackError,
+    path_set,
+    path_set_writeback,
+    path_del_writeback,
+    _warn_on_create,
+)
 
 
 KeyValueGenerator = Generator[tuple[KT, VT], None, None]
@@ -699,92 +708,13 @@ class PathMappedData(KeysReader):
     #     return path in self.paths
 
 
-# Note: Purposely didn't include any path validation to favor efficiency.
-# Validation such as:
-# if not key_path or not isinstance(key_path, Iterable):
-#     raise ValueError(
-#         f"Not a valid key path (should be an iterable with at least one element:"
-#         f" {key_path}"
-#     )
-# TODO: Add possibility of producing different mappings according to the path/level.
-#  For example, the new_mapping factory could be a list of factories, one for each
-#  level, and/or take a path as an argument.
-def path_set(
-    d: Mapping,
-    key_path: Iterable[KT],
-    val: VT,
-    *,
-    sep: str = ".",
-    new_mapping: Callable[[], VT] = dict,
-):
-    """
-    Sets a val to a path of keys.
-
-    :param d: The mapping to set the value in
-    :param key_path: The path of keys to set the value to
-    :param val: The value to set
-    :param sep: The separator to use if the path is a string
-    :param new_mapping: callable that returns a new mapping to use when key is not found
-    :return:
-
-    >>> d = {'a': 1, 'b': {'c': 2}}
-    >>> path_set(d, ['b', 'e'], 42)
-    >>> d
-    {'a': 1, 'b': {'c': 2, 'e': 42}}
-
-    >>> input_dict = {
-    ...   "a": {
-    ...     "c": "val of a.c",
-    ...     "b": 1,
-    ...   },
-    ...   "10": 10,
-    ...   "b": {
-    ...     "B": {
-    ...       "AA": 3
-    ...     }
-    ...   }
-    ... }
-    >>>
-    >>> path_set(input_dict, ('new', 'key', 'path'), 7)
-    >>> input_dict  # doctest: +NORMALIZE_WHITESPACE
-    {'a': {'c': 'val of a.c', 'b': 1}, '10': 10, 'b': {'B': {'AA': 3}},
-    'new': {'key': {'path': 7}}}
-
-    You can also use a string as a path, with a separator:
-
-    >>> path_set(input_dict, 'new/key/old/path', 8, sep='/')
-    >>> input_dict  # doctest: +NORMALIZE_WHITESPACE
-    {'a': {'c': 'val of a.c', 'b': 1}, '10': 10, 'b': {'B': {'AA': 3}},
-    'new': {'key': {'path': 7, 'old': {'path': 8}}}}
-
-    If you specify a string path and a non-None separator, the separator will be used
-    to split the string into a list of keys. The default separator is ``sep='.'``.
-
-    >>> path_set(input_dict, 'new.key', 'new val')
-    >>> input_dict  # doctest: +NORMALIZE_WHITESPACE
-    {'a': {'c': 'val of a.c', 'b': 1}, '10': 10, 'b': {'B': {'AA': 3}},
-    'new': {'key': 'new val'}}
-
-    You can also specify a different ``new_mapping`` factory, which will be used to
-    create new mappings when a key is missing. The default is ``dict``.
-
-    >>> from collections import OrderedDict
-    >>> input_dict = {}
-    >>> path_set(input_dict, 'new.key', 42, new_mapping=OrderedDict)
-    >>> input_dict  # doctest: +ELLIPSIS
-    {'new': OrderedDict(...'key'...42...)}
-
-    """
-    if isinstance(key_path, str) and sep is not None:
-        key_path = key_path.split(sep)
-
-    first_key, *remaining_keys = key_path
-    if len(key_path) == 1:  # base case
-        d[first_key] = val
-    else:
-        if first_key not in d:
-            d[first_key] = new_mapping()
-        path_set(d[first_key], remaining_keys, val)
+# ``path_set`` (and the write-through engine ``path_set_writeback`` /
+# ``path_del_writeback``) now live in the dependency-free leaf module
+# ``dol._paths_core`` (imported at the top of this module and re-exported here for
+# backward compatibility). Relocating them lets ``dol.trans`` use the write-through
+# engine without recreating the ``trans -> paths`` import cycle, fixes the historical
+# bug where ``new_mapping`` was not propagated past the top level, and pre-stages the
+# ``paths.py`` module split (issue #70). See ``misc/docs/dol_issue16_design.md``.
 
 
 # TODO: Nice to have: Edits can be a nested dict, not necessarily a flat path-value one.
@@ -1006,15 +936,36 @@ class KeyPath:
     >>> s
     {'a': {'b': {}}}
 
-    Note: ``KeyPath`` enables you to read with paths when all the keys of the paths
-    are valid (i.e. have a value), but just as with a ``dict``, it will not create
-    intermediate nested values for you (as for example, you could make for yourself
-    using  ``collections.defaultdict``).
+    Note: By default ``KeyPath`` reads with paths only when all the keys of the path
+    are valid (i.e. have a value), and, just like a ``dict``, will *not* create
+    intermediate nested values for you on write. Pass ``create_missing=True`` to opt
+    into write-through autovivification: missing intermediates are created on write
+    (like ``collections.defaultdict``, but with an optional contextual per-level
+    ``mk_missing(ctx)`` factory), and the change persists correctly even through
+    persistent / copy-semantics stores. See ``misc/docs/dol_issue16_design.md``.
+
+    >>> s = KeyPath('.', create_missing=True)({})
+    >>> s['a.b.c'] = 42
+    >>> s['a.b.c']
+    42
 
     """
 
     path_sep: str = path_sep
     _path_type: type | Callable = tuple
+    # Everything below is keyword-only and opt-in; the defaults reproduce today's
+    # behavior (missing intermediate on write raises KeyError). Forwarded verbatim to
+    # ``add_path_access`` in ``__call__``.
+    _: KW_ONLY
+    create_missing: bool = False
+    mk_missing: Callable = None
+    explore_further: Callable = None
+    may_create: Callable = None
+    on_create: Callable = _warn_on_create
+    max_created: int = None
+    max_levels: int = 20
+    verify_writeback: bool = False
+    writeback_lock: object = None
 
     def _key_of_id(self, _id):
         if not isinstance(_id, str):
@@ -1026,7 +977,19 @@ class KeyPath:
         return self._path_type(k.split(self.path_sep))
 
     def __call__(self, store):
-        path_accessible_store = add_path_access(store, path_type=self._path_type)
+        path_accessible_store = add_path_access(
+            store,
+            path_type=self._path_type,
+            create_missing=self.create_missing,
+            mk_missing=self.mk_missing,
+            explore_further=self.explore_further,
+            may_create=self.may_create,
+            on_create=self.on_create,
+            max_created=self.max_created,
+            max_levels=self.max_levels,
+            verify_writeback=self.verify_writeback,
+            writeback_lock=self.writeback_lock,
+        )
         return kv_wrap(self)(path_accessible_store)
 
 

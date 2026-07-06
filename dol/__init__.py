@@ -132,6 +132,7 @@ from dol.trans import (
     insert_hash_method,  # add a hash method to store
     add_path_get,  # add a path_get method to store
     add_path_access,  # add path_get and path_set methods to store
+    autoviv,  # opt-in write-through autovivification (add_path_access + create_missing)
     flatten,  # flatten a nested store
     kv_wrap,  # different interface to wrap_kvs
     disable_delitem,  # disable ability to delete
@@ -174,7 +175,12 @@ from dol.paths import (
     KeyPath,  # a class to represent a path to a key
     paths_getter,  # to make mapping extractors that use path_get
     path_get,  # get a value from a path
-    path_set,  # set a value from a path
+    path_set,  # set a value from a path (creating missing intermediate mappings)
+    path_set_writeback,  # store-aware deep set with write-back (autovivification engine)
+    path_del_writeback,  # store-aware deep delete with write-back
+    PathContext,  # (prev_path, key, depth) handed to a contextual mk_missing factory
+    PathCreationError,  # raised when autoviv is blocked/forbidden
+    PathWritebackError,  # raised when a boundary write-back cannot be persisted
     path_filter,  # search through paths of a Mapping
     add_prefix_filtering,  # add a prefix filtering method to a store
     # PathMappedData,  # A mapping that extracts data from a mapping according to paths

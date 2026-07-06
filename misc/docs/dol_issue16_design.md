@@ -434,12 +434,14 @@ def _boundary_write(store, key, value, prefix, verify, lock=None):
 >>> json.loads(backend['fresh'])
 {'x': 5}
 
-# 2) Swap to real Files — identical semantics, verified across fresh instances
->>> from dol import Files, wrap_kvs, add_path_access, ValueCodecs, Pipe   # doctest: +SKIP
->>> F = wrap_kvs(Files('/data'), obj_of_data=json.loads, data_of_obj=json.dumps)  # doctest: +SKIP
->>> s = add_path_access(F, create_missing=True)                                   # doctest: +SKIP
->>> s['a', 'b', 'c'] = 99          # writes file 'a' == '{"b": {"c": 99}}'         # doctest: +SKIP
->>> add_path_access(wrap_kvs(Files('/data'), obj_of_data=json.loads))['a', 'b', 'c']  # fresh read-back  # doctest: +SKIP
+# 2) Swap to real files — identical semantics, verified across fresh instances.
+#    NOTE: use TextFiles (str-native) with a json codec; plain Files stores *bytes*,
+#    so json.dumps (str) would need an extra str<->bytes codec.
+>>> from dol import TextFiles, wrap_kvs, add_path_access   # doctest: +SKIP
+>>> F = wrap_kvs(TextFiles('/data'), obj_of_data=json.loads, data_of_obj=json.dumps)  # doctest: +SKIP
+>>> s = add_path_access(F, create_missing=True)                                       # doctest: +SKIP
+>>> s['a', 'b', 'c'] = 99          # writes file 'a' == '{"b": {"c": 99}}'             # doctest: +SKIP
+>>> add_path_access(wrap_kvs(TextFiles('/data'), obj_of_data=json.loads))['a', 'b', 'c']  # fresh read-back  # doctest: +SKIP
 99
 ```
 
