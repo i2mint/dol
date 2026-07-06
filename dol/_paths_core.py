@@ -384,7 +384,9 @@ def _path_set_writeback(
     path = list(path)
     if not path:
         raise ValueError("empty key path")
-    if len(_prefix) + len(path) > (max_levels if max_levels is not None else float("inf")):
+    if len(_prefix) + len(path) > (
+        max_levels if max_levels is not None else float("inf")
+    ):
         raise PathCreationError(
             f"path too deep (> max_levels={max_levels}) at {_prefix + tuple(path)!r}"
         )
