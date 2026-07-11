@@ -911,23 +911,69 @@ def rel_path_wrap(o, _prefix):
 import re
 import string
 from collections import namedtuple
+from functools import wraps
 
 
+def _return_none_if_none_input(func):
+    """Wraps a method function, making it return `None` if the input is `None`.
+
+    (More precisely, it will return `None` if the first (non-instance) input is `None`.
+
+    >>> class Foo:
+    ...     @_return_none_if_none_input
+    ...     def foo(self, x, y=1):
+    ...         return x + y)
+    >>> foo = Foo()
+    >>> foo.bar(2)
+    3
+    >>> assert foo.bar(None) is None
+    >>> assert foo.bar(x=None) is None
+
+    Note: On the other hand, this will not return `None`, but should:
+    ``foo.bar(y=3, x=None)``. To achieve this, we'd need to look into the signature,
+    which seems like overkill and I might not want that systematic overhead in my
+    methods.
+    """
+
+    @wraps(func)
+    def _func(self, *args, **kwargs):
+        if args and args[0] is None:
+            return None
+        elif kwargs and next(iter(kwargs.values())) is None:
+            return None
+        else:
+            return func(self, *args, **kwargs)
+
+    return _func
+
+
+# TODO: Make and use _return_none_if_none_input or not?
 # TODO: Do we really want to allow field_patterns to be included in the template (the `{name:pattern}` options)?
 #  Normally, this is used for string GENERATION as `{name:format}`, which is still useful for us here too.
+#  The counter argument is that the main usage of StringTemplate is not actually
+#  generation, but extraction. Further, the format language is not as general as simply
+#  using a format_field = {field: cast_function, ...} argument.
+#  My decision would be to remove any use of the `{name:X}` form in the base class,
+#  and have classmethods specialized for short-hand versions that use `name:regex` or
+#  `name:format`, ...
 class StringTemplate:
-    def __init__(self, template: str, field_patterns: dict = None):
+    def __init__(
+        self, template: str, *, field_patterns: dict = None, simple_str_sep: str = None
+    ):
         self.template = template
         self.field_patterns = field_patterns or {}
+        self.simple_str_sep = simple_str_sep
         self._construct_regex()
 
     def _construct_regex(self):
         formatter = string.Formatter()
         pattern = self.template
         self.field_names = []
-        for literal_text, field_name, format_spec, conversion in formatter.parse(self.template):
-            # Check if the field_name has either a format_spec (regex) in the template 
-            # or a matching regex in the field_patterns dictionary before adding it 
+        for literal_text, field_name, format_spec, conversion in formatter.parse(
+            self.template
+        ):
+            # Check if the field_name has either a format_spec (regex) in the template
+            # or a matching regex in the field_patterns dictionary before adding it
             # to the field_names list.
             if field_name and (format_spec or field_name in self.field_patterns):
                 self.field_names.append(field_name)
@@ -938,69 +984,107 @@ class StringTemplate:
                 pattern = pattern.replace(to_replace, f"(?P<{field_name}>{regex})")
         self.regex = re.compile(pattern)
 
-
+    # @_return_none_if_none_input
     def str_to_dict(self, s: str) -> dict:
         """Parses the input string and returns a dictionary of extracted values.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
 
         >>> st.str_to_dict("Alice is 30 years old.")
         {'name': 'Alice', 'age': '30'}
         """
+        if s is None:
+            return None
         match = self.regex.match(s)
         if match:
             return match.groupdict()
         else:
             raise ValueError(f"String '{s}' does not match the template.")
 
+    # @_return_none_if_none_input
     def dict_to_str(self, params: dict) -> str:
         """Generates a string from the dictionary values based on the template.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.dict_to_str({'name': 'Alice', 'age': '30'})
         'Alice is 30 years old.'
 
         """
+        if params is None:
+            return None
+        if params is None:
+            return None
         return self.template.format(**params)
 
+    # @_return_none_if_none_input
     def dict_to_tuple(self, params: dict) -> tuple:
         """Generates a tuple from the dictionary values based on the template.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.dict_to_tuple({'name': 'Alice', 'age': '30'})
         ('Alice', '30')
         """
+        if params is None:
+            return None
         return tuple(params.get(field_name) for field_name in self.field_names)
 
-    def tuple_to_dict(self, params: tuple) -> dict:
+    # @_return_none_if_none_input
+    def tuple_to_dict(self, param_vals: tuple) -> dict:
         """Generates a dictionary from the tuple values based on the template.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.",
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.tuple_to_dict(('Alice', '30'))
         {'name': 'Alice', 'age': '30'}
         """
+        if param_vals is None:
+            return None
         return {
-            field_name: value for field_name, value in zip(self.field_names, params)
+            field_name: value for field_name, value in zip(self.field_names, param_vals)
         }
 
+    # @_return_none_if_none_input
     def str_to_tuple(self, s: str) -> tuple:
         """Parses the input string and returns a tuple of extracted values.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.", 
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.str_to_tuple("Alice is 30 years old.")
         ('Alice', '30')
         """
+        if s is None:
+            return None
         return self.dict_to_tuple(self.str_to_dict(s))
 
+    # @_return_none_if_none_input
     def tuple_to_str(self, params: tuple) -> str:
         """Generates a string from the tuple values based on the template.
 
-        >>> st = StringTemplate("{name} is {age} years old.", {"name": r"\w+", "age": r"\d+"})
+        >>> st = StringTemplate(
+        ...     "{name} is {age} years old.", 
+        ...     field_patterns={"name": r"\w+", "age": r"\d+"}
+        ... )
         >>> st.tuple_to_str(('Alice', '30'))
         'Alice is 30 years old.'
         """
+        if params is None:
+            return None
         return self.dict_to_str(self.tuple_to_dict(params))
 
+    # @_return_none_if_none_input
     def dict_to_namedtuple(
         self, params: dict, namedtuple_type_name: str = "NamedTuple"
     ):
@@ -1011,8 +1095,11 @@ class StringTemplate:
         >>> Person
         NamedTuple(name='Alice', age='30')
         """
+        if params is None:
+            return None
         return namedtuple(namedtuple_type_name, params.keys())(**params)
 
+    # @_return_none_if_none_input
     def namedtuple_to_dict(self, nt):
         """Converts a namedtuple to a dictionary.
 
@@ -1021,8 +1108,11 @@ class StringTemplate:
         >>> st.namedtuple_to_dict(Person)
         {'name': 'Alice', 'age': '30'}
         """
-        return dict(nt._asdict())
+        if nt is None:
+            return None
+        return dict(nt._asdict())  # TODO: Find way that doesn't involve private method
 
+    # @_return_none_if_none_input
     def str_to_simple_str(self, s: str, sep: str):
         """Converts a string to a simple string (i.e. a simple character-delimited string).
 
@@ -1030,8 +1120,17 @@ class StringTemplate:
         >>> st.str_to_simple_str("Alice is 30 years old.", '-')
         'Alice-30'
         """
+        if s is None:
+            return None
+        elif sep is None:
+            if self.simple_str_sep is None:
+                raise ValueError(
+                    "Need to specify a sep (at method call time), or a simple_str_sep "
+                    "(at instiantiation time) to use str_to_simple_str"
+                )
         return sep.join(self.str_to_tuple(s))
 
+    # @_return_none_if_none_input
     def simple_str_to_str(self, ss: str, sep: str):
         """Converts a simple character-delimited string to a string.
 
@@ -1039,4 +1138,6 @@ class StringTemplate:
         >>> st.simple_str_to_str('Alice-30', '-')
         'Alice is 30 years old.'
         """
+        if ss is None:
+            return None
         return self.tuple_to_str(tuple(ss.split(sep)))
