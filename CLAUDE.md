@@ -190,6 +190,7 @@ Run tests: `pytest dol/tests/`
 | [dol_issues_report.md](misc/docs/dol_issues_report.md) | Prioritized issue triage + wave-by-wave tackle order |
 | [dol_issue16_design.md](misc/docs/dol_issue16_design.md) | Issue #16 design: optional key-path write-through / autovivification — opt-in `create_missing`, contextual per-level factory, the `path_set_writeback` boundary engine + persistent-store write-back protocol, scoped plan. Design-only (no code yet). |
 | [dol_issue18_design.md](misc/docs/dol_issue18_design.md) | Issue #18 design: `self`-not-wrapped delegation trap — `wrapped_self` (shipped) now, is-a wrapping (deferred, major) later. |
+| [dol_issue10_design.md](misc/docs/dol_issue10_design.md) | Issues #10 + #2 (paired) design: recursive wrapping of nested stores (`recursive_wrap`) + a flat `KvReader`/`KvPersister` view (`flat_store`), sharing one `(path,key,value)` descent frontier and reusing the #16 `path_set_writeback` engine. Load-bearing fix: the recursion read-surface and the write-back boundary must be **different** objects (naive `boundary=self` infinite-loops). Model-2 read + write-into-existing in scope; persistent creation deferred to P3. Design-only (no code yet). |
 | [frontend_dol_ideas.md](misc/docs/frontend_dol_ideas.md) | `zoddal` design: TypeScript KV interface, adapters, Zod bridge, zod-collection-ui integration |
 
 > A **local-only** ecosystem inventory (gitignored) lives in `misc/data/`: dol's 76
