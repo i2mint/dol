@@ -203,6 +203,21 @@ from dol.sources import (
     MultiSource,  # read-only Mapping composing multiple sources, tried in order.
 )
 
+from .content import (
+    ContentRef,  # serializable stand-in for stored content (bytes) held in a record
+    is_content_ref,  # predicate for a ContentRef instance or its wire-form dict
+    content_hash,  # hex content hash (sha256 default) — the CAS key
+    guess_mime_type,  # stdlib mimetypes guess from a filename/key
+    content_url,  # fetchable URL via a backend's `url_for` seam, else None
+    put_content,  # location-addressed write (caller supplies id) -> ContentRef
+    add_content,  # content-addressed write (id = content hash, idempotent) -> ContentRef
+    get_content,  # read bytes by ContentRef / wire dict / bare key
+    delete_content,  # delete by ContentRef / wire dict / bare key
+    ContentAddressedStore,  # CAS facade over an injected bytes backend
+    with_content_addressing,  # factory: wrap a backend as a ContentAddressedStore
+    SupportsUrlFor,  # Protocol: backend that can hand out a URL for a key
+)
+
 
 def __getattr__(name):
     """Handle deprecated imports at module level."""
