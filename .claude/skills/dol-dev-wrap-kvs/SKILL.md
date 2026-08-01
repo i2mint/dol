@@ -31,8 +31,8 @@ below (#18, #6).
 
 A transform can be written two ways and dol must decide which:
 ```python
-obj_of_data=lambda data: ...            # f(data)          — no store
-obj_of_data=lambda self, data: ...      # f(self, data)    — wants the store
+obj_of_data = lambda data: ...  # f(data)          — no store
+obj_of_data = lambda self, data: ...  # f(self, data)    — wants the store
 ```
 The decision lives in `_has_unbound_self(func)` (`dol/trans.py`) and is used at **four
 call sites**: `_wrap_outcoming`, `_wrap_ingoing`, and the `postget`/`preset` blocks in
@@ -46,14 +46,15 @@ The arity clause is the #9 fix. Without it, unary callables whose first param me
 were mis-called as `f(store, data)` → `TypeError: descriptor 'decode' ... doesn't apply to
 a 'Store' object`. **Never reintroduce a name-only check.** When editing, verify with:
 ```python
-_has_unbound_self(bytes.decode)          # -> False   (1 required positional)
-_has_unbound_self(lambda self, d: d)     # -> True    (2 required)
+_has_unbound_self(bytes.decode)  # -> False   (1 required positional)
+_has_unbound_self(lambda self, d: d)  # -> True    (2 required)
 ```
 
 ### The explicit escape hatch: `FirstArgIsMapping`
 When the heuristic can't (or shouldn't) infer intent, callers opt in explicitly:
 ```python
 from dol import wrap_kvs, FirstArgIsMapping
+
 wrap_kvs(store, obj_of_data=FirstArgIsMapping(lambda self, data: self.root / data))
 ```
 `FirstArgIsMapping(LiteralVal)` (`trans.py`) marks a transform as wanting the store,
@@ -71,13 +72,19 @@ for backward-compat. See `misc/docs/dol_issues_report.md` §Wave-1.
 Because methods are delegated (has-a), a method defined on the wrapped class runs bound to
 `self.store`, not the `Wrap` instance:
 ```python
-sq = wrap_kvs(data_of_obj=lambda x: x*x, obj_of_data=lambda x: math.sqrt(x))
+sq = wrap_kvs(data_of_obj=lambda x: x * x, obj_of_data=lambda x: math.sqrt(x))
+
+
 @sq
 class S(dict):
-    def via_self(self, k): return self[k]   # self is the inner dict -> NO transform
-s = S(); s['2'] = 2
-s['2']            # 2.0  (transformed, via Store.__getitem__)
-s.via_self('2')   # 4    (untransformed! self is the inner store)
+    def via_self(self, k):
+        return self[k]  # self is the inner dict -> NO transform
+
+
+s = S()
+s["2"] = 2
+s["2"]  # 2.0  (transformed, via Store.__getitem__)
+s.via_self("2")  # 4    (untransformed! self is the inner store)
 ```
 This is **not** the same bug as #9 and the #9 fix does not touch it. Workaround: re-wrap
 `self` inside the method (`sq(self)[k]`). A general fix requires rethinking method
@@ -93,9 +100,13 @@ own params:
 @Store.wrap
 class A:
     def __init__(self, a=1): ...
+
+
 class B(A):
     def __init__(self, a=1, b=2): ...
-signature(B)        # (a=1)   — B's b=2 is lost; B.__dict__ has no __signature__
+
+
+signature(B)  # (a=1)   — B's b=2 is lost; B.__dict__ has no __signature__
 ```
 A fix belongs in the delegation/signature machinery (recompute per-subclass, e.g. via
 `__init_subclass__`), independent of the conditioning work.

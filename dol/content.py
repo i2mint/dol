@@ -52,7 +52,15 @@ from __future__ import annotations
 import hashlib
 import mimetypes
 from dataclasses import dataclass
-from typing import Any, Callable, Mapping, MutableMapping, Optional, Protocol, runtime_checkable
+from typing import (
+    Any,
+    Callable,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Protocol,
+    runtime_checkable,
+)
 
 from dol.base import KvPersister
 
@@ -335,7 +343,11 @@ class ContentAddressedStore(KvPersister):
         self._field = field
 
     def add(
-        self, data: bytes, *, mime_type: Optional[str] = None, name: Optional[str] = None
+        self,
+        data: bytes,
+        *,
+        mime_type: Optional[str] = None,
+        name: Optional[str] = None,
     ) -> ContentRef:
         """Write ``data`` under its content hash (idempotent); return a :class:`ContentRef`."""
         return add_content(

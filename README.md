@@ -28,8 +28,8 @@ and safely.
 import pickle
 
 src_backend = {
-    'file_1.pkl': pickle.dumps([['A', 'B', 'C'], ['one', 'two', 'three']]),
-    'file_2.pkl': pickle.dumps([['apple', 'pie'], ['one', 'two'], ['hot', 'cold']]),
+    "file_1.pkl": pickle.dumps([["A", "B", "C"], ["one", "two", "three"]]),
+    "file_2.pkl": pickle.dumps([["apple", "pie"], ["one", "two"], ["hot", "cold"]]),
 }
 targ_backend = dict()
 ```
@@ -40,14 +40,14 @@ Here's how you can do it with `dol` tools
 from dol import ValueCodecs, KeyCodecs, Pipe
 
 # decoder here will unpickle data and remove remove the .pkl extension from the key
-src_wrap = Pipe(KeyCodecs.suffixed('.pkl'), ValueCodecs.pickle())
+src_wrap = Pipe(KeyCodecs.suffixed(".pkl"), ValueCodecs.pickle())
 
-# encoder here will convert the lists to csv string, the string into bytes, 
-# and the bytes will be gzipped. 
+# encoder here will convert the lists to csv string, the string into bytes,
+# and the bytes will be gzipped.
 # ... also, we'll add .csv.gz on write.
 targ_wrap = Pipe(
-    KeyCodecs.suffixed('.csv.gz'), 
-    ValueCodecs.csv() + ValueCodecs.str_to_bytes() + ValueCodecs.gzip()
+    KeyCodecs.suffixed(".csv.gz"),
+    ValueCodecs.csv() + ValueCodecs.str_to_bytes() + ValueCodecs.gzip(),
 )
 
 # Let's wrap our backends:
@@ -63,20 +63,16 @@ print(f"After: {list(targ_backend)=}")
 From the point of view of src and targ, you see the same thing.
 
 ```python
-assert list(src) == list(targ) == ['file_1', 'file_2']
-assert (
-    src['file_1'] 
-    == targ['file_1']
-    == [['A', 'B', 'C'], ['one', 'two', 'three']]
-)
+assert list(src) == list(targ) == ["file_1", "file_2"]
+assert src["file_1"] == targ["file_1"] == [["A", "B", "C"], ["one", "two", "three"]]
 ```
 
 But the backend of targ is different:
 
 ```python
-src_backend['file_1.pkl']
+src_backend["file_1.pkl"]
 # b'\x80\x04\x95\x19\x00\x00\x00\x00\x00\x00\x00]\x94(]\x94(K\x01K\x02K\x03e]\x94(K\x04K\x05K\x06ee.'
-targ_backend['file_1.csv.gz']
+targ_backend["file_1.csv.gz"]
 # b'\x1f\x8b\x08\x00*YWe\x02\xff3\xd41\xd21\xe6\xe52\xd11\xd51\xe3\xe5\x02\x00)4\x83\x83\x0e\x00\x00\x00'
 ```
 

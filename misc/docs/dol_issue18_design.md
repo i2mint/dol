@@ -52,16 +52,19 @@ method bypasses the transform pipeline and returns **raw** data.
 import math
 from dol import wrap_kvs
 
-sq = wrap_kvs(data_of_obj=lambda x: x*x, obj_of_data=lambda x: math.sqrt(x))
+sq = wrap_kvs(data_of_obj=lambda x: x * x, obj_of_data=lambda x: math.sqrt(x))
+
 
 @sq
 class S(dict):
     def via_self(self, k):
-        return self[k]        # self is the INNER dict → no transform
+        return self[k]  # self is the INNER dict → no transform
 
-s = S(); s['2'] = 2
-s['2']            # 2.0   (transformed, external Store.__getitem__)
-s.via_self('2')   # 4     ← BUG: untransformed; self is the inner store
+
+s = S()
+s["2"] = 2
+s["2"]  # 2.0   (transformed, external Store.__getitem__)
+s.via_self("2")  # 4     ← BUG: untransformed; self is the inner store
 ```
 
 **Dispatch path (verified):** `wrap_kvs → _wrap_store → Store.wrap → delegator_wrap(Store, SomeClass)
@@ -170,10 +173,11 @@ A public accessor backed by an `id`-keyed weakref registry populated once in `St
 # user code, inside a delegation-wrapped class's own method:
 from dol import wrapped_self
 
-@py_files_wrap                       # a Pipe of wrap_kvs/filt_iter/mk_relative_path_store
+
+@py_files_wrap  # a Pipe of wrap_kvs/filt_iter/mk_relative_path_store
 class PyFilesReader(...):
     def is_pkg(self):
-        return '__init__.py' in wrapped_self(self)     # ← outer, relativized+filtered view
+        return "__init__.py" in wrapped_self(self)  # ← outer, relativized+filtered view
 ```
 
 `wrapped_self(obj)` returns the outer transform-applying `Store` registered for `obj`, or `obj`

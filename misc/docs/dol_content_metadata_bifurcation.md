@@ -178,7 +178,7 @@ all sub-stores:
 ```python
 stores = dict(bytes_store=bytes_store, metadata_store=metadata_store)
 reader = FanoutReader(stores)
-reader['b']
+reader["b"]
 # → {'bytes_store': b'b', 'metadata_store': {'x': 2}}
 ```
 
@@ -195,7 +195,7 @@ read, you get a composite value aggregated from all backends.
 extends `FanoutReader` with writes:
 
 ```python
-persister['a'] = dict(bytes_store=b'a', metadata_store=dict(x=1))
+persister["a"] = dict(bytes_store=b"a", metadata_store=dict(x=1))
 ```
 
 The value dict is **destructured** and each sub-value is routed to the
@@ -232,7 +232,7 @@ A key comment in
 s[k] = (blob, meta)
 
 # Option B: dict-based — current FanoutPersister approach
-s[k] = {'bytes_store': blob, 'metadata_store': meta}
+s[k] = {"bytes_store": blob, "metadata_store": meta}
 
 # Option C: functional decomposition — store extracts parts from value
 s[k] = v  # with functional parameters that tell s how to extract blob and meta from v
@@ -259,12 +259,14 @@ introduced the `Mall` pattern — a container that holds multiple named stores,
 each with its own configuration:
 
 ```python
-DFLT_MALL_SPEC = imdict({
-    'raw_data': {'func': DfStore},
-    'xy_data': {'func': PickleStore},
-    'learners': {'func': PickleStore},
-    'models': {'func': PickleStore}
-})
+DFLT_MALL_SPEC = imdict(
+    {
+        "raw_data": {"func": DfStore},
+        "xy_data": {"func": PickleStore},
+        "learners": {"func": PickleStore},
+        "models": {"func": PickleStore},
+    }
+)
 ```
 
 A `Mall` is a **store catalog** — it organizes stores by role but does not
@@ -405,9 +407,9 @@ Section 2.4) is implicit routing via decomposition functions:
 
 ```python
 composite = SplitStore(
-    stores={'content': s3_store, 'meta': mongo_store},
-    split=lambda v: {'content': v.bytes, 'meta': v.info},
-    merge=lambda parts: Waveform(bytes=parts['content'], info=parts['meta']),
+    stores={"content": s3_store, "meta": mongo_store},
+    split=lambda v: {"content": v.bytes, "meta": v.info},
+    merge=lambda parts: Waveform(bytes=parts["content"], info=parts["meta"]),
 )
 composite[key] = wf  # split is called internally
 wf = composite[key]  # merge is called internally

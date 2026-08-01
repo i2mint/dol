@@ -28,12 +28,12 @@ Example:
 ```python
 from dol import Files
 
-files = Files('/path/to/root')  # instance wrapping that folder
-list(files)               # list of relative file paths (keys)
-files['doc.txt'] = b'hello'  # write bytes
-print(files['doc.txt'])      # b'hello'
-assert 'doc.txt' in files
-del files['doc.txt']         # delete file
+files = Files("/path/to/root")  # instance wrapping that folder
+list(files)  # list of relative file paths (keys)
+files["doc.txt"] = b"hello"  # write bytes
+print(files["doc.txt"])  # b'hello'
+assert "doc.txt" in files
+del files["doc.txt"]  # delete file
 ```
 
 If you prefer automatic text handling (str instead of bytes), use `TextFiles`
@@ -41,9 +41,10 @@ which opens files in text mode by default:
 
 ```python
 from dol import TextFiles
-texts = TextFiles('/path/to/root')
-texts['notes.txt'] = 'a string'   # writes text
-print(texts['notes.txt'])         # reads str
+
+texts = TextFiles("/path/to/root")
+texts["notes.txt"] = "a string"  # writes text
+print(texts["notes.txt"])  # reads str
 ```
 
 ### filt_iter — filter the mapping view
@@ -61,13 +62,13 @@ Example — only list and access `.json` files:
 from dol import Files
 from dol.trans import filt_iter
 
-files = Files('/path/to/root')
-json_view = filt_iter.suffixes('.json')(files)
-list(json_view)           # only .json keys are shown
-obj = json_view['data.json']  # behaves like files['data.json'] (same underlying data)
+files = Files("/path/to/root")
+json_view = filt_iter.suffixes(".json")(files)
+list(json_view)  # only .json keys are shown
+obj = json_view["data.json"]  # behaves like files['data.json'] (same underlying data)
 # writing to a non-matching key raises KeyError
 try:
-    json_view['other.txt'] = b'no'
+    json_view["other.txt"] = b"no"
 except KeyError:
     pass
 ```
@@ -95,22 +96,22 @@ import json
 from dol import Files
 from dol.trans import wrap_kvs
 
-files = Files('/path/to/root')
+files = Files("/path/to/root")
 json_store = wrap_kvs(
     files,
     value_decoder=lambda b: json.loads(b.decode()),
     value_encoder=lambda obj: json.dumps(obj, indent=2).encode(),
 )
 
-json_store['data.json'] = {'a': 1}        # writes pretty JSON bytes
-print(json_store['data.json'])           # reads Python dict
+json_store["data.json"] = {"a": 1}  # writes pretty JSON bytes
+print(json_store["data.json"])  # reads Python dict
 ```
 
 You can chain `wrap_kvs` and `filt_iter` to get both decoding and focused views. For
 example: restrict to `.json` files and expose them as Python dicts:
 
 ```python
-json_only = filt_iter.suffixes('.json')(json_store)
+json_only = filt_iter.suffixes(".json")(json_store)
 for k in json_only:
     print(k, type(json_only[k]))  # keys end with .json and values are dicts
 ```

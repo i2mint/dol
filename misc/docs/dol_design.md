@@ -35,10 +35,10 @@ All classes inherit from `collections.abc` ABCs, so they satisfy `isinstance` ch
 
 ```python
 class Store(KvPersister):
-    _id_of_key = static_identity_method   # outer key → inner key
-    _key_of_id = static_identity_method   # inner key → outer key
-    _data_of_obj = static_identity_method # outer value → stored data
-    _obj_of_data = static_identity_method # stored data → outer value
+    _id_of_key = static_identity_method  # outer key → inner key
+    _key_of_id = static_identity_method  # inner key → outer key
+    _data_of_obj = static_identity_method  # outer value → stored data
+    _obj_of_data = static_identity_method  # stored data → outer value
 
     def __getitem__(self, k):
         _id = self._id_of_key(k)
@@ -123,25 +123,28 @@ import json, pickle
 JsonStore = wrap_kvs(dict, obj_of_data=json.loads, data_of_obj=json.dumps)
 
 # 2. Add key prefix
-PrefixedStore = wrap_kvs(dict,
+PrefixedStore = wrap_kvs(
+    dict,
     id_of_key=lambda k: f"user:{k}",
-    key_of_id=lambda _id: _id[len("user:"):],
+    key_of_id=lambda _id: _id[len("user:") :],
 )
 
 # 3. Extension-based deserialization (key-conditioned)
-MultiFormatStore = wrap_kvs(dict,
-    postget=lambda k, v: json.loads(v) if k.endswith('.json') else pickle.loads(v),
-    preset=lambda k, v: json.dumps(v) if k.endswith('.json') else pickle.dumps(v),
+MultiFormatStore = wrap_kvs(
+    dict,
+    postget=lambda k, v: json.loads(v) if k.endswith(".json") else pickle.loads(v),
+    preset=lambda k, v: json.dumps(v) if k.endswith(".json") else pickle.dumps(v),
 )
 
 # 4. Using codec shortcuts
 from dol.trans import ValueCodec
+
 pickle_codec = ValueCodec(encoder=pickle.dumps, decoder=pickle.loads)
 PickleStore = wrap_kvs(dict, value_codec=pickle_codec)
 
 # 5. Stacking layers (the "Russian dolls" pattern)
 store = dict()
-store = wrap_kvs(store, id_of_key=lambda k: k + '.json', key_of_id=lambda _id: _id[:-5])
+store = wrap_kvs(store, id_of_key=lambda k: k + ".json", key_of_id=lambda _id: _id[:-5])
 store = wrap_kvs(store, obj_of_data=json.loads, data_of_obj=json.dumps)
 ```
 
@@ -153,7 +156,7 @@ Located in `dol/trans.py:130`. Enables writing a class-transforming function onc
 
 ```python
 @store_decorator
-def my_deco(store=None, *, some_param='default'):
+def my_deco(store=None, *, some_param="default"):
     # Transform the store class or instance
     ...
     return transformed_store
@@ -166,16 +169,18 @@ The 4 usage modes:
 @my_deco
 class MyStore(dict): ...
 
+
 # 2. Class decorator factory (with params)
-@my_deco(some_param='custom')
+@my_deco(some_param="custom")
 class MyStore(dict): ...
+
 
 # 3. Instance decorator (wraps existing instance in a Store)
 s = dict()
 s_wrapped = my_deco(s)
 
 # 4. Instance decorator factory
-wrap_with_custom = my_deco(some_param='custom')
+wrap_with_custom = my_deco(some_param="custom")
 s_wrapped = wrap_with_custom(s)
 ```
 
@@ -188,8 +193,11 @@ A related utility that upgrades a plain decorator to also work as a factory:
 ```python
 @double_up_as_factory
 def my_deco(func=None, *, multiplier=2):
-    def wrapper(x): return func(x) * multiplier
+    def wrapper(x):
+        return func(x) * multiplier
+
     return wrapper
+
 
 # Direct use:      my_deco(f)
 # Factory use:     my_deco(multiplier=3)(f)
@@ -210,8 +218,9 @@ class Codec(Generic[DecodedType, EncodedType]):
     encoder: Callable[[DecodedType], EncodedType]
     decoder: Callable[[EncodedType], DecodedType]
 
-    def compose_with(self, other): ...   # chain two codecs
-    def invert(self): ...                 # swap encoder/decoder
+    def compose_with(self, other): ...  # chain two codecs
+    def invert(self): ...  # swap encoder/decoder
+
     __add__ = compose_with
     __invert__ = invert
 ```
@@ -223,9 +232,11 @@ class ValueCodec(Codec):
     def __call__(self, obj):
         return wrap_kvs(obj, data_of_obj=self.encoder, obj_of_data=self.decoder)
 
+
 class KeyCodec(Codec):
     def __call__(self, obj):
         return wrap_kvs(obj, id_of_key=self.encoder, key_of_id=self.decoder)
+
 
 class KeyValueCodec(Codec):
     def __call__(self, obj):
@@ -239,7 +250,7 @@ from dol.trans import ValueCodec
 import json
 
 json_codec = ValueCodec(encoder=json.dumps, decoder=json.loads)
-MyStore = json_codec(dict)   # wrap dict with json serialization
+MyStore = json_codec(dict)  # wrap dict with json serialization
 ```
 
 The `kv_codecs.py` module provides ready-made codec factories in two namespaces:
@@ -248,18 +259,20 @@ The `kv_codecs.py` module provides ready-made codec factories in two namespaces:
 from dol import ValueCodecs, KeyCodecs
 
 # Codec factories
-pickle_codec = ValueCodecs.pickle()   # ValueCodec(encoder=pickle.dumps, decoder=pickle.loads)
-json_codec   = ValueCodecs.json()
-gzip_codec   = ValueCodecs.gzip()
-csv_codec    = ValueCodecs.csv()
+pickle_codec = (
+    ValueCodecs.pickle()
+)  # ValueCodec(encoder=pickle.dumps, decoder=pickle.loads)
+json_codec = ValueCodecs.json()
+gzip_codec = ValueCodecs.gzip()
+csv_codec = ValueCodecs.csv()
 
-suffix_codec = KeyCodecs.suffixed('.pkl')  # adds/strips .pkl from keys
+suffix_codec = KeyCodecs.suffixed(".pkl")  # adds/strips .pkl from keys
 
 # Compose with +
 full_codec = ValueCodecs.pickle() + ValueCodecs.gzip()  # pickle then gzip
 
 # Apply to store
-MyStore = Pipe(KeyCodecs.suffixed('.pkl'), ValueCodecs.pickle())(dict)
+MyStore = Pipe(KeyCodecs.suffixed(".pkl"), ValueCodecs.pickle())(dict)
 ```
 
 ---
@@ -292,17 +305,20 @@ Located in `dol/signatures.py`. Rich signature manipulation:
 from dol.signatures import Sig
 
 sig = Sig(my_func)
-sig.names          # list of parameter names
-sig.defaults       # dict of {name: default}
-sig.annotations    # dict of {name: type}
+sig.names  # list of parameter names
+sig.defaults  # dict of {name: default}
+sig.annotations  # dict of {name: type}
 
 # Arithmetic on signatures
-new_sig = Sig(f) + ['extra_param'] + Sig(g)  # merge signatures
-new_sig = Sig(f) - ['verbose']               # remove parameter
+new_sig = Sig(f) + ["extra_param"] + Sig(g)  # merge signatures
+new_sig = Sig(f) - ["verbose"]  # remove parameter
+
 
 # Apply a signature to a function
 @Sig(some_other_func)
 def my_func(*args, **kwargs): ...
+
+
 # my_func now has the signature of some_other_func
 ```
 
@@ -328,6 +344,7 @@ The `DelegatedAttribute` descriptor makes delegation explicit and works with pic
 class DelegatedAttribute:
     def __get__(self, instance, owner):
         return getattr(getattr(instance, self.delegate_name), self.attr_name)
+
     def __set__(self, instance, value):
         setattr(getattr(instance, self.delegate_name), self.attr_name, value)
 ```
@@ -343,18 +360,18 @@ class DelegatedAttribute:
 ```python
 from dol import cache_this
 
+
 class MyClass:
     @cache_this
-    def expensive_property(self):   # no args → cached_property behavior
+    def expensive_property(self):  # no args → cached_property behavior
         return compute_expensive()
 
-    @cache_this(cache={})           # explicit cache dict
+    @cache_this(cache={})  # explicit cache dict
     def expensive_method(self, x, y):
         return compute(x, y)
 
-    @cache_this(cache='my_cache', ignore={'verbose'})
-    def parameterized(self, data, mode='fast', verbose=False):
-        ...
+    @cache_this(cache="my_cache", ignore={"verbose"})
+    def parameterized(self, data, mode="fast", verbose=False): ...
 ```
 
 The cache can be any Mapping — including a dol store, enabling persistent or distributed caches.
@@ -365,7 +382,8 @@ The cache can be any Mapping — including a dol store, enabling persistent or d
 from dol import store_cached
 import shelve
 
-@store_cached(shelve.open('my_cache'))  # persisted cache
+
+@store_cached(shelve.open("my_cache"))  # persisted cache
 def slow_computation(x, y):
     return ...
 ```
@@ -392,7 +410,7 @@ A ChainMap where writes go to the first (fast) store and reads fall through in o
 ```python
 from dol.sources import FlatReader
 
-outer = {'A': {'x': 1, 'y': 2}, 'B': {'z': 3}}
+outer = {"A": {"x": 1, "y": 2}, "B": {"z": 3}}
 flat = FlatReader(outer, key_func=lambda outer_k, inner_k: f"{outer_k}/{inner_k}")
 list(flat)  # ['A/x', 'A/y', 'B/z']
 ```
@@ -405,8 +423,8 @@ Reads/writes broadcast to multiple stores simultaneously.
 from dol.sources import FanoutPersister
 
 s = FanoutPersister(local_store, remote_store)
-s['key'] = value   # writes to both stores
-s['key']           # reads from first store that has the key
+s["key"] = value  # writes to both stores
+s["key"]  # reads from first store that has the key
 ```
 
 ### `CascadedStores`
@@ -422,20 +440,21 @@ For hierarchical/nested stores:
 ```python
 from dol import path_get, path_set, KeyPath, mk_relative_path_store
 
-d = {'a': {'b': {'c': 42}}}
-path_get(d, ('a', 'b', 'c'))   # 42
-path_set(d, ('a', 'b', 'd'), 99)
+d = {"a": {"b": {"c": 42}}}
+path_get(d, ("a", "b", "c"))  # 42
+path_set(d, ("a", "b", "d"), 99)
 
 # Convert a path store (full paths as keys) to a relative path store
-RelativeStore = mk_relative_path_store(root='/data/users')
+RelativeStore = mk_relative_path_store(root="/data/users")
 s = RelativeStore()
-s['john/profile.json']  # reads /data/users/john/profile.json
+s["john/profile.json"]  # reads /data/users/john/profile.json
 
 # KeyTemplate for structured key parsing
 from dol.paths import KeyTemplate
-kt = KeyTemplate('{user}/{year}/{month}.json')
-kt.key_to_dict('john/2024/01.json')  # {'user': 'john', 'year': '2024', 'month': '01'}
-kt.dict_to_key({'user': 'john', 'year': '2024', 'month': '01'})  # 'john/2024/01.json'
+
+kt = KeyTemplate("{user}/{year}/{month}.json")
+kt.key_to_dict("john/2024/01.json")  # {'user': 'john', 'year': '2024', 'month': '01'}
+kt.dict_to_key({"user": "john", "year": "2024", "month": "01"})  # 'john/2024/01.json'
 ```
 
 ---

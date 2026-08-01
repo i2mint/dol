@@ -26,8 +26,8 @@ The single most recurring topic. `wrap_kvs` is central to dol but its current de
 
 ```python
 # These should behave identically, but don't:
-wrap_kvs(store, obj_of_data=lambda x: bytes.decode(x))   # works
-wrap_kvs(store, obj_of_data=bytes.decode)                  # fails!
+wrap_kvs(store, obj_of_data=lambda x: bytes.decode(x))  # works
+wrap_kvs(store, obj_of_data=bytes.decode)  # fails!
 ```
 
 **Root cause** (code-verified 2026-07): dol decides whether to call the transform as
@@ -60,9 +60,9 @@ When a method inside a `wrap_kvs`-decorated class calls `self[key]`, `self` is t
 `wrap_kvs` and all wrappers only apply to the "top level" of a store. If the store contains nested stores (a store of stores), the wrap doesn't propagate to values:
 
 ```python
-s = add_path_access({'a': {'b': {'c': 42}}})
-s['a', 'b', 'c']   # works (top-level wrap applied)
-s['a']['b', 'c']   # fails (returned value is plain dict, not wrapped)
+s = add_path_access({"a": {"b": {"c": 42}}})
+s["a", "b", "c"]  # works (top-level wrap applied)
+s["a"]["b", "c"]  # fails (returned value is plain dict, not wrapped)
 ```
 
 The issue proposes a `conditional_data_trans` pattern to recursively apply wrapping to values that match a condition (e.g., "if the value is a Mapping, wrap it too"). A prototype is shown:
@@ -88,7 +88,8 @@ A repeated need: users want ready-to-use codecs for common Python stdlib operati
 
 ```python
 from dol import ValueCodecs, KeyCodecs
-store = Pipe(KeyCodecs.suffixed('.pkl'), ValueCodecs.pickle())(dict)
+
+store = Pipe(KeyCodecs.suffixed(".pkl"), ValueCodecs.pickle())(dict)
 ```
 
 ### Issue #47: Simpler "affix" key codecs

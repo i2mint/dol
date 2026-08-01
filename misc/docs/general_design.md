@@ -113,8 +113,10 @@ Sometimes the value transform needs to know the key — for example, to choose t
 
 ```python
 def postget(k, v):
-    if k.endswith('.json'): return json.loads(v)
-    if k.endswith('.pkl'):  return pickle.loads(v)
+    if k.endswith(".json"):
+        return json.loads(v)
+    if k.endswith(".pkl"):
+        return pickle.loads(v)
     return v
 ```
 
@@ -146,15 +148,17 @@ The primary tool for adding layers is `wrap_kvs` (see [dol_design.md](dol_design
 from dol import wrap_kvs
 
 # Add json serialization to any store
-JsonStore = wrap_kvs(dict,
+JsonStore = wrap_kvs(
+    dict,
     obj_of_data=json.loads,
     data_of_obj=json.dumps,
 )
 
 # Add prefix to all keys
-PrefixedStore = wrap_kvs(dict,
+PrefixedStore = wrap_kvs(
+    dict,
     id_of_key=lambda k: f"prefix/{k}",
-    key_of_id=lambda id: id[len("prefix/"):],
+    key_of_id=lambda id: id[len("prefix/") :],
 )
 
 # Stack both layers

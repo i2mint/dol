@@ -44,26 +44,30 @@ from dol import Files
 from dol.trash import permanent_delete, trash_only
 
 # Default: safe trash with warning on fallback
-s = Files('/my/data')
-del s['file.txt']  # Moves to trash if available
+s = Files("/my/data")
+del s["file.txt"]  # Moves to trash if available
 
 # Permanent deletion (no warnings)
-s = Files('/my/data', delete_func=permanent_delete)
-del s['file.txt']  # Permanently deleted
+s = Files("/my/data", delete_func=permanent_delete)
+del s["file.txt"]  # Permanently deleted
 
 # Trash only (error if unavailable)
-s = Files('/my/data', delete_func=trash_only)
-del s['file.txt']  # Moves to trash or raises error
+s = Files("/my/data", delete_func=trash_only)
+del s["file.txt"]  # Moves to trash or raises error
+
 
 # Class-level override
 class PermanentFiles(Files):
     _delete_func = permanent_delete
 
+
 # Custom deletion function
 def log_delete(path):
     print(f"Deleting {path}")
     os.remove(path)
-s = Files('/my/data', delete_func=log_delete)
+
+
+s = Files("/my/data", delete_func=log_delete)
 ```
 
 **Optional Dependencies:**

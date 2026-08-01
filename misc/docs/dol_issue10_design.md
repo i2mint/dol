@@ -62,7 +62,9 @@ undesirable in the general case). The author's own sketch is a **self-referentia
 ```python
 def add_path_access_if_mapping(v):
     if isinstance(v, Mapping):
-        return wrap_kvs(add_path_access(v), obj_of_data=add_path_access_if_mapping)  # re-applies ITSELF
+        return wrap_kvs(
+            add_path_access(v), obj_of_data=add_path_access_if_mapping
+        )  # re-applies ITSELF
     return v
 ```
 
@@ -127,10 +129,15 @@ this non-negotiable: the natural nested write must **persist or raise**, never v
 ### 3.2 `flatten`'s three live defects (verified — to be fixed under `flat_store`, not `flatten`)
 
 ```python
-f = flatten({'a': {'b': {'c': 42}}, 'x': {'y': 7}}, levels=2)
-('a','b','c') in f     # AssertionError at dol/trans.py:3211  (assert len(k) < self._levels)
-f['a','b'] = {'c': 100}; f['a','b']   # -> {'c': 42}  (write SILENTLY LOST — add_path_get only)
-del f[('x','y')]       # KeyError ('x','y')  (delete hits the wrong key)
+f = flatten({"a": {"b": {"c": 42}}, "x": {"y": 7}}, levels=2)
+(
+    "a",
+    "b",
+    "c",
+) in f  # AssertionError at dol/trans.py:3211  (assert len(k) < self._levels)
+f["a", "b"] = {"c": 100}
+f["a", "b"]  # -> {'c': 42}  (write SILENTLY LOST — add_path_get only)
+del f[("x", "y")]  # KeyError ('x','y')  (delete hits the wrong key)
 ```
 
 These are **not** fixed in place (that would perturb `flatten`'s 32-dependent surface); they are
@@ -221,56 +228,64 @@ construct it directly.
 from dol import recursive_wrap
 
 # (A) plain dict — the 90% case, ZERO config (reference semantics: nested writes just persist)
-s = recursive_wrap({'a': {'b': {'c': 42}}})
-s['a', 'b', 'c']        # 42     flat path at the top
-s['a']['b', 'c']        # 42     child re-wrapped (was KeyError in conditional_data_trans)
-s['a']['b']['c']        # 42     FIXPOINT — every level carries the DNA
-list(s['a'])            # ['b']  nested view iterates IMMEDIATE keys (faithful to #10)
-s['a']['b', 'c'] = 99   # persists
+s = recursive_wrap({"a": {"b": {"c": 42}}})
+s["a", "b", "c"]  # 42     flat path at the top
+s["a"]["b", "c"]  # 42     child re-wrapped (was KeyError in conditional_data_trans)
+s["a"]["b"]["c"]  # 42     FIXPOINT — every level carries the DNA
+list(s["a"])  # ['b']  nested view iterates IMMEDIATE keys (faithful to #10)
+s["a"]["b", "c"] = 99  # persists
 
 # (B) CLASS form — the #10 sub-bug is structurally impossible (genuine type, not a Pipe)
 S = recursive_wrap(dict)
 assert isinstance(S, type)
-S({'a': {'b': {'c': 42}}})['a', 'b', 'c']   # 42  (was KeyError)
+S({"a": {"b": {"c": 42}}})["a", "b", "c"]  # 42  (was KeyError)
 
 # (C) Model-1 copy-semantics — THE WRITE-BACK TRAP, closed by construction
 import json
 from dol import wrap_kvs
-s = recursive_wrap(wrap_kvs({}, obj_of_data=json.loads, data_of_obj=json.dumps),
-                   create_missing=True)
-s['a'] = {'b': {'c': 42}}
-s['a']['b', 'c'] = 999
-assert s['a', 'b', 'c'] == 999          # PERSISTS across a fresh re-read (verified §7.4)
+
+s = recursive_wrap(
+    wrap_kvs({}, obj_of_data=json.loads, data_of_obj=json.dumps), create_missing=True
+)
+s["a"] = {"b": {"c": 42}}
+s["a"]["b", "c"] = 999
+assert s["a", "b", "c"] == 999  # PERSISTS across a fresh re-read (verified §7.4)
 
 # (D) general (path, key, value) condition — per-depth / per-path stop rules
 s = recursive_wrap(store, descend=lambda p, k, v: len(p) < 2 and isinstance(v, Mapping))
-s = recursive_wrap(store, condition=lambda v: isinstance(v, Mapping))   # value-only, auto-lifted
+s = recursive_wrap(
+    store, condition=lambda v: isinstance(v, Mapping)
+)  # value-only, auto-lifted
 
 # (E) Model-2 store-of-stores — ONE keyword keeps read-descent & write-boundary consistent
-s = recursive_wrap(outer_store, of_type=SubStoreType)   # e.g. a Files / DirReader class
-s['grp']['b', 'c'] = 99     # recurses into the LIVE sub-store, which persists its own write
+s = recursive_wrap(outer_store, of_type=SubStoreType)  # e.g. a Files / DirReader class
+s["grp"]["b", "c"] = (
+    99  # recurses into the LIVE sub-store, which persists its own write
+)
 
 # (F) arbitrary DNA (the store-of-stores vision as a one-liner)
-s = recursive_wrap(FilesOfZip('a.zip'), wrapper=FilesOfZip,
-                   descend=lambda p, k, v: is_zip_bytes(v))
+s = recursive_wrap(
+    FilesOfZip("a.zip"), wrapper=FilesOfZip, descend=lambda p, k, v: is_zip_bytes(v)
+)
 ```
 
 ```python
 # #2 — flat_store: a genuine flat KvReader / KvPersister keyed on kv_walk leaf-paths
 from dol import flat_store
-d = {'a': {'b': {'c': 42}}, 'x': {'y': 7}}
 
-m = flat_store(d)                    # read-only KvReader
-list(m)                 # [('a','b','c'), ('x','y')]     keys ARE the kv_walk leaf paths
-len(m)                  # 2
-('a','b','c') in m      # True    (leaf; fixes flatten's AssertionError)
-('a','b')     in m      # False   (branch — leaf-only membership; k in m ⟺ k in iter(m))
+d = {"a": {"b": {"c": 42}}, "x": {"y": 7}}
 
-w = flat_store(d, writable=True)     # KvPersister
-w['a','b','c'] = 99                  # writes THROUGH to d['a']['b']['c'] (no literal-tuple key)
-del w['x','y']                       # deletes the nested leaf (fixes flatten's del KeyError)
+m = flat_store(d)  # read-only KvReader
+list(m)  # [('a','b','c'), ('x','y')]     keys ARE the kv_walk leaf paths
+len(m)  # 2
+("a", "b", "c") in m  # True    (leaf; fixes flatten's AssertionError)
+("a", "b") in m  # False   (branch — leaf-only membership; k in m ⟺ k in iter(m))
 
-flat_store(d, levels=2)              # flatten-parity bounded view, but correct
+w = flat_store(d, writable=True)  # KvPersister
+w["a", "b", "c"] = 99  # writes THROUGH to d['a']['b']['c'] (no literal-tuple key)
+del w["x", "y"]  # deletes the nested leaf (fixes flatten's del KeyError)
+
+flat_store(d, levels=2)  # flatten-parity bounded view, but correct
 ```
 
 `flatten` stays **byte-identical**; it can later be re-expressed internally as

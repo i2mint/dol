@@ -41,6 +41,7 @@ MsgpackStore = msgpack_codec(dict)
 
 # Compose: msgpack + gzip
 from dol import ValueCodecs
+
 compressed_msgpack = msgpack_codec + ValueCodecs.gzip()
 ```
 

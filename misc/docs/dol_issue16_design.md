@@ -33,7 +33,7 @@ The current write path (`add_path_access.__setitem__`, `dol/trans.py:2977-2981`)
 ```python
 # Verified empirically (Understand phase):
 J = wrap_kvs(dict, obj_of_data=json.loads, data_of_obj=json.dumps)(backend)
-add_path_access(J)['a', 'b', 'c'] = 999   # existing deep path
+add_path_access(J)["a", "b", "c"] = 999  # existing deep path
 # re-read J['a']  ->  {'b': {'c': 42}}    # write SILENTLY LOST, no exception
 ```
 
@@ -163,12 +163,14 @@ def path_set_writeback(store, path, val, *, mk_missing=None, explore_further=Non
 **New public symbols** (exported from `dol/__init__.py`):
 
 ```python
-PathContext = collections.namedtuple('PathContext', ['prev_path', 'key', 'depth'])
+PathContext = collections.namedtuple("PathContext", ["prev_path", "key", "depth"])
+
 
 class PathCreationError(KeyError):
     """Blocked/forbidden autoviv: non-mapping collision, may_create veto,
     ambiguous literal-key collision, or guard exceeded.
     Subclasses KeyError so legacy `except KeyError` still catches; only raised on the opt-in path."""
+
 
 class PathWritebackError(RuntimeError):
     """A boundary write could not be persisted (node is really a sub-store,
@@ -196,11 +198,12 @@ The factory is **always** called with a single `PathContext` positional — no a
 # uniform non-dict container
 mk_missing = lambda ctx: OrderedDict()
 
+
 # heterogeneous per-level / per-path (the core #16 ask)
 def mk_missing(ctx):
     if ctx.depth == 0:
-        return OrderedDict()     # top-level container type
-    return {}                    # can branch on ctx.key or ctx.prev_path too
+        return OrderedDict()  # top-level container type
+    return {}  # can branch on ctx.key or ctx.prev_path too
 ```
 
 Two independent contextual hooks accompany it:
@@ -212,32 +215,47 @@ Two independent contextual hooks accompany it:
 The engine descends by **persistence boundary**, not blindly by dict level. `store` is a boundary (the outer store, or an `explore_further`-flagged sub-store). Local zero-dep sentinel `_MISSING = object()`.
 
 ```python
-def path_set_writeback(store, path, val, *, mk_missing=None, explore_further=None,
-                       may_create=None, on_create=_warn_on_create,
-                       max_created=None, max_levels=20, verify_writeback=False,
-                       writeback_lock=None, _prefix=(), _budget=None):
+def path_set_writeback(
+    store,
+    path,
+    val,
+    *,
+    mk_missing=None,
+    explore_further=None,
+    may_create=None,
+    on_create=_warn_on_create,
+    max_created=None,
+    max_levels=20,
+    verify_writeback=False,
+    writeback_lock=None,
+    _prefix=(),
+    _budget=None,
+):
     path = list(path)
-    if not path:                                   # CLAIM C fix: explicit, clear error
+    if not path:  # CLAIM C fix: explicit, clear error
         raise ValueError("empty key path")
     if mk_missing is None:
-        mk_missing = lambda ctx: {}                # trivial default; NO arity sniffing
-    if len(_prefix) + len(path) > (max_levels or float('inf')):
+        mk_missing = lambda ctx: {}  # trivial default; NO arity sniffing
+    if len(_prefix) + len(path) > (max_levels or float("inf")):
         raise PathCreationError(
-            f"path too deep (> max_levels={max_levels}) at {_prefix + tuple(path)!r}")
+            f"path too deep (> max_levels={max_levels}) at {_prefix + tuple(path)!r}"
+        )
     if _budget is None:
-        _budget = [0]                              # count of NEWLY created intermediates (mutable box)
+        _budget = [0]  # count of NEWLY created intermediates (mutable box)
 
     head, *rest = path
-    if not rest:                                   # terminal leaf AT THIS boundary
+    if not rest:  # terminal leaf AT THIS boundary
         _boundary_write(store, head, val, _prefix, verify_writeback, writeback_lock)
         return
 
     try:
-        child = store[head]                        # fresh copy | live ref | sub-store
+        child = store[head]  # fresh copy | live ref | sub-store
         created = False
     except KeyError:
         ctx = PathContext(_prefix, head, len(_prefix))
-        _authorize_create(ctx, may_create, on_create, _budget, max_created)  # veto/announce/count
+        _authorize_create(
+            ctx, may_create, on_create, _budget, max_created
+        )  # veto/announce/count
         child = mk_missing(ctx)
         created = True
 
@@ -245,26 +263,47 @@ def path_set_writeback(store, path, val, *, mk_missing=None, explore_further=Non
 
     if explore_further is not None and explore_further(child, here):
         # child is its OWN boundary -> recurse; it persists its own writes.
-        path_set_writeback(child, rest, val, mk_missing=mk_missing,
-                           explore_further=explore_further, may_create=may_create,
-                           on_create=on_create, max_created=max_created,
-                           max_levels=max_levels, verify_writeback=verify_writeback,
-                           writeback_lock=writeback_lock, _prefix=here, _budget=_budget)
+        path_set_writeback(
+            child,
+            rest,
+            val,
+            mk_missing=mk_missing,
+            explore_further=explore_further,
+            may_create=may_create,
+            on_create=on_create,
+            max_created=max_created,
+            max_levels=max_levels,
+            verify_writeback=verify_writeback,
+            writeback_lock=writeback_lock,
+            _prefix=here,
+            _budget=_budget,
+        )
         if created and _is_reference_semantics_parent(store):
             # ONLY register a newly-created sub-store into an in-memory (reference) parent.
             # NEVER serialize a live sub-store into a persistent parent (adversarial BREAK #2).
-            _boundary_write(store, head, child, _prefix, verify_writeback, writeback_lock)
+            _boundary_write(
+                store, head, child, _prefix, verify_writeback, writeback_lock
+            )
         elif created:
             raise PathWritebackError(
                 f"cannot register an auto-created sub-store at {here!r} into a persistent "
                 f"parent store. Persistent store-of-stores autoviv is out of scope for #16; "
-                f"pre-create the sub-store, or see mk_dirs_if_missing / issue #10.")
+                f"pre-create the sub-store, or see mk_dirs_if_missing / issue #10."
+            )
         return
 
     # child is a plain VALUE within this boundary: splice in memory, then ONE write-back.
-    _inplace_build(child, rest, val, mk_missing=mk_missing, prefix=here,
-                   budget=_budget, may_create=may_create, on_create=on_create,
-                   max_created=max_created)
+    _inplace_build(
+        child,
+        rest,
+        val,
+        mk_missing=mk_missing,
+        prefix=here,
+        budget=_budget,
+        may_create=may_create,
+        on_create=on_create,
+        max_created=max_created,
+    )
     _boundary_write(store, head, child, _prefix, verify_writeback, writeback_lock)
 ```
 
@@ -280,15 +319,22 @@ def __setitem__(self, k, v):
             if super(store_cls, self).__contains__(k):
                 raise PathCreationError(
                     f"refusing to autoviv path {k!r}: a literal key {k!r} already exists "
-                    f"(create_missing is unsafe on stores whose real keys are tuples).")
+                    f"(create_missing is unsafe on stores whose real keys are tuples)."
+                )
             path_set_writeback(
-                self, list(k), v,
-                mk_missing=mk_missing, explore_further=explore_further,   # closure locals
-                may_create=may_create, on_create=on_create,
-                max_created=max_created, max_levels=max_levels,
-                verify_writeback=verify_writeback, writeback_lock=writeback_lock,
+                self,
+                list(k),
+                v,
+                mk_missing=mk_missing,
+                explore_further=explore_further,  # closure locals
+                may_create=may_create,
+                on_create=on_create,
+                max_created=max_created,
+                max_levels=max_levels,
+                verify_writeback=verify_writeback,
+                writeback_lock=writeback_lock,
             )
-        else:                                       # BACKWARD-COMPAT: verbatim legacy walk
+        else:  # BACKWARD-COMPAT: verbatim legacy walk
             *path_head, last_key = k
             reduce(lambda s, key: s[key], path_head, self)[last_key] = v
     else:
@@ -304,40 +350,61 @@ def __setitem__(self, k, v):
 `_inplace_build` is the single splice implementation (also the fixed body of `path_set`), with **both** the descent guard **and** the final-target guard (adversarial CLAIM B fix):
 
 ```python
-def _inplace_build(node, rest, val, *, mk_missing, prefix, budget,
-                   may_create=None, on_create=_warn_on_create, max_created=None):
+def _inplace_build(
+    node,
+    rest,
+    val,
+    *,
+    mk_missing,
+    prefix,
+    budget,
+    may_create=None,
+    on_create=_warn_on_create,
+    max_created=None,
+):
     cur = node
     for i, key in enumerate(rest[:-1]):
-        here = prefix + tuple(rest[:i + 1])
+        here = prefix + tuple(rest[: i + 1])
         if key not in cur:
             ctx = PathContext(here[:-1], key, len(here) - 1)
             _authorize_create(ctx, may_create, on_create, budget, max_created)
             cur[key] = mk_missing(ctx)
         cur = cur[key]
-        if not isinstance(cur, MutableMapping):     # PRE-checked, informative
+        if not isinstance(cur, MutableMapping):  # PRE-checked, informative
             raise PathCreationError(
                 f"cannot descend into existing non-container at {here!r}: "
-                f"found {type(cur).__name__}")
-    if not isinstance(cur, MutableMapping):         # CLAIM B fix: guard the LEAF target too
+                f"found {type(cur).__name__}"
+            )
+    if not isinstance(cur, MutableMapping):  # CLAIM B fix: guard the LEAF target too
         raise PathCreationError(
             f"cannot set leaf under existing non-container at {prefix!r}: "
-            f"found {type(cur).__name__}")
-    cur[rest[-1]] = val                             # the leaf write
+            f"found {type(cur).__name__}"
+        )
+    cur[rest[-1]] = val  # the leaf write
 ```
 
 `path_set` (fixed) delegates to this:
 
 ```python
-def path_set(d, key_path, val, *, sep='.', new_mapping=dict, mk_missing=None):
+def path_set(d, key_path, val, *, sep=".", new_mapping=dict, mk_missing=None):
     if isinstance(key_path, str) and sep is not None:
         key_path = key_path.split(sep)
     key_path = list(key_path)
     if not key_path:
         raise ValueError("empty key path")
     if mk_missing is None:
-        mk_missing = lambda ctx: new_mapping()      # adapt zero-arg factory, back-compat
-    _inplace_build(d, key_path, val, mk_missing=mk_missing, prefix=(),
-                   budget=[0], may_create=None, on_create=None, max_created=None)
+        mk_missing = lambda ctx: new_mapping()  # adapt zero-arg factory, back-compat
+    _inplace_build(
+        d,
+        key_path,
+        val,
+        mk_missing=mk_missing,
+        prefix=(),
+        budget=[0],
+        may_create=None,
+        on_create=None,
+        max_created=None,
+    )
 ```
 
 `_authorize_create` centralizes the veto/announce/count discipline:
@@ -346,14 +413,16 @@ def path_set(d, key_path, val, *, sep='.', new_mapping=dict, mk_missing=None):
 def _authorize_create(ctx, may_create, on_create, budget, max_created):
     if may_create is not None and not may_create(ctx):
         raise PathCreationError(
-            f"autoviv of {ctx.prev_path + (ctx.key,)!r} vetoed by may_create")
+            f"autoviv of {ctx.prev_path + (ctx.key,)!r} vetoed by may_create"
+        )
     budget[0] += 1
     if max_created is not None and budget[0] > max_created:
         raise PathCreationError(
             f"exceeded max_created={max_created} newly-created intermediates "
-            f"(at {ctx.prev_path + (ctx.key,)!r})")
+            f"(at {ctx.prev_path + (ctx.key,)!r})"
+        )
     if on_create is not None:
-        on_create(ctx)                              # default: warnings.warn once per path
+        on_create(ctx)  # default: warnings.warn once per path
 ```
 
 ### 6.5 The loud-failure path
@@ -394,8 +463,12 @@ def _boundary_write(store, key, value, prefix, verify, lock=None):
     ctx_lock = lock if lock is not None else contextlib.nullcontext()
     with ctx_lock:
         try:
-            store[key] = value                      # re-serializes on copy/persistent; harmless re-set on dict
-        except TypeError as e:                       # e.g. value is a live sub-store the parent can't serialize
+            store[key] = (
+                value  # re-serializes on copy/persistent; harmless re-set on dict
+            )
+        except (
+            TypeError
+        ) as e:  # e.g. value is a live sub-store the parent can't serialize
             raise PathWritebackError(
                 f"could not persist node at {prefix + (key,)!r}: {e}. If this intermediate is "
                 f"itself a store, it must be descended into (explore_further) rather than "
@@ -405,7 +478,8 @@ def _boundary_write(store, key, value, prefix, verify, lock=None):
             # NOTE: the value is ALREADY committed at this point (non-atomic).
             raise PathWritebackError(
                 f"write-back of {prefix + (key,)!r} PERSISTED but re-read differs "
-                f"(lossy/rejecting transform); the store was MUTATED and NOT rolled back.")
+                f"(lossy/rejecting transform); the store was MUTATED and NOT rolled back."
+            )
 ```
 
 **Why single-boundary write-back is correct and sufficient for the default (value-nesting / Model 1):** the entire subtree under a top key is **one serialized value with exactly one persistence boundary** (the outer store). Reading it once returns a detached (or live) nested dict whose interior levels are ordinary references; `_inplace_build` mutates them in memory; the single `store[head] = node` re-serializes the whole branch through the store's own `data_of_obj`. Verified on `wrap_kvs(dict, json)` and `wrap_kvs(Files, json)` across fresh store instances re-reading from disk (12/12 checks). This simultaneously delivers autoviv **and** closes the pre-existing silent-loss hole for existing deep paths (overwrite and delete both go through the same read-modify-writeback).

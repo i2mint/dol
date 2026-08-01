@@ -65,8 +65,9 @@ s = wrap_kvs(dict(), id_of_key=lambda k: k.upper(), key_of_id=str.lower)
 ```python
 from dol import wrap_kvs
 
-MyStore = wrap_kvs(dict,
-    id_of_key=lambda k: k + '.json',
+MyStore = wrap_kvs(
+    dict,
+    id_of_key=lambda k: k + ".json",
     key_of_id=lambda _id: _id[:-5],
     obj_of_data=json.loads,
     data_of_obj=json.dumps,
@@ -77,6 +78,7 @@ MyStore = wrap_kvs(dict,
 
 ```python
 from dol.base import KvReader
+
 
 class MyReader(KvReader):
     def __getitem__(self, k): ...
@@ -89,11 +91,19 @@ class MyReader(KvReader):
 ```python
 from dol.base import Store
 
+
 class MyStore(Store):
-    def _id_of_key(self, k): return k.upper()
-    def _key_of_id(self, _id): return _id.lower()
-    def _data_of_obj(self, obj): return json.dumps(obj)
-    def _obj_of_data(self, data): return json.loads(data)
+    def _id_of_key(self, k):
+        return k.upper()
+
+    def _key_of_id(self, _id):
+        return _id.lower()
+
+    def _data_of_obj(self, obj):
+        return json.dumps(obj)
+
+    def _obj_of_data(self, data):
+        return json.loads(data)
 ```
 
 ---
@@ -104,17 +114,17 @@ class MyStore(Store):
 from dol import ValueCodecs, KeyCodecs, Pipe
 
 # Common value codecs
-ValueCodecs.pickle()       # pickle.dumps / pickle.loads
-ValueCodecs.json()         # json.dumps / json.loads
-ValueCodecs.gzip()         # compress/decompress
-ValueCodecs.str_to_bytes() # encode/decode
+ValueCodecs.pickle()  # pickle.dumps / pickle.loads
+ValueCodecs.json()  # json.dumps / json.loads
+ValueCodecs.gzip()  # compress/decompress
+ValueCodecs.str_to_bytes()  # encode/decode
 
 # Key codecs
-KeyCodecs.suffixed('.pkl')  # add/strip suffix
-KeyCodecs.prefixed('ns:')   # add/strip prefix
+KeyCodecs.suffixed(".pkl")  # add/strip suffix
+KeyCodecs.prefixed("ns:")  # add/strip prefix
 
 # Chain with Pipe
-MyStore = Pipe(KeyCodecs.suffixed('.pkl'), ValueCodecs.pickle())(dict)
+MyStore = Pipe(KeyCodecs.suffixed(".pkl"), ValueCodecs.pickle())(dict)
 ```
 
 ---
@@ -126,15 +136,17 @@ Most tools in `trans.py` use `@store_decorator`, making them work 4 ways:
 ```python
 from dol import filt_iter, cached_keys
 
+
 # As class decorator
-@filt_iter(filt=lambda k: k.endswith('.json'))
+@filt_iter(filt=lambda k: k.endswith(".json"))
 class MyStore(dict): ...
 
+
 # As instance wrapper
-s = filt_iter(my_store, filt=lambda k: k.endswith('.json'))
+s = filt_iter(my_store, filt=lambda k: k.endswith(".json"))
 
 # As factory
-json_only = filt_iter(filt=lambda k: k.endswith('.json'))
+json_only = filt_iter(filt=lambda k: k.endswith(".json"))
 s = json_only(my_store)
 ```
 
@@ -145,17 +157,22 @@ s = json_only(my_store)
 ```python
 from dol import cache_this, cache_vals, store_cached
 
+
 # Cache a property or method
 class MyClass:
     @cache_this
-    def expensive(self): return sum(range(1_000_000))
+    def expensive(self):
+        return sum(range(1_000_000))
+
 
 # Cache fetched values from a slow store
 fast = cache_vals(slow_store)
 
+
 # Persist function results across sessions
-@store_cached(JsonFiles('/cache'))
-def compute(x, y): return slow_computation(x, y)
+@store_cached(JsonFiles("/cache"))
+def compute(x, y):
+    return slow_computation(x, y)
 ```
 
 ---
@@ -167,12 +184,13 @@ Always prototype with `dict` as the backend:
 ```python
 # 1. Test logic with dict
 s = wrap_kvs(dict(), obj_of_data=json.loads, data_of_obj=json.dumps)
-s['key'] = {'a': 1}
-assert s['key'] == {'a': 1}
+s["key"] = {"a": 1}
+assert s["key"] == {"a": 1}
 
 # 2. Swap to real backend
 from dol import Files
-s = wrap_kvs(Files('/data'), obj_of_data=json.loads, data_of_obj=json.dumps)
+
+s = wrap_kvs(Files("/data"), obj_of_data=json.loads, data_of_obj=json.dumps)
 ```
 
 Run tests: `pytest dol/tests/`

@@ -20,11 +20,14 @@ import json
 
 # 1. logic first, dict backend
 S = wrap_kvs(dict, obj_of_data=json.loads, data_of_obj=json.dumps)
-s = S(); s['x'] = {'a': 1}; assert s['x'] == {'a': 1}
+s = S()
+s["x"] = {"a": 1}
+assert s["x"] == {"a": 1}
 
 # 2. same transforms, real backend
 from dol import Files
-s = wrap_kvs(Files('/data'), obj_of_data=json.loads, data_of_obj=json.dumps)
+
+s = wrap_kvs(Files("/data"), obj_of_data=json.loads, data_of_obj=json.dumps)
 ```
 
 ## `wrap_kvs` — the core, and its `X_of_Y` naming
@@ -48,41 +51,51 @@ Use `obj_of_data`/`data_of_obj` when the transform is the same for all values; u
 
 ```python
 from dol import ValueCodecs, KeyCodecs, Pipe
-ValueCodecs.json()          # json.dumps / json.loads
-ValueCodecs.pickle()        # pickle
-ValueCodecs.gzip()          # compress/decompress
-KeyCodecs.suffixed('.json') # add/strip a key suffix
-KeyCodecs.prefixed('ns:')   # add/strip a key prefix
+
+ValueCodecs.json()  # json.dumps / json.loads
+ValueCodecs.pickle()  # pickle
+ValueCodecs.gzip()  # compress/decompress
+KeyCodecs.suffixed(".json")  # add/strip a key suffix
+KeyCodecs.prefixed("ns:")  # add/strip a key prefix
 
 # Compose with + or Pipe (order = application order on the backend side)
-MyStore = Pipe(KeyCodecs.suffixed('.pkl'), ValueCodecs.pickle() + ValueCodecs.gzip())(dict)
+MyStore = Pipe(KeyCodecs.suffixed(".pkl"), ValueCodecs.pickle() + ValueCodecs.gzip())(
+    dict
+)
 ```
 
 ## Ready-made file stores (skip wrap_kvs when one fits)
 
 ```python
 from dol import Files, TextFiles, JsonFiles, PickleFiles
-Files('/data')      # keys=relative paths, values=bytes
-TextFiles('/data')  # values=str
-JsonFiles('/data')  # values=json-decoded objects
+
+Files("/data")  # keys=relative paths, values=bytes
+TextFiles("/data")  # values=str
+JsonFiles("/data")  # values=json-decoded objects
 ```
 
 ## Filtering the key space
 
 ```python
 from dol import filt_iter
-s = filt_iter(store, filt=lambda k: k.endswith('.json'))
+
+s = filt_iter(store, filt=lambda k: k.endswith(".json"))
 # ready-made variants:
-filt_iter.suffixes('.json'); filt_iter.prefixes('user/'); filt_iter.regex(r'\d{4}')
+filt_iter.suffixes(".json")
+filt_iter.prefixes("user/")
+filt_iter.regex(r"\d{4}")
 ```
 
 ## Caching a slow store
 
 ```python
 from dol import cache_vals, cache_this
-fast = cache_vals(slow_store)               # in-memory read cache
+
+fast = cache_vals(slow_store)  # in-memory read cache
+
+
 class C:
-    @cache_this(cache='_c')                 # cache an expensive property/method
+    @cache_this(cache="_c")  # cache an expensive property/method
     def expensive(self): ...
 ```
 
@@ -93,8 +106,12 @@ Most transforms are pure `f(value)`. When a transform genuinely needs the store 
 of relying on parameter names:
 ```python
 from dol import wrap_kvs, FirstArgIsMapping
-def resolve(self, data):            # first arg is the store
+
+
+def resolve(self, data):  # first arg is the store
     return f"{self.root}/{data}"
+
+
 s = wrap_kvs(store, obj_of_data=FirstArgIsMapping(resolve))
 ```
 Note: passing a bare `def f(self, data)` (first param named `self`/`store`/`mapping`, ≥2
