@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol &mdash; dol 0.3.55 documentation</title>
+  <title>dol &mdash; dol 0.3.56 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=8f317feb"></script>
+      <script src="../_static/documentation_options.js?v=b8c9f581"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -51,6 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/appendable.html">dol.appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/base.html">dol.base</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/caching.html">dol.caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/content.html">dol.content</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/dig.html">dol.dig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/errors.html">dol.errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/explicit.html">dol.explicit</a></li>
@@ -72,6 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_appendable.html">dol.tests.test_appendable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_caching.html">dol.tests.test_caching</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_confirm_overwrite.html">dol.tests.test_confirm_overwrite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_content.html">dol.tests.test_content</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_dig.html">dol.tests.test_dig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/dol/tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
@@ -326,6 +328,21 @@
     <span class="n">FanoutPersister</span><span class="p">,</span>
     <span class="n">CascadedStores</span><span class="p">,</span>  <span class="c1"># multi-store writes to all stores and reads from first store.</span>
     <span class="n">MultiSource</span><span class="p">,</span>  <span class="c1"># read-only Mapping composing multiple sources, tried in order.</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.content</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ContentRef</span><span class="p">,</span>  <span class="c1"># serializable stand-in for stored content (bytes) held in a record</span>
+    <span class="n">is_content_ref</span><span class="p">,</span>  <span class="c1"># predicate for a ContentRef instance or its wire-form dict</span>
+    <span class="n">content_hash</span><span class="p">,</span>  <span class="c1"># hex content hash (sha256 default) — the CAS key</span>
+    <span class="n">guess_mime_type</span><span class="p">,</span>  <span class="c1"># stdlib mimetypes guess from a filename/key</span>
+    <span class="n">content_url</span><span class="p">,</span>  <span class="c1"># fetchable URL via a backend&#39;s `url_for` seam, else None</span>
+    <span class="n">put_content</span><span class="p">,</span>  <span class="c1"># location-addressed write (caller supplies id) -&gt; ContentRef</span>
+    <span class="n">add_content</span><span class="p">,</span>  <span class="c1"># content-addressed write (id = content hash, idempotent) -&gt; ContentRef</span>
+    <span class="n">get_content</span><span class="p">,</span>  <span class="c1"># read bytes by ContentRef / wire dict / bare key</span>
+    <span class="n">delete_content</span><span class="p">,</span>  <span class="c1"># delete by ContentRef / wire dict / bare key</span>
+    <span class="n">ContentAddressedStore</span><span class="p">,</span>  <span class="c1"># CAS facade over an injected bytes backend</span>
+    <span class="n">with_content_addressing</span><span class="p">,</span>  <span class="c1"># factory: wrap a backend as a ContentAddressedStore</span>
+    <span class="n">SupportsUrlFor</span><span class="p">,</span>  <span class="c1"># Protocol: backend that can hand out a URL for a key</span>
 <span class="p">)</span>
 
 
