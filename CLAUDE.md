@@ -193,7 +193,12 @@ from dol import Files
 s = wrap_kvs(Files("/data"), obj_of_data=json.loads, data_of_obj=json.dumps)
 ```
 
-Run tests: `pytest dol/tests/`
+Run tests: a bare `pytest` (from the repo root) runs exactly what CI runs — the
+`dol/tests/` unit tests **and** every module doctest, with CI's doctest flags.
+Narrow it with `pytest dol/tests/` (unit tests only) or `pytest dol/caching.py`
+(one module's doctests). Do not add `NORMALIZE_WHITESPACE` to
+`doctest_optionflags`: CI does not pass it, so doctests relying on it would pass
+locally and fail in CI.
 
 ---
 
