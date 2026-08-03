@@ -66,17 +66,24 @@ Examples:
 
 import os
 import types
-from typing import Optional, KT, VT, Any, Union, T
-from collections.abc import Callable
-from collections.abc import Mapping
+from functools import RLock, cached_property, partial, wraps
+from types import GenericAlias
+from typing import Any, Optional, Protocol, TypeVar, Union
+from collections.abc import Callable, Mapping, MutableMapping
 
 from dol.base import Store
 from dol.trans import store_decorator
 
-from functools import RLock, cached_property
-from types import GenericAlias
-from collections.abc import MutableMapping
+# Type variables
+KT = TypeVar("KT")  # Key type
+VT = TypeVar("VT")  # Value type
+T = TypeVar("T")  # Generic type
 
+#: Sentinel marking "no value cached yet". Distinct from every user value, so a
+#: legitimately cached ``None`` is not mistaken for a cache miss.
+_NOT_FOUND = object()
+
+# Type definitions
 Instance = Any
 PropertyFunc = Callable[[Instance], VT]
 MethodName = str
@@ -94,32 +101,6 @@ def identity(x: T) -> T:
     >>> identity([1, 2, 3])
     [1, 2, 3]
     """
-    return x
-
-
-from functools import RLock, partial, wraps
-from types import GenericAlias
-from collections.abc import MutableMapping
-from typing import Optional, TypeVar, Union, Any, Protocol
-from collections.abc import Callable
-
-# Type variables
-KT = TypeVar("KT")  # Key type
-VT = TypeVar("VT")  # Value type
-T = TypeVar("T")  # Generic type
-
-# Constants
-_NOT_FOUND = object()
-
-# Type definitions
-Instance = Any
-PropertyFunc = Callable[[Instance], VT]
-MethodName = str
-Cache = Union[MethodName, MutableMapping[KT, VT]]
-
-
-def identity(x: T) -> T:
-    """Identity function that returns its input unchanged."""
     return x
 
 
