@@ -2,6 +2,17 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+# Declared explicitly (rather than inferred) so the distributed contents are a
+# stated fact. `artifacts` guarantees the PEP 561 marker ships even if a future
+# ignore rule would otherwise exclude it -- without `dol/py.typed` in the wheel,
+# every downstream `from dol import ...` is type-checked as `Any`.
+packages = ["dol"]
+artifacts = ["dol/py.typed"]
+
+[tool.hatch.build.targets.sdist]
+artifacts = ["dol/py.typed"]
+
 [project]
 name = "dol"
 version = "0.3.57"
@@ -49,8 +60,18 @@ convention = "google"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-testpaths = ["tests"]
-doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
+# The package dir IS the test root: unit tests live in dol/tests and doctests
+# live in the modules themselves. (There is no top-level `tests` dir; naming one
+# made pytest silently fall back to recursive discovery and skip all doctests.)
+testpaths = ["dol"]
+# addopts is the single source of truth for what gets collected, so a bare local
+# `pytest` collects exactly what CI collects. Hence `exclude_paths = []` below.
+addopts = "--doctest-modules --ignore=dol/scrap"
+# Must match the flags the wads `run-tests-uv` action passes via `-o` (which
+# override this ini value). Notably CI does NOT pass NORMALIZE_WHITESPACE, so
+# configuring it here would let whitespace-fragile doctests pass locally and
+# fail in CI.
+doctest_optionflags = ["ELLIPSIS", "IGNORE_EXCEPTION_DETAIL"]
 
 [tool.wads.ci]
 project_name = ""
@@ -82,7 +103,10 @@ pytest_args = ["-v", "--tb=short"]
 coverage_enabled = true
 coverage_threshold = 0
 coverage_report_format = ["term", "xml"]
-exclude_paths = ["examples", "scrap"]
+# Empty on purpose: exclusions are declared once, in pytest's `addopts` above,
+# so local and CI runs collect the same set. (The old ["examples", "scrap"] was
+# resolved against the repo root and therefore matched nothing.)
+exclude_paths = []
 test_on_windows = true
 
 [tool.wads.ci.build]

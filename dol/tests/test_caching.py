@@ -3,7 +3,10 @@
 import pytest
 from functools import partial, cached_property
 from collections import UserDict
+from pathlib import Path
 from typing import Dict, Any
+
+from dol import caching as caching_module
 
 # Import the refactored implementations - adjust the import path as needed
 from dol.caching import (
@@ -1115,6 +1118,35 @@ class TestStackingCacheDecorators:
         assert a.g == 8
         assert trace == ["In f method"], "g method should NEVER be called"
         assert cache["g"] == 8, "Value from disk should be in cache"
+
+
+#: Definitions that must appear exactly once in ``dol/caching.py``. A second,
+#: shadowing copy of the module header silently kills the doctests of whatever
+#: it shadows (pytest collects the *live* object, not the dead source).
+SINGLY_DEFINED_IN_CACHING = (
+    "def identity(",
+    "Instance = Any",
+    "PropertyFunc = Callable[[Instance], VT]",
+    "MethodName = str",
+    "Cache = Union[MethodName, MutableMapping[KT, VT]]",
+)
+
+
+@pytest.mark.parametrize("definition", SINGLY_DEFINED_IN_CACHING)
+def test_caching_module_header_is_not_duplicated(definition):
+    """``dol.caching`` must not define its header twice."""
+    source = Path(caching_module.__file__).read_text(encoding="utf-8")
+    count = source.count(definition)
+    assert count == 1, f"{definition!r} appears {count} times in dol/caching.py"
+
+
+def test_identity_keeps_its_doctests():
+    """The live ``dol.caching.identity`` must be the documented one.
+
+    A second, undocumented ``identity`` further down the module used to shadow
+    the documented one, so its three doctests were never actually run.
+    """
+    assert ">>> identity(42)" in caching_module.identity.__doc__
 
 
 if __name__ == "__main__":
