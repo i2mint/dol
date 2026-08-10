@@ -265,11 +265,12 @@ def test_is_valid_key_sees_the_inner_key(tmpdir):
         fp.write("y")
 
     s = Files(rootdir)
-    assert sorted(s) == ["a.txt", "sub/b.txt"]
+    nested_key = os.path.join("sub", "b.txt")  # separator differs on Windows
+    assert sorted(s) == ["a.txt", nested_key]
     # the invariant that was broken: every key the store yields is a valid key
     assert all(s.is_valid_key(k) for k in s)
     assert s.is_valid_key("a.txt")
-    assert s.is_valid_key("sub/b.txt")
+    assert s.is_valid_key(nested_key)
     s.validate_key("a.txt")  # must not raise
     assert TextFiles(rootdir).is_valid_key("a.txt")
     assert s["a.txt"] == b"x"  # reads unaffected
