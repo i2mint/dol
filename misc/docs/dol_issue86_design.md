@@ -75,12 +75,13 @@ A wrap is `(leaf, spec, stack)` — one proxy object, however many layers.
 ### 2.1 The spec
 
 ```python
-KT, VT = TypeVar('KT'), TypeVar('VT')
+KT, VT = TypeVar("KT"), TypeVar("VT")
+
 
 class BucketInterface(Protocol[KT, VT]):
-    def __getitem__(self, k: KT) -> VT: ...      # Mapping dunders are ordinary
-    def __iter__(self) -> Iterator[KT]: ...      # spec entries — no privileged
-    def __contains__(self, k: KT) -> bool: ...   # surface (#83 §5.2)
+    def __getitem__(self, k: KT) -> VT: ...  # Mapping dunders are ordinary
+    def __iter__(self) -> Iterator[KT]: ...  # spec entries — no privileged
+    def __contains__(self, k: KT) -> bool: ...  # surface (#83 §5.2)
     def url_for(self, k: KT, *, expires_in: int = 3600) -> str: ...
     def delete_many(self, keys: Iterable[KT]) -> None: ...
     def items_page(self) -> Iterator[tuple[KT, VT]]: ...

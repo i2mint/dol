@@ -77,14 +77,14 @@ from typing import (
 )
 
 __all__ = [
-    'Codec',
-    'InterfaceSpec',
-    'InterfaceProxy',
-    'interface_wrap',
-    'InterfaceWrapError',
-    'UnsupportedSpecShape',
-    'UnderAnnotatedSpecError',
-    'UndeclaredAttributeError',
+    "Codec",
+    "InterfaceSpec",
+    "InterfaceProxy",
+    "interface_wrap",
+    "InterfaceWrapError",
+    "UnsupportedSpecShape",
+    "UnderAnnotatedSpecError",
+    "UndeclaredAttributeError",
 ]
 
 
@@ -254,15 +254,15 @@ def _transformer_for_path(ann, path, role_func, *, where):
             # Optional[X]: map non-None, pass None through.
             return lambda v: v if v is None else inner(v)
         raise UnsupportedSpecShape(
-            f'Cannot map a role inside a non-Optional Union (in {where}: '
-            f'{ann!r}): there is no reliable runtime discrimination between '
-            f'union arms. Declare separate methods or use an explicit spec.'
+            f"Cannot map a role inside a non-Optional Union (in {where}: "
+            f"{ann!r}): there is no reliable runtime discrimination between "
+            f"union arms. Declare separate methods or use an explicit spec."
         )
     raise UnsupportedSpecShape(
-        f'Cannot map role inside {origin!r} (in {where}: {ann!r}). '
-        f'Supported containers: list, set, frozenset, tuple, dict, '
-        f'Iterable, Iterator, Optional. '
-        f'Add an explicit method override or exclude the method.'
+        f"Cannot map role inside {origin!r} (in {where}: {ann!r}). "
+        f"Supported containers: list, set, frozenset, tuple, dict, "
+        f"Iterable, Iterator, Optional. "
+        f"Add an explicit method override or exclude the method."
     )
 
 
@@ -289,11 +289,11 @@ class InterfaceSpec:
         TypeVars in ``source.__parameters__``, else {'KT', 'VT'}.
         """
         if roles is None:
-            params = getattr(source, '__parameters__', ())
-            roles = (
-                {p.__name__: p for p in params if isinstance(p, TypeVar)}
-                or {'KT': None, 'VT': None}
-            )
+            params = getattr(source, "__parameters__", ())
+            roles = {p.__name__: p for p in params if isinstance(p, TypeVar)} or {
+                "KT": None,
+                "VT": None,
+            }
         else:
             roles = {name: None for name in roles}
         methods = {}
@@ -305,7 +305,7 @@ class InterfaceSpec:
             # of a spec method must be annotated, or a forgotten role is
             # silent. (*args/**kwargs stay conventional passthrough.)
             for p in sig.parameters.values():
-                if p.name in ('self', 'cls'):
+                if p.name in ("self", "cls"):
                     continue
                 if p.kind in (
                     inspect.Parameter.VAR_POSITIONAL,
@@ -314,10 +314,10 @@ class InterfaceSpec:
                     continue
                 if p.annotation is inspect.Parameter.empty:
                     raise UnderAnnotatedSpecError(
-                        f'{source.__name__}.{name}: parameter {p.name!r} has '
-                        f'no annotation. Annotate it with a role TypeVar if '
-                        f'it carries keys/values, or with a concrete type '
-                        f'(or Any) to declare it role-free.'
+                        f"{source.__name__}.{name}: parameter {p.name!r} has "
+                        f"no annotation. Annotate it with a role TypeVar if "
+                        f"it carries keys/values, or with a concrete type "
+                        f"(or Any) to declare it role-free."
                     )
             sites = {}
             for pname, ann in hints.items():
@@ -329,7 +329,7 @@ class InterfaceSpec:
                             ann,
                             site.path,
                             _identity,
-                            where=f'{source.__name__}.{name}({pname})',
+                            where=f"{source.__name__}.{name}({pname})",
                         )
                     sites[pname] = tuple(((s.role, s.path, ann) for s in found))
             methods[name] = sites
@@ -343,6 +343,7 @@ class InterfaceSpec:
         ``methods``: ``{method_name: {param_or_'return': [(role, path)] | role_str}}``
         where a bare role string means "the whole value has this role".
         """
+
         def norm_occurrence(occ):
             # Accept the user 2-tuple (role, path), the normalized 3-tuple
             # (role, path, ann) — __reduce__ round-trips the normalized form
@@ -377,18 +378,18 @@ def _spec_functions(source):
     """
     for name, member in vars(source).items():
         if name in (
-            '__init__',
-            '__subclasshook__',
-            '__init_subclass__',
-            '__class_getitem__',
+            "__init__",
+            "__subclasshook__",
+            "__init_subclass__",
+            "__class_getitem__",
         ):
             continue
         if isinstance(member, (property, staticmethod, classmethod)):
             raise UnsupportedSpecShape(
-                f'{source.__name__}.{name}: {type(member).__name__} members '
-                f'are not supported in interface specs (yet) — they would '
-                f'be silently skipped otherwise. Remove it or use a plain '
-                f'method.'
+                f"{source.__name__}.{name}: {type(member).__name__} members "
+                f"are not supported in interface specs (yet) — they would "
+                f"be silently skipped otherwise. Remove it or use a plain "
+                f"method."
             )
         if inspect.isfunction(member):
             yield name, member
@@ -397,7 +398,7 @@ def _spec_functions(source):
 def _resolved_hints(func, owner):
     """``get_type_hints`` with the owner's module globals, resolving strings."""
     module = inspect.getmodule(owner)
-    globalns = getattr(module, '__dict__', {})
+    globalns = getattr(module, "__dict__", {})
     return get_type_hints(func, globalns=globalns)
 
 
@@ -417,10 +418,8 @@ def _fused_role_funcs(stack, *, direction):
         roles.update(layer)
     out = {}
     for role in roles:
-        if direction == 'encode':
-            funcs = [
-                layer[role].encoder for layer in reversed(stack) if role in layer
-            ]
+        if direction == "encode":
+            funcs = [layer[role].encoder for layer in reversed(stack) if role in layer]
         else:
             funcs = [layer[role].decoder for layer in stack if role in layer]
         out[role] = _fuse(funcs)
@@ -458,27 +457,25 @@ def _compile_method_plan(name, sites, leaf_method, sig, encoders, decoders):
     for pname, occurrences in sites.items():
         funcs = []
         for role, path, ann in occurrences:
-            role_func = (encoders if pname != 'return' else decoders).get(
+            role_func = (encoders if pname != "return" else decoders).get(
                 role, _identity
             )
             if role_func is _identity:
                 continue
-            funcs.append(
-                _transformer_for_path(ann, path, role_func, where=name)
-            )
+            funcs.append(_transformer_for_path(ann, path, role_func, where=name))
         if not funcs:
             continue
         fused = _fuse(funcs)
-        if pname == 'return':
+        if pname == "return":
             return_transform = fused
             continue
         param = sig.parameters.get(pname) if sig is not None else None
         if param is not None:
             if param.kind is inspect.Parameter.VAR_KEYWORD:
                 raise UnsupportedSpecShape(
-                    f'{name}: role on a **kwargs parameter ({pname!r}) is '
-                    f'not supported — keyword names as keys have no '
-                    f'annotation channel.'
+                    f"{name}: role on a **kwargs parameter ({pname!r}) is "
+                    f"not supported — keyword names as keys have no "
+                    f"annotation channel."
                 )
             if param.kind is inspect.Parameter.VAR_POSITIONAL:
                 # bound.arguments holds a TUPLE for *args: map elementwise
@@ -510,9 +507,9 @@ def _compile_method_plan(name, sites, leaf_method, sig, encoders, decoders):
             )
             if len(args) <= max(idx_transforms, default=-1):
                 raise TypeError(
-                    f'{name}: role-bearing positional argument(s) '
-                    f'{sorted(idx_transforms)} must be passed positionally '
-                    f'(no signature is available to resolve keyword calls).'
+                    f"{name}: role-bearing positional argument(s) "
+                    f"{sorted(idx_transforms)} must be passed positionally "
+                    f"(no signature is available to resolve keyword calls)."
                 )
             result = leaf_method(*args, **kwargs)
             if return_transform is not None:
@@ -564,8 +561,8 @@ def _compile_method_plan(name, sites, leaf_method, sig, encoders, decoders):
 
     if sig is None:
         raise UnsupportedSpecShape(
-            f'Method {name!r} has role-bearing named parameters but no '
-            f'inspectable signature to bind against.'
+            f"Method {name!r} has role-bearing named parameters but no "
+            f"inspectable signature to bind against."
         )
 
     def plan(*args, **kwargs):
@@ -599,7 +596,7 @@ def _outer_signature(leaf, name, spec):
         except (TypeError, ValueError):
             return None
     params = list(sig.parameters.values())
-    if params and params[0].name in ('self', 'cls'):
+    if params and params[0].name in ("self", "cls"):
         params = params[1:]
         sig = sig.replace(parameters=params)
     return sig
@@ -623,9 +620,7 @@ class InterfaceProxy:
     def __init__(self, *args, **kwargs):
         # Two construction modes: wrapping an existing instance (internal,
         # via interface_wrap) or constructing the leaf (class-wrap mode).
-        raise TypeError(
-            'InterfaceProxy subclasses are built via interface_wrap(...)'
-        )
+        raise TypeError("InterfaceProxy subclasses are built via interface_wrap(...)")
 
     @property
     def __wrapped__(self):
@@ -641,8 +636,8 @@ class InterfaceProxy:
 
     def __repr__(self):
         return (
-            f'<{type(self).__name__} of {self._self_leaf!r} '
-            f'with {len(self._self_stack)} codec layer(s)>'
+            f"<{type(self).__name__} of {self._self_leaf!r} "
+            f"with {len(self._self_stack)} codec layer(s)>"
         )
 
     def __reduce__(self):
@@ -660,22 +655,20 @@ class InterfaceProxy:
 
     def __getattr__(self, name):
         # Only reached when normal lookup fails: plans and passthroughs first.
-        if name.startswith('__') and name.endswith('__'):
+        if name.startswith("__") and name.endswith("__"):
             # Explicit dunder access must NOT escape to the leaf: forwarding
             # would hand out raw leaf-bound methods (s.__contains__('outer_k')
             # silently answering in the wrong key domain). Plain
             # AttributeError keeps hasattr-style duck typing honest.
             raise AttributeError(name)
-        if name.startswith('_'):
-            return getattr(
-                object.__getattribute__(self, '_self_leaf'), name
-            )
-        if name in object.__getattribute__(self, '_self_passthrough'):
-            return getattr(object.__getattribute__(self, '_self_leaf'), name)
+        if name.startswith("_"):
+            return getattr(object.__getattribute__(self, "_self_leaf"), name)
+        if name in object.__getattribute__(self, "_self_passthrough"):
+            return getattr(object.__getattribute__(self, "_self_leaf"), name)
         raise UndeclaredAttributeError(
-            f'{name!r} is not in the interface spec of this wrap. '
+            f"{name!r} is not in the interface spec of this wrap. "
             f"Add it to the spec, or pass passthrough={{'{name}'}} to "
-            f'interface_wrap to forward it verbatim (unmapped keys/values!).'
+            f"interface_wrap to forward it verbatim (unmapped keys/values!)."
         )
 
 
@@ -690,10 +683,10 @@ def _rebuild_interface_wrap(leaf, spec_ref, stack, undeclared, passthrough):
     )
 
 
-_DUNDER_METHOD_TEMPLATE = '''
+_DUNDER_METHOD_TEMPLATE = """
 def {name}(self, *args, **kwargs):
     return self._self_plans[{name!r}](*args, **kwargs)
-'''
+"""
 
 _proxy_class_cache = {}
 
@@ -719,21 +712,21 @@ def _build_proxy_class(leaf_type, spec, method_names, class_name=None):
     ns = {}
     for name in method_names:
         exec(_DUNDER_METHOD_TEMPLATE.format(name=name), {}, ns)
-    if '__getitem__' in ns and '__iter__' not in ns:
+    if "__getitem__" in ns and "__iter__" not in ns:
         # Without this, Python's legacy sequence protocol would invent
         # iteration from __getitem__(0), __getitem__(1), ... — feeding int
         # keys through the key encoder, silently. Louder to refuse.
         def __iter__(self):
             raise TypeError(
-                f'{type(self).__name__} is not iterable: __iter__ is not in '
-                f'its interface spec (and sequence-protocol fallback over '
-                f'__getitem__ would silently feed integer keys through the '
-                f'key codec).'
+                f"{type(self).__name__} is not iterable: __iter__ is not in "
+                f"its interface spec (and sequence-protocol fallback over "
+                f"__getitem__ would silently feed integer keys through the "
+                f"key codec)."
             )
 
-        ns['__iter__'] = __iter__
-    ns['__module__'] = __name__
-    cls_name = class_name or f'{leaf_type.__name__}InterfaceProxy'
+        ns["__iter__"] = __iter__
+    ns["__module__"] = __name__
+    cls_name = class_name or f"{leaf_type.__name__}InterfaceProxy"
     cls = type(cls_name, (InterfaceProxy,), ns)
     if key is not None:
         _proxy_class_cache[key] = cls
@@ -749,7 +742,7 @@ def interface_wrap(
     *,
     spec,
     codecs: Optional[Mapping[str, Codec]] = None,
-    undeclared: str = 'raise',
+    undeclared: str = "raise",
     passthrough: _IterableABC = (),
     _stack: Optional[tuple] = None,
 ):
@@ -767,10 +760,10 @@ def interface_wrap(
         (hide: touching them raises at use time).
     :param passthrough: explicit names to forward verbatim regardless.
     """
-    if undeclared not in ('raise', 'passthrough', 'exclude'):
+    if undeclared not in ("raise", "passthrough", "exclude"):
         raise ValueError(
             f"undeclared must be 'raise', 'passthrough' or 'exclude', "
-            f'got {undeclared!r}'
+            f"got {undeclared!r}"
         )
     # --- normalize the spec
     if isinstance(spec, InterfaceSpec):
@@ -780,7 +773,7 @@ def interface_wrap(
     elif isinstance(spec, Mapping):
         spec_obj = InterfaceSpec.from_dict(spec)
     else:
-        raise TypeError(f'Cannot interpret spec: {spec!r}')
+        raise TypeError(f"Cannot interpret spec: {spec!r}")
 
     # --- normalize the stack
     if isinstance(obj, InterfaceProxy):
@@ -792,8 +785,8 @@ def interface_wrap(
         base_stack = tuple(_stack or ())
     if isinstance(leaf, type):
         raise TypeError(
-            'interface_wrap wraps instances in this prototype; '
-            'class-wrapping is future work (see the design doc).'
+            "interface_wrap wraps instances in this prototype; "
+            "class-wrapping is future work (see the design doc)."
         )
     # Mixed-architecture stacks: flat-model guarantees (encode/decode
     # totality, __wrapped__ = raw backend, pickle uniformity) are scoped to
@@ -806,10 +799,10 @@ def interface_wrap(
             import warnings
 
             warnings.warn(
-                'interface_wrap over a legacy dol Store: the Store (and its '
-                '.store chain) is treated as an opaque leaf — __wrapped__ '
-                'is the Store, not the raw backend, and flat-stack '
-                'guarantees apply only to the layers above it.',
+                "interface_wrap over a legacy dol Store: the Store (and its "
+                ".store chain) is treated as an opaque leaf — __wrapped__ "
+                "is the Store, not the raw backend, and flat-stack "
+                "guarantees apply only to the layers above it.",
                 stacklevel=2,
             )
     except ImportError:  # pragma: no cover - dol.base always importable here
@@ -827,34 +820,30 @@ def interface_wrap(
         unknown = set(layer) - used_roles
         if unknown:
             raise InterfaceWrapError(
-                f'Codec layer names role(s) {sorted(unknown)} that occur '
-                f'nowhere in the spec (spec roles: {sorted(used_roles)}). '
-                f'A codec that can never apply is almost certainly a mistake.'
+                f"Codec layer names role(s) {sorted(unknown)} that occur "
+                f"nowhere in the spec (spec roles: {sorted(used_roles)}). "
+                f"A codec that can never apply is almost certainly a mistake."
             )
 
     # --- undeclared-surface policy (wrap time, loud by default)
     passthrough = frozenset(passthrough)
-    public_attrs = {
-        n for n in dir(leaf) if not n.startswith('_')
-    }
+    public_attrs = {n for n in dir(leaf) if not n.startswith("_")}
     undeclared_names = public_attrs - set(spec_obj.methods) - passthrough
-    if undeclared_names and undeclared == 'raise':
+    if undeclared_names and undeclared == "raise":
         raise UndeclaredAttributeError(
-            f'The leaf exposes public attributes not covered by the spec: '
-            f'{sorted(undeclared_names)}. Methods among these would receive '
-            f'UNMAPPED keys/values through this wrap (the #83 bug class). '
+            f"The leaf exposes public attributes not covered by the spec: "
+            f"{sorted(undeclared_names)}. Methods among these would receive "
+            f"UNMAPPED keys/values through this wrap (the #83 bug class). "
             f"Add them to the spec, or pass undeclared='passthrough' / "
             f"'exclude', or list them in passthrough=... explicitly."
         )
-    if undeclared == 'passthrough':
+    if undeclared == "passthrough":
         passthrough = passthrough | undeclared_names
 
     # --- compile
-    encoders = _fused_role_funcs(stack, direction='encode')
-    decoders = _fused_role_funcs(stack, direction='decode')
-    present = [
-        name for name in spec_obj.methods if hasattr(leaf, name)
-    ]
+    encoders = _fused_role_funcs(stack, direction="encode")
+    decoders = _fused_role_funcs(stack, direction="decode")
+    present = [name for name in spec_obj.methods if hasattr(leaf, name)]
     plans = {}
     for name in present:
         sig = _outer_signature(leaf, name, spec_obj)
@@ -869,12 +858,12 @@ def interface_wrap(
 
     cls = _build_proxy_class(type(leaf), spec_obj, tuple(present))
     proxy = object.__new__(cls)
-    object.__setattr__(proxy, '_self_leaf', leaf)
-    object.__setattr__(proxy, '_self_spec', spec_obj)
-    object.__setattr__(proxy, '_self_stack', stack)
-    object.__setattr__(proxy, '_self_plans', plans)
-    object.__setattr__(proxy, '_self_encoders', encoders)
-    object.__setattr__(proxy, '_self_decoders', decoders)
-    object.__setattr__(proxy, '_self_undeclared', undeclared)
-    object.__setattr__(proxy, '_self_passthrough', passthrough)
+    object.__setattr__(proxy, "_self_leaf", leaf)
+    object.__setattr__(proxy, "_self_spec", spec_obj)
+    object.__setattr__(proxy, "_self_stack", stack)
+    object.__setattr__(proxy, "_self_plans", plans)
+    object.__setattr__(proxy, "_self_encoders", encoders)
+    object.__setattr__(proxy, "_self_decoders", decoders)
+    object.__setattr__(proxy, "_self_undeclared", undeclared)
+    object.__setattr__(proxy, "_self_passthrough", passthrough)
     return proxy
