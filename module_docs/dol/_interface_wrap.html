@@ -1,0 +1,338 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dol._interface_wrap &mdash; dol 0.3.61 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=de101580"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="dol._paths_core" href="_paths_core.html" />
+    <link rel="prev" title="dol" href="../dol.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dol.html">dol</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">dol._interface_wrap</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dol._interface_wrap.Codec"><code class="docutils literal notranslate"><span class="pre">Codec</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._interface_wrap.InterfaceProxy"><code class="docutils literal notranslate"><span class="pre">InterfaceProxy</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._interface_wrap.InterfaceSpec"><code class="docutils literal notranslate"><span class="pre">InterfaceSpec</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol._interface_wrap.InterfaceSpec.from_annotated"><code class="docutils literal notranslate"><span class="pre">InterfaceSpec.from_annotated()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol._interface_wrap.InterfaceSpec.from_dict"><code class="docutils literal notranslate"><span class="pre">InterfaceSpec.from_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._interface_wrap.InterfaceWrapError"><code class="docutils literal notranslate"><span class="pre">InterfaceWrapError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._interface_wrap.UndeclaredAttributeError"><code class="docutils literal notranslate"><span class="pre">UndeclaredAttributeError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._interface_wrap.UnderAnnotatedSpecError"><code class="docutils literal notranslate"><span class="pre">UnderAnnotatedSpecError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._interface_wrap.UnsupportedSpecShape"><code class="docutils literal notranslate"><span class="pre">UnsupportedSpecShape</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol._interface_wrap.interface_wrap"><code class="docutils literal notranslate"><span class="pre">interface_wrap()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="_paths_core.html">dol._paths_core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appendable.html">dol.appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">dol.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">dol.caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content.html">dol.content</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dig.html">dol.dig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">dol.errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explicit.html">dol.explicit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesys.html">dol.filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kv_codecs.html">dol.kv_codecs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">dol.misc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mixins.html">dol.mixins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="naming.html">dol.naming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paths.html">dol.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.html">dol.recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap.html">dol.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/new_store_wrap.html">dol.scrap.new_store_wrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scrap/store_factories.html">dol.scrap.store_factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="signatures.html">dol.signatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">dol.sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/base_test.html">dol.tests.base_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/pickability_test.html">dol.tests.pickability_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/scrap.html">dol.tests.scrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_appendable.html">dol.tests.test_appendable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_caching.html">dol.tests.test_caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_confirm_overwrite.html">dol.tests.test_confirm_overwrite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_content.html">dol.tests.test_content</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_dig.html">dol.tests.test_dig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_dol_tools.html">dol.tests.test_dol_tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_edge_cases.html">dol.tests.test_edge_cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_errors.html">dol.tests.test_errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_fanout_stores.html">dol.tests.test_fanout_stores</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_filesys.html">dol.tests.test_filesys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_interface_wrap.html">dol.tests.test_interface_wrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_kv_codecs.html">dol.tests.test_kv_codecs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_mk_dirs_if_missing.html">dol.tests.test_mk_dirs_if_missing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_packaging_hygiene.html">dol.tests.test_packaging_hygiene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_path_writethrough.html">dol.tests.test_path_writethrough</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_paths.html">dol.tests.test_paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_trans.html">dol.tests.test_trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/test_walk_permissions.html">dol.tests.test_walk_permissions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests/utils_for_tests.html">dol.tests.utils_for_tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">dol.tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trans.html">dol.trans</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trash.html">dol.trash</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">dol.util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zipfiledol.html">dol.zipfiledol</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">dol._interface_wrap</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/dol/_interface_wrap.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-dol._interface_wrap">
+<span id="dol-interface-wrap"></span><h1>dol._interface_wrap<a class="headerlink" href="#module-dol._interface_wrap" title="Link to this heading"></a></h1>
+<p>Spec-carried boundary codecs on a flat proxy (Option G prototype).</p>
+<p>EXPERIMENTAL — private module, not exported from <code class="docutils literal notranslate"><span class="pre">dol</span></code>. Design study:
+<code class="docutils literal notranslate"><span class="pre">misc/docs/dol_issue86_design.md</span></code> (companion to discussions #86 and the
+#83/#18 design docs).</p>
+<p>The idea, in one paragraph: a wrap is <code class="docutils literal notranslate"><span class="pre">(leaf,</span> <span class="pre">spec,</span> <span class="pre">stack)</span></code> where <em>spec</em>
+declares, per method, at which argument/return paths the “types of interest”
+(KT, VT, … — any TypeVar “role”) occur, and <em>stack</em> is a flat sequence of
+codec layers, each mapping <code class="docutils literal notranslate"><span class="pre">role</span> <span class="pre">-&gt;</span> <span class="pre">Codec(encoder,</span> <span class="pre">decoder)</span></code>. Wrapping an
+already-wrapped object <strong>extends the stack over the same leaf</strong> — there is
+never a wrapper-of-wrapper. At wrap time the stack is compiled: per role, the
+encoder pipeline (outer→inner) and decoder pipeline (inner→outer) are fused
+into single callables; per method, a boundary plan binds parameters and return
+paths to them. Method bodies always run against the <strong>leaf’s own public
+interface</strong> (<code class="docutils literal notranslate"><span class="pre">self</span></code> is the leaf), so a method that is correct on the bare
+leaf stays correct under any codec stack, and internal <code class="docutils literal notranslate"><span class="pre">self.x()</span></code> calls stay
+below the boundary — transforms are applied exactly once, at the boundary.</p>
+<p>What this deliberately does NOT do: it does not change what <code class="docutils literal notranslate"><span class="pre">self</span></code> is inside
+leaf methods (Issue #18’s outer-domain methods are the other half of the
+problem, served by <code class="docutils literal notranslate"><span class="pre">wrapped_self</span></code> today), it does not rebind methods (the
+rejected option D), and it is not (yet) <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;KT&#39;</span><span class="p">),</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;VT&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">KvInterface</span><span class="p">(</span><span class="n">Protocol</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VT</span><span class="p">:</span> <span class="o">...</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">KT</span><span class="p">]:</span> <span class="o">...</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a.json&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codecs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">KT</span><span class="o">=</span><span class="n">Codec</span><span class="p">(</span><span class="n">encoder</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">,</span> <span class="n">decoder</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]),</span>
+<span class="gp">... </span>    <span class="n">VT</span><span class="o">=</span><span class="n">Codec</span><span class="p">(</span><span class="n">encoder</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">decoder</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Loud by default: a public leaf attribute the spec doesn’t cover refuses at
+wrap time (it would be served with unmapped keys/values — the #83 bug class):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface_wrap</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">KvInterface</span><span class="p">,</span> <span class="n">codecs</span><span class="o">=</span><span class="n">codecs</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">dol._interface_wrap.UndeclaredAttributeError</span>: <span class="n">The leaf exposes public...</span>
+</pre></div>
+</div>
+<p>Every escape is explicit — extend the spec, forward verbatim, or hide:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">interface_wrap</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">KvInterface</span><span class="p">,</span> <span class="n">codecs</span><span class="o">=</span><span class="n">codecs</span><span class="p">,</span> <span class="n">undeclared</span><span class="o">=</span><span class="s1">&#39;exclude&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{&#39;a.json&#39;: &#39;1&#39;, &#39;b.json&#39;: &#39;2&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="go">[&#39;a&#39;, &#39;b&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;a&#39;</span> <span class="ow">in</span> <span class="n">s</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol._interface_wrap.Codec">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol._interface_wrap.</span></span><span class="sig-name descname"><span class="pre">Codec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/_interface_wrap.html#Codec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._interface_wrap.Codec" title="Link to this definition"></a></dt>
+<dd><p>An encoder/decoder pair for one role (type of interest).</p>
+<p><code class="docutils literal notranslate"><span class="pre">encoder</span></code> maps outer→inner (the direction of arguments going in);
+<code class="docutils literal notranslate"><span class="pre">decoder</span></code> maps inner→outer (the direction of results coming out).
+Same field semantics as <code class="docutils literal notranslate"><span class="pre">dol.trans.Codec</span></code>; redefined here to keep this
+leaf module dependency-free within dol.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol._interface_wrap.InterfaceProxy">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol._interface_wrap.</span></span><span class="sig-name descname"><span class="pre">InterfaceProxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/_interface_wrap.html#InterfaceProxy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._interface_wrap.InterfaceProxy" title="Link to this definition"></a></dt>
+<dd><p>Base class for generated flat proxies. Instances hold the whole wrap.</p>
+<p>State (all under proxy-private names, wrapt’s <code class="docutils literal notranslate"><span class="pre">_self_</span></code> lesson):
+<code class="docutils literal notranslate"><span class="pre">_self_leaf</span></code> (strong ref, the innermost object — also <code class="docutils literal notranslate"><span class="pre">__wrapped__</span></code>),
+<code class="docutils literal notranslate"><span class="pre">_self_spec</span></code>, <code class="docutils literal notranslate"><span class="pre">_self_stack</span></code> (tuple of {role: Codec}, innermost-first),
+<code class="docutils literal notranslate"><span class="pre">_self_plans</span></code> (compiled boundary callables), plus the policy fields.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol._interface_wrap.InterfaceSpec">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol._interface_wrap.</span></span><span class="sig-name descname"><span class="pre">InterfaceSpec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methods</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signatures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Signature</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/_interface_wrap.html#InterfaceSpec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._interface_wrap.InterfaceSpec" title="Link to this definition"></a></dt>
+<dd><p>Per-method role placement, compiled from an annotated class.</p>
+<p><code class="docutils literal notranslate"><span class="pre">source</span></code> is typically a <code class="docutils literal notranslate"><span class="pre">Protocol</span></code> class whose methods are annotated
+with role TypeVars (KT, VT, …). <code class="docutils literal notranslate"><span class="pre">methods</span></code> maps method name to a dict:
+<code class="docutils literal notranslate"><span class="pre">{param_name_or_'return':</span> <span class="pre">[(role,</span> <span class="pre">path),</span> <span class="pre">...]}</span></code>. You can also build an
+<code class="docutils literal notranslate"><span class="pre">InterfaceSpec</span></code> directly from that dict form (<code class="docutils literal notranslate"><span class="pre">from_dict</span></code>) when
+annotations are unavailable — same mechanism, no typing required.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol._interface_wrap.InterfaceSpec.from_annotated">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_annotated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">roles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/_interface_wrap.html#InterfaceSpec.from_annotated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._interface_wrap.InterfaceSpec.from_annotated" title="Link to this definition"></a></dt>
+<dd><p>Compile a spec from an annotated (Protocol) class.</p>
+<p><code class="docutils literal notranslate"><span class="pre">roles</span></code>: iterable of role names to look for; default = names of the
+TypeVars in <code class="docutils literal notranslate"><span class="pre">source.__parameters__</span></code>, else {‘KT’, ‘VT’}.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol._interface_wrap.InterfaceSpec.from_dict">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methods</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">signatures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/_interface_wrap.html#InterfaceSpec.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._interface_wrap.InterfaceSpec.from_dict" title="Link to this definition"></a></dt>
+<dd><p>Build a spec from the explicit dict form.</p>
+<p><code class="docutils literal notranslate"><span class="pre">methods</span></code>: <code class="docutils literal notranslate"><span class="pre">{method_name:</span> <span class="pre">{param_or_'return':</span> <span class="pre">[(role,</span> <span class="pre">path)]</span> <span class="pre">|</span> <span class="pre">role_str}}</span></code>
+where a bare role string means “the whole value has this role”.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="dol._interface_wrap.InterfaceWrapError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol._interface_wrap.</span></span><span class="sig-name descname"><span class="pre">InterfaceWrapError</span></span><a class="reference internal" href="../../_modules/dol/_interface_wrap.html#InterfaceWrapError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._interface_wrap.InterfaceWrapError" title="Link to this definition"></a></dt>
+<dd><p>Base for all errors raised by this module.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="dol._interface_wrap.UndeclaredAttributeError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol._interface_wrap.</span></span><span class="sig-name descname"><span class="pre">UndeclaredAttributeError</span></span><a class="reference internal" href="../../_modules/dol/_interface_wrap.html#UndeclaredAttributeError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._interface_wrap.UndeclaredAttributeError" title="Link to this definition"></a></dt>
+<dd><p>A public attribute of the leaf is not covered by the spec.</p>
+<p>Raised at wrap time under the default <code class="docutils literal notranslate"><span class="pre">undeclared='raise'</span></code> policy — the
+census’s failure mode is silence-by-omission (s3dol ADR-0011 D5), so an
+attribute that would be served with unmapped keys/values must be
+explicitly passed through, excluded, or added to the spec.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="dol._interface_wrap.UnderAnnotatedSpecError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol._interface_wrap.</span></span><span class="sig-name descname"><span class="pre">UnderAnnotatedSpecError</span></span><a class="reference internal" href="../../_modules/dol/_interface_wrap.html#UnderAnnotatedSpecError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._interface_wrap.UnderAnnotatedSpecError" title="Link to this definition"></a></dt>
+<dd><p>A spec’d method has a parameter with no annotation at all.</p>
+<p>An unannotated parameter is indistinguishable from a deliberately
+non-role parameter, which is exactly the silence-by-omission failure mode
+this mechanism exists to kill — one level down (a key parameter the spec
+author forgot to annotate would silently receive OUTER keys). Annotate
+every named parameter of a spec method: with a role TypeVar if it carries
+a role, with a concrete type (or <code class="docutils literal notranslate"><span class="pre">Any</span></code>) to state it does not.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="dol._interface_wrap.UnsupportedSpecShape">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol._interface_wrap.</span></span><span class="sig-name descname"><span class="pre">UnsupportedSpecShape</span></span><a class="reference internal" href="../../_modules/dol/_interface_wrap.html#UnsupportedSpecShape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._interface_wrap.UnsupportedSpecShape" title="Link to this definition"></a></dt>
+<dd><p>An annotation contains a role TypeVar at a path we cannot map.</p>
+<p>Raised at wrap (compile) time, never at call time: refusing early beats
+guessing (dol_issue83_design.md §5.7).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol._interface_wrap.interface_wrap">
+<span class="sig-prename descclassname"><span class="pre">dol._interface_wrap.</span></span><span class="sig-name descname"><span class="pre">interface_wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codecs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dol._interface_wrap.Codec" title="dol._interface_wrap.Codec"><span class="pre">Codec</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">undeclared</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passthrough</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/_interface_wrap.html#interface_wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol._interface_wrap.interface_wrap" title="Link to this definition"></a></dt>
+<dd><p>Wrap <code class="docutils literal notranslate"><span class="pre">obj</span></code> (an instance) with boundary codecs per an interface spec.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – the object to wrap, or an existing <code class="docutils literal notranslate"><span class="pre">InterfaceProxy</span></code> (in
+which case the new codec layer extends the flat stack over the SAME
+leaf — wrapping never nests).</p></li>
+<li><p><strong>spec</strong> – an annotated (Protocol) class, an <code class="docutils literal notranslate"><span class="pre">InterfaceSpec</span></code>, or the
+explicit dict form accepted by <code class="docutils literal notranslate"><span class="pre">InterfaceSpec.from_dict</span></code>.</p></li>
+<li><p><strong>codecs</strong> – one codec layer: <code class="docutils literal notranslate"><span class="pre">{role_name:</span> <span class="pre">Codec(encoder,</span> <span class="pre">decoder)}</span></code>.</p></li>
+<li><p><strong>undeclared</strong> – policy for public leaf attributes absent from the
+spec: <code class="docutils literal notranslate"><span class="pre">'raise'</span></code> (default — loud, at wrap time), <code class="docutils literal notranslate"><span class="pre">'passthrough'</span></code>
+(forward verbatim; documents itself as unmapped), <code class="docutils literal notranslate"><span class="pre">'exclude'</span></code>
+(hide: touching them raises at use time).</p></li>
+<li><p><strong>passthrough</strong> – explicit names to forward verbatim regardless.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../dol.html" class="btn btn-neutral float-left" title="dol" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="_paths_core.html" class="btn btn-neutral float-right" title="dol._paths_core" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
