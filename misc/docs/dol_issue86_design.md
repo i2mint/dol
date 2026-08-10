@@ -381,7 +381,8 @@ belongs with P2's compatibility appendix.
 | 10 | flat 3.6×/3.4× faster than nested at depth 6 (getitem/iter) | benchmark, this branch |
 | 11 | layer-1 `wants_self` transform receives the layer-1 wrapper (fusion not semantics-preserving) | panel probe A1 |
 | 12 | engine wraps don't populate the `wrapped_self` registry | panel probe C2 |
-| 13 | prototype hardening: `*keys: KT` elementwise, unannotated-param refusal, None-default rule, no raw-dunder leak, in-flight iterator safety, nested iterators, 3.10 parity | `dol/tests/test_interface_wrap.py` (32 tests) + 3.10 doctest run |
+| 13 | prototype hardening: `*keys: KT` elementwise, unannotated-param refusal, None-default rule, no raw-dunder leak, in-flight iterator safety, nested iterators, 3.10 parity | `dol/tests/test_interface_wrap.py` + 3.10 doctest run |
+| 14 | independent code review round: 3.10 builtin-slot signature failure (positional plan fallback), dict-form spec pickle/copy crash, explicit-dunder escape (`s.__contains__` answering in the wrong key domain), sequence-protocol iteration leak, fast-path keyword calls, `Iterable`-arg one-shot downgrade, policy-typo silence, id()-keyed class-cache collisions — all fixed with regression tests (39 total) | independent reviewer probes + `dol/tests/test_interface_wrap.py`; accepted follow-ups: fast path does not enforce the outer signature's arity (generic path does); dict-form proxy classes are not cached |
 
 ## References
 

@@ -239,9 +239,14 @@ def _transformer_for_path(ann, path, role_func, *, where):
         if index == 0:
             return lambda v: {inner(k): x for k, x in v.items()}
         return lambda v: {k: inner(x) for k, x in v.items()}
-    if origin is _IteratorABC or origin is _IterableABC:
-        # Lazy: preserve streaming semantics for iterators/iterables.
+    if origin is _IteratorABC:
+        # Iterators are one-shot by contract: map lazily (streaming preserved).
         return lambda v: map(inner, v)
+    if origin is _IterableABC:
+        # Iterable implies RE-iterable: materialize, because handing a
+        # one-shot map to code that iterates twice (or len()s) silently
+        # yields an empty second pass.
+        return lambda v: [inner(x) for x in v]
     if origin is Union:
         args = get_args(ann)
         non_none = [a for a in args if a is not type(None)]
@@ -259,18 +264,6 @@ def _transformer_for_path(ann, path, role_func, *, where):
         f'Iterable, Iterator, Optional. '
         f'Add an explicit method override or exclude the method.'
     )
-
-
-class _ParamPlan(NamedTuple):
-    name: str
-    kind: Any  # inspect.Parameter.kind
-    transform: Callable  # outer -> inner (fused encoder at the right path)
-
-
-class _MethodPlan(NamedTuple):
-    name: str
-    prepare_args: Callable  # (args, kwargs) -> (args, kwargs) in leaf domain
-    finish: Callable  # leaf result -> outer result
 
 
 @dataclass(frozen=True)
@@ -350,13 +343,25 @@ class InterfaceSpec:
         ``methods``: ``{method_name: {param_or_'return': [(role, path)] | role_str}}``
         where a bare role string means "the whole value has this role".
         """
+        def norm_occurrence(occ):
+            # Accept the user 2-tuple (role, path), the normalized 3-tuple
+            # (role, path, ann) — __reduce__ round-trips the normalized form
+            # back through here — and a bare role string.
+            if isinstance(occ, str):
+                return (occ, (), Any)
+            if len(occ) == 2:
+                role, path = occ
+                return (role, tuple(path), Any)
+            role, path, ann = occ
+            return (role, tuple(path), ann)
+
         norm = {}
         for mname, params in methods.items():
             norm[mname] = {
                 p: (
-                    ((v, (), Any),)
+                    (norm_occurrence(v),)
                     if isinstance(v, str)
-                    else tuple((r, tuple(path), Any) for r, path in v)
+                    else tuple(norm_occurrence(occ) for occ in v)
                 )
                 for p, v in params.items()
             }
@@ -434,19 +439,19 @@ def _compile_method_plan(name, sites, leaf_method, sig, encoders, decoders):
     """
     # Build per-parameter transformers (outer -> inner). Integer site keys
     # mean positional index (dict-form specs), resolved against the outer
-    # signature now.
+    # signature when one exists; when none does (builtin slots like
+    # dict.__getitem__ have no text signature on 3.10), compile a purely
+    # positional plan instead.
+    positional_only_plan = False
     if any(isinstance(p, int) for p in sites):
         if sig is None:
-            raise UnsupportedSpecShape(
-                f'Method {name!r}: positional (integer) spec keys need an '
-                f'inspectable signature to resolve against, and none is '
-                f'available.'
-            )
-        param_names_by_index = list(sig.parameters)
-        sites = {
-            (param_names_by_index[p] if isinstance(p, int) else p): v
-            for p, v in sites.items()
-        }
+            positional_only_plan = True
+        else:
+            param_names_by_index = list(sig.parameters)
+            sites = {
+                (param_names_by_index[p] if isinstance(p, int) else p): v
+                for p, v in sites.items()
+            }
 
     param_transforms = {}  # pname -> callable
     return_transform = None
@@ -491,9 +496,34 @@ def _compile_method_plan(name, sites, leaf_method, sig, encoders, decoders):
         # Spec'd but no active roles in this stack: plain passthrough.
         return leaf_method
 
+    if positional_only_plan:
+        # No signature to resolve against (3.10 builtin slots): transform by
+        # positional index; keyword calls of role'd params are refused loudly.
+        idx_transforms = {
+            p: t for p, t in param_transforms.items() if isinstance(p, int)
+        }
+
+        def plan(*args, **kwargs):
+            args = tuple(
+                idx_transforms[i](a) if i in idx_transforms else a
+                for i, a in enumerate(args)
+            )
+            if len(args) <= max(idx_transforms, default=-1):
+                raise TypeError(
+                    f'{name}: role-bearing positional argument(s) '
+                    f'{sorted(idx_transforms)} must be passed positionally '
+                    f'(no signature is available to resolve keyword calls).'
+                )
+            result = leaf_method(*args, **kwargs)
+            if return_transform is not None:
+                result = return_transform(result)
+            return result
+
+        return plan
+
     # Fast path: single role'd parameter, first positional slot with no
-    # default, always called positionally (all dunders are; most keyed
-    # methods too).
+    # default. Keyword calls of that param are handled by name (POSITIONAL_
+    # OR_KEYWORD contracts include them), without a Signature.bind per call.
     param_names = list(sig.parameters) if sig is not None else []
     _first = sig.parameters[param_names[0]] if param_names else None
     if (
@@ -508,28 +538,34 @@ def _compile_method_plan(name, sites, leaf_method, sig, encoders, decoders):
         )
     ):
         first_transform = param_transforms.get(param_names[0])
+        first_name = param_names[0]
 
-        if first_transform is not None and return_transform is not None:
+        if first_transform is None:
 
-            def plan(k, *args, **kwargs):
-                return return_transform(leaf_method(first_transform(k), *args, **kwargs))
-
-        elif first_transform is not None:
-
-            def plan(k, *args, **kwargs):
-                return leaf_method(first_transform(k), *args, **kwargs)
+            def plan(*args, **kwargs):
+                return return_transform(leaf_method(*args, **kwargs))
 
         else:
 
             def plan(*args, **kwargs):
-                return return_transform(leaf_method(*args, **kwargs))
+                if args:
+                    args = (first_transform(args[0]),) + args[1:]
+                elif first_name in kwargs:
+                    # Re-emit positionally: the caller used the SPEC's name,
+                    # which the leaf's own parameter may not share.
+                    kwargs = dict(kwargs)
+                    args = (first_transform(kwargs.pop(first_name)),)
+                result = leaf_method(*args, **kwargs)
+                if return_transform is not None:
+                    result = return_transform(result)
+                return result
 
         return plan
 
     if sig is None:
         raise UnsupportedSpecShape(
-            f'Method {name!r} has role-bearing parameters beyond the first '
-            f'but no inspectable signature to bind against.'
+            f'Method {name!r} has role-bearing named parameters but no '
+            f'inspectable signature to bind against.'
         )
 
     def plan(*args, **kwargs):
@@ -624,6 +660,12 @@ class InterfaceProxy:
 
     def __getattr__(self, name):
         # Only reached when normal lookup fails: plans and passthroughs first.
+        if name.startswith('__') and name.endswith('__'):
+            # Explicit dunder access must NOT escape to the leaf: forwarding
+            # would hand out raw leaf-bound methods (s.__contains__('outer_k')
+            # silently answering in the wrong key domain). Plain
+            # AttributeError keeps hasattr-style duck typing honest.
+            raise AttributeError(name)
         if name.startswith('_'):
             return getattr(
                 object.__getattribute__(self, '_self_leaf'), name
@@ -664,17 +706,37 @@ def _build_proxy_class(leaf_type, spec, method_names, class_name=None):
     works. Capability mirroring: a method the leaf lacks is NOT given to the
     proxy class.
     """
-    key = (leaf_type, id(spec.source) if spec.source else id(spec), tuple(method_names))
-    cached = _proxy_class_cache.get(key)
-    if cached is not None:
-        return cached
+    # Cache only source-backed specs: the source class is a stable, hashable
+    # key the cache holds strongly. Dict-form specs (no source) build a fresh
+    # class — caching them by id() risks collisions after GC id-reuse and
+    # unbounded growth otherwise.
+    key = None
+    if spec.source is not None:
+        key = (leaf_type, spec.source, tuple(method_names))
+        cached = _proxy_class_cache.get(key)
+        if cached is not None:
+            return cached
     ns = {}
     for name in method_names:
         exec(_DUNDER_METHOD_TEMPLATE.format(name=name), {}, ns)
+    if '__getitem__' in ns and '__iter__' not in ns:
+        # Without this, Python's legacy sequence protocol would invent
+        # iteration from __getitem__(0), __getitem__(1), ... — feeding int
+        # keys through the key encoder, silently. Louder to refuse.
+        def __iter__(self):
+            raise TypeError(
+                f'{type(self).__name__} is not iterable: __iter__ is not in '
+                f'its interface spec (and sequence-protocol fallback over '
+                f'__getitem__ would silently feed integer keys through the '
+                f'key codec).'
+            )
+
+        ns['__iter__'] = __iter__
     ns['__module__'] = __name__
     cls_name = class_name or f'{leaf_type.__name__}InterfaceProxy'
     cls = type(cls_name, (InterfaceProxy,), ns)
-    _proxy_class_cache[key] = cls
+    if key is not None:
+        _proxy_class_cache[key] = cls
     return cls
 
 
@@ -705,6 +767,11 @@ def interface_wrap(
         (hide: touching them raises at use time).
     :param passthrough: explicit names to forward verbatim regardless.
     """
+    if undeclared not in ('raise', 'passthrough', 'exclude'):
+        raise ValueError(
+            f"undeclared must be 'raise', 'passthrough' or 'exclude', "
+            f'got {undeclared!r}'
+        )
     # --- normalize the spec
     if isinstance(spec, InterfaceSpec):
         spec_obj = spec

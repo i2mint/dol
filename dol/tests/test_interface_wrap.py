@@ -552,3 +552,101 @@ def test_wrapping_legacy_store_warns():
             codecs=dict(KT=json_key_codec),
             undeclared='passthrough',
         )
+
+
+# --- independent code-review round (findings 1-9) ----------------------------
+
+
+import copy
+
+
+def test_dict_form_spec_pickles_and_copies():
+    """Finding 2: __reduce__ round-trips the normalized 3-tuple form through
+    from_dict; copy.copy rides the same path."""
+    spec = {'__getitem__': {0: 'KT', 'return': 'VT'}}
+    d = {'a.json': '1'}
+    s = interface_wrap(d, spec=spec,
+                       codecs=dict(KT=json_key_codec, VT=value_codec),
+                       undeclared='exclude')
+    s2 = pickle.loads(pickle.dumps(s))
+    assert s2['a'] == 1
+    s3 = copy.copy(s)
+    assert s3['a'] == 1
+    assert s3.__wrapped__ is not None  # shallow copy shares nothing broken
+
+
+def test_explicit_dunder_access_is_loud():
+    """Finding 3: s.__contains__ / s.__or__ must not silently hand out the
+    leaf's raw bound method — AttributeError keeps duck typing honest."""
+    s = wrap_bucket()
+    with pytest.raises(AttributeError):
+        s.__or__
+    # spec'd dunders remain accessible (they live on the class)
+    assert s.__contains__('a') is True
+
+
+def test_no_sequence_protocol_iteration_leak():
+    """A __getitem__-only spec must not let iter() invent integer-key
+    iteration via the legacy sequence protocol."""
+    s = interface_wrap(
+        {'a.json': '1'},
+        spec={'__getitem__': {0: 'KT', 'return': 'VT'}},
+        codecs=dict(KT=json_key_codec, VT=value_codec),
+        undeclared='exclude',
+    )
+    with pytest.raises(TypeError):
+        iter(s)
+
+
+def test_keyword_call_of_specd_method():
+    """Finding 4: POSITIONAL_OR_KEYWORD contracts include keyword calls;
+    the spec's name is the contract even when the leaf names it differently."""
+
+    class KwSpec(Protocol[KT]):
+        def url_for(self, key: KT) -> str: ...
+
+    class L:
+        def url_for(self, target):  # leaf uses a DIFFERENT param name
+            return 'u/' + target
+
+    s = interface_wrap(L(), spec=KwSpec, codecs=dict(KT=json_key_codec),
+                       undeclared='exclude')
+    assert s.url_for('a') == 'u/a.json'
+    assert s.url_for(key='a') == 'u/a.json'
+
+
+def test_iterable_arg_survives_reiteration():
+    """Finding 5: Iterable (re-iterable contract) args are materialized;
+    a leaf that iterates twice sees both passes."""
+
+    class TwoPass(Protocol[KT]):
+        def pairs(self, keys: Iterable[KT]) -> list: ...
+
+    class L:
+        def pairs(self, keys):
+            return [list(keys), list(keys)]
+
+    s = interface_wrap(L(), spec=TwoPass, codecs=dict(KT=json_key_codec),
+                       undeclared='exclude')
+    assert s.pairs(['a']) == [['a.json'], ['a.json']]
+
+
+def test_invalid_undeclared_policy_refuses():
+    with pytest.raises(ValueError):
+        wrap_bucket(undeclared='riase')  # typo must not silently mean exclude
+
+
+def test_dict_kv_return_shape():
+    """Review gap 9a: dict[KT, VT] returns map both keys and values."""
+
+    class BulkSpec(Protocol[KT, VT]):
+        def bulk(self, ks: list[KT]) -> dict[KT, VT]: ...
+
+    class L:
+        def bulk(self, ks):
+            return {k: '7' for k in ks}
+
+    s = interface_wrap(L(), spec=BulkSpec,
+                       codecs=dict(KT=json_key_codec, VT=value_codec),
+                       undeclared='exclude')
+    assert s.bulk(['a']) == {'a': 7}
