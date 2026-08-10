@@ -186,7 +186,11 @@ from dol.paths import (
     # PathMappedData,  # A mapping that extracts data from a mapping according to paths
 )
 
-from dol.dig import trace_getitem  # trace getitem calls, stepping through the layers
+from dol.dig import (
+    trace_getitem,  # trace getitem calls, stepping through the layers
+    inner_most_key,  # resolve a key through every layer of a wrapped store
+    unravel_key,  # ... same, but yielding the key at each layer
+)
 
 from dol.explicit import ExplicitKeyMap, invertible_maps, KeysReader
 

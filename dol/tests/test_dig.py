@@ -231,3 +231,82 @@ def test_inner_most_key():
     result = inner_most_key(store, "test")
     # Should return final key transformation or None
     assert result is None or isinstance(result, str)
+
+
+# -------------------------------------------------------------------------------------
+# Resolution failures must be loud, not None
+#
+# ``inner_most_key`` used to return ``None`` when no layer of the chain defined
+# ``_id_of_key``. Callers use the result as a key or a path, so the ``None`` surfaced far
+# from its cause -- as a URL ending in ``/None``, or as
+# ``TypeError: expected str, bytes or os.PathLike object, not NoneType`` inside
+# ``MakeMissingDirsStoreMixin``.
+
+
+class _NoKeyMethods:
+    """A leaf with no ``_id_of_key`` -- the shape that used to yield a silent ``None``."""
+
+    def __getitem__(self, k):
+        return k
+
+
+def test_inner_most_raises_when_no_layer_defines_the_method():
+    with pytest.raises(AttributeError) as excinfo:
+        inner_most_key(_NoKeyMethods(), "some_key")
+    msg = str(excinfo.value)
+    assert "_id_of_key" in msg
+    assert "some_key" in msg
+
+    with pytest.raises(AttributeError):
+        inner_most_key({}, "some_key")
+
+
+def test_inner_most_default_opts_out_of_raising():
+    assert inner_most_key(_NoKeyMethods(), "k", default=None) is None
+    assert inner_most_key({}, "k", default="fallback") == "fallback"
+    # default is ignored when resolution succeeds
+    assert inner_most_key(SimpleStore({}), "k", default="fallback") == "id_k"
+
+
+def test_inner_most_still_resolves_through_a_real_wrap():
+    from dol import KeyCodecs
+
+    store = KeyCodecs.prefixed("a/")({"a/b": 1})
+    assert inner_most_key(store, "b") == "a/b"
+    assert list(unravel_key(store, "b")) == ["a/b", "a/b"]
+
+
+def test_store_trans_path_recurses_with_the_given_method():
+    """``inner_most_val`` used to apply ``_data_of_obj`` at the top layer and
+    ``_id_of_key`` at every deeper one, because the recursion hardcoded ``unravel_key``."""
+    from dol import wrap_kvs
+    from dol.dig import inner_most_val
+
+    store = wrap_kvs(
+        wrap_kvs({"k": 1}, data_of_obj=lambda v: v * 10), data_of_obj=lambda v: v + 1
+    )
+    assert inner_most_val(store, 5) == 60  # (5 + 1) * 10, both layers applied
+
+
+def test_inner_most_key_is_exported_from_dol():
+    """s3dol and other adapters need this as public API, not a submodule import."""
+    import dol
+
+    assert dol.inner_most_key is inner_most_key
+    assert hasattr(dol, "unravel_key")
+
+
+def test_make_missing_dirs_store_mixin_creates_dirs(tmpdir):
+    """Regression: this recovery path raised ``TypeError`` twice over -- once from the
+    ``None`` key, once from passing keyword-only ``verbose`` positionally."""
+    import os
+    from dol.filesys import MakeMissingDirsStoreMixin, FileBytesPersister
+
+    class S(MakeMissingDirsStoreMixin, FileBytesPersister):
+        pass
+
+    rootdir = str(tmpdir)
+    filepath = os.path.join(rootdir, "deep", "deeper", "f.bin")
+    S(rootdir)[filepath] = b"hello"
+    with open(filepath, "rb") as fp:
+        assert fp.read() == b"hello"

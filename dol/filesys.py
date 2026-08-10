@@ -821,13 +821,18 @@ class MakeMissingDirsStoreMixin:
             # TODO: ... But perhaps a more precise (but sufficient) exception list better?
             from dol.dig import inner_most_key
 
-            # get the inner most key, which should be a full path
-            _id = inner_most_key(self, k)
+            # Get the inner most key, which should be a full path.
+            # ``default=k``: this mixin is normally mixed into a persister whose keys ARE
+            # full paths and which therefore defines no ``_id_of_key``. Without the default
+            # the resolution fails, and it used to fail as a silent ``None`` -- turning the
+            # original write error into ``TypeError: expected str ... not NoneType``.
+            _id = inner_most_key(self, k, default=k)
             # get the full path of directory needed for this file
             dirname = os.path.dirname(_id)
             # make all the directories needed
-            ensure_dir(dirname, self._verbose)
-            os.makedirs(dirname, exist_ok=True)
+            # ``verbose`` is keyword-only; this was passing it positionally, so the
+            # recovery path raised TypeError instead of creating the directory.
+            ensure_dir(dirname, verbose=self._verbose)
             # try writing again
             super().__setitem__(k, v)
             # TODO: Undesirable here: If the setitem still fails, we created dirs
