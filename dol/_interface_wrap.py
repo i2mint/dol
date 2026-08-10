@@ -465,9 +465,7 @@ def _validate_stack_seams(stack):
     """
     roles = {role for layer in stack for role in layer}
     for role in roles:
-        carriers = [
-            (i, layer[role]) for i, layer in enumerate(stack) if role in layer
-        ]
+        carriers = [(i, layer[role]) for i, layer in enumerate(stack) if role in layer]
         for (i, inner_c), (j, outer_c) in zip(carriers, carriers[1:]):
             inner_face = inner_c.decoded_type
             outer_face = outer_c.encoded_type
@@ -1028,15 +1026,9 @@ def kv_interface_wrap(
     {'a': '{"x": 1}'}
     """
     if key_codec is not None and (key_of_id is not None or id_of_key is not None):
-        raise ValueError(
-            "Pass key_codec OR key_of_id/id_of_key, not both."
-        )
-    if value_codec is not None and (
-        obj_of_data is not None or data_of_obj is not None
-    ):
-        raise ValueError(
-            "Pass value_codec OR obj_of_data/data_of_obj, not both."
-        )
+        raise ValueError("Pass key_codec OR key_of_id/id_of_key, not both.")
+    if value_codec is not None and (obj_of_data is not None or data_of_obj is not None):
+        raise ValueError("Pass value_codec OR obj_of_data/data_of_obj, not both.")
     layer = {}
     if key_codec is not None:
         layer["KT"] = _as_codec(key_codec)
