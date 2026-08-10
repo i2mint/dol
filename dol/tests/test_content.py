@@ -248,3 +248,34 @@ def test_content_url_does_not_double_apply_the_providers_own_transform():
     assert content_url(KeyCodecs.prefixed("x/")(Prefixed("logs/")), "f") == (
         "https://s3/logs/x/f"
     )
+
+
+def test_content_url_terminates_on_pathological_chains():
+    """The chain walk must be bounded. A ``MagicMock`` mints a fresh child for every
+    ``.store``, and a self-referential store cycles -- both used to hang forever."""
+    from unittest.mock import MagicMock
+
+    from dol import content_url
+
+    content_url(MagicMock(), "k")  # must simply return
+
+    class SelfStore:
+        @property
+        def store(self):
+            return self
+
+    assert content_url(SelfStore(), "k") is None
+
+
+def test_content_url_still_finds_a_dynamically_provided_url_for():
+    """``url_for`` supplied via ``__getattr__`` is invisible to a static lookup. Returning
+    None there would be a silent wrong answer, so we fall back to plain duck typing."""
+    from dol import content_url
+
+    class Dyn(dict):
+        def __getattr__(self, name):
+            if name == "url_for":
+                return lambda key: f"https://dyn/{key}"
+            raise AttributeError(name)
+
+    assert content_url(Dyn({"k": 1}), "k") == "https://dyn/k"

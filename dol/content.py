@@ -63,6 +63,7 @@ from typing import (
 )
 
 from dol.base import KvPersister
+from dol.base import DelegatedAttribute as _DelegatedAttribute
 
 #: The ``_tag`` discriminator value carried on the JSON wire form (cross-language parity).
 CONTENT_REF_TAG = "ContentRef"
@@ -192,6 +193,36 @@ def _url_of(ref_or_key: Any) -> Optional[str]:
     return None
 
 
+_MAX_STORE_CHAIN_DEPTH = 100  # no real wrap stack is remotely this deep
+
+
+def _statically_defines_url_for(obj) -> bool:
+    """True if ``obj`` itself provides ``url_for`` (as opposed to forwarding it inward).
+
+    Looks the attribute up **without invoking descriptors**, so a class-wrap's
+    ``DelegatedAttribute`` is seen as itself rather than as the inner bound method -- a layer
+    that only *forwards* ``url_for`` is not the provider.
+
+    This is a hand-rolled ``inspect.getattr_static``. It agrees with it on every shape that
+    matters here (instance attribute, plain method, ``__slots__``, class-wrap, instance-wrap,
+    ``__getattr__``-provided) and is ~7x faster, which matters because ``content_url`` is
+    called per object. Anything this misses falls through to the plain-``getattr`` fallback
+    in :func:`content_url`, so a miss costs correctness nothing.
+
+    NOTE: ``DelegatedAttribute`` is defined twice in dol -- ``dol.base`` (the one the wrap
+    machinery constructs) and an unused duplicate in ``dol.util``. If a wrap path ever
+    switches to the other copy this check silently stops working, so they must not diverge.
+    """
+    d = getattr(obj, "__dict__", None)
+    if d is not None and "url_for" in d:
+        return not isinstance(d["url_for"], _DelegatedAttribute)
+    for klass in type(obj).__mro__:
+        attr = klass.__dict__.get("url_for")
+        if attr is not None:
+            return not isinstance(attr, _DelegatedAttribute)
+    return False
+
+
 def _url_for_provider_and_key(store: Any, key: str):
     """The layer that owns ``url_for``, and ``key`` expressed in *that layer's* key space.
 
@@ -200,34 +231,31 @@ def _url_for_provider_and_key(store: Any, key: str):
     to find the layer that actually defines ``url_for``, applying every *outer* layer's
     ``_id_of_key`` on the way -- and stopping there, because that layer applies its own.
 
-    Returns ``(None, key)`` when no layer provides ``url_for``.
+    Returns ``(None, key)`` -- with ``key`` unchanged -- when the walk finds no provider, so
+    the caller can fall back to plain ``getattr``.
+
+    The walk is bounded two ways. ``seen`` catches a chain that points back at itself; the
+    depth cap catches one that never repeats and never ends, which is what a ``MagicMock``
+    does (every ``.store`` mints a fresh child).
     """
-    import inspect
-
-    from dol.base import DelegatedAttribute
-
-    def _really_defines_url_for(obj) -> bool:
-        # ``getattr_static`` does not invoke descriptors, so a class-wrap's
-        # ``DelegatedAttribute`` is visible as itself rather than as the inner bound method.
-        # A layer that only *forwards* ``url_for`` is not the provider.
-        try:
-            attr = inspect.getattr_static(obj, "url_for")
-        except AttributeError:
-            return False
-        return not isinstance(attr, DelegatedAttribute)
-
-    layer, k = store, key
-    while layer is not None:
-        if _really_defines_url_for(layer):
-            return layer, k
+    layer, k, seen = store, key, set()
+    for _ in range(_MAX_STORE_CHAIN_DEPTH):
+        if layer is None or id(layer) in seen:
+            break
+        seen.add(id(layer))
         inner = getattr(layer, "store", None)
         if inner is None:
-            return None, k
+            # Innermost layer: nothing left to forward to, so it is the provider if it has
+            # ``url_for`` at all. Checking ``.store`` first keeps the unwrapped case --
+            # by far the common one -- on a single cheap ``getattr``.
+            return layer, k
+        if _statically_defines_url_for(layer):
+            return layer, k
         id_of_key = getattr(layer, "_id_of_key", None)
         if callable(id_of_key):
             k = id_of_key(k)
         layer = inner
-    return None, k
+    return None, key
 
 
 def content_url(store: Any, ref_or_key: Any) -> Optional[str]:
@@ -259,11 +287,18 @@ def content_url(store: Any, ref_or_key: Any) -> Optional[str]:
     carried = _url_of(ref_or_key)
     if carried:
         return carried
-    provider, key = _url_for_provider_and_key(store, _key_of(ref_or_key))
-    if provider is None:
-        return None
-    url_for = getattr(provider, "url_for", None)
-    return url_for(key) if callable(url_for) else None
+    outer_key = _key_of(ref_or_key)
+    provider, key = _url_for_provider_and_key(store, outer_key)
+    if provider is not None:
+        url_for = getattr(provider, "url_for", None)
+        if callable(url_for):
+            return url_for(key)
+    # Fallback to plain duck typing, with the key as given. The walk above looks attributes
+    # up statically and so cannot see a ``url_for`` supplied by ``__getattr__`` (a proxy, a
+    # lazy-client wrapper). Returning None there would be a silent wrong answer; this keeps
+    # such stores working exactly as they did before.
+    url_for = getattr(store, "url_for", None)
+    return url_for(outer_key) if callable(url_for) else None
 
 
 def _ref(

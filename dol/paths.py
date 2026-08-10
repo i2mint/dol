@@ -1218,7 +1218,13 @@ def mk_relative_path_store(
         if hasattr(store_cls, _method_name) and _method_name not in cls.__dict__:
 
             def _key_mapped(self, k, *args, __name=_method_name, **kwargs):
-                return getattr(self.store, __name)(self._id_of_key(k), *args, **kwargs)
+                # Use the mixin's *unvalidated* mapping, not ``self._id_of_key``. Under
+                # ``with_key_validation=True`` the latter is redefined above to RAISE
+                # ``KeyError`` on an invalid key -- which would make ``is_valid_key`` raise
+                # for exactly the input it exists to answer "no" for, and would change
+                # ``validate_key``'s exception type.
+                _id = PrefixRelativizationMixin._id_of_key(self, k)
+                return getattr(self.store, __name)(_id, *args, **kwargs)
 
             _key_mapped.__name__ = _method_name
             _key_mapped.__qualname__ = f"{cls.__name__}.{_method_name}"
