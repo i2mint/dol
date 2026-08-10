@@ -142,9 +142,12 @@ What this buys, each previously a named open problem — **scoped to pure-codec 
 The census's failure mode is silence-by-omission (ADR-0011 D5), so omission is loud at
 every level the mechanism can see:
 
-1. **Undeclared public attributes** of the leaf (`undeclared='raise'`, the default):
-   wrap-time refusal naming the attributes; escapes are explicit
-   (`'passthrough'` / `'exclude'` / `passthrough={...}` per name).
+1. **Undeclared public attributes** of the leaf: under the default
+   `undeclared='exclude'` (decision 2026-08-10, see §11), the wrap succeeds and
+   every *use* of an undeclared attribute raises with guidance — refusal at the
+   moment of danger, no habit-forming escape. `'raise'` is the strict mode
+   (wrap-time refusal naming the attributes); `'passthrough'` /
+   `passthrough={...}` forward verbatim, explicitly.
 2. **Unannotated parameters inside spec'd methods** (`UnderAnnotatedSpecError`):
    a spec author who writes `url_for(self, k)` forgot the annotation, and `k` would
    silently receive outer keys — refused at compile time. (Panel-found hole, closed.)
@@ -351,20 +354,34 @@ wrapper, not the backend) **[probe p1]**. The prototype's policy: wrapping a leg
 scoped to the layers above it. The eventual policy (absorb known layer types? refuse?)
 belongs with P2's compatibility appendix.
 
-## 11. Open questions for the maintainer
+## 11. Open questions — DECIDED (maintainer, 2026-08-10)
 
-0. **Who owns the wrap_kvs endgame** — flat engine, is-a, or the split synthesis (§8)?
-1. Naming: `interface_wrap`? role-lane spelling (`codecs=dict(KT=…)`)? Should the
-   built-in Mapping spec ship now, and with which of the mixin methods (each needs a
-   vocabulary decision: `KeysView[KT]`, `update(**kw)`, `get`'s default)?
-2. Loudness defaults: keep `undeclared='raise'` knowing real leaves are noisy and
-   passthrough becomes habit — or default to `'exclude'` (loud at use, quiet at wrap)?
-3. **Typed codecs**: adopt encoded/decoded type tags on `Codec` (the two in-tree
-   TODOs) so stack composition can check adjacency and the §2.5 laws become
-   enforceable rather than documentary?
-4. The eq/hash/len policy family (§2.4) — decide explicitly, including whether to fix
-   today's Store eq/hash incoherence in the same breath.
-5. `__class__` transparency — co-design with #5, or drop permanently?
+0. **Who owns the wrap_kvs endgame?** → **Split synthesis**: codec/instance wrapping
+   compiles to the flat engine; `@wrap_kvs` class-decoration becomes is-a — each
+   mechanism serves the population it is uniquely correct for (§8). Consequence: P2
+   and the #18 doc's Phase 3 are no longer rivals; the crisp fire-when rule is P2/P3
+   design work.
+1. **Public surface** → **Private + facade next**: the engine stays private; the
+   built-in `MappingInterface` spec and the `wrap_kvs`-shaped `kv_interface_wrap`
+   facade ship (done — this decision round), so the simple gesture never regresses.
+   Export considered after adapters (P1) validate it. The Mapping *mixin* methods
+   (`get`, `keys`, `update`, …) stay out of the built-in spec — each needs its own
+   vocabulary decision — and are hidden-loud under the default policy.
+2. **Loudness default** → **`'exclude'`**: wrap succeeds; undeclared *use* raises
+   with guidance. `'raise'` remains as strict mode. Rationale: wrap-time raise on
+   real leaves (dict: 11 publics; boto3: 122) drives users to `'passthrough'`,
+   after which omission is silent again.
+3. **Typed codecs** → **Yes, now**: `Codec` carries optional
+   `decoded_type`/`encoded_type` tags; stack compilation validates adjacent seams
+   (outer `encoded_type` ≡ inner `decoded_type`) and refuses loudly on mismatch;
+   untagged stays unchecked (done — this decision round). Tagging `dol.trans.Codec`
+   is P2 territory (dependents gate).
+4. **eq/hash/len** → **Outer-view eq, no hash**: when the spec'd surface covers
+   `__getitem__`+`__iter__`, `__eq__` compares outer views (a wrap equals a dict
+   holding its outer items) and `__hash__` is None (done — this decision round).
+   Store's own eq/hash incoherence is queued for 0.4.
+5. **`__class__` transparency** → **Opt-in later, co-designed with #5**. Off today;
+   nothing lies by default.
 
 ## 12. Verification log
 

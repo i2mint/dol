@@ -35,18 +35,7 @@ rejected option D), and it is not (yet) ``wrap_kvs``.
 ...     KT=Codec(encoder=lambda k: k + '.json', decoder=lambda k: k[:-5]),
 ...     VT=Codec(encoder=str, decoder=int),
 ... )
-
-Loud by default: a public leaf attribute the spec doesn't cover refuses at
-wrap time (it would be served with unmapped keys/values — the #83 bug class):
-
->>> interface_wrap(d, spec=KvInterface, codecs=codecs)  # doctest: +ELLIPSIS
-Traceback (most recent call last):
-...
-dol._interface_wrap.UndeclaredAttributeError: The leaf exposes public...
-
-Every escape is explicit — extend the spec, forward verbatim, or hide:
-
->>> s = interface_wrap(d, spec=KvInterface, codecs=codecs, undeclared='exclude')
+>>> s = interface_wrap(d, spec=KvInterface, codecs=codecs)
 >>> s['a']
 1
 >>> s['b'] = 2
@@ -55,6 +44,30 @@ Every escape is explicit — extend the spec, forward verbatim, or hide:
 >>> list(s)
 ['a', 'b']
 >>> 'a' in s
+True
+
+Loudness: under the default ``undeclared='exclude'`` policy, a public leaf
+attribute the spec doesn't cover is hidden — USING it refuses with guidance
+(it would be served with unmapped keys/values, the #83 bug class):
+
+>>> s.get('a')  # doctest: +ELLIPSIS
+Traceback (most recent call last):
+...
+dol._interface_wrap.UndeclaredAttributeError: 'get' is not in the interface...
+
+Strict mode refuses at WRAP time instead (``undeclared='raise'``); and
+``undeclared='passthrough'`` / ``passthrough={...}`` forward verbatim — every
+escape is explicit.
+
+For the common Mapping-shaped case there is a built-in spec and a
+``wrap_kvs``-shaped facade, so simple things stay simple:
+
+>>> t = kv_interface_wrap({}, id_of_key=lambda k: k + '.txt',
+...                       key_of_id=lambda k: k[:-4])
+>>> t['a'] = 'hello'
+>>> list(t)
+['a']
+>>> t == {'a': 'hello'}
 True
 """
 
@@ -66,9 +79,11 @@ import typing
 from typing import (
     Any,
     Callable,
+    Iterator,
     Mapping,
     NamedTuple,
     Optional,
+    Protocol,
     TypeVar,
     Union,
     get_args,
@@ -80,7 +95,9 @@ __all__ = [
     "Codec",
     "InterfaceSpec",
     "InterfaceProxy",
+    "MappingInterface",
     "interface_wrap",
+    "kv_interface_wrap",
     "InterfaceWrapError",
     "UnsupportedSpecShape",
     "UnderAnnotatedSpecError",
@@ -119,10 +136,11 @@ class UnderAnnotatedSpecError(InterfaceWrapError, TypeError):
 class UndeclaredAttributeError(InterfaceWrapError, AttributeError):
     """A public attribute of the leaf is not covered by the spec.
 
-    Raised at wrap time under the default ``undeclared='raise'`` policy — the
-    census's failure mode is silence-by-omission (s3dol ADR-0011 D5), so an
-    attribute that would be served with unmapped keys/values must be
-    explicitly passed through, excluded, or added to the spec.
+    The census's failure mode is silence-by-omission (s3dol ADR-0011 D5), so
+    an attribute that would be served with unmapped keys/values must be
+    explicitly passed through or added to the spec. Under the default
+    ``undeclared='exclude'`` policy this raises at USE time; under the strict
+    ``'raise'`` policy, at wrap time.
     """
 
 
@@ -138,10 +156,20 @@ class Codec:
     ``decoder`` maps inner→outer (the direction of results coming out).
     Same field semantics as ``dol.trans.Codec``; redefined here to keep this
     leaf module dependency-free within dol.
+
+    ``decoded_type``/``encoded_type`` are OPTIONAL type tags (design decision
+    2026-08-10, question 3): ``decoded_type`` is the outer-facing domain,
+    ``encoded_type`` the inner-facing (leafward) one. When two adjacent stack
+    layers both declare the facing types, stack compilation validates the
+    seam (the outer layer's ``encoded_type`` must be the inner layer's
+    ``decoded_type``) and refuses loudly on mismatch. ``None`` = untagged =
+    unchecked, so plain ``Codec(f, g)`` keeps working.
     """
 
     encoder: Callable[[Any], Any]
     decoder: Callable[[Any], Any]
+    decoded_type: Optional[type] = None
+    encoded_type: Optional[type] = None
 
     def __iter__(self):
         return iter((self.encoder, self.decoder))
@@ -424,6 +452,37 @@ def _fused_role_funcs(stack, *, direction):
             funcs = [layer[role].decoder for layer in stack if role in layer]
         out[role] = _fuse(funcs)
     return out
+
+
+def _validate_stack_seams(stack):
+    """Validate typed-codec seams between adjacent layers (per role).
+
+    Layers are innermost-first. For a role present in layers i < j (adjacent
+    among the layers that carry that role), the OUTER layer's leafward face
+    (``encoded_type``) meets the INNER layer's outer face (``decoded_type``).
+    When both are declared and differ, refuse loudly; ``None`` = untagged =
+    unchecked (design decision 2026-08-10, question 3).
+    """
+    roles = {role for layer in stack for role in layer}
+    for role in roles:
+        carriers = [
+            (i, layer[role]) for i, layer in enumerate(stack) if role in layer
+        ]
+        for (i, inner_c), (j, outer_c) in zip(carriers, carriers[1:]):
+            inner_face = inner_c.decoded_type
+            outer_face = outer_c.encoded_type
+            if (
+                inner_face is not None
+                and outer_face is not None
+                and inner_face is not outer_face
+            ):
+                raise InterfaceWrapError(
+                    f"Typed-codec seam mismatch for role {role!r}: layer {i} "
+                    f"decodes to {inner_face.__name__} but layer {j} encodes "
+                    f"to {outer_face.__name__}. Adjacent codec layers must "
+                    f"agree at their seam (outer encoded_type == inner "
+                    f"decoded_type)."
+                )
 
 
 # ---------------------------------------------------------------------------
@@ -725,6 +784,22 @@ def _build_proxy_class(leaf_type, spec, method_names, class_name=None):
             )
 
         ns["__iter__"] = __iter__
+    if "__getitem__" in method_names and "__iter__" in method_names:
+        # Design decision (2026-08-10, question 4): when the spec'd surface
+        # supports Mapping-style traversal, equality compares OUTER views —
+        # a wrapped store equals a dict holding its outer items. Defining
+        # __eq__ sets __hash__ to None (mutable-mapping convention), which is
+        # the decided no-hash policy.
+        def __eq__(self, other):
+            if other is self:
+                return True
+            try:
+                other_items = {k: other[k] for k in other}
+            except (TypeError, KeyError):
+                return NotImplemented
+            return {k: self[k] for k in self} == other_items
+
+        ns["__eq__"] = __eq__
     ns["__module__"] = __name__
     cls_name = class_name or f"{leaf_type.__name__}InterfaceProxy"
     cls = type(cls_name, (InterfaceProxy,), ns)
@@ -742,7 +817,7 @@ def interface_wrap(
     *,
     spec,
     codecs: Optional[Mapping[str, Codec]] = None,
-    undeclared: str = "raise",
+    undeclared: str = "exclude",
     passthrough: _IterableABC = (),
     _stack: Optional[tuple] = None,
 ):
@@ -755,9 +830,12 @@ def interface_wrap(
         explicit dict form accepted by ``InterfaceSpec.from_dict``.
     :param codecs: one codec layer: ``{role_name: Codec(encoder, decoder)}``.
     :param undeclared: policy for public leaf attributes absent from the
-        spec: ``'raise'`` (default — loud, at wrap time), ``'passthrough'``
-        (forward verbatim; documents itself as unmapped), ``'exclude'``
-        (hide: touching them raises at use time).
+        spec. Default ``'exclude'`` (design decision 2026-08-10, question 2):
+        the wrap succeeds, and every USE of an undeclared attribute raises
+        ``UndeclaredAttributeError`` with guidance — refusal at the moment of
+        danger, with no habit-forming escape. ``'raise'`` is the strict mode
+        (refuse at wrap time, listing names); ``'passthrough'`` forwards
+        verbatim (explicitly unmapped keys/values).
     :param passthrough: explicit names to forward verbatim regardless.
     """
     if undeclared not in ("raise", "passthrough", "exclude"):
@@ -824,6 +902,7 @@ def interface_wrap(
                 f"nowhere in the spec (spec roles: {sorted(used_roles)}). "
                 f"A codec that can never apply is almost certainly a mistake."
             )
+    _validate_stack_seams(stack)
 
     # --- undeclared-surface policy (wrap time, loud by default)
     passthrough = frozenset(passthrough)
@@ -867,3 +946,114 @@ def interface_wrap(
     object.__setattr__(proxy, "_self_undeclared", undeclared)
     object.__setattr__(proxy, "_self_passthrough", passthrough)
     return proxy
+
+
+# ---------------------------------------------------------------------------
+# Built-in Mapping spec and the wrap_kvs-shaped facade
+# (design decision 2026-08-10, question 1: simple things stay simple)
+
+
+KT = TypeVar("KT")
+VT = TypeVar("VT")
+
+
+class MappingInterface(Protocol[KT, VT]):
+    """The built-in Mapping-shaped spec: the six methods dol's Store routes.
+
+    The MutableMapping mixin surface (``get``, ``keys``, ``items``,
+    ``update``, ...) is deliberately NOT declared: each of those needs its
+    own vocabulary decision (``KeysView[KT]``, ``update(**kw)``, ``get``'s
+    default), so under the default ``undeclared='exclude'`` policy they are
+    hidden-and-loud rather than silently unmapped.
+    """
+
+    def __getitem__(self, k: KT) -> VT: ...
+
+    def __setitem__(self, k: KT, v: VT) -> None: ...
+
+    def __delitem__(self, k: KT) -> None: ...
+
+    def __iter__(self) -> Iterator[KT]: ...
+
+    def __len__(self) -> int: ...
+
+    def __contains__(self, k: KT) -> bool: ...
+
+
+def _as_codec(codec_or_pair):
+    """Coerce anything with .encoder/.decoder (or a pair) to our Codec."""
+    if isinstance(codec_or_pair, Codec):
+        return codec_or_pair
+    if hasattr(codec_or_pair, "encoder") and hasattr(codec_or_pair, "decoder"):
+        return Codec(
+            encoder=codec_or_pair.encoder,
+            decoder=codec_or_pair.decoder,
+            decoded_type=getattr(codec_or_pair, "decoded_type", None),
+            encoded_type=getattr(codec_or_pair, "encoded_type", None),
+        )
+    encoder, decoder = codec_or_pair
+    return Codec(encoder=encoder, decoder=decoder)
+
+
+def kv_interface_wrap(
+    store,
+    *,
+    obj_of_data: Optional[Callable] = None,
+    data_of_obj: Optional[Callable] = None,
+    key_of_id: Optional[Callable] = None,
+    id_of_key: Optional[Callable] = None,
+    key_codec=None,
+    value_codec=None,
+    undeclared: str = "exclude",
+    passthrough: _IterableABC = (),
+):
+    """``wrap_kvs``-shaped kwargs facade over the interface engine.
+
+    Same transform-naming conventions as ``dol.wrap_kvs`` (``X_of_Y``:
+    ``id_of_key`` encodes keys going in, ``key_of_id`` decodes keys coming
+    out, ``data_of_obj`` encodes values going in, ``obj_of_data`` decodes
+    values coming out), compiled onto a flat proxy with the built-in
+    ``MappingInterface`` spec.
+
+    Unlike ``wrap_kvs``, transforms here are plain unary callables — there is
+    no self-convention (``f(self, x)``) inference, because there are no
+    wrapper layers for a transform to receive.
+
+    >>> import json
+    >>> s = kv_interface_wrap({}, data_of_obj=json.dumps, obj_of_data=json.loads)
+    >>> s['a'] = {'x': 1}
+    >>> s['a']
+    {'x': 1}
+    >>> s.__wrapped__
+    {'a': '{"x": 1}'}
+    """
+    if key_codec is not None and (key_of_id is not None or id_of_key is not None):
+        raise ValueError(
+            "Pass key_codec OR key_of_id/id_of_key, not both."
+        )
+    if value_codec is not None and (
+        obj_of_data is not None or data_of_obj is not None
+    ):
+        raise ValueError(
+            "Pass value_codec OR obj_of_data/data_of_obj, not both."
+        )
+    layer = {}
+    if key_codec is not None:
+        layer["KT"] = _as_codec(key_codec)
+    elif key_of_id is not None or id_of_key is not None:
+        layer["KT"] = Codec(
+            encoder=id_of_key or _identity, decoder=key_of_id or _identity
+        )
+    if value_codec is not None:
+        layer["VT"] = _as_codec(value_codec)
+    elif obj_of_data is not None or data_of_obj is not None:
+        layer["VT"] = Codec(
+            encoder=data_of_obj or _identity, decoder=obj_of_data or _identity
+        )
+    return interface_wrap(
+        store,
+        spec=MappingInterface,
+        codecs=layer or None,
+        undeclared=undeclared,
+        passthrough=passthrough,
+    )
