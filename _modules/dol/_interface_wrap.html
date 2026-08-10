@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol._interface_wrap &mdash; dol 0.3.61 documentation</title>
+  <title>dol._interface_wrap &mdash; dol 0.3.62 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=de101580"></script>
+      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -160,18 +160,7 @@
 <span class="sd">...     KT=Codec(encoder=lambda k: k + &#39;.json&#39;, decoder=lambda k: k[:-5]),</span>
 <span class="sd">...     VT=Codec(encoder=str, decoder=int),</span>
 <span class="sd">... )</span>
-
-<span class="sd">Loud by default: a public leaf attribute the spec doesn&#39;t cover refuses at</span>
-<span class="sd">wrap time (it would be served with unmapped keys/values — the #83 bug class):</span>
-
-<span class="sd">&gt;&gt;&gt; interface_wrap(d, spec=KvInterface, codecs=codecs)  # doctest: +ELLIPSIS</span>
-<span class="sd">Traceback (most recent call last):</span>
-<span class="sd">...</span>
-<span class="sd">dol._interface_wrap.UndeclaredAttributeError: The leaf exposes public...</span>
-
-<span class="sd">Every escape is explicit — extend the spec, forward verbatim, or hide:</span>
-
-<span class="sd">&gt;&gt;&gt; s = interface_wrap(d, spec=KvInterface, codecs=codecs, undeclared=&#39;exclude&#39;)</span>
+<span class="sd">&gt;&gt;&gt; s = interface_wrap(d, spec=KvInterface, codecs=codecs)</span>
 <span class="sd">&gt;&gt;&gt; s[&#39;a&#39;]</span>
 <span class="sd">1</span>
 <span class="sd">&gt;&gt;&gt; s[&#39;b&#39;] = 2</span>
@@ -180,6 +169,30 @@
 <span class="sd">&gt;&gt;&gt; list(s)</span>
 <span class="sd">[&#39;a&#39;, &#39;b&#39;]</span>
 <span class="sd">&gt;&gt;&gt; &#39;a&#39; in s</span>
+<span class="sd">True</span>
+
+<span class="sd">Loudness: under the default ``undeclared=&#39;exclude&#39;`` policy, a public leaf</span>
+<span class="sd">attribute the spec doesn&#39;t cover is hidden — USING it refuses with guidance</span>
+<span class="sd">(it would be served with unmapped keys/values, the #83 bug class):</span>
+
+<span class="sd">&gt;&gt;&gt; s.get(&#39;a&#39;)  # doctest: +ELLIPSIS</span>
+<span class="sd">Traceback (most recent call last):</span>
+<span class="sd">...</span>
+<span class="sd">dol._interface_wrap.UndeclaredAttributeError: &#39;get&#39; is not in the interface...</span>
+
+<span class="sd">Strict mode refuses at WRAP time instead (``undeclared=&#39;raise&#39;``); and</span>
+<span class="sd">``undeclared=&#39;passthrough&#39;`` / ``passthrough={...}`` forward verbatim — every</span>
+<span class="sd">escape is explicit.</span>
+
+<span class="sd">For the common Mapping-shaped case there is a built-in spec and a</span>
+<span class="sd">``wrap_kvs``-shaped facade, so simple things stay simple:</span>
+
+<span class="sd">&gt;&gt;&gt; t = kv_interface_wrap({}, id_of_key=lambda k: k + &#39;.txt&#39;,</span>
+<span class="sd">...                       key_of_id=lambda k: k[:-4])</span>
+<span class="sd">&gt;&gt;&gt; t[&#39;a&#39;] = &#39;hello&#39;</span>
+<span class="sd">&gt;&gt;&gt; list(t)</span>
+<span class="sd">[&#39;a&#39;]</span>
+<span class="sd">&gt;&gt;&gt; t == {&#39;a&#39;: &#39;hello&#39;}</span>
 <span class="sd">True</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -191,9 +204,11 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Iterator</span><span class="p">,</span>
     <span class="n">Mapping</span><span class="p">,</span>
     <span class="n">NamedTuple</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Protocol</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
     <span class="n">get_args</span><span class="p">,</span>
@@ -202,14 +217,16 @@
 <span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;Codec&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;InterfaceSpec&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;InterfaceProxy&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;interface_wrap&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;InterfaceWrapError&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;UnsupportedSpecShape&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;UnderAnnotatedSpecError&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;UndeclaredAttributeError&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;Codec&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;InterfaceSpec&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;InterfaceProxy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MappingInterface&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;interface_wrap&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;kv_interface_wrap&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;InterfaceWrapError&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UnsupportedSpecShape&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UnderAnnotatedSpecError&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UndeclaredAttributeError&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -255,10 +272,11 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">UndeclaredAttributeError</span><span class="p">(</span><span class="n">InterfaceWrapError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A public attribute of the leaf is not covered by the spec.</span>
 
-<span class="sd">    Raised at wrap time under the default ``undeclared=&#39;raise&#39;`` policy — the</span>
-<span class="sd">    census&#39;s failure mode is silence-by-omission (s3dol ADR-0011 D5), so an</span>
-<span class="sd">    attribute that would be served with unmapped keys/values must be</span>
-<span class="sd">    explicitly passed through, excluded, or added to the spec.</span>
+<span class="sd">    The census&#39;s failure mode is silence-by-omission (s3dol ADR-0011 D5), so</span>
+<span class="sd">    an attribute that would be served with unmapped keys/values must be</span>
+<span class="sd">    explicitly passed through or added to the spec. Under the default</span>
+<span class="sd">    ``undeclared=&#39;exclude&#39;`` policy this raises at USE time; under the strict</span>
+<span class="sd">    ``&#39;raise&#39;`` policy, at wrap time.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 
@@ -277,10 +295,20 @@
 <span class="sd">    ``decoder`` maps inner→outer (the direction of results coming out).</span>
 <span class="sd">    Same field semantics as ``dol.trans.Codec``; redefined here to keep this</span>
 <span class="sd">    leaf module dependency-free within dol.</span>
+
+<span class="sd">    ``decoded_type``/``encoded_type`` are OPTIONAL type tags (design decision</span>
+<span class="sd">    2026-08-10, question 3): ``decoded_type`` is the outer-facing domain,</span>
+<span class="sd">    ``encoded_type`` the inner-facing (leafward) one. When two adjacent stack</span>
+<span class="sd">    layers both declare the facing types, stack compilation validates the</span>
+<span class="sd">    seam (the outer layer&#39;s ``encoded_type`` must be the inner layer&#39;s</span>
+<span class="sd">    ``decoded_type``) and refuses loudly on mismatch. ``None`` = untagged =</span>
+<span class="sd">    unchecked, so plain ``Codec(f, g)`` keeps working.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">encoder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span>
     <span class="n">decoder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="n">decoded_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">encoded_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">))</span></div>
@@ -394,15 +422,15 @@
             <span class="c1"># Optional[X]: map non-None, pass None through.</span>
             <span class="k">return</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">inner</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">UnsupportedSpecShape</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;Cannot map a role inside a non-Optional Union (in </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s1">: &#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">ann</span><span class="si">!r}</span><span class="s1">): there is no reliable runtime discrimination between &#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;union arms. Declare separate methods or use an explicit spec.&#39;</span>
+            <span class="sa">f</span><span class="s2">&quot;Cannot map a role inside a non-Optional Union (in </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ann</span><span class="si">!r}</span><span class="s2">): there is no reliable runtime discrimination between &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;union arms. Declare separate methods or use an explicit spec.&quot;</span>
         <span class="p">)</span>
     <span class="k">raise</span> <span class="n">UnsupportedSpecShape</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s1">&#39;Cannot map role inside </span><span class="si">{</span><span class="n">origin</span><span class="si">!r}</span><span class="s1"> (in </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">ann</span><span class="si">!r}</span><span class="s1">). &#39;</span>
-        <span class="sa">f</span><span class="s1">&#39;Supported containers: list, set, frozenset, tuple, dict, &#39;</span>
-        <span class="sa">f</span><span class="s1">&#39;Iterable, Iterator, Optional. &#39;</span>
-        <span class="sa">f</span><span class="s1">&#39;Add an explicit method override or exclude the method.&#39;</span>
+        <span class="sa">f</span><span class="s2">&quot;Cannot map role inside </span><span class="si">{</span><span class="n">origin</span><span class="si">!r}</span><span class="s2"> (in </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">ann</span><span class="si">!r}</span><span class="s2">). &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;Supported containers: list, set, frozenset, tuple, dict, &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;Iterable, Iterator, Optional. &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;Add an explicit method override or exclude the method.&quot;</span>
     <span class="p">)</span>
 
 
@@ -433,11 +461,11 @@
 <span class="sd">        TypeVars in ``source.__parameters__``, else {&#39;KT&#39;, &#39;VT&#39;}.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">roles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">params</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s1">&#39;__parameters__&#39;</span><span class="p">,</span> <span class="p">())</span>
-            <span class="n">roles</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="p">{</span><span class="n">p</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">)}</span>
-                <span class="ow">or</span> <span class="p">{</span><span class="s1">&#39;KT&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;VT&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
-            <span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;__parameters__&quot;</span><span class="p">,</span> <span class="p">())</span>
+            <span class="n">roles</span> <span class="o">=</span> <span class="p">{</span><span class="n">p</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">)}</span> <span class="ow">or</span> <span class="p">{</span>
+                <span class="s2">&quot;KT&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;VT&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">}</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">roles</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">roles</span><span class="p">}</span>
         <span class="n">methods</span> <span class="o">=</span> <span class="p">{}</span>
@@ -449,7 +477,7 @@
             <span class="c1"># of a spec method must be annotated, or a forgotten role is</span>
             <span class="c1"># silent. (*args/**kwargs stay conventional passthrough.)</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;self&#39;</span><span class="p">,</span> <span class="s1">&#39;cls&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="s2">&quot;cls&quot;</span><span class="p">):</span>
                     <span class="k">continue</span>
                 <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span>
                     <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span><span class="p">,</span>
@@ -458,10 +486,10 @@
                     <span class="k">continue</span>
                 <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">annotation</span> <span class="ow">is</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">UnderAnnotatedSpecError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">source</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">: parameter </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s1"> has &#39;</span>
-                        <span class="sa">f</span><span class="s1">&#39;no annotation. Annotate it with a role TypeVar if &#39;</span>
-                        <span class="sa">f</span><span class="s1">&#39;it carries keys/values, or with a concrete type &#39;</span>
-                        <span class="sa">f</span><span class="s1">&#39;(or Any) to declare it role-free.&#39;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: parameter </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;no annotation. Annotate it with a role TypeVar if &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;it carries keys/values, or with a concrete type &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;(or Any) to declare it role-free.&quot;</span>
                     <span class="p">)</span>
             <span class="n">sites</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">pname</span><span class="p">,</span> <span class="n">ann</span> <span class="ow">in</span> <span class="n">hints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -473,7 +501,7 @@
                             <span class="n">ann</span><span class="p">,</span>
                             <span class="n">site</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
                             <span class="n">_identity</span><span class="p">,</span>
-                            <span class="n">where</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">source</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">pname</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span>
+                            <span class="n">where</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">pname</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
                         <span class="p">)</span>
                     <span class="n">sites</span><span class="p">[</span><span class="n">pname</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(((</span><span class="n">s</span><span class="o">.</span><span class="n">role</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">ann</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">found</span><span class="p">))</span>
             <span class="n">methods</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">sites</span>
@@ -490,6 +518,7 @@
 <span class="sd">        ``methods``: ``{method_name: {param_or_&#39;return&#39;: [(role, path)] | role_str}}``</span>
 <span class="sd">        where a bare role string means &quot;the whole value has this role&quot;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">def</span><span class="w"> </span><span class="nf">norm_occurrence</span><span class="p">(</span><span class="n">occ</span><span class="p">):</span>
             <span class="c1"># Accept the user 2-tuple (role, path), the normalized 3-tuple</span>
             <span class="c1"># (role, path, ann) — __reduce__ round-trips the normalized form</span>
@@ -526,18 +555,18 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">member</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s1">&#39;__init__&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;__subclasshook__&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;__init_subclass__&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;__class_getitem__&#39;</span><span class="p">,</span>
+            <span class="s2">&quot;__init__&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;__subclasshook__&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;__init_subclass__&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;__class_getitem__&quot;</span><span class="p">,</span>
         <span class="p">):</span>
             <span class="k">continue</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">member</span><span class="p">,</span> <span class="p">(</span><span class="nb">property</span><span class="p">,</span> <span class="nb">staticmethod</span><span class="p">,</span> <span class="nb">classmethod</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="n">UnsupportedSpecShape</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">source</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">member</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1"> members &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;are not supported in interface specs (yet) — they would &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;be silently skipped otherwise. Remove it or use a plain &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;method.&#39;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">member</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> members &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;are not supported in interface specs (yet) — they would &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;be silently skipped otherwise. Remove it or use a plain &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;method.&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isfunction</span><span class="p">(</span><span class="n">member</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">name</span><span class="p">,</span> <span class="n">member</span>
@@ -546,7 +575,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolved_hints</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``get_type_hints`` with the owner&#39;s module globals, resolving strings.&quot;&quot;&quot;</span>
     <span class="n">module</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmodule</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span>
-    <span class="n">globalns</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s1">&#39;__dict__&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">globalns</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">,</span> <span class="p">{})</span>
     <span class="k">return</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">globalns</span><span class="o">=</span><span class="n">globalns</span><span class="p">)</span>
 
 
@@ -566,14 +595,43 @@
         <span class="n">roles</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
     <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">roles</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;encode&#39;</span><span class="p">:</span>
-            <span class="n">funcs</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">layer</span><span class="p">[</span><span class="n">role</span><span class="p">]</span><span class="o">.</span><span class="n">encoder</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span> <span class="k">if</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">layer</span>
-            <span class="p">]</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;encode&quot;</span><span class="p">:</span>
+            <span class="n">funcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">layer</span><span class="p">[</span><span class="n">role</span><span class="p">]</span><span class="o">.</span><span class="n">encoder</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span> <span class="k">if</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">layer</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">funcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">layer</span><span class="p">[</span><span class="n">role</span><span class="p">]</span><span class="o">.</span><span class="n">decoder</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">stack</span> <span class="k">if</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">layer</span><span class="p">]</span>
         <span class="n">out</span><span class="p">[</span><span class="n">role</span><span class="p">]</span> <span class="o">=</span> <span class="n">_fuse</span><span class="p">(</span><span class="n">funcs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_stack_seams</span><span class="p">(</span><span class="n">stack</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate typed-codec seams between adjacent layers (per role).</span>
+
+<span class="sd">    Layers are innermost-first. For a role present in layers i &lt; j (adjacent</span>
+<span class="sd">    among the layers that carry that role), the OUTER layer&#39;s leafward face</span>
+<span class="sd">    (``encoded_type``) meets the INNER layer&#39;s outer face (``decoded_type``).</span>
+<span class="sd">    When both are declared and differ, refuse loudly; ``None`` = untagged =</span>
+<span class="sd">    unchecked (design decision 2026-08-10, question 3).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">roles</span> <span class="o">=</span> <span class="p">{</span><span class="n">role</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">stack</span> <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">layer</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">roles</span><span class="p">:</span>
+        <span class="n">carriers</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">layer</span><span class="p">[</span><span class="n">role</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span> <span class="k">if</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">layer</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">inner_c</span><span class="p">),</span> <span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">outer_c</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">carriers</span><span class="p">,</span> <span class="n">carriers</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+            <span class="n">inner_face</span> <span class="o">=</span> <span class="n">inner_c</span><span class="o">.</span><span class="n">decoded_type</span>
+            <span class="n">outer_face</span> <span class="o">=</span> <span class="n">outer_c</span><span class="o">.</span><span class="n">encoded_type</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">inner_face</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="n">outer_face</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="n">inner_face</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">outer_face</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="n">InterfaceWrapError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Typed-codec seam mismatch for role </span><span class="si">{</span><span class="n">role</span><span class="si">!r}</span><span class="s2">: layer </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;decodes to </span><span class="si">{</span><span class="n">inner_face</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> but layer </span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2"> encodes &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;to </span><span class="si">{</span><span class="n">outer_face</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. Adjacent codec layers must &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;agree at their seam (outer encoded_type == inner &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;decoded_type).&quot;</span>
+                <span class="p">)</span>
 
 
 <span class="c1"># ---------------------------------------------------------------------------</span>
@@ -607,27 +665,25 @@
     <span class="k">for</span> <span class="n">pname</span><span class="p">,</span> <span class="n">occurrences</span> <span class="ow">in</span> <span class="n">sites</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">funcs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">role</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">ann</span> <span class="ow">in</span> <span class="n">occurrences</span><span class="p">:</span>
-            <span class="n">role_func</span> <span class="o">=</span> <span class="p">(</span><span class="n">encoders</span> <span class="k">if</span> <span class="n">pname</span> <span class="o">!=</span> <span class="s1">&#39;return&#39;</span> <span class="k">else</span> <span class="n">decoders</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">role_func</span> <span class="o">=</span> <span class="p">(</span><span class="n">encoders</span> <span class="k">if</span> <span class="n">pname</span> <span class="o">!=</span> <span class="s2">&quot;return&quot;</span> <span class="k">else</span> <span class="n">decoders</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
                 <span class="n">role</span><span class="p">,</span> <span class="n">_identity</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">role_func</span> <span class="ow">is</span> <span class="n">_identity</span><span class="p">:</span>
                 <span class="k">continue</span>
-            <span class="n">funcs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">_transformer_for_path</span><span class="p">(</span><span class="n">ann</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">role_func</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="n">funcs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_transformer_for_path</span><span class="p">(</span><span class="n">ann</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">role_func</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="n">name</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">funcs</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="n">fused</span> <span class="o">=</span> <span class="n">_fuse</span><span class="p">(</span><span class="n">funcs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">pname</span> <span class="o">==</span> <span class="s1">&#39;return&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pname</span> <span class="o">==</span> <span class="s2">&quot;return&quot;</span><span class="p">:</span>
             <span class="n">return_transform</span> <span class="o">=</span> <span class="n">fused</span>
             <span class="k">continue</span>
         <span class="n">param</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pname</span><span class="p">)</span> <span class="k">if</span> <span class="n">sig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">param</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="ow">is</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">UnsupportedSpecShape</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">: role on a **kwargs parameter (</span><span class="si">{</span><span class="n">pname</span><span class="si">!r}</span><span class="s1">) is &#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;not supported — keyword names as keys have no &#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;annotation channel.&#39;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: role on a **kwargs parameter (</span><span class="si">{</span><span class="n">pname</span><span class="si">!r}</span><span class="s2">) is &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;not supported — keyword names as keys have no &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;annotation channel.&quot;</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="ow">is</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span><span class="p">:</span>
                 <span class="c1"># bound.arguments holds a TUPLE for *args: map elementwise</span>
@@ -659,9 +715,9 @@
             <span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">max</span><span class="p">(</span><span class="n">idx_transforms</span><span class="p">,</span> <span class="n">default</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">: role-bearing positional argument(s) &#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">idx_transforms</span><span class="p">)</span><span class="si">}</span><span class="s1"> must be passed positionally &#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;(no signature is available to resolve keyword calls).&#39;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: role-bearing positional argument(s) &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">idx_transforms</span><span class="p">)</span><span class="si">}</span><span class="s2"> must be passed positionally &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;(no signature is available to resolve keyword calls).&quot;</span>
                 <span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">leaf_method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">return_transform</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -713,8 +769,8 @@
 
     <span class="k">if</span> <span class="n">sig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">UnsupportedSpecShape</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;Method </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s1"> has role-bearing named parameters but no &#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;inspectable signature to bind against.&#39;</span>
+            <span class="sa">f</span><span class="s2">&quot;Method </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has role-bearing named parameters but no &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;inspectable signature to bind against.&quot;</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">plan</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -748,7 +804,7 @@
         <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">None</span>
     <span class="n">params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="k">if</span> <span class="n">params</span> <span class="ow">and</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;self&#39;</span><span class="p">,</span> <span class="s1">&#39;cls&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">params</span> <span class="ow">and</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="s2">&quot;cls&quot;</span><span class="p">):</span>
         <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="n">sig</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">sig</span>
@@ -774,9 +830,7 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># Two construction modes: wrapping an existing instance (internal,</span>
         <span class="c1"># via interface_wrap) or constructing the leaf (class-wrap mode).</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="s1">&#39;InterfaceProxy subclasses are built via interface_wrap(...)&#39;</span>
-        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;InterfaceProxy subclasses are built via interface_wrap(...)&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">__wrapped__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -792,8 +846,8 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;&lt;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1"> of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_self_leaf</span><span class="si">!r}</span><span class="s1"> &#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_self_stack</span><span class="p">)</span><span class="si">}</span><span class="s1"> codec layer(s)&gt;&#39;</span>
+            <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_self_leaf</span><span class="si">!r}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_self_stack</span><span class="p">)</span><span class="si">}</span><span class="s2"> codec layer(s)&gt;&quot;</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -811,22 +865,20 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="c1"># Only reached when normal lookup fails: plans and passthroughs first.</span>
-        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">):</span>
             <span class="c1"># Explicit dunder access must NOT escape to the leaf: forwarding</span>
             <span class="c1"># would hand out raw leaf-bound methods (s.__contains__(&#39;outer_k&#39;)</span>
             <span class="c1"># silently answering in the wrong key domain). Plain</span>
             <span class="c1"># AttributeError keeps hasattr-style duck typing honest.</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span>
-                <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_self_leaf&#39;</span><span class="p">),</span> <span class="n">name</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_self_passthrough&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_self_leaf&#39;</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_self_leaf&quot;</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_self_passthrough&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_self_leaf&quot;</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">UndeclaredAttributeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s1"> is not in the interface spec of this wrap. &#39;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is not in the interface spec of this wrap. &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;Add it to the spec, or pass passthrough=</span><span class="se">{{</span><span class="s2">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">}}</span><span class="s2"> to &quot;</span>
-            <span class="sa">f</span><span class="s1">&#39;interface_wrap to forward it verbatim (unmapped keys/values!).&#39;</span>
+            <span class="sa">f</span><span class="s2">&quot;interface_wrap to forward it verbatim (unmapped keys/values!).&quot;</span>
         <span class="p">)</span></div>
 
 
@@ -842,10 +894,10 @@
     <span class="p">)</span>
 
 
-<span class="n">_DUNDER_METHOD_TEMPLATE</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
-<span class="s1">def </span><span class="si">{name}</span><span class="s1">(self, *args, **kwargs):</span>
-<span class="s1">    return self._self_plans[</span><span class="si">{name!r}</span><span class="s1">](*args, **kwargs)</span>
-<span class="s1">&#39;&#39;&#39;</span>
+<span class="n">_DUNDER_METHOD_TEMPLATE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">def </span><span class="si">{name}</span><span class="s2">(self, *args, **kwargs):</span>
+<span class="s2">    return self._self_plans[</span><span class="si">{name!r}</span><span class="s2">](*args, **kwargs)</span>
+<span class="s2">&quot;&quot;&quot;</span>
 
 <span class="n">_proxy_class_cache</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -871,21 +923,37 @@
     <span class="n">ns</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">method_names</span><span class="p">:</span>
         <span class="n">exec</span><span class="p">(</span><span class="n">_DUNDER_METHOD_TEMPLATE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span> <span class="p">{},</span> <span class="n">ns</span><span class="p">)</span>
-    <span class="k">if</span> <span class="s1">&#39;__getitem__&#39;</span> <span class="ow">in</span> <span class="n">ns</span> <span class="ow">and</span> <span class="s1">&#39;__iter__&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ns</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">&quot;__getitem__&quot;</span> <span class="ow">in</span> <span class="n">ns</span> <span class="ow">and</span> <span class="s2">&quot;__iter__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ns</span><span class="p">:</span>
         <span class="c1"># Without this, Python&#39;s legacy sequence protocol would invent</span>
         <span class="c1"># iteration from __getitem__(0), __getitem__(1), ... — feeding int</span>
         <span class="c1"># keys through the key encoder, silently. Louder to refuse.</span>
         <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1"> is not iterable: __iter__ is not in &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;its interface spec (and sequence-protocol fallback over &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;__getitem__ would silently feed integer keys through the &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;key codec).&#39;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not iterable: __iter__ is not in &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;its interface spec (and sequence-protocol fallback over &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;__getitem__ would silently feed integer keys through the &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;key codec).&quot;</span>
             <span class="p">)</span>
 
-        <span class="n">ns</span><span class="p">[</span><span class="s1">&#39;__iter__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="fm">__iter__</span>
-    <span class="n">ns</span><span class="p">[</span><span class="s1">&#39;__module__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="vm">__name__</span>
-    <span class="n">cls_name</span> <span class="o">=</span> <span class="n">class_name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">leaf_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">InterfaceProxy&#39;</span>
+        <span class="n">ns</span><span class="p">[</span><span class="s2">&quot;__iter__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="fm">__iter__</span>
+    <span class="k">if</span> <span class="s2">&quot;__getitem__&quot;</span> <span class="ow">in</span> <span class="n">method_names</span> <span class="ow">and</span> <span class="s2">&quot;__iter__&quot;</span> <span class="ow">in</span> <span class="n">method_names</span><span class="p">:</span>
+        <span class="c1"># Design decision (2026-08-10, question 4): when the spec&#39;d surface</span>
+        <span class="c1"># supports Mapping-style traversal, equality compares OUTER views —</span>
+        <span class="c1"># a wrapped store equals a dict holding its outer items. Defining</span>
+        <span class="c1"># __eq__ sets __hash__ to None (mutable-mapping convention), which is</span>
+        <span class="c1"># the decided no-hash policy.</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">other_items</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">other</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">other</span><span class="p">}</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">NotImplemented</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">}</span> <span class="o">==</span> <span class="n">other_items</span>
+
+        <span class="n">ns</span><span class="p">[</span><span class="s2">&quot;__eq__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="fm">__eq__</span>
+    <span class="n">ns</span><span class="p">[</span><span class="s2">&quot;__module__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="vm">__name__</span>
+    <span class="n">cls_name</span> <span class="o">=</span> <span class="n">class_name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">leaf_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">InterfaceProxy&quot;</span>
     <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">cls_name</span><span class="p">,</span> <span class="p">(</span><span class="n">InterfaceProxy</span><span class="p">,),</span> <span class="n">ns</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_proxy_class_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
@@ -903,7 +971,7 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">spec</span><span class="p">,</span>
     <span class="n">codecs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Codec</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">undeclared</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;raise&#39;</span><span class="p">,</span>
+    <span class="n">undeclared</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exclude&quot;</span><span class="p">,</span>
     <span class="n">passthrough</span><span class="p">:</span> <span class="n">_IterableABC</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="n">_stack</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
@@ -916,15 +984,18 @@
 <span class="sd">        explicit dict form accepted by ``InterfaceSpec.from_dict``.</span>
 <span class="sd">    :param codecs: one codec layer: ``{role_name: Codec(encoder, decoder)}``.</span>
 <span class="sd">    :param undeclared: policy for public leaf attributes absent from the</span>
-<span class="sd">        spec: ``&#39;raise&#39;`` (default — loud, at wrap time), ``&#39;passthrough&#39;``</span>
-<span class="sd">        (forward verbatim; documents itself as unmapped), ``&#39;exclude&#39;``</span>
-<span class="sd">        (hide: touching them raises at use time).</span>
+<span class="sd">        spec. Default ``&#39;exclude&#39;`` (design decision 2026-08-10, question 2):</span>
+<span class="sd">        the wrap succeeds, and every USE of an undeclared attribute raises</span>
+<span class="sd">        ``UndeclaredAttributeError`` with guidance — refusal at the moment of</span>
+<span class="sd">        danger, with no habit-forming escape. ``&#39;raise&#39;`` is the strict mode</span>
+<span class="sd">        (refuse at wrap time, listing names); ``&#39;passthrough&#39;`` forwards</span>
+<span class="sd">        verbatim (explicitly unmapped keys/values).</span>
 <span class="sd">    :param passthrough: explicit names to forward verbatim regardless.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">undeclared</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;raise&#39;</span><span class="p">,</span> <span class="s1">&#39;passthrough&#39;</span><span class="p">,</span> <span class="s1">&#39;exclude&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">undeclared</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="s2">&quot;passthrough&quot;</span><span class="p">,</span> <span class="s2">&quot;exclude&quot;</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;undeclared must be &#39;raise&#39;, &#39;passthrough&#39; or &#39;exclude&#39;, &quot;</span>
-            <span class="sa">f</span><span class="s1">&#39;got </span><span class="si">{</span><span class="n">undeclared</span><span class="si">!r}</span><span class="s1">&#39;</span>
+            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">undeclared</span><span class="si">!r}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
     <span class="c1"># --- normalize the spec</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">InterfaceSpec</span><span class="p">):</span>
@@ -934,7 +1005,7 @@
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
         <span class="n">spec_obj</span> <span class="o">=</span> <span class="n">InterfaceSpec</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cannot interpret spec: </span><span class="si">{</span><span class="n">spec</span><span class="si">!r}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot interpret spec: </span><span class="si">{</span><span class="n">spec</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># --- normalize the stack</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">InterfaceProxy</span><span class="p">):</span>
@@ -946,8 +1017,8 @@
         <span class="n">base_stack</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_stack</span> <span class="ow">or</span> <span class="p">())</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="s1">&#39;interface_wrap wraps instances in this prototype; &#39;</span>
-            <span class="s1">&#39;class-wrapping is future work (see the design doc).&#39;</span>
+            <span class="s2">&quot;interface_wrap wraps instances in this prototype; &quot;</span>
+            <span class="s2">&quot;class-wrapping is future work (see the design doc).&quot;</span>
         <span class="p">)</span>
     <span class="c1"># Mixed-architecture stacks: flat-model guarantees (encode/decode</span>
     <span class="c1"># totality, __wrapped__ = raw backend, pickle uniformity) are scoped to</span>
@@ -960,10 +1031,10 @@
             <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="s1">&#39;interface_wrap over a legacy dol Store: the Store (and its &#39;</span>
-                <span class="s1">&#39;.store chain) is treated as an opaque leaf — __wrapped__ &#39;</span>
-                <span class="s1">&#39;is the Store, not the raw backend, and flat-stack &#39;</span>
-                <span class="s1">&#39;guarantees apply only to the layers above it.&#39;</span><span class="p">,</span>
+                <span class="s2">&quot;interface_wrap over a legacy dol Store: the Store (and its &quot;</span>
+                <span class="s2">&quot;.store chain) is treated as an opaque leaf — __wrapped__ &quot;</span>
+                <span class="s2">&quot;is the Store, not the raw backend, and flat-stack &quot;</span>
+                <span class="s2">&quot;guarantees apply only to the layers above it.&quot;</span><span class="p">,</span>
                 <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="p">)</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover - dol.base always importable here</span>
@@ -981,34 +1052,31 @@
         <span class="n">unknown</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span> <span class="o">-</span> <span class="n">used_roles</span>
         <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">InterfaceWrapError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;Codec layer names role(s) </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span><span class="si">}</span><span class="s1"> that occur &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;nowhere in the spec (spec roles: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">used_roles</span><span class="p">)</span><span class="si">}</span><span class="s1">). &#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;A codec that can never apply is almost certainly a mistake.&#39;</span>
+                <span class="sa">f</span><span class="s2">&quot;Codec layer names role(s) </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span><span class="si">}</span><span class="s2"> that occur &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;nowhere in the spec (spec roles: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">used_roles</span><span class="p">)</span><span class="si">}</span><span class="s2">). &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;A codec that can never apply is almost certainly a mistake.&quot;</span>
             <span class="p">)</span>
+    <span class="n">_validate_stack_seams</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
 
     <span class="c1"># --- undeclared-surface policy (wrap time, loud by default)</span>
     <span class="n">passthrough</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">passthrough</span><span class="p">)</span>
-    <span class="n">public_attrs</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">leaf</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
-    <span class="p">}</span>
+    <span class="n">public_attrs</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">leaf</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)}</span>
     <span class="n">undeclared_names</span> <span class="o">=</span> <span class="n">public_attrs</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">spec_obj</span><span class="o">.</span><span class="n">methods</span><span class="p">)</span> <span class="o">-</span> <span class="n">passthrough</span>
-    <span class="k">if</span> <span class="n">undeclared_names</span> <span class="ow">and</span> <span class="n">undeclared</span> <span class="o">==</span> <span class="s1">&#39;raise&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">undeclared_names</span> <span class="ow">and</span> <span class="n">undeclared</span> <span class="o">==</span> <span class="s2">&quot;raise&quot;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">UndeclaredAttributeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;The leaf exposes public attributes not covered by the spec: &#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">undeclared_names</span><span class="p">)</span><span class="si">}</span><span class="s1">. Methods among these would receive &#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;UNMAPPED keys/values through this wrap (the #83 bug class). &#39;</span>
+            <span class="sa">f</span><span class="s2">&quot;The leaf exposes public attributes not covered by the spec: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">undeclared_names</span><span class="p">)</span><span class="si">}</span><span class="s2">. Methods among these would receive &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;UNMAPPED keys/values through this wrap (the #83 bug class). &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;Add them to the spec, or pass undeclared=&#39;passthrough&#39; / &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;&#39;exclude&#39;, or list them in passthrough=... explicitly.&quot;</span>
         <span class="p">)</span>
-    <span class="k">if</span> <span class="n">undeclared</span> <span class="o">==</span> <span class="s1">&#39;passthrough&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">undeclared</span> <span class="o">==</span> <span class="s2">&quot;passthrough&quot;</span><span class="p">:</span>
         <span class="n">passthrough</span> <span class="o">=</span> <span class="n">passthrough</span> <span class="o">|</span> <span class="n">undeclared_names</span>
 
     <span class="c1"># --- compile</span>
-    <span class="n">encoders</span> <span class="o">=</span> <span class="n">_fused_role_funcs</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;encode&#39;</span><span class="p">)</span>
-    <span class="n">decoders</span> <span class="o">=</span> <span class="n">_fused_role_funcs</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;decode&#39;</span><span class="p">)</span>
-    <span class="n">present</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">spec_obj</span><span class="o">.</span><span class="n">methods</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-    <span class="p">]</span>
+    <span class="n">encoders</span> <span class="o">=</span> <span class="n">_fused_role_funcs</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;encode&quot;</span><span class="p">)</span>
+    <span class="n">decoders</span> <span class="o">=</span> <span class="n">_fused_role_funcs</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;decode&quot;</span><span class="p">)</span>
+    <span class="n">present</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">spec_obj</span><span class="o">.</span><span class="n">methods</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="n">name</span><span class="p">)]</span>
     <span class="n">plans</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">present</span><span class="p">:</span>
         <span class="n">sig</span> <span class="o">=</span> <span class="n">_outer_signature</span><span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">spec_obj</span><span class="p">)</span>
@@ -1023,15 +1091,132 @@
 
     <span class="bp">cls</span> <span class="o">=</span> <span class="n">_build_proxy_class</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">leaf</span><span class="p">),</span> <span class="n">spec_obj</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">present</span><span class="p">))</span>
     <span class="n">proxy</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
-    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s1">&#39;_self_leaf&#39;</span><span class="p">,</span> <span class="n">leaf</span><span class="p">)</span>
-    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s1">&#39;_self_spec&#39;</span><span class="p">,</span> <span class="n">spec_obj</span><span class="p">)</span>
-    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s1">&#39;_self_stack&#39;</span><span class="p">,</span> <span class="n">stack</span><span class="p">)</span>
-    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s1">&#39;_self_plans&#39;</span><span class="p">,</span> <span class="n">plans</span><span class="p">)</span>
-    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s1">&#39;_self_encoders&#39;</span><span class="p">,</span> <span class="n">encoders</span><span class="p">)</span>
-    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s1">&#39;_self_decoders&#39;</span><span class="p">,</span> <span class="n">decoders</span><span class="p">)</span>
-    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s1">&#39;_self_undeclared&#39;</span><span class="p">,</span> <span class="n">undeclared</span><span class="p">)</span>
-    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s1">&#39;_self_passthrough&#39;</span><span class="p">,</span> <span class="n">passthrough</span><span class="p">)</span>
+    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s2">&quot;_self_leaf&quot;</span><span class="p">,</span> <span class="n">leaf</span><span class="p">)</span>
+    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s2">&quot;_self_spec&quot;</span><span class="p">,</span> <span class="n">spec_obj</span><span class="p">)</span>
+    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s2">&quot;_self_stack&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="p">)</span>
+    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s2">&quot;_self_plans&quot;</span><span class="p">,</span> <span class="n">plans</span><span class="p">)</span>
+    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s2">&quot;_self_encoders&quot;</span><span class="p">,</span> <span class="n">encoders</span><span class="p">)</span>
+    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s2">&quot;_self_decoders&quot;</span><span class="p">,</span> <span class="n">decoders</span><span class="p">)</span>
+    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s2">&quot;_self_undeclared&quot;</span><span class="p">,</span> <span class="n">undeclared</span><span class="p">)</span>
+    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">proxy</span><span class="p">,</span> <span class="s2">&quot;_self_passthrough&quot;</span><span class="p">,</span> <span class="n">passthrough</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">proxy</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Built-in Mapping spec and the wrap_kvs-shaped facade</span>
+<span class="c1"># (design decision 2026-08-10, question 1: simple things stay simple)</span>
+
+
+<span class="n">KT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;KT&quot;</span><span class="p">)</span>
+<span class="n">VT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;VT&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MappingInterface">
+<a class="viewcode-back" href="../../module_docs/dol/_interface_wrap.html#dol._interface_wrap.MappingInterface">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MappingInterface</span><span class="p">(</span><span class="n">Protocol</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The built-in Mapping-shaped spec: the six methods dol&#39;s Store routes.</span>
+
+<span class="sd">    The MutableMapping mixin surface (``get``, ``keys``, ``items``,</span>
+<span class="sd">    ``update``, ...) is deliberately NOT declared: each of those needs its</span>
+<span class="sd">    own vocabulary decision (``KeysView[KT]``, ``update(**kw)``, ``get``&#39;s</span>
+<span class="sd">    default), so under the default ``undeclared=&#39;exclude&#39;`` policy they are</span>
+<span class="sd">    hidden-and-loud rather than silently unmapped.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VT</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">KT</span><span class="p">]:</span> <span class="o">...</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="o">...</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_as_codec</span><span class="p">(</span><span class="n">codec_or_pair</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Coerce anything with .encoder/.decoder (or a pair) to our Codec.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">codec_or_pair</span><span class="p">,</span> <span class="n">Codec</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">codec_or_pair</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">codec_or_pair</span><span class="p">,</span> <span class="s2">&quot;encoder&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">codec_or_pair</span><span class="p">,</span> <span class="s2">&quot;decoder&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Codec</span><span class="p">(</span>
+            <span class="n">encoder</span><span class="o">=</span><span class="n">codec_or_pair</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span>
+            <span class="n">decoder</span><span class="o">=</span><span class="n">codec_or_pair</span><span class="o">.</span><span class="n">decoder</span><span class="p">,</span>
+            <span class="n">decoded_type</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">codec_or_pair</span><span class="p">,</span> <span class="s2">&quot;decoded_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">encoded_type</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">codec_or_pair</span><span class="p">,</span> <span class="s2">&quot;encoded_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span> <span class="o">=</span> <span class="n">codec_or_pair</span>
+    <span class="k">return</span> <span class="n">Codec</span><span class="p">(</span><span class="n">encoder</span><span class="o">=</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="o">=</span><span class="n">decoder</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="kv_interface_wrap">
+<a class="viewcode-back" href="../../module_docs/dol/_interface_wrap.html#dol._interface_wrap.kv_interface_wrap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">kv_interface_wrap</span><span class="p">(</span>
+    <span class="n">store</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">obj_of_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">data_of_obj</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">key_of_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">id_of_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">key_codec</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">value_codec</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">undeclared</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exclude&quot;</span><span class="p">,</span>
+    <span class="n">passthrough</span><span class="p">:</span> <span class="n">_IterableABC</span> <span class="o">=</span> <span class="p">(),</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``wrap_kvs``-shaped kwargs facade over the interface engine.</span>
+
+<span class="sd">    Same transform-naming conventions as ``dol.wrap_kvs`` (``X_of_Y``:</span>
+<span class="sd">    ``id_of_key`` encodes keys going in, ``key_of_id`` decodes keys coming</span>
+<span class="sd">    out, ``data_of_obj`` encodes values going in, ``obj_of_data`` decodes</span>
+<span class="sd">    values coming out), compiled onto a flat proxy with the built-in</span>
+<span class="sd">    ``MappingInterface`` spec.</span>
+
+<span class="sd">    Unlike ``wrap_kvs``, transforms here are plain unary callables — there is</span>
+<span class="sd">    no self-convention (``f(self, x)``) inference, because there are no</span>
+<span class="sd">    wrapper layers for a transform to receive.</span>
+
+<span class="sd">    &gt;&gt;&gt; import json</span>
+<span class="sd">    &gt;&gt;&gt; s = kv_interface_wrap({}, data_of_obj=json.dumps, obj_of_data=json.loads)</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;] = {&#39;x&#39;: 1}</span>
+<span class="sd">    &gt;&gt;&gt; s[&#39;a&#39;]</span>
+<span class="sd">    {&#39;x&#39;: 1}</span>
+<span class="sd">    &gt;&gt;&gt; s.__wrapped__</span>
+<span class="sd">    {&#39;a&#39;: &#39;{&quot;x&quot;: 1}&#39;}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">key_codec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">key_of_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">id_of_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Pass key_codec OR key_of_id/id_of_key, not both.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">value_codec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span>
+        <span class="n">obj_of_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">data_of_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Pass value_codec OR obj_of_data/data_of_obj, not both.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">layer</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">key_codec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">layer</span><span class="p">[</span><span class="s2">&quot;KT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_as_codec</span><span class="p">(</span><span class="n">key_codec</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">key_of_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">id_of_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">layer</span><span class="p">[</span><span class="s2">&quot;KT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Codec</span><span class="p">(</span>
+            <span class="n">encoder</span><span class="o">=</span><span class="n">id_of_key</span> <span class="ow">or</span> <span class="n">_identity</span><span class="p">,</span> <span class="n">decoder</span><span class="o">=</span><span class="n">key_of_id</span> <span class="ow">or</span> <span class="n">_identity</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">value_codec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">layer</span><span class="p">[</span><span class="s2">&quot;VT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_as_codec</span><span class="p">(</span><span class="n">value_codec</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">obj_of_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">data_of_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">layer</span><span class="p">[</span><span class="s2">&quot;VT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Codec</span><span class="p">(</span>
+            <span class="n">encoder</span><span class="o">=</span><span class="n">data_of_obj</span> <span class="ow">or</span> <span class="n">_identity</span><span class="p">,</span> <span class="n">decoder</span><span class="o">=</span><span class="n">obj_of_data</span> <span class="ow">or</span> <span class="n">_identity</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">interface_wrap</span><span class="p">(</span>
+        <span class="n">store</span><span class="p">,</span>
+        <span class="n">spec</span><span class="o">=</span><span class="n">MappingInterface</span><span class="p">,</span>
+        <span class="n">codecs</span><span class="o">=</span><span class="n">layer</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">undeclared</span><span class="o">=</span><span class="n">undeclared</span><span class="p">,</span>
+        <span class="n">passthrough</span><span class="o">=</span><span class="n">passthrough</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 </pre></div>
 
