@@ -247,3 +247,29 @@ def test_subfolder_stores():
         assert set(folder2_store.keys()) == {"this.txt", "over.json"}
         assert folder2_store["this.txt"] == b"that"
         assert folder2_store["over.json"] == b"there"
+
+
+def test_is_valid_key_sees_the_inner_key(tmpdir):
+    """``Files`` is ``mk_relative_path_store(FileBytesPersister)``, so ``is_valid_key`` was
+    reached through ``Store.__getattr__`` with the RELATIVE key while the leaf matched it
+    against a pattern built from the absolute path -- returning False for keys that exist."""
+    import os
+
+    from dol import Files, TextFiles
+
+    rootdir = str(tmpdir)
+    os.makedirs(os.path.join(rootdir, "sub"), exist_ok=True)
+    with open(os.path.join(rootdir, "a.txt"), "w") as fp:
+        fp.write("x")
+    with open(os.path.join(rootdir, "sub", "b.txt"), "w") as fp:
+        fp.write("y")
+
+    s = Files(rootdir)
+    assert sorted(s) == ["a.txt", "sub/b.txt"]
+    # the invariant that was broken: every key the store yields is a valid key
+    assert all(s.is_valid_key(k) for k in s)
+    assert s.is_valid_key("a.txt")
+    assert s.is_valid_key("sub/b.txt")
+    s.validate_key("a.txt")  # must not raise
+    assert TextFiles(rootdir).is_valid_key("a.txt")
+    assert s["a.txt"] == b"x"  # reads unaffected

@@ -192,6 +192,44 @@ def _url_of(ref_or_key: Any) -> Optional[str]:
     return None
 
 
+def _url_for_provider_and_key(store: Any, key: str):
+    """The layer that owns ``url_for``, and ``key`` expressed in *that layer's* key space.
+
+    ``getattr(store, 'url_for')`` on a wrapped store returns the method bound to an inner
+    layer, so handing it the outer key addresses the wrong object. Walk the ``.store`` chain
+    to find the layer that actually defines ``url_for``, applying every *outer* layer's
+    ``_id_of_key`` on the way -- and stopping there, because that layer applies its own.
+
+    Returns ``(None, key)`` when no layer provides ``url_for``.
+    """
+    import inspect
+
+    from dol.base import DelegatedAttribute
+
+    def _really_defines_url_for(obj) -> bool:
+        # ``getattr_static`` does not invoke descriptors, so a class-wrap's
+        # ``DelegatedAttribute`` is visible as itself rather than as the inner bound method.
+        # A layer that only *forwards* ``url_for`` is not the provider.
+        try:
+            attr = inspect.getattr_static(obj, "url_for")
+        except AttributeError:
+            return False
+        return not isinstance(attr, DelegatedAttribute)
+
+    layer, k = store, key
+    while layer is not None:
+        if _really_defines_url_for(layer):
+            return layer, k
+        inner = getattr(layer, "store", None)
+        if inner is None:
+            return None, k
+        id_of_key = getattr(layer, "_id_of_key", None)
+        if callable(id_of_key):
+            k = id_of_key(k)
+        layer = inner
+    return None, k
+
+
 def content_url(store: Any, ref_or_key: Any) -> Optional[str]:
     """A fetchable URL for content, resolved **on demand**.
 
@@ -206,12 +244,26 @@ def content_url(store: Any, ref_or_key: Any) -> Optional[str]:
     True
     >>> content_url({}, ContentRef('k1', url='https://carried/k1'))  # ref carries its own
     'https://carried/k1'
+
+    The key is resolved **through any wrapping layers**, so a URL addresses the same object
+    ``store[key]`` reads. Without this, a key-transforming wrap would hand the backend the
+    outer key and silently return a URL for a different object:
+
+    >>> from dol import KeyCodecs
+    >>> wrapped = KeyCodecs.prefixed('a/')(Served)({'a/k1': b'v'})
+    >>> wrapped['k1']
+    b'v'
+    >>> content_url(wrapped, 'k1')
+    'https://cdn.example/a/k1'
     """
     carried = _url_of(ref_or_key)
     if carried:
         return carried
-    url_for = getattr(store, "url_for", None)
-    return url_for(_key_of(ref_or_key)) if callable(url_for) else None
+    provider, key = _url_for_provider_and_key(store, _key_of(ref_or_key))
+    if provider is None:
+        return None
+    url_for = getattr(provider, "url_for", None)
+    return url_for(key) if callable(url_for) else None
 
 
 def _ref(

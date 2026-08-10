@@ -1207,6 +1207,26 @@ def mk_relative_path_store(
 
         cls._id_of_key = _id_of_key
 
+    # Key-validation methods must see the INNER (absolute) key.
+    #
+    # ``is_valid_key``/``validate_key`` are defined on the wrapped class and reached through
+    # ``Store.__getattr__``, which hands the leaf the OUTER (relativized) key. The leaf then
+    # matches it against a pattern built from the absolute path, so
+    # ``Files(d).is_valid_key('a.txt')`` was False for a key that demonstrably exists. Map the
+    # key first, exactly as the ``with_key_validation`` branch above already does by hand.
+    for _method_name in ("is_valid_key", "validate_key"):
+        if hasattr(store_cls, _method_name) and _method_name not in cls.__dict__:
+
+            def _key_mapped(self, k, *args, __name=_method_name, **kwargs):
+                return getattr(self.store, __name)(self._id_of_key(k), *args, **kwargs)
+
+            _key_mapped.__name__ = _method_name
+            _key_mapped.__qualname__ = f"{cls.__name__}.{_method_name}"
+            _key_mapped.__doc__ = (
+                f"``{_method_name}`` on the inner key -- see ``mk_relative_path_store``."
+            )
+            setattr(cls, _method_name, _key_mapped)
+
     # if __module__ is not None:
     #     cls.__module__ = __module__
 
