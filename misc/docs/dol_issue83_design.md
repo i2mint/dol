@@ -58,9 +58,11 @@ Both return the method **bound to the leaf**.
 ```python
 from dol import KeyCodecs
 
+
 class WithUrl(dict):
     def url_for(self, k):
         return f"https://x/{k}"
+
 
 w = KeyCodecs.prefixed("a/")(WithUrl)({"a/b": 1})
 w["b"]  # 1                 correct
