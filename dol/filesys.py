@@ -829,6 +829,12 @@ class MakeMissingDirsStoreMixin:
             _id = inner_most_key(self, k, default=k)
             # get the full path of directory needed for this file
             dirname = os.path.dirname(_id)
+            # Only create directories for an ABSOLUTE path. A relative one means the key
+            # was never resolved to a filepath (a persister with relative keys and no
+            # ``_id_of_key``), and creating it would silently mkdir under the process CWD --
+            # outside the store -- after which the write would still fail. Re-raise instead.
+            if not os.path.isabs(dirname):
+                raise
             # make all the directories needed
             # ``verbose`` is keyword-only; this was passing it positionally, so the
             # recovery path raised TypeError instead of creating the directory.

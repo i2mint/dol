@@ -310,3 +310,35 @@ def test_make_missing_dirs_store_mixin_creates_dirs(tmpdir):
     S(rootdir)[filepath] = b"hello"
     with open(filepath, "rb") as fp:
         assert fp.read() == b"hello"
+
+
+def test_make_missing_dirs_mixin_does_not_mkdir_under_the_cwd(tmpdir):
+    """A relative dirname means the key was never resolved to a filepath. Creating it
+    would mkdir under the process CWD -- outside the store -- and the write would still
+    fail, so the original error is re-raised instead."""
+    import os
+    import tempfile
+
+    from dol.filesys import MakeMissingDirsStoreMixin
+
+    class RelPersister:
+        def __init__(self, rootdir):
+            self.rootdir = rootdir
+
+        def __setitem__(self, k, v):
+            with open(os.path.join(self.rootdir, k), "wb") as fp:
+                fp.write(v)
+
+    class S(MakeMissingDirsStoreMixin, RelPersister):
+        pass
+
+    cwd = str(tmpdir)
+    store_root = tempfile.mkdtemp()
+    previous = os.getcwd()
+    os.chdir(cwd)
+    try:
+        with pytest.raises(Exception):
+            S(store_root)["sub/dir/f.bin"] = b"hi"
+        assert not os.path.exists(os.path.join(cwd, "sub")), "mkdir'd outside the store"
+    finally:
+        os.chdir(previous)
