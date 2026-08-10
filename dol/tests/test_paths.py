@@ -91,3 +91,31 @@ def test_string_template_simple():
     VersionedFile = st.dict_to_namedtuple({"i01_": "life", "version": 42})
     assert VersionedFile == namedtuple("VersionedFile", ["i01_", "version"])("life", 42)
     assert st.namedtuple_to_dict(VersionedFile) == {"i01_": "life", "version": 42}
+
+
+def test_key_validation_wrappers_coexist_with_with_key_validation():
+    """``with_key_validation=True`` redefines ``_id_of_key`` to RAISE on an invalid key, so
+    the key-mapping wrappers must use the unvalidated mapping -- otherwise ``is_valid_key``
+    raises for exactly the input it exists to answer 'no' for."""
+    from dol.paths import mk_relative_path_store
+
+    class Leaf(dict):
+        _prefix = "/ROOT/"
+
+        def is_valid_key(self, k):
+            return k.startswith("/ROOT/") and k.endswith(".txt")
+
+        def validate_key(self, k):
+            if not self.is_valid_key(k):
+                raise ValueError(k)
+
+    s = mk_relative_path_store(Leaf, with_key_validation=True)()
+    assert s.is_valid_key("b.txt") is True
+    assert s.is_valid_key("b.json") is False  # a bool, not a raise
+    s.validate_key("b.txt")
+    try:
+        s.validate_key("b.json")
+    except ValueError:
+        pass  # the LEAF's exception type, not KeyError from the validating _id_of_key
+    else:
+        raise AssertionError("validate_key should have raised ValueError")

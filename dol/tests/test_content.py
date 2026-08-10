@@ -169,3 +169,113 @@ def test_backend_injection_dict_vs_class():
     cas = with_content_addressing(backing)
     ref = cas.add(b"shared-bytes")
     assert backing[ref.item_id] == b"shared-bytes"  # writes land in the injected backend
+
+
+# -------------------------------------------------------------------------------------
+# content_url must resolve the key through wrapping layers
+#
+# It used to do a flat ``getattr(store, 'url_for')(key)``. On a wrapped store that returns
+# the method bound to an inner layer, so the backend received the OUTER key and returned a
+# URL for a different object than ``store[key]`` reads.
+
+
+class _Served(dict):
+    def url_for(self, key):
+        return f"https://cdn/{key}"
+
+
+def test_content_url_resolves_through_a_key_wrap():
+    from dol import KeyCodecs, Pipe, content_url
+
+    # class-wrap: url_for reaches the leaf via a DelegatedAttribute
+    wrapped = KeyCodecs.prefixed("a/")(_Served)({"a/k": b"v"})
+    assert wrapped["k"] == b"v"
+    assert content_url(wrapped, "k") == "https://cdn/a/k"
+
+    # instance-wrap: url_for reaches the leaf via Store.__getattr__
+    wrapped = KeyCodecs.prefixed("a/")(_Served({"a/k": b"v"}))
+    assert content_url(wrapped, "k") == "https://cdn/a/k"
+
+    # stacked
+    stacked = Pipe(KeyCodecs.prefixed("a/"), KeyCodecs.prefixed("b/"))(
+        _Served({"a/b/k": b"v"})
+    )
+    assert content_url(stacked, "k") == "https://cdn/a/b/k"
+
+
+def test_content_url_unchanged_for_unwrapped_and_keyless_wraps():
+    from dol import KeyCodecs, content_url, filt_iter, wrap_kvs
+
+    assert content_url(_Served({"k": b"v"}), "k") == "https://cdn/k"
+    assert content_url({}, "k") is None
+    # wraps that do not change keys must not change the URL
+    assert (
+        content_url(wrap_kvs(_Served({"k": b"v"}), obj_of_data=lambda v: v), "k")
+        == "https://cdn/k"
+    )
+    assert (
+        content_url(filt_iter(_Served({"k": b"v"}), filt=lambda k: True), "k")
+        == "https://cdn/k"
+    )
+
+
+def test_content_url_does_not_double_apply_the_providers_own_transform():
+    """A backend whose own ``url_for`` applies ``self._id_of_key`` (e.g. a store that owns
+    a prefix) must receive the key in ITS key space, not the fully-resolved one."""
+    from dol import KeyCodecs, content_url
+    from dol.base import KvReader
+
+    class Prefixed(KvReader):
+        def __init__(self, prefix=""):
+            self.prefix = prefix
+
+        def _id_of_key(self, k):
+            return f"{self.prefix}{k}"
+
+        def _key_of_id(self, i):
+            return i[len(self.prefix) :]
+
+        def __iter__(self):
+            yield from ()
+
+        def __getitem__(self, k):
+            return b"v"
+
+        def url_for(self, k):
+            return f"https://s3/{self._id_of_key(k)}"
+
+    assert content_url(Prefixed("logs/"), "f") == "https://s3/logs/f"
+    assert content_url(KeyCodecs.prefixed("x/")(Prefixed("logs/")), "f") == (
+        "https://s3/logs/x/f"
+    )
+
+
+def test_content_url_terminates_on_pathological_chains():
+    """The chain walk must be bounded. A ``MagicMock`` mints a fresh child for every
+    ``.store``, and a self-referential store cycles -- both used to hang forever."""
+    from unittest.mock import MagicMock
+
+    from dol import content_url
+
+    content_url(MagicMock(), "k")  # must simply return
+
+    class SelfStore:
+        @property
+        def store(self):
+            return self
+
+    assert content_url(SelfStore(), "k") is None
+
+
+def test_content_url_still_finds_a_dynamically_provided_url_for():
+    """``url_for`` supplied via ``__getattr__`` is invisible to a static lookup. Returning
+    None there would be a silent wrong answer, so we fall back to plain duck typing."""
+    from dol import content_url
+
+    class Dyn(dict):
+        def __getattr__(self, name):
+            if name == "url_for":
+                return lambda key: f"https://dyn/{key}"
+            raise AttributeError(name)
+
+    assert content_url(Dyn({"k": 1}), "k") == "https://dyn/k"
