@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.zipfiledol &mdash; dol 0.3.57 documentation</title>
+  <title>dol.zipfiledol &mdash; dol 0.3.58 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1cb17198"></script>
+      <script src="../../_static/documentation_options.js?v=f4abd25a"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -100,7 +100,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.FilesOfZip"><code class="docutils literal notranslate"><span class="pre">FilesOfZip</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.FlatZipFilesReader"><code class="docutils literal notranslate"><span class="pre">FlatZipFilesReader</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.OverwriteNotAllowed"><code class="docutils literal notranslate"><span class="pre">OverwriteNotAllowed</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.ZipFileStreamsReader"><code class="docutils literal notranslate"><span class="pre">ZipFileStreamsReader</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.ZipFileStreamsReader"><code class="docutils literal notranslate"><span class="pre">ZipFileStreamsReader</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dol.zipfiledol.ZipFileStreamsReader.is_valid_key"><code class="docutils literal notranslate"><span class="pre">ZipFileStreamsReader.is_valid_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dol.zipfiledol.ZipFileStreamsReader.validate_key"><code class="docutils literal notranslate"><span class="pre">ZipFileStreamsReader.validate_key()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.ZipFiles"><code class="docutils literal notranslate"><span class="pre">ZipFiles</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.ZipFilesReader"><code class="docutils literal notranslate"><span class="pre">ZipFilesReader</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dol.zipfiledol.ZipFilesReaderAndBytesWriter"><code class="docutils literal notranslate"><span class="pre">ZipFilesReaderAndBytesWriter</span></code></a></li>
@@ -209,6 +213,18 @@ merged”.</p>
 <dt class="sig sig-object py" id="dol.zipfiledol.ZipFileStreamsReader">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.zipfiledol.</span></span><span class="sig-name descname"><span class="pre">ZipFileStreamsReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.+\\.zip'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern_for_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zip_reader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'dol.zipfiledol.FileStreamsOfZip'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**zip_reader_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.zipfiledol.ZipFileStreamsReader" title="Link to this definition"></a></dt>
 <dd><p>Like ZipFilesReader, but objects returned are file streams instead.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.zipfiledol.ZipFileStreamsReader.is_valid_key">
+<span class="sig-name descname"><span class="pre">is_valid_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'is_valid_key'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.zipfiledol.ZipFileStreamsReader.is_valid_key" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">is_valid_key</span></code> on the inner key – see <code class="docutils literal notranslate"><span class="pre">mk_relative_path_store</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.zipfiledol.ZipFileStreamsReader.validate_key">
+<span class="sig-name descname"><span class="pre">validate_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'validate_key'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.zipfiledol.ZipFileStreamsReader.validate_key" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">validate_key</span></code> on the inner key – see <code class="docutils literal notranslate"><span class="pre">mk_relative_path_store</span></code>.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">

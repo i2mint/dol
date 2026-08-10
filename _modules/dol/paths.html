@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.paths &mdash; dol 0.3.57 documentation</title>
+  <title>dol.paths &mdash; dol 0.3.58 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1cb17198"></script>
+      <script src="../../_static/documentation_options.js?v=f4abd25a"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -1385,6 +1385,32 @@
                 <span class="p">)</span>
 
         <span class="bp">cls</span><span class="o">.</span><span class="n">_id_of_key</span> <span class="o">=</span> <span class="n">_id_of_key</span>
+
+    <span class="c1"># Key-validation methods must see the INNER (absolute) key.</span>
+    <span class="c1">#</span>
+    <span class="c1"># ``is_valid_key``/``validate_key`` are defined on the wrapped class and reached through</span>
+    <span class="c1"># ``Store.__getattr__``, which hands the leaf the OUTER (relativized) key. The leaf then</span>
+    <span class="c1"># matches it against a pattern built from the absolute path, so</span>
+    <span class="c1"># ``Files(d).is_valid_key(&#39;a.txt&#39;)`` was False for a key that demonstrably exists. Map the</span>
+    <span class="c1"># key first, exactly as the ``with_key_validation`` branch above already does by hand.</span>
+    <span class="k">for</span> <span class="n">_method_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;is_valid_key&quot;</span><span class="p">,</span> <span class="s2">&quot;validate_key&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">_method_name</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_method_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">_key_mapped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">__name</span><span class="o">=</span><span class="n">_method_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="c1"># Use the mixin&#39;s *unvalidated* mapping, not ``self._id_of_key``. Under</span>
+                <span class="c1"># ``with_key_validation=True`` the latter is redefined above to RAISE</span>
+                <span class="c1"># ``KeyError`` on an invalid key -- which would make ``is_valid_key`` raise</span>
+                <span class="c1"># for exactly the input it exists to answer &quot;no&quot; for, and would change</span>
+                <span class="c1"># ``validate_key``&#39;s exception type.</span>
+                <span class="n">_id</span> <span class="o">=</span> <span class="n">PrefixRelativizationMixin</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+                <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">__name</span><span class="p">)(</span><span class="n">_id</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="n">_key_mapped</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="n">_method_name</span>
+            <span class="n">_key_mapped</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">_method_name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">_key_mapped</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;``</span><span class="si">{</span><span class="n">_method_name</span><span class="si">}</span><span class="s2">`` on the inner key -- see ``mk_relative_path_store``.&quot;</span>
+            <span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">_method_name</span><span class="p">,</span> <span class="n">_key_mapped</span><span class="p">)</span>
 
     <span class="c1"># if __module__ is not None:</span>
     <span class="c1">#     cls.__module__ = __module__</span>

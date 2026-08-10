@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.content &mdash; dol 0.3.57 documentation</title>
+  <title>dol.content &mdash; dol 0.3.58 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1cb17198"></script>
+      <script src="../../_static/documentation_options.js?v=f4abd25a"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -186,6 +186,7 @@
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">KvPersister</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">DelegatedAttribute</span> <span class="k">as</span> <span class="n">_DelegatedAttribute</span>
 
 <span class="c1">#: The ``_tag`` discriminator value carried on the JSON wire form (cross-language parity).</span>
 <span class="n">CONTENT_REF_TAG</span> <span class="o">=</span> <span class="s2">&quot;ContentRef&quot;</span>
@@ -336,6 +337,71 @@
     <span class="k">return</span> <span class="kc">None</span>
 
 
+<span class="n">_MAX_STORE_CHAIN_DEPTH</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># no real wrap stack is remotely this deep</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_statically_defines_url_for</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;True if ``obj`` itself provides ``url_for`` (as opposed to forwarding it inward).</span>
+
+<span class="sd">    Looks the attribute up **without invoking descriptors**, so a class-wrap&#39;s</span>
+<span class="sd">    ``DelegatedAttribute`` is seen as itself rather than as the inner bound method -- a layer</span>
+<span class="sd">    that only *forwards* ``url_for`` is not the provider.</span>
+
+<span class="sd">    This is a hand-rolled ``inspect.getattr_static``. It agrees with it on every shape that</span>
+<span class="sd">    matters here (instance attribute, plain method, ``__slots__``, class-wrap, instance-wrap,</span>
+<span class="sd">    ``__getattr__``-provided) and is ~7x faster, which matters because ``content_url`` is</span>
+<span class="sd">    called per object. Anything this misses falls through to the plain-``getattr`` fallback</span>
+<span class="sd">    in :func:`content_url`, so a miss costs correctness nothing.</span>
+
+<span class="sd">    NOTE: ``DelegatedAttribute`` is defined twice in dol -- ``dol.base`` (the one the wrap</span>
+<span class="sd">    machinery constructs) and an unused duplicate in ``dol.util``. If a wrap path ever</span>
+<span class="sd">    switches to the other copy this check silently stops working, so they must not diverge.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;url_for&quot;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;url_for&quot;</span><span class="p">],</span> <span class="n">_DelegatedAttribute</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="vm">__mro__</span><span class="p">:</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="n">klass</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url_for&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">_DelegatedAttribute</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_url_for_provider_and_key</span><span class="p">(</span><span class="n">store</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The layer that owns ``url_for``, and ``key`` expressed in *that layer&#39;s* key space.</span>
+
+<span class="sd">    ``getattr(store, &#39;url_for&#39;)`` on a wrapped store returns the method bound to an inner</span>
+<span class="sd">    layer, so handing it the outer key addresses the wrong object. Walk the ``.store`` chain</span>
+<span class="sd">    to find the layer that actually defines ``url_for``, applying every *outer* layer&#39;s</span>
+<span class="sd">    ``_id_of_key`` on the way -- and stopping there, because that layer applies its own.</span>
+
+<span class="sd">    Returns ``(None, key)`` -- with ``key`` unchanged -- when the walk finds no provider, so</span>
+<span class="sd">    the caller can fall back to plain ``getattr``.</span>
+
+<span class="sd">    The walk is bounded two ways. ``seen`` catches a chain that points back at itself; the</span>
+<span class="sd">    depth cap catches one that never repeats and never ends, which is what a ``MagicMock``</span>
+<span class="sd">    does (every ``.store`` mints a fresh child).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">layer</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">seen</span> <span class="o">=</span> <span class="n">store</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">_MAX_STORE_CHAIN_DEPTH</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">layer</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">id</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
+        <span class="n">inner</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">inner</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Innermost layer: nothing left to forward to, so it is the provider if it has</span>
+            <span class="c1"># ``url_for`` at all. Checking ``.store`` first keeps the unwrapped case --</span>
+            <span class="c1"># by far the common one -- on a single cheap ``getattr``.</span>
+            <span class="k">return</span> <span class="n">layer</span><span class="p">,</span> <span class="n">k</span>
+        <span class="k">if</span> <span class="n">_statically_defines_url_for</span><span class="p">(</span><span class="n">layer</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">layer</span><span class="p">,</span> <span class="n">k</span>
+        <span class="n">id_of_key</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;_id_of_key&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">id_of_key</span><span class="p">):</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">id_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">inner</span>
+    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">key</span>
+
+
 <div class="viewcode-block" id="content_url">
 <a class="viewcode-back" href="../../module_docs/dol/content.html#dol.content.content_url">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">content_url</span><span class="p">(</span><span class="n">store</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ref_or_key</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -352,12 +418,33 @@
 <span class="sd">    True</span>
 <span class="sd">    &gt;&gt;&gt; content_url({}, ContentRef(&#39;k1&#39;, url=&#39;https://carried/k1&#39;))  # ref carries its own</span>
 <span class="sd">    &#39;https://carried/k1&#39;</span>
+
+<span class="sd">    The key is resolved **through any wrapping layers**, so a URL addresses the same object</span>
+<span class="sd">    ``store[key]`` reads. Without this, a key-transforming wrap would hand the backend the</span>
+<span class="sd">    outer key and silently return a URL for a different object:</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol import KeyCodecs</span>
+<span class="sd">    &gt;&gt;&gt; wrapped = KeyCodecs.prefixed(&#39;a/&#39;)(Served)({&#39;a/k1&#39;: b&#39;v&#39;})</span>
+<span class="sd">    &gt;&gt;&gt; wrapped[&#39;k1&#39;]</span>
+<span class="sd">    b&#39;v&#39;</span>
+<span class="sd">    &gt;&gt;&gt; content_url(wrapped, &#39;k1&#39;)</span>
+<span class="sd">    &#39;https://cdn.example/a/k1&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">carried</span> <span class="o">=</span> <span class="n">_url_of</span><span class="p">(</span><span class="n">ref_or_key</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">carried</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">carried</span>
+    <span class="n">outer_key</span> <span class="o">=</span> <span class="n">_key_of</span><span class="p">(</span><span class="n">ref_or_key</span><span class="p">)</span>
+    <span class="n">provider</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="n">_url_for_provider_and_key</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">outer_key</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">provider</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">url_for</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="s2">&quot;url_for&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">url_for</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">url_for</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    <span class="c1"># Fallback to plain duck typing, with the key as given. The walk above looks attributes</span>
+    <span class="c1"># up statically and so cannot see a ``url_for`` supplied by ``__getattr__`` (a proxy, a</span>
+    <span class="c1"># lazy-client wrapper). Returning None there would be a silent wrong answer; this keeps</span>
+    <span class="c1"># such stores working exactly as they did before.</span>
     <span class="n">url_for</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">&quot;url_for&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">url_for</span><span class="p">(</span><span class="n">_key_of</span><span class="p">(</span><span class="n">ref_or_key</span><span class="p">))</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">url_for</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
+    <span class="k">return</span> <span class="n">url_for</span><span class="p">(</span><span class="n">outer_key</span><span class="p">)</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">url_for</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
 
 
 

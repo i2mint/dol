@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.dig &mdash; dol 0.3.57 documentation</title>
+  <title>dol.dig &mdash; dol 0.3.58 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1cb17198"></script>
+      <script src="../../_static/documentation_options.js?v=f4abd25a"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -157,13 +157,34 @@
 <span class="n">dig_up</span> <span class="o">=</span> <span class="n">recursive_get_attr</span>
 
 
+<div class="viewcode-block" id="store_trans_path">
+<a class="viewcode-back" href="../../module_docs/dol/dig.html#dol.dig.store_trans_path">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">store_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield ``arg`` transformed by ``method`` at each layer, outermost first.</span>
+
+<span class="sd">    Walks the ``.store`` chain, applying ``store.&lt;method&gt;`` at every layer that defines it.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol import wrap_kvs</span>
+<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({&#39;a.txt&#39;: 1}, id_of_key=lambda k: k + &#39;.txt&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; list(store_trans_path(s, &#39;a&#39;, &#39;_id_of_key&#39;))</span>
+<span class="sd">    [&#39;a.txt&#39;, &#39;a.txt&#39;]</span>
+
+<span class="sd">    Yields nothing when no layer defines ``method`` -- which is why :func:`inner_most`</span>
+<span class="sd">    raises rather than returning the ``None`` that an empty walk would otherwise produce.</span>
+
+<span class="sd">    &gt;&gt;&gt; list(store_trans_path({}, &#39;a&#39;, &#39;_id_of_key&#39;))</span>
+<span class="sd">    []</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">f</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">trans_arg</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
         <span class="k">yield</span> <span class="n">trans_arg</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">):</span>
-            <span class="k">yield from</span> <span class="n">unravel_key</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">trans_arg</span><span class="p">)</span>
+            <span class="c1"># NOTE: recurse with the SAME ``method``. This used to hardcode ``unravel_key``</span>
+            <span class="c1"># (i.e. ``_id_of_key``), so ``unravel_val``/``inner_most_val`` applied</span>
+            <span class="c1"># ``_data_of_obj`` at the top layer and ``_id_of_key`` at every deeper one.</span>
+            <span class="k">yield from</span> <span class="n">store_trans_path</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">trans_arg</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">print_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">with_type</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -182,8 +203,45 @@
     <span class="k">return</span> <span class="n">x</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">inner_most</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">last_element</span><span class="p">(</span><span class="n">store_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">))</span>
+<div class="viewcode-block" id="inner_most">
+<a class="viewcode-back" href="../../module_docs/dol/dig.html#dol.dig.inner_most">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">inner_most</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">no_default</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The value of ``arg`` after every layer&#39;s ``method`` has been applied.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol import wrap_kvs</span>
+<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({&#39;a.txt&#39;: 1}, id_of_key=lambda k: k + &#39;.txt&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; inner_most(s, &#39;a&#39;, &#39;_id_of_key&#39;)</span>
+<span class="sd">    &#39;a.txt&#39;</span>
+
+<span class="sd">    **Raises when no layer defines ``method``**, instead of silently returning ``None``:</span>
+
+<span class="sd">    &gt;&gt;&gt; inner_most({}, &#39;a&#39;, &#39;_id_of_key&#39;)</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    AttributeError: No layer of dict defines &#39;_id_of_key&#39;, so &#39;a&#39; cannot be resolved. ...</span>
+
+<span class="sd">    A ``None`` here is the worst possible answer: callers use the result as a key or a</span>
+<span class="sd">    path, so it surfaces far from its cause -- as ``https://.../None``, or as</span>
+<span class="sd">    ``TypeError: expected str, bytes or os.PathLike object, not NoneType``.</span>
+
+<span class="sd">    Pass ``default`` to opt out of raising:</span>
+
+<span class="sd">    &gt;&gt;&gt; inner_most({}, &#39;a&#39;, &#39;_id_of_key&#39;, default=None) is None</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">last_element</span><span class="p">(</span><span class="n">store_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Distinguish &quot;no layer supplied the method&quot; (a resolution failure) from &quot;a layer</span>
+        <span class="c1"># legitimately returned None&quot; (only reachable when the outermost layer HAS the method).</span>
+        <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="n">no_default</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No layer of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> defines </span><span class="si">{</span><span class="n">method</span><span class="si">!r}</span><span class="s2">, so </span><span class="si">{</span><span class="n">arg</span><span class="si">!r}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;cannot be resolved. Pass default= if you want a fallback instead of &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;this error. (Previously this returned None silently.)&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">default</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
 
 
 <span class="c1"># TODO: Better change the signature to reflect context (k (key) or v (val) instead of arg)</span>

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.content &mdash; dol 0.3.57 documentation</title>
+  <title>dol.content &mdash; dol 0.3.58 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1cb17198"></script>
+      <script src="../../_static/documentation_options.js?v=f4abd25a"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -317,6 +317,17 @@ corpus is small.</p>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">({},</span> <span class="n">ContentRef</span><span class="p">(</span><span class="s1">&#39;k1&#39;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;https://carried/k1&#39;</span><span class="p">))</span>  <span class="c1"># ref carries its own</span>
 <span class="go">&#39;https://carried/k1&#39;</span>
+</pre></div>
+</div>
+<p>The key is resolved <strong>through any wrapping layers</strong>, so a URL addresses the same object
+<code class="docutils literal notranslate"><span class="pre">store[key]</span></code> reads. Without this, a key-transforming wrap would hand the backend the
+outer key and silently return a URL for a different object:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeyCodecs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">prefixed</span><span class="p">(</span><span class="s1">&#39;a/&#39;</span><span class="p">)(</span><span class="n">Served</span><span class="p">)({</span><span class="s1">&#39;a/k1&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;v&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped</span><span class="p">[</span><span class="s1">&#39;k1&#39;</span><span class="p">]</span>
+<span class="go">b&#39;v&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="s1">&#39;k1&#39;</span><span class="p">)</span>
+<span class="go">&#39;https://cdn.example/a/k1&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
