@@ -424,3 +424,131 @@ def test_optional_key_param():
     )
     assert s.find(None) is None
     assert s.find('a') == 7
+
+
+# --- panel-driven hardening tests (refute round 1) ---------------------------
+
+
+from dol._interface_wrap import UnderAnnotatedSpecError
+
+
+def test_var_positional_role_maps_elementwise():
+    """*keys: KT must encode each element, not the tuple (was a silent bug)."""
+
+    class VarSpec(Protocol[KT]):
+        def delete(self, *keys: KT) -> None: ...
+
+    class L:
+        def delete(self, *keys):
+            self.got = keys
+
+    s = interface_wrap(L(), spec=VarSpec, codecs=dict(KT=json_key_codec),
+                       undeclared='exclude')
+    s.delete('a', 'b')
+    assert s.__wrapped__.got == ('a.json', 'b.json')
+
+
+def test_var_keyword_role_refuses():
+    class KwSpec(Protocol[VT]):
+        def update_all(self, **kv: VT) -> None: ...
+
+    class L:
+        def update_all(self, **kv): ...
+
+    with pytest.raises(UnsupportedSpecShape):
+        interface_wrap(L(), spec=KwSpec, codecs=dict(VT=value_codec),
+                       undeclared='exclude')
+
+
+def test_unannotated_param_in_spec_method_refuses():
+    """A spec method with an unannotated param is silence-by-omission one
+    level down — refuse at compile time."""
+
+    class Sloppy(Protocol[KT]):
+        def url_for(self, k) -> str: ...  # forgot the annotation
+
+    with pytest.raises(UnderAnnotatedSpecError):
+        InterfaceSpec.from_annotated(Sloppy)
+
+
+def test_property_in_spec_refuses_not_vanishes():
+    class WithProp(Protocol[KT]):
+        def __getitem__(self, k: KT) -> str: ...
+        rootdir = property(lambda self: '/')
+
+    with pytest.raises(UnsupportedSpecShape):
+        InterfaceSpec.from_annotated(WithProp)
+
+
+def test_none_default_never_encoded():
+    """`k: KT = None`: the None default is leaf-domain; never encode it.
+    Also converges the 3.10 (implicit-Optional) vs 3.11+ compilation."""
+
+    class DefSpec(Protocol[KT]):
+        def latest(self, k: KT = None) -> str: ...
+
+    class L:
+        def latest(self, k=None):
+            return f'got:{k}'
+
+    s = interface_wrap(L(), spec=DefSpec, codecs=dict(KT=json_key_codec),
+                       undeclared='exclude')
+    assert s.latest() == 'got:None'       # default: untouched
+    assert s.latest(None) == 'got:None'   # explicit None: untouched
+    assert s.latest('a') == 'got:a.json'  # real key: encoded
+
+
+def test_in_flight_iterator_survives_stack_extension():
+    """Wrapping is copy-not-mutate: an iterator obtained before a new wrap
+    keeps the pipelines it was compiled with."""
+    s1 = wrap_bucket()
+    it = iter(sorted(s1))
+    first = it if isinstance(it, str) else None  # noqa: just consume below
+    got_first = next(iter(sorted(s1)))
+    s2 = interface_wrap(s1, spec=BucketInterface, codecs=dict(KT=x_key_codec))
+    # s1's own iteration is unaffected by s2's existence
+    assert sorted(s1) == ['a', 'b']
+    assert len(s1._self_stack) == 1 and len(s2._self_stack) == 2
+    assert got_first == 'a'
+
+
+def test_unspecced_dunder_absent_not_leaked():
+    """dict's __or__ must NOT be silently mirrored raw (the basepy-verified
+    transform-bypass leak): a dunder outside the spec simply doesn't exist
+    on the proxy — loud TypeError, no silent raw data."""
+    d = {'a.json': '1'}
+    s = interface_wrap(
+        d,
+        spec={'__getitem__': {0: 'KT', 'return': 'VT'}},
+        codecs=dict(KT=json_key_codec, VT=value_codec),
+        undeclared='exclude',
+    )
+    with pytest.raises(TypeError):
+        s | {'b': 2}
+
+
+def test_nested_iterator_of_iterators():
+    class NestSpec(Protocol[KT]):
+        def batches(self) -> Iterator[Iterator[KT]]: ...
+
+    class L:
+        def batches(self):
+            yield iter(['a.json'])
+            yield iter(['b.json'])
+
+    s = interface_wrap(L(), spec=NestSpec, codecs=dict(KT=json_key_codec),
+                       undeclared='exclude')
+    assert [list(b) for b in s.batches()] == [['a'], ['b']]
+
+
+def test_wrapping_legacy_store_warns():
+    from dol import wrap_kvs
+
+    legacy = wrap_kvs({'a.json': '1'}, obj_of_data=str)
+    with pytest.warns(UserWarning, match='legacy dol Store'):
+        interface_wrap(
+            legacy,
+            spec={'__getitem__': {0: 'KT'}},
+            codecs=dict(KT=json_key_codec),
+            undeclared='passthrough',
+        )

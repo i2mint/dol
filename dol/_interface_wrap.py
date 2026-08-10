@@ -79,8 +79,11 @@ from typing import (
 __all__ = [
     'Codec',
     'InterfaceSpec',
+    'InterfaceProxy',
     'interface_wrap',
+    'InterfaceWrapError',
     'UnsupportedSpecShape',
+    'UnderAnnotatedSpecError',
     'UndeclaredAttributeError',
 ]
 
@@ -98,6 +101,18 @@ class UnsupportedSpecShape(InterfaceWrapError, TypeError):
 
     Raised at wrap (compile) time, never at call time: refusing early beats
     guessing (dol_issue83_design.md §5.7).
+    """
+
+
+class UnderAnnotatedSpecError(InterfaceWrapError, TypeError):
+    """A spec'd method has a parameter with no annotation at all.
+
+    An unannotated parameter is indistinguishable from a deliberately
+    non-role parameter, which is exactly the silence-by-omission failure mode
+    this mechanism exists to kill — one level down (a key parameter the spec
+    author forgot to annotate would silently receive OUTER keys). Annotate
+    every named parameter of a spec method: with a role TypeVar if it carries
+    a role, with a concrete type (or ``Any``) to state it does not.
     """
 
 
@@ -293,6 +308,24 @@ class InterfaceSpec:
         for name, func in _spec_functions(source):
             hints = _resolved_hints(func, source)
             sig = inspect.signature(func)
+            # Loudness one level down (s3dol ADR-0011 D5): every named param
+            # of a spec method must be annotated, or a forgotten role is
+            # silent. (*args/**kwargs stay conventional passthrough.)
+            for p in sig.parameters.values():
+                if p.name in ('self', 'cls'):
+                    continue
+                if p.kind in (
+                    inspect.Parameter.VAR_POSITIONAL,
+                    inspect.Parameter.VAR_KEYWORD,
+                ):
+                    continue
+                if p.annotation is inspect.Parameter.empty:
+                    raise UnderAnnotatedSpecError(
+                        f'{source.__name__}.{name}: parameter {p.name!r} has '
+                        f'no annotation. Annotate it with a role TypeVar if '
+                        f'it carries keys/values, or with a concrete type '
+                        f'(or Any) to declare it role-free.'
+                    )
             sites = {}
             for pname, ann in hints.items():
                 found = list(_find_role_sites(ann, roles))
@@ -331,11 +364,28 @@ class InterfaceSpec:
 
 
 def _spec_functions(source):
-    """Yield (name, function) for the spec's declared methods (incl. dunders)."""
+    """Yield (name, function) for the spec's declared methods (incl. dunders).
+
+    Only the spec class's OWN plain functions count (inherited Protocol
+    methods carry the base's TypeVars, whose substitution is future work).
+    Members a spec cannot host refuse loudly instead of vanishing silently.
+    """
     for name, member in vars(source).items():
-        if name in ('__init__', '__subclasshook__', '__init_subclass__'):
+        if name in (
+            '__init__',
+            '__subclasshook__',
+            '__init_subclass__',
+            '__class_getitem__',
+        ):
             continue
-        if callable(member):
+        if isinstance(member, (property, staticmethod, classmethod)):
+            raise UnsupportedSpecShape(
+                f'{source.__name__}.{name}: {type(member).__name__} members '
+                f'are not supported in interface specs (yet) — they would '
+                f'be silently skipped otherwise. Remove it or use a plain '
+                f'method.'
+            )
+        if inspect.isfunction(member):
             yield name, member
 
 
@@ -416,20 +466,46 @@ def _compile_method_plan(name, sites, leaf_method, sig, encoders, decoders):
         fused = _fuse(funcs)
         if pname == 'return':
             return_transform = fused
-        else:
-            param_transforms[pname] = fused
+            continue
+        param = sig.parameters.get(pname) if sig is not None else None
+        if param is not None:
+            if param.kind is inspect.Parameter.VAR_KEYWORD:
+                raise UnsupportedSpecShape(
+                    f'{name}: role on a **kwargs parameter ({pname!r}) is '
+                    f'not supported — keyword names as keys have no '
+                    f'annotation channel.'
+                )
+            if param.kind is inspect.Parameter.VAR_POSITIONAL:
+                # bound.arguments holds a TUPLE for *args: map elementwise
+                # (a bare-role transform applied to the tuple itself would
+                # silently corrupt).
+                fused = (lambda f: lambda tup: tuple(f(x) for x in tup))(fused)
+            if param.default is None:
+                # A None default lives in the LEAF's domain and, on 3.10,
+                # get_type_hints implicitly wraps `x: KT = None` in Optional.
+                # Normalize both: never transform None.
+                fused = (lambda f: lambda v: v if v is None else f(v))(fused)
+        param_transforms[pname] = fused
 
     if not param_transforms and return_transform is None:
         # Spec'd but no active roles in this stack: plain passthrough.
         return leaf_method
 
-    # Fast path: single role'd parameter, first positional slot, always
-    # called positionally (all dunders are; most keyed methods too).
+    # Fast path: single role'd parameter, first positional slot with no
+    # default, always called positionally (all dunders are; most keyed
+    # methods too).
     param_names = list(sig.parameters) if sig is not None else []
+    _first = sig.parameters[param_names[0]] if param_names else None
     if (
         sig is not None
         and param_names
         and set(param_transforms) <= {param_names[0]}
+        and _first.default is inspect.Parameter.empty
+        and _first.kind
+        in (
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        )
     ):
         first_transform = param_transforms.get(param_names[0])
 
@@ -652,6 +728,25 @@ def interface_wrap(
             'interface_wrap wraps instances in this prototype; '
             'class-wrapping is future work (see the design doc).'
         )
+    # Mixed-architecture stacks: flat-model guarantees (encode/decode
+    # totality, __wrapped__ = raw backend, pickle uniformity) are scoped to
+    # pure interface_wrap stacks. Wrapping a legacy dol Store is allowed but
+    # the Store chain below is opaque to us — say so.
+    try:
+        from dol.base import Store as _LegacyStore
+
+        if isinstance(leaf, _LegacyStore):
+            import warnings
+
+            warnings.warn(
+                'interface_wrap over a legacy dol Store: the Store (and its '
+                '.store chain) is treated as an opaque leaf — __wrapped__ '
+                'is the Store, not the raw backend, and flat-stack '
+                'guarantees apply only to the layers above it.',
+                stacklevel=2,
+            )
+    except ImportError:  # pragma: no cover - dol.base always importable here
+        pass
     stack = base_stack + ((dict(codecs),) if codecs else ())
 
     # --- role sanity (loudness): every codec role must appear in the spec
