@@ -35,12 +35,30 @@ dig_up = recursive_get_attr
 
 
 def store_trans_path(store, arg, method):
+    """Yield ``arg`` transformed by ``method`` at each layer, outermost first.
+
+    Walks the ``.store`` chain, applying ``store.<method>`` at every layer that defines it.
+
+    >>> from dol import wrap_kvs
+    >>> s = wrap_kvs({'a.txt': 1}, id_of_key=lambda k: k + '.txt')
+    >>> list(store_trans_path(s, 'a', '_id_of_key'))
+    ['a.txt', 'a.txt']
+
+    Yields nothing when no layer defines ``method`` -- which is why :func:`inner_most`
+    raises rather than returning the ``None`` that an empty walk would otherwise produce.
+
+    >>> list(store_trans_path({}, 'a', '_id_of_key'))
+    []
+    """
     f = getattr(store, method, None)
     if f is not None:
         trans_arg = f(arg)
         yield trans_arg
         if hasattr(store, "store"):
-            yield from unravel_key(store.store, trans_arg)
+            # NOTE: recurse with the SAME ``method``. This used to hardcode ``unravel_key``
+            # (i.e. ``_id_of_key``), so ``unravel_val``/``inner_most_val`` applied
+            # ``_data_of_obj`` at the top layer and ``_id_of_key`` at every deeper one.
+            yield from store_trans_path(store.store, trans_arg, method)
 
 
 def print_trans_path(store, arg, method, with_type=False):
@@ -59,8 +77,42 @@ def last_element(gen):
     return x
 
 
-def inner_most(store, arg, method):
-    return last_element(store_trans_path(store, arg, method))
+def inner_most(store, arg, method, default=no_default):
+    """The value of ``arg`` after every layer's ``method`` has been applied.
+
+    >>> from dol import wrap_kvs
+    >>> s = wrap_kvs({'a.txt': 1}, id_of_key=lambda k: k + '.txt')
+    >>> inner_most(s, 'a', '_id_of_key')
+    'a.txt'
+
+    **Raises when no layer defines ``method``**, instead of silently returning ``None``:
+
+    >>> inner_most({}, 'a', '_id_of_key')
+    Traceback (most recent call last):
+      ...
+    AttributeError: No layer of dict defines '_id_of_key', so 'a' cannot be resolved. ...
+
+    A ``None`` here is the worst possible answer: callers use the result as a key or a
+    path, so it surfaces far from its cause -- as ``https://.../None``, or as
+    ``TypeError: expected str, bytes or os.PathLike object, not NoneType``.
+
+    Pass ``default`` to opt out of raising:
+
+    >>> inner_most({}, 'a', '_id_of_key', default=None) is None
+    True
+    """
+    x = last_element(store_trans_path(store, arg, method))
+    if x is None and getattr(store, method, None) is None:
+        # Distinguish "no layer supplied the method" (a resolution failure) from "a layer
+        # legitimately returned None" (only reachable when the outermost layer HAS the method).
+        if default is no_default:
+            raise AttributeError(
+                f"No layer of {type(store).__name__} defines {method!r}, so {arg!r} "
+                f"cannot be resolved. Pass default= if you want a fallback instead of "
+                f"this error. (Previously this returned None silently.)"
+            )
+        return default
+    return x
 
 
 # TODO: Better change the signature to reflect context (k (key) or v (val) instead of arg)
