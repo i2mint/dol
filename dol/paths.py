@@ -1228,9 +1228,7 @@ def mk_relative_path_store(
 
             _key_mapped.__name__ = _method_name
             _key_mapped.__qualname__ = f"{cls.__name__}.{_method_name}"
-            _key_mapped.__doc__ = (
-                f"``{_method_name}`` on the inner key -- see ``mk_relative_path_store``."
-            )
+            _key_mapped.__doc__ = f"``{_method_name}`` on the inner key -- see ``mk_relative_path_store``."
             setattr(cls, _method_name, _key_mapped)
 
     # if __module__ is not None:
