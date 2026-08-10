@@ -291,10 +291,20 @@ class MinimalGet(Protocol[KT, VT]):
     def __getitem__(self, k: KT) -> VT: ...
 
 
-def test_undeclared_public_method_raises_at_wrap_time():
+def test_default_exclude_is_loud_at_use_time():
+    """Design decision (question 2): default 'exclude' — wrap succeeds,
+    undeclared use refuses with guidance."""
+    s = interface_wrap(Leaky(), spec=MinimalGet, codecs=dict(KT=json_key_codec))
+    with pytest.raises(UndeclaredAttributeError) as exc:
+        _ = s.surprise_delete
+    assert 'surprise_delete' in str(exc.value)
+
+
+def test_strict_mode_raises_at_wrap_time():
     with pytest.raises(UndeclaredAttributeError) as exc:
         interface_wrap(
-            Leaky(), spec=MinimalGet, codecs=dict(KT=json_key_codec)
+            Leaky(), spec=MinimalGet, codecs=dict(KT=json_key_codec),
+            undeclared='raise',
         )
     assert 'surprise_delete' in str(exc.value)
 
@@ -650,3 +660,79 @@ def test_dict_kv_return_shape():
                        codecs=dict(KT=json_key_codec, VT=value_codec),
                        undeclared='exclude')
     assert s.bulk(['a']) == {'a': 7}
+
+
+# --- decisions round (2026-08-10): typed codecs, eq, facade ------------------
+
+
+from dol._interface_wrap import MappingInterface, kv_interface_wrap
+
+
+def test_typed_codec_seam_validation_ok_and_mismatch():
+    """Question 3: adjacent typed layers must agree at the seam."""
+
+    class KOnly(Protocol[KT]):
+        def __getitem__(self, k: KT) -> str: ...
+
+    class L:
+        def __getitem__(self, k):
+            return 'v'
+
+    inner = Codec(add_json, strip_json, decoded_type=str, encoded_type=str)
+    outer_ok = Codec(prefix_x, strip_x, decoded_type=str, encoded_type=str)
+    s = interface_wrap(L(), spec=KOnly, codecs=dict(KT=inner))
+    s2 = interface_wrap(s, spec=KOnly, codecs=dict(KT=outer_ok))
+    assert s2._encode_role('KT', 'a') == 'x/a.json'
+
+    outer_bad = Codec(prefix_x, strip_x, decoded_type=str, encoded_type=bytes)
+    with pytest.raises(InterfaceWrapError, match='seam mismatch'):
+        interface_wrap(s, spec=KOnly, codecs=dict(KT=outer_bad))
+
+    # untagged layers stay unchecked (progressive disclosure)
+    untagged = Codec(prefix_x, strip_x)
+    assert interface_wrap(s, spec=KOnly, codecs=dict(KT=untagged)) is not None
+
+
+def test_outer_view_equality_and_no_hash():
+    """Question 4: eq compares outer views when the spec covers traversal;
+    hash is absent (defining __eq__ nulls __hash__)."""
+    s = wrap_bucket()
+    assert s == {'a': 1, 'b': 2}
+    assert not (s == {'a': 1})
+    t = wrap_bucket(Bucket({'logs/a.json': '1', 'logs/b.json': '2'}))
+    assert s == t  # two proxies, equal outer views
+    with pytest.raises(TypeError):
+        hash(s)
+    # a getitem-only wrap keeps identity eq (no traversal surface)
+    g = interface_wrap({'a.json': '1'},
+                       spec={'__getitem__': {0: 'KT', 'return': 'VT'}},
+                       codecs=dict(KT=json_key_codec, VT=value_codec))
+    assert g != {'a': 1}
+
+
+def test_kv_interface_wrap_facade_matches_wrap_kvs_semantics():
+    """Question 1: the simple gesture stays simple, with wrap_kvs naming."""
+    import json
+
+    s = kv_interface_wrap(
+        {}, data_of_obj=json.dumps, obj_of_data=json.loads,
+        id_of_key=add_json, key_of_id=strip_json,
+    )
+    s['a'] = {'x': 1}
+    assert s.__wrapped__ == {'a.json': '{"x": 1}'}
+    assert s['a'] == {'x': 1}
+    assert list(s) == ['a']
+    assert len(s) == 1
+    assert 'a' in s
+    assert s == {'a': {'x': 1}}
+
+
+def test_kv_interface_wrap_conflict_raises():
+    with pytest.raises(ValueError):
+        kv_interface_wrap({}, key_codec=json_key_codec, id_of_key=add_json)
+
+
+def test_facade_undeclared_mixin_methods_are_loud():
+    s = kv_interface_wrap({}, id_of_key=add_json, key_of_id=strip_json)
+    with pytest.raises(UndeclaredAttributeError):
+        s.get('a')
