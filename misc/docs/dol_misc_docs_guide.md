@@ -14,6 +14,8 @@ These documents describe **dol**, a Python library for building uniform `dict`-l
 
 - **`dol_issue18_design.md`** (~250 lines) — Decision-ready design for Issue #18 (`self` is the unwrapped inner store inside a delegation-wrapped class's own methods). Mechanism, a 26-site ecosystem blast-radius classification (0 break, 6 latent bugs), four fix designs with adversarial judging, an empirical verification log, and the staged recommendation: ship `wrapped_self()` now (Phase 1, backward-compatible), commit to is-a wrapping later (closes #18 + #6), reject method-rebinding.
 
+- **`dol_issue83_design.md`** (~300 lines) — Design study for Issue #83, the **inverse** of #18: a delegated method *receives* the outer, unmapped key. Documents the two delegation routes (`Store.__getattr__` and `DelegatedAttribute.__get__` — a fix for one is a silent no-op on the other), a 13-package ecosystem census (overwhelmingly **latent**, and 12 survey claims refuted), and options A–F each with the running-code evidence for its cost: `wrapped_self` degrades silently when nothing holds a strong reference to the wrapper, chain-walking free functions break on a non-`Store` layer, and the only form correct *by construction* is exposing the capability as a sibling store keyed through `__getitem__`. **§5 is the explicit carry-forward list for a future redesign of the wrapping machinery.**
+
 - **`dol_content_metadata_bifurcation.md`** (~450 lines) — Design study of the content/metadata split-store problem (a store whose values carry both payload and metadata).
 
 - **`code-quality-improvements.md`** (~230 lines) — Technical debt tracker for dol: dead code, unused parameters, incomplete implementations, test coverage gaps. Operational/maintenance reference.
