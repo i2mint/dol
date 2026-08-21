@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.base &mdash; dol 0.3.62 documentation</title>
+  <title>dol.base &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -198,7 +198,7 @@ and computing __len__ by iterating over all keys, and counting them.</p>
 But that doesn’t mean it’s a dict.</p>
 <p>For instance, consider the following code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">SomeKvPersister</span><span class="p">()</span>
-<span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">][</span><span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
 </pre></div>
 </div>
 <p>If <cite>s</cite> is a dict, this would have the effect of adding a (‘b’, 3) item under ‘a’.
@@ -280,35 +280,35 @@ how the content is stored should be specified, but StoreInterface offers a dict-
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Default store: no key or value conversion #####################################</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">Store</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Store</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">33</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;bar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">65</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>  <span class="c1"># see that the store contains the same thing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'foo'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">33</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'bar'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">65</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">'foo'</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="p">(</span><span class="s1">'bar'</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">'foo'</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="p">(</span><span class="s1">'bar'</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>  <span class="c1"># see that the store contains the same thing</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1">#################################################################################</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Now let&#39;s make stores that have a key and value conversion layer ##############</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Now let's make stores that have a key and value conversion layer ##############</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># input keys will be upper cased, and output keys lower cased ###################</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># input values (assumed int) will be converted to ascii string, and visa versa ##</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1">#################################################################################</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">test_store</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">s</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">33</span>  <span class="c1"># write 33 to &#39;foo&#39;</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="s1">&#39;foo&#39;</span> <span class="ow">in</span> <span class="n">s</span>  <span class="c1"># __contains__ works</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="s1">&#39;no_such_key&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">s</span>  <span class="c1"># __nin__ works</span>
-<span class="gp">... </span>    <span class="n">s</span><span class="p">[</span><span class="s1">&#39;bar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">65</span>  <span class="c1"># write 65 to &#39;bar&#39;</span>
+<span class="gp">... </span>    <span class="n">s</span><span class="p">[</span><span class="s1">'foo'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">33</span>  <span class="c1"># write 33 to 'foo'</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="s1">'foo'</span> <span class="ow">in</span> <span class="n">s</span>  <span class="c1"># __contains__ works</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="s1">'no_such_key'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">s</span>  <span class="c1"># __nin__ works</span>
+<span class="gp">... </span>    <span class="n">s</span><span class="p">[</span><span class="s1">'bar'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">65</span>  <span class="c1"># write 65 to 'bar'</span>
 <span class="gp">... </span>    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>  <span class="c1"># there are indeed two elements</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">]</span>  <span class="c1"># these are the keys</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">]</span>  <span class="c1"># the keys() method works!</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="s1">'foo'</span><span class="p">,</span> <span class="s1">'bar'</span><span class="p">]</span>  <span class="c1"># these are the keys</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="p">[</span><span class="s1">'foo'</span><span class="p">,</span> <span class="s1">'bar'</span><span class="p">]</span>  <span class="c1"># the keys() method works!</span>
 <span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">==</span> <span class="p">[</span><span class="mi">33</span><span class="p">,</span> <span class="mi">65</span><span class="p">]</span>  <span class="c1"># the values() method works!</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>  <span class="c1"># these are the items</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">&#39;FOO&#39;</span><span class="p">,</span> <span class="s1">&#39;!&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;BAR&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)]</span>  <span class="c1"># but note the internal representation</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">33</span>  <span class="c1"># the get method works</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;no_such_key&#39;</span><span class="p">,</span> <span class="s1">&#39;something&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;something&#39;</span>  <span class="c1"># return a default value</span>
-<span class="gp">... </span>    <span class="k">del</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">])</span>  <span class="c1"># you can delete an item given its key</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">'foo'</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="p">(</span><span class="s1">'bar'</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>  <span class="c1"># these are the items</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">'FOO'</span><span class="p">,</span> <span class="s1">'!'</span><span class="p">),</span> <span class="p">(</span><span class="s1">'BAR'</span><span class="p">,</span> <span class="s1">'A'</span><span class="p">)]</span>  <span class="c1"># but note the internal representation</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">33</span>  <span class="c1"># the get method works</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'no_such_key'</span><span class="p">,</span> <span class="s1">'something'</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'something'</span>  <span class="c1"># return a default value</span>
+<span class="gp">... </span>    <span class="k">del</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">'foo'</span><span class="p">])</span>  <span class="c1"># you can delete an item given its key</span>
 <span class="gp">... </span>    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>  <span class="c1"># see, only one item left!</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>  <span class="c1"># here it is</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">'bar'</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>  <span class="c1"># here it is</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># We can introduce this conversion layer in several ways. Here&#39;s a few... ######################</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># We can introduce this conversion layer in several ways. Here's a few... ######################</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># by subclassing ###############################################################################</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyStore</span><span class="p">(</span><span class="n">Store</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_id_of_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
@@ -319,7 +319,7 @@ how the content is stored should be specified, but StoreInterface offers a dict-
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="nb">dict</span><span class="p">())</span>  <span class="c1"># note that you don&#39;t need to specify dict(), since it&#39;s the default</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="nb">dict</span><span class="p">())</span>  <span class="c1"># note that you don't need to specify dict(), since it's the default</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">test_store</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># by assigning functions to converters ##########################################################</span>
@@ -405,12 +405,12 @@ one required input) that will return a wrapped version of it’s input instance.
 </dl>
 <p>Let’s demo this on a simple Delegator class.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Delegator</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">i_think</span> <span class="o">=</span> <span class="s1">&#39;therefore I am delegated&#39;</span>  <span class="c1"># this is just to verify that we&#39;re in a Delegator</span>
+<span class="gp">... </span>    <span class="n">i_think</span> <span class="o">=</span> <span class="s1">'therefore I am delegated'</span>  <span class="c1"># this is just to verify that we're in a Delegator</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrapped_obj</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_obj</span> <span class="o">=</span> <span class="n">wrapped_obj</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>  <span class="c1"># delegation: just forward attributes to wrapped_obj</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped_obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">)</span>  <span class="c1"># this is a useful recipe to have the Delegator carry it&#39;s own wrapping method</span>
+<span class="gp">... </span>    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">)</span>  <span class="c1"># this is a useful recipe to have the Delegator carry it's own wrapping method</span>
 </pre></div>
 </div>
 <p>The only difference between a wrapped object <code class="docutils literal notranslate"><span class="pre">Delegator(obj)</span></code> and the original <code class="docutils literal notranslate"><span class="pre">obj</span></code> is
@@ -418,22 +418,22 @@ that the wrapped one has a <code class="docutils literal notranslate"><span clas
 The wrapped object should otherwise behave the same (on all but special (dunder) methods).
 So let’s test this on dictionaries, using the following test function:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">test_wrapped_d</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="n">original_d</span><span class="p">):</span>
-<span class="gp">... </span><span class="w">    </span><span class="sd">&#39;&#39;&#39;A function to test a wrapped dict&#39;&#39;&#39;</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">original_d</span><span class="p">,</span> <span class="s1">&#39;i_think&#39;</span><span class="p">)</span>  <span class="c1"># verify that the unwrapped_d doesn&#39;t have an i_think attribute</span>
+<span class="gp">... </span><span class="w">    </span><span class="sd">'''A function to test a wrapped dict'''</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">original_d</span><span class="p">,</span> <span class="s1">'i_think'</span><span class="p">)</span>  <span class="c1"># verify that the unwrapped_d doesn't have an i_think attribute</span>
 <span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">wrapped_d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">original_d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># verify that wrapped_d has an items that gives us the same thing as origina_d</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="s1">&#39;i_think&#39;</span><span class="p">)</span>  <span class="c1"># ... but wrapped_d has a i_think attribute</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="n">wrapped_d</span><span class="o">.</span><span class="n">i_think</span> <span class="o">==</span> <span class="s1">&#39;therefore I am delegated&#39;</span>  <span class="c1"># ... and its what we set it to be</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="s1">'i_think'</span><span class="p">)</span>  <span class="c1"># ... but wrapped_d has a i_think attribute</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">wrapped_d</span><span class="o">.</span><span class="n">i_think</span> <span class="o">==</span> <span class="s1">'therefore I am delegated'</span>  <span class="c1"># ... and its what we set it to be</span>
 </pre></div>
 </div>
 <p>Let’s try delegating a dict INSTANCE first:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">Delegator</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">test_wrapped_d</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If we ask <code class="docutils literal notranslate"><span class="pre">delegator_wrap</span></code> to wrap a <code class="docutils literal notranslate"><span class="pre">dict</span></code> type, we get a subclass of Delegator
 (NOT dict!) whose instances will have the behavior exhibited above:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">Delegator</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">&#39;wrapped_obj&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">Delegator</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">'wrapped_obj'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">WrappedDict</span><span class="p">,</span> <span class="n">Delegator</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">WrappedDict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
@@ -448,7 +448,7 @@ So let’s test this on dictionaries, using the following test function:</p>
 </pre></div>
 </div>
 <p>… with classes</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">&#39;wrapped_obj&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">'wrapped_obj'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">WrappedDict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -456,10 +456,10 @@ So let’s test this on dictionaries, using the following test function:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">A</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="s1">'foo'</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedA</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">WrappedA</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">WrappedA</span><span class="p">,</span> <span class="s1">'foo'</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -477,32 +477,32 @@ So let’s test this on dictionaries, using the following test function:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">src</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span>
-<span class="gp">... </span><span class="sd">&#39;&#39;&#39;a, b, c</span>
+<span class="gp">... </span><span class="sd">'''a, b, c</span>
 <span class="gp">... </span><span class="sd">1,2, 3</span>
 <span class="gp">... </span><span class="sd">4, 5,6</span>
-<span class="gp">... </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="sd">'''</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stream</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyStream</span><span class="p">(</span><span class="n">Stream</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">','</span><span class="p">)]</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">stream</span> <span class="o">=</span> <span class="n">MyStream</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
-<span class="go">[[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;], [&#39;1&#39;, &#39;2&#39;, &#39;3&#39;], [&#39;4&#39;, &#39;5&#39;, &#39;6&#39;]]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">stream</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># oh!... but we consumed the stream already, so let&#39;s go back to the beginning</span>
+<span class="go">[['a', 'b', 'c'], ['1', '2', '3'], ['4', '5', '6']]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stream</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># oh!... but we consumed the stream already, so let's go back to the beginning</span>
 <span class="go">0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
-<span class="go">[[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;], [&#39;1&#39;, &#39;2&#39;, &#39;3&#39;], [&#39;4&#39;, &#39;5&#39;, &#39;6&#39;]]</span>
+<span class="go">[['a', 'b', 'c'], ['1', '2', '3'], ['4', '5', '6']]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">stream</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># reverse again</span>
 <span class="go">0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
-<span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="go">['a', 'b', 'c']</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
-<span class="go">[&#39;1&#39;, &#39;2&#39;, &#39;3&#39;]</span>
+<span class="go">['1', '2', '3']</span>
 </pre></div>
 </div>
 <p>Let’s add a filter! There’s two kinds you can use.
@@ -512,10 +512,10 @@ and the other that is applied after (to the obj).</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">src</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span>
-<span class="gp">... </span><span class="w">    </span><span class="sd">&#39;&#39;&#39;a, b, c</span>
+<span class="gp">... </span><span class="w">    </span><span class="sd">'''a, b, c</span>
 <span class="gp">... </span><span class="sd">1,2, 3</span>
 <span class="gp">... </span><span class="sd">4, 5,6</span>
-<span class="gp">... </span><span class="sd">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="sd">'''</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyFilteredStream</span><span class="p">(</span><span class="n">MyStream</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_post_filt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">str</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -523,15 +523,15 @@ and the other that is applied after (to the obj).</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyFilteredStream</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="go">[[&#39;1&#39;, &#39;2&#39;, &#39;3&#39;], [&#39;4&#39;, &#39;5&#39;, &#39;6&#39;]]</span>
+<span class="go">[['1', '2', '3'], ['4', '5', '6']]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="go">0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="go">[[&#39;1&#39;, &#39;2&#39;, &#39;3&#39;], [&#39;4&#39;, &#39;5&#39;, &#39;6&#39;]]</span>
+<span class="go">[['1', '2', '3'], ['4', '5', '6']]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="go">0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="go">[&#39;1&#39;, &#39;2&#39;, &#39;3&#39;]</span>
+<span class="go">['1', '2', '3']</span>
 </pre></div>
 </div>
 <p>Recipes:</p>
@@ -566,12 +566,12 @@ one required input) that will return a wrapped version of it’s input instance.
 </dl>
 <p>Let’s demo this on a simple Delegator class.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Delegator</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">i_think</span> <span class="o">=</span> <span class="s1">&#39;therefore I am delegated&#39;</span>  <span class="c1"># this is just to verify that we&#39;re in a Delegator</span>
+<span class="gp">... </span>    <span class="n">i_think</span> <span class="o">=</span> <span class="s1">'therefore I am delegated'</span>  <span class="c1"># this is just to verify that we're in a Delegator</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrapped_obj</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_obj</span> <span class="o">=</span> <span class="n">wrapped_obj</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>  <span class="c1"># delegation: just forward attributes to wrapped_obj</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped_obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">)</span>  <span class="c1"># this is a useful recipe to have the Delegator carry it&#39;s own wrapping method</span>
+<span class="gp">... </span>    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">)</span>  <span class="c1"># this is a useful recipe to have the Delegator carry it's own wrapping method</span>
 </pre></div>
 </div>
 <p>The only difference between a wrapped object <code class="docutils literal notranslate"><span class="pre">Delegator(obj)</span></code> and the original <code class="docutils literal notranslate"><span class="pre">obj</span></code> is
@@ -579,22 +579,22 @@ that the wrapped one has a <code class="docutils literal notranslate"><span clas
 The wrapped object should otherwise behave the same (on all but special (dunder) methods).
 So let’s test this on dictionaries, using the following test function:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">test_wrapped_d</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="n">original_d</span><span class="p">):</span>
-<span class="gp">... </span><span class="w">    </span><span class="sd">&#39;&#39;&#39;A function to test a wrapped dict&#39;&#39;&#39;</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">original_d</span><span class="p">,</span> <span class="s1">&#39;i_think&#39;</span><span class="p">)</span>  <span class="c1"># verify that the unwrapped_d doesn&#39;t have an i_think attribute</span>
+<span class="gp">... </span><span class="w">    </span><span class="sd">'''A function to test a wrapped dict'''</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">original_d</span><span class="p">,</span> <span class="s1">'i_think'</span><span class="p">)</span>  <span class="c1"># verify that the unwrapped_d doesn't have an i_think attribute</span>
 <span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">wrapped_d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">original_d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># verify that wrapped_d has an items that gives us the same thing as origina_d</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="s1">&#39;i_think&#39;</span><span class="p">)</span>  <span class="c1"># ... but wrapped_d has a i_think attribute</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="n">wrapped_d</span><span class="o">.</span><span class="n">i_think</span> <span class="o">==</span> <span class="s1">&#39;therefore I am delegated&#39;</span>  <span class="c1"># ... and its what we set it to be</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="s1">'i_think'</span><span class="p">)</span>  <span class="c1"># ... but wrapped_d has a i_think attribute</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">wrapped_d</span><span class="o">.</span><span class="n">i_think</span> <span class="o">==</span> <span class="s1">'therefore I am delegated'</span>  <span class="c1"># ... and its what we set it to be</span>
 </pre></div>
 </div>
 <p>Let’s try delegating a dict INSTANCE first:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">Delegator</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">test_wrapped_d</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If we ask <code class="docutils literal notranslate"><span class="pre">delegator_wrap</span></code> to wrap a <code class="docutils literal notranslate"><span class="pre">dict</span></code> type, we get a subclass of Delegator
 (NOT dict!) whose instances will have the behavior exhibited above:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">Delegator</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">&#39;wrapped_obj&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">Delegator</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">'wrapped_obj'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">WrappedDict</span><span class="p">,</span> <span class="n">Delegator</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">WrappedDict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
@@ -609,7 +609,7 @@ So let’s test this on dictionaries, using the following test function:</p>
 </pre></div>
 </div>
 <p>… with classes</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">&#39;wrapped_obj&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">'wrapped_obj'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">WrappedDict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -617,10 +617,10 @@ So let’s test this on dictionaries, using the following test function:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">A</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="s1">'foo'</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedA</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">WrappedA</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">WrappedA</span><span class="p">,</span> <span class="s1">'foo'</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -650,12 +650,12 @@ one required input) that will return a wrapped version of it’s input instance.
 </dl>
 <p>Let’s demo this on a simple Delegator class.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Delegator</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">i_think</span> <span class="o">=</span> <span class="s1">&#39;therefore I am delegated&#39;</span>  <span class="c1"># this is just to verify that we&#39;re in a Delegator</span>
+<span class="gp">... </span>    <span class="n">i_think</span> <span class="o">=</span> <span class="s1">'therefore I am delegated'</span>  <span class="c1"># this is just to verify that we're in a Delegator</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrapped_obj</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">wrapped_obj</span> <span class="o">=</span> <span class="n">wrapped_obj</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>  <span class="c1"># delegation: just forward attributes to wrapped_obj</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped_obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">)</span>  <span class="c1"># this is a useful recipe to have the Delegator carry it&#39;s own wrapping method</span>
+<span class="gp">... </span>    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">)</span>  <span class="c1"># this is a useful recipe to have the Delegator carry it's own wrapping method</span>
 </pre></div>
 </div>
 <p>The only difference between a wrapped object <code class="docutils literal notranslate"><span class="pre">Delegator(obj)</span></code> and the original <code class="docutils literal notranslate"><span class="pre">obj</span></code> is
@@ -663,22 +663,22 @@ that the wrapped one has a <code class="docutils literal notranslate"><span clas
 The wrapped object should otherwise behave the same (on all but special (dunder) methods).
 So let’s test this on dictionaries, using the following test function:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">test_wrapped_d</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="n">original_d</span><span class="p">):</span>
-<span class="gp">... </span><span class="w">    </span><span class="sd">&#39;&#39;&#39;A function to test a wrapped dict&#39;&#39;&#39;</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">original_d</span><span class="p">,</span> <span class="s1">&#39;i_think&#39;</span><span class="p">)</span>  <span class="c1"># verify that the unwrapped_d doesn&#39;t have an i_think attribute</span>
+<span class="gp">... </span><span class="w">    </span><span class="sd">'''A function to test a wrapped dict'''</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">original_d</span><span class="p">,</span> <span class="s1">'i_think'</span><span class="p">)</span>  <span class="c1"># verify that the unwrapped_d doesn't have an i_think attribute</span>
 <span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">wrapped_d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">original_d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>  <span class="c1"># verify that wrapped_d has an items that gives us the same thing as origina_d</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="s1">&#39;i_think&#39;</span><span class="p">)</span>  <span class="c1"># ... but wrapped_d has a i_think attribute</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="n">wrapped_d</span><span class="o">.</span><span class="n">i_think</span> <span class="o">==</span> <span class="s1">&#39;therefore I am delegated&#39;</span>  <span class="c1"># ... and its what we set it to be</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="s1">'i_think'</span><span class="p">)</span>  <span class="c1"># ... but wrapped_d has a i_think attribute</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">wrapped_d</span><span class="o">.</span><span class="n">i_think</span> <span class="o">==</span> <span class="s1">'therefore I am delegated'</span>  <span class="c1"># ... and its what we set it to be</span>
 </pre></div>
 </div>
 <p>Let’s try delegating a dict INSTANCE first:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">Delegator</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">test_wrapped_d</span><span class="p">(</span><span class="n">wrapped_d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If we ask <code class="docutils literal notranslate"><span class="pre">delegator_wrap</span></code> to wrap a <code class="docutils literal notranslate"><span class="pre">dict</span></code> type, we get a subclass of Delegator
 (NOT dict!) whose instances will have the behavior exhibited above:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">Delegator</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">&#39;wrapped_obj&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">Delegator</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">'wrapped_obj'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">WrappedDict</span><span class="p">,</span> <span class="n">Delegator</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">WrappedDict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
@@ -693,7 +693,7 @@ So let’s test this on dictionaries, using the following test function:</p>
 </pre></div>
 </div>
 <p>… with classes</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">&#39;wrapped_obj&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedDict</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s1">'wrapped_obj'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped_d</span> <span class="o">=</span> <span class="n">WrappedDict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -701,10 +701,10 @@ So let’s test this on dictionaries, using the following test function:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">A</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="s1">'foo'</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">WrappedA</span> <span class="o">=</span> <span class="n">Delegator</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">WrappedA</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">WrappedA</span><span class="p">,</span> <span class="s1">'foo'</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -745,11 +745,11 @@ for every branch, not just the leaves.</p></li>
 </ul>
 </dd>
 </dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}}</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'d'</span><span class="p">:</span> <span class="mi">3</span><span class="p">}}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">kv_walk</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
-<span class="go">[((&#39;a&#39;,), &#39;a&#39;, 1), ((&#39;b&#39;, &#39;c&#39;), &#39;c&#39;, 2), ((&#39;b&#39;, &#39;d&#39;), &#39;d&#39;, 3)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">kv_walk</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="p">)))</span>
-<span class="go">[&#39;a&#39;, &#39;b.c&#39;, &#39;b.d&#39;]</span>
+<span class="go">[(('a',), 'a', 1), (('b', 'c'), 'c', 2), (('b', 'd'), 'd', 3)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">kv_walk</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="s1">'.'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="p">)))</span>
+<span class="go">['a', 'b.c', 'b.d']</span>
 </pre></div>
 </div>
 <p>The <cite>walk_filt</cite> argument allows you to control what values the walk encountered
@@ -768,30 +768,30 @@ This can be done as follows:</p>
 <span class="gp">... </span>        <span class="n">walk_filt</span><span class="o">=</span><span class="n">mk_level_walk_filt</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>    <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}},</span>
-<span class="gp">... </span>    <span class="s1">&#39;aa&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;bb&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cc&#39;</span><span class="p">:</span> <span class="s1">&#39;dragon_con&#39;</span><span class="p">}}</span>
+<span class="gp">... </span>    <span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}},</span>
+<span class="gp">... </span>    <span class="s1">'aa'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'bb'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'cc'</span><span class="p">:</span> <span class="s1">'dragon_con'</span><span class="p">}}</span>
 <span class="gp">... </span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
 <span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">leveled_map_walk</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">),</span> <span class="mi">42</span><span class="p">),</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="s1">&#39;bb&#39;</span><span class="p">,</span> <span class="s1">&#39;cc&#39;</span><span class="p">),</span> <span class="s1">&#39;dragon_con&#39;</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">),</span> <span class="mi">42</span><span class="p">),</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">'aa'</span><span class="p">,</span> <span class="s1">'bb'</span><span class="p">,</span> <span class="s1">'cc'</span><span class="p">),</span> <span class="s1">'dragon_con'</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="p">]</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
 <span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">leveled_map_walk</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 <span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">),</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}),</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="s1">&#39;bb&#39;</span><span class="p">),</span> <span class="p">{</span><span class="s1">&#39;cc&#39;</span><span class="p">:</span> <span class="s1">&#39;dragon_con&#39;</span><span class="p">})</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">),</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}),</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">'aa'</span><span class="p">,</span> <span class="s1">'bb'</span><span class="p">),</span> <span class="p">{</span><span class="s1">'cc'</span><span class="p">:</span> <span class="s1">'dragon_con'</span><span class="p">})</span>
 <span class="gp">... </span>        <span class="p">]</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
 <span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">leveled_map_walk</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 <span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,),</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}),</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">&#39;aa&#39;</span><span class="p">,),</span> <span class="p">{</span><span class="s1">&#39;bb&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cc&#39;</span><span class="p">:</span> <span class="s1">&#39;dragon_con&#39;</span><span class="p">}})</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">'a'</span><span class="p">,),</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}),</span>
+<span class="gp">... </span>            <span class="p">((</span><span class="s1">'aa'</span><span class="p">,),</span> <span class="p">{</span><span class="s1">'bb'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'cc'</span><span class="p">:</span> <span class="s1">'dragon_con'</span><span class="p">}})</span>
 <span class="gp">... </span>        <span class="p">]</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
@@ -801,28 +801,28 @@ mapping, you can have your <code class="docutils literal notranslate"><span clas
 indicate that the value should be skipped, and then filter out the <a href="#id1"><span class="problematic" id="id2">``</span></a>None``s from
 your results.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mm</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>    <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}},</span>
-<span class="gp">... </span>    <span class="s1">&#39;aa&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;bb&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cc&#39;</span><span class="p">:</span> <span class="s1">&#39;meaning_of_life&#39;</span><span class="p">}},</span>
-<span class="gp">... </span>    <span class="s1">&#39;aaa&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;bbb&#39;</span><span class="p">:</span> <span class="mi">314</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}},</span>
+<span class="gp">... </span>    <span class="s1">'aa'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'bb'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'cc'</span><span class="p">:</span> <span class="s1">'meaning_of_life'</span><span class="p">}},</span>
+<span class="gp">... </span>    <span class="s1">'aaa'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'bbb'</span><span class="p">:</span> <span class="mi">314</span><span class="p">},</span>
 <span class="gp">... </span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">return_path_if_int_leaf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">kv_walk</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span> <span class="n">leaf_yield</span><span class="o">=</span><span class="n">return_path_if_int_leaf</span><span class="p">)))</span>
-<span class="go">[((&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), 42), ((&#39;aaa&#39;, &#39;bbb&#39;), 314)]</span>
+<span class="go">[(('a', 'b', 'c'), 42), (('aaa', 'bbb'), 314)]</span>
 </pre></div>
 </div>
 <p>This “path search” functionality is available as a function in the <code class="docutils literal notranslate"><span class="pre">recipes</span></code>
 module, as <code class="docutils literal notranslate"><span class="pre">search_paths</span></code>.</p>
 <p>One last thing. Let’s demonstrate the use of <cite>branch_yield</cite> and <cite>breadth_first</cite>.
 Consider the following dictionary:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;big&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;apple&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s1">&#39;deal&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pie&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;crumble&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}}</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'big'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'apple'</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s1">'deal'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">'apple'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'pie'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'crumble'</span><span class="p">:</span> <span class="mi">2</span><span class="p">}}</span>
 </pre></div>
 </div>
 <p>Say you wanted to find all the paths that end with ‘apple’. You could do:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">yield_path_if_ends_with_apple</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">p</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;apple&#39;</span> <span class="k">else</span> <span class="kc">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">yield_path_if_ends_with_apple</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">p</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">'apple'</span> <span class="k">else</span> <span class="kc">None</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">walker1</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">kv_walk</span><span class="p">,</span> <span class="n">leaf_yield</span><span class="o">=</span><span class="n">yield_path_if_ends_with_apple</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">walker1</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
-<span class="go">[(&#39;big&#39;, &#39;apple&#39;)]</span>
+<span class="go">[('big', 'apple')]</span>
 </pre></div>
 </div>
 <p>It only got <cite>(‘big’, ‘apple’)</cite> because the <cite>leaf_yield</cite> is only triggered
@@ -831,7 +831,7 @@ for leaf nodes (as defined by the <cite>walk_filt</cite> argument, which default
 to yield the path for every branch (not just the leaves):</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">walker2</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">walker1</span><span class="p">,</span> <span class="n">branch_yield</span><span class="o">=</span><span class="n">yield_path_if_ends_with_apple</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">walker2</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
-<span class="go">[(&#39;big&#39;, &#39;apple&#39;), (&#39;apple&#39;,)]</span>
+<span class="go">[('big', 'apple'), ('apple',)]</span>
 </pre></div>
 </div>
 <p>But this isn’t convenient if you’d like your search to finish as soon as you
@@ -840,7 +840,7 @@ find a path ending with <cite>‘apple’</cite>. The order here comes from the 
 traversal, just say it:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">walker3</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">walker2</span><span class="p">,</span> <span class="n">breadth_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">walker3</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
-<span class="go">[(&#39;apple&#39;,), (&#39;big&#39;, &#39;apple&#39;)]</span>
+<span class="go">[('apple',), ('big', 'apple')]</span>
 </pre></div>
 </div>
 <p>So now, you can get the first apple path by doing:
@@ -877,12 +877,12 @@ are transform-equivalent, so either answer is correct).</p>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">via_wrapped_self</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="n">wrapped_self</span><span class="p">(</span><span class="bp">self</span><span class="p">)[</span><span class="n">k</span><span class="p">]</span>    <span class="c1"># outer store: transform applied</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;2&#39;</span><span class="p">]</span>                                 <span class="c1"># external access is transformed</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'2'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'2'</span><span class="p">]</span>                                 <span class="c1"># external access is transformed</span>
 <span class="go">2.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">via_self</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">)</span>                        <span class="c1"># Issue #18: bypasses the transform</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">via_self</span><span class="p">(</span><span class="s1">'2'</span><span class="p">)</span>                        <span class="c1"># Issue #18: bypasses the transform</span>
 <span class="go">4</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">via_wrapped_self</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">)</span>                <span class="c1"># wrapped_self recovers the transformed value</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">via_wrapped_self</span><span class="p">(</span><span class="s1">'2'</span><span class="p">)</span>                <span class="c1"># wrapped_self recovers the transformed value</span>
 <span class="go">2.0</span>
 </pre></div>
 </div>

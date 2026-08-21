@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.base &mdash; dol 0.3.62 documentation</title>
+  <title>dol.base &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -123,7 +123,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dol.base</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Base classes for making stores.</span>
 <span class="sd">In the language of the collections.abc module, a store is a MutableMapping that is configured to work with a specific</span>
 <span class="sd">representation of keys, serialization of objects (python values), and persistence of the serialized data.</span>
@@ -131,23 +131,23 @@
 <span class="sd">That is, stores offer the same interface as a dict, but where the actual implementation of writes, reads, and listing</span>
 <span class="sd">are configurable.</span>
 
-<span class="sd">Consider the following example. You&#39;re store is meant to store waveforms as wav files on a remote server.</span>
+<span class="sd">Consider the following example. You're store is meant to store waveforms as wav files on a remote server.</span>
 <span class="sd">Say waveforms are represented in python as a tuple (wf, sr), where wf is a list of numbers and sr is the sample</span>
-<span class="sd">rate, an int). The __setitem__ method will specify how to store bytes on a remote server, but you&#39;ll need to specify</span>
+<span class="sd">rate, an int). The __setitem__ method will specify how to store bytes on a remote server, but you'll need to specify</span>
 <span class="sd">how to SERIALIZE (wf, sr) to the bytes that constitute that wav file: _data_of_obj specifies that.</span>
 <span class="sd">You might also want to read those wav files back into a python (wf, sr) tuple. The __getitem__ method will get</span>
 <span class="sd">you those bytes from the server, but the store will need to know how to DESERIALIZE those bytes back into a python</span>
 <span class="sd">object: _obj_of_data specifies that</span>
 
-<span class="sd">Further, say you&#39;re storing these .wav files in /some/folder/on/the/server/, but you don&#39;t want the store to use</span>
-<span class="sd">these as the keys. For one, it&#39;s annoying to type and harder to read. But more importantly, it&#39;s an irrelevant</span>
-<span class="sd">implementation detail that shouldn&#39;t be exposed. THe _id_of_key and _key_of_id pair are what allow you to</span>
+<span class="sd">Further, say you're storing these .wav files in /some/folder/on/the/server/, but you don't want the store to use</span>
+<span class="sd">these as the keys. For one, it's annoying to type and harder to read. But more importantly, it's an irrelevant</span>
+<span class="sd">implementation detail that shouldn't be exposed. THe _id_of_key and _key_of_id pair are what allow you to</span>
 <span class="sd">add this key interface layer.</span>
 
 <span class="sd">These key converters object serialization methods default to the identity (i.e. they return the input as is).</span>
-<span class="sd">This means that you don&#39;t have to implement these as all, and can choose to implement these concerns within</span>
+<span class="sd">This means that you don't have to implement these as all, and can choose to implement these concerns within</span>
 <span class="sd">the storage methods themselves.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">update_wrapper</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copyreg</span>
@@ -183,28 +183,28 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AttrNames</span><span class="p">:</span>
-    <span class="n">CollectionABC</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;__len__&quot;</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">,</span> <span class="s2">&quot;__contains__&quot;</span><span class="p">}</span>
+    <span class="n">CollectionABC</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"__len__"</span><span class="p">,</span> <span class="s2">"__iter__"</span><span class="p">,</span> <span class="s2">"__contains__"</span><span class="p">}</span>
     <span class="n">Mapping</span> <span class="o">=</span> <span class="n">CollectionABC</span> <span class="o">|</span> <span class="p">{</span>
-        <span class="s2">&quot;keys&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;get&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;items&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__reversed__&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;values&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__getitem__&quot;</span><span class="p">,</span>
+        <span class="s2">"keys"</span><span class="p">,</span>
+        <span class="s2">"get"</span><span class="p">,</span>
+        <span class="s2">"items"</span><span class="p">,</span>
+        <span class="s2">"__reversed__"</span><span class="p">,</span>
+        <span class="s2">"values"</span><span class="p">,</span>
+        <span class="s2">"__getitem__"</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">MutableMapping</span> <span class="o">=</span> <span class="n">Mapping</span> <span class="o">|</span> <span class="p">{</span>
-        <span class="s2">&quot;setdefault&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pop&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;popitem&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;clear&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;update&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__delitem__&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__setitem__&quot;</span><span class="p">,</span>
+        <span class="s2">"setdefault"</span><span class="p">,</span>
+        <span class="s2">"pop"</span><span class="p">,</span>
+        <span class="s2">"popitem"</span><span class="p">,</span>
+        <span class="s2">"clear"</span><span class="p">,</span>
+        <span class="s2">"update"</span><span class="p">,</span>
+        <span class="s2">"__delitem__"</span><span class="p">,</span>
+        <span class="s2">"__setitem__"</span><span class="p">,</span>
     <span class="p">}</span>
 
-    <span class="n">Collection</span> <span class="o">=</span> <span class="n">CollectionABC</span> <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;head&quot;</span><span class="p">}</span>
-    <span class="n">KvReader</span> <span class="o">=</span> <span class="p">(</span><span class="n">Mapping</span> <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;head&quot;</span><span class="p">})</span> <span class="o">-</span> <span class="p">{</span><span class="s2">&quot;__reversed__&quot;</span><span class="p">}</span>
-    <span class="n">KvPersister</span> <span class="o">=</span> <span class="p">(</span><span class="n">MutableMapping</span> <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;head&quot;</span><span class="p">})</span> <span class="o">-</span> <span class="p">{</span><span class="s2">&quot;__reversed__&quot;</span><span class="p">}</span> <span class="o">-</span> <span class="p">{</span><span class="s2">&quot;clear&quot;</span><span class="p">}</span>
+    <span class="n">Collection</span> <span class="o">=</span> <span class="n">CollectionABC</span> <span class="o">|</span> <span class="p">{</span><span class="s2">"head"</span><span class="p">}</span>
+    <span class="n">KvReader</span> <span class="o">=</span> <span class="p">(</span><span class="n">Mapping</span> <span class="o">|</span> <span class="p">{</span><span class="s2">"head"</span><span class="p">})</span> <span class="o">-</span> <span class="p">{</span><span class="s2">"__reversed__"</span><span class="p">}</span>
+    <span class="n">KvPersister</span> <span class="o">=</span> <span class="p">(</span><span class="n">MutableMapping</span> <span class="o">|</span> <span class="p">{</span><span class="s2">"head"</span><span class="p">})</span> <span class="o">-</span> <span class="p">{</span><span class="s2">"__reversed__"</span><span class="p">}</span> <span class="o">-</span> <span class="p">{</span><span class="s2">"clear"</span><span class="p">}</span>
 
 
 <span class="c1"># TODO: Consider using ContainmentChecker and Sizer attributes which dunders would</span>
@@ -212,29 +212,29 @@
 <div class="viewcode-block" id="Collection">
 <a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.Collection">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Collection</span><span class="p">(</span><span class="n">CollectionABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The same as collections.abc.Collection, with some modifications:</span>
+<span class="w">    </span><span class="sd">"""The same as collections.abc.Collection, with some modifications:</span>
 <span class="sd">    - Addition of a ``head``</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check if collection of keys contains k.</span>
 <span class="sd">        Note: This method loops through all contents of collection to see if query element exists.</span>
 <span class="sd">        Therefore it may not be efficient, and in most cases, a method specific to the case should be used.</span>
 <span class="sd">        :return: True if k is in the collection, and False if not</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">existing_x</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">existing_x</span> <span class="o">==</span> <span class="n">x</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of elements in collection of keys.</span>
 <span class="sd">        Note: This method iterates over all elements of the collection and counts them.</span>
 <span class="sd">        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.</span>
 <span class="sd">        :return: The number (int) of elements in the collection of keys.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Note: Found that sum(1 for _ in self.__iter__()) was slower for small, slightly faster for big inputs.</span>
         <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -242,7 +242,7 @@
         <span class="k">return</span> <span class="n">count</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">head</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;items&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"items"</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span></div>
@@ -253,12 +253,12 @@
 
 
 <span class="c1"># def getitem_based_contains(self, x) -&gt; bool:</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     """</span>
 <span class="c1">#     Check if collection of keys contains k.</span>
-<span class="c1">#     Note: This method actually fetches the contents for k, returning False if there&#39;s a key error trying to do so</span>
+<span class="c1">#     Note: This method actually fetches the contents for k, returning False if there's a key error trying to do so</span>
 <span class="c1">#     Therefore it may not be efficient, and in most cases, a method specific to the case should be used.</span>
 <span class="c1">#     :return: True if k is in the collection, and False if not</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     """</span>
 <span class="c1">#</span>
 <span class="c1">#     try:</span>
 <span class="c1">#         self.__getitem__(k)</span>
@@ -285,25 +285,25 @@
 <div class="viewcode-block" id="KvReader">
 <a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.KvReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">KvReader</span><span class="p">(</span><span class="n">MappingViewMixin</span><span class="p">,</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Acts as a Mapping abc, but with default __len__ (implemented by counting keys)</span>
-<span class="sd">    and head method to get the first (k, v) item of the store&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Acts as a Mapping abc, but with default __len__ (implemented by counting keys)</span>
+<span class="sd">    and head method to get the first (k, v) item of the store"""</span>
 
 <div class="viewcode-block" id="KvReader.head">
 <a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.KvReader.head">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">head</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the first (key, value) pair&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get the first (key, value) pair"""</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__reversed__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The __reversed__ is disabled at the base, but can be re-defined in subclasses.</span>
+<span class="w">        </span><span class="sd">"""The __reversed__ is disabled at the base, but can be re-defined in subclasses.</span>
 <span class="sd">        Rationale: KvReader is meant to wrap a variety of storage backends or key-value</span>
 <span class="sd">        perspectives thereof.</span>
 <span class="sd">        Not all of these would have a natural or intuitive order nor do we want to</span>
 <span class="sd">        incur the cost of maintaining one systematically.</span>
 
-<span class="sd">        If you need a reversed list, here&#39;s one way to do it, but note that it</span>
+<span class="sd">        If you need a reversed list, here's one way to do it, but note that it</span>
 <span class="sd">        depends on how self iterates, which is not even assured to be consistent at</span>
 <span class="sd">        every call:</span>
 
@@ -318,7 +318,7 @@
 
 <span class="sd">            reversed = sorted(self)[::-1]</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="vm">__doc__</span><span class="p">)</span></div>
 
 
@@ -326,51 +326,51 @@
 <span class="n">Reader</span> <span class="o">=</span> <span class="n">KvReader</span>  <span class="c1"># alias for back-compatibility</span>
 
 
-<span class="c1"># TODO: Should we really be using MutableMapping if we&#39;re disabling so many of it&#39;s methods?</span>
-<span class="c1"># TODO: Wishful thinking: Define store type so the type is defined by it&#39;s methods, not by subclassing.</span>
+<span class="c1"># TODO: Should we really be using MutableMapping if we're disabling so many of it's methods?</span>
+<span class="c1"># TODO: Wishful thinking: Define store type so the type is defined by it's methods, not by subclassing.</span>
 <div class="viewcode-block" id="KvPersister">
 <a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.KvPersister">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">KvPersister</span><span class="p">(</span><span class="n">KvReader</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Acts as a MutableMapping abc, but disabling the clear and __reversed__ method,</span>
+<span class="w">    </span><span class="sd">"""Acts as a MutableMapping abc, but disabling the clear and __reversed__ method,</span>
 <span class="sd">    and computing __len__ by iterating over all keys, and counting them.</span>
 
 <span class="sd">    Note that KvPersister is a MutableMapping, and as such, is dict-like.</span>
-<span class="sd">    But that doesn&#39;t mean it&#39;s a dict.</span>
+<span class="sd">    But that doesn't mean it's a dict.</span>
 
 <span class="sd">    For instance, consider the following code:</span>
 
 <span class="sd">    .. code-block:: python</span>
 
 <span class="sd">        s = SomeKvPersister()</span>
-<span class="sd">        s[&#39;a&#39;][&#39;b&#39;] = 3</span>
+<span class="sd">        s['a']['b'] = 3</span>
 
-<span class="sd">    If `s` is a dict, this would have the effect of adding a (&#39;b&#39;, 3) item under &#39;a&#39;.</span>
+<span class="sd">    If `s` is a dict, this would have the effect of adding a ('b', 3) item under 'a'.</span>
 <span class="sd">    But in the general case, this might</span>
-<span class="sd">    - fail, because the `s[&#39;a&#39;]` doesn&#39;t support sub-scripting (doesn&#39;t have a `__getitem__`)</span>
+<span class="sd">    - fail, because the `s['a']` doesn't support sub-scripting (doesn't have a `__getitem__`)</span>
 <span class="sd">    - or, worse, will pass silently but not actually persist the write as expected (e.g. LocalFileStore)</span>
 
 <span class="sd">    Another example: `s.popitem()` will pop a `(k, v)` pair off of the `s` store.</span>
 <span class="sd">    That is, retrieve the `v` for `k`, delete the entry for `k`, and return a `(k, v)`.</span>
 <span class="sd">    Note that unlike modern dicts which will return the last item that was stored</span>
 <span class="sd">     -- that is, LIFO (last-in, first-out) order -- for KvPersisters,</span>
-<span class="sd">     there&#39;s no assurance as to what item will be, since it will depend on the backend storage system</span>
+<span class="sd">     there's no assurance as to what item will be, since it will depend on the backend storage system</span>
 <span class="sd">     and/or how the persister was implemented.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">clear</span> <span class="o">=</span> <span class="n">_disabled_clear_method</span></div>
 
 
     <span class="c1"># # TODO: Tests and documentation demos needed.</span>
     <span class="c1"># def popitem(self):</span>
-    <span class="c1">#     &quot;&quot;&quot;pop a (k, v) pair off of the store.</span>
+    <span class="c1">#     """pop a (k, v) pair off of the store.</span>
     <span class="c1">#     That is, retrieve the v for k, delete the entry for k, and return a (k, v)</span>
     <span class="c1">#     Note that unlike modern dicts which will return the last item that was stored</span>
     <span class="c1">#      -- that is, LIFO (last-in, first-out) order -- for KvPersisters,</span>
-    <span class="c1">#      there&#39;s no assurance as to what item will be, since it will depend on the backend storage system</span>
+    <span class="c1">#      there's no assurance as to what item will be, since it will depend on the backend storage system</span>
     <span class="c1">#      and/or how the persister was implemented.</span>
     <span class="c1">#     :return:</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     """</span>
     <span class="c1">#     return super(KvPersister, self).popitem()</span>
 
 
@@ -400,13 +400,13 @@
             <span class="c1">#   self.__wrapped__ would make it hard to debug and</span>
             <span class="c1">#   self would fail with unbound methods (why?)</span>
             <span class="c1">#   So doing a check here, but would like to find a better solution.</span>
-            <span class="n">wrapped_callable</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;__wrapped__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">wrapped_callable</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"__wrapped__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">is_classmethod</span><span class="p">(</span><span class="n">wrapped_callable</span><span class="p">)</span> <span class="ow">or</span> <span class="n">is_unbound_method</span><span class="p">(</span><span class="n">wrapped_callable</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">wrapped_callable</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span>
 
-            <span class="c1"># wrapped_callable = getattr(self, &#39;__wrapped__&#39;, None)</span>
+            <span class="c1"># wrapped_callable = getattr(self, '__wrapped__', None)</span>
             <span class="c1"># if not is_classmethod(wrapped_callable):</span>
             <span class="c1">#     return self</span>
             <span class="c1"># else:</span>
@@ -425,7 +425,7 @@
 
 <span class="c1"># ---------------------------------------------------------------------------------------</span>
 <span class="c1"># wrapped_self: recover the outer (transform-applying) store from inside a wrapped</span>
-<span class="c1"># class&#39;s own method. See Issue #18 and misc/docs/dol_issue18_design.md.</span>
+<span class="c1"># class's own method. See Issue #18 and misc/docs/dol_issue18_design.md.</span>
 <span class="c1">#</span>
 <span class="c1"># dol wraps by delegation (has-a): ``wrap_kvs(SomeClass)`` returns a ``Store`` subclass</span>
 <span class="c1"># ``Wrap`` that HOLDS an instance of ``SomeClass`` in ``self.store``. A method defined on</span>
@@ -444,27 +444,27 @@
 <span class="c1"># Each id maps to a *list* of weakrefs, not a single one, so that objects legitimately</span>
 <span class="c1"># sharing an inner store (most importantly a shallow ``copy.copy`` of a wrapped store, whose</span>
 <span class="c1"># copy shares ``self.store`` with the original) coexist: a finalizer removes only its own</span>
-<span class="c1"># weakref, never a live sibling&#39;s. ``wrapped_self`` then picks a live wrapper that still</span>
+<span class="c1"># weakref, never a live sibling's. ``wrapped_self`` then picks a live wrapper that still</span>
 <span class="c1"># actually holds the queried object as its ``.store`` (an identity guard).</span>
-<span class="n">_wrapper_backrefs</span><span class="p">:</span> <span class="s2">&quot;dict[int, list[weakref.ReferenceType]]&quot;</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">_wrapper_backrefs</span><span class="p">:</span> <span class="s2">"dict[int, list[weakref.ReferenceType]]"</span> <span class="o">=</span> <span class="p">{}</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_register_wrapper_backref</span><span class="p">(</span><span class="n">inner</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">:</span> <span class="s2">&quot;Store&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Record that ``wrapper`` holds ``inner`` as its delegated store.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_register_wrapper_backref</span><span class="p">(</span><span class="n">inner</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">:</span> <span class="s2">"Store"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Record that ``wrapper`` holds ``inner`` as its delegated store.</span>
 
 <span class="sd">    Appends ``weakref(wrapper)`` to the list registered under ``id(inner)`` (idempotent for</span>
 <span class="sd">    an already-registered live wrapper). When ``wrapper`` is garbage-collected the weakref</span>
 <span class="sd">    callback removes *only its own* entry from that list, and drops the ``id(inner)`` key once</span>
 <span class="sd">    the list is empty -- so garbage-collecting one wrapper (e.g. a transient ``copy.copy``)</span>
 <span class="sd">    never evicts a still-live sibling that shares the same inner.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">inner_id</span> <span class="o">=</span> <span class="nb">id</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span>
 
     <span class="n">existing</span> <span class="o">=</span> <span class="n">_wrapper_backrefs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">inner_id</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">existing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">ref</span><span class="p">()</span> <span class="ow">is</span> <span class="n">wrapper</span> <span class="k">for</span> <span class="n">ref</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">):</span>
         <span class="k">return</span>  <span class="c1"># this live wrapper is already registered for this inner</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_cleanup</span><span class="p">(</span><span class="n">dead_ref</span><span class="p">:</span> <span class="s2">&quot;weakref.ReferenceType&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cleanup</span><span class="p">(</span><span class="n">dead_ref</span><span class="p">:</span> <span class="s2">"weakref.ReferenceType"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">refs</span> <span class="o">=</span> <span class="n">_wrapper_backrefs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">inner_id</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">refs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
@@ -487,9 +487,9 @@
 <div class="viewcode-block" id="wrapped_self">
 <a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.wrapped_self">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_self</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the outermost transform-applying store wrapping ``obj``, else ``obj`` itself.</span>
+<span class="w">    </span><span class="sd">"""Return the outermost transform-applying store wrapping ``obj``, else ``obj`` itself.</span>
 
-<span class="sd">    Use this inside a method DEFINED ON a class that was wrapped by dol&#39;s delegation</span>
+<span class="sd">    Use this inside a method DEFINED ON a class that was wrapped by dol's delegation</span>
 <span class="sd">    machinery (``wrap_kvs`` / ``filt_iter`` / ``cached_keys`` / ``mk_relative_path_store`` /</span>
 <span class="sd">    ``Store.wrap`` applied to the *class*). There, ``self`` is bound to the inner, unwrapped</span>
 <span class="sd">    store, so ``self[k]`` bypasses the transforms (Issue #18). Writing</span>
@@ -517,14 +517,14 @@
 <span class="sd">    ...     def via_wrapped_self(self, k):</span>
 <span class="sd">    ...         return wrapped_self(self)[k]    # outer store: transform applied</span>
 <span class="sd">    &gt;&gt;&gt; s = S()</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;2&#39;] = 2</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;2&#39;]                                 # external access is transformed</span>
+<span class="sd">    &gt;&gt;&gt; s['2'] = 2</span>
+<span class="sd">    &gt;&gt;&gt; s['2']                                 # external access is transformed</span>
 <span class="sd">    2.0</span>
-<span class="sd">    &gt;&gt;&gt; s.via_self(&#39;2&#39;)                        # Issue #18: bypasses the transform</span>
+<span class="sd">    &gt;&gt;&gt; s.via_self('2')                        # Issue #18: bypasses the transform</span>
 <span class="sd">    4</span>
-<span class="sd">    &gt;&gt;&gt; s.via_wrapped_self(&#39;2&#39;)                # wrapped_self recovers the transformed value</span>
+<span class="sd">    &gt;&gt;&gt; s.via_wrapped_self('2')                # wrapped_self recovers the transformed value</span>
 <span class="sd">    2.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">seen</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="n">obj</span><span class="p">)}</span>
     <span class="n">cur</span> <span class="o">=</span> <span class="n">obj</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -538,7 +538,7 @@
             <span class="k">if</span> <span class="p">(</span>
                 <span class="n">candidate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                 <span class="ow">and</span> <span class="nb">id</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen</span>
-                <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">candidate</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="n">cur</span>
+                <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">candidate</span><span class="p">,</span> <span class="s2">"store"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="n">cur</span>
             <span class="p">):</span>
                 <span class="n">nxt</span> <span class="o">=</span> <span class="n">candidate</span>
                 <span class="k">break</span>
@@ -556,11 +556,11 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">delegate_to</span><span class="p">(</span>
     <span class="n">wrapped</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
     <span class="n">class_trans</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">delegation_attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;store&quot;</span><span class="p">,</span>
+    <span class="n">delegation_attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"store"</span><span class="p">,</span>
     <span class="n">include</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">(),</span>
     <span class="n">ignore</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">(),</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Decorator</span><span class="p">:</span>
-    <span class="c1"># turn include and ignore into sets, if they aren&#39;t already</span>
+    <span class="c1"># turn include and ignore into sets, if they aren't already</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">include</span><span class="p">,</span> <span class="n">Set</span><span class="p">):</span>
         <span class="n">include</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">include</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ignore</span><span class="p">,</span> <span class="n">Set</span><span class="p">):</span>
@@ -583,7 +583,7 @@
                 <span class="n">delegate</span> <span class="o">=</span> <span class="n">wrapped</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">delegate</span><span class="p">)</span>
                 <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">wrapped</span><span class="p">),</span> <span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;The wrapper instance has no (expected) </span><span class="si">{</span><span class="n">delegation_attr</span><span class="si">!r}</span><span class="s2"> attribute&quot;</span>
+                    <span class="sa">f</span><span class="s2">"The wrapper instance has no (expected) </span><span class="si">{</span><span class="n">delegation_attr</span><span class="si">!r}</span><span class="s2"> attribute"</span>
                 <span class="p">)</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -598,10 +598,10 @@
 
         <span class="n">attrs</span> <span class="o">=</span> <span class="n">attributes_of_wrapped</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span>
             <span class="nb">dir</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">)</span>
-        <span class="p">)</span>  <span class="c1"># don&#39;t bother adding attributes that the class already has</span>
+        <span class="p">)</span>  <span class="c1"># don't bother adding attributes that the class already has</span>
         <span class="c1"># set all the attributes</span>
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;__provides__&quot;</span><span class="p">:</span>  <span class="c1"># TODO: Hack. Find better solution.</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">"__provides__"</span><span class="p">:</span>  <span class="c1"># TODO: Hack. Find better solution.</span>
                 <span class="c1"># This is because __provides__ happened to be in wrapper_cls but not</span>
                 <span class="c1"># in wrapped.</span>
                 <span class="c1"># Happened at some point with `from sqldol import SqlRowsReader``</span>
@@ -621,7 +621,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_delegator_reconstruct</span><span class="p">(</span><span class="n">wrapped_cls</span><span class="p">,</span> <span class="n">wrapped</span><span class="p">,</span> <span class="n">class_trans</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">""""""</span>
     <span class="n">type_</span> <span class="o">=</span> <span class="n">delegator_wrap</span><span class="p">(</span><span class="n">wrapped_cls</span><span class="p">,</span> <span class="n">wrapped</span><span class="p">,</span> <span class="n">class_trans</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="p">)</span>
     <span class="c1"># produce an empty object for pickle to pour the</span>
     <span class="c1"># __getstate__ values into, via __setstate__</span>
@@ -634,9 +634,9 @@
     <span class="n">delegator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
     <span class="n">obj</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="n">Any</span><span class="p">,</span>
     <span class="n">class_trans</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">delegation_attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;store&quot;</span><span class="p">,</span>
+    <span class="n">delegation_attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"store"</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap a ``obj`` (type or instance) with ``delegator``.</span>
+<span class="w">    </span><span class="sd">"""Wrap a ``obj`` (type or instance) with ``delegator``.</span>
 
 <span class="sd">    If obj is not a type, trivially returns ``delegator(obj)``.</span>
 
@@ -645,48 +645,48 @@
 <span class="sd">    same signature as obj, but that produces instances that are wrapped by ``delegator``</span>
 
 <span class="sd">    :param delegator: An instance wrapper. A Callable (type or function -- with only</span>
-<span class="sd">        one required input) that will return a wrapped version of it&#39;s input instance.</span>
+<span class="sd">        one required input) that will return a wrapped version of it's input instance.</span>
 <span class="sd">    :param obj: The object (class or instance) to be wrapped.</span>
 <span class="sd">    :return: A wrapped object</span>
 
-<span class="sd">    Let&#39;s demo this on a simple Delegator class.</span>
+<span class="sd">    Let's demo this on a simple Delegator class.</span>
 
 <span class="sd">    &gt;&gt;&gt; class Delegator:</span>
-<span class="sd">    ...     i_think = &#39;therefore I am delegated&#39;  # this is just to verify that we&#39;re in a Delegator</span>
+<span class="sd">    ...     i_think = 'therefore I am delegated'  # this is just to verify that we're in a Delegator</span>
 <span class="sd">    ...     def __init__(self, wrapped_obj):</span>
 <span class="sd">    ...         self.wrapped_obj = wrapped_obj</span>
 <span class="sd">    ...     def __getattr__(self, attr):  # delegation: just forward attributes to wrapped_obj</span>
 <span class="sd">    ...         return getattr(self.wrapped_obj, attr)</span>
-<span class="sd">    ...     wrap = classmethod(delegator_wrap)  # this is a useful recipe to have the Delegator carry it&#39;s own wrapping method</span>
+<span class="sd">    ...     wrap = classmethod(delegator_wrap)  # this is a useful recipe to have the Delegator carry it's own wrapping method</span>
 
 <span class="sd">    The only difference between a wrapped object ``Delegator(obj)`` and the original ``obj`` is</span>
 <span class="sd">    that the wrapped one has a ``i_think`` attribute.</span>
 <span class="sd">    The wrapped object should otherwise behave the same (on all but special (dunder) methods).</span>
-<span class="sd">    So let&#39;s test this on dictionaries, using the following test function:</span>
+<span class="sd">    So let's test this on dictionaries, using the following test function:</span>
 
 <span class="sd">    &gt;&gt;&gt; def test_wrapped_d(wrapped_d, original_d):</span>
-<span class="sd">    ...     &#39;&#39;&#39;A function to test a wrapped dict&#39;&#39;&#39;</span>
-<span class="sd">    ...     assert not hasattr(original_d, &#39;i_think&#39;)  # verify that the unwrapped_d doesn&#39;t have an i_think attribute</span>
+<span class="sd">    ...     '''A function to test a wrapped dict'''</span>
+<span class="sd">    ...     assert not hasattr(original_d, 'i_think')  # verify that the unwrapped_d doesn't have an i_think attribute</span>
 <span class="sd">    ...     assert list(wrapped_d.items()) == list(original_d.items())  # verify that wrapped_d has an items that gives us the same thing as origina_d</span>
-<span class="sd">    ...     assert hasattr(wrapped_d, &#39;i_think&#39;)  # ... but wrapped_d has a i_think attribute</span>
-<span class="sd">    ...     assert wrapped_d.i_think == &#39;therefore I am delegated&#39;  # ... and its what we set it to be</span>
+<span class="sd">    ...     assert hasattr(wrapped_d, 'i_think')  # ... but wrapped_d has a i_think attribute</span>
+<span class="sd">    ...     assert wrapped_d.i_think == 'therefore I am delegated'  # ... and its what we set it to be</span>
 
-<span class="sd">    Let&#39;s try delegating a dict INSTANCE first:</span>
+<span class="sd">    Let's try delegating a dict INSTANCE first:</span>
 
-<span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: 1, &#39;b&#39;: 2}</span>
+<span class="sd">    &gt;&gt;&gt; d = {'a': 1, 'b': 2}</span>
 <span class="sd">    &gt;&gt;&gt; wrapped_d = delegator_wrap(Delegator, d)</span>
 <span class="sd">    &gt;&gt;&gt; test_wrapped_d(wrapped_d, d)</span>
 
 <span class="sd">    If we ask ``delegator_wrap`` to wrap a ``dict`` type, we get a subclass of Delegator</span>
 <span class="sd">    (NOT dict!) whose instances will have the behavior exhibited above:</span>
 
-<span class="sd">    &gt;&gt;&gt; WrappedDict = delegator_wrap(Delegator, dict, delegation_attr=&#39;wrapped_obj&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; WrappedDict = delegator_wrap(Delegator, dict, delegation_attr='wrapped_obj')</span>
 <span class="sd">    &gt;&gt;&gt; assert issubclass(WrappedDict, Delegator)</span>
 <span class="sd">    &gt;&gt;&gt; wrapped_d = WrappedDict(a=1, b=2)</span>
 
 <span class="sd">    &gt;&gt;&gt; test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)</span>
 
-<span class="sd">    Now we&#39;ll demo/test the ``wrap = classmethod(delegator_wrap)`` trick</span>
+<span class="sd">    Now we'll demo/test the ``wrap = classmethod(delegator_wrap)`` trick</span>
 <span class="sd">    ... with instances</span>
 
 <span class="sd">    &gt;&gt;&gt; wrapped_d = Delegator.wrap(d)</span>
@@ -694,20 +694,20 @@
 
 <span class="sd">    ... with classes</span>
 
-<span class="sd">    &gt;&gt;&gt; WrappedDict = Delegator.wrap(dict, delegation_attr=&#39;wrapped_obj&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; WrappedDict = Delegator.wrap(dict, delegation_attr='wrapped_obj')</span>
 <span class="sd">    &gt;&gt;&gt; wrapped_d = WrappedDict(a=1, b=2)</span>
 
 <span class="sd">    &gt;&gt;&gt; test_wrapped_d(wrapped_d, wrapped_d.wrapped_obj)</span>
 <span class="sd">    &gt;&gt;&gt; class A(dict):</span>
 <span class="sd">    ...     def foo(self, x):</span>
 <span class="sd">    ...         pass</span>
-<span class="sd">    &gt;&gt;&gt; hasattr(A, &#39;foo&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; hasattr(A, 'foo')</span>
 <span class="sd">    True</span>
 <span class="sd">    &gt;&gt;&gt; WrappedA = Delegator.wrap(A)</span>
-<span class="sd">    &gt;&gt;&gt; hasattr(WrappedA, &#39;foo&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; hasattr(WrappedA, 'foo')</span>
 <span class="sd">    True</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">delegator</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
             <span class="n">type_decorator</span> <span class="o">=</span> <span class="n">delegate_to</span><span class="p">(</span>
@@ -737,7 +737,7 @@
 <div class="viewcode-block" id="Store">
 <a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.Store">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Store</span><span class="p">(</span><span class="n">KvPersister</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    By store we mean key-value store. This could be files in a filesystem, objects in s3, or a database. Where and</span>
 <span class="sd">    how the content is stored should be specified, but StoreInterface offers a dict-like interface to this.</span>
 <span class="sd">    ::</span>
@@ -750,35 +750,35 @@
 <span class="sd">    &gt;&gt;&gt; # Default store: no key or value conversion #####################################</span>
 <span class="sd">    &gt;&gt;&gt; from dol import Store</span>
 <span class="sd">    &gt;&gt;&gt; s = Store()</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;foo&#39;] = 33</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;bar&#39;] = 65</span>
-<span class="sd">    &gt;&gt;&gt; assert list(s.items()) == [(&#39;foo&#39;, 33), (&#39;bar&#39;, 65)]</span>
-<span class="sd">    &gt;&gt;&gt; assert list(s.store.items()) == [(&#39;foo&#39;, 33), (&#39;bar&#39;, 65)]  # see that the store contains the same thing</span>
+<span class="sd">    &gt;&gt;&gt; s['foo'] = 33</span>
+<span class="sd">    &gt;&gt;&gt; s['bar'] = 65</span>
+<span class="sd">    &gt;&gt;&gt; assert list(s.items()) == [('foo', 33), ('bar', 65)]</span>
+<span class="sd">    &gt;&gt;&gt; assert list(s.store.items()) == [('foo', 33), ('bar', 65)]  # see that the store contains the same thing</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; #################################################################################</span>
-<span class="sd">    &gt;&gt;&gt; # Now let&#39;s make stores that have a key and value conversion layer ##############</span>
+<span class="sd">    &gt;&gt;&gt; # Now let's make stores that have a key and value conversion layer ##############</span>
 <span class="sd">    &gt;&gt;&gt; # input keys will be upper cased, and output keys lower cased ###################</span>
 <span class="sd">    &gt;&gt;&gt; # input values (assumed int) will be converted to ascii string, and visa versa ##</span>
 <span class="sd">    &gt;&gt;&gt; #################################################################################</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; def test_store(s):</span>
-<span class="sd">    ...     s[&#39;foo&#39;] = 33  # write 33 to &#39;foo&#39;</span>
-<span class="sd">    ...     assert &#39;foo&#39; in s  # __contains__ works</span>
-<span class="sd">    ...     assert &#39;no_such_key&#39; not in s  # __nin__ works</span>
-<span class="sd">    ...     s[&#39;bar&#39;] = 65  # write 65 to &#39;bar&#39;</span>
+<span class="sd">    ...     s['foo'] = 33  # write 33 to 'foo'</span>
+<span class="sd">    ...     assert 'foo' in s  # __contains__ works</span>
+<span class="sd">    ...     assert 'no_such_key' not in s  # __nin__ works</span>
+<span class="sd">    ...     s['bar'] = 65  # write 65 to 'bar'</span>
 <span class="sd">    ...     assert len(s) == 2  # there are indeed two elements</span>
-<span class="sd">    ...     assert list(s) == [&#39;foo&#39;, &#39;bar&#39;]  # these are the keys</span>
-<span class="sd">    ...     assert list(s.keys()) == [&#39;foo&#39;, &#39;bar&#39;]  # the keys() method works!</span>
+<span class="sd">    ...     assert list(s) == ['foo', 'bar']  # these are the keys</span>
+<span class="sd">    ...     assert list(s.keys()) == ['foo', 'bar']  # the keys() method works!</span>
 <span class="sd">    ...     assert list(s.values()) == [33, 65]  # the values() method works!</span>
-<span class="sd">    ...     assert list(s.items()) == [(&#39;foo&#39;, 33), (&#39;bar&#39;, 65)]  # these are the items</span>
-<span class="sd">    ...     assert list(s.store.items()) == [(&#39;FOO&#39;, &#39;!&#39;), (&#39;BAR&#39;, &#39;A&#39;)]  # but note the internal representation</span>
-<span class="sd">    ...     assert s.get(&#39;foo&#39;) == 33  # the get method works</span>
-<span class="sd">    ...     assert s.get(&#39;no_such_key&#39;, &#39;something&#39;) == &#39;something&#39;  # return a default value</span>
-<span class="sd">    ...     del(s[&#39;foo&#39;])  # you can delete an item given its key</span>
+<span class="sd">    ...     assert list(s.items()) == [('foo', 33), ('bar', 65)]  # these are the items</span>
+<span class="sd">    ...     assert list(s.store.items()) == [('FOO', '!'), ('BAR', 'A')]  # but note the internal representation</span>
+<span class="sd">    ...     assert s.get('foo') == 33  # the get method works</span>
+<span class="sd">    ...     assert s.get('no_such_key', 'something') == 'something'  # return a default value</span>
+<span class="sd">    ...     del(s['foo'])  # you can delete an item given its key</span>
 <span class="sd">    ...     assert len(s) == 1  # see, only one item left!</span>
-<span class="sd">    ...     assert list(s.items()) == [(&#39;bar&#39;, 65)]  # here it is</span>
+<span class="sd">    ...     assert list(s.items()) == [('bar', 65)]  # here it is</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; # We can introduce this conversion layer in several ways. Here&#39;s a few... ######################</span>
+<span class="sd">    &gt;&gt;&gt; # We can introduce this conversion layer in several ways. Here's a few... ######################</span>
 <span class="sd">    &gt;&gt;&gt; # by subclassing ###############################################################################</span>
 <span class="sd">    &gt;&gt;&gt; class MyStore(Store):</span>
 <span class="sd">    ...     def _id_of_key(self, k):</span>
@@ -789,7 +789,7 @@
 <span class="sd">    ...         return chr(obj)</span>
 <span class="sd">    ...     def _obj_of_data(self, data):</span>
 <span class="sd">    ...         return ord(data)</span>
-<span class="sd">    &gt;&gt;&gt; s = MyStore(store=dict())  # note that you don&#39;t need to specify dict(), since it&#39;s the default</span>
+<span class="sd">    &gt;&gt;&gt; s = MyStore(store=dict())  # note that you don't need to specify dict(), since it's the default</span>
 <span class="sd">    &gt;&gt;&gt; test_store(s)</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # by assigning functions to converters ##########################################################</span>
@@ -833,9 +833,9 @@
 <span class="sd">    &gt;&gt;&gt; s._obj_of_data=lambda data: ord(data)</span>
 <span class="sd">    &gt;&gt;&gt; test_store(s)</span>
 
-<span class="sd">    Note on defining your own &quot;Mapping Views&quot;.</span>
+<span class="sd">    Note on defining your own "Mapping Views".</span>
 
-<span class="sd">    When you do a `.keys()`, a `.values()` or `.items()` you&#39;re getting a `MappingView`</span>
+<span class="sd">    When you do a `.keys()`, a `.values()` or `.items()` you're getting a `MappingView`</span>
 <span class="sd">    instance; an iterable and sized container that provides some methods to access</span>
 <span class="sd">    particular aspects of the wrapped mapping.</span>
 
@@ -845,10 +845,10 @@
 
 <span class="sd">    For more, see: https://github.com/i2mint/dol/wiki/Mapping-Views</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">_state_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;store&quot;</span><span class="p">,</span> <span class="s2">&quot;_class_wrapper&quot;</span><span class="p">]</span>
-    <span class="c1"># __slots__ = (&#39;_id_of_key&#39;, &#39;_key_of_id&#39;, &#39;_data_of_obj&#39;, &#39;_obj_of_data&#39;)</span>
+    <span class="n">_state_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"store"</span><span class="p">,</span> <span class="s2">"_class_wrapper"</span><span class="p">]</span>
+    <span class="c1"># __slots__ = ('_id_of_key', '_key_of_id', '_data_of_obj', '_obj_of_data')</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="nb">dict</span><span class="p">):</span>
         <span class="c1"># self._wrapped_methods = set(dir(Store))</span>
@@ -862,13 +862,13 @@
         <span class="c1"># inside a delegated method whose ``self`` is the inner store (Issue #18).</span>
         <span class="n">_register_wrapper_backref</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="s2">&quot;KeysView&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="s2">"KeysView"</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">KeysView</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">KeysView</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="s2">&quot;ValuesView&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="s2">"ValuesView"</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ValuesView</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">ValuesView</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="s2">&quot;ItemsView&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="s2">"ItemsView"</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ItemsView</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">ItemsView</span>
 
     <span class="n">_id_of_key</span> <span class="o">=</span> <span class="n">static_identity_method</span>
@@ -882,13 +882,13 @@
         <span class="ne">KeyError</span><span class="p">,</span>
     <span class="p">)</span>  <span class="c1"># another option: (KeyError, FileNotFoundError)</span>
 
-    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s2">&quot;store&quot;</span><span class="p">))</span>
+    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s2">"store"</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delegate method to wrapped store if not part of wrapper store methods&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Delegate method to wrapped store if not part of wrapper store methods"""</span>
         <span class="c1"># Instead of return getattr(self.store, attr), doing the following</span>
         <span class="c1"># because self.store had problems with pickling</span>
-        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">),</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"store"</span><span class="p">),</span> <span class="n">attr</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__dir__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span>
@@ -908,7 +908,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">_id</span><span class="p">]</span>
         <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">_errors_that_trigger_missing</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;__missing__&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"__missing__"</span><span class="p">):</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__missing__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">error</span>
@@ -947,24 +947,24 @@
             <span class="k">if</span> <span class="n">k</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Couldn&#39;t get data for the key </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">. This could be be...</span><span class="se">\n</span><span class="s2">&quot;</span>
-                <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;... because it&#39;s not a store (just a collection, that doesn&#39;t have a __getitem__)</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Couldn't get data for the key </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">. This could be be...</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="s2">"... because it's not a store (just a collection, that doesn't have a __getitem__)</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="n">msg</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="s2">&quot;... because there&#39;s a layer transforming outcoming keys that are not the ones the store actually &quot;</span>
-                    <span class="s2">&quot;uses? If you didn&#39;t wrap the store with the inverse ingoing keys transformation, &quot;</span>
-                    <span class="s2">&quot;that would happen.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">"... because there's a layer transforming outcoming keys that are not the ones the store actually "</span>
+                    <span class="s2">"uses? If you didn't wrap the store with the inverse ingoing keys transformation, "</span>
+                    <span class="s2">"that would happen.</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="p">)</span>
                 <span class="n">msg</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="s2">&quot;I&#39;ll ask the inner-layer what it&#39;s head is, but IT MAY NOT REFLECT the reality of your store &quot;</span>
-                    <span class="s2">&quot;if you have some filtering, caching etc.&quot;</span>
+                    <span class="s2">"I'll ask the inner-layer what it's head is, but IT MAY NOT REFLECT the reality of your store "</span>
+                    <span class="s2">"if you have some filtering, caching etc."</span>
                 <span class="p">)</span>
-                <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;The error messages was: </span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"The error messages was: </span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
                 <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_of_id</span><span class="p">(</span><span class="n">_id</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">_id</span><span class="p">])</span></div>
 
-        <span class="c1"># NOTE: Old version didn&#39;t work when key mapping was asymmetrical</span>
+        <span class="c1"># NOTE: Old version didn't work when key mapping was asymmetrical</span>
         <span class="c1"># for k, v in self.items():</span>
         <span class="c1">#     return k, v</span>
 
@@ -980,14 +980,14 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
 
     <span class="c1"># def clear(self):</span>
-    <span class="c1">#     raise NotImplementedError(&#39;&#39;&#39;</span>
+    <span class="c1">#     raise NotImplementedError('''</span>
     <span class="c1">#     The clear method was overridden to make dangerous difficult.</span>
     <span class="c1">#     If you really want to delete all your data, you can do so by doing:</span>
     <span class="c1">#         try:</span>
     <span class="c1">#             while True:</span>
     <span class="c1">#                 self.popitem()</span>
     <span class="c1">#         except KeyError:</span>
-    <span class="c1">#             pass&#39;&#39;&#39;)</span>
+    <span class="c1">#             pass''')</span>
 
     <span class="c1"># Misc ####################################################################</span>
     <span class="c1"># TODO: Review this -- must be a better overall solution!</span>
@@ -996,7 +996,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_repr_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">half</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_repr_size</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_repr_size</span><span class="p">:</span>
-                <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="n">half</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;  ...  &quot;</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="n">half</span><span class="p">:]</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="n">half</span><span class="p">]</span> <span class="o">+</span> <span class="s2">"  ...  "</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="n">half</span><span class="p">:]</span>
         <span class="k">return</span> <span class="n">x</span>
         <span class="c1"># return self.store.__repr__()</span>
 
@@ -1014,7 +1014,7 @@
         <span class="c1"># Unpickling reconstructs via copyreg (bypassing __init__), so re-register the</span>
         <span class="c1"># inner-store -&gt; self back-reference here too (else wrapped_self would silently</span>
         <span class="c1"># revert to the Issue #18 raw behavior after a pickle round-trip).</span>
-        <span class="n">inner</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">inner</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"store"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">inner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">_register_wrapper_backref</span><span class="p">(</span><span class="n">inner</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
 
@@ -1030,8 +1030,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span>
 
-<span class="n">PT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;PT&quot;</span><span class="p">)</span>  <span class="c1"># Path Type</span>
-<span class="n">inf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;infinity&quot;</span><span class="p">)</span>
+<span class="n">PT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">"PT"</span><span class="p">)</span>  <span class="c1"># Path Type</span>
+<span class="n">inf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"infinity"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">val_is_mapping</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">PT</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1043,7 +1043,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">tuple_keypath_and_val</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">PT</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]:</span>
-    <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="p">():</span>  <span class="c1"># we&#39;re just begining (the root),</span>
+    <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="p">():</span>  <span class="c1"># we're just begining (the root),</span>
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span><span class="p">,)</span>  <span class="c1"># so begin the path with the first key.</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>  <span class="c1"># extend the path (append the new key)</span>
@@ -1064,7 +1064,7 @@
     <span class="n">breadth_first</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">p</span><span class="p">:</span> <span class="n">PT</span> <span class="o">=</span> <span class="p">(),</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Walks a nested structure of mappings, yielding stuff on the way.</span>
 
 <span class="sd">    :param v: A nested structure of mappings</span>
@@ -1081,15 +1081,15 @@
 <span class="sd">        the recursive walk of a branch. This is useful if you want to yield something</span>
 <span class="sd">        for every branch, not just the leaves.</span>
 
-<span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: 1, &#39;b&#39;: {&#39;c&#39;: 2, &#39;d&#39;: 3}}</span>
+<span class="sd">    &gt;&gt;&gt; d = {'a': 1, 'b': {'c': 2, 'd': 3}}</span>
 <span class="sd">    &gt;&gt;&gt; list(kv_walk(d))</span>
-<span class="sd">    [((&#39;a&#39;,), &#39;a&#39;, 1), ((&#39;b&#39;, &#39;c&#39;), &#39;c&#39;, 2), ((&#39;b&#39;, &#39;d&#39;), &#39;d&#39;, 3)]</span>
-<span class="sd">    &gt;&gt;&gt; list(kv_walk(d, lambda p, k, v: &#39;.&#39;.join(p)))</span>
-<span class="sd">    [&#39;a&#39;, &#39;b.c&#39;, &#39;b.d&#39;]</span>
+<span class="sd">    [(('a',), 'a', 1), (('b', 'c'), 'c', 2), (('b', 'd'), 'd', 3)]</span>
+<span class="sd">    &gt;&gt;&gt; list(kv_walk(d, lambda p, k, v: '.'.join(p)))</span>
+<span class="sd">    ['a', 'b.c', 'b.d']</span>
 
 <span class="sd">    The `walk_filt` argument allows you to control what values the walk encountered</span>
 <span class="sd">    should be walked through. This also means that this function is what controls</span>
-<span class="sd">    when to stop the recursive traversal of the tree, and yield an actual &quot;leaf&quot;.</span>
+<span class="sd">    when to stop the recursive traversal of the tree, and yield an actual "leaf".</span>
 
 <span class="sd">    Say we want to get (path, values) items from a nested mapping/store based on</span>
 <span class="sd">    a ``levels`` argument that determines what the desired values are.</span>
@@ -1105,30 +1105,30 @@
 <span class="sd">    ...         walk_filt=mk_level_walk_filt(levels)</span>
 <span class="sd">    ...     )</span>
 <span class="sd">    &gt;&gt;&gt; m = {</span>
-<span class="sd">    ...     &#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 42}},</span>
-<span class="sd">    ...     &#39;aa&#39;: {&#39;bb&#39;: {&#39;cc&#39;: &#39;dragon_con&#39;}}</span>
+<span class="sd">    ...     'a': {'b': {'c': 42}},</span>
+<span class="sd">    ...     'aa': {'bb': {'cc': 'dragon_con'}}</span>
 <span class="sd">    ... }</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; assert (</span>
 <span class="sd">    ...         list(leveled_map_walk(m, 3))</span>
 <span class="sd">    ...         == [</span>
-<span class="sd">    ...             ((&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), 42),</span>
-<span class="sd">    ...             ((&#39;aa&#39;, &#39;bb&#39;, &#39;cc&#39;), &#39;dragon_con&#39;)</span>
+<span class="sd">    ...             (('a', 'b', 'c'), 42),</span>
+<span class="sd">    ...             (('aa', 'bb', 'cc'), 'dragon_con')</span>
 <span class="sd">    ...         ]</span>
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; assert (</span>
 <span class="sd">    ...         list(leveled_map_walk(m, 2))</span>
 <span class="sd">    ...         == [</span>
-<span class="sd">    ...             ((&#39;a&#39;, &#39;b&#39;), {&#39;c&#39;: 42}),</span>
-<span class="sd">    ...             ((&#39;aa&#39;, &#39;bb&#39;), {&#39;cc&#39;: &#39;dragon_con&#39;})</span>
+<span class="sd">    ...             (('a', 'b'), {'c': 42}),</span>
+<span class="sd">    ...             (('aa', 'bb'), {'cc': 'dragon_con'})</span>
 <span class="sd">    ...         ]</span>
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; assert (</span>
 <span class="sd">    ...         list(leveled_map_walk(m, 1))</span>
 <span class="sd">    ...         == [</span>
-<span class="sd">    ...             ((&#39;a&#39;,), {&#39;b&#39;: {&#39;c&#39;: 42}}),</span>
-<span class="sd">    ...             ((&#39;aa&#39;,), {&#39;bb&#39;: {&#39;cc&#39;: &#39;dragon_con&#39;}})</span>
+<span class="sd">    ...             (('a',), {'b': {'c': 42}}),</span>
+<span class="sd">    ...             (('aa',), {'bb': {'cc': 'dragon_con'}})</span>
 <span class="sd">    ...         ]</span>
 <span class="sd">    ... )</span>
 
@@ -1138,64 +1138,64 @@
 <span class="sd">    your results.</span>
 
 <span class="sd">    &gt;&gt;&gt; mm = {</span>
-<span class="sd">    ...     &#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: 42}},</span>
-<span class="sd">    ...     &#39;aa&#39;: {&#39;bb&#39;: {&#39;cc&#39;: &#39;meaning_of_life&#39;}},</span>
-<span class="sd">    ...     &#39;aaa&#39;: {&#39;bbb&#39;: 314},</span>
+<span class="sd">    ...     'a': {'b': {'c': 42}},</span>
+<span class="sd">    ...     'aa': {'bb': {'cc': 'meaning_of_life'}},</span>
+<span class="sd">    ...     'aaa': {'bbb': 314},</span>
 <span class="sd">    ... }</span>
 <span class="sd">    &gt;&gt;&gt; return_path_if_int_leaf = lambda p, k, v: (p, v) if isinstance(v, int) else None</span>
 <span class="sd">    &gt;&gt;&gt; list(filter(None, kv_walk(mm, leaf_yield=return_path_if_int_leaf)))</span>
-<span class="sd">    [((&#39;a&#39;, &#39;b&#39;, &#39;c&#39;), 42), ((&#39;aaa&#39;, &#39;bbb&#39;), 314)]</span>
+<span class="sd">    [(('a', 'b', 'c'), 42), (('aaa', 'bbb'), 314)]</span>
 
-<span class="sd">    This &quot;path search&quot; functionality is available as a function in the ``recipes``</span>
+<span class="sd">    This "path search" functionality is available as a function in the ``recipes``</span>
 <span class="sd">    module, as ``search_paths``.</span>
 
-<span class="sd">    One last thing. Let&#39;s demonstrate the use of `branch_yield` and `breadth_first`.</span>
+<span class="sd">    One last thing. Let's demonstrate the use of `branch_yield` and `breadth_first`.</span>
 <span class="sd">    Consider the following dictionary:</span>
 
-<span class="sd">    &gt;&gt;&gt; d = {&#39;big&#39;: {&#39;apple&#39;: 1}, &#39;deal&#39;: 3, &#39;apple&#39;: {&#39;pie&#39;: 1, &#39;crumble&#39;: 2}}</span>
+<span class="sd">    &gt;&gt;&gt; d = {'big': {'apple': 1}, 'deal': 3, 'apple': {'pie': 1, 'crumble': 2}}</span>
 
-<span class="sd">    Say you wanted to find all the paths that end with &#39;apple&#39;. You could do:</span>
+<span class="sd">    Say you wanted to find all the paths that end with 'apple'. You could do:</span>
 
 <span class="sd">    &gt;&gt;&gt; from functools import partial</span>
-<span class="sd">    &gt;&gt;&gt; yield_path_if_ends_with_apple = lambda p, k, v: p if k == &#39;apple&#39; else None</span>
+<span class="sd">    &gt;&gt;&gt; yield_path_if_ends_with_apple = lambda p, k, v: p if k == 'apple' else None</span>
 <span class="sd">    &gt;&gt;&gt; walker1 = partial(kv_walk, leaf_yield=yield_path_if_ends_with_apple)</span>
 <span class="sd">    &gt;&gt;&gt; list(filter(None, walker1(d)))</span>
-<span class="sd">    [(&#39;big&#39;, &#39;apple&#39;)]</span>
+<span class="sd">    [('big', 'apple')]</span>
 
-<span class="sd">    It only got `(&#39;big&#39;, &#39;apple&#39;)` because the `leaf_yield` is only triggered</span>
+<span class="sd">    It only got `('big', 'apple')` because the `leaf_yield` is only triggered</span>
 <span class="sd">    for leaf nodes (as defined by the `walk_filt` argument, which defaults to</span>
-<span class="sd">    `val_is_mapping`). So let&#39;s try again, but this time, we&#39;ll use `branch_yield`</span>
+<span class="sd">    `val_is_mapping`). So let's try again, but this time, we'll use `branch_yield`</span>
 <span class="sd">    to yield the path for every branch (not just the leaves):</span>
 
 <span class="sd">    &gt;&gt;&gt; walker2 = partial(walker1, branch_yield=yield_path_if_ends_with_apple)</span>
 <span class="sd">    &gt;&gt;&gt; list(filter(None, walker2(d)))</span>
-<span class="sd">    [(&#39;big&#39;, &#39;apple&#39;), (&#39;apple&#39;,)]</span>
+<span class="sd">    [('big', 'apple'), ('apple',)]</span>
 
-<span class="sd">    But this isn&#39;t convenient if you&#39;d like your search to finish as soon as you</span>
-<span class="sd">    find a path ending with `&#39;apple&#39;`. The order here comes from the fact that</span>
+<span class="sd">    But this isn't convenient if you'd like your search to finish as soon as you</span>
+<span class="sd">    find a path ending with `'apple'`. The order here comes from the fact that</span>
 <span class="sd">    `kv_walk` does a depth-first traversal. If you want to do a breadth-first</span>
 <span class="sd">    traversal, just say it:</span>
 
 <span class="sd">    &gt;&gt;&gt; walker3 = partial(walker2, breadth_first=True)</span>
 <span class="sd">    &gt;&gt;&gt; list(filter(None, walker3(d)))</span>
-<span class="sd">    [(&#39;apple&#39;,), (&#39;big&#39;, &#39;apple&#39;)]</span>
+<span class="sd">    [('apple',), ('big', 'apple')]</span>
 
 <span class="sd">    So now, you can get the first apple path by doing:</span>
 <span class="sd">    &gt;&gt;&gt; next(filter(None, walker3(d)))</span>
-<span class="sd">    (&#39;apple&#39;,)</span>
+<span class="sd">    ('apple',)</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">breadth_first</span><span class="p">:</span>
-        <span class="c1"># print(f&quot;1: entered with: v={v}, p={p}&quot;)</span>
+        <span class="c1"># print(f"1: entered with: v={v}, p={p}")</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="c1"># print(f&quot;2: item: k={k}, vv={vv}&quot;)</span>
+            <span class="c1"># print(f"2: item: k={k}, vv={vv}")</span>
             <span class="n">pp</span><span class="p">,</span> <span class="n">vv</span> <span class="o">=</span> <span class="n">pkv_to_pv</span><span class="p">(</span>
                 <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">vv</span>
             <span class="p">)</span>  <span class="c1"># update the path with k (and preprocess v if necessary)</span>
             <span class="k">if</span> <span class="n">walk_filt</span><span class="p">(</span>
                 <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">vv</span>
             <span class="p">):</span>  <span class="c1"># should we recurse? (based on some function of p, k, v)</span>
-                <span class="c1"># print(f&quot;3: recurse with: pp={pp}, vv={vv}\n&quot;)</span>
+                <span class="c1"># print(f"3: recurse with: pp={pp}, vv={vv}\n")</span>
                 <span class="k">if</span> <span class="n">branch_yield</span><span class="p">:</span>
                     <span class="k">yield</span> <span class="n">branch_yield</span><span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
                 <span class="k">yield from</span> <span class="n">kv_walk</span><span class="p">(</span>
@@ -1208,7 +1208,7 @@
                     <span class="n">p</span><span class="o">=</span><span class="n">pp</span><span class="p">,</span>
                 <span class="p">)</span>  <span class="c1"># recurse</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># print(f&quot;4: leaf_yield(pp={pp}, k={k}, vv={vv})\n --&gt; {leaf_yield(pp, k, vv)}&quot;)</span>
+                <span class="c1"># print(f"4: leaf_yield(pp={pp}, k={k}, vv={vv})\n --&gt; {leaf_yield(pp, k, vv)}")</span>
                 <span class="k">yield</span> <span class="n">leaf_yield</span><span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>  <span class="c1"># yield something computed from p, k, vv</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)])</span>
@@ -1229,19 +1229,19 @@
 <div class="viewcode-block" id="has_kv_store_interface">
 <a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.has_kv_store_interface">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">has_kv_store_interface</span><span class="p">(</span><span class="n">o</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if object has the KvStore interface (that is, has the kv wrapper methods</span>
+<span class="w">    </span><span class="sd">"""Check if object has the KvStore interface (that is, has the kv wrapper methods</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        o: object (class or instance)</span>
 
 <span class="sd">    Returns: True if kv has the four key (in/out) and value (in/out) transformation methods</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">(</span>
-        <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">&quot;_id_of_key&quot;</span><span class="p">)</span>
-        <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">&quot;_key_of_id&quot;</span><span class="p">)</span>
-        <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">&quot;_data_of_obj&quot;</span><span class="p">)</span>
-        <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">&quot;_obj_of_data&quot;</span><span class="p">)</span>
+        <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">"_id_of_key"</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">"_key_of_id"</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">"_data_of_obj"</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">"_obj_of_data"</span><span class="p">)</span>
     <span class="p">)</span></div>
 
 
@@ -1251,10 +1251,10 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_methods</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="o">*</span><span class="n">methods</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Check that all methods listed are in the __dict__ of C, or in the classes of it&#39;s mro.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Check that all methods listed are in the __dict__ of C, or in the classes of it's mro.</span>
 <span class="sd">    One trick pony borrowed from collections.abc.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">mro</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="vm">__mro__</span>
     <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">methods</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">B</span> <span class="ow">in</span> <span class="n">mro</span><span class="p">:</span>
@@ -1271,11 +1271,11 @@
 <div class="viewcode-block" id="KeyValidationABC">
 <a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.KeyValidationABC">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">KeyValidationABC</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    An ABC for an object writer.</span>
 <span class="sd">    Single purpose: store an object under a given key.</span>
 <span class="sd">    How the object is serialized and or physically stored should be defined in a concrete subclass.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
@@ -1285,12 +1285,12 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">check_key_is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid_key</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">KeyValidationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;key is not valid: </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">KeyValidationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"key is not valid: </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">__subclasshook__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="n">KeyValidationABC</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_check_methods</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="s2">&quot;is_valid_key&quot;</span><span class="p">,</span> <span class="s2">&quot;check_key_is_valid&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_check_methods</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="s2">"is_valid_key"</span><span class="p">,</span> <span class="s2">"check_key_is_valid"</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -1317,41 +1317,41 @@
 <div class="viewcode-block" id="Stream">
 <a class="viewcode-back" href="../../module_docs/dol/base.html#dol.base.Stream">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Stream</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A layer-able version of the stream interface</span>
+<span class="w">    </span><span class="sd">"""A layer-able version of the stream interface</span>
 
 <span class="sd">        __iter__    calls: _obj_of_data(map)</span>
 
 <span class="sd">    &gt;&gt;&gt; from io import StringIO</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; src = StringIO(</span>
-<span class="sd">    ... &#39;&#39;&#39;a, b, c</span>
+<span class="sd">    ... '''a, b, c</span>
 <span class="sd">    ... 1,2, 3</span>
 <span class="sd">    ... 4, 5,6</span>
-<span class="sd">    ... &#39;&#39;&#39;</span>
+<span class="sd">    ... '''</span>
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; from dol.base import Stream</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; class MyStream(Stream):</span>
 <span class="sd">    ...     def _obj_of_data(self, line):</span>
-<span class="sd">    ...         return [x.strip() for x in line.strip().split(&#39;,&#39;)]</span>
+<span class="sd">    ...         return [x.strip() for x in line.strip().split(',')]</span>
 <span class="sd">    ...</span>
 <span class="sd">    &gt;&gt;&gt; stream = MyStream(src)</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; list(stream)</span>
-<span class="sd">    [[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;], [&#39;1&#39;, &#39;2&#39;, &#39;3&#39;], [&#39;4&#39;, &#39;5&#39;, &#39;6&#39;]]</span>
-<span class="sd">    &gt;&gt;&gt; stream.seek(0)  # oh!... but we consumed the stream already, so let&#39;s go back to the beginning</span>
+<span class="sd">    [['a', 'b', 'c'], ['1', '2', '3'], ['4', '5', '6']]</span>
+<span class="sd">    &gt;&gt;&gt; stream.seek(0)  # oh!... but we consumed the stream already, so let's go back to the beginning</span>
 <span class="sd">    0</span>
 <span class="sd">    &gt;&gt;&gt; list(stream)</span>
-<span class="sd">    [[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;], [&#39;1&#39;, &#39;2&#39;, &#39;3&#39;], [&#39;4&#39;, &#39;5&#39;, &#39;6&#39;]]</span>
+<span class="sd">    [['a', 'b', 'c'], ['1', '2', '3'], ['4', '5', '6']]</span>
 <span class="sd">    &gt;&gt;&gt; stream.seek(0)  # reverse again</span>
 <span class="sd">    0</span>
 <span class="sd">    &gt;&gt;&gt; next(stream)</span>
-<span class="sd">    [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    ['a', 'b', 'c']</span>
 <span class="sd">    &gt;&gt;&gt; next(stream)</span>
-<span class="sd">    [&#39;1&#39;, &#39;2&#39;, &#39;3&#39;]</span>
+<span class="sd">    ['1', '2', '3']</span>
 
-<span class="sd">    Let&#39;s add a filter! There&#39;s two kinds you can use.</span>
+<span class="sd">    Let's add a filter! There's two kinds you can use.</span>
 <span class="sd">    One that is applied to the line before the data is transformed by _obj_of_data,</span>
 <span class="sd">    and the other that is applied after (to the obj).</span>
 
@@ -1360,10 +1360,10 @@
 <span class="sd">    &gt;&gt;&gt; from io import StringIO</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; src = StringIO(</span>
-<span class="sd">    ...     &#39;&#39;&#39;a, b, c</span>
+<span class="sd">    ...     '''a, b, c</span>
 <span class="sd">    ... 1,2, 3</span>
 <span class="sd">    ... 4, 5,6</span>
-<span class="sd">    ... &#39;&#39;&#39;)</span>
+<span class="sd">    ... ''')</span>
 <span class="sd">    &gt;&gt;&gt; class MyFilteredStream(MyStream):</span>
 <span class="sd">    ...     def _post_filt(self, obj):</span>
 <span class="sd">    ...         return str.isnumeric(obj[0])</span>
@@ -1371,15 +1371,15 @@
 <span class="sd">    &gt;&gt;&gt; s = MyFilteredStream(src)</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; list(s)</span>
-<span class="sd">    [[&#39;1&#39;, &#39;2&#39;, &#39;3&#39;], [&#39;4&#39;, &#39;5&#39;, &#39;6&#39;]]</span>
+<span class="sd">    [['1', '2', '3'], ['4', '5', '6']]</span>
 <span class="sd">    &gt;&gt;&gt; s.seek(0)</span>
 <span class="sd">    0</span>
 <span class="sd">    &gt;&gt;&gt; list(s)</span>
-<span class="sd">    [[&#39;1&#39;, &#39;2&#39;, &#39;3&#39;], [&#39;4&#39;, &#39;5&#39;, &#39;6&#39;]]</span>
+<span class="sd">    [['1', '2', '3'], ['4', '5', '6']]</span>
 <span class="sd">    &gt;&gt;&gt; s.seek(0)</span>
 <span class="sd">    0</span>
 <span class="sd">    &gt;&gt;&gt; next(s)</span>
-<span class="sd">    [&#39;1&#39;, &#39;2&#39;, &#39;3&#39;]</span>
+<span class="sd">    ['1', '2', '3']</span>
 
 <span class="sd">    Recipes:</span>
 
@@ -1388,12 +1388,12 @@
 <span class="sd">        * _pre_iter: involving enumerate to get line indices in stream iterator</span>
 <span class="sd">        * _pre_iter = functools.partial(map, line_pre_proc_func) to preprocess all lines with line_pre_proc_func</span>
 <span class="sd">        * _pre_iter: include filter before obj</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span>
 
-    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s2">&quot;stream&quot;</span><span class="p">))</span>
+    <span class="n">wrap</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">delegator_wrap</span><span class="p">,</span> <span class="n">delegation_attr</span><span class="o">=</span><span class="s2">"stream"</span><span class="p">))</span>
 
     <span class="c1"># _data_of_obj = static_identity_method  # for write methods</span>
     <span class="n">_pre_iter</span> <span class="o">=</span> <span class="n">static_identity_method</span>
@@ -1411,13 +1411,13 @@
         <span class="c1">#                   map(self._obj_of_data,</span>
         <span class="c1">#                       self._pre_iter(self.stream)))</span>
 
-    <span class="c1"># _wrapped_methods = {&#39;__iter__&#39;}</span>
+    <span class="c1"># _wrapped_methods = {'__iter__'}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># TODO: Pros and cons of having a __next__?</span>
         <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delegate method to wrapped store if not part of wrapper store methods&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Delegate method to wrapped store if not part of wrapper store methods"""</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
         <span class="c1"># if attr in self._wrapped_methods:</span>
         <span class="c1">#     return getattr(self, attr)</span>

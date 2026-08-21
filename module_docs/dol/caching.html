@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.caching &mdash; dol 0.3.62 documentation</title>
+  <title>dol.caching &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -230,9 +230,9 @@ caching layers to data stores.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">DataProcessor</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">&#39;cache&#39;</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;verbose&#39;</span><span class="p">})</span>
-<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;fast&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;fast&#39;</span> <span class="k">else</span> <span class="nb">sum</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">'cache'</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="p">{</span><span class="s1">'verbose'</span><span class="p">})</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'fast'</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">'fast'</span> <span class="k">else</span> <span class="nb">sum</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="py class">
@@ -257,9 +257,9 @@ caching layers to data stores.</p>
 <dt class="sig sig-object py" id="dol.caching.ApplyToMethodName">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">ApplyToMethodName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#ApplyToMethodName"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.ApplyToMethodName" title="Link to this definition"></a></dt>
 <dd><p>Apply a function to the method name to generate the key.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strategy</span> <span class="o">=</span> <span class="n">ApplyToMethodName</span><span class="p">(</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.cache&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">strategy</span><span class="o">.</span><span class="n">resolve_at_definition</span><span class="p">(</span><span class="s2">&quot;my_method&quot;</span><span class="p">)</span>
-<span class="go">&#39;my_method.cache&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strategy</span> <span class="o">=</span> <span class="n">ApplyToMethodName</span><span class="p">(</span><span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.cache"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">strategy</span><span class="o">.</span><span class="n">resolve_at_definition</span><span class="p">(</span><span class="s2">"my_method"</span><span class="p">)</span>
+<span class="go">'my_method.cache'</span>
 </pre></div>
 </div>
 <dl class="py method">
@@ -309,9 +309,9 @@ specify a cache object and a key to store the cache value.</p>
 <dt class="sig sig-object py" id="dol.caching.ExplicitKey">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">ExplicitKey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#ExplicitKey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.ExplicitKey" title="Link to this definition"></a></dt>
 <dd><p>Use an explicitly provided key value.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strategy</span> <span class="o">=</span> <span class="n">ExplicitKey</span><span class="p">(</span><span class="s2">&quot;my_key&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">strategy</span><span class="o">.</span><span class="n">resolve_at_definition</span><span class="p">(</span><span class="s2">&quot;method_name&quot;</span><span class="p">)</span>
-<span class="go">&#39;my_key&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strategy</span> <span class="o">=</span> <span class="n">ExplicitKey</span><span class="p">(</span><span class="s2">"my_key"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">strategy</span><span class="o">.</span><span class="n">resolve_at_definition</span><span class="p">(</span><span class="s2">"method_name"</span><span class="p">)</span>
+<span class="go">'my_key'</span>
 </pre></div>
 </div>
 <dl class="py method">
@@ -409,7 +409,7 @@ By default, this will call resolve_at_definition on method_name.</p>
 <dd><p>A collections.ChainMap that also ‘writes back’ when a key is found.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.caching</span><span class="w"> </span><span class="kn">import</span> <span class="n">WriteBackChainMap</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">WriteBackChainMap</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">33</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="mi">444</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">WriteBackChainMap</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">:</span> <span class="mi">33</span><span class="p">},</span> <span class="p">{</span><span class="s1">'d'</span><span class="p">:</span> <span class="mi">444</span><span class="p">})</span>
 </pre></div>
 </div>
 <p>In a <code class="docutils literal notranslate"><span class="pre">ChainMap</span></code>, when you ask for the value for a key, each mapping in the
@@ -417,18 +417,18 @@ sequence is checked for, and the first mapping found that contains it will be
 the one determining the value.</p>
 <p>So here if you look for <cite>b</cite>, though the first mapping will give you the value,
 though the second mapping also contains a <cite>b</cite> with a different value:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">'b'</span><span class="p">]</span>
 <span class="go">2</span>
 </pre></div>
 </div>
 <p>if you ask for <cite>c</cite>, it’s the second mapping that will give you the value:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">'c'</span><span class="p">]</span>
 <span class="go">33</span>
 </pre></div>
 </div>
 <p>But unlike with the builtin <code class="docutils literal notranslate"><span class="pre">ChainMap</span></code>, something else is going to happen here:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
-<span class="go">WriteBackChainMap({&#39;a&#39;: 1, &#39;b&#39;: 2, &#39;c&#39;: 33}, {&#39;b&#39;: 22, &#39;c&#39;: 33}, {&#39;d&#39;: 444})</span>
+<span class="go">WriteBackChainMap({'a': 1, 'b': 2, 'c': 33}, {'b': 22, 'c': 33}, {'d': 444})</span>
 </pre></div>
 </div>
 <p>See that now the first mapping also has the <code class="docutils literal notranslate"><span class="pre">('c',</span> <span class="pre">33)</span></code> key-value pair:</p>
@@ -438,9 +438,9 @@ though the second mapping also contains a <cite>b</cite> with a different value:
 pair will be written in it.</p>
 <p>As in with <code class="docutils literal notranslate"><span class="pre">ChainMap</span></code>, all writes will be carried out in the first mapping,
 and only the first mapping:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">'e'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
-<span class="go">WriteBackChainMap({&#39;a&#39;: 1, &#39;b&#39;: 2, &#39;c&#39;: 33, &#39;e&#39;: 5}, {&#39;b&#39;: 22, &#39;c&#39;: 33}, {&#39;d&#39;: 444})</span>
+<span class="go">WriteBackChainMap({'a': 1, 'b': 2, 'c': 33, 'e': 5}, {'b': 22, 'c': 33}, {'d': 444})</span>
 </pre></div>
 </div>
 <p>Example use cases:</p>
@@ -464,23 +464,23 @@ resolution) and environment variables.</p>
 <p>If name is None, return a partial function that will add the extension to a
 name when called.</p>
 <p>add_extension is a useful helper for making key functions, namely for cache_this.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_extension</span><span class="p">(</span><span class="s1">&#39;txt&#39;</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">)</span>
-<span class="go">&#39;file.txt&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">add_txt_ext</span> <span class="o">=</span> <span class="n">add_extension</span><span class="p">(</span><span class="s1">&#39;txt&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">add_txt_ext</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>
-<span class="go">&#39;file.txt&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_extension</span><span class="p">(</span><span class="s1">'txt'</span><span class="p">,</span> <span class="s1">'file'</span><span class="p">)</span>
+<span class="go">'file.txt'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add_txt_ext</span> <span class="o">=</span> <span class="n">add_extension</span><span class="p">(</span><span class="s1">'txt'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add_txt_ext</span><span class="p">(</span><span class="s1">'file'</span><span class="p">)</span>
+<span class="go">'file.txt'</span>
 </pre></div>
 </div>
 <p>Note: If you want to add an extension to a name that already has an extension,
 you can do that, but it will add the extension to the end of the name,
 not replace the existing extension.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_txt_ext</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">)</span>
-<span class="go">&#39;file.txt.txt&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_txt_ext</span><span class="p">(</span><span class="s1">'file.txt'</span><span class="p">)</span>
+<span class="go">'file.txt.txt'</span>
 </pre></div>
 </div>
 <p>Also, bare in mind that if ext starts with the system’s extension separator,
 (os.path.extsep), it will be removed.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_extension</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">add_extension</span><span class="p">(</span><span class="s1">&#39;txt&#39;</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;file.txt&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_extension</span><span class="p">(</span><span class="s1">'.txt'</span><span class="p">,</span> <span class="s1">'file'</span><span class="p">)</span> <span class="o">==</span> <span class="n">add_extension</span><span class="p">(</span><span class="s1">'txt'</span><span class="p">,</span> <span class="s1">'file'</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'file.txt'</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -505,15 +505,15 @@ fix the cache and key parameters of <cite>cache_this</cite> and inject that.</p>
 </dd>
 </dl>
 <p>Example:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@cache_property_method</span><span class="p">([</span><span class="s1">&#39;normal_method&#39;</span><span class="p">,</span> <span class="s1">&#39;property_method&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@cache_property_method</span><span class="p">([</span><span class="s1">'normal_method'</span><span class="p">,</span> <span class="s1">'property_method'</span><span class="p">])</span>
 <span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">TestClass</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">normal_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;normal_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">'normal_method called'</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">1</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="nd">@property</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">property_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;property_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">'property_method called'</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">2</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">TestClass</span><span class="p">()</span>
@@ -532,22 +532,22 @@ fix the cache and key parameters of <cite>cache_this</cite> and inject that.</p>
 <p>You can also use it like this:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">TestClass</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">normal_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;normal_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">'normal_method called'</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">1</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="nd">@property</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">property_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;property_method called&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s1">'property_method called'</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">2</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cache_property_method</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">TestClass</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="p">[</span>
-<span class="gp">... </span>        <span class="s1">&#39;normal_method&#39;</span><span class="p">,</span>
-<span class="gp">... </span>        <span class="s1">&#39;property_method&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">'normal_method'</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">'property_method'</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="p">],</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="go">&lt;class ...TestClass&#39;&gt;</span>
+<span class="go">&lt;class ...TestClass'&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">TestClass</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">normal_method</span>
 <span class="go">normal_method called</span>
@@ -623,7 +623,7 @@ Example: deserialize=pickle.loads</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">DataProcessor</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="s2">&quot;user123&quot;</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="s2">"user123"</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">user_id</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">memory_cache</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># In-memory cache</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># Track function calls for demo</span>
@@ -631,62 +631,62 @@ Example: deserialize=pickle.loads</p></li>
 <span class="gp">... </span>    <span class="c1"># 1. Basic property caching (like functools.cached_property)</span>
 <span class="gp">... </span>    <span class="nd">@cache_this</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">basic_property</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span><span class="w">        </span><span class="sd">&#39;&#39;&#39;Cached in instance.__dict__ by default&#39;&#39;&#39;</span>
-<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="p">[</span><span class="s1">&#39;basic_property&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;basic_property&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;computed_value_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="p">[</span><span class="s1">&#39;basic_property&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="gp">... </span><span class="w">        </span><span class="sd">'''Cached in instance.__dict__ by default'''</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="p">[</span><span class="s1">'basic_property'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'basic_property'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="sa">f</span><span class="s2">"computed_value_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="p">[</span><span class="s1">'basic_property'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="c1"># 2. Property with custom cache and key</span>
-<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">&#39;memory_cache&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;custom_prop_key&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">'memory_cache'</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">'custom_prop_key'</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">custom_cached_property</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span><span class="w">        </span><span class="sd">&#39;&#39;&#39;Cached in instance.memory_cache with custom key&#39;&#39;&#39;</span>
-<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="p">[</span><span class="s1">&#39;custom_cached_property&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;custom_cached_property&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;custom_value_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="p">[</span><span class="s1">&#39;custom_cached_property&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="gp">... </span><span class="w">        </span><span class="sd">'''Cached in instance.memory_cache with custom key'''</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="p">[</span><span class="s1">'custom_cached_property'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'custom_cached_property'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="sa">f</span><span class="s2">"custom_value_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="p">[</span><span class="s1">'custom_cached_property'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="c1"># 3. Method caching with argument-based keys</span>
-<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">&#39;memory_cache&#39;</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">compute_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;fast&#39;</span><span class="p">):</span>
-<span class="gp">... </span><span class="w">        </span><span class="sd">&#39;&#39;&#39;Cached based on arguments (x, y, mode)&#39;&#39;&#39;</span>
-<span class="gp">... </span>        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;compute_result&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">'memory_cache'</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">compute_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'fast'</span><span class="p">):</span>
+<span class="gp">... </span><span class="w">        </span><span class="sd">'''Cached based on arguments (x, y, mode)'''</span>
+<span class="gp">... </span>        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'compute_result'</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;fast&#39;</span> <span class="k">else</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">'fast'</span> <span class="k">else</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="c1"># 4. Method caching with ignored parameters</span>
-<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">&#39;memory_cache&#39;</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">})</span>
-<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="gp">... </span><span class="w">        </span><span class="sd">&#39;&#39;&#39;Cache ignores verbose and debug parameters&#39;&#39;&#39;</span>
-<span class="gp">... </span>        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;process_data&#39;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">algorithm</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">'memory_cache'</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="p">{</span><span class="s1">'verbose'</span><span class="p">,</span> <span class="s1">'debug'</span><span class="p">})</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s1">'default'</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="gp">... </span><span class="w">        </span><span class="sd">'''Cache ignores verbose and debug parameters'''</span>
+<span class="gp">... </span>        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'process_data'</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">algorithm</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="gp">... </span>        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">algorithm</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="k">if</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">&#39;default&#39;</span> <span class="k">else</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processing </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">algorithm</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="k">if</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s1">'default'</span> <span class="k">else</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="c1"># 5. Instance-specific cache factory</span>
-<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="p">{</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="si">}</span><span class="s1">_cache&#39;</span><span class="p">:</span> <span class="p">{}}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="si">}</span><span class="s1">_cache&#39;</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="p">{</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="si">}</span><span class="s1">_cache'</span><span class="p">:</span> <span class="p">{}}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="si">}</span><span class="s1">_cache'</span><span class="p">))</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">user_specific_computation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="gp">... </span><span class="w">        </span><span class="sd">&#39;&#39;&#39;Each instance gets its own cache based on user_id&#39;&#39;&#39;</span>
-<span class="gp">... </span>        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;user_specific_computation&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+<span class="gp">... </span><span class="w">        </span><span class="sd">'''Each instance gets its own cache based on user_id'''</span>
+<span class="gp">... </span>        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'user_specific_computation'</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="n">value</span> <span class="o">**</span> <span class="mi">2</span>
 </pre></div>
 </div>
 <p>Now let’s test all the features:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">processor</span> <span class="o">=</span> <span class="n">DataProcessor</span><span class="p">(</span><span class="s2">&quot;alice&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">processor</span> <span class="o">=</span> <span class="n">DataProcessor</span><span class="p">(</span><span class="s2">"alice"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Test basic property caching</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result1</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">basic_property</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result2</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">basic_property</span>  <span class="c1"># Should use cache</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">result1</span> <span class="o">==</span> <span class="n">result2</span> <span class="o">==</span> <span class="s2">&quot;computed_value_1&quot;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="s1">&#39;basic_property&#39;</span> <span class="ow">in</span> <span class="n">processor</span><span class="o">.</span><span class="vm">__dict__</span>  <span class="c1"># Cached in instance dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">result1</span> <span class="o">==</span> <span class="n">result2</span> <span class="o">==</span> <span class="s2">"computed_value_1"</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="s1">'basic_property'</span> <span class="ow">in</span> <span class="n">processor</span><span class="o">.</span><span class="vm">__dict__</span>  <span class="c1"># Cached in instance dict</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Test custom cache and key</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result1</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">custom_cached_property</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result2</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">custom_cached_property</span>  <span class="c1"># Should use cache</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">result1</span> <span class="o">==</span> <span class="n">result2</span> <span class="o">==</span> <span class="s2">&quot;custom_value_1&quot;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="s1">&#39;custom_prop_key&#39;</span> <span class="ow">in</span> <span class="n">processor</span><span class="o">.</span><span class="n">memory_cache</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">result1</span> <span class="o">==</span> <span class="n">result2</span> <span class="o">==</span> <span class="s2">"custom_value_1"</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="s1">'custom_prop_key'</span> <span class="ow">in</span> <span class="n">processor</span><span class="o">.</span><span class="n">memory_cache</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Test method caching with arguments</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result1</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">compute_result</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;fast&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result2</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">compute_result</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;fast&#39;</span><span class="p">)</span>  <span class="c1"># Should use cache</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result3</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">compute_result</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;slow&#39;</span><span class="p">)</span>  <span class="c1"># Different args, new computation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result1</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">compute_result</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">'fast'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result2</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">compute_result</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">'fast'</span><span class="p">)</span>  <span class="c1"># Should use cache</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result3</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">compute_result</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">'slow'</span><span class="p">)</span>  <span class="c1"># Different args, new computation</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">result1</span> <span class="o">==</span> <span class="n">result2</span> <span class="o">==</span> <span class="mi">24</span>  <span class="c1"># 3 * 4 * 2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">result3</span> <span class="o">==</span> <span class="mi">36</span>  <span class="c1"># 3 * 4 * 3</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -703,7 +703,7 @@ Example: deserialize=pickle.loads</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">result1</span> <span class="o">==</span> <span class="n">result2</span> <span class="o">==</span> <span class="mi">25</span>  <span class="c1"># 5 ** 2</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Different instance should have separate cache</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">processor2</span> <span class="o">=</span> <span class="n">DataProcessor</span><span class="p">(</span><span class="s2">&quot;bob&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">processor2</span> <span class="o">=</span> <span class="n">DataProcessor</span><span class="p">(</span><span class="s2">"bob"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result3</span> <span class="o">=</span> <span class="n">processor2</span><span class="o">.</span><span class="n">user_specific_computation</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># Fresh computation</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">result3</span> <span class="o">==</span> <span class="mi">25</span>
 </pre></div>
@@ -713,18 +713,18 @@ Example: deserialize=pickle.loads</p></li>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">SameAsCachedProperty</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@cache_this</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In SameAsCachedProperty.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">"In SameAsCachedProperty.foo..."</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">SameAsCachedProperty</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span>  <span class="c1"># the cache is empty</span>
 <span class="go">{}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>  <span class="c1"># when we access foo, it&#39;s computed and returned...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>  <span class="c1"># when we access foo, it's computed and returned...</span>
 <span class="go">In SameAsCachedProperty.foo...</span>
 <span class="go">42</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span>  <span class="c1"># ... but also cached</span>
-<span class="go">{&#39;foo&#39;: 42}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>  <span class="c1"># so that the next time we access foo, it&#39;s returned from the cache.</span>
+<span class="go">{'foo': 42}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>  <span class="c1"># so that the next time we access foo, it's returned from the cache.</span>
 <span class="go">42</span>
 </pre></div>
 </div>
@@ -733,7 +733,7 @@ every time it’s accessed:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">NoCache</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In NoCache.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">"In NoCache.foo..."</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">NoCache</span><span class="p">()</span>
@@ -751,7 +751,7 @@ every time it’s accessed:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">CacheWithExternalMapping</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="n">external_cache</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In CacheWithExternalMapping.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">"In CacheWithExternalMapping.foo..."</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">CacheWithExternalMapping</span><span class="p">()</span>
@@ -761,7 +761,7 @@ every time it’s accessed:</p>
 <span class="go">In CacheWithExternalMapping.foo...</span>
 <span class="go">42</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">external_cache</span>
-<span class="go">{&#39;foo&#39;: 42}</span>
+<span class="go">{'foo': 42}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
 <span class="go">42</span>
 </pre></div>
@@ -772,9 +772,9 @@ every time it’s accessed:</p>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">my_cache</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="gp">...</span>
-<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">&#39;my_cache&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;key_for_foo&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nd">@cache_this</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s1">'my_cache'</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">'key_for_foo'</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In WithCacheInInstanceAttribute.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">"In WithCacheInInstanceAttribute.foo..."</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">WithCacheInInstanceAttribute</span><span class="p">()</span>
@@ -784,7 +784,7 @@ every time it’s accessed:</p>
 <span class="go">In WithCacheInInstanceAttribute.foo...</span>
 <span class="go">42</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">my_cache</span>
-<span class="go">{&#39;key_for_foo&#39;: 42}</span>
+<span class="go">{'key_for_foo': 42}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
 <span class="go">42</span>
 </pre></div>
@@ -817,29 +817,29 @@ how the caches are being used.</p>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">LoggedCache</span><span class="p">(</span><span class="n">UserDict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;cache&#39;</span>
+<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">'cache'</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;In </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: setting </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"In </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: setting </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;In </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: getting value of </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"In </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: getting value of </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">CacheA</span><span class="p">(</span><span class="n">LoggedCache</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CacheA&#39;</span>
+<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">'CacheA'</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">CacheB</span><span class="p">(</span><span class="n">LoggedCache</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CacheB&#39;</span>
+<span class="gp">... </span>    <span class="n">name</span> <span class="o">=</span> <span class="s1">'CacheB'</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cache_with_pickle</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">cache_this</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">cache</span><span class="o">=</span><span class="s1">&#39;cache&#39;</span><span class="p">,</span>  <span class="c1"># the cache can be found on the instance attribute `cache`</span>
-<span class="gp">... </span>    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">,</span>  <span class="c1"># the key is the method name with a &#39;.pkl&#39; extension</span>
+<span class="gp">... </span>    <span class="n">cache</span><span class="o">=</span><span class="s1">'cache'</span><span class="p">,</span>  <span class="c1"># the cache can be found on the instance attribute `cache`</span>
+<span class="gp">... </span>    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">.pkl"</span><span class="p">,</span>  <span class="c1"># the key is the method name with a '.pkl' extension</span>
 <span class="gp">... </span>    <span class="n">pre_cache</span><span class="o">=</span><span class="n">CacheB</span><span class="p">(),</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -852,7 +852,7 @@ how the caches are being used.</p>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="nd">@cache_with_pickle</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In PickleCached.foo...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">"In PickleCached.foo..."</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="mi">42</span>
 <span class="gp">...</span>
 </pre></div>
@@ -866,7 +866,7 @@ how the caches are being used.</p>
 <span class="go">In CacheA: getting value of foo.pkl</span>
 <span class="go">In CacheA: getting value of foo.pkl</span>
 <span class="go">In PickleCached.foo...</span>
-<span class="go">In CacheA: setting foo.pkl to b&#39;\x80\x04K*.&#39;</span>
+<span class="go">In CacheA: setting foo.pkl to b'\x80\x04K*.'</span>
 <span class="go">42</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">foo</span>
 <span class="go">In CacheA: getting value of foo.pkl</span>
@@ -876,21 +876,21 @@ how the caches are being used.</p>
 </div>
 <p>As usual, it’s because the cache now holds something that has to do with <cite>foo</cite>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">)</span>
-<span class="go">[&#39;foo.pkl&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># == [&#39;foo.pkl&#39;]</span>
+<span class="go">['foo.pkl']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># == ['foo.pkl']</span>
 </pre></div>
 </div>
 <p>The value of <cite>‘foo.pkl’</cite> is indeed <cite>42</cite>:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="s1">&#39;foo.pkl&#39;</span><span class="p">]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="s1">'foo.pkl'</span><span class="p">]</span>
 <span class="go">In CacheA: getting value of foo.pkl</span>
 <span class="go">42</span>
 </pre></div>
 </div>
 <p>But note that the actual way it’s stored in the <cite>_backend_store</cite> is as pickle bytes:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">_backend_store</span><span class="p">[</span><span class="s1">&#39;foo.pkl&#39;</span><span class="p">]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">_backend_store</span><span class="p">[</span><span class="s1">'foo.pkl'</span><span class="p">]</span>
 <span class="go">In CacheA: getting value of foo.pkl</span>
-<span class="go">b&#39;\x80\x04K*.&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># == b&#39;\x80\x04K*.&#39;</span>
+<span class="go">b'\x80\x04K*.'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># == b'\x80\x04K*.'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -917,53 +917,53 @@ By default, it will use a dict</p></li>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">SlowDict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">SlowDict</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>  <span class="c1"># Wow! Takes a long time to get &#39;a&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>  <span class="c1"># Wow! Takes a long time to get 'a'</span>
 <span class="go">1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">CachedSlowDict</span> <span class="o">=</span> <span class="n">cache_vals</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">SlowDict</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">CachedSlowDict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">CachedSlowDict</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c']</span>
 <span class="go">cache: []</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This will take a LONG time because it&#39;s the first time we ask for &#39;a&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
-<span class="go">cache: [&#39;a&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This will take very little time because we have &#39;a&#39; in the cache</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
-<span class="go">cache: [&#39;a&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># But we don&#39;t have &#39;b&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
-<span class="go">cache: [&#39;a&#39;, &#39;b&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># But now we have &#39;b&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
-<span class="go">cache: [&#39;a&#39;, &#39;b&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># and we can do things normally (like put stuff in the store)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;]</span>
-<span class="go">cache: [&#39;a&#39;, &#39;b&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span>  <span class="c1"># if we ask for it again though, it will take time (the first time)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This will take a LONG time because it's the first time we ask for 'a'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c']</span>
+<span class="go">cache: ['a']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This will take very little time because we have 'a' in the cache</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c']</span>
+<span class="go">cache: ['a']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># But we don't have 'b'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">'b'</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c']</span>
+<span class="go">cache: ['a', 'b']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># But now we have 'b'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">'b'</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c']</span>
+<span class="go">cache: ['a', 'b']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'d'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># and we can do things normally (like put stuff in the store)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c', 'd']</span>
+<span class="go">cache: ['a', 'b']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'d'</span><span class="p">]</span>  <span class="c1"># if we ask for it again though, it will take time (the first time)</span>
 <span class="go">4</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;]</span>
-<span class="go">cache: [&#39;a&#39;, &#39;b&#39;, &#39;d&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Of course, we could write &#39;d&#39; in the cache as well, to get it quicker,</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># but that&#39;s another story: The story of write caches!</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c', 'd']</span>
+<span class="go">cache: ['a', 'b', 'd']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Of course, we could write 'd' in the cache as well, to get it quicker,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># but that's another story: The story of write caches!</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># And by the way, your &quot;cache wrapped&quot; store hold a pointer to the cache it&#39;s using,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># And by the way, your "cache wrapped" store hold a pointer to the cache it's using,</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># so you can take a peep there if needed:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_cache</span>
-<span class="go">{&#39;a&#39;: 1, &#39;b&#39;: 2, &#39;d&#39;: 4}</span>
+<span class="go">{'a': 1, 'b': 2, 'd': 4}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1021,7 +1021,7 @@ adds a proper implementation that safely removes all items.</p>
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">NoClearing</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">clear</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">NoClearing</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">NoClearing</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">ensure_clear_to_kv_store</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 <span class="go">2</span>
@@ -1036,8 +1036,8 @@ adds a proper implementation that safely removes all items.</p>
 <dt class="sig sig-object py" id="dol.caching.get_cache">
 <span class="sig-prename descclassname"><span class="pre">dol.caching.</span></span><span class="sig-name descname"><span class="pre">get_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cache</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/caching.html#get_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.caching.get_cache" title="Link to this definition"></a></dt>
 <dd><p>Convenience function to get a cache (whether it’s already an instance, or needs to be validated).</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_cache</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>  <span class="c1"># Return existing cache instance</span>
-<span class="go">{&#39;a&#39;: 1}</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_cache</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>  <span class="c1"># Return existing cache instance</span>
+<span class="go">{'a': 1}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">get_cache</span><span class="p">(</span><span class="nb">dict</span><span class="p">)()</span>  <span class="c1"># Return result of calling cache factory</span>
 <span class="go">{}</span>
 </pre></div>
@@ -1050,8 +1050,8 @@ adds a proper implementation that safely removes all items.</p>
 <dd><p>Identity function that returns its input unchanged.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">identity</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 <span class="go">42</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">identity</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
-<span class="go">&#39;hello&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">identity</span><span class="p">(</span><span class="s2">"hello"</span><span class="p">)</span>
+<span class="go">'hello'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">identity</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 <span class="go">[1, 2, 3]</span>
 </pre></div>
@@ -1067,7 +1067,7 @@ adds a proper implementation that safely removes all items.</p>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">is_a_cache</span><span class="p">([])</span>  <span class="c1"># list has these methods but for indexed access</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_a_cache</span><span class="p">(</span><span class="s2">&quot;string&quot;</span><span class="p">)</span>  <span class="c1"># string is not (immutable)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_a_cache</span><span class="p">(</span><span class="s2">"string"</span><span class="p">)</span>  <span class="c1"># string is not (immutable)</span>
 <span class="go">False</span>
 </pre></div>
 </div>
@@ -1097,7 +1097,7 @@ distinguishing between <cite>1</cite> and <cite>1.0</cite>. Defaults to False.</
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@lru_cache_method</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Computing </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
@@ -1111,7 +1111,7 @@ distinguishing between <cite>1</cite> and <cite>1.0</cite>. Defaults to False.</
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyOtherClass</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nd">@lru_cache_method</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">typed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Computing </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">MyOtherClass</span><span class="p">()</span>
@@ -1149,53 +1149,53 @@ By default, it will use a dict</p></li>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">SlowDict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">SlowDict</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>  <span class="c1"># Wow! Takes a long time to get &#39;a&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>  <span class="c1"># Wow! Takes a long time to get 'a'</span>
 <span class="go">1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">CachedSlowDict</span> <span class="o">=</span> <span class="n">cache_vals</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">SlowDict</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">CachedSlowDict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">CachedSlowDict</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c']</span>
 <span class="go">cache: []</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This will take a LONG time because it&#39;s the first time we ask for &#39;a&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
-<span class="go">cache: [&#39;a&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This will take very little time because we have &#39;a&#39; in the cache</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
-<span class="go">cache: [&#39;a&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># But we don&#39;t have &#39;b&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
-<span class="go">cache: [&#39;a&#39;, &#39;b&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># But now we have &#39;b&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
-<span class="go">cache: [&#39;a&#39;, &#39;b&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># and we can do things normally (like put stuff in the store)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;]</span>
-<span class="go">cache: [&#39;a&#39;, &#39;b&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span>  <span class="c1"># if we ask for it again though, it will take time (the first time)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This will take a LONG time because it's the first time we ask for 'a'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c']</span>
+<span class="go">cache: ['a']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This will take very little time because we have 'a' in the cache</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c']</span>
+<span class="go">cache: ['a']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># But we don't have 'b'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">'b'</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c']</span>
+<span class="go">cache: ['a', 'b']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># But now we have 'b'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">'b'</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c']</span>
+<span class="go">cache: ['a', 'b']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'d'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># and we can do things normally (like put stuff in the store)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c', 'd']</span>
+<span class="go">cache: ['a', 'b']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'d'</span><span class="p">]</span>  <span class="c1"># if we ask for it again though, it will take time (the first time)</span>
 <span class="go">4</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">store: [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;]</span>
-<span class="go">cache: [&#39;a&#39;, &#39;b&#39;, &#39;d&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Of course, we could write &#39;d&#39; in the cache as well, to get it quicker,</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># but that&#39;s another story: The story of write caches!</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">cache: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">store: ['a', 'b', 'c', 'd']</span>
+<span class="go">cache: ['a', 'b', 'd']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Of course, we could write 'd' in the cache as well, to get it quicker,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># but that's another story: The story of write caches!</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># And by the way, your &quot;cache wrapped&quot; store hold a pointer to the cache it&#39;s using,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># And by the way, your "cache wrapped" store hold a pointer to the cache it's using,</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># so you can take a peep there if needed:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_cache</span>
-<span class="go">{&#39;a&#39;: 1, &#39;b&#39;: 2, &#39;d&#39;: 4}</span>
+<span class="go">{'a': 1, 'b': 2, 'd': 4}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1217,7 +1217,7 @@ functions/methods that have the signature (instance, key) and return a value.</p
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@mk_memoizer</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">getter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;getting value for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"getting value for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">k</span> <span class="o">*</span> <span class="mi">10</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">getter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
@@ -1264,50 +1264,50 @@ transforms the data in some way.</p></li>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Local</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;looking for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> in Local&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"looking for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> in Local"</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Remote</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;looking for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> in Remote&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"looking for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> in Remote"</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Let’s make a remote store with two elements in it, and a local store class that asks the remote store for stuff
 if it can’t find it locally.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">remote</span> <span class="o">=</span> <span class="n">Remote</span><span class="p">({</span><span class="s1">&#39;foo&#39;</span><span class="p">:</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span><span class="p">:</span> <span class="s1">&#39;world&#39;</span><span class="p">})</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">remote</span> <span class="o">=</span> <span class="n">Remote</span><span class="p">({</span><span class="s1">'foo'</span><span class="p">:</span> <span class="s1">'bar'</span><span class="p">,</span> <span class="s1">'hello'</span><span class="p">:</span> <span class="s1">'world'</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">SourcedLocal</span> <span class="o">=</span> <span class="n">mk_sourced_store</span><span class="p">(</span><span class="n">Local</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">remote</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">SourcedLocal</span><span class="p">({</span><span class="s1">&#39;some&#39;</span><span class="p">:</span> <span class="s1">&#39;local stuff&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">SourcedLocal</span><span class="p">({</span><span class="s1">'some'</span><span class="p">:</span> <span class="s1">'local stuff'</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># the local store has one key</span>
-<span class="go">[&#39;some&#39;]</span>
+<span class="go">['some']</span>
 </pre></div>
 </div>
 <p># but if we ask for a key that is in the remote store, it provides it</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;bar&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'foo'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'bar'</span>
 <span class="go">looking for foo in Local</span>
 <span class="go">looking for foo in Remote</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="go">[&#39;some&#39;, &#39;foo&#39;]</span>
+<span class="go">['some', 'foo']</span>
 </pre></div>
 </div>
 <p>See that next time we ask for the ‘foo’ key, the local store provides it:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;bar&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'foo'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'bar'</span>
 <span class="go">looking for foo in Local</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;hello&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;world&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'hello'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'world'</span>
 <span class="go">looking for hello in Local</span>
 <span class="go">looking for hello in Remote</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="go">[&#39;some&#39;, &#39;foo&#39;, &#39;hello&#39;]</span>
+<span class="go">['some', 'foo', 'hello']</span>
 </pre></div>
 </div>
 <p>We can still add stuff (locally)…</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;something&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;else&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'something'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'else'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="go">[&#39;some&#39;, &#39;foo&#39;, &#39;hello&#39;, &#39;something&#39;]</span>
+<span class="go">['some', 'foo', 'hello', 'something']</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1336,22 +1336,22 @@ You don’t want to do this unwittingly and delete a bunch of precious data!!</p
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Store</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">print_state</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;store: </span><span class="si">{</span><span class="n">store</span><span class="si">}</span><span class="s2"> ----- store._w_cache: </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">_w_cache</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"store: </span><span class="si">{</span><span class="n">store</span><span class="si">}</span><span class="s2"> ----- store._w_cache: </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">_w_cache</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyStore</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span> <span class="o">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">MyCachedStore</span> <span class="o">=</span> <span class="n">mk_write_cached_store</span><span class="p">(</span><span class="n">MyStore</span><span class="p">,</span> <span class="n">w_cache</span><span class="o">=</span><span class="p">{})</span>  <span class="c1"># wrap MyStore with a (dict) write cache</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyCachedStore</span><span class="p">()</span>  <span class="c1"># make a MyCachedStore instance</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># print the contents (both store and cache), see that it&#39;s empty</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># print the contents (both store and cache), see that it's empty</span>
 <span class="go">store: {} ----- store._w_cache: {}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;hello&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;world&#39;</span>  <span class="c1"># write &#39;world&#39; in &#39;hello&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># see that it hasn&#39;t been written</span>
-<span class="go">store: {} ----- store._w_cache: {&#39;hello&#39;: &#39;world&#39;}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;ding&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;dong&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'hello'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'world'</span>  <span class="c1"># write 'world' in 'hello'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># see that it hasn't been written</span>
+<span class="go">store: {} ----- store._w_cache: {'hello': 'world'}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'ding'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'dong'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="go">store: {} ----- store._w_cache: {&#39;hello&#39;: &#39;world&#39;, &#39;ding&#39;: &#39;dong&#39;}</span>
+<span class="go">store: {} ----- store._w_cache: {'hello': 'world', 'ding': 'dong'}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">flush_cache</span><span class="p">()</span>  <span class="c1"># manually flush the cache</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># note that store._w_cache is empty, but store has the data now</span>
-<span class="go">store: {&#39;hello&#39;: &#39;world&#39;, &#39;ding&#39;: &#39;dong&#39;} ----- store._w_cache: {}</span>
+<span class="go">store: {'hello': 'world', 'ding': 'dong'} ----- store._w_cache: {}</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># But you usually want to use the store as a context manager</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">MyCachedStore</span> <span class="o">=</span> <span class="n">mk_write_cached_store</span><span class="p">(</span>
@@ -1362,22 +1362,22 @@ You don’t want to do this unwittingly and delete a bunch of precious data!!</p
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyCachedStore</span><span class="p">(</span><span class="n">the_persistent_dict</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">s</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;===&gt; Before writing data:&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">"===&gt; Before writing data:"</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">s</span><span class="p">[</span><span class="s1">&#39;hello&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;world&#39;</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;===&gt; Before exiting the with block:&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">s</span><span class="p">[</span><span class="s1">'hello'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'world'</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">"===&gt; Before exiting the with block:"</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="go">===&gt; Before writing data:</span>
 <span class="go">store: {} ----- store._w_cache: {}</span>
 <span class="go">===&gt; Before exiting the with block:</span>
-<span class="go">store: {} ----- store._w_cache: {&#39;hello&#39;: &#39;world&#39;}</span>
+<span class="go">store: {} ----- store._w_cache: {'hello': 'world'}</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;===&gt; After exiting the with block:&quot;</span><span class="p">);</span> <span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># Note that the cache store flushed!</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">"===&gt; After exiting the with block:"</span><span class="p">);</span> <span class="n">print_state</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># Note that the cache store flushed!</span>
 <span class="go">===&gt; After exiting the with block:</span>
-<span class="go">store: {&#39;hello&#39;: &#39;world&#39;} ----- store._w_cache: {}</span>
+<span class="go">store: {'hello': 'world'} ----- store._w_cache: {}</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example of auto-flushing when there&#39;s at least two elements</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example of auto-flushing when there's at least two elements</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyStore</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span> <span class="o">...</span>
 <span class="gp">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">MyCachedStore</span> <span class="o">=</span> <span class="n">mk_write_cached_store</span><span class="p">(</span>
@@ -1431,15 +1431,15 @@ Note: No, Union[Callable, Hashable] is not better. For one, general store keys a
 Note: No, they shouldn’t.</p>
 <p>See Also: store_cached_with_single_key (for a version where the cache store key doesn’t depend on function’s args)</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Note: Our doc test will use dict as the store, but to make the functionality useful beyond existing</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># RAM-memorizer, you should use actual &quot;persisting&quot; stores that store in local files, or DBs, etc.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># RAM-memorizer, you should use actual "persisting" stores that store in local files, or DBs, etc.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@store_cached</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">args</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">my_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pretend this is a long computation&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">"Pretend this is a long computation"</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">my_data</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># note the print below (because the function is called</span>
 <span class="go">Pretend this is a long computation</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">tt</span> <span class="o">=</span> <span class="n">my_data</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># note there&#39;s no print (because the function is NOT called)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tt</span> <span class="o">=</span> <span class="n">my_data</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># note there's no print (because the function is NOT called)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">t</span> <span class="o">==</span> <span class="n">tt</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tt</span>
 <span class="go">3</span>
@@ -1476,23 +1476,23 @@ Note: No, Union[Callable, Hashable] is not better. For one, general store keys a
 Note: No, they shouldn’t.</p>
 <p>See Also: store_cached (for a version whose keys are computed from the wrapped function’s input.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Note: Our doc test will use dict as the store, but to make the functionality useful beyond existing</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># RAM-memorizer, you should use actual &quot;persisting&quot; stores that store in local files, or DBs, etc.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># RAM-memorizer, you should use actual "persisting" stores that store in local files, or DBs, etc.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nd">@store_cached_with_single_key</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s1">&#39;whatevs&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@store_cached_with_single_key</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s1">'whatevs'</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">my_data</span><span class="p">():</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pretend this is a long computation&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">"Pretend this is a long computation"</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">my_data</span><span class="p">()</span>  <span class="c1"># note the print below (because the function is called</span>
 <span class="go">Pretend this is a long computation</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">tt</span> <span class="o">=</span> <span class="n">my_data</span><span class="p">()</span>  <span class="c1"># note there&#39;s no print (because the function is NOT called)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tt</span> <span class="o">=</span> <span class="n">my_data</span><span class="p">()</span>  <span class="c1"># note there's no print (because the function is NOT called)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">t</span> <span class="o">==</span> <span class="n">tt</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tt</span>
 <span class="go">[1, 2, 3]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">my_data</span><span class="o">.</span><span class="n">_cache</span>  <span class="c1"># peep in the cache</span>
-<span class="go">{&#39;whatevs&#39;: [1, 2, 3]}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># let&#39;s empty the cache</span>
+<span class="go">{'whatevs': [1, 2, 3]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># let's empty the cache</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">my_data</span><span class="o">.</span><span class="n">empty_cache_entry</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="s1">&#39;whatevs&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">my_data</span><span class="o">.</span><span class="n">_cache</span>  <span class="c1"># see that the cache entry is gone.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="s1">'whatevs'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">my_data</span><span class="o">.</span><span class="n">_cache</span>  <span class="c1"># see that the cache entry is gone.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">my_data</span><span class="p">()</span>  <span class="c1"># so when you call the function again, it prints again!d</span>
 <span class="go">Pretend this is a long computation</span>
 </pre></div>

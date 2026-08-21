@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.misc &mdash; dol 0.3.62 documentation</title>
+  <title>dol.misc &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -123,9 +123,9 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dol.misc</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Functions to read from and write to misc sources</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="c1"># TODO: Completely redo this, using preset and postget and making it into a plugin</span>
 <span class="c1">#  architecture. See</span>
@@ -144,7 +144,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">csv_fileobj</span><span class="p">(</span><span class="n">csv_data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># TODO: Use extended wraps func to inject</span>
-    <span class="n">fp</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">fp</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
     <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
     <span class="n">writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="n">csv_data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">fp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -156,7 +156,7 @@
 
 
 <span class="c1"># TODO: Enhance default handling so users can have their own defaults (checking for local config file etc.)</span>
-<span class="c1"># Note: If you&#39;re tempted to add third-party cases here (like yaml, pandas):</span>
+<span class="c1"># Note: If you're tempted to add third-party cases here (like yaml, pandas):</span>
 <span class="c1">#   DO NOT!! Defaults must work only with builtins (or misc would be non-deterministic)</span>
 <span class="n">dflt_func_key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">dflt_dflt_incoming_val_trans</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">identity_method</span><span class="p">)</span>
@@ -164,25 +164,25 @@
 <span class="c1"># TODO: Get rid of lambdas. Use methodcaller and partial instead</span>
 <span class="c1">#  Requires solving https://github.com/i2mint/dol/issues/9 first</span>
 <span class="n">dflt_incoming_val_trans_for_key</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;.bin&quot;</span><span class="p">:</span> <span class="n">identity_method</span><span class="p">,</span>
-    <span class="s2">&quot;.csv&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">decode</span><span class="p">()))),</span>
-    <span class="s2">&quot;.txt&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span>
-    <span class="s2">&quot;.pkl&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
-    <span class="s2">&quot;.pickle&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
-    <span class="s2">&quot;.json&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
-    <span class="s2">&quot;.zip&quot;</span><span class="p">:</span> <span class="n">FilesOfZip</span><span class="p">,</span>
-    <span class="s2">&quot;.gzip&quot;</span><span class="p">:</span> <span class="n">gzip</span><span class="o">.</span><span class="n">decompress</span><span class="p">,</span>
+    <span class="s2">".bin"</span><span class="p">:</span> <span class="n">identity_method</span><span class="p">,</span>
+    <span class="s2">".csv"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">decode</span><span class="p">()))),</span>
+    <span class="s2">".txt"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span>
+    <span class="s2">".pkl"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
+    <span class="s2">".pickle"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
+    <span class="s2">".json"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
+    <span class="s2">".zip"</span><span class="p">:</span> <span class="n">FilesOfZip</span><span class="p">,</span>
+    <span class="s2">".gzip"</span><span class="p">:</span> <span class="n">gzip</span><span class="o">.</span><span class="n">decompress</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">dflt_outgoing_val_trans_for_key</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;.bin&quot;</span><span class="p">:</span> <span class="n">identity_method</span><span class="p">,</span>
-    <span class="s2">&quot;.csv&quot;</span><span class="p">:</span> <span class="n">csv_fileobj</span><span class="p">,</span>
-    <span class="s2">&quot;.txt&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
-    <span class="s2">&quot;.pkl&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
-    <span class="s2">&quot;.pickle&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
-    <span class="s2">&quot;.json&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
-    <span class="s2">&quot;.gzip&quot;</span><span class="p">:</span> <span class="n">gzip</span><span class="o">.</span><span class="n">compress</span><span class="p">,</span>
-    <span class="s2">&quot;.ini&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">ConfigStore</span><span class="p">(</span>
+    <span class="s2">".bin"</span><span class="p">:</span> <span class="n">identity_method</span><span class="p">,</span>
+    <span class="s2">".csv"</span><span class="p">:</span> <span class="n">csv_fileobj</span><span class="p">,</span>
+    <span class="s2">".txt"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
+    <span class="s2">".pkl"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
+    <span class="s2">".pickle"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">),</span>
+    <span class="s2">".json"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
+    <span class="s2">".gzip"</span><span class="p">:</span> <span class="n">gzip</span><span class="o">.</span><span class="n">compress</span><span class="p">,</span>
+    <span class="s2">".ini"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">ConfigStore</span><span class="p">(</span>
         <span class="n">v</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">ConfigReader</span><span class="o">.</span><span class="n">ExtendedInterpolation</span><span class="p">()</span>
     <span class="p">),</span>
 <span class="p">}</span>
@@ -191,17 +191,17 @@
 <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">):</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">config2py</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigReader</span><span class="p">,</span> <span class="n">ConfigStore</span>
 
-    <span class="n">dflt_incoming_val_trans_for_key</span><span class="p">[</span><span class="s2">&quot;.ini&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+    <span class="n">dflt_incoming_val_trans_for_key</span><span class="p">[</span><span class="s2">".ini"</span><span class="p">]</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
         <span class="n">ConfigStore</span><span class="p">,</span>
         <span class="n">interpolation</span><span class="o">=</span><span class="n">ConfigReader</span><span class="o">.</span><span class="n">ExtendedInterpolation</span><span class="p">(),</span>
     <span class="p">)</span>
 
-    <span class="n">dflt_outgoing_val_trans_for_key</span><span class="p">[</span><span class="s2">&quot;.ini&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+    <span class="n">dflt_outgoing_val_trans_for_key</span><span class="p">[</span><span class="s2">".ini"</span><span class="p">]</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
         <span class="n">ConfigStore</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">ConfigReader</span><span class="o">.</span><span class="n">ExtendedInterpolation</span><span class="p">()</span>
     <span class="p">)</span>
 
 
-<span class="n">synset_of_ext</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;.ini&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;.cnf&quot;</span><span class="p">,</span> <span class="s2">&quot;.conf&quot;</span><span class="p">,</span> <span class="s2">&quot;.config&quot;</span><span class="p">},</span> <span class="s2">&quot;.gzip&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;.gz&quot;</span><span class="p">]}</span>
+<span class="n">synset_of_ext</span> <span class="o">=</span> <span class="p">{</span><span class="s2">".ini"</span><span class="p">:</span> <span class="p">{</span><span class="s2">".cnf"</span><span class="p">,</span> <span class="s2">".conf"</span><span class="p">,</span> <span class="s2">".config"</span><span class="p">},</span> <span class="s2">".gzip"</span><span class="p">:</span> <span class="p">[</span><span class="s2">".gz"</span><span class="p">]}</span>
 <span class="k">for</span> <span class="n">_user_this</span><span class="p">,</span> <span class="n">_for_these_extensions</span> <span class="ow">in</span> <span class="n">synset_of_ext</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">_d</span> <span class="ow">in</span> <span class="p">[</span>
         <span class="n">dflt_incoming_val_trans_for_key</span><span class="p">,</span>
@@ -218,7 +218,7 @@
 <div class="viewcode-block" id="MiscReaderMixin">
 <a class="viewcode-back" href="../../module_docs/dol/misc.html#dol.misc.MiscReaderMixin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MiscReaderMixin</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixin to transform incoming vals according to the key their under.</span>
+<span class="w">    </span><span class="sd">"""Mixin to transform incoming vals according to the key their under.</span>
 <span class="sd">    Warning: If used as a subclass, this mixin should (in general) be placed before the store</span>
 
 
@@ -234,34 +234,34 @@
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; incoming_val_trans_for_key = dict(</span>
 <span class="sd">    ...     MiscReaderMixin._incoming_val_trans_for_key,  # take the existing defaults...</span>
-<span class="sd">    ...     **{&#39;.bin&#39;: lambda v: [ord(x) for x in v.decode()], # ... override how to handle the .bin extension</span>
-<span class="sd">    ...      &#39;.reverse_this&#39;: lambda v: v[::-1]  # add a new extension (and how to handle it)</span>
+<span class="sd">    ...     **{'.bin': lambda v: [ord(x) for x in v.decode()], # ... override how to handle the .bin extension</span>
+<span class="sd">    ...      '.reverse_this': lambda v: v[::-1]  # add a new extension (and how to handle it)</span>
 <span class="sd">    ...     })</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; import pickle</span>
 <span class="sd">    &gt;&gt;&gt; d = {</span>
-<span class="sd">    ...     &#39;a.bin&#39;: b&#39;abc123&#39;,</span>
-<span class="sd">    ...     &#39;a.reverse_this&#39;: b&#39;abc123&#39;,</span>
-<span class="sd">    ...     &#39;a.csv&#39;: b&#39;event,year\\n Magna Carta,1215\\n Guido,1956&#39;,</span>
-<span class="sd">    ...     &#39;a.txt&#39;: b&#39;this is not a text&#39;,</span>
-<span class="sd">    ...     &#39;a.pkl&#39;: pickle.dumps([&#39;text&#39;, [str, map], {&#39;a list&#39;: [1, 2, 3]}]),</span>
-<span class="sd">    ...     &#39;a.json&#39;: &#39;{&quot;str&quot;: &quot;field&quot;, &quot;int&quot;: 42, &quot;float&quot;: 3.14, &quot;array&quot;: [1, 2], &quot;nested&quot;: {&quot;a&quot;: 1, &quot;b&quot;: 2}}&#39;,</span>
+<span class="sd">    ...     'a.bin': b'abc123',</span>
+<span class="sd">    ...     'a.reverse_this': b'abc123',</span>
+<span class="sd">    ...     'a.csv': b'event,year\\n Magna Carta,1215\\n Guido,1956',</span>
+<span class="sd">    ...     'a.txt': b'this is not a text',</span>
+<span class="sd">    ...     'a.pkl': pickle.dumps(['text', [str, map], {'a list': [1, 2, 3]}]),</span>
+<span class="sd">    ...     'a.json': '{"str": "field", "int": 42, "float": 3.14, "array": [1, 2], "nested": {"a": 1, "b": 2}}',</span>
 <span class="sd">    ... }</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; s = MiscReader(d=d, incoming_val_trans_for_key=incoming_val_trans_for_key)</span>
 <span class="sd">    &gt;&gt;&gt; list(s)</span>
-<span class="sd">    [&#39;a.bin&#39;, &#39;a.reverse_this&#39;, &#39;a.csv&#39;, &#39;a.txt&#39;, &#39;a.pkl&#39;, &#39;a.json&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;a.bin&#39;]</span>
+<span class="sd">    ['a.bin', 'a.reverse_this', 'a.csv', 'a.txt', 'a.pkl', 'a.json']</span>
+<span class="sd">    &gt;&gt;&gt; s['a.bin']</span>
 <span class="sd">    [97, 98, 99, 49, 50, 51]</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;a.reverse_this&#39;]</span>
-<span class="sd">    b&#39;321cba&#39;</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;a.csv&#39;]</span>
-<span class="sd">    [[&#39;event&#39;, &#39;year&#39;], [&#39; Magna Carta&#39;, &#39;1215&#39;], [&#39; Guido&#39;, &#39;1956&#39;]]</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;a.pkl&#39;]</span>
-<span class="sd">    [&#39;text&#39;, [&lt;class &#39;str&#39;&gt;, &lt;class &#39;map&#39;&gt;], {&#39;a list&#39;: [1, 2, 3]}]</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;a.json&#39;]</span>
-<span class="sd">    {&#39;str&#39;: &#39;field&#39;, &#39;int&#39;: 42, &#39;float&#39;: 3.14, &#39;array&#39;: [1, 2], &#39;nested&#39;: {&#39;a&#39;: 1, &#39;b&#39;: 2}}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    &gt;&gt;&gt; s['a.reverse_this']</span>
+<span class="sd">    b'321cba'</span>
+<span class="sd">    &gt;&gt;&gt; s['a.csv']</span>
+<span class="sd">    [['event', 'year'], [' Magna Carta', '1215'], [' Guido', '1956']]</span>
+<span class="sd">    &gt;&gt;&gt; s['a.pkl']</span>
+<span class="sd">    ['text', [&lt;class 'str'&gt;, &lt;class 'map'&gt;], {'a list': [1, 2, 3]}]</span>
+<span class="sd">    &gt;&gt;&gt; s['a.json']</span>
+<span class="sd">    {'str': 'field', 'int': 42, 'float': 3.14, 'array': [1, 2], 'nested': {'a': 1, 'b': 2}}</span>
+<span class="sd">    """</span>
 
     <span class="n">_func_key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">_dflt_incoming_val_trans</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">identity_method</span><span class="p">)</span>
@@ -293,12 +293,12 @@
 <span class="c1"># import urllib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
 
-<span class="n">DFLT_USER_AGENT</span> <span class="o">=</span> <span class="s2">&quot;Wget/1.16 (linux-gnu)&quot;</span>
+<span class="n">DFLT_USER_AGENT</span> <span class="o">=</span> <span class="s2">"Wget/1.16 (linux-gnu)"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_dropbox_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http://www.dropbox.com&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
-        <span class="s2">&quot;https://www.dropbox.com&quot;</span>
+    <span class="k">return</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"http://www.dropbox.com"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
+        <span class="s2">"https://www.dropbox.com"</span>
     <span class="p">)</span>
 
 
@@ -308,7 +308,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_download_from_dropbox</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">chk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">DFLT_USER_AGENT</span><span class="p">):</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">iter_content_and_copy_to</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
             <span class="n">req</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-            <span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s2">&quot;user-agent&quot;</span><span class="p">,</span> <span class="n">user_agent</span><span class="p">)</span>
+            <span class="n">req</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s2">"user-agent"</span><span class="p">,</span> <span class="n">user_agent</span><span class="p">)</span>
             <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
                 <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
                     <span class="n">chk</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">chk_size</span><span class="p">)</span>
@@ -320,7 +320,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">iter_content_and_copy_to</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">_target_file</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">_target_file</span><span class="p">:</span>
                 <span class="n">iter_content_and_copy_to</span><span class="p">(</span><span class="n">_target_file</span><span class="p">)</span>
 
     <span class="k">with</span> <span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
@@ -337,31 +337,31 @@
             <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
 
-<span class="c1"># TODO: I&#39;d really like to reuse MiscReaderMixin here! There&#39;s a lot of potential.</span>
-<span class="c1"># TODO: For more flexibility, the default store should probably be a UriReader (that doesn&#39;t exist yet)</span>
+<span class="c1"># TODO: I'd really like to reuse MiscReaderMixin here! There's a lot of potential.</span>
+<span class="c1"># TODO: For more flexibility, the default store should probably be a UriReader (that doesn't exist yet)</span>
 <span class="c1">#  If store argument of get_obj was a type instead of an instance, or if MiscReaderMixin was a transformer, if would</span>
 <span class="c1">#  be easier -- but would it make their individual concerns mixed?</span>
-<span class="c1">#   Also, preset and postget (trans.wrap_kvs(...)) now exist. Let&#39;s use them here.</span>
+<span class="c1">#   Also, preset and postget (trans.wrap_kvs(...)) now exist. Let's use them here.</span>
 <div class="viewcode-block" id="get_obj">
 <a class="viewcode-back" href="../../module_docs/dol/misc.html#dol.misc.get_obj">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_obj</span><span class="p">(</span>
     <span class="n">k</span><span class="p">,</span>
-    <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
+    <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">""</span><span class="p">),</span>
     <span class="n">incoming_val_trans_for_key</span><span class="o">=</span><span class="n">imdict</span><span class="p">(</span><span class="n">dflt_incoming_val_trans_for_key</span><span class="p">),</span>
     <span class="n">dflt_incoming_val_trans</span><span class="o">=</span><span class="n">identity_method</span><span class="p">,</span>
     <span class="n">func_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A quick way to get an object, with default... everything (but the key, you know, a clue of what you want)&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http://&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;https://&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A quick way to get an object, with default... everything (but the key, you know, a clue of what you want)"""</span>
+    <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"http://"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"https://"</span><span class="p">):</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">url_to_bytes</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
             <span class="n">store</span><span class="p">,</span> <span class="n">Files</span>
         <span class="p">):</span>  <span class="c1"># being extra careful to only do this if default local store</span>
-            <span class="c1"># preprocessing the key if it starts with &#39;.&#39;, &#39;..&#39;, or &#39;~&#39;</span>
-            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">):</span>
+            <span class="c1"># preprocessing the key if it starts with '.', '..', or '~'</span>
+            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">".."</span><span class="p">):</span>
                 <span class="n">k</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"~"</span><span class="p">):</span>
                 <span class="n">k</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
     <span class="n">trans_func</span> <span class="o">=</span> <span class="p">(</span><span class="n">incoming_val_trans_for_key</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -371,12 +371,12 @@
 
 
 
-<span class="c1"># TODO: I&#39;d really like to reuse MiscReaderMixin here! There&#39;s a lot of potential.</span>
+<span class="c1"># TODO: I'd really like to reuse MiscReaderMixin here! There's a lot of potential.</span>
 <span class="c1">#  Same comment as for get_obj.</span>
 <div class="viewcode-block" id="MiscGetter">
 <a class="viewcode-back" href="../../module_docs/dol/misc.html#dol.misc.MiscGetter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MiscGetter</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    An object to write (and only write) to a store (default local files) with automatic deserialization</span>
 <span class="sd">    according to a property of the key (default: file extension).</span>
 
@@ -384,23 +384,23 @@
 <span class="sd">    &gt;&gt;&gt; import os</span>
 <span class="sd">    &gt;&gt;&gt; import json</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; pjoin = lambda *p: os.path.join(os.path.expanduser(&#39;~&#39;), *p)</span>
-<span class="sd">    &gt;&gt;&gt; path = pjoin(&#39;tmp.json&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: [1, 2, 3]}}}</span>
-<span class="sd">    &gt;&gt;&gt; json.dump(d, open(path, &#39;w&#39;))  # putting a json file there, the normal way, so we can use it later</span>
+<span class="sd">    &gt;&gt;&gt; pjoin = lambda *p: os.path.join(os.path.expanduser('~'), *p)</span>
+<span class="sd">    &gt;&gt;&gt; path = pjoin('tmp.json')</span>
+<span class="sd">    &gt;&gt;&gt; d = {'a': {'b': {'c': [1, 2, 3]}}}</span>
+<span class="sd">    &gt;&gt;&gt; json.dump(d, open(path, 'w'))  # putting a json file there, the normal way, so we can use it later</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; k = path</span>
-<span class="sd">    &gt;&gt;&gt; t = get_obj(k)  # if you&#39;d like to use a function</span>
+<span class="sd">    &gt;&gt;&gt; t = get_obj(k)  # if you'd like to use a function</span>
 <span class="sd">    &gt;&gt;&gt; assert t == d</span>
-<span class="sd">    &gt;&gt;&gt; tt = misc_objs_get[k]  # if you&#39;d like to use an object (note: can get, but nothing else (no list, set, del, etc))</span>
+<span class="sd">    &gt;&gt;&gt; tt = misc_objs_get[k]  # if you'd like to use an object (note: can get, but nothing else (no list, set, del, etc))</span>
 <span class="sd">    &gt;&gt;&gt; assert tt == d</span>
 <span class="sd">    &gt;&gt;&gt; t</span>
-<span class="sd">    {&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: [1, 2, 3]}}}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    {'a': {'b': {'c': [1, 2, 3]}}}</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">""</span><span class="p">),</span>
         <span class="n">incoming_val_trans_for_key</span><span class="o">=</span><span class="n">imdict</span><span class="p">(</span><span class="n">dflt_incoming_val_trans_for_key</span><span class="p">),</span>
         <span class="n">dflt_incoming_val_trans</span><span class="o">=</span><span class="n">identity_method</span><span class="p">,</span>
         <span class="n">func_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
@@ -420,15 +420,15 @@
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Disabling &quot;manually&quot; to avoid iteration falling back on __getitem__ with integers</span>
+        <span class="c1"># Disabling "manually" to avoid iteration falling back on __getitem__ with integers</span>
         <span class="c1"># To know more, see:</span>
         <span class="c1">#   https://stackoverflow.com/questions/37941523/pip-uninstall-no-files-were-found-to-uninstall</span>
         <span class="c1">#   https://www.python.org/dev/peps/pep-0234/</span>
 
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s2">&quot;By default, there&#39;s no iteration in MiscGetter. &quot;</span>
-            <span class="s2">&quot;But feel free to subclass if you &quot;</span>
-            <span class="s2">&quot;have a particular sense of what the iteration should yield!&quot;</span>
+            <span class="s2">"By default, there's no iteration in MiscGetter. "</span>
+            <span class="s2">"But feel free to subclass if you "</span>
+            <span class="s2">"have a particular sense of what the iteration should yield!"</span>
         <span class="p">)</span></div>
 
 
@@ -442,7 +442,7 @@
 <div class="viewcode-block" id="MiscStoreMixin">
 <a class="viewcode-back" href="../../module_docs/dol/misc.html#dol.misc.MiscStoreMixin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MiscStoreMixin</span><span class="p">(</span><span class="n">MiscReaderMixin</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixin to transform incoming and outgoing vals according to the key their under.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Mixin to transform incoming and outgoing vals according to the key their under.</span>
 <span class="sd">    Warning: If used as a subclass, this mixin should (in general) be placed before the store</span>
 
 <span class="sd">    See also: preset and postget args from wrap_kvs decorator from dol.trans.</span>
@@ -460,39 +460,39 @@
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; outgoing_val_trans_for_key = dict(</span>
 <span class="sd">    ...     MiscStoreMixin._outgoing_val_trans_for_key,  # take the existing defaults...</span>
-<span class="sd">    ...     **{&#39;.bin&#39;: lambda v: &#39;&#39;.join([chr(x) for x in v]).encode(), # ... override how to handle the .bin extension</span>
-<span class="sd">    ...        &#39;.reverse_this&#39;: lambda v: v[::-1]  # add a new extension (and how to handle it)</span>
+<span class="sd">    ...     **{'.bin': lambda v: ''.join([chr(x) for x in v]).encode(), # ... override how to handle the .bin extension</span>
+<span class="sd">    ...        '.reverse_this': lambda v: v[::-1]  # add a new extension (and how to handle it)</span>
 <span class="sd">    ...     })</span>
 <span class="sd">    &gt;&gt;&gt; ss = MiscStore(d={},  # store starts empty</span>
 <span class="sd">    ...                incoming_val_trans_for_key={},  # overriding incoming trans so we can see the raw data later</span>
 <span class="sd">    ...                outgoing_val_trans_for_key=outgoing_val_trans_for_key)</span>
 <span class="sd">    ...</span>
-<span class="sd">    &gt;&gt;&gt; # here&#39;s what we&#39;re going to write in the store</span>
+<span class="sd">    &gt;&gt;&gt; # here's what we're going to write in the store</span>
 <span class="sd">    &gt;&gt;&gt; data_to_write = {</span>
-<span class="sd">    ...      &#39;a.bin&#39;: [97, 98, 99, 49, 50, 51],</span>
-<span class="sd">    ...      &#39;a.reverse_this&#39;: b&#39;321cba&#39;,</span>
-<span class="sd">    ...      &#39;a.csv&#39;: [[&#39;event&#39;, &#39;year&#39;], [&#39; Magna Carta&#39;, &#39;1215&#39;], [&#39; Guido&#39;, &#39;1956&#39;]],</span>
-<span class="sd">    ...      &#39;a.txt&#39;: &#39;this is not a text&#39;,</span>
-<span class="sd">    ...      &#39;a.pkl&#39;: [&#39;text&#39;, [str, map], {&#39;a list&#39;: [1, 2, 3]}],</span>
-<span class="sd">    ...      &#39;a.json&#39;: {&#39;str&#39;: &#39;field&#39;, &#39;int&#39;: 42, &#39;float&#39;: 3.14, &#39;array&#39;: [1, 2], &#39;nested&#39;: {&#39;a&#39;: 1, &#39;b&#39;: 2}}}</span>
+<span class="sd">    ...      'a.bin': [97, 98, 99, 49, 50, 51],</span>
+<span class="sd">    ...      'a.reverse_this': b'321cba',</span>
+<span class="sd">    ...      'a.csv': [['event', 'year'], [' Magna Carta', '1215'], [' Guido', '1956']],</span>
+<span class="sd">    ...      'a.txt': 'this is not a text',</span>
+<span class="sd">    ...      'a.pkl': ['text', [str, map], {'a list': [1, 2, 3]}],</span>
+<span class="sd">    ...      'a.json': {'str': 'field', 'int': 42, 'float': 3.14, 'array': [1, 2], 'nested': {'a': 1, 'b': 2}}}</span>
 <span class="sd">    &gt;&gt;&gt; # write this data in our store</span>
 <span class="sd">    &gt;&gt;&gt; for k, v in data_to_write.items():</span>
 <span class="sd">    ...     ss[k] = v</span>
 <span class="sd">    &gt;&gt;&gt; list(ss)</span>
-<span class="sd">    [&#39;a.bin&#39;, &#39;a.reverse_this&#39;, &#39;a.csv&#39;, &#39;a.txt&#39;, &#39;a.pkl&#39;, &#39;a.json&#39;]</span>
+<span class="sd">    ['a.bin', 'a.reverse_this', 'a.csv', 'a.txt', 'a.pkl', 'a.json']</span>
 <span class="sd">    &gt;&gt;&gt; # Looking at the contents (what was actually stored/written)</span>
 <span class="sd">    &gt;&gt;&gt; for k, v in ss.items():</span>
-<span class="sd">    ...     if k != &#39;a.pkl&#39;:</span>
-<span class="sd">    ...         print(f&quot;{k}: {v}&quot;)</span>
+<span class="sd">    ...     if k != 'a.pkl':</span>
+<span class="sd">    ...         print(f"{k}: {v}")</span>
 <span class="sd">    ...     else:  # need to verify pickle data differently, since printing contents is problematic in doctest</span>
-<span class="sd">    ...         assert pickle.loads(v) == data_to_write[&#39;a.pkl&#39;]</span>
-<span class="sd">    a.bin: b&#39;abc123&#39;</span>
-<span class="sd">    a.reverse_this: b&#39;abc123&#39;</span>
-<span class="sd">    a.csv: b&#39;event,year\r\n Magna Carta,1215\r\n Guido,1956\r\n&#39;</span>
-<span class="sd">    a.txt: b&#39;this is not a text&#39;</span>
-<span class="sd">    a.json: b&#39;{&quot;str&quot;: &quot;field&quot;, &quot;int&quot;: 42, &quot;float&quot;: 3.14, &quot;array&quot;: [1, 2], &quot;nested&quot;: {&quot;a&quot;: 1, &quot;b&quot;: 2}}&#39;</span>
+<span class="sd">    ...         assert pickle.loads(v) == data_to_write['a.pkl']</span>
+<span class="sd">    a.bin: b'abc123'</span>
+<span class="sd">    a.reverse_this: b'abc123'</span>
+<span class="sd">    a.csv: b'event,year\r\n Magna Carta,1215\r\n Guido,1956\r\n'</span>
+<span class="sd">    a.txt: b'this is not a text'</span>
+<span class="sd">    a.json: b'{"str": "field", "int": 42, "float": 3.14, "array": [1, 2], "nested": {"a": 1, "b": 2}}'</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">_dflt_outgoing_val_trans_for_key</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">identity_method</span><span class="p">)</span>
     <span class="n">_outgoing_val_trans_for_key</span> <span class="o">=</span> <span class="n">dflt_outgoing_val_trans_for_key</span>
@@ -520,7 +520,7 @@
 
 
 
-<span class="c1"># TODO: I&#39;d really like to reuse MiscStoreMixin here! There&#39;s a lot of potential.</span>
+<span class="c1"># TODO: I'd really like to reuse MiscStoreMixin here! There's a lot of potential.</span>
 <span class="c1">#  If store argument of get_obj was a type instead of an instance, or if MiscReaderMixin was a transformer, if would</span>
 <span class="c1">#  be easier -- but would it make their individual concerns mixed?</span>
 <div class="viewcode-block" id="set_obj">
@@ -528,13 +528,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">set_obj</span><span class="p">(</span>
     <span class="n">k</span><span class="p">,</span>
     <span class="n">v</span><span class="p">,</span>
-    <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
+    <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">""</span><span class="p">),</span>
     <span class="n">outgoing_val_trans_for_key</span><span class="o">=</span><span class="n">imdict</span><span class="p">(</span><span class="n">dflt_outgoing_val_trans_for_key</span><span class="p">),</span>
     <span class="n">func_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A quick way to get an object, with default...</span>
-<span class="sd">    # everything (but the key, you know, a clue of what you want)&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">Files</span><span class="p">)</span> <span class="ow">and</span> <span class="n">store</span><span class="o">.</span><span class="n">_prefix</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">}:</span>
+<span class="w">    </span><span class="sd">"""A quick way to get an object, with default...</span>
+<span class="sd">    # everything (but the key, you know, a clue of what you want)"""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">Files</span><span class="p">)</span> <span class="ow">and</span> <span class="n">store</span><span class="o">.</span><span class="n">_prefix</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">""</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">}:</span>
         <span class="n">k</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
 
     <span class="n">trans_func</span> <span class="o">=</span> <span class="n">outgoing_val_trans_for_key</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -544,12 +544,12 @@
 
 
 
-<span class="c1"># TODO: I&#39;d really like to reuse MiscReaderMixin here! There&#39;s a lot of potential.</span>
+<span class="c1"># TODO: I'd really like to reuse MiscReaderMixin here! There's a lot of potential.</span>
 <span class="c1">#  Same comment as above.</span>
 <div class="viewcode-block" id="MiscGetterAndSetter">
 <a class="viewcode-back" href="../../module_docs/dol/misc.html#dol.misc.MiscGetterAndSetter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MiscGetterAndSetter</span><span class="p">(</span><span class="n">MiscGetter</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    An object to read and write (and nothing else) to a store (default local) with automatic (de)serialization</span>
 <span class="sd">    according to a property of the key (default: file extension).</span>
 
@@ -557,35 +557,35 @@
 <span class="sd">    &gt;&gt;&gt; import json</span>
 <span class="sd">    &gt;&gt;&gt; import os</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; pjoin = lambda *p: os.path.join(os.path.expanduser(&#39;~&#39;), *p)</span>
+<span class="sd">    &gt;&gt;&gt; pjoin = lambda *p: os.path.join(os.path.expanduser('~'), *p)</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; d = {&#39;a&#39;: {&#39;b&#39;: {&#39;c&#39;: [1, 2, 3]}}}</span>
-<span class="sd">    &gt;&gt;&gt; misc_objs[pjoin(&#39;tmp.json&#39;)] = d</span>
-<span class="sd">    &gt;&gt;&gt; filepath = os.path.expanduser(&#39;~/tmp.json&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; assert misc_objs[filepath] == d  # yep, it&#39;s there, and can be retrieved</span>
-<span class="sd">    &gt;&gt;&gt; assert json.load(open(filepath)) == d  # in case you don&#39;t believe it&#39;s an actual json file</span>
+<span class="sd">    &gt;&gt;&gt; d = {'a': {'b': {'c': [1, 2, 3]}}}</span>
+<span class="sd">    &gt;&gt;&gt; misc_objs[pjoin('tmp.json')] = d</span>
+<span class="sd">    &gt;&gt;&gt; filepath = os.path.expanduser('~/tmp.json')</span>
+<span class="sd">    &gt;&gt;&gt; assert misc_objs[filepath] == d  # yep, it's there, and can be retrieved</span>
+<span class="sd">    &gt;&gt;&gt; assert json.load(open(filepath)) == d  # in case you don't believe it's an actual json file</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # using pickle</span>
-<span class="sd">    &gt;&gt;&gt; misc_objs[pjoin(&#39;tmp.pkl&#39;)] = d</span>
-<span class="sd">    &gt;&gt;&gt; assert misc_objs[pjoin(&#39;tmp.pkl&#39;)] == d</span>
+<span class="sd">    &gt;&gt;&gt; misc_objs[pjoin('tmp.pkl')] = d</span>
+<span class="sd">    &gt;&gt;&gt; assert misc_objs[pjoin('tmp.pkl')] == d</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # using txt</span>
-<span class="sd">    &gt;&gt;&gt; misc_objs[pjoin(&#39;tmp.txt&#39;)] = &#39;hello world!&#39;</span>
-<span class="sd">    &gt;&gt;&gt; assert misc_objs[pjoin(&#39;tmp.txt&#39;)] == &#39;hello world!&#39;</span>
+<span class="sd">    &gt;&gt;&gt; misc_objs[pjoin('tmp.txt')] = 'hello world!'</span>
+<span class="sd">    &gt;&gt;&gt; assert misc_objs[pjoin('tmp.txt')] == 'hello world!'</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # using csv</span>
-<span class="sd">    &gt;&gt;&gt; misc_objs[pjoin(&#39;tmp.csv&#39;)] = [[1,2,3], [&#39;a&#39;,&#39;b&#39;,&#39;c&#39;]]</span>
-<span class="sd">    &gt;&gt;&gt; assert misc_objs[pjoin(&#39;tmp.csv&#39;)] == [[&#39;1&#39;,&#39;2&#39;,&#39;3&#39;], [&#39;a&#39;,&#39;b&#39;,&#39;c&#39;]]  # yeah, well, not numbers, but you deal with it</span>
+<span class="sd">    &gt;&gt;&gt; misc_objs[pjoin('tmp.csv')] = [[1,2,3], ['a','b','c']]</span>
+<span class="sd">    &gt;&gt;&gt; assert misc_objs[pjoin('tmp.csv')] == [['1','2','3'], ['a','b','c']]  # yeah, well, not numbers, but you deal with it</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # using bin</span>
-<span class="sd">    ... misc_objs[pjoin(&#39;tmp.bin&#39;)] = b&#39;let us pretend these are bytes of an audio waveform&#39;</span>
-<span class="sd">    &gt;&gt;&gt; assert misc_objs[pjoin(&#39;tmp.bin&#39;)] == b&#39;let us pretend these are bytes of an audio waveform&#39;</span>
+<span class="sd">    ... misc_objs[pjoin('tmp.bin')] = b'let us pretend these are bytes of an audio waveform'</span>
+<span class="sd">    &gt;&gt;&gt; assert misc_objs[pjoin('tmp.bin')] == b'let us pretend these are bytes of an audio waveform'</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="n">store</span><span class="o">=</span><span class="n">Files</span><span class="p">(</span><span class="s2">""</span><span class="p">),</span>
         <span class="n">incoming_val_trans_for_key</span><span class="o">=</span><span class="n">imdict</span><span class="p">(</span><span class="n">dflt_incoming_val_trans_for_key</span><span class="p">),</span>
         <span class="n">outgoing_val_trans_for_key</span><span class="o">=</span><span class="n">imdict</span><span class="p">(</span><span class="n">dflt_outgoing_val_trans_for_key</span><span class="p">),</span>
         <span class="n">dflt_incoming_val_trans</span><span class="o">=</span><span class="n">identity_method</span><span class="p">,</span>

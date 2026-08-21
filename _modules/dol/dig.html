@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.dig &mdash; dol 0.3.62 documentation</title>
+  <title>dol.dig &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -123,15 +123,15 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dol.dig</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Layers introspection&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Layers introspection"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 
 <span class="c1"># TODO: Make a generator and a index getter for keys and vals (and both).</span>
 <span class="c1">#  Point is to be able to get views from any level.</span>
 
-<span class="n">not_found</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;NotFound&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>
-<span class="n">no_default</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;NoDefault&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>
+<span class="n">not_found</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">"NotFound"</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>
+<span class="n">no_default</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">"NoDefault"</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_first_attr_found</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">no_default</span><span class="p">):</span>
@@ -140,7 +140,7 @@
         <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">not_found</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">a</span>
     <span class="k">if</span> <span class="n">default</span> <span class="o">==</span> <span class="n">no_default</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;None of the attributes were found: </span><span class="si">{</span><span class="n">attrs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"None of the attributes were found: </span><span class="si">{</span><span class="n">attrs</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default</span>
 
@@ -149,7 +149,7 @@
     <span class="n">a</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">a</span>
-    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">"store"</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">recursive_get_attr</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default</span>
@@ -162,26 +162,26 @@
 <div class="viewcode-block" id="store_trans_path">
 <a class="viewcode-back" href="../../module_docs/dol/dig.html#dol.dig.store_trans_path">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">store_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield ``arg`` transformed by ``method`` at each layer, outermost first.</span>
+<span class="w">    </span><span class="sd">"""Yield ``arg`` transformed by ``method`` at each layer, outermost first.</span>
 
 <span class="sd">    Walks the ``.store`` chain, applying ``store.&lt;method&gt;`` at every layer that defines it.</span>
 
 <span class="sd">    &gt;&gt;&gt; from dol import wrap_kvs</span>
-<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({&#39;a.txt&#39;: 1}, id_of_key=lambda k: k + &#39;.txt&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; list(store_trans_path(s, &#39;a&#39;, &#39;_id_of_key&#39;))</span>
-<span class="sd">    [&#39;a.txt&#39;, &#39;a.txt&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({'a.txt': 1}, id_of_key=lambda k: k + '.txt')</span>
+<span class="sd">    &gt;&gt;&gt; list(store_trans_path(s, 'a', '_id_of_key'))</span>
+<span class="sd">    ['a.txt', 'a.txt']</span>
 
 <span class="sd">    Yields nothing when no layer defines ``method`` -- which is why :func:`inner_most`</span>
 <span class="sd">    raises rather than returning the ``None`` that an empty walk would otherwise produce.</span>
 
-<span class="sd">    &gt;&gt;&gt; list(store_trans_path({}, &#39;a&#39;, &#39;_id_of_key&#39;))</span>
+<span class="sd">    &gt;&gt;&gt; list(store_trans_path({}, 'a', '_id_of_key'))</span>
 <span class="sd">    []</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">f</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">trans_arg</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
         <span class="k">yield</span> <span class="n">trans_arg</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">"store"</span><span class="p">):</span>
             <span class="c1"># NOTE: recurse with the SAME ``method``. This used to hardcode ``unravel_key``</span>
             <span class="c1"># (i.e. ``_id_of_key``), so ``unravel_val``/``inner_most_val`` applied</span>
             <span class="c1"># ``_data_of_obj`` at the top layer and ``_id_of_key`` at every deeper one.</span>
@@ -192,10 +192,10 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">print_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">with_type</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">gen</span> <span class="o">=</span> <span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="o">*</span><span class="n">store_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">with_type</span><span class="p">:</span>
-        <span class="n">gen</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">gen</span><span class="p">)</span>
+        <span class="n">gen</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">gen</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">gen</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">gen</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">last_element</span><span class="p">(</span><span class="n">gen</span><span class="p">):</span>
@@ -208,19 +208,19 @@
 <div class="viewcode-block" id="inner_most">
 <a class="viewcode-back" href="../../module_docs/dol/dig.html#dol.dig.inner_most">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">inner_most</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">no_default</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The value of ``arg`` after every layer&#39;s ``method`` has been applied.</span>
+<span class="w">    </span><span class="sd">"""The value of ``arg`` after every layer's ``method`` has been applied.</span>
 
 <span class="sd">    &gt;&gt;&gt; from dol import wrap_kvs</span>
-<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({&#39;a.txt&#39;: 1}, id_of_key=lambda k: k + &#39;.txt&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; inner_most(s, &#39;a&#39;, &#39;_id_of_key&#39;)</span>
-<span class="sd">    &#39;a.txt&#39;</span>
+<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({'a.txt': 1}, id_of_key=lambda k: k + '.txt')</span>
+<span class="sd">    &gt;&gt;&gt; inner_most(s, 'a', '_id_of_key')</span>
+<span class="sd">    'a.txt'</span>
 
 <span class="sd">    **Raises when no layer defines ``method``**, instead of silently returning ``None``:</span>
 
-<span class="sd">    &gt;&gt;&gt; inner_most({}, &#39;a&#39;, &#39;_id_of_key&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; inner_most({}, 'a', '_id_of_key')</span>
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">      ...</span>
-<span class="sd">    AttributeError: No layer of dict defines &#39;_id_of_key&#39;, so &#39;a&#39; cannot be resolved. ...</span>
+<span class="sd">    AttributeError: No layer of dict defines '_id_of_key', so 'a' cannot be resolved. ...</span>
 
 <span class="sd">    A ``None`` here is the worst possible answer: callers use the result as a key or a</span>
 <span class="sd">    path, so it surfaces far from its cause -- as ``https://.../None``, or as</span>
@@ -228,18 +228,18 @@
 
 <span class="sd">    Pass ``default`` to opt out of raising:</span>
 
-<span class="sd">    &gt;&gt;&gt; inner_most({}, &#39;a&#39;, &#39;_id_of_key&#39;, default=None) is None</span>
+<span class="sd">    &gt;&gt;&gt; inner_most({}, 'a', '_id_of_key', default=None) is None</span>
 <span class="sd">    True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">last_element</span><span class="p">(</span><span class="n">store_trans_path</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">method</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Distinguish &quot;no layer supplied the method&quot; (a resolution failure) from &quot;a layer</span>
-        <span class="c1"># legitimately returned None&quot; (only reachable when the outermost layer HAS the method).</span>
+        <span class="c1"># Distinguish "no layer supplied the method" (a resolution failure) from "a layer</span>
+        <span class="c1"># legitimately returned None" (only reachable when the outermost layer HAS the method).</span>
         <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="n">no_default</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;No layer of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> defines </span><span class="si">{</span><span class="n">method</span><span class="si">!r}</span><span class="s2">, so </span><span class="si">{</span><span class="n">arg</span><span class="si">!r}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;cannot be resolved. Pass default= if you want a fallback instead of &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;this error. (Previously this returned None silently.)&quot;</span>
+                <span class="sa">f</span><span class="s2">"No layer of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> defines </span><span class="si">{</span><span class="n">method</span><span class="si">!r}</span><span class="s2">, so </span><span class="si">{</span><span class="n">arg</span><span class="si">!r}</span><span class="s2"> "</span>
+                <span class="sa">f</span><span class="s2">"cannot be resolved. Pass default= if you want a fallback instead of "</span>
+                <span class="sa">f</span><span class="s2">"this error. (Previously this returned None silently.)"</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">default</span>
     <span class="k">return</span> <span class="n">x</span></div>
@@ -247,19 +247,19 @@
 
 
 <span class="c1"># TODO: Better change the signature to reflect context (k (key) or v (val) instead of arg)</span>
-<span class="n">unravel_key</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">store_trans_path</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;_id_of_key&quot;</span><span class="p">)</span>
-<span class="n">print_key_trans_path</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">print_trans_path</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;_id_of_key&quot;</span><span class="p">)</span>
-<span class="n">inner_most_key</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">inner_most</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;_id_of_key&quot;</span><span class="p">)</span>
+<span class="n">unravel_key</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">store_trans_path</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"_id_of_key"</span><span class="p">)</span>
+<span class="n">print_key_trans_path</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">print_trans_path</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"_id_of_key"</span><span class="p">)</span>
+<span class="n">inner_most_key</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">inner_most</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"_id_of_key"</span><span class="p">)</span>
 
-<span class="c1"># TODO: inner_most_val doesn&#39;t really do what one expects. It just does what inner_most_key does</span>
-<span class="n">unravel_val</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">store_trans_path</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;_data_of_obj&quot;</span><span class="p">)</span>
-<span class="n">print_val_trans_path</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">print_trans_path</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;_data_of_obj&quot;</span><span class="p">)</span>
-<span class="n">inner_most_val</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">inner_most</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;_data_of_obj&quot;</span><span class="p">)</span>
+<span class="c1"># TODO: inner_most_val doesn't really do what one expects. It just does what inner_most_key does</span>
+<span class="n">unravel_val</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">store_trans_path</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"_data_of_obj"</span><span class="p">)</span>
+<span class="n">print_val_trans_path</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">print_trans_path</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"_data_of_obj"</span><span class="p">)</span>
+<span class="n">inner_most_val</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">inner_most</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"_data_of_obj"</span><span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">next_layer</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;store&quot;</span><span class="p">,)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">next_layer</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">"store"</span><span class="p">,)):</span>
     <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">layer_attrs</span><span class="p">:</span>
         <span class="n">attr_val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">not_found</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">attr_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">not_found</span><span class="p">:</span>
@@ -267,24 +267,24 @@
     <span class="k">return</span> <span class="n">not_found</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">recursive_calls</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sentinel</span><span class="o">=</span><span class="n">not_found</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">recursive_calls</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="nb">sentinel</span><span class="o">=</span><span class="n">not_found</span><span class="p">):</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="n">sentinel</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="nb">sentinel</span><span class="p">:</span>
             <span class="k">break</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">yield</span> <span class="n">x</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">layers</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;store&quot;</span><span class="p">,)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">layers</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">"store"</span><span class="p">,)):</span>
     <span class="n">_next_layer</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">next_layer</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="n">layer_attrs</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">recursive_calls</span><span class="p">(</span><span class="n">_next_layer</span><span class="p">,</span> <span class="n">store</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="trace_getitem">
 <a class="viewcode-back" href="../../module_docs/dol/dig.html#dol.dig.trace_getitem">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">trace_getitem</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;store&quot;</span><span class="p">,)):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A generator of layered steps to inspect a store.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">trace_getitem</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">"store"</span><span class="p">,)):</span>
+<span class="w">    </span><span class="sd">"""A generator of layered steps to inspect a store.</span>
 
 <span class="sd">    :param store: An instance that has the base.Store interface</span>
 <span class="sd">    :param k: A key</span>
@@ -293,17 +293,17 @@
 
 <span class="sd">    We start with a small dict:</span>
 
-<span class="sd">    &gt;&gt;&gt; d = {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; d = {'a.num': '1000', 'b.num': '2000'}</span>
 
-<span class="sd">    Now let&#39;s add layers to it. For example, with wrap_kvs:</span>
+<span class="sd">    Now let's add layers to it. For example, with wrap_kvs:</span>
 
 <span class="sd">    &gt;&gt;&gt; from dol.trans import wrap_kvs</span>
 
-<span class="sd">    Say that we want the interface to not see the ``&#39;.num&#39;`` strings, and deal with numerical values, not strings.</span>
+<span class="sd">    Say that we want the interface to not see the ``'.num'`` strings, and deal with numerical values, not strings.</span>
 
 <span class="sd">    &gt;&gt;&gt; s = wrap_kvs(d,</span>
-<span class="sd">    ...              key_of_id=lambda x: x[:-len(&#39;.num&#39;)],</span>
-<span class="sd">    ...              id_of_key=lambda x: x + &#39;.num&#39;,</span>
+<span class="sd">    ...              key_of_id=lambda x: x[:-len('.num')],</span>
+<span class="sd">    ...              id_of_key=lambda x: x + '.num',</span>
 <span class="sd">    ...              obj_of_data=lambda x: int(x),</span>
 <span class="sd">    ...              data_of_obj=lambda x: str(x)</span>
 <span class="sd">    ...             )</span>
@@ -316,7 +316,7 @@
 <span class="sd">    ...              id_of_key=lambda x: x.lower(),</span>
 <span class="sd">    ...             )</span>
 
-<span class="sd">    And we want the numerical unit to be the kilo (that&#39;s 1000):</span>
+<span class="sd">    And we want the numerical unit to be the kilo (that's 1000):</span>
 
 <span class="sd">    &gt;&gt;&gt; sss = wrap_kvs(ss,</span>
 <span class="sd">    ...                obj_of_data=lambda x: x / 1000,</span>
@@ -324,56 +324,56 @@
 <span class="sd">    ...               )</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; dict(sss.items())</span>
-<span class="sd">    {&#39;A&#39;: 1.0, &#39;B&#39;: 2.0}</span>
+<span class="sd">    {'A': 1.0, 'B': 2.0}</span>
 
-<span class="sd">    Well, if we had bugs, we&#39;d like to inspect the various layers, and how they transform the data.</span>
+<span class="sd">    Well, if we had bugs, we'd like to inspect the various layers, and how they transform the data.</span>
 
 <span class="sd">    .. code-block:: python</span>
 
-<span class="sd">        # Here&#39;s how to do that:</span>
+<span class="sd">        # Here's how to do that:</span>
 
-<span class="sd">        # &gt;&gt;&gt; for layer, method, value in trace_getitem(sss, &#39;A&#39;):</span>
+<span class="sd">        # &gt;&gt;&gt; for layer, method, value in trace_getitem(sss, 'A'):</span>
 <span class="sd">        # ...     print(layer, method, value)</span>
 <span class="sd">        # ...</span>
 <span class="sd">        # Traceback (most recent call last):</span>
-<span class="sd">        #   File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;</span>
-<span class="sd">        # NameError: name &#39;trace_getitem&#39; is not defined</span>
+<span class="sd">        #   File "&lt;stdin&gt;", line 1, in &lt;module&gt;</span>
+<span class="sd">        # NameError: name 'trace_getitem' is not defined</span>
 
 <span class="sd">    &gt;&gt;&gt; from dol.dig import trace_getitem</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; for layer, method, value in trace_getitem(sss, &#39;A&#39;):</span>
+<span class="sd">    &gt;&gt;&gt; for layer, method, value in trace_getitem(sss, 'A'):</span>
 <span class="sd">    ...     print(layer, method, value)</span>
 <span class="sd">    ...</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _id_of_key A</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _id_of_key A</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _id_of_key a</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _id_of_key a</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _id_of_key a.num</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _id_of_key a.num</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} __getitem__ 1000</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _obj_of_data 1000</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _obj_of_data 1000</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _obj_of_data 1000</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _obj_of_data 1000</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _obj_of_data 1000</span>
-<span class="sd">    {&#39;a.num&#39;: &#39;1000&#39;, &#39;b.num&#39;: &#39;2000&#39;} _obj_of_data 1.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _id_of_key A</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _id_of_key A</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _id_of_key a</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _id_of_key a</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _id_of_key a.num</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _id_of_key a.num</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} __getitem__ 1000</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _obj_of_data 1000</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _obj_of_data 1000</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _obj_of_data 1000</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _obj_of_data 1000</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _obj_of_data 1000</span>
+<span class="sd">    {'a.num': '1000', 'b.num': '2000'} _obj_of_data 1.0</span>
+<span class="sd">    """</span>
     <span class="n">_layers</span> <span class="o">=</span> <span class="n">layers</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">layer_attrs</span><span class="p">)</span>
 
     <span class="n">layer</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_layers</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;_id_of_key&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">"_id_of_key"</span><span class="p">):</span>
             <span class="n">k</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-            <span class="k">yield</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;_id_of_key&quot;</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">"_id_of_key"</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">layer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">layer</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-        <span class="k">yield</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;__getitem__&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">"__getitem__"</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">_layers</span><span class="p">[:</span><span class="n">i</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;_obj_of_data&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">"_obj_of_data"</span><span class="p">):</span>
                 <span class="n">v</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">_obj_of_data</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-                <span class="k">yield</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;_obj_of_data&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
+                <span class="k">yield</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">"_obj_of_data"</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
 
 
 
@@ -384,7 +384,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_trace_item_info</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
     <span class="n">layer</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">item</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">print_trace_info</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">item_info</span><span class="o">=</span><span class="n">_trace_item_info</span><span class="p">):</span>

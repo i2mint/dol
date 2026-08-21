@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.appendable &mdash; dol 0.3.62 documentation</title>
+  <title>dol.appendable &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -123,14 +123,14 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dol.appendable</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Tools to add append-functionality to key-val stores. The main function is</span>
 <span class="sd">    `appendable_store_cls = add_append_functionality_to_store_cls(store_cls, item2kv, ...)`</span>
 <span class="sd">You give it the `store_cls` you want to sub class, and a item -&gt; (key, val) function, and you get a store (subclass) that</span>
 <span class="sd">has a `store.append(item)` method. Also includes an extend method (that just called appends in a loop.</span>
 
 <span class="sd">See add_append_functionality_to_store_cls docs for examples.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
@@ -146,10 +146,10 @@
 <div class="viewcode-block" id="define_extend_as_seq_of_appends">
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.define_extend_as_seq_of_appends">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">define_extend_as_seq_of_appends</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Inject an extend method in obj that will used append method.</span>
+<span class="w">    </span><span class="sd">"""Inject an extend method in obj that will used append method.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        obj: Class (type) or instance of an object that has an &quot;append&quot; method.</span>
+<span class="sd">        obj: Class (type) or instance of an object that has an "append" method.</span>
 
 <span class="sd">    Returns: The obj, but with that extend method.</span>
 
@@ -176,9 +176,9 @@
 <span class="sd">    &gt;&gt;&gt; a.t</span>
 <span class="sd">    [1, 2, 3, 10, 20]</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;append&quot;</span><span class="p">),</span> <span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;Your object needs to have an append method! Object was: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="sd">    """</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"append"</span><span class="p">),</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"Your object needs to have an append method! Object was: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">"</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span>
@@ -204,57 +204,57 @@
 <div class="viewcode-block" id="mk_item2kv_for">
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">mk_item2kv_for</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A bunch of functions to make item2kv functions</span>
+<span class="w">    </span><span class="sd">"""A bunch of functions to make item2kv functions</span>
 
-<span class="sd">    A few examples (see individual methods&#39; docs for more examples)</span>
+<span class="sd">    A few examples (see individual methods' docs for more examples)</span>
 
 <span class="sd">    &gt;&gt;&gt; # item_to_key</span>
-<span class="sd">    &gt;&gt;&gt; item2kv = mk_item2kv_for.item_to_key(item2key=lambda item: item[&#39;L&#39;] )</span>
-<span class="sd">    &gt;&gt;&gt; item2kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">    (&#39;let&#39;, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
+<span class="sd">    &gt;&gt;&gt; item2kv = mk_item2kv_for.item_to_key(item2key=lambda item: item['L'] )</span>
+<span class="sd">    &gt;&gt;&gt; item2kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">    ('let', {'L': 'let', 'I': 'it', 'G': 'go'})</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # utc_key</span>
 <span class="sd">    &gt;&gt;&gt; import time</span>
 <span class="sd">    &gt;&gt;&gt; item2key = mk_item2kv_for.utc_key()</span>
-<span class="sd">    &gt;&gt;&gt; k, v = item2key(&#39;some data&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; k, v = item2key('some data')</span>
 <span class="sd">    &gt;&gt;&gt; assert abs(time.time() - k) &lt; 0.01  # which asserts that k is indeed a (current) utc timestamp</span>
-<span class="sd">    &gt;&gt;&gt; assert v == &#39;some data&#39;  # just the item itself</span>
+<span class="sd">    &gt;&gt;&gt; assert v == 'some data'  # just the item itself</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # item_to_key_params_and_val</span>
-<span class="sd">    &gt;&gt;&gt; item_to_kv = mk_item2kv_for.item_to_key_params_and_val(lambda x: ((x[&#39;L&#39;], x[&#39;I&#39;]), x[&#39;G&#39;]), &#39;{}/{}&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; item_to_kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">    (&#39;let/it&#39;, &#39;go&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; item_to_kv = mk_item2kv_for.item_to_key_params_and_val(lambda x: ((x['L'], x['I']), x['G']), '{}/{}')</span>
+<span class="sd">    &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">    ('let/it', 'go')</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # fields</span>
-<span class="sd">    &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields([&#39;L&#39;, &#39;I&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; item_to_kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">    ({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;}, {&#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">    &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields((&#39;G&#39;, &#39;L&#39;), keep_field_in_value=True)</span>
-<span class="sd">    &gt;&gt;&gt; item_to_kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})  # note the order of the key is not (&#39;G&#39;, &#39;L&#39;)...</span>
-<span class="sd">    ({&#39;L&#39;: &#39;let&#39;, &#39;G&#39;: &#39;go&#39;}, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">    &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields((&#39;G&#39;, &#39;L&#39;), key_as_tuple=True)  # but (&#39;G&#39;, &#39;L&#39;) order is respected here</span>
-<span class="sd">    &gt;&gt;&gt; item_to_kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">    ((&#39;go&#39;, &#39;let&#39;), {&#39;I&#39;: &#39;it&#39;})</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields(['L', 'I'])</span>
+<span class="sd">    &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">    ({'L': 'let', 'I': 'it'}, {'G': 'go'})</span>
+<span class="sd">    &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields(('G', 'L'), keep_field_in_value=True)</span>
+<span class="sd">    &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})  # note the order of the key is not ('G', 'L')...</span>
+<span class="sd">    ({'L': 'let', 'G': 'go'}, {'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">    &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields(('G', 'L'), key_as_tuple=True)  # but ('G', 'L') order is respected here</span>
+<span class="sd">    &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">    (('go', 'let'), {'I': 'it'})</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="mk_item2kv_for.attr">
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for.attr">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">attr</span><span class="p">(</span><span class="n">attr_name</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make item2kv from an attribute name (the value will be the item itself).</span>
+<span class="w">        </span><span class="sd">"""Make item2kv from an attribute name (the value will be the item itself).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            attr_name: The attribute name to use as the key</span>
 <span class="sd">        Returns: an item -&gt; (key, val) function</span>
 
-<span class="sd">        &gt;&gt;&gt; ref_getter =mk_item2kv_for.attr(&quot;ref&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; ref_getter =mk_item2kv_for.attr("ref")</span>
 <span class="sd">        &gt;&gt;&gt; from collections import namedtuple</span>
-<span class="sd">        &gt;&gt;&gt; A = namedtuple(&#39;A&#39;, [&#39;ref&#39;])</span>
-<span class="sd">        &gt;&gt;&gt; a = A(ref=&#39;some_ref&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; A = namedtuple('A', ['ref'])</span>
+<span class="sd">        &gt;&gt;&gt; a = A(ref='some_ref')</span>
 <span class="sd">        &gt;&gt;&gt; ref_getter(a)</span>
-<span class="sd">        (&#39;some_ref&#39;, A(ref=&#39;some_ref&#39;))</span>
+<span class="sd">        ('some_ref', A(ref='some_ref'))</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">item2kv</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">),</span> <span class="n">item</span>
@@ -266,9 +266,9 @@
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for.kv_pairs">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">kv_pairs</span><span class="p">():</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Essentially, the identity. Is used when the items are already (key, val) pairs.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">item2kv</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">item</span>
@@ -280,20 +280,20 @@
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for.item_to_key">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">item_to_key</span><span class="p">(</span><span class="n">item2key</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make item2kv from a item2key function (the value will be the item itself).</span>
+<span class="w">        </span><span class="sd">"""Make item2kv from a item2key function (the value will be the item itself).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            item2key: an item -&gt; key function</span>
 
 <span class="sd">        Returns: an item -&gt; (key, val) function</span>
 
-<span class="sd">        &gt;&gt;&gt; item2key = lambda item: item[&#39;G&#39;]  # use value of &#39;L&#39; as the key</span>
-<span class="sd">        &gt;&gt;&gt; item2key({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        &#39;go&#39;</span>
+<span class="sd">        &gt;&gt;&gt; item2key = lambda item: item['G']  # use value of 'L' as the key</span>
+<span class="sd">        &gt;&gt;&gt; item2key({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        'go'</span>
 <span class="sd">        &gt;&gt;&gt; item2kv = mk_item2kv_for.item_to_key(item2key)</span>
-<span class="sd">        &gt;&gt;&gt; item2kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        (&#39;go&#39;, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; item2kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        ('go', {'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        """</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">item2kv</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">item2key</span><span class="p">(</span><span class="n">item</span><span class="p">),</span> <span class="n">item</span>
@@ -305,27 +305,27 @@
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for.field">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">field</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">keep_field_in_value</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dflt_if_missing</span><span class="o">=</span><span class="n">NotSpecified</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;item2kv that uses a specific key of a (mapping) item as the key</span>
+<span class="w">        </span><span class="sd">"""item2kv that uses a specific key of a (mapping) item as the key</span>
 
 <span class="sd">        Note: If keep_field_in_value=False, the field will be popped OUT of the item.</span>
-<span class="sd">         If that&#39;s not the desired effect, one should feed copies of the items (e.g. map(dict.copy, items))</span>
+<span class="sd">         If that's not the desired effect, one should feed copies of the items (e.g. map(dict.copy, items))</span>
 
 <span class="sd">        :param field: The field (value) to use as the returned key</span>
 <span class="sd">        :param keep_field_in_value: Whether to leave the field in the item. If False, will pop it out</span>
 <span class="sd">        :param dflt_if_missing: If specified (even None) will use the specified key as the key, if the field is missig</span>
 <span class="sd">        :return: A item2kv function</span>
 
-<span class="sd">        &gt;&gt;&gt; item2kv = mk_item2kv_for.field(&#39;G&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; item2kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        (&#39;go&#39;, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        &gt;&gt;&gt; item2kv = mk_item2kv_for.field(&#39;G&#39;, keep_field_in_value=False)</span>
-<span class="sd">        &gt;&gt;&gt; item2kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        (&#39;go&#39;, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;})</span>
-<span class="sd">        &gt;&gt;&gt; item2kv = mk_item2kv_for.field(&#39;G&#39;, dflt_if_missing=None)</span>
-<span class="sd">        &gt;&gt;&gt; item2kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;DIE&#39;: &#39;go&#39;})</span>
-<span class="sd">        (None, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;DIE&#39;: &#39;go&#39;})</span>
+<span class="sd">        &gt;&gt;&gt; item2kv = mk_item2kv_for.field('G')</span>
+<span class="sd">        &gt;&gt;&gt; item2kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        ('go', {'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        &gt;&gt;&gt; item2kv = mk_item2kv_for.field('G', keep_field_in_value=False)</span>
+<span class="sd">        &gt;&gt;&gt; item2kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        ('go', {'L': 'let', 'I': 'it'})</span>
+<span class="sd">        &gt;&gt;&gt; item2kv = mk_item2kv_for.field('G', dflt_if_missing=None)</span>
+<span class="sd">        &gt;&gt;&gt; item2kv({'L': 'let', 'I': 'it', 'DIE': 'go'})</span>
+<span class="sd">        (None, {'L': 'let', 'I': 'it', 'DIE': 'go'})</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">dflt_if_missing</span> <span class="ow">is</span> <span class="n">NotSpecified</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">keep_field_in_value</span><span class="p">:</span>
 
@@ -355,12 +355,12 @@
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for.utc_key">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">utc_key</span><span class="p">(</span><span class="n">offset_s</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">time_postproc</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make an item2kv function that uses the current time as the key, and the unchanged item as a value.</span>
-<span class="sd">        The offset_s, which is added to the output key, can be used, for example, to align to another system&#39;s clock,</span>
+<span class="w">        </span><span class="sd">"""Make an item2kv function that uses the current time as the key, and the unchanged item as a value.</span>
+<span class="sd">        The offset_s, which is added to the output key, can be used, for example, to align to another system's clock,</span>
 <span class="sd">        or to get a more accurate timestamp of an event.</span>
 
 <span class="sd">        Use case for offset_s:</span>
-<span class="sd">            * Align to another system&#39;s clock</span>
+<span class="sd">            * Align to another system's clock</span>
 <span class="sd">            * Get more accurate timestamping of an event. For example, in situations where the item is a chunk of live</span>
 <span class="sd">            streaming data and we want the key (timestamp) to represent the timestamp of the beginning of the chunk.</span>
 <span class="sd">            Without an offset_s, the timestamp would be the timestamp after the last byte of the chunk was produced,</span>
@@ -375,11 +375,11 @@
 
 <span class="sd">        &gt;&gt;&gt; import time</span>
 <span class="sd">        &gt;&gt;&gt; item2key = mk_item2kv_for.utc_key()</span>
-<span class="sd">        &gt;&gt;&gt; k, v = item2key(&#39;some data&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; k, v = item2key('some data')</span>
 <span class="sd">        &gt;&gt;&gt; assert abs(time.time() - k) &lt; 0.01  # which asserts that k is indeed a (current) utc timestamp</span>
-<span class="sd">        &gt;&gt;&gt; assert v == &#39;some data&#39;  # just the item itself</span>
+<span class="sd">        &gt;&gt;&gt; assert v == 'some data'  # just the item itself</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">time_postproc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">item2kv</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
@@ -401,7 +401,7 @@
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for.uuid_key">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">uuid_key</span><span class="p">(</span><span class="nb">hex</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make an item2kv function that uses a uuid hex as the key.</span>
+<span class="w">        </span><span class="sd">"""Make an item2kv function that uses a uuid hex as the key.</span>
 <span class="sd">        This uses uuid.uuid1() to generate the uuid, so it is not cryptographically</span>
 <span class="sd">        secure, and it may not be unique if you generate more than 10k uuids per second.</span>
 <span class="sd">        One advantage though, is that the uuid is time-based, so it can be used to sort</span>
@@ -411,19 +411,19 @@
 
 <span class="sd">        &gt;&gt;&gt; import uuid</span>
 <span class="sd">        &gt;&gt;&gt; item2key = mk_item2kv_for.uuid_key()</span>
-<span class="sd">        &gt;&gt;&gt; k, v = item2key(&#39;some data&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; k, v = item2key('some data')</span>
 <span class="sd">        &gt;&gt;&gt; v</span>
-<span class="sd">        &#39;some data&#39;</span>
+<span class="sd">        'some data'</span>
 <span class="sd">        &gt;&gt;&gt; isinstance(k, str)</span>
 <span class="sd">        True</span>
 <span class="sd">        &gt;&gt;&gt; k  # doctest: +SKIP</span>
-<span class="sd">        &#39;0d8a9930aaf411ee9f605e03a02258c9&#39;</span>
+<span class="sd">        '0d8a9930aaf411ee9f605e03a02258c9'</span>
 <span class="sd">        &gt;&gt;&gt; item2key = mk_item2kv_for.uuid_key(hex=False)</span>
-<span class="sd">        &gt;&gt;&gt; k, v = item2key(&#39;some data&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; k, v = item2key('some data')</span>
 <span class="sd">        &gt;&gt;&gt; isinstance(k, uuid.UUID)</span>
 <span class="sd">        True</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 
         <span class="k">if</span> <span class="nb">hex</span><span class="p">:</span>
@@ -443,7 +443,7 @@
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for.item_to_key_params_and_val">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">item_to_key_params_and_val</span><span class="p">(</span><span class="n">item_to_key_params_and_val</span><span class="p">,</span> <span class="n">key_str_format</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make item2kv from a function that produces key_params and val,</span>
+<span class="w">        </span><span class="sd">"""Make item2kv from a function that produces key_params and val,</span>
 <span class="sd">        and a key_template that will produce a string key from the key_params</span>
 
 <span class="sd">        Args:</span>
@@ -456,16 +456,16 @@
 <span class="sd">        Returns: an item -&gt; (key, val) function</span>
 
 <span class="sd">        &gt;&gt;&gt; # Using tuple key params with unnamed string format fields</span>
-<span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.item_to_key_params_and_val(lambda x: ((x[&#39;L&#39;], x[&#39;I&#39;]), x[&#39;G&#39;]), &#39;{}/{}&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; item_to_kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        (&#39;let/it&#39;, &#39;go&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.item_to_key_params_and_val(lambda x: ((x['L'], x['I']), x['G']), '{}/{}')</span>
+<span class="sd">        &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        ('let/it', 'go')</span>
 <span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # Using dict key params with named string format fields</span>
 <span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.item_to_key_params_and_val(</span>
-<span class="sd">        ...                             lambda x: ({&#39;second&#39;: x[&#39;L&#39;], &#39;first&#39;: x[&#39;G&#39;]}, x[&#39;I&#39;]), &#39;{first}_{second}&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; item_to_kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        (&#39;go_let&#39;, &#39;it&#39;)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        ...                             lambda x: ({'second': x['L'], 'first': x['G']}, x['I']), '{first}_{second}')</span>
+<span class="sd">        &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        ('go_let', 'it')</span>
+<span class="sd">        """</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">item2kv</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
             <span class="n">key_params</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">item_to_key_params_and_val</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
@@ -481,7 +481,7 @@
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.mk_item2kv_for.fields">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fields</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">keep_field_in_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">key_as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make item2kv from specific fields of a Mapping (i.e. dict-like object) item.</span>
+<span class="w">        </span><span class="sd">"""Make item2kv from specific fields of a Mapping (i.e. dict-like object) item.</span>
 
 <span class="sd">        Note: item2kv will not mutate item (even if keep_field_in_value=False).</span>
 
@@ -492,20 +492,20 @@
 
 <span class="sd">        Returns: an item -&gt; (item[fields], item[not in fields]) function</span>
 
-<span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields(&#39;L&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; item_to_kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        ({&#39;L&#39;: &#39;let&#39;}, {&#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields([&#39;L&#39;, &#39;I&#39;])</span>
-<span class="sd">        &gt;&gt;&gt; item_to_kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        ({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;}, {&#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields((&#39;G&#39;, &#39;L&#39;), keep_field_in_value=True)</span>
-<span class="sd">        &gt;&gt;&gt; item_to_kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})  # note the order of the key is not (&#39;G&#39;, &#39;L&#39;)...</span>
-<span class="sd">        ({&#39;L&#39;: &#39;let&#39;, &#39;G&#39;: &#39;go&#39;}, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields((&#39;G&#39;, &#39;L&#39;), key_as_tuple=True)  # but (&#39;G&#39;, &#39;L&#39;) order is respected here</span>
-<span class="sd">        &gt;&gt;&gt; item_to_kv({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">        ((&#39;go&#39;, &#39;let&#39;), {&#39;I&#39;: &#39;it&#39;})</span>
+<span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields('L')</span>
+<span class="sd">        &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        ({'L': 'let'}, {'I': 'it', 'G': 'go'})</span>
+<span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields(['L', 'I'])</span>
+<span class="sd">        &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        ({'L': 'let', 'I': 'it'}, {'G': 'go'})</span>
+<span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields(('G', 'L'), keep_field_in_value=True)</span>
+<span class="sd">        &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})  # note the order of the key is not ('G', 'L')...</span>
+<span class="sd">        ({'L': 'let', 'G': 'go'}, {'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields(('G', 'L'), key_as_tuple=True)  # but ('G', 'L') order is respected here</span>
+<span class="sd">        &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">        (('go', 'let'), {'I': 'it'})</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">fields_set</span> <span class="o">=</span> <span class="p">{</span><span class="n">fields</span><span class="p">}</span>
             <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="n">fields</span><span class="p">,)</span>
@@ -542,56 +542,56 @@
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.appendable">[docs]</a>
 <span class="nd">@store_decorator</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">appendable</span><span class="p">(</span><span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">item2kv</span><span class="p">,</span> <span class="n">return_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Makes a new class with append (and consequential extend) methods</span>
+<span class="w">    </span><span class="sd">"""Makes a new class with append (and consequential extend) methods</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        store_cls: The store class to subclass</span>
 <span class="sd">        item2kv: The function that produces a (key, val) pair from an item</span>
-<span class="sd">        new_store_name: The name to give the new class (default will be &#39;Appendable&#39; + store_cls.__name__)</span>
+<span class="sd">        new_store_name: The name to give the new class (default will be 'Appendable' + store_cls.__name__)</span>
 
 <span class="sd">    Returns: A subclass of store_cls with two additional methods: append, and extend.</span>
 
 
-<span class="sd">    &gt;&gt;&gt; item_to_kv = lambda item: (item[&#39;L&#39;], item)  # use value of &#39;L&#39; as the key, and value is the item itself</span>
+<span class="sd">    &gt;&gt;&gt; item_to_kv = lambda item: (item['L'], item)  # use value of 'L' as the key, and value is the item itself</span>
 <span class="sd">    &gt;&gt;&gt; MyStore = appendable(dict, item2kv=item_to_kv)</span>
-<span class="sd">    &gt;&gt;&gt; s = MyStore(); s.append({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;}); list(s.items())</span>
-<span class="sd">    [(&#39;let&#39;, {&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})]</span>
+<span class="sd">    &gt;&gt;&gt; s = MyStore(); s.append({'L': 'let', 'I': 'it', 'G': 'go'}); list(s.items())</span>
+<span class="sd">    [('let', {'L': 'let', 'I': 'it', 'G': 'go'})]</span>
 
 <span class="sd">    Use mk_item2kv.from_item_to_key_params_and_val with tuple key params</span>
 
-<span class="sd">    &gt;&gt;&gt; item_to_kv = appendable.mk_item2kv_for.item_to_key_params_and_val(lambda x: ((x[&#39;L&#39;], x[&#39;I&#39;]), x[&#39;G&#39;]), &#39;{}/{}&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; item_to_kv = appendable.mk_item2kv_for.item_to_key_params_and_val(lambda x: ((x['L'], x['I']), x['G']), '{}/{}')</span>
 <span class="sd">    &gt;&gt;&gt; MyStore = appendable(item2kv=item_to_kv)(dict)  # showing the append(...)(store) form</span>
-<span class="sd">    &gt;&gt;&gt; s = MyStore(); s.append({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;}); list(s.items())</span>
-<span class="sd">    [(&#39;let/it&#39;, &#39;go&#39;)]</span>
+<span class="sd">    &gt;&gt;&gt; s = MyStore(); s.append({'L': 'let', 'I': 'it', 'G': 'go'}); list(s.items())</span>
+<span class="sd">    [('let/it', 'go')]</span>
 
 <span class="sd">    Use mk_item2kv.from_item_to_key_params_and_val with dict key params</span>
 
 <span class="sd">    &gt;&gt;&gt; item_to_kv = appendable.mk_item2kv_for.item_to_key_params_and_val(</span>
-<span class="sd">    ...     lambda x: ({&#39;L&#39;: x[&#39;L&#39;], &#39;G&#39;: x[&#39;G&#39;]}, x[&#39;I&#39;]), &#39;{G}_{L}&#39;)</span>
+<span class="sd">    ...     lambda x: ({'L': x['L'], 'G': x['G']}, x['I']), '{G}_{L}')</span>
 <span class="sd">    &gt;&gt;&gt; @appendable(item2kv=item_to_kv)  # showing the @ form</span>
 <span class="sd">    ... class MyStore(dict):</span>
 <span class="sd">    ...     pass</span>
-<span class="sd">    &gt;&gt;&gt; s = MyStore(); s.append({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;}); list(s.items())</span>
-<span class="sd">    [(&#39;go_let&#39;, &#39;it&#39;)]</span>
+<span class="sd">    &gt;&gt;&gt; s = MyStore(); s.append({'L': 'let', 'I': 'it', 'G': 'go'}); list(s.items())</span>
+<span class="sd">    [('go_let', 'it')]</span>
 
 <span class="sd">    Use mk_item2kv.fields to get a tuple key from item fields,</span>
 <span class="sd">    defining the sub-dict of the remaining fields to be the value.</span>
 <span class="sd">    Also showing here how you can decorate the instance itself.</span>
 
-<span class="sd">    &gt;&gt;&gt; item_to_kv = appendable.mk_item2kv_for.fields([&#39;G&#39;, &#39;L&#39;], key_as_tuple=True)</span>
+<span class="sd">    &gt;&gt;&gt; item_to_kv = appendable.mk_item2kv_for.fields(['G', 'L'], key_as_tuple=True)</span>
 <span class="sd">    &gt;&gt;&gt; d = {}</span>
 <span class="sd">    &gt;&gt;&gt; s = appendable(d, item2kv=item_to_kv)</span>
-<span class="sd">    &gt;&gt;&gt; s.append({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;}); list(s.items())</span>
-<span class="sd">    [((&#39;go&#39;, &#39;let&#39;), {&#39;I&#39;: &#39;it&#39;})]</span>
+<span class="sd">    &gt;&gt;&gt; s.append({'L': 'let', 'I': 'it', 'G': 'go'}); list(s.items())</span>
+<span class="sd">    [(('go', 'let'), {'I': 'it'})]</span>
 
-<span class="sd">    You can make the &quot;append&quot; and &quot;extend&quot; methods to return the new generated keys by</span>
-<span class="sd">    using the &quot;return_keys&quot; flag.</span>
+<span class="sd">    You can make the "append" and "extend" methods to return the new generated keys by</span>
+<span class="sd">    using the "return_keys" flag.</span>
 
 <span class="sd">    &gt;&gt;&gt; d = {}</span>
 <span class="sd">    &gt;&gt;&gt; s = appendable(d, item2kv=item_to_kv, return_keys=True)</span>
-<span class="sd">    &gt;&gt;&gt; s.append({&#39;L&#39;: &#39;let&#39;, &#39;I&#39;: &#39;it&#39;, &#39;G&#39;: &#39;go&#39;})</span>
-<span class="sd">    (&#39;go&#39;, &#39;let&#39;)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    &gt;&gt;&gt; s.append({'L': 'let', 'I': 'it', 'G': 'go'})</span>
+<span class="sd">    ('go', 'let')</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
         <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">item2kv</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
@@ -610,9 +610,9 @@
         <span class="n">exhaust</span><span class="p">(</span><span class="n">gen</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="nb">type</span><span class="p">(</span>
-        <span class="s2">&quot;Appendable&quot;</span> <span class="o">+</span> <span class="n">store_cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+        <span class="s2">"Appendable"</span> <span class="o">+</span> <span class="n">store_cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
         <span class="p">(</span><span class="n">store_cls</span><span class="p">,),</span>
-        <span class="p">{</span><span class="s2">&quot;append&quot;</span><span class="p">:</span> <span class="n">append</span><span class="p">,</span> <span class="s2">&quot;extend&quot;</span><span class="p">:</span> <span class="n">extend</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">"append"</span><span class="p">:</span> <span class="n">append</span><span class="p">,</span> <span class="s2">"extend"</span><span class="p">:</span> <span class="n">extend</span><span class="p">},</span>
     <span class="p">)</span></div>
 
 
@@ -625,7 +625,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 
-<span class="n">NotAVal</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;NotAVal&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>  <span class="c1"># singleton instance to distinguish from None</span>
+<span class="n">NotAVal</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">"NotAVal"</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{})()</span>  <span class="c1"># singleton instance to distinguish from None</span>
 
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MutableMapping</span>
@@ -636,7 +636,7 @@
 <div class="viewcode-block" id="read_add_write">
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.read_add_write">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">read_add_write</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">add_iterables</span><span class="o">=</span><span class="n">add</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Retrieves"""</span>
     <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">store</span><span class="p">:</span>
         <span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">add_iterables</span><span class="p">(</span><span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">iterable</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -647,7 +647,7 @@
 <div class="viewcode-block" id="Extender">
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.Extender">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Extender</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extends a value in a store.</span>
+<span class="w">    </span><span class="sd">"""Extends a value in a store.</span>
 
 <span class="sd">    The value in the store (if it exists) must be an iterable.</span>
 <span class="sd">    The value to extend must also be an iterable.</span>
@@ -664,23 +664,23 @@
 <span class="sd">    argument. The ``append`` method will then be defined as a partial of this function</span>
 <span class="sd">    with the ``Extender`` instance as first argument.</span>
 
-<span class="sd">    &gt;&gt;&gt; store = {&#39;a&#39;: &#39;pple&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; store = {'a': 'pple'}</span>
 <span class="sd">    &gt;&gt;&gt; # test normal extend</span>
-<span class="sd">    &gt;&gt;&gt; a_extender = Extender(store, &#39;a&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; a_extender.extend(&#39;sauce&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; a_extender = Extender(store, 'a')</span>
+<span class="sd">    &gt;&gt;&gt; a_extender.extend('sauce')</span>
 <span class="sd">    &gt;&gt;&gt; store</span>
-<span class="sd">    {&#39;a&#39;: &#39;pplesauce&#39;}</span>
+<span class="sd">    {'a': 'pplesauce'}</span>
 <span class="sd">    &gt;&gt;&gt; # test creation (when key is not in store)</span>
-<span class="sd">    &gt;&gt;&gt; b_extender = Extender(store, &#39;b&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; b_extender.extend(&#39;anana&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; b_extender = Extender(store, 'b')</span>
+<span class="sd">    &gt;&gt;&gt; b_extender.extend('anana')</span>
 <span class="sd">    &gt;&gt;&gt; store</span>
-<span class="sd">    {&#39;a&#39;: &#39;pplesauce&#39;, &#39;b&#39;: &#39;anana&#39;}</span>
+<span class="sd">    {'a': 'pplesauce', 'b': 'anana'}</span>
 <span class="sd">    &gt;&gt;&gt; # you can use the += operator too</span>
-<span class="sd">    &gt;&gt;&gt; b_extender += &#39; split&#39;</span>
+<span class="sd">    &gt;&gt;&gt; b_extender += ' split'</span>
 <span class="sd">    &gt;&gt;&gt; store</span>
-<span class="sd">    {&#39;a&#39;: &#39;pplesauce&#39;, &#39;b&#39;: &#39;anana split&#39;}</span>
+<span class="sd">    {'a': 'pplesauce', 'b': 'anana split'}</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -695,7 +695,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">extend_store_value</span> <span class="o">=</span> <span class="n">extend_store_value</span>
 
         <span class="c1"># Note: Not sure this is a good idea.</span>
-        <span class="c1"># Note:   I&#39;m not documenting it or testing it until I let class mature.</span>
+        <span class="c1"># Note:   I'm not documenting it or testing it until I let class mature.</span>
         <span class="c1"># Note: Yes, I tried making this a method of the class, but it became ugly.</span>
         <span class="k">if</span> <span class="n">append_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">append</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">append_method</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
@@ -703,7 +703,7 @@
 <div class="viewcode-block" id="Extender.extend">
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.Extender.extend">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterable</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extend the iterable stored in&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Extend the iterable stored in"""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend_store_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">iterable</span><span class="p">)</span></div>
 
 
@@ -718,29 +718,29 @@
 
 <span class="c1">#</span>
 <span class="c1"># class FixedSizeStack(Sequence):</span>
-<span class="c1">#     &quot;&quot;&quot;A finite Sequence that can have no more than one element.</span>
+<span class="c1">#     """A finite Sequence that can have no more than one element.</span>
 <span class="c1">#</span>
 <span class="c1">#     &gt;&gt;&gt; t = FixedSizeStack(maxsize=1)</span>
 <span class="c1">#     &gt;&gt;&gt; assert len(t) == 0</span>
 <span class="c1">#     &gt;&gt;&gt;</span>
-<span class="c1">#     &gt;&gt;&gt; t.append(&#39;something&#39;)</span>
+<span class="c1">#     &gt;&gt;&gt; t.append('something')</span>
 <span class="c1">#     &gt;&gt;&gt; assert len(t) == 1</span>
-<span class="c1">#     &gt;&gt;&gt; assert t[0] == &#39;something&#39;</span>
+<span class="c1">#     &gt;&gt;&gt; assert t[0] == 'something'</span>
 <span class="c1">#     &gt;&gt;&gt;</span>
-<span class="c1">#     &gt;&gt;&gt; t.append(&#39;something else&#39;)</span>
+<span class="c1">#     &gt;&gt;&gt; t.append('something else')</span>
 <span class="c1">#     &gt;&gt;&gt; assert len(t) == 1  # still only one item</span>
-<span class="c1">#     &gt;&gt;&gt; assert t[0] == &#39;something&#39;  # still the same item</span>
+<span class="c1">#     &gt;&gt;&gt; assert t[0] == 'something'  # still the same item</span>
 <span class="c1">#</span>
-<span class="c1">#     Not that we&#39;d ever these methods of FirstAppendOnly,</span>
+<span class="c1">#     Not that we'd ever these methods of FirstAppendOnly,</span>
 <span class="c1">#     but know that FirstAppendOnly is a collection.abc.Sequence, so...</span>
 <span class="c1">#</span>
-<span class="c1">#     &gt;&gt;&gt; t[:1] == t[:10] == t[::-1] == t[::-10] == t[0:2:10] == list(reversed(t)) == [&#39;something&#39;]</span>
+<span class="c1">#     &gt;&gt;&gt; t[:1] == t[:10] == t[::-1] == t[::-10] == t[0:2:10] == list(reversed(t)) == ['something']</span>
 <span class="c1">#     True</span>
 <span class="c1">#     &gt;&gt;&gt;</span>
-<span class="c1">#     &gt;&gt;&gt; assert t.count(&#39;something&#39;) == 1</span>
-<span class="c1">#     &gt;&gt;&gt; assert t.index(&#39;something&#39;) == 0</span>
+<span class="c1">#     &gt;&gt;&gt; assert t.count('something') == 1</span>
+<span class="c1">#     &gt;&gt;&gt; assert t.index('something') == 0</span>
 <span class="c1">#</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     """</span>
 <span class="c1">#</span>
 <span class="c1">#     def __init__(self, iterable: Optional[Iterable] = None, *, maxsize: int):</span>
 <span class="c1">#         self.maxsize = maxsize</span>
@@ -764,13 +764,13 @@
 <span class="c1">#                 return self.data[k]</span>
 <span class="c1">#             else:</span>
 <span class="c1">#                 raise IndexError(</span>
-<span class="c1">#                     f&quot;There are only {len(self)} items: You asked for self[{k}].&quot;</span>
+<span class="c1">#                     f"There are only {len(self)} items: You asked for self[{k}]."</span>
 <span class="c1">#                 )</span>
 <span class="c1">#         elif isinstance(k, slice):</span>
 <span class="c1">#             return self.data[: self.cursor][k]</span>
 <span class="c1">#         else:</span>
 <span class="c1">#             raise IndexError(</span>
-<span class="c1">#                 f&quot;A {self.__class__} instance can only have one value, or none at all.&quot;</span>
+<span class="c1">#                 f"A {self.__class__} instance can only have one value, or none at all."</span>
 <span class="c1">#             )</span>
 <span class="c1">#</span>
 
@@ -778,28 +778,28 @@
 <div class="viewcode-block" id="FirstAppendOnly">
 <a class="viewcode-back" href="../../module_docs/dol/appendable.html#dol.appendable.FirstAppendOnly">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FirstAppendOnly</span><span class="p">(</span><span class="n">Sequence</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A finite Sequence that can have no more than one element.</span>
+<span class="w">    </span><span class="sd">"""A finite Sequence that can have no more than one element.</span>
 
 <span class="sd">    &gt;&gt;&gt; t = FirstAppendOnly()</span>
 <span class="sd">    &gt;&gt;&gt; assert len(t) == 0</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; t.append(&#39;something&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; t.append('something')</span>
 <span class="sd">    &gt;&gt;&gt; assert len(t) == 1</span>
-<span class="sd">    &gt;&gt;&gt; assert t[0] == &#39;something&#39;</span>
+<span class="sd">    &gt;&gt;&gt; assert t[0] == 'something'</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; t.append(&#39;something else&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; t.append('something else')</span>
 <span class="sd">    &gt;&gt;&gt; assert len(t) == 1  # still only one item</span>
-<span class="sd">    &gt;&gt;&gt; assert t[0] == &#39;something&#39;  # still the same item</span>
+<span class="sd">    &gt;&gt;&gt; assert t[0] == 'something'  # still the same item</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; # Not that we&#39;d ever these methods of FirstAppendOnly, but know that FirstAppendOnly is a collection.abc.Sequence, so...</span>
-<span class="sd">    &gt;&gt;&gt; t[:1] == t[:10] == t[::-1] == t[::-10] == t[0:2:10] == list(reversed(t)) == [&#39;something&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; # Not that we'd ever these methods of FirstAppendOnly, but know that FirstAppendOnly is a collection.abc.Sequence, so...</span>
+<span class="sd">    &gt;&gt;&gt; t[:1] == t[:10] == t[::-1] == t[::-10] == t[0:2:10] == list(reversed(t)) == ['something']</span>
 <span class="sd">    True</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; t.count(&#39;something&#39;) == 1</span>
+<span class="sd">    &gt;&gt;&gt; t.count('something') == 1</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; t.index(&#39;something&#39;) == 0</span>
+<span class="sd">    &gt;&gt;&gt; t.index('something') == 0</span>
 <span class="sd">    True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">NotAVal</span>
@@ -813,14 +813,14 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There are no items in this </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s2"> instance&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"There are no items in this </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s2"> instance"</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">val</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">val</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s2"> instance can only have one value, or none at all.&quot;</span>
+                <span class="sa">f</span><span class="s2">"A </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s2"> instance can only have one value, or none at all."</span>
             <span class="p">)</span></div>
 
 
@@ -836,7 +836,7 @@
 <span class="c1">#         nonlocal key_template</span>
 <span class="c1">#         if key_template is None:</span>
 <span class="c1">#             key_params, _ = item_to_key_params_and_val(item)</span>
-<span class="c1">#             key_template = path_sep.join(&#39;{{{}}}&#39;.format(p) for p in key_params)</span>
+<span class="c1">#             key_template = path_sep.join('{{{}}}'.format(p) for p in key_params)</span>
 <span class="c1">#         key_params, val = item_to_key_params_and_val(item)</span>
 <span class="c1">#         return key_template.format(**key_params), val</span>
 <span class="c1">#</span>

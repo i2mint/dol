@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.naming &mdash; dol 0.3.62 documentation</title>
+  <title>dol.naming &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -298,9 +298,9 @@
 But note that you will lose the spec part of your template (e.g. in {foo:1.2f}, you’ll loose the 1.2f
 if not foo is given – but {foo} will remain).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">partial_formatter</span> <span class="o">=</span> <span class="n">PartialFormatter</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">str_template</span> <span class="o">=</span> <span class="s1">&#39;foo:</span><span class="si">{foo}</span><span class="s1"> bar=</span><span class="si">{bar}</span><span class="s1"> a=</span><span class="si">{a}</span><span class="s1"> b=</span><span class="si">{b:0.02f}</span><span class="s1"> c=</span><span class="si">{c}</span><span class="s1">&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">partial_formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">str_template</span><span class="p">,</span> <span class="n">bar</span><span class="o">=</span><span class="s2">&quot;BAR&quot;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">34</span><span class="p">)</span>
-<span class="go">&#39;foo:{foo} bar=BAR a={a} b=34.00 c={c}&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">str_template</span> <span class="o">=</span> <span class="s1">'foo:</span><span class="si">{foo}</span><span class="s1"> bar=</span><span class="si">{bar}</span><span class="s1"> a=</span><span class="si">{a}</span><span class="s1"> b=</span><span class="si">{b:0.02f}</span><span class="s1"> c=</span><span class="si">{c}</span><span class="s1">'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">partial_formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">str_template</span><span class="p">,</span> <span class="n">bar</span><span class="o">=</span><span class="s2">"BAR"</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">34</span><span class="p">)</span>
+<span class="go">'foo:{foo} bar=BAR a={a} b=34.00 c={c}'</span>
 </pre></div>
 </div>
 <p>Note: If you only need a formatting function (not the transformed formatting string), a simpler solution may be:
@@ -348,29 +348,29 @@ before returning them.</p></li>
 </ul>
 </dd>
 </dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span> <span class="o">=</span> <span class="n">StrTupleDictWithPrefix</span><span class="p">(</span><span class="s1">&#39;/home/</span><span class="si">{user}</span><span class="s1">/fav/</span><span class="si">{num}</span><span class="s1">.txt&#39;</span><span class="p">,</span>
-<span class="gp">... </span>                  <span class="n">format_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;[^/]+&#39;</span><span class="p">,</span> <span class="s1">&#39;num&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">},</span>
-<span class="gp">... </span>                  <span class="n">process_info_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;num&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">},</span>
-<span class="gp">... </span>                  <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;/&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span> <span class="o">=</span> <span class="n">StrTupleDictWithPrefix</span><span class="p">(</span><span class="s1">'/home/</span><span class="si">{user}</span><span class="s1">/fav/</span><span class="si">{num}</span><span class="s1">.txt'</span><span class="p">,</span>
+<span class="gp">... </span>                  <span class="n">format_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">'user'</span><span class="p">:</span> <span class="s1">'[^/]+'</span><span class="p">,</span> <span class="s1">'num'</span><span class="p">:</span> <span class="sa">r</span><span class="s1">'\d+'</span><span class="p">},</span>
+<span class="gp">... </span>                  <span class="n">process_info_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">'num'</span><span class="p">:</span> <span class="nb">int</span><span class="p">},</span>
+<span class="gp">... </span>                  <span class="n">sep</span><span class="o">=</span><span class="s1">'/'</span>
 <span class="gp">... </span>                 <span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk</span><span class="p">(</span><span class="s1">&#39;USER&#39;</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>  <span class="c1"># making a string (with args or kwargs)</span>
-<span class="go">&#39;/home/USER/fav/123.txt&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk</span><span class="p">(</span><span class="s1">'USER'</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>  <span class="c1"># making a string (with args or kwargs)</span>
+<span class="go">'/home/USER/fav/123.txt'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1">####### prefix methods #######</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;/home/USER/fav/&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">'/home/USER/fav/'</span><span class="p">)</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;/home/USER/fav/12&#39;</span><span class="p">)</span>  <span class="c1"># False because too long</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">'/home/USER/fav/12'</span><span class="p">)</span>  <span class="c1"># False because too long</span>
 <span class="go">False</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;/home/USER/fav&#39;</span><span class="p">)</span>  <span class="c1"># False because too short</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">'/home/USER/fav'</span><span class="p">)</span>  <span class="c1"># False because too short</span>
 <span class="go">False</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;/home/&#39;</span><span class="p">)</span>  <span class="c1"># True because just right</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">'/home/'</span><span class="p">)</span>  <span class="c1"># True because just right</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">&#39;/home/USER/fav/123.txt&#39;</span><span class="p">)</span>  <span class="c1"># full path, so output same as is_valid() method</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">'/home/USER/fav/123.txt'</span><span class="p">)</span>  <span class="c1"># full path, so output same as is_valid() method</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk_prefix</span><span class="p">(</span><span class="s1">&#39;ME&#39;</span><span class="p">)</span>
-<span class="go">&#39;/home/ME/fav/&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk_prefix</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="s1">&#39;YOU&#39;</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">456</span><span class="p">)</span>  <span class="c1"># full specification, so output same as same as mk() method</span>
-<span class="go">&#39;/home/YOU/fav/456.txt&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk_prefix</span><span class="p">(</span><span class="s1">'ME'</span><span class="p">)</span>
+<span class="go">'/home/ME/fav/'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk_prefix</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="s1">'YOU'</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">456</span><span class="p">)</span>  <span class="c1"># full specification, so output same as same as mk() method</span>
+<span class="go">'/home/YOU/fav/456.txt'</span>
 </pre></div>
 </div>
 <dl class="py method">
@@ -387,13 +387,13 @@ before returning them.</p></li>
 <dt class="sig sig-object py" id="dol.naming.dict_to_namedtuple">
 <span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">dict_to_namedtuple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namedtuple_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#dict_to_namedtuple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.dict_to_namedtuple" title="Link to this definition"></a></dt>
 <dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;MyTuple&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">'MyTuple'</span><span class="p">,</span> <span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span> <span class="s1">'hello'</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span> <span class="o">=</span> <span class="n">NT</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span>
 <span class="go">MyTuple(foo=1, hello=42)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">namedtuple_to_dict</span><span class="p">(</span><span class="n">nt</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
-<span class="go">{&#39;foo&#39;: 1, &#39;hello&#39;: 42}</span>
+<span class="go">{'foo': 1, 'hello': 42}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dict_to_namedtuple</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 <span class="go">NamedTupleFromDict(foo=1, hello=42)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dict_to_namedtuple</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">nt</span><span class="p">)</span>
@@ -409,8 +409,8 @@ before returning them.</p></li>
 :param template: a “template” string (a string with {item} items
 – the kind that is used to mark token for str.format)
 :return: a list of the token items of the string, in the order they appear</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_fields_from_template</span><span class="p">(</span><span class="s1">&#39;this</span><span class="si">{is}</span><span class="s1">an</span><span class="si">{example}</span><span class="s1">of</span><span class="si">{a}</span><span class="s1">template&#39;</span><span class="p">)</span>
-<span class="go">[&#39;is&#39;, &#39;example&#39;, &#39;a&#39;]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_fields_from_template</span><span class="p">(</span><span class="s1">'this</span><span class="si">{is}</span><span class="s1">an</span><span class="si">{example}</span><span class="s1">of</span><span class="si">{a}</span><span class="s1">template'</span><span class="p">)</span>
+<span class="go">['is', 'example', 'a']</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -432,15 +432,15 @@ Used to easily make process_kwargs and process_info_dict arguments for LinearNam
 <p>Assert on <em>behavior</em> (matching) rather than the exact pattern string, so the
 examples hold on every OS (the field separator – and therefore the default
 capture class – is <code class="docutils literal notranslate"><span class="pre">/</span></code> on POSIX and <code class="docutils literal notranslate"><span class="pre">\</span></code> on Windows):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">'</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-<span class="go">&lt;class &#39;re.Pattern&#39;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;HERE/and/1234&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
-<span class="go">{&#39;here&#39;: &#39;HERE&#39;, &#39;there&#39;: &#39;1234&#39;}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;there&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;HERE/and/1234&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
-<span class="go">{&#39;here&#39;: &#39;HERE&#39;, &#39;there&#39;: &#39;1234&#39;}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;HERE/and/not_digits&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>  <span class="c1"># &#39;there&#39; must be digits</span>
+<span class="go">&lt;class 're.Pattern'&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">'HERE/and/1234'</span><span class="p">)</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+<span class="go">{'here': 'HERE', 'there': '1234'}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">'</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">'</span><span class="p">,</span> <span class="p">{</span><span class="s1">'there'</span><span class="p">:</span> <span class="sa">r</span><span class="s1">'\d+'</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">'HERE/and/1234'</span><span class="p">)</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+<span class="go">{'here': 'HERE', 'there': '1234'}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">'HERE/and/not_digits'</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>  <span class="c1"># 'there' must be digits</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -512,13 +512,13 @@ keymap_kwargs=dict(process_info_dict={‘session’: int, ‘bt’: int}))</p>
 <dt class="sig sig-object py" id="dol.naming.namedtuple_to_dict">
 <span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">namedtuple_to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#namedtuple_to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.namedtuple_to_dict" title="Link to this definition"></a></dt>
 <dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;MyTuple&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;hello&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">'MyTuple'</span><span class="p">,</span> <span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span> <span class="s1">'hello'</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span> <span class="o">=</span> <span class="n">NT</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span>
 <span class="go">MyTuple(foo=1, hello=42)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">namedtuple_to_dict</span><span class="p">(</span><span class="n">nt</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
-<span class="go">{&#39;foo&#39;: 1, &#39;hello&#39;: 42}</span>
+<span class="go">{'foo': 1, 'hello': 42}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -542,7 +542,7 @@ re.escape the <em>whole</em> pattern on Windows and corrupt the capture groups.)
 <span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">update_fields_of_namedtuple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_of_output_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/naming.html#update_fields_of_namedtuple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.update_fields_of_namedtuple" title="Link to this definition"></a></dt>
 <dd><p>Replace fields of namedtuple</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;NT&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">'NT'</span><span class="p">,</span> <span class="p">(</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span> <span class="o">=</span> <span class="n">NT</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span>
 <span class="go">NT(a=1, b=2, c=3)</span>
@@ -550,13 +550,13 @@ re.escape the <em>whole</em> pattern on Windows and corrupt the capture groups.)
 <span class="go">NT(a=1, b=2, c=3000)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># replacing two fields</span>
 <span class="go">NT(a=1000, b=2, c=3000)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span>  <span class="c1"># see that the original order doesn&#39;t change</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span>  <span class="c1"># see that the original order doesn't change</span>
 <span class="go">NT(a=1000, b=2, c=3000)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span>  <span class="c1"># replacing one field and adding a new one</span>
-<span class="go">UpdatedNT(a=1, b=2000, c=3, d=&#39;hello&#39;)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Now let&#39;s try controlling the name of the output type, remove fields, and add new ones</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">name_of_output_type</span><span class="o">=</span><span class="s1">&#39;NewGuy&#39;</span><span class="p">,</span> <span class="n">remove_fields</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">),</span> <span class="n">hello</span><span class="o">=</span><span class="s1">&#39;world&#39;</span><span class="p">)</span>
-<span class="go">NewGuy(b=2, hello=&#39;world&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="s1">'hello'</span><span class="p">)</span>  <span class="c1"># replacing one field and adding a new one</span>
+<span class="go">UpdatedNT(a=1, b=2000, c=3, d='hello')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Now let's try controlling the name of the output type, remove fields, and add new ones</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">name_of_output_type</span><span class="o">=</span><span class="s1">'NewGuy'</span><span class="p">,</span> <span class="n">remove_fields</span><span class="o">=</span><span class="p">(</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">),</span> <span class="n">hello</span><span class="o">=</span><span class="s1">'world'</span><span class="p">)</span>
+<span class="go">NewGuy(b=2, hello='world')</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -591,31 +591,31 @@ tell you so!</p></li>
 </dd>
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">validation_dict</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>    <span class="s1">&#39;system&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="gp">... </span>        <span class="s1">&#39;be in&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;darwin&#39;</span><span class="p">,</span> <span class="s1">&#39;linux&#39;</span><span class="p">}</span>
+<span class="gp">... </span>    <span class="s1">'system'</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>        <span class="s1">'be in'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'darwin'</span><span class="p">,</span> <span class="s1">'linux'</span><span class="p">}</span>
 <span class="gp">... </span>    <span class="p">},</span>
-<span class="gp">... </span>    <span class="s1">&#39;fv_version&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="gp">... </span>        <span class="s1">&#39;be a&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<span class="gp">... </span>        <span class="s1">&#39;be at least&#39;</span><span class="p">:</span> <span class="mi">5</span>
+<span class="gp">... </span>    <span class="s1">'fv_version'</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>        <span class="s1">'be a'</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">'be at least'</span><span class="p">:</span> <span class="mi">5</span>
 <span class="gp">... </span>    <span class="p">}</span>
 <span class="gp">... </span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">&#39;system&#39;</span><span class="p">:</span> <span class="s1">&#39;darwin&#39;</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">'system'</span><span class="p">:</span> <span class="s1">'darwin'</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">&#39;system&#39;</span><span class="p">:</span> <span class="s1">&#39;windows&#39;</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">'system'</span><span class="p">:</span> <span class="s1">'windows'</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;system must be in&#39;</span><span class="p">)</span>  <span class="c1"># omitting the set because inconsistent order</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'system must be in'</span><span class="p">)</span>  <span class="c1"># omitting the set because inconsistent order</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">&#39;fv_version&#39;</span><span class="p">:</span> <span class="mf">9.9</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">'fv_version'</span><span class="p">:</span> <span class="mf">9.9</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-<span class="go">fv_version must be a &lt;class &#39;int&#39;&gt;</span>
+<span class="go">fv_version must be a &lt;class 'int'&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">&#39;fv_version&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">'fv_version'</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 <span class="go">fv_version must be at least 5</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">&#39;fv_version&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">'fv_version'</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>

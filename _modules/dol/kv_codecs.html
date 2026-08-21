@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.kv_codecs &mdash; dol 0.3.62 documentation</title>
+  <title>dol.kv_codecs &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -123,9 +123,9 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dol.kv_codecs</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="c1"># ------------------------------------ Codecs ------------------------------------------</span>
 
@@ -156,17 +156,17 @@
 
 
 <span class="c1"># Signature template functions - not meant to be called, only used for signature composition</span>
-<span class="c1"># via @Sig decorator. Parameters appear &quot;unused&quot; but are actually captured for later use.</span>
+<span class="c1"># via @Sig decorator. Parameters appear "unused" but are actually captured for later use.</span>
 <span class="nd">@Sig</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_csv_rw_sig</span><span class="p">(</span>
-    <span class="n">dialect</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;excel&quot;</span><span class="p">,</span>
+    <span class="n">dialect</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"excel"</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
-    <span class="n">quotechar</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">,</span>
+    <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">","</span><span class="p">,</span>
+    <span class="n">quotechar</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s1">'"'</span><span class="p">,</span>
     <span class="n">escapechar</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">doublequote</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">skipinitialspace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">lineterminator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">lineterminator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\r\n</span><span class="s2">"</span><span class="p">,</span>
     <span class="n">quoting</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span> <span class="o">...</span>
@@ -174,7 +174,7 @@
 
 <span class="nd">@Sig</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_csv_dict_extra_sig</span><span class="p">(</span>
-    <span class="n">fieldnames</span><span class="p">,</span> <span class="n">restkey</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">restval</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">extrasaction</span><span class="o">=</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="n">fieldcasts</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">fieldnames</span><span class="p">,</span> <span class="n">restkey</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">restval</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">extrasaction</span><span class="o">=</span><span class="s2">"raise"</span><span class="p">,</span> <span class="n">fieldcasts</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span> <span class="o">...</span>
 
 
@@ -202,15 +202,15 @@
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.csv_dict_encode">[docs]</a>
 <span class="nd">@__csv_dict_sig</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csv_dict_encode</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Encode a list of dicts into a csv string.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Encode a list of dicts into a csv string.</span>
 
-<span class="sd">    &gt;&gt;&gt; data = [{&#39;a&#39;: 1, &#39;b&#39;: 2}, {&#39;a&#39;: 3, &#39;b&#39;: 4}]</span>
-<span class="sd">    &gt;&gt;&gt; encoded = csv_dict_encode(data, fieldnames=[&#39;a&#39;, &#39;b&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; data = [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]</span>
+<span class="sd">    &gt;&gt;&gt; encoded = csv_dict_encode(data, fieldnames=['a', 'b'])</span>
 <span class="sd">    &gt;&gt;&gt; encoded</span>
-<span class="sd">    &#39;a,b\r\n1,2\r\n3,4\r\n&#39;</span>
+<span class="sd">    'a,b\r\n1,2\r\n3,4\r\n'</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;fieldcasts&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># this one is for decoder only</span>
+<span class="sd">    """</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"fieldcasts"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># this one is for decoder only</span>
     <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">buffer</span><span class="p">:</span>
         <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
@@ -223,7 +223,7 @@
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.csv_dict_decode">[docs]</a>
 <span class="nd">@__csv_dict_sig</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csv_dict_decode</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Decode a csv string into a list of dicts.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Decode a csv string into a list of dicts.</span>
 
 <span class="sd">    :param string: The csv string to decode</span>
 <span class="sd">    :param fieldcasts: A function that takes a row and returns a row with the same keys</span>
@@ -232,29 +232,29 @@
 <span class="sd">        cast functions, in which case each cast function will be applied to each element</span>
 <span class="sd">        of the row, element wise.</span>
 
-<span class="sd">    &gt;&gt;&gt; data = [{&#39;a&#39;: 1, &#39;b&#39;: 2}, {&#39;a&#39;: 3, &#39;b&#39;: 4}]</span>
-<span class="sd">    &gt;&gt;&gt; encoded = csv_dict_encode(data, fieldnames=[&#39;a&#39;, &#39;b&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; data = [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]</span>
+<span class="sd">    &gt;&gt;&gt; encoded = csv_dict_encode(data, fieldnames=['a', 'b'])</span>
 <span class="sd">    &gt;&gt;&gt; encoded</span>
-<span class="sd">    &#39;a,b\r\n1,2\r\n3,4\r\n&#39;</span>
+<span class="sd">    'a,b\r\n1,2\r\n3,4\r\n'</span>
 <span class="sd">    &gt;&gt;&gt; csv_dict_decode(encoded)</span>
-<span class="sd">    [{&#39;a&#39;: &#39;1&#39;, &#39;b&#39;: &#39;2&#39;}, {&#39;a&#39;: &#39;3&#39;, &#39;b&#39;: &#39;4&#39;}]</span>
+<span class="sd">    [{'a': '1', 'b': '2'}, {'a': '3', 'b': '4'}]</span>
 
 
-<span class="sd">    See that you don&#39;t get back when you started with. The ints aren&#39;t ints anymore!</span>
+<span class="sd">    See that you don't get back when you started with. The ints aren't ints anymore!</span>
 <span class="sd">    You can resolve this by using the fieldcasts argument</span>
-<span class="sd">    (that&#39;s our argument -- not present in builtin csv module).</span>
+<span class="sd">    (that's our argument -- not present in builtin csv module).</span>
 <span class="sd">    I should be a function (that transforms a dict to the one you want) or</span>
 <span class="sd">    list or tuple of the same size as the row (that specifies the cast function for</span>
 <span class="sd">    each field)</span>
 
 
-<span class="sd">    &gt;&gt;&gt; csv_dict_decode(encoded, fieldnames=[&#39;a&#39;, &#39;b&#39;], fieldcasts=[int] * 2)</span>
-<span class="sd">    [{&#39;a&#39;: 1, &#39;b&#39;: 2}, {&#39;a&#39;: 3, &#39;b&#39;: 4}]</span>
-<span class="sd">    &gt;&gt;&gt; csv_dict_decode(encoded, fieldnames=[&#39;a&#39;, &#39;b&#39;], fieldcasts={&#39;b&#39;: float})</span>
-<span class="sd">    [{&#39;a&#39;: &#39;1&#39;, &#39;b&#39;: 2.0}, {&#39;a&#39;: &#39;3&#39;, &#39;b&#39;: 4.0}]</span>
+<span class="sd">    &gt;&gt;&gt; csv_dict_decode(encoded, fieldnames=['a', 'b'], fieldcasts=[int] * 2)</span>
+<span class="sd">    [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]</span>
+<span class="sd">    &gt;&gt;&gt; csv_dict_decode(encoded, fieldnames=['a', 'b'], fieldcasts={'b': float})</span>
+<span class="sd">    [{'a': '1', 'b': 2.0}, {'a': '3', 'b': 4.0}]</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fieldcasts</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;fieldcasts&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">fieldcasts</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"fieldcasts"</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fieldcasts</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fieldcasts</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="n">cast_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fieldcasts</span><span class="p">)</span>
@@ -281,7 +281,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_xml_tree_encode</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="c1"># Needed to replace original &quot;text&quot; argument with &quot;element&quot; to be consistent with</span>
+    <span class="c1"># Needed to replace original "text" argument with "element" to be consistent with</span>
     <span class="c1"># ET.tostring</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
 
@@ -350,35 +350,35 @@
 
 
 <span class="c1"># wrappers to manage encoder and decoder arguments and signature</span>
-<span class="n">value_wrap</span> <span class="o">=</span> <span class="n">named_partial</span><span class="p">(</span><span class="n">codec_wrap</span><span class="p">,</span> <span class="n">ValueCodec</span><span class="p">,</span> <span class="vm">__name__</span><span class="o">=</span><span class="s2">&quot;value_wrap&quot;</span><span class="p">)</span>
-<span class="n">key_wrap</span> <span class="o">=</span> <span class="n">named_partial</span><span class="p">(</span><span class="n">codec_wrap</span><span class="p">,</span> <span class="n">KeyCodec</span><span class="p">,</span> <span class="vm">__name__</span><span class="o">=</span><span class="s2">&quot;key_wrap&quot;</span><span class="p">)</span>
-<span class="n">key_value_wrap</span> <span class="o">=</span> <span class="n">named_partial</span><span class="p">(</span><span class="n">codec_wrap</span><span class="p">,</span> <span class="n">KeyValueCodec</span><span class="p">,</span> <span class="vm">__name__</span><span class="o">=</span><span class="s2">&quot;key_value_wrap&quot;</span><span class="p">)</span>
+<span class="n">value_wrap</span> <span class="o">=</span> <span class="n">named_partial</span><span class="p">(</span><span class="n">codec_wrap</span><span class="p">,</span> <span class="n">ValueCodec</span><span class="p">,</span> <span class="vm">__name__</span><span class="o">=</span><span class="s2">"value_wrap"</span><span class="p">)</span>
+<span class="n">key_wrap</span> <span class="o">=</span> <span class="n">named_partial</span><span class="p">(</span><span class="n">codec_wrap</span><span class="p">,</span> <span class="n">KeyCodec</span><span class="p">,</span> <span class="vm">__name__</span><span class="o">=</span><span class="s2">"key_wrap"</span><span class="p">)</span>
+<span class="n">key_value_wrap</span> <span class="o">=</span> <span class="n">named_partial</span><span class="p">(</span><span class="n">codec_wrap</span><span class="p">,</span> <span class="n">KeyValueCodec</span><span class="p">,</span> <span class="vm">__name__</span><span class="o">=</span><span class="s2">"key_value_wrap"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="CodecCollection">
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.CodecCollection">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CodecCollection</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The base class for collections of codecs.</span>
+<span class="w">    </span><span class="sd">"""The base class for collections of codecs.</span>
 <span class="sd">    Makes sure that the class cannot be instantiated, but only used as a collection.</span>
 <span class="sd">    Also provides an _iter_codecs method that iterates over the codec names.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s2">"__name__"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> class is not meant to be instantiated, &quot;</span>
-            <span class="s2">&quot;but only act as a collection of codec factories&quot;</span>
+            <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> class is not meant to be instantiated, "</span>
+            <span class="s2">"but only act as a collection of codec factories"</span>
         <span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_iter_codecs</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">is_value_codec</span><span class="p">(</span><span class="n">attr_val</span><span class="p">):</span>
-            <span class="n">func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">attr_val</span><span class="p">,</span> <span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;_codec_wrap&quot;</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">attr_val</span><span class="p">,</span> <span class="s2">"func"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s2">"__name__"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"_codec_wrap"</span>
 
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">):</span>
                 <span class="n">attr_val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">is_value_codec</span><span class="p">(</span><span class="n">attr_val</span><span class="p">):</span>
                     <span class="k">yield</span> <span class="n">attr</span></div>
@@ -397,32 +397,32 @@
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.ValueCodecs">[docs]</a>
 <span class="nd">@_add_default_codecs</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ValueCodecs</span><span class="p">(</span><span class="n">CodecCollection</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    A collection of value codec factories using standard lib tools.</span>
 
 <span class="sd">    &gt;&gt;&gt; json_codec = ValueCodecs.json()  # call the json codec factory</span>
 <span class="sd">    &gt;&gt;&gt; encoder, decoder = json_codec</span>
-<span class="sd">    &gt;&gt;&gt; encoder({&#39;b&#39;: 2})</span>
-<span class="sd">    &#39;{&quot;b&quot;: 2}&#39;</span>
-<span class="sd">    &gt;&gt;&gt; decoder(&#39;{&quot;b&quot;: 2}&#39;)</span>
-<span class="sd">    {&#39;b&#39;: 2}</span>
+<span class="sd">    &gt;&gt;&gt; encoder({'b': 2})</span>
+<span class="sd">    '{"b": 2}'</span>
+<span class="sd">    &gt;&gt;&gt; decoder('{"b": 2}')</span>
+<span class="sd">    {'b': 2}</span>
 
 <span class="sd">    The `json_codec` object is also a `Mapping` value wrapper:</span>
 
 <span class="sd">    &gt;&gt;&gt; backend = dict()</span>
 <span class="sd">    &gt;&gt;&gt; interface = json_codec(backend)</span>
-<span class="sd">    &gt;&gt;&gt; interface[&#39;a&#39;] = {&#39;b&#39;: 2}  # we write a dict</span>
-<span class="sd">    &gt;&gt;&gt; assert backend == {&#39;a&#39;: &#39;{&quot;b&quot;: 2}&#39;}  # json was written in backend</span>
-<span class="sd">    &gt;&gt;&gt; interface[&#39;a&#39;]  # but this json is decoded to a dict when read from interface</span>
-<span class="sd">    {&#39;b&#39;: 2}</span>
+<span class="sd">    &gt;&gt;&gt; interface['a'] = {'b': 2}  # we write a dict</span>
+<span class="sd">    &gt;&gt;&gt; assert backend == {'a': '{"b": 2}'}  # json was written in backend</span>
+<span class="sd">    &gt;&gt;&gt; interface['a']  # but this json is decoded to a dict when read from interface</span>
+<span class="sd">    {'b': 2}</span>
 
 <span class="sd">    In order not to have to call the codec factory when you just want the default,</span>
-<span class="sd">    we&#39;ve made a `default` attribute that contains all the default codecs:</span>
+<span class="sd">    we've made a `default` attribute that contains all the default codecs:</span>
 
 <span class="sd">    &gt;&gt;&gt; backend = dict()</span>
 <span class="sd">    &gt;&gt;&gt; interface = ValueCodecs.default.json(backend)</span>
-<span class="sd">    &gt;&gt;&gt; interface[&#39;a&#39;] = {&#39;b&#39;: 2}  # we write a dict</span>
-<span class="sd">    &gt;&gt;&gt; assert backend == {&#39;a&#39;: &#39;{&quot;b&quot;: 2}&#39;}  # json was written in backend</span>
+<span class="sd">    &gt;&gt;&gt; interface['a'] = {'b': 2}  # we write a dict</span>
+<span class="sd">    &gt;&gt;&gt; assert backend == {'a': '{"b": 2}'}  # json was written in backend</span>
 
 <span class="sd">    For times when you want to parametrize your code though, know that you can also</span>
 <span class="sd">    pass arguments to the encoder and decoder when you make your codec.</span>
@@ -431,14 +431,14 @@
 <span class="sd">    &gt;&gt;&gt; json_codec = ValueCodecs.json(indent=2)</span>
 <span class="sd">    &gt;&gt;&gt; backend = dict()</span>
 <span class="sd">    &gt;&gt;&gt; interface = json_codec(backend)</span>
-<span class="sd">    &gt;&gt;&gt; interface[&#39;a&#39;] = {&#39;b&#39;: 2}  # we write a dict</span>
-<span class="sd">    &gt;&gt;&gt; print(backend[&#39;a&#39;])  # written in backend with indent</span>
+<span class="sd">    &gt;&gt;&gt; interface['a'] = {'b': 2}  # we write a dict</span>
+<span class="sd">    &gt;&gt;&gt; print(backend['a'])  # written in backend with indent</span>
 <span class="sd">    {</span>
-<span class="sd">      &quot;b&quot;: 2</span>
+<span class="sd">      "b": 2</span>
 <span class="sd">    }</span>
 
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># TODO: Clean up module import polution?</span>
     <span class="c1"># TODO: Import all these in module instead of class</span>
@@ -448,7 +448,7 @@
 <div class="viewcode-block" id="ValueCodecs.default">
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.ValueCodecs.default">[docs]</a>
     <span class="k">class</span><span class="w"> </span><span class="nc">default</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;To contain default codecs. Is populated by @_add_default_codecs&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">"""To contain default codecs. Is populated by @_add_default_codecs"""</span></div>
 
 
     <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span><span class="o">,</span><span class="w"> </span><span class="nn">json</span><span class="o">,</span><span class="w"> </span><span class="nn">gzip</span><span class="o">,</span><span class="w"> </span><span class="nn">bz2</span><span class="o">,</span><span class="w"> </span><span class="nn">base64</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">b64</span><span class="o">,</span><span class="w"> </span><span class="nn">lzma</span><span class="o">,</span><span class="w"> </span><span class="nn">codecs</span><span class="o">,</span><span class="w"> </span><span class="nn">io</span>
@@ -462,10 +462,10 @@
 
     <span class="n">str_to_bytes</span><span class="p">:</span> <span class="n">ValueCodec</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">encode</span><span class="p">,</span> <span class="nb">bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">)</span>
     <span class="n">stringio</span><span class="p">:</span> <span class="n">ValueCodec</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span>
-        <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">,</span> <span class="n">methodcaller</span><span class="p">(</span><span class="s2">&quot;read&quot;</span><span class="p">)</span>
+        <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">,</span> <span class="n">methodcaller</span><span class="p">(</span><span class="s2">"read"</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="n">bytesio</span><span class="p">:</span> <span class="n">ValueCodec</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span>
-        <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">,</span> <span class="n">methodcaller</span><span class="p">(</span><span class="s2">&quot;read&quot;</span><span class="p">)</span>
+        <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">,</span> <span class="n">methodcaller</span><span class="p">(</span><span class="s2">"read"</span><span class="p">)</span>
     <span class="p">)</span>
 
     <span class="n">pickle</span><span class="p">:</span> <span class="n">ValueCodec</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">)</span>
@@ -489,7 +489,7 @@
     <span class="n">bz2</span><span class="p">:</span> <span class="n">ValueCodec</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span><span class="n">bz2</span><span class="o">.</span><span class="n">compress</span><span class="p">,</span> <span class="n">bz2</span><span class="o">.</span><span class="n">decompress</span><span class="p">)</span>
     <span class="n">tarfile</span><span class="p">:</span> <span class="n">ValueCodec</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span><span class="n">tar_compress</span><span class="p">,</span> <span class="n">tar_decompress</span><span class="p">)</span>
     <span class="n">lzma</span><span class="p">:</span> <span class="n">ValueCodec</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span>
-        <span class="n">lzma</span><span class="o">.</span><span class="n">compress</span><span class="p">,</span> <span class="n">lzma</span><span class="o">.</span><span class="n">decompress</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;format&quot;</span><span class="p">,)</span>
+        <span class="n">lzma</span><span class="o">.</span><span class="n">compress</span><span class="p">,</span> <span class="n">lzma</span><span class="o">.</span><span class="n">decompress</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"format"</span><span class="p">,)</span>
     <span class="p">)</span>
 
     <span class="kn">import</span><span class="w"> </span><span class="nn">quopri</span><span class="o">,</span><span class="w"> </span><span class="nn">plistlib</span>
@@ -498,10 +498,10 @@
         <span class="n">quopri</span><span class="o">.</span><span class="n">encodestring</span><span class="p">,</span> <span class="n">quopri</span><span class="o">.</span><span class="n">decodestring</span>
     <span class="p">)</span>
     <span class="n">plistlib</span><span class="p">:</span> <span class="n">ValueCodec</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span>
-        <span class="n">plistlib</span><span class="o">.</span><span class="n">dumps</span><span class="p">,</span> <span class="n">plistlib</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;fmt&quot;</span><span class="p">,)</span>
+        <span class="n">plistlib</span><span class="o">.</span><span class="n">dumps</span><span class="p">,</span> <span class="n">plistlib</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"fmt"</span><span class="p">,)</span>
     <span class="p">)</span>
 
-    <span class="c1"># Any is really xml.etree.ElementTree.Element, but didn&#39;t want to import</span>
+    <span class="c1"># Any is really xml.etree.ElementTree.Element, but didn't want to import</span>
     <span class="n">xml_etree</span><span class="p">:</span> <span class="n">Codec</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_wrap</span><span class="p">(</span><span class="n">_xml_tree_encode</span><span class="p">,</span> <span class="n">_xml_tree_decode</span><span class="p">)</span>
 
     <span class="c1"># TODO: Review value_wrap so it works with non-class functions like below</span>
@@ -512,19 +512,19 @@
 <div class="viewcode-block" id="ValueCodecs.single_nested_value">
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.ValueCodecs.single_nested_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">single_nested_value</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        &gt;&gt;&gt; d = {</span>
-<span class="sd">        ...     1: {&#39;en&#39;: &#39;one&#39;, &#39;fr&#39;: &#39;un&#39;, &#39;sp&#39;: &#39;uno&#39;},</span>
-<span class="sd">        ...     2: {&#39;en&#39;: &#39;two&#39;, &#39;fr&#39;: &#39;deux&#39;, &#39;sp&#39;: &#39;dos&#39;},</span>
+<span class="sd">        ...     1: {'en': 'one', 'fr': 'un', 'sp': 'uno'},</span>
+<span class="sd">        ...     2: {'en': 'two', 'fr': 'deux', 'sp': 'dos'},</span>
 <span class="sd">        ... }</span>
-<span class="sd">        &gt;&gt;&gt; en = ValueCodecs.single_nested_value(&#39;en&#39;)(d)</span>
+<span class="sd">        &gt;&gt;&gt; en = ValueCodecs.single_nested_value('en')(d)</span>
 <span class="sd">        &gt;&gt;&gt; en[1]</span>
-<span class="sd">        &#39;one&#39;</span>
-<span class="sd">        &gt;&gt;&gt; en[1] = &#39;ONE&#39;</span>
+<span class="sd">        'one'</span>
+<span class="sd">        &gt;&gt;&gt; en[1] = 'ONE'</span>
 <span class="sd">        &gt;&gt;&gt; d[1]  # note that here d[1] is completely replaced (not updated)</span>
-<span class="sd">        {&#39;en&#39;: &#39;ONE&#39;}</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        {'en': 'ONE'}</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">ValueCodec</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">single_nest_in_dict</span><span class="p">,</span> <span class="n">key</span><span class="p">),</span> <span class="n">itemgetter</span><span class="p">(</span><span class="n">key</span><span class="p">))</span></div>
 
 
@@ -533,34 +533,34 @@
 <div class="viewcode-block" id="ValueCodecs.tuple_of_dict">
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.ValueCodecs.tuple_of_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">tuple_of_dict</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a tuple-view of dict values.</span>
+<span class="w">        </span><span class="sd">"""Get a tuple-view of dict values.</span>
 
 <span class="sd">        &gt;&gt;&gt; d = {</span>
-<span class="sd">        ...     1: {&#39;en&#39;: &#39;one&#39;, &#39;fr&#39;: &#39;un&#39;, &#39;sp&#39;: &#39;uno&#39;},</span>
-<span class="sd">        ...     2: {&#39;en&#39;: &#39;two&#39;, &#39;fr&#39;: &#39;deux&#39;, &#39;sp&#39;: &#39;dos&#39;},</span>
+<span class="sd">        ...     1: {'en': 'one', 'fr': 'un', 'sp': 'uno'},</span>
+<span class="sd">        ...     2: {'en': 'two', 'fr': 'deux', 'sp': 'dos'},</span>
 <span class="sd">        ... }</span>
-<span class="sd">        &gt;&gt;&gt; codec = ValueCodecs.tuple_of_dict([&#39;fr&#39;, &#39;sp&#39;])</span>
-<span class="sd">        &gt;&gt;&gt; codec.encoder([&#39;deux&#39;, &#39;tre&#39;])</span>
-<span class="sd">        {&#39;fr&#39;: &#39;deux&#39;, &#39;sp&#39;: &#39;tre&#39;}</span>
-<span class="sd">        &gt;&gt;&gt; codec.decoder({&#39;en&#39;: &#39;one&#39;, &#39;fr&#39;: &#39;un&#39;, &#39;sp&#39;: &#39;uno&#39;})</span>
-<span class="sd">        (&#39;un&#39;, &#39;uno&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; codec = ValueCodecs.tuple_of_dict(['fr', 'sp'])</span>
+<span class="sd">        &gt;&gt;&gt; codec.encoder(['deux', 'tre'])</span>
+<span class="sd">        {'fr': 'deux', 'sp': 'tre'}</span>
+<span class="sd">        &gt;&gt;&gt; codec.decoder({'en': 'one', 'fr': 'un', 'sp': 'uno'})</span>
+<span class="sd">        ('un', 'uno')</span>
 <span class="sd">        &gt;&gt;&gt; frsp = codec(d)</span>
 <span class="sd">        &gt;&gt;&gt; frsp[2]</span>
-<span class="sd">        (&#39;deux&#39;, &#39;dos&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; (&#39;deux&#39;, &#39;dos&#39;)</span>
-<span class="sd">        (&#39;deux&#39;, &#39;dos&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; frsp[2] = (&#39;DEUX&#39;, &#39;DOS&#39;)</span>
+<span class="sd">        ('deux', 'dos')</span>
+<span class="sd">        &gt;&gt;&gt; ('deux', 'dos')</span>
+<span class="sd">        ('deux', 'dos')</span>
+<span class="sd">        &gt;&gt;&gt; frsp[2] = ('DEUX', 'DOS')</span>
 <span class="sd">        &gt;&gt;&gt; frsp[2]</span>
-<span class="sd">        (&#39;DEUX&#39;, &#39;DOS&#39;)</span>
+<span class="sd">        ('DEUX', 'DOS')</span>
 
 <span class="sd">        Note that writes completely replace the values in the backend dict,</span>
-<span class="sd">        it doesn&#39;t update them:</span>
+<span class="sd">        it doesn't update them:</span>
 
 <span class="sd">        &gt;&gt;&gt; d[2]</span>
-<span class="sd">        {&#39;fr&#39;: &#39;DEUX&#39;, &#39;sp&#39;: &#39;DOS&#39;}</span>
+<span class="sd">        {'fr': 'DEUX', 'sp': 'DOS'}</span>
 
 <span class="sd">        See also `dol.KeyTemplate` for more general key-based views.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">ValueCodec</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">nest_in_dict</span><span class="p">,</span> <span class="n">keys</span><span class="p">),</span> <span class="n">itemgetter</span><span class="p">(</span><span class="o">*</span><span class="n">keys</span><span class="p">))</span></div>
 </div>
 
@@ -573,11 +573,11 @@
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyCodecs">[docs]</a>
 <span class="nd">@_add_default_codecs</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">KeyCodecs</span><span class="p">(</span><span class="n">CodecCollection</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A collection of key codecs</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">affixed</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">affixed</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span> <span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">affix_key_codec</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">suffixed</span><span class="p">(</span><span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -598,8 +598,8 @@
         <span class="n">encoder</span><span class="p">:</span> <span class="n">Mapping</span> <span class="o">|</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">decoder</span><span class="p">:</span> <span class="n">Mapping</span> <span class="o">|</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A factory that creates a key codec that uses &quot;explicit&quot; mappings to encode</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        A factory that creates a key codec that uses "explicit" mappings to encode</span>
 <span class="sd">        and decode keys.</span>
 
 <span class="sd">        The encoders and decoders can be an explicit mapping of a function.</span>
@@ -608,25 +608,25 @@
 <span class="sd">        If not, the decoder will be computed by swapping the keys and values of the</span>
 <span class="sd">        encoder and asserting that no values were lost in the process</span>
 <span class="sd">        (that is, that the mappings are invertible).</span>
-<span class="sd">        The statements above are true if you swap &quot;encoder&quot; and &quot;decoder&quot;.</span>
+<span class="sd">        The statements above are true if you swap "encoder" and "decoder".</span>
 
-<span class="sd">        &gt;&gt;&gt; km = KeyCodecs.mapped_keys({&#39;a&#39;: 1, &#39;b&#39;: 2})</span>
-<span class="sd">        &gt;&gt;&gt; km.encoder(&#39;a&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; km = KeyCodecs.mapped_keys({'a': 1, 'b': 2})</span>
+<span class="sd">        &gt;&gt;&gt; km.encoder('a')</span>
 <span class="sd">        1</span>
 <span class="sd">        &gt;&gt;&gt; km.decoder(1)</span>
-<span class="sd">        &#39;a&#39;</span>
+<span class="sd">        'a'</span>
 
 <span class="sd">        If the encoder is a function, the decoder must be an iterable of keys who will</span>
 <span class="sd">        be used as arguments of the function to get the encoded key, and the decode</span>
 <span class="sd">        will be the inverse of that mapping.</span>
-<span class="sd">        The statement above is true if you swap &quot;encoder&quot; and &quot;decoder&quot;.</span>
+<span class="sd">        The statement above is true if you swap "encoder" and "decoder".</span>
 
-<span class="sd">        &gt;&gt;&gt; km = KeyCodecs.mapped_keys([&#39;a&#39;, &#39;b&#39;], str.upper)</span>
-<span class="sd">        &gt;&gt;&gt; km.encoder(&#39;A&#39;)</span>
-<span class="sd">        &#39;a&#39;</span>
-<span class="sd">        &gt;&gt;&gt; km.decoder(&#39;a&#39;)</span>
-<span class="sd">        &#39;A&#39;</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; km = KeyCodecs.mapped_keys(['a', 'b'], str.upper)</span>
+<span class="sd">        &gt;&gt;&gt; km.encoder('A')</span>
+<span class="sd">        'a'</span>
+<span class="sd">        &gt;&gt;&gt; km.decoder('a')</span>
+<span class="sd">        'A'</span>
+<span class="sd">        """</span>
         <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span> <span class="o">=</span> <span class="n">invertible_maps</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">KeyCodec</span><span class="p">(</span>
             <span class="n">encoder</span><span class="o">=</span><span class="n">encoder</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">,</span>
@@ -639,19 +639,19 @@
 <div class="viewcode-block" id="common_prefix_keys_wrap">
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.common_prefix_keys_wrap">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">common_prefix_keys_wrap</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transforms keys of mapping to omit the longest prefix they have in common&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Transforms keys of mapping to omit the longest prefix they have in common"""</span>
     <span class="n">common_prefix_wrap</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">common_prefixed</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">common_prefix_wrap</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
 
 
 
-<span class="c1"># TODO: Here, I&#39;d like to decorate with store_decorator, but KeyCodecs.mapped_keys</span>
-<span class="c1">#  doesn&#39;t apply to a Mapping class, only an instance. We have to make the iteration</span>
+<span class="c1"># TODO: Here, I'd like to decorate with store_decorator, but KeyCodecs.mapped_keys</span>
+<span class="c1">#  doesn't apply to a Mapping class, only an instance. We have to make the iteration</span>
 <span class="c1">#  of keys to be inverted have lazy capabilities (only happen when the instance is made)</span>
 <div class="viewcode-block" id="add_invertible_key_decoder">
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.add_invertible_key_decoder">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_invertible_key_decoder</span><span class="p">(</span><span class="n">store</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">decoder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a key decoder to a store (instance)&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Add a key decoder to a store (instance)"""</span>
     <span class="k">return</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">mapped_keys</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">decoder</span><span class="o">=</span><span class="n">decoder</span><span class="p">)(</span><span class="n">store</span><span class="p">)</span></div>
 
 
@@ -660,24 +660,24 @@
 
 
 <span class="n">dflt_ext_mapping</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;.json&quot;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">json</span><span class="p">,</span>
-    <span class="s2">&quot;.csv&quot;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">csv</span><span class="p">,</span>
-    <span class="s2">&quot;.csv_dict&quot;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">csv_dict</span><span class="p">,</span>
-    <span class="s2">&quot;.pickle&quot;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">pickle</span><span class="p">,</span>
-    <span class="s2">&quot;.gz&quot;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">gzip</span><span class="p">,</span>
-    <span class="s2">&quot;.bz2&quot;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">bz2</span><span class="p">,</span>
-    <span class="s2">&quot;.lzma&quot;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">lzma</span><span class="p">,</span>
-    <span class="s2">&quot;.zip&quot;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">zipfile</span><span class="p">,</span>
-    <span class="s2">&quot;.tar&quot;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">tarfile</span><span class="p">,</span>
-    <span class="s2">&quot;.xml&quot;</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">xml_etree</span><span class="p">,</span>
+    <span class="s2">".json"</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">json</span><span class="p">,</span>
+    <span class="s2">".csv"</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">csv</span><span class="p">,</span>
+    <span class="s2">".csv_dict"</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">csv_dict</span><span class="p">,</span>
+    <span class="s2">".pickle"</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">pickle</span><span class="p">,</span>
+    <span class="s2">".gz"</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">gzip</span><span class="p">,</span>
+    <span class="s2">".bz2"</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">bz2</span><span class="p">,</span>
+    <span class="s2">".lzma"</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">lzma</span><span class="p">,</span>
+    <span class="s2">".zip"</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">zipfile</span><span class="p">,</span>
+    <span class="s2">".tar"</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">tarfile</span><span class="p">,</span>
+    <span class="s2">".xml"</span><span class="p">:</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">xml_etree</span><span class="p">,</span>
 <span class="p">}</span>
 
 
 <div class="viewcode-block" id="key_based_codec_factory">
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.key_based_codec_factory">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">key_based_codec_factory</span><span class="p">(</span><span class="n">key_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">key_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">identity_func</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A factory that creates a key codec that uses the key to determine the</span>
-<span class="sd">    codec to use.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A factory that creates a key codec that uses the key to determine the</span>
+<span class="sd">    codec to use."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">encoder</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">key_mapping</span><span class="p">[</span><span class="n">key_func</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span>
@@ -692,10 +692,10 @@
 <div class="viewcode-block" id="NotGiven">
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.NotGiven">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NotGiven</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A singleton to indicate that a value was not given&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A singleton to indicate that a value was not given"""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;NotGiven&quot;</span></div>
+        <span class="k">return</span> <span class="s2">"NotGiven"</span></div>
 
 
 
@@ -710,7 +710,7 @@
     <span class="n">default_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Callable</span><span class="p">],</span>
     <span class="n">k</span><span class="o">=</span><span class="n">NotGiven</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A factory that creates a value codec that uses the key to determine the</span>
+<span class="w">    </span><span class="sd">"""A factory that creates a value codec that uses the key to determine the</span>
 <span class="sd">    codec to use.</span>
 
 <span class="sd">    # a key_func that gets the extension of a file path</span>
@@ -718,14 +718,14 @@
 <span class="sd">    &gt;&gt;&gt; import json</span>
 <span class="sd">    &gt;&gt;&gt; from functools import partial</span>
 <span class="sd">    &gt;&gt;&gt; key_func = lambda k: os.path.splitext(k)[1]</span>
-<span class="sd">    &gt;&gt;&gt; value_trans_mapping = {&#39;.json&#39;: json.loads, &#39;.txt&#39;: bytes.decode}</span>
-<span class="sd">    &gt;&gt;&gt; default_factory = partial(ValueError, &quot;No codec for this extension&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; value_trans_mapping = {'.json': json.loads, '.txt': bytes.decode}</span>
+<span class="sd">    &gt;&gt;&gt; default_factory = partial(ValueError, "No codec for this extension")</span>
 <span class="sd">    &gt;&gt;&gt; trans = key_based_value_trans(</span>
 <span class="sd">    ...     key_func, value_trans_mapping, default_factory=lambda: identity_func</span>
 <span class="sd">    ... )</span>
 
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">k</span> <span class="ow">is</span> <span class="n">NotGiven</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
             <span class="n">key_based_value_trans</span><span class="p">,</span> <span class="n">key_func</span><span class="p">,</span> <span class="n">value_trans_mapping</span><span class="p">,</span> <span class="n">default_factory</span>
@@ -742,9 +742,9 @@
 <a class="viewcode-back" href="../../module_docs/dol/kv_codecs.html#dol.kv_codecs.KeyValueCodecs">[docs]</a>
 <span class="nd">@_add_default_codecs</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">KeyValueCodecs</span><span class="p">(</span><span class="n">CodecCollection</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A collection of key-value codecs that can be used with postget and preset kv_wraps.</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<span class="sd">    """</span></div>
 
 
     <span class="c1"># Note: ``key_based`` / ``extension_based`` factories were removed here (Issue #68):</span>

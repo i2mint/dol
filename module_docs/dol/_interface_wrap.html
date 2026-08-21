@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol._interface_wrap &mdash; dol 0.3.62 documentation</title>
+  <title>dol._interface_wrap &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -163,37 +163,37 @@ leaf methods (Issue #18’s outer-domain methods are the other half of the
 problem, served by <code class="docutils literal notranslate"><span class="pre">wrapped_self</span></code> today), it does not rebind methods (the
 rejected option D), and it is not (yet) <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code>.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Iterable</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;KT&#39;</span><span class="p">),</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;VT&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">'KT'</span><span class="p">),</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">'VT'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">KvInterface</span><span class="p">(</span><span class="n">Protocol</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">]):</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VT</span><span class="p">:</span> <span class="o">...</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">VT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">KT</span><span class="p">]:</span> <span class="o">...</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">KT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="o">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a.json&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'a.json'</span><span class="p">:</span> <span class="s1">'1'</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">codecs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">KT</span><span class="o">=</span><span class="n">Codec</span><span class="p">(</span><span class="n">encoder</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">,</span> <span class="n">decoder</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]),</span>
+<span class="gp">... </span>    <span class="n">KT</span><span class="o">=</span><span class="n">Codec</span><span class="p">(</span><span class="n">encoder</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="s1">'.json'</span><span class="p">,</span> <span class="n">decoder</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]),</span>
 <span class="gp">... </span>    <span class="n">VT</span><span class="o">=</span><span class="n">Codec</span><span class="p">(</span><span class="n">encoder</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">decoder</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">interface_wrap</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">KvInterface</span><span class="p">,</span> <span class="n">codecs</span><span class="o">=</span><span class="n">codecs</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>
 <span class="go">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'b'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
-<span class="go">{&#39;a.json&#39;: &#39;1&#39;, &#39;b.json&#39;: &#39;2&#39;}</span>
+<span class="go">{'a.json': '1', 'b.json': '2'}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="go">[&#39;a&#39;, &#39;b&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;a&#39;</span> <span class="ow">in</span> <span class="n">s</span>
+<span class="go">['a', 'b']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">'a'</span> <span class="ow">in</span> <span class="n">s</span>
 <span class="go">True</span>
 </pre></div>
 </div>
 <p>Loudness: under the default <code class="docutils literal notranslate"><span class="pre">undeclared='exclude'</span></code> policy, a public leaf
 attribute the spec doesn’t cover is hidden — USING it refuses with guidance
 (it would be served with unmapped keys/values, the #83 bug class):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
 <span class="c">...</span>
-<span class="gr">dol._interface_wrap.UndeclaredAttributeError</span>: <span class="n">&#39;get&#39; is not in the interface...</span>
+<span class="gr">dol._interface_wrap.UndeclaredAttributeError</span>: <span class="n">'get' is not in the interface...</span>
 </pre></div>
 </div>
 <p>Strict mode refuses at WRAP time instead (<code class="docutils literal notranslate"><span class="pre">undeclared='raise'</span></code>); and
@@ -201,12 +201,12 @@ attribute the spec doesn’t cover is hidden — USING it refuses with guidance
 escape is explicit.</p>
 <p>For the common Mapping-shaped case there is a built-in spec and a
 <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code>-shaped facade, so simple things stay simple:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">kv_interface_wrap</span><span class="p">({},</span> <span class="n">id_of_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span><span class="p">,</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">kv_interface_wrap</span><span class="p">({},</span> <span class="n">id_of_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="s1">'.txt'</span><span class="p">,</span>
 <span class="gp">... </span>                      <span class="n">key_of_id</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'hello'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-<span class="go">[&#39;a&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;hello&#39;</span><span class="p">}</span>
+<span class="go">['a']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="s1">'hello'</span><span class="p">}</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -352,11 +352,11 @@ no self-convention (<code class="docutils literal notranslate"><span class="pre"
 wrapper layers for a transform to receive.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">kv_interface_wrap</span><span class="p">({},</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
-<span class="go">{&#39;x&#39;: 1}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'x'</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>
+<span class="go">{'x': 1}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">__wrapped__</span>
-<span class="go">{&#39;a&#39;: &#39;{&quot;x&quot;: 1}&#39;}</span>
+<span class="go">{'a': '{"x": 1}'}</span>
 </pre></div>
 </div>
 </dd></dl>

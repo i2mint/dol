@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.kv_codecs &mdash; dol 0.3.62 documentation</title>
+  <title>dol.kv_codecs &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -177,22 +177,22 @@ If not, the decoder will be computed by swapping the keys and values of the
 encoder and asserting that no values were lost in the process
 (that is, that the mappings are invertible).
 The statements above are true if you swap “encoder” and “decoder”.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">km</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">mapped_keys</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">km</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">km</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">mapped_keys</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">km</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span>
 <span class="go">1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">km</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="go">&#39;a&#39;</span>
+<span class="go">'a'</span>
 </pre></div>
 </div>
 <p>If the encoder is a function, the decoder must be an iterable of keys who will
 be used as arguments of the function to get the encoded key, and the decode
 will be the inverse of that mapping.
 The statement above is true if you swap “encoder” and “decoder”.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">km</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">mapped_keys</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">km</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
-<span class="go">&#39;a&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">km</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
-<span class="go">&#39;A&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">km</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">mapped_keys</span><span class="p">([</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">],</span> <span class="nb">str</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">km</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="s1">'A'</span><span class="p">)</span>
+<span class="go">'a'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">km</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span>
+<span class="go">'A'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -217,27 +217,27 @@ The statement above is true if you swap “encoder” and “decoder”.</p>
 <dd><p>A collection of value codec factories using standard lib tools.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">json_codec</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>  <span class="c1"># call the json codec factory</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span> <span class="o">=</span> <span class="n">json_codec</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">encoder</span><span class="p">({</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
-<span class="go">&#39;{&quot;b&quot;: 2}&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">decoder</span><span class="p">(</span><span class="s1">&#39;{&quot;b&quot;: 2}&#39;</span><span class="p">)</span>
-<span class="go">{&#39;b&#39;: 2}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encoder</span><span class="p">({</span><span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="go">'{"b": 2}'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">decoder</span><span class="p">(</span><span class="s1">'{"b": 2}'</span><span class="p">)</span>
+<span class="go">{'b': 2}</span>
 </pre></div>
 </div>
 <p>The <cite>json_codec</cite> object is also a <cite>Mapping</cite> value wrapper:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">json_codec</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">backend</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;{&quot;b&quot;: 2}&#39;</span><span class="p">}</span>  <span class="c1"># json was written in backend</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>  <span class="c1"># but this json is decoded to a dict when read from interface</span>
-<span class="go">{&#39;b&#39;: 2}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">backend</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="s1">'{"b": 2}'</span><span class="p">}</span>  <span class="c1"># json was written in backend</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>  <span class="c1"># but this json is decoded to a dict when read from interface</span>
+<span class="go">{'b': 2}</span>
 </pre></div>
 </div>
 <p>In order not to have to call the codec factory when you just want the default,
 we’ve made a <cite>default</cite> attribute that contains all the default codecs:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">backend</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;{&quot;b&quot;: 2}&#39;</span><span class="p">}</span>  <span class="c1"># json was written in backend</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">backend</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="s1">'{"b": 2}'</span><span class="p">}</span>  <span class="c1"># json was written in backend</span>
 </pre></div>
 </div>
 <p>For times when you want to parametrize your code though, know that you can also
@@ -246,16 +246,16 @@ For example, to make a json codec that indents the json, you can do:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">json_codec</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">json_codec</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">backend</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">])</span>  <span class="c1"># written in backend with indent</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># we write a dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">backend</span><span class="p">[</span><span class="s1">'a'</span><span class="p">])</span>  <span class="c1"># written in backend with indent</span>
 <span class="go">{</span>
-<span class="go">  &quot;b&quot;: 2</span>
+<span class="go">  "b": 2</span>
 <span class="go">}</span>
 </pre></div>
 </div>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs.b64">
-<span class="sig-name descname"><span class="pre">b64</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;module</span> <span class="pre">'base64'</span> <span class="pre">from</span> <span class="pre">'/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/base64.py'&gt;</span></span><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.b64" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">b64</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;module</span> <span class="pre">'base64'</span> <span class="pre">from</span> <span class="pre">'/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/base64.py'&gt;</span></span><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.b64" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
@@ -283,15 +283,15 @@ r.name(‘date’, foo=1).</p>
 <dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs.single_nested_value">
 <span class="sig-name descname"><span class="pre">single_nested_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#ValueCodecs.single_nested_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.single_nested_value" title="Link to this definition"></a></dt>
 <dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;un&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;uno&#39;</span><span class="p">},</span>
-<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;dos&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s1">'en'</span><span class="p">:</span> <span class="s1">'one'</span><span class="p">,</span> <span class="s1">'fr'</span><span class="p">:</span> <span class="s1">'un'</span><span class="p">,</span> <span class="s1">'sp'</span><span class="p">:</span> <span class="s1">'uno'</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s1">'en'</span><span class="p">:</span> <span class="s1">'two'</span><span class="p">,</span> <span class="s1">'fr'</span><span class="p">:</span> <span class="s1">'deux'</span><span class="p">,</span> <span class="s1">'sp'</span><span class="p">:</span> <span class="s1">'dos'</span><span class="p">},</span>
 <span class="gp">... </span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">en</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">single_nested_value</span><span class="p">(</span><span class="s1">&#39;en&#39;</span><span class="p">)(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">en</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">single_nested_value</span><span class="p">(</span><span class="s1">'en'</span><span class="p">)(</span><span class="n">d</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">en</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="go">&#39;one&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">en</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ONE&#39;</span>
+<span class="go">'one'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">en</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'ONE'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># note that here d[1] is completely replaced (not updated)</span>
-<span class="go">{&#39;en&#39;: &#39;ONE&#39;}</span>
+<span class="go">{'en': 'ONE'}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -301,28 +301,28 @@ r.name(‘date’, foo=1).</p>
 <span class="sig-name descname"><span class="pre">tuple_of_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#ValueCodecs.tuple_of_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.tuple_of_dict" title="Link to this definition"></a></dt>
 <dd><p>Get a tuple-view of dict values.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;un&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;uno&#39;</span><span class="p">},</span>
-<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;dos&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s1">'en'</span><span class="p">:</span> <span class="s1">'one'</span><span class="p">,</span> <span class="s1">'fr'</span><span class="p">:</span> <span class="s1">'un'</span><span class="p">,</span> <span class="s1">'sp'</span><span class="p">:</span> <span class="s1">'uno'</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s1">'en'</span><span class="p">:</span> <span class="s1">'two'</span><span class="p">,</span> <span class="s1">'fr'</span><span class="p">:</span> <span class="s1">'deux'</span><span class="p">,</span> <span class="s1">'sp'</span><span class="p">:</span> <span class="s1">'dos'</span><span class="p">},</span>
 <span class="gp">... </span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">tuple_of_dict</span><span class="p">([</span><span class="s1">&#39;fr&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span><span class="o">.</span><span class="n">encoder</span><span class="p">([</span><span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;tre&#39;</span><span class="p">])</span>
-<span class="go">{&#39;fr&#39;: &#39;deux&#39;, &#39;sp&#39;: &#39;tre&#39;}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span><span class="o">.</span><span class="n">decoder</span><span class="p">({</span><span class="s1">&#39;en&#39;</span><span class="p">:</span> <span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;fr&#39;</span><span class="p">:</span> <span class="s1">&#39;un&#39;</span><span class="p">,</span> <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;uno&#39;</span><span class="p">})</span>
-<span class="go">(&#39;un&#39;, &#39;uno&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span> <span class="o">=</span> <span class="n">ValueCodecs</span><span class="o">.</span><span class="n">tuple_of_dict</span><span class="p">([</span><span class="s1">'fr'</span><span class="p">,</span> <span class="s1">'sp'</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span><span class="o">.</span><span class="n">encoder</span><span class="p">([</span><span class="s1">'deux'</span><span class="p">,</span> <span class="s1">'tre'</span><span class="p">])</span>
+<span class="go">{'fr': 'deux', 'sp': 'tre'}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span><span class="o">.</span><span class="n">decoder</span><span class="p">({</span><span class="s1">'en'</span><span class="p">:</span> <span class="s1">'one'</span><span class="p">,</span> <span class="s1">'fr'</span><span class="p">:</span> <span class="s1">'un'</span><span class="p">,</span> <span class="s1">'sp'</span><span class="p">:</span> <span class="s1">'uno'</span><span class="p">})</span>
+<span class="go">('un', 'uno')</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span> <span class="o">=</span> <span class="n">codec</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-<span class="go">(&#39;deux&#39;, &#39;dos&#39;)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="s1">&#39;deux&#39;</span><span class="p">,</span> <span class="s1">&#39;dos&#39;</span><span class="p">)</span>
-<span class="go">(&#39;deux&#39;, &#39;dos&#39;)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;DEUX&#39;</span><span class="p">,</span> <span class="s1">&#39;DOS&#39;</span><span class="p">)</span>
+<span class="go">('deux', 'dos')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="s1">'deux'</span><span class="p">,</span> <span class="s1">'dos'</span><span class="p">)</span>
+<span class="go">('deux', 'dos')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'DEUX'</span><span class="p">,</span> <span class="s1">'DOS'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">frsp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-<span class="go">(&#39;DEUX&#39;, &#39;DOS&#39;)</span>
+<span class="go">('DEUX', 'DOS')</span>
 </pre></div>
 </div>
 <p>Note that writes completely replace the values in the backend dict,
 it doesn’t update them:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-<span class="go">{&#39;fr&#39;: &#39;DEUX&#39;, &#39;sp&#39;: &#39;DOS&#39;}</span>
+<span class="go">{'fr': 'DEUX', 'sp': 'DOS'}</span>
 </pre></div>
 </div>
 <p>See also <cite>dol.KeyTemplate</cite> for more general key-based views.</p>
@@ -332,7 +332,7 @@ it doesn’t update them:</p>
 <dt class="sig sig-object py" id="dol.kv_codecs.ValueCodecs.zip_compress">
 <span class="sig-name descname"><span class="pre">zip_compress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'some_bytes'</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowZip64</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compresslevel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_timestamps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#dol.kv_codecs.ValueCodecs.zip_compress" title="Link to this definition"></a></dt>
 <dd><p>Compress input bytes, returning the compressed bytes</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;x&#39;</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">+</span> <span class="sa">b</span><span class="s1">&#39;y&#39;</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># 2000 (quite compressible) bytes</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">'x'</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">+</span> <span class="sa">b</span><span class="s1">'y'</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># 2000 (quite compressible) bytes</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 <span class="go">2000</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -346,7 +346,7 @@ it doesn’t update them:</p>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.zipfiledol</span><span class="w"> </span><span class="kn">import</span> <span class="n">compression_methods</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">zipped_bytes</span> <span class="o">=</span> <span class="n">zip_compress</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression_methods</span><span class="p">[</span><span class="s1">&#39;bzip2&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">zipped_bytes</span> <span class="o">=</span> <span class="n">zip_compress</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression_methods</span><span class="p">[</span><span class="s1">'bzip2'</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Note: Compression details will be system dependent</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">zipped_bytes</span><span class="p">)</span>
 <span class="go">221</span>
@@ -394,12 +394,12 @@ of the row, element wise.</p></li>
 </ul>
 </dd>
 </dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">encoded</span> <span class="o">=</span> <span class="n">csv_dict_encode</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">4</span><span class="p">}]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encoded</span> <span class="o">=</span> <span class="n">csv_dict_encode</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">encoded</span>
-<span class="go">&#39;a,b\r\n1,2\r\n3,4\r\n&#39;</span>
+<span class="go">'a,b\r\n1,2\r\n3,4\r\n'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">csv_dict_decode</span><span class="p">(</span><span class="n">encoded</span><span class="p">)</span>
-<span class="go">[{&#39;a&#39;: &#39;1&#39;, &#39;b&#39;: &#39;2&#39;}, {&#39;a&#39;: &#39;3&#39;, &#39;b&#39;: &#39;4&#39;}]</span>
+<span class="go">[{'a': '1', 'b': '2'}, {'a': '3', 'b': '4'}]</span>
 </pre></div>
 </div>
 <p>See that you don’t get back when you started with. The ints aren’t ints anymore!
@@ -408,10 +408,10 @@ You can resolve this by using the fieldcasts argument
 I should be a function (that transforms a dict to the one you want) or
 list or tuple of the same size as the row (that specifies the cast function for
 each field)</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">csv_dict_decode</span><span class="p">(</span><span class="n">encoded</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">],</span> <span class="n">fieldcasts</span><span class="o">=</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
-<span class="go">[{&#39;a&#39;: 1, &#39;b&#39;: 2}, {&#39;a&#39;: 3, &#39;b&#39;: 4}]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">csv_dict_decode</span><span class="p">(</span><span class="n">encoded</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">],</span> <span class="n">fieldcasts</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">})</span>
-<span class="go">[{&#39;a&#39;: &#39;1&#39;, &#39;b&#39;: 2.0}, {&#39;a&#39;: &#39;3&#39;, &#39;b&#39;: 4.0}]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">csv_dict_decode</span><span class="p">(</span><span class="n">encoded</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">],</span> <span class="n">fieldcasts</span><span class="o">=</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">[{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csv_dict_decode</span><span class="p">(</span><span class="n">encoded</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">],</span> <span class="n">fieldcasts</span><span class="o">=</span><span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="nb">float</span><span class="p">})</span>
+<span class="go">[{'a': '1', 'b': 2.0}, {'a': '3', 'b': 4.0}]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -420,10 +420,10 @@ each field)</p>
 <dt class="sig sig-object py" id="dol.kv_codecs.csv_dict_encode">
 <span class="sig-prename descclassname"><span class="pre">dol.kv_codecs.</span></span><span class="sig-name descname"><span class="pre">csv_dict_encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fieldnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dialect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'excel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quotechar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'&quot;'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">escapechar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doublequote</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipinitialspace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lineterminator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'\r\n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quoting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrasaction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fieldcasts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/kv_codecs.html#csv_dict_encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kv_codecs.csv_dict_encode" title="Link to this definition"></a></dt>
 <dd><p>Encode a list of dicts into a csv string.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">encoded</span> <span class="o">=</span> <span class="n">csv_dict_encode</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">4</span><span class="p">}]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encoded</span> <span class="o">=</span> <span class="n">csv_dict_encode</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">encoded</span>
-<span class="go">&#39;a,b\r\n1,2\r\n3,4\r\n&#39;</span>
+<span class="go">'a,b\r\n1,2\r\n3,4\r\n'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -444,8 +444,8 @@ codec to use.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">key_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">value_trans_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;.json&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="s1">&#39;.txt&#39;</span><span class="p">:</span> <span class="nb">bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">default_factory</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s2">&quot;No codec for this extension&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">value_trans_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'.json'</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="s1">'.txt'</span><span class="p">:</span> <span class="nb">bytes</span><span class="o">.</span><span class="n">decode</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">default_factory</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s2">"No codec for this extension"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">trans</span> <span class="o">=</span> <span class="n">key_based_value_trans</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">key_func</span><span class="p">,</span> <span class="n">value_trans_mapping</span><span class="p">,</span> <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">identity_func</span>
 <span class="gp">... </span><span class="p">)</span>

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol &mdash; dol 0.3.62 documentation</title>
+  <title>dol &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -122,7 +122,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dol</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Core tools to build simple interfaces to complex data sources and bend the interface to your will (and need)&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Core tools to build simple interfaces to complex data sources and bend the interface to your will (and need)"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
@@ -134,7 +134,7 @@
 <div class="viewcode-block" id="kvhead">
 <a class="viewcode-back" href="../module_docs/dol.html#dol.kvhead">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">kvhead</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the first item of a kv store, or a list of the first n items&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Get the first item of a kv store, or a list of the first n items"""</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">store</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">k</span><span class="p">,</span> <span class="n">store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -146,7 +146,7 @@
 <div class="viewcode-block" id="ihead">
 <a class="viewcode-back" href="../module_docs/dol.html#dol.ihead">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ihead</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the first item of an iterable, or a list of the first n items&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Get the first item of an iterable, or a list of the first n items"""</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">item</span>
@@ -277,13 +277,13 @@
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.caching</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">cache_this</span><span class="p">,</span>  <span class="c1"># cache the result of &quot;property&quot; methods in a store</span>
+    <span class="n">cache_this</span><span class="p">,</span>  <span class="c1"># cache the result of "property" methods in a store</span>
     <span class="n">add_extension</span><span class="p">,</span>  <span class="c1"># a helper (for cache_this) to make key functions</span>
     <span class="n">lru_cache_method</span><span class="p">,</span>  <span class="c1"># A decorator to cache the result of a method, ignoring the first argument</span>
     <span class="n">WriteBackChainMap</span><span class="p">,</span>  <span class="c1"># write-back cache</span>
     <span class="n">mk_cached_store</span><span class="p">,</span>  <span class="c1"># (old alias of cache_vals) wrap a store so it uses a cache</span>
     <span class="n">cache_vals</span><span class="p">,</span>  <span class="c1"># wrap a store so it uses a cache</span>
-    <span class="n">store_cached</span><span class="p">,</span>  <span class="c1"># func memorizer using a specific store as its &quot;memory&quot;</span>
+    <span class="n">store_cached</span><span class="p">,</span>  <span class="c1"># func memorizer using a specific store as its "memory"</span>
     <span class="n">store_cached_with_single_key</span><span class="p">,</span>
     <span class="n">ensure_clear_to_kv_store</span><span class="p">,</span>  <span class="c1"># add a clear method to a store (removed by default)</span>
     <span class="n">flush_on_exit</span><span class="p">,</span>  <span class="c1"># make a store become a context manager that flushes cache on exit</span>
@@ -342,7 +342,7 @@
     <span class="n">is_content_ref</span><span class="p">,</span>  <span class="c1"># predicate for a ContentRef instance or its wire-form dict</span>
     <span class="n">content_hash</span><span class="p">,</span>  <span class="c1"># hex content hash (sha256 default) — the CAS key</span>
     <span class="n">guess_mime_type</span><span class="p">,</span>  <span class="c1"># stdlib mimetypes guess from a filename/key</span>
-    <span class="n">content_url</span><span class="p">,</span>  <span class="c1"># fetchable URL via a backend&#39;s `url_for` seam, else None</span>
+    <span class="n">content_url</span><span class="p">,</span>  <span class="c1"># fetchable URL via a backend's `url_for` seam, else None</span>
     <span class="n">put_content</span><span class="p">,</span>  <span class="c1"># location-addressed write (caller supplies id) -&gt; ContentRef</span>
     <span class="n">add_content</span><span class="p">,</span>  <span class="c1"># content-addressed write (id = content hash, idempotent) -&gt; ContentRef</span>
     <span class="n">get_content</span><span class="p">,</span>  <span class="c1"># read bytes by ContentRef / wire dict / bare key</span>
@@ -354,17 +354,17 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle deprecated imports at module level.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;get_app_data_folder&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Handle deprecated imports at module level."""</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"get_app_data_folder"</span><span class="p">:</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="s2">&quot;`get_app_data_folder` is deprecated. Use `get_app_config_folder` instead.&quot;</span><span class="p">,</span>
+            <span class="s2">"`get_app_data_folder` is deprecated. Use `get_app_config_folder` instead."</span><span class="p">,</span>
             <span class="ne">DeprecationWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">get_app_config_folder</span>
-    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;module &#39;</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; has no attribute &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"module '</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">' has no attribute '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 </pre></div>
 
            </div>

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.content &mdash; dol 0.3.62 documentation</title>
+  <title>dol.content &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -178,22 +178,22 @@ URL. This is deliberate: a backend’s <code class="docutils literal notranslate
 freezing an expiring URL into it would be a latent bug. Reads can thus redirect to a
 CDN / presigned URL / static route while writes always go to the injected backend.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">store</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;hello world&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;greeting.txt&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">item_id</span> <span class="o">==</span> <span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;hello world&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'hello world'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'greeting.txt'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">item_id</span> <span class="o">==</span> <span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'hello world'</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">mime_type</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
-<span class="go">(11, &#39;text/plain&#39;, None)</span>
+<span class="go">(11, 'text/plain', None)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">get_content</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span>
-<span class="go">b&#39;hello world&#39;</span>
+<span class="go">b'hello world'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_content_ref</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
 <span class="go">True</span>
 </pre></div>
 </div>
 <p>The wire form is camelCase and drops empty fields, matching <code class="docutils literal notranslate"><span class="pre">zodal</span></code>’s <code class="docutils literal notranslate"><span class="pre">ContentRef</span></code>:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">to_json</span><span class="p">()[</span><span class="s1">&#39;itemId&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ref</span><span class="o">.</span><span class="n">item_id</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">to_json</span><span class="p">()[</span><span class="s1">'itemId'</span><span class="p">]</span> <span class="o">==</span> <span class="n">ref</span><span class="o">.</span><span class="n">item_id</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
-<span class="go">[&#39;_tag&#39;, &#39;field&#39;, &#39;hash&#39;, &#39;itemId&#39;, &#39;mimeType&#39;, &#39;size&#39;]</span>
+<span class="go">['_tag', 'field', 'hash', 'itemId', 'mimeType', 'size']</span>
 </pre></div>
 </div>
 <dl class="py data">
@@ -212,12 +212,12 @@ picks the key); reads/iter/delete delegate to the backend. A direct
 <code class="docutils literal notranslate"><span class="pre">store[k]</span> <span class="pre">=</span> <span class="pre">v</span></code> is allowed only when <code class="docutils literal notranslate"><span class="pre">k</span></code> equals the content hash of <code class="docutils literal notranslate"><span class="pre">v</span></code> — so the
 CAS invariant can’t be silently violated.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cas</span> <span class="o">=</span> <span class="n">with_content_addressing</span><span class="p">()</span>   <span class="c1"># dict-backed</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">cas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;h.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">cas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">b</span><span class="s1">'hello'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'h.txt'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cas</span><span class="p">[</span><span class="n">ref</span><span class="o">.</span><span class="n">item_id</span><span class="p">]</span>
-<span class="go">b&#39;hello&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">cas</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;hello&#39;</span><span class="p">)]</span>
+<span class="go">b'hello'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">cas</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'hello'</span><span class="p">)]</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">item_id</span> <span class="o">==</span> <span class="n">ref</span><span class="o">.</span><span class="n">item_id</span>   <span class="c1"># idempotent / deduplicated</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">b</span><span class="s1">'hello'</span><span class="p">)</span><span class="o">.</span><span class="n">item_id</span> <span class="o">==</span> <span class="n">ref</span><span class="o">.</span><span class="n">item_id</span>   <span class="c1"># idempotent / deduplicated</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -282,8 +282,8 @@ a presigned URL — so all S3 knowledge lives in <code class="docutils literal n
 <p>A second call with identical bytes neither rewrites nor produces a different id, so
 identical content is stored once. Returns a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> with <code class="docutils literal notranslate"><span class="pre">hash</span></code> set.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'xyz'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'xyz'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">item_id</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">item_id</span> <span class="o">==</span> <span class="n">a</span><span class="o">.</span><span class="n">hash</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
 <span class="go">True</span>
 </pre></div>
@@ -297,9 +297,9 @@ identical content is stored once. Returns a <a class="reference internal" href="
 <p>Truncation trades key length for a higher collision probability (a 16-hex-char
 prefix is 64 bits) — leave <code class="docutils literal notranslate"><span class="pre">length</span></code> unset unless keys must be short and the
 corpus is small.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;abc&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;abc&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">)</span> <span class="o">==</span> <span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">)</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;abc&#39;</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">16</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">16</span><span class="p">))</span>
 <span class="go">16</span>
 </pre></div>
 </div>
@@ -312,24 +312,24 @@ corpus is small.</p>
 <p>Prefers a URL the ref already carries; otherwise asks the backend’s <code class="docutils literal notranslate"><span class="pre">url_for</span></code>
 (the <a class="reference internal" href="#dol.content.SupportsUrlFor" title="dol.content.SupportsUrlFor"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupportsUrlFor</span></code></a> seam), returning <code class="docutils literal notranslate"><span class="pre">None</span></code> if it has none.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Served</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">url_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;https://cdn.example/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">(</span><span class="n">Served</span><span class="p">(),</span> <span class="s1">&#39;k1&#39;</span><span class="p">)</span>
-<span class="go">&#39;https://cdn.example/k1&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">({},</span> <span class="s1">&#39;k1&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">url_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="k">return</span> <span class="sa">f</span><span class="s1">'https://cdn.example/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">(</span><span class="n">Served</span><span class="p">(),</span> <span class="s1">'k1'</span><span class="p">)</span>
+<span class="go">'https://cdn.example/k1'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">({},</span> <span class="s1">'k1'</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">({},</span> <span class="n">ContentRef</span><span class="p">(</span><span class="s1">&#39;k1&#39;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;https://carried/k1&#39;</span><span class="p">))</span>  <span class="c1"># ref carries its own</span>
-<span class="go">&#39;https://carried/k1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">({},</span> <span class="n">ContentRef</span><span class="p">(</span><span class="s1">'k1'</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">'https://carried/k1'</span><span class="p">))</span>  <span class="c1"># ref carries its own</span>
+<span class="go">'https://carried/k1'</span>
 </pre></div>
 </div>
 <p>The key is resolved <strong>through any wrapping layers</strong>, so a URL addresses the same object
 <code class="docutils literal notranslate"><span class="pre">store[key]</span></code> reads. Without this, a key-transforming wrap would hand the backend the
 outer key and silently return a URL for a different object:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeyCodecs</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">prefixed</span><span class="p">(</span><span class="s1">&#39;a/&#39;</span><span class="p">)(</span><span class="n">Served</span><span class="p">)({</span><span class="s1">&#39;a/k1&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;v&#39;</span><span class="p">})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped</span><span class="p">[</span><span class="s1">&#39;k1&#39;</span><span class="p">]</span>
-<span class="go">b&#39;v&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="s1">&#39;k1&#39;</span><span class="p">)</span>
-<span class="go">&#39;https://cdn.example/a/k1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">prefixed</span><span class="p">(</span><span class="s1">'a/'</span><span class="p">)(</span><span class="n">Served</span><span class="p">)({</span><span class="s1">'a/k1'</span><span class="p">:</span> <span class="sa">b</span><span class="s1">'v'</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped</span><span class="p">[</span><span class="s1">'k1'</span><span class="p">]</span>
+<span class="go">b'v'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="s1">'k1'</span><span class="p">)</span>
+<span class="go">'https://cdn.example/a/k1'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -339,7 +339,7 @@ outer key and silently return a URL for a different object:</p>
 <span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">delete_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MutableMapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_or_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/dol/content.html#delete_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.delete_content" title="Link to this definition"></a></dt>
 <dd><p>Delete content by <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a>, wire dict, or bare key (<code class="docutils literal notranslate"><span class="pre">del</span> <span class="pre">store[key]</span></code>).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;gone&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'gone'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">delete_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">item_id</span> <span class="ow">in</span> <span class="n">s</span>
 <span class="go">False</span>
@@ -352,8 +352,8 @@ outer key and silently return a URL for a different object:</p>
 <span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">get_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_or_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../../_modules/dol/content.html#get_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.get_content" title="Link to this definition"></a></dt>
 <dd><p>Read content bytes by <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a>, wire dict, or bare key.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">get_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span> <span class="o">==</span> <span class="n">get_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">item_id</span><span class="p">)</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;data&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'data'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span> <span class="o">==</span> <span class="n">get_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">item_id</span><span class="p">)</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">'data'</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -364,9 +364,9 @@ outer key and silently return a URL for a different object:</p>
 <span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">guess_mime_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/dol/content.html#guess_mime_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.guess_mime_type" title="Link to this definition"></a></dt>
 <dd><p>Guess a mime type from a filename/key by extension (stdlib <code class="docutils literal notranslate"><span class="pre">mimetypes</span></code>).</p>
 <p>Results depend on the platform’s mime registry, so treat them as best-effort.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">guess_mime_type</span><span class="p">(</span><span class="s1">&#39;a.json&#39;</span><span class="p">)</span>
-<span class="go">&#39;application/json&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">guess_mime_type</span><span class="p">(</span><span class="s1">&#39;no-extension&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">guess_mime_type</span><span class="p">(</span><span class="s1">'a.json'</span><span class="p">)</span>
+<span class="go">'application/json'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">guess_mime_type</span><span class="p">(</span><span class="s1">'no-extension'</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -376,11 +376,11 @@ outer key and silently return a URL for a different object:</p>
 <dt class="sig sig-object py" id="dol.content.is_content_ref">
 <span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">is_content_ref</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/dol/content.html#is_content_ref"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.is_content_ref" title="Link to this definition"></a></dt>
 <dd><p>True for a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> instance or its wire-form dict (<code class="docutils literal notranslate"><span class="pre">_tag</span></code> discriminator).</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">(</span><span class="n">ContentRef</span><span class="p">(</span><span class="s1">&#39;id1&#39;</span><span class="p">))</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">(</span><span class="n">ContentRef</span><span class="p">(</span><span class="s1">'id1'</span><span class="p">))</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">({</span><span class="s1">&#39;_tag&#39;</span><span class="p">:</span> <span class="s1">&#39;ContentRef&#39;</span><span class="p">,</span> <span class="s1">&#39;itemId&#39;</span><span class="p">:</span> <span class="s1">&#39;id1&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">({</span><span class="s1">'_tag'</span><span class="p">:</span> <span class="s1">'ContentRef'</span><span class="p">,</span> <span class="s1">'itemId'</span><span class="p">:</span> <span class="s1">'id1'</span><span class="p">})</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">({</span><span class="s1">&#39;itemId&#39;</span><span class="p">:</span> <span class="s1">&#39;id1&#39;</span><span class="p">})</span> <span class="ow">or</span> <span class="n">is_content_ref</span><span class="p">(</span><span class="s1">&#39;id1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">({</span><span class="s1">'itemId'</span><span class="p">:</span> <span class="s1">'id1'</span><span class="p">})</span> <span class="ow">or</span> <span class="n">is_content_ref</span><span class="p">(</span><span class="s1">'id1'</span><span class="p">)</span>
 <span class="go">False</span>
 </pre></div>
 </div>
@@ -393,10 +393,10 @@ outer key and silently return a URL for a different object:</p>
 <p>Backend <code class="docutils literal notranslate"><span class="pre">store</span></code> is injected. Returns a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> (mime guessed from
 <code class="docutils literal notranslate"><span class="pre">name</span></code> if not given; <code class="docutils literal notranslate"><span class="pre">url</span></code> left empty — resolve via <a class="reference internal" href="#dol.content.content_url" title="dol.content.content_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_url()</span></code></a>).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">put_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s1">&#39;clip1&#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00\x01</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;clip1.wav&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">item_id</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">hash</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;clip1&#39;</span><span class="p">]</span>
-<span class="go">(&#39;clip1&#39;, None, b&#39;\x00\x01&#39;)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">mime_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;audio/&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">put_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s1">'clip1'</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'</span><span class="se">\x00\x01</span><span class="s1">'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'clip1.wav'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">item_id</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">hash</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="s1">'clip1'</span><span class="p">]</span>
+<span class="go">('clip1', None, b'\x00\x01')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">mime_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'audio/'</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -407,7 +407,7 @@ outer key and silently return a URL for a different object:</p>
 <span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">with_content_addressing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">store:</span> <span class="pre">~typing.MutableMapping</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">*,</span> <span class="pre">hasher:</span> <span class="pre">~typing.Callable[[bytes],</span> <span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;built-in</span> <span class="pre">function</span> <span class="pre">openssl_sha256&gt;,</span> <span class="pre">length:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">field:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'content'</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dol.content.ContentAddressedStore" title="dol.content.ContentAddressedStore"><span class="pre">ContentAddressedStore</span></a></span></span><a class="reference internal" href="../../_modules/dol/content.html#with_content_addressing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.with_content_addressing" title="Link to this definition"></a></dt>
 <dd><p>Wrap an injected backend as a <a class="reference internal" href="#dol.content.ContentAddressedStore" title="dol.content.ContentAddressedStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentAddressedStore</span></code></a> (<code class="docutils literal notranslate"><span class="pre">dict</span></code> if <code class="docutils literal notranslate"><span class="pre">None</span></code>).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cas</span> <span class="o">=</span> <span class="n">with_content_addressing</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">cas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;abc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">item_id</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">cas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">)</span><span class="o">.</span><span class="n">item_id</span><span class="p">)</span>
 <span class="go">16</span>
 </pre></div>
 </div>

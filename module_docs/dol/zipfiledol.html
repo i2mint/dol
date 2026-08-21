@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.zipfiledol &mdash; dol 0.3.62 documentation</title>
+  <title>dol.zipfiledol &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -252,7 +252,7 @@ makes for a not so efficient store, out of the box.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">rootdir</span> <span class="o">=</span> <span class="n">gettempdir</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># preparation</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">test_zipfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="s1">&#39;zipstore_test_file.zip&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_zipfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="s1">'zipstore_test_file.zip'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
@@ -264,16 +264,16 @@ makes for a not so efficient store, out of the box.</p>
 </div>
 <p>See that the file still doesn’t exist (it will only be created when we start writing)</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_zipfile</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># z &quot;is&quot; empty (which makes sense?)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># z "is" empty (which makes sense?)</span>
 <span class="go">[]</span>
 </pre></div>
 </div>
 <p>Now let’s write something interesting (notice, it has to be in bytes):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;bar&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">[</span><span class="s1">'foo'</span><span class="p">]</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">'bar'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># now we have something in z</span>
-<span class="go">[&#39;foo&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">]</span>  <span class="c1"># and that thing is what we put there</span>
-<span class="go">b&#39;bar&#39;</span>
+<span class="go">['foo']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">[</span><span class="s1">'foo'</span><span class="p">]</span>  <span class="c1"># and that thing is what we put there</span>
+<span class="go">b'bar'</span>
 </pre></div>
 </div>
 <p>And indeed we have a zip file now:</p>
@@ -320,7 +320,7 @@ But you might find it useful to remove them from view. One choice is to use
 <cite>dol.trans.filt_iter</cite>
 to get a filtered view of the zips contents. In most cases, this should do the job:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># applied to store instance or class:</span>
-<span class="n">store</span> <span class="o">=</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;__MACOSX&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;.DS_Store&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)(</span><span class="n">store</span><span class="p">)</span>
+<span class="n">store</span> <span class="o">=</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'__MACOSX'</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">'.DS_Store'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)(</span><span class="n">store</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Another option is just to remove these from the zip file once and for all. In unix-like systems:</p>
@@ -329,32 +329,32 @@ to get a filtered view of the zips contents. In most cases, this should do the j
 </pre></div>
 </div>
 <p>Examples:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># &gt;&gt;&gt; s = ZipReader(&#39;/path/to/some_zip_file.zip&#39;)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># &gt;&gt;&gt; s = ZipReader('/path/to/some_zip_file.zip')</span>
 <span class="c1"># &gt;&gt;&gt; len(s)</span>
 <span class="c1"># 53432</span>
 <span class="c1"># &gt;&gt;&gt; list(s)[:3]  # the first 3 elements (well... their keys)</span>
-<span class="c1"># [&#39;odir/&#39;, &#39;odir/app/&#39;, &#39;odir/app/data/&#39;]</span>
+<span class="c1"># ['odir/', 'odir/app/', 'odir/app/data/']</span>
 <span class="c1"># &gt;&gt;&gt; list(s)[-3:]  # the last 3 elements (well... their keys)</span>
-<span class="c1"># [&#39;odir/app/data/audio/d/1574287049078391/m/Ctor.json&#39;,</span>
-<span class="c1">#  &#39;odir/app/data/audio/d/1574287049078391/m/intensity.json&#39;,</span>
-<span class="c1">#  &#39;odir/app/data/run/status.json&#39;]</span>
+<span class="c1"># ['odir/app/data/audio/d/1574287049078391/m/Ctor.json',</span>
+<span class="c1">#  'odir/app/data/audio/d/1574287049078391/m/intensity.json',</span>
+<span class="c1">#  'odir/app/data/run/status.json']</span>
 <span class="c1"># &gt;&gt;&gt; # getting a file (note that by default, you get bytes, so need to decode)</span>
-<span class="c1"># &gt;&gt;&gt; s[&#39;odir/app/data/run/status.json&#39;].decode()</span>
-<span class="c1"># b&#39;{&quot;test_phase_number&quot;: 9, &quot;test_phase&quot;: &quot;TestActions.IGNORE_TEST&quot;, &quot;session_id&quot;: 0}&#39;</span>
-<span class="c1"># &gt;&gt;&gt; # when you ask for the contents for a key that&#39;s a directory,</span>
+<span class="c1"># &gt;&gt;&gt; s['odir/app/data/run/status.json'].decode()</span>
+<span class="c1"># b'{"test_phase_number": 9, "test_phase": "TestActions.IGNORE_TEST", "session_id": 0}'</span>
+<span class="c1"># &gt;&gt;&gt; # when you ask for the contents for a key that's a directory,</span>
 <span class="c1"># &gt;&gt;&gt; # you get a ZipReader filtered for that prefix:</span>
-<span class="c1"># &gt;&gt;&gt; s[&#39;odir/app/data/audio/&#39;]</span>
-<span class="c1"># ZipReader(&#39;/path/to/some_zip_file.zip&#39;, &#39;odir/app/data/audio/&#39;, {}, &lt;function</span>
+<span class="c1"># &gt;&gt;&gt; s['odir/app/data/audio/']</span>
+<span class="c1"># ZipReader('/path/to/some_zip_file.zip', 'odir/app/data/audio/', {}, &lt;function</span>
 <span class="n">take_everything</span> <span class="n">at</span> <span class="mh">0x1538999e0</span><span class="o">&gt;</span><span class="p">)</span>
 <span class="c1"># &gt;&gt;&gt; # Often, you only want files (not directories)</span>
 <span class="c1"># &gt;&gt;&gt; # You can filter directories out using the file_info_filt argument</span>
-<span class="c1"># &gt;&gt;&gt; s = ZipReader(&#39;/path/to/some_zip_file.zip&#39;, file_info_filt=ZipReader.FILES_ONLY)</span>
+<span class="c1"># &gt;&gt;&gt; s = ZipReader('/path/to/some_zip_file.zip', file_info_filt=ZipReader.FILES_ONLY)</span>
 <span class="c1"># &gt;&gt;&gt; len(s)  # compare to the 53432 above, that contained dirs too</span>
 <span class="c1"># 53280</span>
 <span class="c1"># &gt;&gt;&gt; list(s)[:3]  # first 3 keys are all files now</span>
-<span class="c1"># [&#39;odir/app/data/plc/d/1574304926795633/d/1574305026895702&#39;,</span>
-<span class="c1">#  &#39;odir/app/data/plc/d/1574304926795633/d/1574305276853053&#39;,</span>
-<span class="c1">#  &#39;odir/app/data/plc/d/1574304926795633/d/1574305159343326&#39;]</span>
+<span class="c1"># ['odir/app/data/plc/d/1574304926795633/d/1574305026895702',</span>
+<span class="c1">#  'odir/app/data/plc/d/1574304926795633/d/1574305276853053',</span>
+<span class="c1">#  'odir/app/data/plc/d/1574304926795633/d/1574305159343326']</span>
 <span class="c1"># &gt;&gt;&gt;</span>
 <span class="c1"># &gt;&gt;&gt; # ZipReader.FILES_ONLY and ZipReader.DIRS_ONLY are just convenience filt functions</span>
 <span class="c1"># &gt;&gt;&gt; # Really, you can provide any custom one yourself.</span>
@@ -362,15 +362,15 @@ to get a filtered view of the zips contents. In most cases, this should do the j
 <span class="c1"># &gt;&gt;&gt; # (https://docs.python.org/3/library/zipfile.html#zipfile.ZipInfo)</span>
 <span class="c1"># &gt;&gt;&gt;</span>
 <span class="c1"># &gt;&gt;&gt; import re</span>
-<span class="c1"># &gt;&gt;&gt; p = re.compile(&#39;audio.*\.json$&#39;)</span>
+<span class="c1"># &gt;&gt;&gt; p = re.compile('audio.*\.json$')</span>
 <span class="c1"># &gt;&gt;&gt; my_filt_func = lambda fileinfo: bool(p.search(fileinfo.filename))</span>
-<span class="c1"># &gt;&gt;&gt; s = ZipReader(&#39;/Users/twhalen/Downloads/2019_11_21.zip&#39;, file_info_filt=my_filt_func)</span>
+<span class="c1"># &gt;&gt;&gt; s = ZipReader('/Users/twhalen/Downloads/2019_11_21.zip', file_info_filt=my_filt_func)</span>
 <span class="c1"># &gt;&gt;&gt; len(s)</span>
 <span class="c1"># 48</span>
 <span class="c1"># &gt;&gt;&gt; list(s)[:3]</span>
-<span class="c1"># [&#39;odir/app/data/audio/d/1574333557263758/m/Ctor.json&#39;,</span>
-<span class="c1">#  &#39;odir/app/data/audio/d/1574333557263758/m/intensity.json&#39;,</span>
-<span class="c1">#  &#39;odir/app/data/audio/d/1574288084739961/m/Ctor.json&#39;]</span>
+<span class="c1"># ['odir/app/data/audio/d/1574333557263758/m/Ctor.json',</span>
+<span class="c1">#  'odir/app/data/audio/d/1574333557263758/m/intensity.json',</span>
+<span class="c1">#  'odir/app/data/audio/d/1574288084739961/m/Ctor.json']</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -392,20 +392,20 @@ to get a filtered view of the zips contents. In most cases, this should do the j
 <span class="sig-prename descclassname"><span class="pre">dol.zipfiledol.</span></span><span class="sig-name descname"><span class="pre">if_i_zipped_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dol/zipfiledol.html#if_i_zipped_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.zipfiledol.if_i_zipped_stats" title="Link to this definition"></a></dt>
 <dd><p>Compress and decompress bytes with four different methods and return a dictionary
 of (size and time) stats.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;x&#39;</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">+</span> <span class="sa">b</span><span class="s1">&#39;y&#39;</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># 2000 (quite compressible) bytes</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">'x'</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">+</span> <span class="sa">b</span><span class="s1">'y'</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># 2000 (quite compressible) bytes</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">if_i_zipped_stats</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-<span class="go">{&#39;uncompressed&#39;: {&#39;bytes&#39;: 2000,</span>
-<span class="go">  &#39;comp_time&#39;: 0,</span>
-<span class="go">  &#39;uncomp_time&#39;: 0},</span>
-<span class="go"> &#39;deflated&#39;: {&#39;bytes&#39;: 137,</span>
-<span class="go">  &#39;comp_time&#39;: 0.00015592575073242188,</span>
-<span class="go">  &#39;uncomp_time&#39;: 0.00012612342834472656},</span>
-<span class="go"> &#39;bzip2&#39;: {&#39;bytes&#39;: 221,</span>
-<span class="go">  &#39;comp_time&#39;: 0.0013129711151123047,</span>
-<span class="go">  &#39;uncomp_time&#39;: 0.0011119842529296875},</span>
-<span class="go"> &#39;lzma&#39;: {&#39;bytes&#39;: 206,</span>
-<span class="go">  &#39;comp_time&#39;: 0.0058901309967041016,</span>
-<span class="go">  &#39;uncomp_time&#39;: 0.0005228519439697266}}</span>
+<span class="go">{'uncompressed': {'bytes': 2000,</span>
+<span class="go">  'comp_time': 0,</span>
+<span class="go">  'uncomp_time': 0},</span>
+<span class="go"> 'deflated': {'bytes': 137,</span>
+<span class="go">  'comp_time': 0.00015592575073242188,</span>
+<span class="go">  'uncomp_time': 0.00012612342834472656},</span>
+<span class="go"> 'bzip2': {'bytes': 221,</span>
+<span class="go">  'comp_time': 0.0013129711151123047,</span>
+<span class="go">  'uncomp_time': 0.0011119842529296875},</span>
+<span class="go"> 'lzma': {'bytes': 206,</span>
+<span class="go">  'comp_time': 0.0058901309967041016,</span>
+<span class="go">  'uncomp_time': 0.0005228519439697266}}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -474,7 +474,7 @@ presented with the keys first, and asked permission to delete.</p></li>
 <dt class="sig sig-object py" id="dol.zipfiledol.zip_compress">
 <span class="sig-prename descclassname"><span class="pre">dol.zipfiledol.</span></span><span class="sig-name descname"><span class="pre">zip_compress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'some_bytes'</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowZip64</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compresslevel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_timestamps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../../_modules/dol/zipfiledol.html#zip_compress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.zipfiledol.zip_compress" title="Link to this definition"></a></dt>
 <dd><p>Compress input bytes, returning the compressed bytes</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;x&#39;</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">+</span> <span class="sa">b</span><span class="s1">&#39;y&#39;</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># 2000 (quite compressible) bytes</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">'x'</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">+</span> <span class="sa">b</span><span class="s1">'y'</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># 2000 (quite compressible) bytes</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 <span class="go">2000</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -488,7 +488,7 @@ presented with the keys first, and asked permission to delete.</p></li>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.zipfiledol</span><span class="w"> </span><span class="kn">import</span> <span class="n">compression_methods</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">zipped_bytes</span> <span class="o">=</span> <span class="n">zip_compress</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression_methods</span><span class="p">[</span><span class="s1">&#39;bzip2&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">zipped_bytes</span> <span class="o">=</span> <span class="n">zip_compress</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">compression_methods</span><span class="p">[</span><span class="s1">'bzip2'</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Note: Compression details will be system dependent</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">zipped_bytes</span><span class="p">)</span>
 <span class="go">221</span>

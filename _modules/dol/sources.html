@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.sources &mdash; dol 0.3.62 documentation</title>
+  <title>dol.sources &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -123,9 +123,9 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dol.sources</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">This module contains key-value views of disparate sources.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Callable</span>
@@ -165,17 +165,17 @@
 <div class="viewcode-block" id="NotUnique">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.NotUnique">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NotUnique</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when an iterator was expected to have only one element, but had more&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">"""Raised when an iterator was expected to have only one element, but had more"""</span></div>
 
 
 
-<span class="n">NoMoreElements</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;NoMoreElements&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">object</span><span class="p">,),</span> <span class="p">{})()</span>
+<span class="n">NoMoreElements</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">"NoMoreElements"</span><span class="p">,</span> <span class="p">(</span><span class="nb">object</span><span class="p">,),</span> <span class="p">{})()</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">unique_element</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
     <span class="n">element</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="n">NoMoreElements</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">NoMoreElements</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">NotUnique</span><span class="p">(</span><span class="s2">&quot;iterator had more than one element&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">NotUnique</span><span class="p">(</span><span class="s2">"iterator had more than one element"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">element</span>
 
 
@@ -192,14 +192,14 @@
     <span class="k">return</span> <span class="n">kv_spec</span>
 
 
-<span class="c1"># TODO: This doesn&#39;t work</span>
-<span class="c1"># KvSpec.from = _kv_spec_to_func  # I&#39;d like to be able to couple KvSpec and it&#39;s</span>
+<span class="c1"># TODO: This doesn't work</span>
+<span class="c1"># KvSpec.from = _kv_spec_to_func  # I'd like to be able to couple KvSpec and it's</span>
 <span class="c1"># conversion function (even more: __call__ instead of from)</span>
 
 
 <span class="c1"># TODO: Generalize to several layers</span>
 <span class="c1">#   Need a general tool for flattening views.</span>
-<span class="c1">#   What we&#39;re doing here is giving access to a nested/tree structure through a key-value</span>
+<span class="c1">#   What we're doing here is giving access to a nested/tree structure through a key-value</span>
 <span class="c1">#   view where keys specify tree paths.</span>
 <span class="c1">#   Should handle situations where number layers are not fixed in advanced,</span>
 <span class="c1">#   but determined by some rules executed dynamically.</span>
@@ -207,22 +207,22 @@
 <div class="viewcode-block" id="FlatReader">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FlatReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FlatReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a &#39;flat view&#39; of a store of stores.</span>
+<span class="w">    </span><span class="sd">"""Get a 'flat view' of a store of stores.</span>
 <span class="sd">    That is, where keys are `(first_level_key, second_level_key)` pairs.</span>
-<span class="sd">    This is useful, for instance, to make a union of stores (you&#39;ll get all the values).</span>
+<span class="sd">    This is useful, for instance, to make a union of stores (you'll get all the values).</span>
 
 <span class="sd">    &gt;&gt;&gt; readers = {</span>
-<span class="sd">    ...     &#39;fr&#39;: {1: &#39;un&#39;, 2: &#39;deux&#39;},</span>
-<span class="sd">    ...     &#39;it&#39;: {1: &#39;uno&#39;, 2: &#39;due&#39;, 3: &#39;tre&#39;},</span>
+<span class="sd">    ...     'fr': {1: 'un', 2: 'deux'},</span>
+<span class="sd">    ...     'it': {1: 'uno', 2: 'due', 3: 'tre'},</span>
 <span class="sd">    ... }</span>
 <span class="sd">    &gt;&gt;&gt; s = FlatReader(readers)</span>
 <span class="sd">    &gt;&gt;&gt; list(s)</span>
-<span class="sd">    [(&#39;fr&#39;, 1), (&#39;fr&#39;, 2), (&#39;it&#39;, 1), (&#39;it&#39;, 2), (&#39;it&#39;, 3)]</span>
-<span class="sd">    &gt;&gt;&gt; s[(&#39;fr&#39;, 1)]</span>
-<span class="sd">    &#39;un&#39;</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;it&#39;, 2]</span>
-<span class="sd">    &#39;due&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    [('fr', 1), ('fr', 2), ('it', 1), ('it', 2), ('it', 3)]</span>
+<span class="sd">    &gt;&gt;&gt; s[('fr', 1)]</span>
+<span class="sd">    'un'</span>
+<span class="sd">    &gt;&gt;&gt; s['it', 2]</span>
+<span class="sd">    'due'</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">readers</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span> <span class="o">=</span> <span class="n">readers</span>
@@ -253,7 +253,7 @@
 <div class="viewcode-block" id="FanoutReader">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FanoutReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FanoutReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a &#39;fanout view&#39; of a store of stores.</span>
+<span class="w">    </span><span class="sd">"""Get a 'fanout view' of a store of stores.</span>
 <span class="sd">    That is, when a key is requested, the key is passed to all the stores, and results</span>
 <span class="sd">    accumulated in a dict that is then returned.</span>
 
@@ -262,12 +262,12 @@
 <span class="sd">    param get_existing_values_only: If True, only return values for stores that contain</span>
 <span class="sd">        the key.</span>
 
-<span class="sd">    Let&#39;s define the following sub-stores:</span>
+<span class="sd">    Let's define the following sub-stores:</span>
 
 <span class="sd">    &gt;&gt;&gt; bytes_store = dict(</span>
-<span class="sd">    ...     a=b&#39;a&#39;,</span>
-<span class="sd">    ...     b=b&#39;b&#39;,</span>
-<span class="sd">    ...     c=b&#39;c&#39;,</span>
+<span class="sd">    ...     a=b'a',</span>
+<span class="sd">    ...     b=b'b',</span>
+<span class="sd">    ...     c=b'c',</span>
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; metadata_store = dict(</span>
 <span class="sd">    ...     b=dict(x=2),</span>
@@ -279,8 +279,8 @@
 
 <span class="sd">    &gt;&gt;&gt; stores = dict(bytes_store=bytes_store, metadata_store=metadata_store)</span>
 <span class="sd">    &gt;&gt;&gt; reader = FanoutReader(stores)</span>
-<span class="sd">    &gt;&gt;&gt; reader[&#39;b&#39;]</span>
-<span class="sd">    {&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
+<span class="sd">    &gt;&gt;&gt; reader['b']</span>
+<span class="sd">    {'bytes_store': b'b', 'metadata_store': {'x': 2}}</span>
 
 <span class="sd">    The reader returns a dict with the values from each store, keyed by the name of the</span>
 <span class="sd">    store.</span>
@@ -289,17 +289,17 @@
 
 <span class="sd">    &gt;&gt;&gt; reader = FanoutReader(</span>
 <span class="sd">    ...     stores=stores,</span>
-<span class="sd">    ...     default=&#39;no value in this store for this key&#39;,</span>
+<span class="sd">    ...     default='no value in this store for this key',</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; reader[&#39;a&#39;]</span>
-<span class="sd">    {&#39;bytes_store&#39;: b&#39;a&#39;, &#39;metadata_store&#39;: &#39;no value in this store for this key&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; reader['a']</span>
+<span class="sd">    {'bytes_store': b'a', 'metadata_store': 'no value in this store for this key'}</span>
 
 <span class="sd">    If the key is not in any of the stores, a KeyError is raised:</span>
 
-<span class="sd">    &gt;&gt;&gt; reader[&#39;z&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; reader['z']</span>
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
-<span class="sd">    KeyError: &#39;z&#39;</span>
+<span class="sd">    KeyError: 'z'</span>
 
 <span class="sd">    We can also pass `get_existing_values_only=True` to only return values for stores</span>
 <span class="sd">    that contain the key:</span>
@@ -308,9 +308,9 @@
 <span class="sd">    ...     stores=stores,</span>
 <span class="sd">    ...     get_existing_values_only=True,</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; reader[&#39;a&#39;]</span>
-<span class="sd">    {&#39;bytes_store&#39;: b&#39;a&#39;}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    &gt;&gt;&gt; reader['a']</span>
+<span class="sd">    {'bytes_store': b'a'}</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -324,7 +324,7 @@
                 <span class="n">stores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">stores</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;stores must be a Mapping or an Iterable, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">stores</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"stores must be a Mapping or an Iterable, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">stores</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span> <span class="o">=</span> <span class="n">stores</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_default</span> <span class="o">=</span> <span class="n">default</span>
@@ -334,7 +334,7 @@
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FanoutReader.from_variadics">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_variadics</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A way to create a fan-out store from a mix of args and kwargs, instead of a</span>
+<span class="w">        </span><span class="sd">"""A way to create a fan-out store from a mix of args and kwargs, instead of a</span>
 <span class="sd">        single dict.</span>
 
 <span class="sd">        param args: sub-stores used to fan-out the data. These stores will be</span>
@@ -344,12 +344,12 @@
 <span class="sd">            as kwargs (i.e. `default`, `get_existing_values_only`, and any other subclass</span>
 <span class="sd">            specific arguments).</span>
 
-<span class="sd">        Let&#39;s use the same sub-stores:</span>
+<span class="sd">        Let's use the same sub-stores:</span>
 
 <span class="sd">        &gt;&gt;&gt; bytes_store = dict(</span>
-<span class="sd">        ...     a=b&#39;a&#39;,</span>
-<span class="sd">        ...     b=b&#39;b&#39;,</span>
-<span class="sd">        ...     c=b&#39;c&#39;,</span>
+<span class="sd">        ...     a=b'a',</span>
+<span class="sd">        ...     b=b'b',</span>
+<span class="sd">        ...     c=b'c',</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; metadata_store = dict(</span>
 <span class="sd">        ...     b=dict(x=2),</span>
@@ -360,8 +360,8 @@
 <span class="sd">        We can create a fan-out reader from these stores, using args:</span>
 
 <span class="sd">        &gt;&gt;&gt; reader = FanoutReader.from_variadics(bytes_store, metadata_store)</span>
-<span class="sd">        &gt;&gt;&gt; reader[&#39;b&#39;]</span>
-<span class="sd">        {0: b&#39;b&#39;, 1: {&#39;x&#39;: 2}}</span>
+<span class="sd">        &gt;&gt;&gt; reader['b']</span>
+<span class="sd">        {0: b'b', 1: {'x': 2}}</span>
 
 <span class="sd">        The reader returns a dict with the values from each store, keyed by the index of</span>
 <span class="sd">        the store in the `args` tuple.</span>
@@ -372,20 +372,20 @@
 <span class="sd">        ...     bytes_store=bytes_store,</span>
 <span class="sd">        ...     metadata_store=metadata_store</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; reader[&#39;b&#39;]</span>
-<span class="sd">        {&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
+<span class="sd">        &gt;&gt;&gt; reader['b']</span>
+<span class="sd">        {'bytes_store': b'b', 'metadata_store': {'x': 2}}</span>
 
 <span class="sd">        This way, the returned value is keyed by the name of the store.</span>
 
 <span class="sd">        We can also mix args and kwargs:</span>
 
 <span class="sd">        &gt;&gt;&gt; reader = FanoutReader.from_variadics(bytes_store, metadata_store=metadata_store)</span>
-<span class="sd">        &gt;&gt;&gt; reader[&#39;b&#39;]</span>
-<span class="sd">        {0: b&#39;b&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 2}}</span>
+<span class="sd">        &gt;&gt;&gt; reader['b']</span>
+<span class="sd">        {0: b'b', 'metadata_store': {'x': 2}}</span>
 
 <span class="sd">        Note that the order of the stores is determined by the order of the args and</span>
 <span class="sd">        kwargs.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">extract_init_kwargs</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">cls_sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
@@ -431,7 +431,7 @@
 <div class="viewcode-block" id="FanoutPersister">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FanoutPersister">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FanoutPersister</span><span class="p">(</span><span class="n">FanoutReader</span><span class="p">,</span> <span class="n">KvPersister</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A fanout persister is a fanout reader that can also set and delete items.</span>
 
 <span class="sd">    param stores: A mapping of store keys to stores.</span>
@@ -443,7 +443,7 @@
 <span class="sd">    param ignore_non_existing_store_keys: If True, ignore store keys from the value that</span>
 <span class="sd">        are not in the persister. If False, a ValueError is raised.</span>
 
-<span class="sd">    Let&#39;s create a persister from in-memory stores:</span>
+<span class="sd">    Let's create a persister from in-memory stores:</span>
 
 <span class="sd">    &gt;&gt;&gt; bytes_store = dict()</span>
 <span class="sd">    &gt;&gt;&gt; metadata_store = dict()</span>
@@ -453,21 +453,21 @@
 
 <span class="sd">    The persister sets the values in each store, based on the store key in the value dict.</span>
 
-<span class="sd">    &gt;&gt;&gt; persister[&#39;a&#39;] = dict(bytes_store=b&#39;a&#39;, metadata_store=dict(x=1))</span>
-<span class="sd">    &gt;&gt;&gt; persister[&#39;a&#39;]</span>
-<span class="sd">    {&#39;bytes_store&#39;: b&#39;a&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 1}}</span>
+<span class="sd">    &gt;&gt;&gt; persister['a'] = dict(bytes_store=b'a', metadata_store=dict(x=1))</span>
+<span class="sd">    &gt;&gt;&gt; persister['a']</span>
+<span class="sd">    {'bytes_store': b'a', 'metadata_store': {'x': 1}}</span>
 
 <span class="sd">    By default, not all stores must be set when setting a value:</span>
 
-<span class="sd">    &gt;&gt;&gt; persister[&#39;b&#39;] = dict(bytes_store=b&#39;b&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; persister[&#39;b&#39;]</span>
-<span class="sd">    {&#39;bytes_store&#39;: b&#39;b&#39;, &#39;metadata_store&#39;: None}</span>
+<span class="sd">    &gt;&gt;&gt; persister['b'] = dict(bytes_store=b'b')</span>
+<span class="sd">    &gt;&gt;&gt; persister['b']</span>
+<span class="sd">    {'bytes_store': b'b', 'metadata_store': None}</span>
 
 <span class="sd">    This allow to update a subset of the stores whithout having to set all the stores.</span>
 
-<span class="sd">    &gt;&gt;&gt; persister[&#39;a&#39;] = dict(bytes_store=b&#39;A&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; persister[&#39;a&#39;]</span>
-<span class="sd">    {&#39;bytes_store&#39;: b&#39;A&#39;, &#39;metadata_store&#39;: {&#39;x&#39;: 1}}</span>
+<span class="sd">    &gt;&gt;&gt; persister['a'] = dict(bytes_store=b'A')</span>
+<span class="sd">    &gt;&gt;&gt; persister['a']</span>
+<span class="sd">    {'bytes_store': b'A', 'metadata_store': {'x': 1}}</span>
 
 <span class="sd">    This behavior can be changed by passing `need_to_set_all_stores=True`:</span>
 
@@ -475,20 +475,20 @@
 <span class="sd">    ...     stores=dict(bytes_store=dict(), metadata_store=dict()),</span>
 <span class="sd">    ...     need_to_set_all_stores=True,</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; persister_all_stores[&#39;a&#39;] = dict(bytes_store=b&#39;a&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; persister_all_stores['a'] = dict(bytes_store=b'a')</span>
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
-<span class="sd">    ValueError: All stores must be set when setting a value. Missing stores: {&#39;metadata_store&#39;}</span>
+<span class="sd">    ValueError: All stores must be set when setting a value. Missing stores: {'metadata_store'}</span>
 
 <span class="sd">    By default, if a store key from the value is not in the persister, a ValueError is</span>
 <span class="sd">    raised:</span>
 
-<span class="sd">    &gt;&gt;&gt; persister[&#39;a&#39;] = dict(</span>
-<span class="sd">    ...     bytes_store=b&#39;a&#39;, metadata_store=dict(y=1), other_store=&#39;some value&#39;</span>
+<span class="sd">    &gt;&gt;&gt; persister['a'] = dict(</span>
+<span class="sd">    ...     bytes_store=b'a', metadata_store=dict(y=1), other_store='some value'</span>
 <span class="sd">    ... )</span>
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
-<span class="sd">    ValueError: The value contains some invalid store keys: {&#39;other_store&#39;}</span>
+<span class="sd">    ValueError: The value contains some invalid store keys: {'other_store'}</span>
 
 <span class="sd">    This behavior can be changed by passing `ignore_non_existing_store_keys=True`:</span>
 
@@ -496,48 +496,48 @@
 <span class="sd">    ...     stores=dict(bytes_store=dict(), metadata_store=dict()),</span>
 <span class="sd">    ...     ignore_non_existing_store_keys=True,</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; persister_ignore_non_existing_store_keys[&#39;a&#39;] = dict(</span>
-<span class="sd">    ...     bytes_store=b&#39;a&#39;, metadata_store=dict(y=1), other_store=&#39;some value&#39;</span>
+<span class="sd">    &gt;&gt;&gt; persister_ignore_non_existing_store_keys['a'] = dict(</span>
+<span class="sd">    ...     bytes_store=b'a', metadata_store=dict(y=1), other_store='some value'</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; persister_ignore_non_existing_store_keys[&#39;a&#39;]</span>
-<span class="sd">    {&#39;bytes_store&#39;: b&#39;a&#39;, &#39;metadata_store&#39;: {&#39;y&#39;: 1}}</span>
+<span class="sd">    &gt;&gt;&gt; persister_ignore_non_existing_store_keys['a']</span>
+<span class="sd">    {'bytes_store': b'a', 'metadata_store': {'y': 1}}</span>
 
 <span class="sd">    Note that the value of the non-existing store key is ignored! So, be careful when</span>
 <span class="sd">    using this option, to avoid losing data.</span>
 
-<span class="sd">    Let&#39;s delete items now:</span>
+<span class="sd">    Let's delete items now:</span>
 
-<span class="sd">    &gt;&gt;&gt; del persister[&#39;a&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; &#39;a&#39; in persister</span>
+<span class="sd">    &gt;&gt;&gt; del persister['a']</span>
+<span class="sd">    &gt;&gt;&gt; 'a' in persister</span>
 <span class="sd">    False</span>
 
 <span class="sd">    The key as been deleted from all the stores:</span>
 
-<span class="sd">    &gt;&gt;&gt; &#39;a&#39; in bytes_store</span>
+<span class="sd">    &gt;&gt;&gt; 'a' in bytes_store</span>
 <span class="sd">    False</span>
-<span class="sd">    &gt;&gt;&gt; &#39;a&#39; in metadata_store</span>
+<span class="sd">    &gt;&gt;&gt; 'a' in metadata_store</span>
 <span class="sd">    False</span>
 
 <span class="sd">    As expected, if the key is not in any of the stores, a KeyError is raised:</span>
 
-<span class="sd">    &gt;&gt;&gt; del persister[&#39;z&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; del persister['z']</span>
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
-<span class="sd">    KeyError: &#39;z&#39;</span>
+<span class="sd">    KeyError: 'z'</span>
 
 <span class="sd">    However, if the key is in some of the stores, but not in others, the key is deleted</span>
 <span class="sd">    from the stores where it is present:</span>
 
-<span class="sd">    &gt;&gt;&gt; bytes_store=dict(a=b&#39;a&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; bytes_store=dict(a=b'a')</span>
 <span class="sd">    &gt;&gt;&gt; persister = FanoutPersister(</span>
 <span class="sd">    ...     stores=dict(bytes_store=bytes_store, metadata_store=dict()),</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; del persister[&#39;a&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; &#39;a&#39; in persister</span>
+<span class="sd">    &gt;&gt;&gt; del persister['a']</span>
+<span class="sd">    &gt;&gt;&gt; 'a' in persister</span>
 <span class="sd">    False</span>
-<span class="sd">    &gt;&gt;&gt; &#39;a&#39; in bytes_store</span>
+<span class="sd">    &gt;&gt;&gt; 'a' in bytes_store</span>
 <span class="sd">    False</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -561,14 +561,14 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_need_to_set_all_stores</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)):</span>
             <span class="n">missing_stores</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;All stores must be set when setting a value. Missing stores: </span><span class="si">{</span><span class="n">missing_stores</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"All stores must be set when setting a value. Missing stores: </span><span class="si">{</span><span class="n">missing_stores</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_non_existing_store_keys</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span>
             <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="n">invalid_store_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;The value contains some invalid store keys: </span><span class="si">{</span><span class="n">invalid_store_keys</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"The value contains some invalid store keys: </span><span class="si">{</span><span class="n">invalid_store_keys</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="k">for</span> <span class="n">store_key</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">store_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="p">:</span>
@@ -585,14 +585,14 @@
 
 
 
-<span class="n">NotFound</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;NotFound&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">object</span><span class="p">,),</span> <span class="p">{})()</span>
+<span class="n">NotFound</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="s2">"NotFound"</span><span class="p">,</span> <span class="p">(</span><span class="nb">object</span><span class="p">,),</span> <span class="p">{})()</span>
 
 
 <div class="viewcode-block" id="CascadedStores">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.CascadedStores">[docs]</a>
 <span class="nd">@wrap_kvs</span><span class="p">(</span><span class="n">value_encoder</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="o">.</span><span class="n">keys</span><span class="p">()})</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CascadedStores</span><span class="p">(</span><span class="n">FanoutPersister</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A MutableMapping interface to a collection of stores that will write a value in</span>
 <span class="sd">    all the stores it contains, read it from the first store it finds that has it, and</span>
 <span class="sd">    write it back to all the stores up to the store where it found it.</span>
@@ -600,11 +600,11 @@
 <span class="sd">    This is useful, for example, when you want to, say, write something to disk,</span>
 <span class="sd">    and possibly to a remote backup or shared store, but also keep that value in memory.</span>
 
-<span class="sd">    The name `CascadedStores` comes from &quot;Cascaded Caches&quot;, which is a common pattern in</span>
+<span class="sd">    The name `CascadedStores` comes from "Cascaded Caches", which is a common pattern in</span>
 <span class="sd">    caching systems</span>
 <span class="sd">    (e.g. https://philipwalton.com/articles/cascading-cache-invalidation/)</span>
 
-<span class="sd">    To demo this, let&#39;s create a couple of stores that print when they get a value:</span>
+<span class="sd">    To demo this, let's create a couple of stores that print when they get a value:</span>
 
 
 <span class="sd">    &gt;&gt;&gt; from collections import UserDict</span>
@@ -613,67 +613,67 @@
 <span class="sd">    ...        self.name = name</span>
 <span class="sd">    ...        super().__init__()</span>
 <span class="sd">    ...     def __getitem__(self, k):</span>
-<span class="sd">    ...         print(f&quot;Getting {k} from {self.name}&quot;)</span>
+<span class="sd">    ...         print(f"Getting {k} from {self.name}")</span>
 <span class="sd">    ...         return super().__getitem__(k)</span>
-<span class="sd">    &gt;&gt;&gt; cache = LoggedDict(&#39;cache&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; disk = LoggedDict(&#39;disk&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; remote = LoggedDict(&#39;remote&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; cache = LoggedDict('cache')</span>
+<span class="sd">    &gt;&gt;&gt; disk = LoggedDict('disk')</span>
+<span class="sd">    &gt;&gt;&gt; remote = LoggedDict('remote')</span>
 
 <span class="sd">    Now we can create a CascadedStores instance with these stores and write a</span>
 <span class="sd">    value to it:</span>
 
 <span class="sd">    &gt;&gt;&gt; stores = CascadedStores([cache, disk, remote])</span>
-<span class="sd">    &gt;&gt;&gt; stores[&#39;f&#39;] = 42</span>
+<span class="sd">    &gt;&gt;&gt; stores['f'] = 42</span>
 
-<span class="sd">    See that it&#39;s in both stores:</span>
+<span class="sd">    See that it's in both stores:</span>
 
-<span class="sd">    &gt;&gt;&gt; cache[&#39;f&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; cache['f']</span>
 <span class="sd">    Getting f from cache</span>
 <span class="sd">    42</span>
-<span class="sd">    &gt;&gt;&gt; disk[&#39;f&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; disk['f']</span>
 <span class="sd">    Getting f from disk</span>
 <span class="sd">    42</span>
-<span class="sd">    &gt;&gt;&gt; remote[&#39;f&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; remote['f']</span>
 <span class="sd">    Getting f from remote</span>
 <span class="sd">    42</span>
 
 <span class="sd">    See how it reads from the first store only, because it found the `f` key there:</span>
 
-<span class="sd">    &gt;&gt;&gt; stores[&#39;f&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; stores['f']</span>
 <span class="sd">    Getting f from cache</span>
 <span class="sd">    42</span>
 
-<span class="sd">    Let&#39;s write something in disk only:</span>
+<span class="sd">    Let's write something in disk only:</span>
 
-<span class="sd">    &gt;&gt;&gt; disk[&#39;g&#39;] = 43</span>
+<span class="sd">    &gt;&gt;&gt; disk['g'] = 43</span>
 
-<span class="sd">    Now if you ask for `g`, it won&#39;t find it in cache, but will find it in `disk`</span>
+<span class="sd">    Now if you ask for `g`, it won't find it in cache, but will find it in `disk`</span>
 <span class="sd">    and return it.</span>
 
-<span class="sd">    &gt;&gt;&gt; stores[&#39;g&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; stores['g']</span>
 <span class="sd">    Getting g from disk</span>
 <span class="sd">    43</span>
 
-<span class="sd">    Here&#39;s the thing though. Now, `g` is also in `cache`:</span>
+<span class="sd">    Here's the thing though. Now, `g` is also in `cache`:</span>
 
 <span class="sd">    &gt;&gt;&gt; cache</span>
-<span class="sd">    {&#39;f&#39;: 42, &#39;g&#39;: 43}</span>
+<span class="sd">    {'f': 42, 'g': 43}</span>
 
 <span class="sd">    But `remote` still only has `f`:</span>
 
 <span class="sd">    &gt;&gt;&gt; remote</span>
-<span class="sd">    {&#39;f&#39;: 42}</span>
+<span class="sd">    {'f': 42}</span>
 
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="c1"># Note: Need to overwrite FanoutPersister&#39;s getitem to not read values from all stores</span>
+    <span class="c1"># Note: Need to overwrite FanoutPersister's getitem to not read values from all stores</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the value of the first store for that key&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Returns the value of the first store for that key"""</span>
         <span class="k">for</span> <span class="n">store_ref</span><span class="p">,</span> <span class="n">store</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">store</span><span class="p">:</span>  <span class="c1"># Check existence first, without triggering __getitem__</span>
                 <span class="n">v</span> <span class="o">=</span> <span class="n">store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>  <span class="c1"># Now get the value (will trigger logging)</span>
-                <span class="c1"># value found, now let&#39;s write it to all the stores up to the store_ref</span>
+                <span class="c1"># value found, now let's write it to all the stores up to the store_ref</span>
                 <span class="k">for</span> <span class="n">_store_ref</span><span class="p">,</span> <span class="n">_store</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stores</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="k">if</span> <span class="n">_store_ref</span> <span class="o">!=</span> <span class="n">store_ref</span><span class="p">:</span>
                         <span class="n">_store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
@@ -688,7 +688,7 @@
 <div class="viewcode-block" id="MultiSource">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.MultiSource">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MultiSource</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A read-only Mapping that composes multiple sources, tried in order.</span>
+<span class="w">    </span><span class="sd">"""A read-only Mapping that composes multiple sources, tried in order.</span>
 
 <span class="sd">    On key lookup, sources are tried left-to-right until one has the key.</span>
 <span class="sd">    On iteration, keys are yielded from all sources (deduplicated, order-preserved).</span>
@@ -696,28 +696,28 @@
 <span class="sd">    This is useful as the ``source`` argument to :func:`dol.caching.mk_sourced_store`</span>
 <span class="sd">    when you need fallback across multiple read-only backends.</span>
 
-<span class="sd">    &gt;&gt;&gt; s1 = {&#39;a&#39;: 1, &#39;b&#39;: 2}</span>
-<span class="sd">    &gt;&gt;&gt; s2 = {&#39;b&#39;: 20, &#39;c&#39;: 3}</span>
+<span class="sd">    &gt;&gt;&gt; s1 = {'a': 1, 'b': 2}</span>
+<span class="sd">    &gt;&gt;&gt; s2 = {'b': 20, 'c': 3}</span>
 <span class="sd">    &gt;&gt;&gt; ms = MultiSource(s1, s2)</span>
-<span class="sd">    &gt;&gt;&gt; ms[&#39;a&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; ms['a']</span>
 <span class="sd">    1</span>
-<span class="sd">    &gt;&gt;&gt; ms[&#39;b&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; ms['b']</span>
 <span class="sd">    2</span>
-<span class="sd">    &gt;&gt;&gt; ms[&#39;c&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; ms['c']</span>
 <span class="sd">    3</span>
 <span class="sd">    &gt;&gt;&gt; sorted(ms)</span>
-<span class="sd">    [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="sd">    ['a', 'b', 'c']</span>
 <span class="sd">    &gt;&gt;&gt; len(ms)</span>
 <span class="sd">    3</span>
-<span class="sd">    &gt;&gt;&gt; &#39;c&#39; in ms</span>
+<span class="sd">    &gt;&gt;&gt; 'c' in ms</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; &#39;z&#39; in ms</span>
+<span class="sd">    &gt;&gt;&gt; 'z' in ms</span>
 <span class="sd">    False</span>
-<span class="sd">    &gt;&gt;&gt; ms[&#39;z&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; ms['z']</span>
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
-<span class="sd">    KeyError: &#39;z&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    KeyError: 'z'</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">sources</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sources</span> <span class="o">=</span> <span class="n">sources</span>
@@ -745,20 +745,20 @@
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span></div>
 
 
 
 <div class="viewcode-block" id="SequenceKvReader">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.SequenceKvReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SequenceKvReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A KvReader that sources itself in an iterable of elements from which keys and values</span>
 <span class="sd">    will be extracted and grouped by key.</span>
 
-<span class="sd">    &gt;&gt;&gt; docs = [{&#39;_id&#39;: 0, &#39;s&#39;: &#39;a&#39;, &#39;n&#39;: 1},</span>
-<span class="sd">    ...  {&#39;_id&#39;: 1, &#39;s&#39;: &#39;b&#39;, &#39;n&#39;: 2},</span>
-<span class="sd">    ...  {&#39;_id&#39;: 2, &#39;s&#39;: &#39;b&#39;, &#39;n&#39;: 3}]</span>
+<span class="sd">    &gt;&gt;&gt; docs = [{'_id': 0, 's': 'a', 'n': 1},</span>
+<span class="sd">    ...  {'_id': 1, 's': 'b', 'n': 2},</span>
+<span class="sd">    ...  {'_id': 2, 's': 'b', 'n': 3}]</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 
 <span class="sd">    Out of the box, SequenceKvReader gives you enumerated integer indices as keys,</span>
@@ -768,41 +768,41 @@
 <span class="sd">    &gt;&gt;&gt; list(s)</span>
 <span class="sd">    [0, 1, 2]</span>
 <span class="sd">    &gt;&gt;&gt; s[1]</span>
-<span class="sd">    {&#39;_id&#39;: 1, &#39;s&#39;: &#39;b&#39;, &#39;n&#39;: 2}</span>
-<span class="sd">    &gt;&gt;&gt; assert s.get(&#39;not_a_key&#39;) is None</span>
+<span class="sd">    {'_id': 1, 's': 'b', 'n': 2}</span>
+<span class="sd">    &gt;&gt;&gt; assert s.get('not_a_key') is None</span>
 
 <span class="sd">    You can make it more interesting by specifying a val function to compute the vals</span>
 <span class="sd">    from the sequence elements</span>
 
-<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, val=lambda x: (x[&#39;_id&#39;] + x[&#39;n&#39;]) * x[&#39;s&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, val=lambda x: (x['_id'] + x['n']) * x['s'])</span>
 <span class="sd">    &gt;&gt;&gt; assert list(s) == [0, 1, 2]  # as before</span>
 <span class="sd">    &gt;&gt;&gt; list(s.values())</span>
-<span class="sd">    [&#39;a&#39;, &#39;bbb&#39;, &#39;bbbbb&#39;]</span>
+<span class="sd">    ['a', 'bbb', 'bbbbb']</span>
 
 <span class="sd">    But where it becomes more useful is when you specify a key as well.</span>
 <span class="sd">    SequenceKvReader will then compute the keys with that function, group them,</span>
 <span class="sd">    and return as the value, the list of sequence elements that match that key.</span>
 
 <span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs,</span>
-<span class="sd">    ...         key=lambda x: x[&#39;s&#39;],</span>
-<span class="sd">    ...         val=lambda x: {k: x[k] for k in x.keys() - {&#39;s&#39;}})</span>
-<span class="sd">    &gt;&gt;&gt; assert list(s) == [&#39;a&#39;, &#39;b&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;] == [{&#39;_id&#39;: 0, &#39;n&#39;: 1}]</span>
-<span class="sd">    &gt;&gt;&gt; assert s[&#39;b&#39;] == [{&#39;_id&#39;: 1, &#39;n&#39;: 2}, {&#39;_id&#39;: 2, &#39;n&#39;: 3}]</span>
+<span class="sd">    ...         key=lambda x: x['s'],</span>
+<span class="sd">    ...         val=lambda x: {k: x[k] for k in x.keys() - {'s'}})</span>
+<span class="sd">    &gt;&gt;&gt; assert list(s) == ['a', 'b']</span>
+<span class="sd">    &gt;&gt;&gt; assert s['a'] == [{'_id': 0, 'n': 1}]</span>
+<span class="sd">    &gt;&gt;&gt; assert s['b'] == [{'_id': 1, 'n': 2}, {'_id': 2, 'n': 3}]</span>
 
 <span class="sd">    The cannonical form of key and val is a function, but if you specify a str, int,</span>
 <span class="sd">    or iterable thereof,</span>
 <span class="sd">    SequenceKvReader will make an itemgetter function from it, for your convenience.</span>
 
-<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=&#39;_id&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key='_id')</span>
 <span class="sd">    &gt;&gt;&gt; assert list(s) == [0, 1, 2]</span>
-<span class="sd">    &gt;&gt;&gt; assert s[1] == [{&#39;_id&#39;: 1, &#39;s&#39;: &#39;b&#39;, &#39;n&#39;: 2}]</span>
+<span class="sd">    &gt;&gt;&gt; assert s[1] == [{'_id': 1, 's': 'b', 'n': 2}]</span>
 
-<span class="sd">    The ``val_postproc`` argument is ``list`` by default, but what if we don&#39;t specify</span>
+<span class="sd">    The ``val_postproc`` argument is ``list`` by default, but what if we don't specify</span>
 <span class="sd">    any?</span>
-<span class="sd">    Well then you&#39;ll get an unconsumed iterable of matches</span>
+<span class="sd">    Well then you'll get an unconsumed iterable of matches</span>
 
-<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=&#39;_id&#39;, val_postproc=None)</span>
+<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key='_id', val_postproc=None)</span>
 <span class="sd">    &gt;&gt;&gt; assert isinstance(s[1], Iterable)</span>
 
 <span class="sd">    The ``val_postproc`` argument specifies what to apply to this iterable of matches.</span>
@@ -810,47 +810,47 @@
 <span class="sd">    element:</span>
 
 
-<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=&#39;_id&#39;, val_postproc=next)</span>
+<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key='_id', val_postproc=next)</span>
 <span class="sd">    &gt;&gt;&gt; assert list(s) == [0, 1, 2]</span>
-<span class="sd">    &gt;&gt;&gt; assert s[1] == {&#39;_id&#39;: 1, &#39;s&#39;: &#39;b&#39;, &#39;n&#39;: 2}</span>
+<span class="sd">    &gt;&gt;&gt; assert s[1] == {'_id': 1, 's': 'b', 'n': 2}</span>
 
-<span class="sd">    We got the whole dict there. What if we just want we didn&#39;t want the _id, which is</span>
+<span class="sd">    We got the whole dict there. What if we just want we didn't want the _id, which is</span>
 <span class="sd">    used by the key, in our val?</span>
 
 <span class="sd">    &gt;&gt;&gt; from functools import partial</span>
-<span class="sd">    &gt;&gt;&gt; all_but_s = partial(exclusive_subdict, exclude=[&#39;s&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=&#39;_id&#39;, val=all_but_s, val_postproc=next)</span>
+<span class="sd">    &gt;&gt;&gt; all_but_s = partial(exclusive_subdict, exclude=['s'])</span>
+<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key='_id', val=all_but_s, val_postproc=next)</span>
 <span class="sd">    &gt;&gt;&gt; assert list(s) == [0, 1, 2]</span>
-<span class="sd">    &gt;&gt;&gt; assert s[1] == {&#39;_id&#39;: 1, &#39;n&#39;: 2}</span>
+<span class="sd">    &gt;&gt;&gt; assert s[1] == {'_id': 1, 'n': 2}</span>
 
-<span class="sd">    Suppose we want to have the pair of (&#39;_id&#39;, &#39;n&#39;) values as a key, and only &#39;s&#39;</span>
+<span class="sd">    Suppose we want to have the pair of ('_id', 'n') values as a key, and only 's'</span>
 <span class="sd">    as a value...</span>
 
-<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=(&#39;_id&#39;, &#39;n&#39;), val=&#39;s&#39;, val_postproc=next)</span>
+<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=('_id', 'n'), val='s', val_postproc=next)</span>
 <span class="sd">    &gt;&gt;&gt; assert list(s) == [(0, 1), (1, 2), (2, 3)]</span>
-<span class="sd">    &gt;&gt;&gt; assert s[1, 2] == &#39;b&#39;</span>
+<span class="sd">    &gt;&gt;&gt; assert s[1, 2] == 'b'</span>
 
 <span class="sd">    But remember that using ``val_postproc=next`` will only give you the first match</span>
 <span class="sd">    as a val.</span>
 
-<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=&#39;s&#39;, val=all_but_s, val_postproc=next)</span>
-<span class="sd">    &gt;&gt;&gt; assert list(s) == [&#39;a&#39;, &#39;b&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;] == {&#39;_id&#39;: 0, &#39;n&#39;: 1}</span>
-<span class="sd">    &gt;&gt;&gt; assert s[&#39;b&#39;] == {&#39;_id&#39;: 1, &#39;n&#39;: 2}   # note that only the first match is returned.</span>
+<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key='s', val=all_but_s, val_postproc=next)</span>
+<span class="sd">    &gt;&gt;&gt; assert list(s) == ['a', 'b']</span>
+<span class="sd">    &gt;&gt;&gt; assert s['a'] == {'_id': 0, 'n': 1}</span>
+<span class="sd">    &gt;&gt;&gt; assert s['b'] == {'_id': 1, 'n': 2}   # note that only the first match is returned.</span>
 
 <span class="sd">    If you do want to only grab the first match, but want to additionally assert</span>
 <span class="sd">    that there is no more than one,</span>
 <span class="sd">    you can specify this with ``val_postproc=unique_element``:</span>
 
-<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key=&#39;s&#39;, val=all_but_s, val_postproc=unique_element)</span>
-<span class="sd">    &gt;&gt;&gt; assert s[&#39;a&#39;] == {&#39;_id&#39;: 0, &#39;n&#39;: 1}</span>
-<span class="sd">    &gt;&gt;&gt; # The following should raise an exception since there&#39;s more than one match</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;b&#39;]  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; s = SequenceKvReader(docs, key='s', val=all_but_s, val_postproc=unique_element)</span>
+<span class="sd">    &gt;&gt;&gt; assert s['a'] == {'_id': 0, 'n': 1}</span>
+<span class="sd">    &gt;&gt;&gt; # The following should raise an exception since there's more than one match</span>
+<span class="sd">    &gt;&gt;&gt; s['b']  # doctest: +SKIP</span>
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">      ...</span>
 <span class="sd">    sources.NotUnique: iterator had more than one element</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -859,7 +859,7 @@
         <span class="n">val</span><span class="p">:</span> <span class="n">KvSpec</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">val_postproc</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a SequenceKvReader instance,</span>
+<span class="w">        </span><span class="sd">"""Make a SequenceKvReader instance,</span>
 
 <span class="sd">        :param sequence: The iterable to source the keys and values from.</span>
 <span class="sd">        :param key: Specification of how to extract a key from an iterable element.</span>
@@ -873,7 +873,7 @@
 <span class="sd">            vals matching a key.</span>
 <span class="sd">            Another popular choice is ``next`` which will have the effect of values</span>
 <span class="sd">            being the first matched to the key</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="n">sequence</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">_kv_spec_to_func</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
@@ -895,7 +895,7 @@
         <span class="k">for</span> <span class="n">kk</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kv_items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">kk</span> <span class="o">==</span> <span class="n">k</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">vv</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key not found: </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Key not found: </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield from</span> <span class="nb">map</span><span class="p">(</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">kv_items</span><span class="p">())</span></div>
@@ -906,8 +906,8 @@
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.CachedKeysSequenceKvReader">[docs]</a>
 <span class="nd">@cached_keys</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CachedKeysSequenceKvReader</span><span class="p">(</span><span class="n">SequenceKvReader</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;SequenceKvReader but with keys cached. Use this one if you will perform multiple</span>
-<span class="sd">    accesses to only some of the keys of the store&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">"""SequenceKvReader but with keys cached. Use this one if you will perform multiple</span>
+<span class="sd">    accesses to only some of the keys of the store"""</span></div>
 
 
 
@@ -915,17 +915,17 @@
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.CachedSequenceKvReader">[docs]</a>
 <span class="nd">@mk_cached_store</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CachedSequenceKvReader</span><span class="p">(</span><span class="n">SequenceKvReader</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;SequenceKvReader but with the whole mapping cached as a dict. Use this one if</span>
-<span class="sd">    you will perform multiple accesses to the store&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">"""SequenceKvReader but with the whole mapping cached as a dict. Use this one if</span>
+<span class="sd">    you will perform multiple accesses to the store"""</span></div>
 
 
 
 <span class="c1"># TODO: Basically same could be acheived with</span>
-<span class="c1">#  wrap_kvs(obj_of_data=methodcaller(&#39;__call__&#39;))</span>
+<span class="c1">#  wrap_kvs(obj_of_data=methodcaller('__call__'))</span>
 <div class="viewcode-block" id="FuncReader">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.FuncReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FuncReader</span><span class="p">(</span><span class="n">KvReader</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reader that seeds itself from a data fetching function list</span>
+<span class="w">    </span><span class="sd">"""Reader that seeds itself from a data fetching function list</span>
 <span class="sd">    Uses the function list names as the keys, and their returned value as the values.</span>
 
 <span class="sd">    For example: You have a list of urls that contain the data you want to have access</span>
@@ -936,29 +936,29 @@
 <span class="sd">    transform from the raw source, but the opposite can be impossible).</span>
 
 <span class="sd">    &gt;&gt;&gt; def foo():</span>
-<span class="sd">    ...     return &#39;bar&#39;</span>
+<span class="sd">    ...     return 'bar'</span>
 <span class="sd">    &gt;&gt;&gt; def pi():</span>
 <span class="sd">    ...     return 3.14159</span>
 <span class="sd">    &gt;&gt;&gt; s = FuncReader([foo, pi])</span>
 <span class="sd">    &gt;&gt;&gt; list(s)</span>
-<span class="sd">    [&#39;foo&#39;, &#39;pi&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;foo&#39;]</span>
-<span class="sd">    &#39;bar&#39;</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;pi&#39;]</span>
+<span class="sd">    ['foo', 'pi']</span>
+<span class="sd">    &gt;&gt;&gt; s['foo']</span>
+<span class="sd">    'bar'</span>
+<span class="sd">    &gt;&gt;&gt; s['pi']</span>
 <span class="sd">    3.14159</span>
 
 <span class="sd">    You might want to give your own names to the functions.</span>
-<span class="sd">    You might even have to (because the callable you&#39;re using doesn&#39;t have a `__name__`).</span>
+<span class="sd">    You might even have to (because the callable you're using doesn't have a `__name__`).</span>
 <span class="sd">    In that case, you can specify a ``{name: func, ...}`` dict instead of a simple</span>
 <span class="sd">    iterable.</span>
 
-<span class="sd">    &gt;&gt;&gt; s = FuncReader({&#39;FU&#39;: foo, &#39;Pie&#39;: pi})</span>
+<span class="sd">    &gt;&gt;&gt; s = FuncReader({'FU': foo, 'Pie': pi})</span>
 <span class="sd">    &gt;&gt;&gt; list(s)</span>
-<span class="sd">    [&#39;FU&#39;, &#39;Pie&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; s[&#39;FU&#39;]</span>
-<span class="sd">    &#39;bar&#39;</span>
+<span class="sd">    ['FU', 'Pie']</span>
+<span class="sd">    &gt;&gt;&gt; s['FU']</span>
+<span class="sd">    'bar'</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">funcs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Callable</span><span class="p">]):</span>
         <span class="c1"># TODO: assert no free arguments (arguments are allowed but must all have</span>
@@ -999,24 +999,24 @@
 
 <span class="n">psep</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
 
-<span class="n">ddir</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)]</span>
+<span class="n">ddir</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">not_underscore_prefixed</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_path_to_module_str</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">root_path</span><span class="p">):</span>
-    <span class="k">assert</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.py&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".py"</span><span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">root_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">psep</span><span class="p">):</span>
         <span class="n">root_path</span> <span class="o">=</span> <span class="n">root_path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">root_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">root_path</span><span class="p">)</span>
     <span class="n">len_root</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">root_path</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="n">path_parts</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="n">len_root</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">psep</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">path_parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;__init__.py&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">path_parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"__init__.py"</span><span class="p">:</span>
         <span class="n">path_parts</span> <span class="o">=</span> <span class="n">path_parts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">return</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_parts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"."</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_parts</span><span class="p">)</span>
 
 
 <span class="c1"># class SourceReader(KvReader):</span>
@@ -1031,7 +1031,7 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_of_key</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_of_key</span> <span class="o">=</span> <span class="n">data_of_key</span>
         <span class="k">if</span> <span class="n">obj_of_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj_of_data</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;serializer must be None or a callable&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"serializer must be None or a callable"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obj_of_data</span> <span class="o">=</span> <span class="n">obj_of_data</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
@@ -1048,20 +1048,20 @@
 <div class="viewcode-block" id="ObjReader">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.ObjReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ObjReader</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A reader that uses a specified function to get the contents for a given key.</span>
 
 <span class="sd">    &gt;&gt;&gt; # define a contents_of_key that reads stuff from a dict</span>
-<span class="sd">    &gt;&gt;&gt; data = {&#39;foo&#39;: &#39;bar&#39;, 42: &quot;everything&quot;}</span>
+<span class="sd">    &gt;&gt;&gt; data = {'foo': 'bar', 42: "everything"}</span>
 <span class="sd">    &gt;&gt;&gt; def read_dict(k):</span>
 <span class="sd">    ...     return data[k]</span>
 <span class="sd">    &gt;&gt;&gt; pr = ObjReader(_obj_of_key=read_dict)</span>
-<span class="sd">    &gt;&gt;&gt; pr[&#39;foo&#39;]</span>
-<span class="sd">    &#39;bar&#39;</span>
+<span class="sd">    &gt;&gt;&gt; pr['foo']</span>
+<span class="sd">    'bar'</span>
 <span class="sd">    &gt;&gt;&gt; pr[42]</span>
-<span class="sd">    &#39;everything&#39;</span>
+<span class="sd">    'everything'</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; # define contents_of_key that reads stuff from a file given it&#39;s path</span>
+<span class="sd">    &gt;&gt;&gt; # define contents_of_key that reads stuff from a file given it's path</span>
 <span class="sd">    &gt;&gt;&gt; def read_file(path):</span>
 <span class="sd">    ...     with open(path) as fp:</span>
 <span class="sd">    ...         return fp.read()</span>
@@ -1071,10 +1071,10 @@
 <span class="sd">    ``file_where_this_code_is`` should be the file where this doctest is written,</span>
 <span class="sd">    therefore should contain what I just said:</span>
 
-<span class="sd">    &gt;&gt;&gt; &#39;therefore should contain what I just said&#39; in pr[file_where_this_code_is]</span>
+<span class="sd">    &gt;&gt;&gt; 'therefore should contain what I just said' in pr[file_where_this_code_is]</span>
 <span class="sd">    True</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_obj_of_key</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_obj_of_key</span> <span class="o">=</span> <span class="n">_obj_of_key</span>
@@ -1090,7 +1090,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                <span class="s2">&quot;KeyError in </span><span class="si">{}</span><span class="s2"> when trying to __getitem__(</span><span class="si">{}</span><span class="s2">): </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="s2">"KeyError in </span><span class="si">{}</span><span class="s2"> when trying to __getitem__(</span><span class="si">{}</span><span class="s2">): </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">e</span>
                 <span class="p">)</span>
             <span class="p">)</span></div>
@@ -1098,12 +1098,12 @@
 
 
 <span class="c1"># Pattern: Recursive navigation</span>
-<span class="c1"># Note: Moved dev to independent package called &quot;guide&quot;</span>
+<span class="c1"># Note: Moved dev to independent package called "guide"</span>
 <div class="viewcode-block" id="Attrs">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.Attrs">[docs]</a>
-<span class="nd">@cached_keys</span><span class="p">(</span><span class="n">keys_cache</span><span class="o">=</span><span class="nb">set</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Attrs&quot;</span><span class="p">)</span>
+<span class="nd">@cached_keys</span><span class="p">(</span><span class="n">keys_cache</span><span class="o">=</span><span class="nb">set</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Attrs"</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Attrs</span><span class="p">(</span><span class="n">ObjReader</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A simple recursive KvReader for the attributes of a python object.</span>
+<span class="w">    </span><span class="sd">"""A simple recursive KvReader for the attributes of a python object.</span>
 <span class="sd">    Keys are attr names, values are Attrs(attr_val) instances.</span>
 
 <span class="sd">    Note: A more significant version of Attrs, along with many tools based on it,</span>
@@ -1111,7 +1111,7 @@
 
 
 <span class="sd">        pip install guide</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">key_filt</span><span class="o">=</span><span class="n">not_underscore_prefixed</span><span class="p">,</span> <span class="n">getattrs</span><span class="o">=</span><span class="nb">dir</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
@@ -1129,7 +1129,7 @@
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">name</span> <span class="o">=</span> <span class="n">_path_to_module_str</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">root_path</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;fake.module.name&quot;</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="s2">"fake.module.name"</span>
         <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
         <span class="n">foo</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
@@ -1142,7 +1142,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_filt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getattrs</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_filt</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_filt</span><span class="si">}</span><span class="s2">)"</span></div>
 
 
 
@@ -1152,17 +1152,17 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_first_identifier</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\w+&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">"\w+"</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">""</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_dflt_object_namer</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dflt_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;name_not_found&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_dflt_object_namer</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dflt_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"name_not_found"</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span>
-        <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="ow">or</span> <span class="n">_extract_first_identifier</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;__doc__&quot;</span><span class="p">))</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"__name__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">_extract_first_identifier</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"__doc__"</span><span class="p">))</span>
         <span class="ow">or</span> <span class="n">dflt_name</span>
     <span class="p">)</span>
 
@@ -1170,7 +1170,7 @@
 <div class="viewcode-block" id="AttrContainer">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.AttrContainer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AttrContainer</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience class to hold Key-Val pairs as attribute-val pairs, with all the</span>
+<span class="w">    </span><span class="sd">"""Convenience class to hold Key-Val pairs as attribute-val pairs, with all the</span>
 <span class="sd">    magic methods of mappings.</span>
 
 <span class="sd">    On the other hand, you will not get the usuall non-dunders (non magic methods) of</span>
@@ -1178,44 +1178,44 @@
 <span class="sd">    the container has, and not any of the non-dunder methods like ``get``, ``items``,</span>
 <span class="sd">    etc.</span>
 
-<span class="sd">    &gt;&gt;&gt; da = AttrContainer(foo=&#39;bar&#39;, life=42)</span>
+<span class="sd">    &gt;&gt;&gt; da = AttrContainer(foo='bar', life=42)</span>
 <span class="sd">    &gt;&gt;&gt; da.foo</span>
-<span class="sd">    &#39;bar&#39;</span>
-<span class="sd">    &gt;&gt;&gt; da[&#39;life&#39;]</span>
+<span class="sd">    'bar'</span>
+<span class="sd">    &gt;&gt;&gt; da['life']</span>
 <span class="sd">    42</span>
-<span class="sd">    &gt;&gt;&gt; da.true = &#39;love&#39;</span>
+<span class="sd">    &gt;&gt;&gt; da.true = 'love'</span>
 <span class="sd">    &gt;&gt;&gt; len(da)  # count the number of fields</span>
 <span class="sd">    3</span>
-<span class="sd">    &gt;&gt;&gt; da[&#39;friends&#39;] = &#39;forever&#39;  # write as dict</span>
+<span class="sd">    &gt;&gt;&gt; da['friends'] = 'forever'  # write as dict</span>
 <span class="sd">    &gt;&gt;&gt; da.friends  # read as attribute</span>
-<span class="sd">    &#39;forever&#39;</span>
+<span class="sd">    'forever'</span>
 <span class="sd">    &gt;&gt;&gt; list(da)  # list fields (i.e. keys i.e. attributes)</span>
-<span class="sd">    [&#39;foo&#39;, &#39;life&#39;, &#39;true&#39;, &#39;friends&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; &#39;life&#39; in da  # check containement</span>
+<span class="sd">    ['foo', 'life', 'true', 'friends']</span>
+<span class="sd">    &gt;&gt;&gt; 'life' in da  # check containement</span>
 <span class="sd">    True</span>
 
-<span class="sd">    &gt;&gt;&gt; del da[&#39;friends&#39;]  # delete as dict</span>
+<span class="sd">    &gt;&gt;&gt; del da['friends']  # delete as dict</span>
 <span class="sd">    &gt;&gt;&gt; del da.foo # delete as attribute</span>
 <span class="sd">    &gt;&gt;&gt; list(da)</span>
-<span class="sd">    [&#39;life&#39;, &#39;true&#39;]</span>
+<span class="sd">    ['life', 'true']</span>
 <span class="sd">    &gt;&gt;&gt; da._source  # the hidden Mapping (here dict) that is wrapped</span>
-<span class="sd">    {&#39;life&#39;: 42, &#39;true&#39;: &#39;love&#39;}</span>
+<span class="sd">    {'life': 42, 'true': 'love'}</span>
 
-<span class="sd">    If you don&#39;t specify a name for some objects, ``AttrContainer`` will use the</span>
+<span class="sd">    If you don't specify a name for some objects, ``AttrContainer`` will use the</span>
 <span class="sd">    ``__name__`` attribute of the objects:</span>
 
-<span class="sd">    &gt;&gt;&gt; d = AttrContainer(map, tuple, obj=&#39;objects&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; d = AttrContainer(map, tuple, obj='objects')</span>
 <span class="sd">    &gt;&gt;&gt; list(d)</span>
-<span class="sd">    [&#39;map&#39;, &#39;tuple&#39;, &#39;obj&#39;]</span>
+<span class="sd">    ['map', 'tuple', 'obj']</span>
 
 <span class="sd">    You can also specify a different way of auto naming the objects:</span>
 
-<span class="sd">    &gt;&gt;&gt; d = AttrContainer(&#39;an&#39;, &#39;example&#39;, _object_namer=lambda x: f&quot;_{len(x)}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; d = AttrContainer('an', 'example', _object_namer=lambda x: f"_{len(x)}")</span>
 <span class="sd">    &gt;&gt;&gt; {k: getattr(d, k) for k in d}</span>
-<span class="sd">    {&#39;_2&#39;: &#39;an&#39;, &#39;_7&#39;: &#39;example&#39;}</span>
+<span class="sd">    {'_2': 'an', '_7': 'example'}</span>
 
 <span class="sd">    .. seealso:: Objects in ``py2store.utils.attr_dict`` module</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">_source</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -1230,7 +1230,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_validate_named_objects</span><span class="p">(</span><span class="n">auto_named_objects</span><span class="p">,</span> <span class="n">named_objects</span><span class="p">)</span>
             <span class="n">named_objects</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">auto_named_objects</span><span class="p">,</span> <span class="o">**</span><span class="n">named_objects</span><span class="p">)</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s2">&quot;_source&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s2">"_source"</span><span class="p">,</span> <span class="p">{})</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">named_objects</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 
@@ -1238,14 +1238,14 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_named_objects</span><span class="p">(</span><span class="n">auto_named_objects</span><span class="p">,</span> <span class="n">named_objects</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">,</span> <span class="n">auto_named_objects</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;All names produced by _object_namer should be valid python identifiers:&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">auto_named_objects</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="s2">"All names produced by _object_namer should be valid python identifiers:"</span>
+                <span class="sa">f</span><span class="s2">" </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">auto_named_objects</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">x</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">())</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="n">clashing_names</span> <span class="o">=</span> <span class="n">auto_named_objects</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">named_objects</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">clashing_names</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Some auto named objects clashed with named ones: &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">clashing_names</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="s2">"Some auto named objects clashed with named ones: "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">clashing_names</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
@@ -1283,44 +1283,44 @@
 <div class="viewcode-block" id="AttrDict">
 <a class="viewcode-back" href="../../module_docs/dol/sources.html#dol.sources.AttrDict">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AttrDict</span><span class="p">(</span><span class="n">AttrContainer</span><span class="p">,</span> <span class="n">KvPersister</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience class to hold Key-Val pairs with both a dict-like and struct-like</span>
+<span class="w">    </span><span class="sd">"""Convenience class to hold Key-Val pairs with both a dict-like and struct-like</span>
 <span class="sd">    interface.</span>
 
 <span class="sd">    The dict-like interface has just the basic get/set/del/iter/len</span>
-<span class="sd">    (all &quot;dunders&quot;: none visible as methods). There is no get, update, etc.</span>
+<span class="sd">    (all "dunders": none visible as methods). There is no get, update, etc.</span>
 <span class="sd">    This is on purpose, so that the only visible attributes</span>
 <span class="sd">    (those you get by tab-completion for instance) are the those you injected.</span>
 
-<span class="sd">    &gt;&gt;&gt; da = AttrDict(foo=&#39;bar&#39;, life=42)</span>
+<span class="sd">    &gt;&gt;&gt; da = AttrDict(foo='bar', life=42)</span>
 
-<span class="sd">    You get the &quot;keys as attributes&quot; that you get with ``AttrContainer``:</span>
+<span class="sd">    You get the "keys as attributes" that you get with ``AttrContainer``:</span>
 
 <span class="sd">    &gt;&gt;&gt; da.foo</span>
-<span class="sd">    &#39;bar&#39;</span>
+<span class="sd">    'bar'</span>
 
 <span class="sd">    But additionally, you get the extra ``Mapping`` methods:</span>
 
 <span class="sd">    &gt;&gt;&gt; list(da.keys())</span>
-<span class="sd">    [&#39;foo&#39;, &#39;life&#39;]</span>
+<span class="sd">    ['foo', 'life']</span>
 <span class="sd">    &gt;&gt;&gt; list(da.values())</span>
-<span class="sd">    [&#39;bar&#39;, 42]</span>
-<span class="sd">    &gt;&gt;&gt; da.get(&#39;foo&#39;)</span>
-<span class="sd">    &#39;bar&#39;</span>
-<span class="sd">    &gt;&gt;&gt; da.get(&#39;not_a_key&#39;, &#39;default&#39;)</span>
-<span class="sd">    &#39;default&#39;</span>
+<span class="sd">    ['bar', 42]</span>
+<span class="sd">    &gt;&gt;&gt; da.get('foo')</span>
+<span class="sd">    'bar'</span>
+<span class="sd">    &gt;&gt;&gt; da.get('not_a_key', 'default')</span>
+<span class="sd">    'default'</span>
 
 <span class="sd">    You can assign through key or attribute assignment:</span>
 
-<span class="sd">    &gt;&gt;&gt; da[&#39;true&#39;] = &#39;love&#39;</span>
-<span class="sd">    &gt;&gt;&gt; da.friends = &#39;forever&#39;</span>
+<span class="sd">    &gt;&gt;&gt; da['true'] = 'love'</span>
+<span class="sd">    &gt;&gt;&gt; da.friends = 'forever'</span>
 <span class="sd">    &gt;&gt;&gt; list(da.items())</span>
-<span class="sd">    [(&#39;foo&#39;, &#39;bar&#39;), (&#39;life&#39;, 42), (&#39;true&#39;, &#39;love&#39;), (&#39;friends&#39;, &#39;forever&#39;)]</span>
+<span class="sd">    [('foo', 'bar'), ('life', 42), ('true', 'love'), ('friends', 'forever')]</span>
 
 
 <span class="sd">    etc.</span>
 
 <span class="sd">    .. seealso:: Objects in ``py2store.utils.attr_dict`` module</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<span class="sd">    """</span></div>
 
 
 
@@ -1330,18 +1330,18 @@
 <span class="c1">#         copy_attrs(</span>
 <span class="c1">#             target=self,</span>
 <span class="c1">#             source=self.src,</span>
-<span class="c1">#             attrs=(&#39;__name__&#39;, &#39;__qualname__&#39;, &#39;__module__&#39;),</span>
+<span class="c1">#             attrs=('__name__', '__qualname__', '__module__'),</span>
 <span class="c1">#             raise_error_if_an_attr_is_missing=False,</span>
 <span class="c1">#         )</span>
 
 <span class="c1">#     def __repr__(self):</span>
-<span class="c1">#         return f&#39;{self.__class__.__qualname__}({self.src})&#39;</span>
+<span class="c1">#         return f'{self.__class__.__qualname__}({self.src})'</span>
 
 <span class="c1">#     @property</span>
 <span class="c1">#     def _source(self):</span>
 <span class="c1">#         from warnings import warn</span>
 
-<span class="c1">#         warn(&#39;Deprecated: Use .src instead of ._source&#39;, DeprecationWarning, 2)</span>
+<span class="c1">#         warn('Deprecated: Use .src instead of ._source', DeprecationWarning, 2)</span>
 <span class="c1">#         return self.src</span>
 </pre></div>
 

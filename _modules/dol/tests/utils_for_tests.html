@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dol.tests.utils_for_tests &mdash; dol 0.3.62 documentation</title>
+  <title>dol.tests.utils_for_tests &mdash; dol 0.3.63 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e9e89fea"></script>
+      <script src="../../../_static/documentation_options.js?v=4d901bf3"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -123,7 +123,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dol.tests.utils_for_tests</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Utils for tests.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Utils for tests."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextFiles</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -131,14 +131,14 @@
 
 
 <span class="n">_dflt_keys</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s2">&quot;pluto&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;planets/mercury&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;planets/venus&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;planets/earth&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;planets/mars&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;fruit/apple&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;fruit/banana&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;fruit/cherry&quot;</span><span class="p">,</span>
+    <span class="s2">"pluto"</span><span class="p">,</span>
+    <span class="s2">"planets/mercury"</span><span class="p">,</span>
+    <span class="s2">"planets/venus"</span><span class="p">,</span>
+    <span class="s2">"planets/earth"</span><span class="p">,</span>
+    <span class="s2">"planets/mars"</span><span class="p">,</span>
+    <span class="s2">"fruit/apple"</span><span class="p">,</span>
+    <span class="s2">"fruit/banana"</span><span class="p">,</span>
+    <span class="s2">"fruit/cherry"</span><span class="p">,</span>
 <span class="p">)</span>
 
 
@@ -148,18 +148,18 @@
     <span class="n">keys</span><span class="o">=</span><span class="n">_dflt_keys</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">mk_store</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span>
-    <span class="n">obj_of_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Content of </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">obj_of_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Content of </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="n">empty_store_before_writing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make some test data for a store from a list of keys.</span>
+<span class="w">    </span><span class="sd">"""Make some test data for a store from a list of keys.</span>
 
 <span class="sd">    None of the arguments are required, for the convenience of getting test stores</span>
 <span class="sd">    quickly:</span>
 
 <span class="sd">    &gt;&gt;&gt; store = mk_test_store_from_keys()</span>
 <span class="sd">    &gt;&gt;&gt; store = mk_test_store_from_keys.for_local()  # makes files in temp local dir</span>
-<span class="sd">    &gt;&gt;&gt; store = mk_test_store_from_keys(keys=[&#39;one&#39;, &#39;two&#39;, &#39;three&#39;])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    &gt;&gt;&gt; store = mk_test_store_from_keys(keys=['one', 'two', 'three'])</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mk_store</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">mk_store</span> <span class="o">=</span> <span class="n">mk_tmp_local_store</span><span class="p">(</span><span class="n">mk_store</span><span class="p">)</span>
     <span class="n">store</span> <span class="o">=</span> <span class="n">mk_store</span><span class="p">()</span>
@@ -173,7 +173,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">mk_tmp_local_store</span><span class="p">(</span>
-    <span class="n">tmp_name</span><span class="o">=</span><span class="s2">&quot;temp_local_store&quot;</span><span class="p">,</span> <span class="n">mk_store</span><span class="o">=</span><span class="n">TextFiles</span><span class="p">,</span> <span class="n">make_dirs_if_missing</span><span class="o">=</span><span class="kc">True</span>
+    <span class="n">tmp_name</span><span class="o">=</span><span class="s2">"temp_local_store"</span><span class="p">,</span> <span class="n">mk_store</span><span class="o">=</span><span class="n">TextFiles</span><span class="p">,</span> <span class="n">make_dirs_if_missing</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">):</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">temp_dir</span><span class="p">,</span> <span class="n">mk_dirs_if_missing</span>
 
