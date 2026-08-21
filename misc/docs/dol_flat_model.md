@@ -44,10 +44,10 @@ through a spec'd method that internally calls another spec'd method.
 ```python
 @dataclass(frozen=True)
 class Codec:
-    encoder: Callable[[Any], Any]   # outer -> inner (arguments going in)
-    decoder: Callable[[Any], Any]   # inner -> outer (results coming out)
-    decoded_type: Optional[type] = None   # outer-facing type tag (optional)
-    encoded_type: Optional[type] = None   # leafward type tag (optional)
+    encoder: Callable[[Any], Any]  # outer -> inner (arguments going in)
+    decoder: Callable[[Any], Any]  # inner -> outer (results coming out)
+    decoded_type: Optional[type] = None  # outer-facing type tag (optional)
+    encoded_type: Optional[type] = None  # leafward type tag (optional)
 ```
 
 `encoder` handles what goes in: keys on `__getitem__`/`__setitem__`/`__delitem__`/
@@ -68,10 +68,10 @@ Re-wrapping an already-wrapped object appends a layer to the flat tuple over the
 
 ```python
 if isinstance(obj, InterfaceProxy):
-    leaf = obj._self_leaf                  # same leaf — never a proxy-of-proxy
-    base_stack = tuple(obj._self_stack)    # copy the existing flat list
+    leaf = obj._self_leaf  # same leaf — never a proxy-of-proxy
+    base_stack = tuple(obj._self_stack)  # copy the existing flat list
     ...
-stack = base_stack + ((dict(codecs),) if codecs else ())   # extend, don't nest
+stack = base_stack + ((dict(codecs),) if codecs else ())  # extend, don't nest
 ```
 
 Wrapping is **copy-not-mutate**: the old proxy stays valid, and an iterator
@@ -100,7 +100,7 @@ def _fused_role_funcs(stack, *, direction):
             funcs = [layer[role].encoder for layer in reversed(stack) if role in layer]
         else:
             funcs = [layer[role].decoder for layer in stack if role in layer]
-        out[role] = _fuse(funcs)   # left-to-right composition into ONE callable
+        out[role] = _fuse(funcs)  # left-to-right composition into ONE callable
     return out
 ```
 
@@ -152,12 +152,14 @@ dunders — which is precisely what kills the #83 bug class (a delegated method 
 
 ```python
 from typing import Protocol, TypeVar, Iterator, Iterable
-KT, VT = TypeVar('KT'), TypeVar('VT')
+
+KT, VT = TypeVar("KT"), TypeVar("VT")
+
 
 class BucketInterface(Protocol[KT, VT]):
-    def __getitem__(self, k: KT) -> VT: ...      # Mapping dunders are ordinary
-    def __iter__(self) -> Iterator[KT]: ...       # spec entries - no privileged
-    def __contains__(self, k: KT) -> bool: ...    # surface
+    def __getitem__(self, k: KT) -> VT: ...  # Mapping dunders are ordinary
+    def __iter__(self) -> Iterator[KT]: ...  # spec entries - no privileged
+    def __contains__(self, k: KT) -> bool: ...  # surface
     def url_for(self, k: KT, *, expires_in: int = 3600) -> str: ...
     def delete_many(self, keys: Iterable[KT]) -> None: ...
     def items_page(self) -> Iterator[tuple[KT, VT]]: ...
@@ -176,8 +178,10 @@ exact silent hole the mechanism exists to kill.
 ### Dict form (no typing required)
 
 ```python
-spec = {'__getitem__': {0: 'KT', 'return': 'VT'},
-        '__setitem__': {0: 'KT', 1: 'VT'}}       # int keys = positional index
+spec = {
+    "__getitem__": {0: "KT", "return": "VT"},
+    "__setitem__": {0: "KT", 1: "VT"},
+}  # int keys = positional index
 ```
 
 Same compiled algebra, same loudness rules.
@@ -307,19 +311,21 @@ from dol._interface_wrap import interface_wrap, kv_interface_wrap, Codec
 # The wrap_kvs-shaped facade (built-in Mapping spec):
 s = kv_interface_wrap(
     {},
-    id_of_key=lambda k: k + '.json',    # facade keeps wrap_kvs vocabulary...
+    id_of_key=lambda k: k + ".json",  # facade keeps wrap_kvs vocabulary...
     key_of_id=lambda k: k[:-5],
     data_of_obj=str,
     obj_of_data=int,
 )
-s['a'] = 1                # leaf now holds {'a.json': '1'}
-assert list(s) == ['a'] and s == {'a': 1}
+s["a"] = 1  # leaf now holds {'a.json': '1'}
+assert list(s) == ["a"] and s == {"a": 1}
 
 # The general gesture (any spec, any roles):
-s = interface_wrap(leaf, spec=BucketInterface,
-                   codecs=dict(KT=Codec(encoder=..., decoder=...),
-                               VT=Codec(encoder=..., decoder=...)),
-                   passthrough={'wire'})
+s = interface_wrap(
+    leaf,
+    spec=BucketInterface,
+    codecs=dict(KT=Codec(encoder=..., decoder=...), VT=Codec(encoder=..., decoder=...)),
+    passthrough={"wire"},
+)
 ```
 
 Caveats: `kv_interface_wrap` transforms are **plain unary callables** — no
