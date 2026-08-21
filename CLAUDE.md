@@ -227,10 +227,15 @@ and the full doc index with status labels. The table below is the quick version.
 | [dol_content_metadata_bifurcation.md](misc/docs/dol_content_metadata_bifurcation.md) | The content/metadata split-store problem (feeds issue #80) |
 | [code-quality-improvements.md](misc/docs/code-quality-improvements.md) | Tech-debt tracker: dead code, coverage gaps (feeds issue #94) |
 
-> A **local-only** ecosystem inventory (gitignored) lives in `misc/data/`: dol's 85
-> direct dependents (as of the 2026-08-03 scan), their usages (file:line), a pre-PR
-> test-gate order + runner, and the `wrap_kvs` blast-radius scan. Regenerate with
-> the scripts there. Growing this into a versioned fleet ledger is issue #91.
+> The **fleet usage ledger** ([#91](https://github.com/i2mint/dol/issues/91)) lives
+> in gitignored `misc/data/` — start at its [README](misc/data/README.md).
+> `python -m fleet_ledger scan` records one immutable, timestamped scan: dol's **89
+> direct dependents** pinned at full 40-char commits, their imports, AST-verified
+> subclasses and call-site kwargs (all `file:line`), a generated zero-usage report,
+> and the pre-PR test-gate order. `baseline` captures every dependent's suite result
+> so a candidate's damage can be told apart from pre-existing red; `pin restore`
+> freezes the fleet at a scan and `pin undo` releases it. Scans accumulate — nothing
+> is overwritten. Figures quoted in these docs are from the 2026-08-21 scan.
 
 ---
 

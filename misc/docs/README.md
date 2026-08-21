@@ -47,7 +47,7 @@ Limitations.
 the `dol-dev-wrap-kvs` skill before touching `trans.py`/`base.py` →
 [dol_roadmap.md](dol_roadmap.md) for what's in flight → then the design-study
 chain for your area (see the index). Before any PR touching `wrap_kvs`: the
-dependents test-gate (local `misc/data/` inventory).
+dependents test-gate (`fleet_ledger baseline`, in local `misc/data/`).
 
 **I'm an agent needing orientation.**
 `llms.txt` → project `CLAUDE.md` → stop. Escalate to
@@ -104,8 +104,10 @@ parallel: [dol_issue16_design.md](dol_issue16_design.md) →
 | [frontend_dol_ideas.md](frontend_dol_ideas.md) | `zoddal`: the TypeScript/Zod incarnation of the dol idea. |
 | [generate_llms_txt_instruction.md](generate_llms_txt_instruction.md) | How the repo's `llms.txt` files are generated. |
 
-> A **local-only** ecosystem inventory (gitignored) lives in `misc/data/`: dol's
-> 85 direct dependents, their usages (file:line), a pre-PR test-gate order +
-> runner, and the `wrap_kvs` blast-radius scan. Regenerate with the scripts
-> there. Growing this into a versioned fleet ledger is
-> [#91](https://github.com/i2mint/dol/issues/91).
+> The **fleet usage ledger** ([#91](https://github.com/i2mint/dol/issues/91)) lives
+> in gitignored `misc/data/` (see its `README.md`). Each `fleet_ledger scan` is one
+> immutable, timestamped record: dol's **89 direct dependents** at full commit pins,
+> their imports / AST-verified subclasses / call-site kwargs, a generated zero-usage
+> report, and the pre-PR test-gate order. `baseline` captures each dependent's suite
+> result — the reference a candidate is judged against — and `pin restore` freezes
+> the fleet at a scan. Scans accumulate; figures below are from the 2026-08-21 scan.
