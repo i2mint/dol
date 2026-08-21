@@ -2,6 +2,15 @@
 
 This document describes the Python-specific implementation of dol's design. For the language-agnostic concepts, see [general_design.md](general_design.md).
 
+> **Status (2026-08): partially superseded.** This doc describes the *shipping*
+> delegation architecture, which remains what users run today — but the redesign
+> program ([dol_flat_model.md](dol_flat_model.md),
+> [dol_issue86_design.md](dol_issue86_design.md), decisions Q0–Q5) has superseded
+> several sections; each carries an inline note. For citation-grade mechanics
+> prefer [dol_architecture_map.md](dol_architecture_map.md). Still uniquely here:
+> the `Sig` narrative, the design-critique register, `double_up_as_factory`, and
+> the worked examples. Index: [README.md](README.md).
+
 ---
 
 ## Class Hierarchy
@@ -64,6 +73,13 @@ The hooks default to identity (no-op), so `Store(dict())` behaves exactly like a
 ---
 
 ## `wrap_kvs`: The Core Transformation Function
+
+> **Note (2026-08):** accurate for the shipping architecture, with two updates:
+> the method-transform parameters documented below (`outcoming_key_methods` /
+> `ingoing_key_methods` …) are **verified broken** and replaced by typed interface
+> specs in the flat model ([dol_issue86_design.md](dol_issue86_design.md) TL;DR 1);
+> and per decision Q0, codec/instance wrapping compiles to the flat engine at the
+> endgame ([dol_flat_model.md](dol_flat_model.md)).
 
 Located in `dol/trans.py:1801`. The most important function in the library.
 
@@ -151,6 +167,12 @@ store = wrap_kvs(store, obj_of_data=json.loads, data_of_obj=json.dumps)
 ---
 
 ## `store_decorator`: The Meta-Decorator
+
+> **Note (2026-08):** the 4-way usage taxonomy survives, but the instance branch
+> ("wraps it in `Store` first") is what changes under decision Q0: instance
+> wrapping compiles to a flat proxy at the endgame, not a fresh `Store` subclass.
+> The P2 compatibility questions are listed in
+> [dol_roadmap.md](dol_roadmap.md) Track A.
 
 Located in `dol/trans.py:130`. Enables writing a class-transforming function once and using it in 4 ways:
 
@@ -331,6 +353,14 @@ def my_func(*args, **kwargs): ...
 
 ## Delegation Pattern
 
+> **Note (2026-08): the most-superseded section of this doc.** The snippet below
+> is simplified (the real implementation guards via `object.__getattribute__`,
+> see the architecture map), and delegation-as-the-architecture is what the flat
+> carrier replaces for codec stacks: capability mirroring plus the
+> `undeclared='exclude'` policy (decision Q2) eliminate the verified
+> `DelegatedAttribute` raw-data leaks (`__or__`/`copy`/`fromkeys`). Delegation
+> remains the shipping mechanism, and remains the model for filter/cache layers.
+
 `Store` uses the delegation pattern: it holds a reference to an inner store (`self.store`) and delegates all storage operations to it. Attribute access falls through via `__getattr__`:
 
 ```python
@@ -461,6 +491,12 @@ kt.dict_to_key({"user": "john", "year": "2024", "month": "01"})  # 'john/2024/01
 
 ## Design Critique and Alternatives
 
+> **Note (2026-08):** this register predates the redesign; several critiques have
+> since been *realized* rather than refuted — item 1's Protocol suggestion and
+> item 6's missing generics are now the flat model's core mechanism
+> (KT/VT-annotated Protocol specs, typed codecs per decision Q3). Items 2
+> (`clear()`/LSP), 3 (naming — now issue #92), and 5 (async) remain live.
+
 ### 1. ABC Inheritance vs. Protocols
 
 **Current approach**: Classes inherit from `collections.abc.Mapping`, `MutableMapping`, etc.
@@ -536,7 +572,10 @@ kt.dict_to_key({"user": "john", "year": "2024", "month": "01"})  # 'john/2024/01
 
 `wrap_kvs` is powerful but creates anonymous classes at runtime, which has implications:
 - `type(store).__name__` may not be meaningful
-- Pickling can be tricky (though dol handles this via `__reduce__`)
+- Pickling is **broken today** for decorator-form, `Files`, and stacked wraps (one
+  root cause: class-name shadowing — verified in the #86 study's 7-case matrix);
+  instance wraps and a single class-wrap work. The flat proxy repairs the stacked
+  case by construction.
 - Debugging stack traces show generic names
 
 For performance-critical code or when pickling is needed, direct subclassing is still more reliable.

@@ -204,23 +204,33 @@ locally and fail in CI.
 
 ## Documentation Index (`misc/docs/`)
 
+**Master index: [misc/docs/README.md](misc/docs/README.md)** — overview of the two
+architectures (shipping delegation vs the flat model), reading paths per audience,
+and the full doc index with status labels. The table below is the quick version.
+
 | Document | Contents |
 |----------|----------|
+| [README.md](misc/docs/README.md) | **Start here.** Master index: big picture, reading paths, status labels |
+| [dol_flat_model.md](misc/docs/dol_flat_model.md) | **The flat model reference** (Option G): a wrap is `(leaf, spec, stack)` — flat compiled codec stack, typed interface specs, loudness policies, codec laws, scope limits, the six decisions Q0–Q5, code map for `dol/_interface_wrap.py` (private, experimental) |
+| [dol_roadmap.md](misc/docs/dol_roadmap.md) | **Sequencing SSOT**: tracks A–E (flat engine P0–P3, is-a, paths engine, fleet program #91/#92/#94, hygiene) |
 | [general_design.md](misc/docs/general_design.md) | Language-agnostic design: what dol is, the KV pipeline, layered composition, patterns |
-| [dol_design.md](misc/docs/dol_design.md) | Python architecture: class hierarchy, `wrap_kvs` deep dive, `Codec`/`Sig`/`Pipe`, critique |
+| [dol_design.md](misc/docs/dol_design.md) | Python architecture: class hierarchy, `wrap_kvs` deep dive, `Codec`/`Sig`/`Pipe`, critique. **Partially superseded** — see its banner; prefer the architecture map for mechanics |
 | [dol_architecture_map.md](misc/docs/dol_architecture_map.md) | Code-verified structural map: module/dependency graph, public API, class hierarchy, `wrap_kvs`/codec machinery deep dive, ranked tech debt. **Start here for refactors.** |
 | [issues_and_discussions.md](misc/docs/issues_and_discussions.md) | GitHub issues/discussions themes, known limitations, open design questions |
-| [dol_issues_report.md](misc/docs/dol_issues_report.md) | Prioritized issue triage + wave-by-wave tackle order |
-| [dol_issue16_design.md](misc/docs/dol_issue16_design.md) | Issue #16 design: optional key-path write-through / autovivification — opt-in `create_missing`, contextual per-level factory, the `path_set_writeback` boundary engine + persistent-store write-back protocol, scoped plan. Design-only (no code yet). |
+| [dol_issues_report.md](misc/docs/dol_issues_report.md) | Historical triage snapshot (2026-07-02); sequencing superseded by `dol_roadmap.md`, verification log still cited |
+| [dol_issue16_design.md](misc/docs/dol_issue16_design.md) | Issue #16 design: optional key-path write-through / autovivification — opt-in `create_missing`, contextual per-level factory, the `path_set_writeback` boundary engine + persistent-store write-back protocol. **Implementation shipped** (see Known Limitations below). |
 | [dol_issue18_design.md](misc/docs/dol_issue18_design.md) | Issue #18 design: `self`-not-wrapped delegation trap — `wrapped_self` (shipped) now, is-a wrapping (deferred, major) later. |
 | [dol_issue83_design.md](misc/docs/dol_issue83_design.md) | Issue #83 design study: the **inverse** of #18 — a delegated method *receives* the unmapped key. Two delegation routes (a fix for one is a no-op on the other), a 13-package census (mostly **latent**; 12 claims refuted), and options A–F with verified costs: `wrapped_self` has its own silent hole (degrades with no live strong reference), chain-walking free functions break on non-`Store` layers, and the only form correct *by construction* is routing the capability through `__getitem__` as a sibling store. **§5 is the carry-forward list for a future redesign.** |
 | [dol_issue86_design.md](misc/docs/dol_issue86_design.md) | Discussion #86 design study: **Option G** — spec-carried boundary codecs on a flat proxy (wrapt lessons, KT/VT-annotated interface specs, flatten-and-compile codec stacks). Prototype in `dol/_interface_wrap.py` (private, experimental). Headline: is-a does **not** fix #83 for backend-direct method bodies — F and G serve disjoint populations; codec laws (§2.5) are the boundary invariant's fine print; flat-model guarantees are scoped to pure-codec stacks (filters/caches still nest). Open question 0: who owns the wrap_kvs endgame. |
 | [dol_issue10_design.md](misc/docs/dol_issue10_design.md) | Issues #10 + #2 (paired) design: recursive wrapping of nested stores (`recursive_wrap`) + a flat `KvReader`/`KvPersister` view (`flat_store`), sharing one `(path,key,value)` descent frontier and reusing the #16 `path_set_writeback` engine. Load-bearing fix: the recursion read-surface and the write-back boundary must be **different** objects (naive `boundary=self` infinite-loops). Model-2 read + write-into-existing in scope; persistent creation deferred to P3. Design-only (no code yet). |
 | [frontend_dol_ideas.md](misc/docs/frontend_dol_ideas.md) | `zoddal` design: TypeScript KV interface, adapters, Zod bridge, zod-collection-ui integration |
+| [dol_content_metadata_bifurcation.md](misc/docs/dol_content_metadata_bifurcation.md) | The content/metadata split-store problem (feeds issue #80) |
+| [code-quality-improvements.md](misc/docs/code-quality-improvements.md) | Tech-debt tracker: dead code, coverage gaps (feeds issue #94) |
 
-> A **local-only** ecosystem inventory (gitignored) lives in `misc/data/`: dol's 76
-> dependents, their usages (file:line), a pre-PR test-gate order + runner, and the
-> `wrap_kvs` blast-radius scan. Regenerate with the scripts there.
+> A **local-only** ecosystem inventory (gitignored) lives in `misc/data/`: dol's 85
+> direct dependents (as of the 2026-08-03 scan), their usages (file:line), a pre-PR
+> test-gate order + runner, and the `wrap_kvs` blast-radius scan. Regenerate with
+> the scripts there. Growing this into a versioned fleet ledger is issue #91.
 
 ---
 

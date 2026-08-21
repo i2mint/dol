@@ -124,6 +124,12 @@ def postget(k, v):
 
 ## Layered Composition (Russian Dolls)
 
+> **Scope note (2026-08):** layers are dol's *semantic* model — always true. As
+> *runtime structure*, nesting is how the shipping architecture works; under the
+> decided flat-model endgame, pure-codec stacks compile to a single flat proxy
+> with fused transform pipelines (one boundary hop), while filters and caches
+> keep nesting. See [dol_flat_model.md](dol_flat_model.md).
+
 The name "dol" evokes Russian dolls: layers of wrappers, each adding a transformation. A store is built by stacking layers:
 
 ```

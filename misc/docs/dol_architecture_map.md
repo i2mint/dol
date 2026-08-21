@@ -24,7 +24,7 @@ It **complements, does not repeat** the existing `misc/docs`:
 | GitHub issues/discussions themes | [issues_and_discussions.md](issues_and_discussions.md) | Corrects the Issue #9 root-cause (§5.4) |
 | The split-store / content-metadata problem | [dol_content_metadata_bifurcation.md](dol_content_metadata_bifurcation.md) | — |
 | Dead code / coverage tracker | [code-quality-improvements.md](code-quality-improvements.md) | Adds new debt found (§11) |
-| Doc index | [dol_misc_docs_guide.md](dol_misc_docs_guide.md) | Should be updated to list this file |
+| Doc index | [README.md](README.md) | The master index; routes here for refactors |
 
 ### Staleness / inaccuracies found in existing docs
 
@@ -600,7 +600,8 @@ single `cache_this` with an explicit `key`/`cache` over stacking.
    `path_get`/`_path_get`/`chain_get`.
 10. **Every module must keep its top-level docstring** (all 20 currently have one — verified;
     they are auto-extracted for docs). When adding a module or editing one, preserve/enhance
-    it (per CLAUDE.md). And update `dol_misc_docs_guide.md` if you add a doc here.
+    it (per CLAUDE.md). And update `misc/docs/README.md` (the master index) if you
+    add a doc here.
 
 ---
 
