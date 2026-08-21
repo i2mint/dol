@@ -1,5 +1,10 @@
 # dol — Issues Triage & Tackle-Order Report
 
+> **Status: historical snapshot (2026-07-02).** The wave/tackle order in §2 is
+> superseded by [dol_roadmap.md](dol_roadmap.md) (the sequencing SSOT). The
+> close-list, dependency map, and verification log remain the cited evidence
+> record.
+>
 > **Purpose:** a scannable, prioritized map of dol's open GitHub issues — what is
 > already resolved (and should be closed), and in what order to tackle the rest.
 > Companion to [issues_and_discussions.md](issues_and_discussions.md) (themes/history),
