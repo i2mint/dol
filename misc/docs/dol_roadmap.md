@@ -5,7 +5,7 @@
 > of [dol_issues_report.md](dol_issues_report.md) §2 (kept as the 2026-07-02 triage
 > snapshot — its close-list, dependency map, and verification log remain the
 > evidence record). Design content lives in the linked docs; this file only
-> sequences it. Last updated 2026-08-21.
+> sequences it. Last updated 2026-08-21 (Track D #91 built).
 
 ## The program in one paragraph
 
@@ -54,25 +54,44 @@ P2/P3 design work. Open issues folded in here: [#18](https://github.com/i2mint/d
 
 ## Track D — the fleet program (intent recorded 2026-08-21)
 
-Maintainer intents, recorded as issues; sequencing is **ledger first** — both
-other legs consume it.
+Sequencing is **ledger first** — both other legs consume it.
 
-1. **[#91 — fleet usage ledger](https://github.com/i2mint/dol/issues/91)**: grow
-   the local import-census (85 direct dependents, 2026-08-03 scan) into a
-   versioned ledger: full commit pins + baseline test results + restore helper;
-   AST-level subclass and kwarg census; zero-usage report; successive scans.
+1. **[#91 — fleet usage ledger](https://github.com/i2mint/dol/issues/91) — built
+   (2026-08-21)**. The v1 import census is now an append-only ledger under
+   gitignored `misc/data/` (`fleet_ledger`, see `misc/data/README.md`): full 40-char
+   commit pins with a restore/undo helper, per-dependent baseline suite results,
+   an AST census (subclassing and call-site kwargs, not just imports), a generated
+   zero-usage report, and one immutable record per scan. Headline figures from the
+   first v2 scan, superseding the 2026-08-03 numbers everywhere:
+   **89** direct dependents (121 transitive, of 217 registry packages);
+   **29** of them subclass a core class (`Store`/`KvReader`/`KvPersister`/`Collection`)
+   across **141** classes, while 3 more import one without ever subclassing it;
+   **40** call `wrap_kvs` across **112** call sites, 29 of those as a class decorator.
 2. **[#92 — vocabulary horizon](https://github.com/i2mint/dol/issues/92)**:
-   `{kind}_{encoder|decoder|codec}` replaces the `X_of_Y` language (and
-   `kv_wrap`'s `outcoming_*`/`ingoing_*` — three vocabularies to reconcile).
-   Strategy: successor surface, not rename-in-place; `wrap_kvs` stays as a
-   back-compat facade over it. Execution gated on P1 evidence + P2 facade + #91.
-   New surfaces adopt the target vocabulary from day one (the flat engine's
-   `Codec(encoder, decoder)` already does).
+   `{kind}_{encoder|decoder|codec}` replaces the `X_of_Y` language. Strategy:
+   successor surface, not rename-in-place; `wrap_kvs` stays as a back-compat facade
+   over it. Execution gated on P1 evidence + P2 facade + #91. **The ledger reframes
+   the scope** (2026-08-21 scan): the successor spelling is not prospective — dol
+   already accepts `key_encoder`/`key_decoder`/`value_encoder`/`value_decoder` as
+   aliases onto the four `X_of_Y` names (`dol/trans.py`), and the fleet is *already
+   split* across both — **34** packages / **132** call sites on `X_of_Y` versus
+   **9** packages / **28** sites on encoder-decoder, with 5 packages using both.
+   The other two vocabularies are near-dead by comparison and cheap to settle:
+   `kv_wrap` is called by 2 packages (5 calls, none passing its `outcoming_*`/
+   `ingoing_*` kwargs by name), and `key_codec`/`value_codec` have **zero** fleet
+   call sites. So the real work is converging two live spellings of the same four
+   arguments, not reconciling three peers. New surfaces adopt the target vocabulary
+   from day one (the flat engine's `Codec(encoder, decoder)` already does).
 3. **[#94 — cruft audit](https://github.com/i2mint/dol/issues/94)**: relocate
-   fleet-unused, low-value members (→ xdol / tests / recipes). Current scan:
-   86/147 `__init__` exports with zero detected fleet usage (61 public >1 year).
-   Gated on #91's authoritative census (star-imports + submodule-only compat
-   surface). Complementary to [#70](https://github.com/i2mint/dol/issues/70).
+   fleet-unused, low-value members (→ xdol / tests / recipes). Per the 2026-08-21
+   ledger scan: **82 of 148** `__init__` exports have zero detected fleet usage, of
+   which **58** have been public over a year — that cohort, not the 82, is the
+   candidate pool (the other 24 are the recently shipped `content`/`autoviv`/
+   `path_*_writeback` surface, which nothing has had time to adopt). Three caveats
+   ship with the list and are generated into it: fleet-only scope (dol is on PyPI),
+   5 star-importing packages, and **47** submodule-only names that are live compat
+   surface without being exports. Complementary to
+   [#70](https://github.com/i2mint/dol/issues/70).
 
 ## Track E — hygiene and remaining triage
 
