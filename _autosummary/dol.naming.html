@@ -1,0 +1,966 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link rel="alternate" type="text/markdown" href="dol.naming.html.md">
+<link rel="describedby" href="../llms.txt" type="text/markdown"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="dol.paths" href="dol.paths.html"><link rel="prev" title="dol.mixins" href="dol.mixins.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>dol.naming - dol</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #694191;
+  --color-brand-content: #694191;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #cba1fa;
+  --color-brand-content: #cba1fa;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #cba1fa;
+  --color-brand-content: #cba1fa;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">dol</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">dol</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API reference</a><input aria-label="Toggle navigation of API reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="dol.html">dol</a><input aria-label="Toggle navigation of dol" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dol.appendable.html">dol.appendable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.base.html">dol.base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.caching.html">dol.caching</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.content.html">dol.content</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.dig.html">dol.dig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.errors.html">dol.errors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.explicit.html">dol.explicit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.filesys.html">dol.filesys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.kv_codecs.html">dol.kv_codecs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.misc.html">dol.misc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.mixins.html">dol.mixins</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">dol.naming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.paths.html">dol.paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.recipes.html">dol.recipes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.signatures.html">dol.signatures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.sources.html">dol.sources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.tools.html">dol.tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.trans.html">dol.trans</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.trash.html">dol.trash</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.util.html">dol.util</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.zipfiledol.html">dol.zipfiledol</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ai-agents.html">For AI agents</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/_autosummary/dol.naming.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-dol.naming">
+<span id="dol-naming"></span><h1>dol.naming<a class="headerlink" href="#module-dol.naming" title="Link to this heading">¶</a></h1>
+<p>This module is about generating, validating, and operating on (parametrized) fields (i.e. stings, e.g. paths).</p>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.naming.dict_to_namedtuple" title="dol.naming.dict_to_namedtuple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict_to_namedtuple</span></code></a>(d[, namedtuple_obj])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.get_fields_from_template" title="dol.naming.get_fields_from_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_fields_from_template</span></code></a>(template)</p></td>
+<td><p>Get list from {item} items of template string</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_capture_patterns</span></code>(mapping_dict)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_extract_pattern</span></code>(template[, format_dict, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_format_mapping_dict</span></code>(format_dict, ...[, sep])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.mk_kwargs_trans" title="dol.naming.mk_kwargs_trans"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_kwargs_trans</span></code></a>(**trans_func_for_key)</p></td>
+<td><p>Make a dict transformer from functions that depends solely on keys (of the dict to be transformed) Used to easily make process_kwargs and process_info_dict arguments for LinearNaming.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_named_capture_patterns</span></code>(mapping_dict)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.mk_pattern_from_template_and_format_dict" title="dol.naming.mk_pattern_from_template_and_format_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_pattern_from_template_and_format_dict</span></code></a>(...)</p></td>
+<td><p>Make a compiled regex to match template :type template:  :param template: A format string :type format_dict:  :param format_dict: A dict whose keys are template fields and values are regex strings to capture them</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_prefix_templates_dicts</span></code>(template)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.mk_store_from_path_format_store_cls" title="dol.naming.mk_store_from_path_format_store_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_store_from_path_format_store_cls</span></code></a>([store, ...])</p></td>
+<td><p>Wrap a store (instance or class) that uses string keys to make it into a store that uses a specific key format.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.naming.mk_tupled_store_from_path_format_store_cls" title="dol.naming.mk_tupled_store_from_path_format_store_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_tupled_store_from_path_format_store_cls</span></code></a>([...])</p></td>
+<td><p>Wrap a store (instance or class) that uses string keys to make it into a store that uses a specific key format.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.namedtuple_to_dict" title="dol.naming.namedtuple_to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">namedtuple_to_dict</span></code></a>(nt)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.naming.template_to_pattern" title="dol.naming.template_to_pattern"><code class="xref py py-obj docutils literal notranslate"><span class="pre">template_to_pattern</span></code></a>(mapping_dict, template)</p></td>
+<td><p>Weave a <code class="docutils literal notranslate"><span class="pre">{field}</span></code> template into a regex, substituting each field with its capture pattern and <strong>regex-escaping the literal text between fields</strong>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.update_fields_of_namedtuple" title="dol.naming.update_fields_of_namedtuple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_fields_of_namedtuple</span></code></a>(nt, *[, ...])</p></td>
+<td><p>Replace fields of namedtuple</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.naming.validate_kwargs" title="dol.naming.validate_kwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_kwargs</span></code></a>(kwargs_to_validate, ...[, ...])</p></td>
+<td><p>Utility to validate a dict.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.naming.BigDocTest" title="dol.naming.BigDocTest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BigDocTest</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.KeyMapNames" title="dol.naming.KeyMapNames"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KeyMapNames</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.naming.KeyMaps" title="dol.naming.KeyMaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KeyMaps</span></code></a>(key_of_id, id_of_key)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.LinearNaming" title="dol.naming.LinearNaming"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LinearNaming</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">NamingInterface</span></code>([params, validation_funs, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.ParametricKeyStore" title="dol.naming.ParametricKeyStore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParametricKeyStore</span></code></a>(store[, keymap])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.naming.PartialFormatter" title="dol.naming.PartialFormatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PartialFormatter</span></code></a>()</p></td>
+<td><p>A string formatter that won't complain if the fields are only partially formatted.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.StoreWithDictKeys" title="dol.naming.StoreWithDictKeys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StoreWithDictKeys</span></code></a>(store[, keymap])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.naming.StoreWithNamedTupleKeys" title="dol.naming.StoreWithNamedTupleKeys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StoreWithNamedTupleKeys</span></code></a>(store[, keymap])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.StoreWithTupleKeys" title="dol.naming.StoreWithTupleKeys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StoreWithTupleKeys</span></code></a>(store[, keymap])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">StrTupleDict</span></code>(template[, format_dict, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.StrTupleDictWithPrefix" title="dol.naming.StrTupleDictWithPrefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StrTupleDictWithPrefix</span></code></a>(template[, ...])</p></td>
+<td><p>Converting from and to strings, tuples, and dicts, but with partial &quot;prefix&quot; specs allowed.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.naming.BigDocTest">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">BigDocTest</span></span><a class="reference internal" href="../_modules/dol/naming.html#BigDocTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.BigDocTest" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p class="rubric">TODO: Fix this test (maybe test assertions aren’t correct)</p>
+<p class="rubric">This happened when we changed some re.compile to safe_compile</p>
+<p># &gt;&gt;&gt;
+# &gt;&gt;&gt; e_name = BigDocTest.mk_e_naming()
+# &gt;&gt;&gt; u_name = BigDocTest.mk_u_naming()
+# &gt;&gt;&gt; e_sref = ‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469’
+# &gt;&gt;&gt; u_sref = “s3://uploads/GROUP/upload/files/USER/2017-01-24/SUBUSER/a_file.wav”
+# &gt;&gt;&gt; u_name_2 = “s3://uploads/ANOTHER_GROUP/upload/files/ANOTHER_USER/2017-01-24/SUBUSER/a_file.wav”
+# &gt;&gt;&gt;
+# &gt;&gt;&gt; ####### is_valid(self, name): ######
+# &gt;&gt;&gt; e_name.is_valid(e_sref)</p>
+<p class="rubric">True</p>
+<p># &gt;&gt;&gt; e_name.is_valid(u_sref)</p>
+<p class="rubric">False</p>
+<p># &gt;&gt;&gt; u_name.is_valid(u_sref)</p>
+<p class="rubric">True</p>
+<p># &gt;&gt;&gt;
+# &gt;&gt;&gt; ####### is_valid_prefix(self, name): ######
+# &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-‘)</p>
+<p class="rubric">True</p>
+<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP’)</p>
+<p class="rubric">False</p>
+<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP/example/’)</p>
+<p class="rubric">False</p>
+<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files’)</p>
+<p class="rubric">False</p>
+<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files/’)</p>
+<p class="rubric">True</p>
+<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/’)</p>
+<p class="rubric">True</p>
+<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/0_0’)</p>
+<p class="rubric">True</p>
+<p># &gt;&gt;&gt;
+# &gt;&gt;&gt; ####### info_dict(self, name): ######
+# &gt;&gt;&gt; e_name.info_dict(e_sref)  # see that utc_ms args were cast to ints
+# {‘group’: ‘GROUP’, ‘user’: ‘USER’, ‘subuser’: ‘SUBUSER’, ‘day’: ‘2017-01-24’, ‘s_ums’: 1485272231982, ‘e_ums’: 1485261448469}
+# &gt;&gt;&gt; u_name.info_dict(u_sref)  # returns None (because self was made for example!
+# {‘group’: ‘GROUP’, ‘user’: ‘USER’, ‘day’: ‘2017-01-24’, ‘subuser’: ‘SUBUSER’, ‘filename’: ‘a_file.wav’}
+# &gt;&gt;&gt; # but with a u_name, it will work
+# &gt;&gt;&gt; u_name.info_dict(u_sref)
+# {‘group’: ‘GROUP’, ‘user’: ‘USER’, ‘day’: ‘2017-01-24’, ‘subuser’: ‘SUBUSER’, ‘filename’: ‘a_file.wav’}
+# &gt;&gt;&gt;
+# &gt;&gt;&gt; ####### extract(self, item, name): ######
+# &gt;&gt;&gt; e_name.extract(‘group’, e_sref)
+# ‘GROUP’
+# &gt;&gt;&gt; e_name.extract(‘user’, e_sref)
+# ‘USER’
+# &gt;&gt;&gt; u_name.extract(‘group’, u_name_2)
+# ‘ANOTHER_GROUP’
+# &gt;&gt;&gt; u_name.extract(‘user’, u_name_2)
+# ‘ANOTHER_USER’
+# &gt;&gt;&gt;</p>
+<p>#
+# &gt;&gt;&gt; ####### mk_prefix(self, *args, **kwargs): ######
+# &gt;&gt;&gt; e_name.mk_prefix()
+# ‘s3://bucket-’
+# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’)
+# ‘s3://bucket-GROUP/example/files/’
+# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’, user=’USER’)
+# ‘s3://bucket-GROUP/example/files/USER/’
+# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’)
+# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/’
+# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’)
+# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/’
+# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’,
+# … s_ums=1485272231982)
+# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/<a href="#id1"><span class="problematic" id="id2">1485272231982_</span></a>’
+# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’,
+# … s_ums=1485272231982, e_ums=1485261448469)
+# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469’
+# &gt;&gt;&gt;
+# &gt;&gt;&gt; u_name.mk_prefix()
+# ‘s3://uploads/’
+# &gt;&gt;&gt; u_name.mk_prefix(group=’GROUP’)
+# ‘s3://uploads/GROUP/upload/files/’
+# &gt;&gt;&gt; u_name.mk_prefix(group=’GROUP’, user=’USER’)
+# ‘s3://uploads/GROUP/upload/files/USER/’
+# &gt;&gt;&gt; u_name.mk_prefix(group=’GROUP’, user=’USER’, day=’DAY’)
+# ‘s3://uploads/GROUP/upload/files/USER/DAY/’
+# &gt;&gt;&gt; u_name.mk_prefix(group=’GROUP’, user=’USER’, day=’DAY’)
+# ‘s3://uploads/GROUP/upload/files/USER/DAY/’
+# &gt;&gt;&gt; u_name.mk_prefix(group=’GROUP’, user=’USER’, day=’DAY’, subuser=’SUBUSER’)
+# ‘s3://uploads/GROUP/upload/files/USER/DAY/SUBUSER/’
+# &gt;&gt;&gt;
+# &gt;&gt;&gt; ####### mk(self, *args, **kwargs): ######
+# &gt;&gt;&gt; e_name.mk(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’,
+# …             s_ums=1485272231982, e_ums=1485261448469)
+# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469’
+# &gt;&gt;&gt; e_name.mk(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’from_s_ums’,
+# …             s_ums=1485272231982, e_ums=1485261448469)
+# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469’
+# &gt;&gt;&gt;
+# &gt;&gt;&gt; ####### replace_name_elements(self, *args, **kwargs): ######
+# &gt;&gt;&gt; name = ‘s3://bucket-redrum/example/files/oopsy&#64;domain.com/ozeip/2008-11-04/1225779243969_1225779246969’
+# &gt;&gt;&gt; e_name.replace_name_elements(name, user=’NEW_USER’, group=’NEW_GROUP’)
+# ‘s3://bucket-NEW_GROUP/example/files/NEW_USER/ozeip/2008-11-04/1225779243969_1225779246969’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dol.naming.KeyMapNames">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">KeyMapNames</span></span><a class="headerlink" href="#dol.naming.KeyMapNames" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#dol.naming.KeyMaps" title="dol.naming.KeyMaps"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyMaps</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.naming.KeyMaps">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">KeyMaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_of_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_of_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.naming.KeyMaps" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dol.naming.KeyMaps.id_of_key">
+<span class="sig-name descname"><span class="pre">id_of_key</span></span><a class="headerlink" href="#dol.naming.KeyMaps.id_of_key" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dol.naming.KeyMaps.key_of_id">
+<span class="sig-name descname"><span class="pre">key_of_id</span></span><a class="headerlink" href="#dol.naming.KeyMaps.key_of_id" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dol.naming.LinearNaming">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">LinearNaming</span></span><a class="headerlink" href="#dol.naming.LinearNaming" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#dol.naming.StrTupleDictWithPrefix" title="dol.naming.StrTupleDictWithPrefix"><code class="xref py py-class docutils literal notranslate"><span class="pre">StrTupleDictWithPrefix</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.naming.ParametricKeyStore">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">ParametricKeyStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keymap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#ParametricKeyStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.ParametricKeyStore" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="dol.base.html#dol.base.Store" title="dol.base.Store"><code class="xref py py-class docutils literal notranslate"><span class="pre">Store</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.naming.PartialFormatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">PartialFormatter</span></span><a class="reference internal" href="../_modules/dol/naming.html#PartialFormatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.PartialFormatter" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/string.html#string.Formatter" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Formatter</span></code></a></p>
+<p>A string formatter that won’t complain if the fields are only partially formatted.
+But note that you will lose the spec part of your template (e.g. in {foo:1.2f}, you’ll loose the 1.2f
+if not foo is given – but {foo} will remain).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">partial_formatter</span> <span class="o">=</span> <span class="n">PartialFormatter</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">str_template</span> <span class="o">=</span> <span class="s1">'foo:</span><span class="si">{foo}</span><span class="s1"> bar=</span><span class="si">{bar}</span><span class="s1"> a=</span><span class="si">{a}</span><span class="s1"> b=</span><span class="si">{b:0.02f}</span><span class="s1"> c=</span><span class="si">{c}</span><span class="s1">'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">partial_formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">str_template</span><span class="p">,</span> <span class="n">bar</span><span class="o">=</span><span class="s2">"BAR"</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">34</span><span class="p">)</span>
+<span class="go">'foo:{foo} bar=BAR a={a} b=34.00 c={c}'</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you only need a formatting function (not the transformed formatting string), a simpler solution may be:</p>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>import functools
+format_str = functools.partial(str_template.format, bar="BAR", b=34)
+</pre></div>
+</div>
+<p>See <a class="reference external" href="https://stackoverflow.com/questions/11283961/partial-string-formatting">https://stackoverflow.com/questions/11283961/partial-string-formatting</a> for more options and discussions.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.naming.StoreWithDictKeys">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">StoreWithDictKeys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keymap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StoreWithDictKeys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StoreWithDictKeys" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dol.naming.ParametricKeyStore" title="dol.naming.ParametricKeyStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParametricKeyStore</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.naming.StoreWithNamedTupleKeys">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">StoreWithNamedTupleKeys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keymap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StoreWithNamedTupleKeys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StoreWithNamedTupleKeys" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dol.naming.ParametricKeyStore" title="dol.naming.ParametricKeyStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParametricKeyStore</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.naming.StoreWithTupleKeys">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">StoreWithTupleKeys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keymap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StoreWithTupleKeys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StoreWithTupleKeys" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dol.naming.ParametricKeyStore" title="dol.naming.ParametricKeyStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParametricKeyStore</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.naming.StrTupleDictWithPrefix">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">StrTupleDictWithPrefix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_info_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_tuple_type_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NamedTuple'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StrTupleDictWithPrefix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StrTupleDictWithPrefix" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StrTupleDict</span></code></p>
+<p>Converting from and to strings, tuples, and dicts, but with partial “prefix” specs allowed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span>) – The string format template</p></li>
+<li><p><strong>format_dict</strong> – A {field_name: field_value_format_regex, …} dict</p></li>
+<li><p><strong>process_kwargs</strong> – A function taking the field=value pairs and producing a dict of processed
+{field: value,…} dict (where both fields and values could have been processed.
+This is useful when we need to process (format, default, etc.) fields, or their values,
+according to the other fields of values in the collection.
+A specification of {field: function_to_process_this_value,…} wouldn’t allow the full powers
+we are allowing here.</p></li>
+<li><p><strong>process_info_dict</strong> – A sort of converse of format_dict.
+This is a {field_name: field_conversion_func, …} dict that is used to convert info_dict values
+before returning them.</p></li>
+<li><p><strong>name_separator</strong> – Used</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span> <span class="o">=</span> <span class="n">StrTupleDictWithPrefix</span><span class="p">(</span><span class="s1">'/home/</span><span class="si">{user}</span><span class="s1">/fav/</span><span class="si">{num}</span><span class="s1">.txt'</span><span class="p">,</span>
+<span class="gp">... </span>                  <span class="n">format_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">'user'</span><span class="p">:</span> <span class="s1">'[^/]+'</span><span class="p">,</span> <span class="s1">'num'</span><span class="p">:</span> <span class="sa">r</span><span class="s1">'\d+'</span><span class="p">},</span>
+<span class="gp">... </span>                  <span class="n">process_info_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">'num'</span><span class="p">:</span> <span class="nb">int</span><span class="p">},</span>
+<span class="gp">... </span>                  <span class="n">sep</span><span class="o">=</span><span class="s1">'/'</span>
+<span class="gp">... </span>                 <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk</span><span class="p">(</span><span class="s1">'USER'</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>  <span class="c1"># making a string (with args or kwargs)</span>
+<span class="go">'/home/USER/fav/123.txt'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">####### prefix methods #######</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">'/home/USER/fav/'</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">'/home/USER/fav/12'</span><span class="p">)</span>  <span class="c1"># False because too long</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">'/home/USER/fav'</span><span class="p">)</span>  <span class="c1"># False because too short</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">'/home/'</span><span class="p">)</span>  <span class="c1"># True because just right</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">is_valid_prefix</span><span class="p">(</span><span class="s1">'/home/USER/fav/123.txt'</span><span class="p">)</span>  <span class="c1"># full path, so output same as is_valid() method</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk_prefix</span><span class="p">(</span><span class="s1">'ME'</span><span class="p">)</span>
+<span class="go">'/home/ME/fav/'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ln</span><span class="o">.</span><span class="n">mk_prefix</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="s1">'YOU'</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">456</span><span class="p">)</span>  <span class="c1"># full specification, so output same as same as mk() method</span>
+<span class="go">'/home/YOU/fav/456.txt'</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.naming.StrTupleDictWithPrefix.is_valid_prefix">
+<span class="sig-name descname"><span class="pre">is_valid_prefix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StrTupleDictWithPrefix.is_valid_prefix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StrTupleDictWithPrefix.is_valid_prefix" title="Link to this definition">¶</a></dt>
+<dd><p>Check if name is a valid prefix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s</strong> – a string (that might or might not be a valid prefix)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True iff name is a valid prefix</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.naming.dict_to_namedtuple">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">dict_to_namedtuple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namedtuple_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#dict_to_namedtuple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.dict_to_namedtuple" title="Link to this definition">¶</a></dt>
+<dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">'MyTuple'</span><span class="p">,</span> <span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span> <span class="s1">'hello'</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span> <span class="o">=</span> <span class="n">NT</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span>
+<span class="go">MyTuple(foo=1, hello=42)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">namedtuple_to_dict</span><span class="p">(</span><span class="n">nt</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{'foo': 1, 'hello': 42}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dict_to_namedtuple</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">NamedTupleFromDict(foo=1, hello=42)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dict_to_namedtuple</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">nt</span><span class="p">)</span>
+<span class="go">MyTuple(foo=1, hello=42)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.naming.get_fields_from_template">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">get_fields_from_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#get_fields_from_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.get_fields_from_template" title="Link to this definition">¶</a></dt>
+<dd><p>Get list from {item} items of template string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>template</strong> – a “template” string (a string with {item} items
+– the kind that is used to mark token for str.format)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a list of the token items of the string, in the order they appear</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_fields_from_template</span><span class="p">(</span><span class="s1">'this</span><span class="si">{is}</span><span class="s1">an</span><span class="si">{example}</span><span class="s1">of</span><span class="si">{a}</span><span class="s1">template'</span><span class="p">)</span>
+<span class="go">['is', 'example', 'a']</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.naming.mk_kwargs_trans">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">mk_kwargs_trans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">trans_func_for_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#mk_kwargs_trans"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.mk_kwargs_trans" title="Link to this definition">¶</a></dt>
+<dd><p>Make a dict transformer from functions that depends solely on keys (of the dict to be transformed)
+Used to easily make process_kwargs and process_info_dict arguments for LinearNaming.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.naming.mk_pattern_from_template_and_format_dict">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">mk_pattern_from_template_and_format_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#mk_pattern_from_template_and_format_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.mk_pattern_from_template_and_format_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Make a compiled regex to match template
+:type template: 
+:param template: A format string
+:type format_dict: 
+:param format_dict: A dict whose keys are template fields and values are regex strings to capture them</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a compiled regex</p>
+</dd>
+</dl>
+<p>Assert on <em>behavior</em> (matching) rather than the exact pattern string, so the
+examples hold on every OS (the field separator – and therefore the default
+capture class – is <code class="docutils literal notranslate"><span class="pre">/</span></code> on POSIX and <code class="docutils literal notranslate"><span class="pre">\</span></code> on Windows):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">'</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="go">&lt;class 're.Pattern'&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">'HERE/and/1234'</span><span class="p">)</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+<span class="go">{'here': 'HERE', 'there': '1234'}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="s1">'</span><span class="si">{here}</span><span class="s1">/and/</span><span class="si">{there}</span><span class="s1">'</span><span class="p">,</span> <span class="p">{</span><span class="s1">'there'</span><span class="p">:</span> <span class="sa">r</span><span class="s1">'\d+'</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">'HERE/and/1234'</span><span class="p">)</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+<span class="go">{'here': 'HERE', 'there': '1234'}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">'HERE/and/not_digits'</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>  <span class="c1"># 'there' must be digits</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.naming.mk_store_from_path_format_store_cls">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">mk_store_from_path_format_store_cls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_cls_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">namedtuple&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keymap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'dol.naming.StrTupleDict'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keymap_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#mk_store_from_path_format_store_cls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.mk_store_from_path_format_store_cls" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap a store (instance or class) that uses string keys to make it into a store that uses a specific key format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>store</strong> – The instance or class to wrap</p></li>
+<li><p><strong>subpath</strong> – The subpath (defining the subset of the data pointed at by the URI</p></li>
+<li><p><strong>store_cls_kwargs</strong> – # if store is a class, the kwargs that you would have given the store_cls to make itself</p></li>
+<li><p><strong>key_type</strong> – <p>The key type you want to interface with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">dict</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">namedtuple</span><span class="p">,</span> <span class="nb">str</span> <span class="ow">or</span> <span class="s1">'dict'</span><span class="p">,</span> <span class="s1">'tuple'</span><span class="p">,</span> <span class="s1">'namedtuple'</span><span class="p">,</span> <span class="s1">'str'</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>keymap</strong> – # the keymap instance or class you want to use to map keys</p></li>
+<li><p><strong>keymap_kwargs</strong> – # if keymap is a cls, the kwargs to give it (besides the subpath)</p></li>
+<li><p><strong>name</strong> – The name to give the class the function will make here</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of a wrapped class</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># Get a (session, bt) indexed LocalJsonStore
+s = mk_store_from_path_format_store_cls(LocalJsonStore,
+                                               os.path.join(root_dir, 'd'),
+                                               subpath='{session}/d/{bt}',
+                                               keymap_kwargs=dict(process_info_dict={'session': int, 'bt': int}))
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.naming.mk_tupled_store_from_path_format_store_cls">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">mk_tupled_store_from_path_format_store_cls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_cls_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">namedtuple&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keymap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'dol.naming.StrTupleDict'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keymap_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.naming.mk_tupled_store_from_path_format_store_cls" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap a store (instance or class) that uses string keys to make it into a store that uses a specific key format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>store</strong> – The instance or class to wrap</p></li>
+<li><p><strong>subpath</strong> – The subpath (defining the subset of the data pointed at by the URI</p></li>
+<li><p><strong>store_cls_kwargs</strong> – # if store is a class, the kwargs that you would have given the store_cls to make itself</p></li>
+<li><p><strong>key_type</strong> – <p>The key type you want to interface with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">dict</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">namedtuple</span><span class="p">,</span> <span class="nb">str</span> <span class="ow">or</span> <span class="s1">'dict'</span><span class="p">,</span> <span class="s1">'tuple'</span><span class="p">,</span> <span class="s1">'namedtuple'</span><span class="p">,</span> <span class="s1">'str'</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>keymap</strong> – # the keymap instance or class you want to use to map keys</p></li>
+<li><p><strong>keymap_kwargs</strong> – # if keymap is a cls, the kwargs to give it (besides the subpath)</p></li>
+<li><p><strong>name</strong> – The name to give the class the function will make here</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of a wrapped class</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># Get a (session, bt) indexed LocalJsonStore
+s = mk_store_from_path_format_store_cls(LocalJsonStore,
+                                               os.path.join(root_dir, 'd'),
+                                               subpath='{session}/d/{bt}',
+                                               keymap_kwargs=dict(process_info_dict={'session': int, 'bt': int}))
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.naming.namedtuple_to_dict">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">namedtuple_to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#namedtuple_to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.namedtuple_to_dict" title="Link to this definition">¶</a></dt>
+<dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">'MyTuple'</span><span class="p">,</span> <span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span> <span class="s1">'hello'</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span> <span class="o">=</span> <span class="n">NT</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span>
+<span class="go">MyTuple(foo=1, hello=42)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">namedtuple_to_dict</span><span class="p">(</span><span class="n">nt</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">{'foo': 1, 'hello': 42}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.naming.template_to_pattern">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">template_to_pattern</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#template_to_pattern"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.template_to_pattern" title="Link to this definition">¶</a></dt>
+<dd><p>Weave a <code class="docutils literal notranslate"><span class="pre">{field}</span></code> template into a regex, substituting each field with its
+capture pattern and <strong>regex-escaping the literal text between fields</strong>.</p>
+<p>Escaping the literals is what makes this OS-independent: a template that is (or
+contains) a real filesystem path has backslashes on Windows (<code class="docutils literal notranslate"><span class="pre">C:\Users\...</span></code>),
+which are regex metacharacters – compiling them unescaped raises
+<code class="docutils literal notranslate"><span class="pre">re.error:</span> <span class="pre">incomplete</span> <span class="pre">escape</span> <span class="pre">\U</span></code>. Escaping also makes a literal <code class="docutils literal notranslate"><span class="pre">.</span></code> match a
+literal dot rather than any character. (This mirrors <code class="docutils literal notranslate"><span class="pre">KeyTemplate._compile_regex</span></code>
+and is why the result is never routed through <code class="docutils literal notranslate"><span class="pre">safe_compile</span></code>, which would
+re.escape the <em>whole</em> pattern on Windows and corrupt the capture groups.)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.naming.update_fields_of_namedtuple">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">update_fields_of_namedtuple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nt</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_of_output_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#update_fields_of_namedtuple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.update_fields_of_namedtuple" title="Link to this definition">¶</a></dt>
+<dd><p>Replace fields of namedtuple</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">NT</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">'NT'</span><span class="p">,</span> <span class="p">(</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span> <span class="o">=</span> <span class="n">NT</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nt</span>
+<span class="go">NT(a=1, b=2, c=3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span>  <span class="c1"># replacing a single field</span>
+<span class="go">NT(a=1, b=2, c=3000)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># replacing two fields</span>
+<span class="go">NT(a=1000, b=2, c=3000)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span>  <span class="c1"># see that the original order doesn't change</span>
+<span class="go">NT(a=1000, b=2, c=3000)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="s1">'hello'</span><span class="p">)</span>  <span class="c1"># replacing one field and adding a new one</span>
+<span class="go">UpdatedNT(a=1, b=2000, c=3, d='hello')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Now let's try controlling the name of the output type, remove fields, and add new ones</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_fields_of_namedtuple</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">name_of_output_type</span><span class="o">=</span><span class="s1">'NewGuy'</span><span class="p">,</span> <span class="n">remove_fields</span><span class="o">=</span><span class="p">(</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">),</span> <span class="n">hello</span><span class="o">=</span><span class="s1">'world'</span><span class="p">)</span>
+<span class="go">NewGuy(b=2, hello='world')</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.naming.validate_kwargs">
+<span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">validate_kwargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kwargs_to_validate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_funs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_kwargs_should_be_in_validation_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_misunderstood_validation_instructions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#validate_kwargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.validate_kwargs" title="Link to this definition">¶</a></dt>
+<dd><p>Utility to validate a dict. It’s main use is to validate function arguments (expressing the validation checks
+in validation_dict) by doing validate_kwargs(locals()), usually in the beginning of the function
+(to avoid having more accumulated variables than we need in locals())</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kwargs_to_validate</strong> – as the name implies…</p></li>
+<li><p><strong>validation_dict</strong> – A dict specifying what to validate. Keys are usually name of variables (when feeding
+locals()) and values are dicts, themselves specifying check:check_val pairs where check is a string that
+points to a function (see validation_funs argument) and check_val is an object that the kwargs_to_validate
+value will be checked against.</p></li>
+<li><p><strong>validation_funs</strong> – A dict of check:check_function(val, check_val) where check_function is a function returning
+True if val is valid (with respect to check_val).</p></li>
+<li><p><strong>all_kwargs_should_be_in_validation_dict</strong> – If True, will raise an error if kwargs_to_validate contains
+keys that are not in validation_dict.</p></li>
+<li><p><strong>ignore_misunderstood_validation_instructions</strong> – If True, will raise an error if validation_dict contains
+a key that is not in validation_funs (safer, since if you mistype a key in validation_dict, the function will
+tell you so!</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if all the validations passed.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">validation_dict</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">'system'</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>        <span class="s1">'be in'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'darwin'</span><span class="p">,</span> <span class="s1">'linux'</span><span class="p">}</span>
+<span class="gp">... </span>    <span class="p">},</span>
+<span class="gp">... </span>    <span class="s1">'fv_version'</span><span class="p">:</span> <span class="p">{</span>
+<span class="gp">... </span>        <span class="s1">'be a'</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">'be at least'</span><span class="p">:</span> <span class="mi">5</span>
+<span class="gp">... </span>    <span class="p">}</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">'system'</span><span class="p">:</span> <span class="s1">'darwin'</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">'system'</span><span class="p">:</span> <span class="s1">'windows'</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'system must be in'</span><span class="p">)</span>  <span class="c1"># omitting the set because inconsistent order</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">'fv_version'</span><span class="p">:</span> <span class="mf">9.9</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+<span class="go">fv_version must be a &lt;class 'int'&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">'fv_version'</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+<span class="go">fv_version must be at least 5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">validate_kwargs</span><span class="p">({</span><span class="s1">'fv_version'</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span> <span class="n">validation_dict</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="dol.paths.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">dol.paths</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="dol.mixins.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">dol.mixins</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">dol.naming</a><ul>
+<li><a class="reference internal" href="#dol.naming.BigDocTest"><code class="docutils literal notranslate"><span class="pre">BigDocTest</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.KeyMapNames"><code class="docutils literal notranslate"><span class="pre">KeyMapNames</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.KeyMaps"><code class="docutils literal notranslate"><span class="pre">KeyMaps</span></code></a><ul>
+<li><a class="reference internal" href="#dol.naming.KeyMaps.id_of_key"><code class="docutils literal notranslate"><span class="pre">KeyMaps.id_of_key</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.KeyMaps.key_of_id"><code class="docutils literal notranslate"><span class="pre">KeyMaps.key_of_id</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dol.naming.LinearNaming"><code class="docutils literal notranslate"><span class="pre">LinearNaming</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.ParametricKeyStore"><code class="docutils literal notranslate"><span class="pre">ParametricKeyStore</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.PartialFormatter"><code class="docutils literal notranslate"><span class="pre">PartialFormatter</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.StoreWithDictKeys"><code class="docutils literal notranslate"><span class="pre">StoreWithDictKeys</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.StoreWithNamedTupleKeys"><code class="docutils literal notranslate"><span class="pre">StoreWithNamedTupleKeys</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.StoreWithTupleKeys"><code class="docutils literal notranslate"><span class="pre">StoreWithTupleKeys</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.StrTupleDictWithPrefix"><code class="docutils literal notranslate"><span class="pre">StrTupleDictWithPrefix</span></code></a><ul>
+<li><a class="reference internal" href="#dol.naming.StrTupleDictWithPrefix.is_valid_prefix"><code class="docutils literal notranslate"><span class="pre">StrTupleDictWithPrefix.is_valid_prefix()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dol.naming.dict_to_namedtuple"><code class="docutils literal notranslate"><span class="pre">dict_to_namedtuple()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.get_fields_from_template"><code class="docutils literal notranslate"><span class="pre">get_fields_from_template()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.mk_kwargs_trans"><code class="docutils literal notranslate"><span class="pre">mk_kwargs_trans()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.mk_pattern_from_template_and_format_dict"><code class="docutils literal notranslate"><span class="pre">mk_pattern_from_template_and_format_dict()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.mk_store_from_path_format_store_cls"><code class="docutils literal notranslate"><span class="pre">mk_store_from_path_format_store_cls()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.mk_tupled_store_from_path_format_store_cls"><code class="docutils literal notranslate"><span class="pre">mk_tupled_store_from_path_format_store_cls()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.namedtuple_to_dict"><code class="docutils literal notranslate"><span class="pre">namedtuple_to_dict()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.template_to_pattern"><code class="docutils literal notranslate"><span class="pre">template_to_pattern()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.update_fields_of_namedtuple"><code class="docutils literal notranslate"><span class="pre">update_fields_of_namedtuple()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.validate_kwargs"><code class="docutils literal notranslate"><span class="pre">validate_kwargs()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    </body>
+</html>

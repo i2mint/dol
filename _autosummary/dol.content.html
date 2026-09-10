@@ -1,0 +1,758 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link rel="alternate" type="text/markdown" href="dol.content.html.md">
+<link rel="describedby" href="../llms.txt" type="text/markdown"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="dol.dig" href="dol.dig.html"><link rel="prev" title="dol.caching" href="dol.caching.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>dol.content - dol</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #694191;
+  --color-brand-content: #694191;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #cba1fa;
+  --color-brand-content: #cba1fa;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #cba1fa;
+  --color-brand-content: #cba1fa;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">dol</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">dol</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API reference</a><input aria-label="Toggle navigation of API reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="dol.html">dol</a><input aria-label="Toggle navigation of dol" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dol.appendable.html">dol.appendable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.base.html">dol.base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.caching.html">dol.caching</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">dol.content</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.dig.html">dol.dig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.errors.html">dol.errors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.explicit.html">dol.explicit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.filesys.html">dol.filesys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.kv_codecs.html">dol.kv_codecs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.misc.html">dol.misc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.mixins.html">dol.mixins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.naming.html">dol.naming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.paths.html">dol.paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.recipes.html">dol.recipes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.signatures.html">dol.signatures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.sources.html">dol.sources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.tools.html">dol.tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.trans.html">dol.trans</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.trash.html">dol.trash</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.util.html">dol.util</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.zipfiledol.html">dol.zipfiledol</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ai-agents.html">For AI agents</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/_autosummary/dol.content.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-dol.content">
+<span id="dol-content"></span><h1>dol.content<a class="headerlink" href="#module-dol.content" title="Link to this heading">¶</a></h1>
+<p>Content references and content-addressed storage — the flat “blob” layer.</p>
+<p>Many apps split their data into two concerns (the <em>content-metadata bifurcation</em>;
+see <code class="docutils literal notranslate"><span class="pre">misc/docs/dol_content_metadata_bifurcation.md</span></code>):</p>
+<ul class="simple">
+<li><p><strong>records / metadata</strong> — small, queryable rows (a <code class="docutils literal notranslate"><span class="pre">MutableMapping</span></code> of dicts, a DB);</p></li>
+<li><p><strong>content / blobs</strong> — large bytes (media, documents, renders) that you don’t want
+to inline into a record or a query result.</p></li>
+</ul>
+<p>This module is the <strong>content half</strong>: a <em>flat</em> bytes store plus a small, serializable
+<a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> token that stands in for the bytes inside a record. The store
+itself is just a <code class="docutils literal notranslate"><span class="pre">MutableMapping[str,</span> <span class="pre">bytes]</span></code> — so the backend is <strong>injected</strong>
+(<code class="docutils literal notranslate"><span class="pre">dict</span></code> in tests, <code class="xref py py-class docutils literal notranslate"><span class="pre">dol.Files</span></code> locally, an <code class="docutils literal notranslate"><span class="pre">s3dol</span></code> store in the cloud) and
+nothing here depends on any of them.</p>
+<p>Two addressing modes, mirroring the same convention used by the <code class="docutils literal notranslate"><span class="pre">zodal</span></code> TypeScript
+stores (so a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> serialized here matches <code class="docutils literal notranslate"><span class="pre">zodal</span></code>’s <code class="docutils literal notranslate"><span class="pre">ContentRef</span></code> on
+the wire — see <a class="reference internal" href="#dol.content.ContentRef.to_json" title="dol.content.ContentRef.to_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ContentRef.to_json()</span></code></a>):</p>
+<ul class="simple">
+<li><p><strong>location-addressed</strong> (<a class="reference internal" href="#dol.content.put_content" title="dol.content.put_content"><code class="xref py py-func docutils literal notranslate"><span class="pre">put_content()</span></code></a>) — the caller supplies the id;</p></li>
+<li><p><strong>content-addressed</strong> (<a class="reference internal" href="#dol.content.add_content" title="dol.content.add_content"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_content()</span></code></a> / <a class="reference internal" href="#dol.content.with_content_addressing" title="dol.content.with_content_addressing"><code class="xref py py-func docutils literal notranslate"><span class="pre">with_content_addressing()</span></code></a>) — the
+id <em>is</em> the content hash, which makes writes idempotent and deduplicated (CAS).</p></li>
+</ul>
+<p><strong>URLs are resolved on demand, never baked in.</strong> <code class="docutils literal notranslate"><span class="pre">put_content</span></code>/<code class="docutils literal notranslate"><span class="pre">add_content</span></code> leave
+<code class="docutils literal notranslate"><span class="pre">ContentRef.url</span></code> empty; call <a class="reference internal" href="#dol.content.content_url" title="dol.content.content_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_url()</span></code></a> when you actually need a fetchable
+URL. This is deliberate: a backend’s <code class="docutils literal notranslate"><span class="pre">url_for</span></code> may mint a <em>presigned, expiring</em> URL
+(e.g. S3), and a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> is meant to be <em>persisted</em> inside a record — so
+freezing an expiring URL into it would be a latent bug. Reads can thus redirect to a
+CDN / presigned URL / static route while writes always go to the injected backend.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">store</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'hello world'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'greeting.txt'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">item_id</span> <span class="o">==</span> <span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'hello world'</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">mime_type</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+<span class="go">(11, 'text/plain', None)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_content</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span>
+<span class="go">b'hello world'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_content_ref</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>The wire form is camelCase and drops empty fields, matching <code class="docutils literal notranslate"><span class="pre">zodal</span></code>’s <code class="docutils literal notranslate"><span class="pre">ContentRef</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">to_json</span><span class="p">()[</span><span class="s1">'itemId'</span><span class="p">]</span> <span class="o">==</span> <span class="n">ref</span><span class="o">.</span><span class="n">item_id</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
+<span class="go">['_tag', 'field', 'hash', 'itemId', 'mimeType', 'size']</span>
+</pre></div>
+</div>
+<p class="rubric">Module Attributes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.content.CONTENT_REF_TAG" title="dol.content.CONTENT_REF_TAG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CONTENT_REF_TAG</span></code></a></p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">_tag</span></code> discriminator value carried on the JSON wire form (cross-language parity).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.content.HashFunc" title="dol.content.HashFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HashFunc</span></code></a></p></td>
+<td><p>A key-minting hash constructor, e.g. <code class="docutils literal notranslate"><span class="pre">hashlib.sha256</span></code> — <code class="docutils literal notranslate"><span class="pre">bytes</span> <span class="pre">-&gt;</span> <span class="pre">hash</span> <span class="pre">object</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.content.add_content" title="dol.content.add_content"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_content</span></code></a>(store, data, *[, field, hasher, ...])</p></td>
+<td><p>Content-addressed write: the key <em>is</em> the content hash; idempotent (CAS).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.content.content_hash" title="dol.content.content_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">content_hash</span></code></a>(data, *[, hasher, length])</p></td>
+<td><p>Hex content hash of <code class="docutils literal notranslate"><span class="pre">data</span></code> (sha256 by default), optionally truncated to <code class="docutils literal notranslate"><span class="pre">length</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.content.content_url" title="dol.content.content_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">content_url</span></code></a>(store, ref_or_key)</p></td>
+<td><p>A fetchable URL for content, resolved <strong>on demand</strong>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.content.delete_content" title="dol.content.delete_content"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete_content</span></code></a>(store, ref_or_key)</p></td>
+<td><p>Delete content by <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a>, wire dict, or bare key (<code class="docutils literal notranslate"><span class="pre">del</span> <span class="pre">store[key]</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.content.get_content" title="dol.content.get_content"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_content</span></code></a>(store, ref_or_key)</p></td>
+<td><p>Read content bytes by <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a>, wire dict, or bare key.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.content.guess_mime_type" title="dol.content.guess_mime_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">guess_mime_type</span></code></a>(name)</p></td>
+<td><p>Guess a mime type from a filename/key by extension (stdlib <code class="docutils literal notranslate"><span class="pre">mimetypes</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.content.is_content_ref" title="dol.content.is_content_ref"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_content_ref</span></code></a>(obj)</p></td>
+<td><p>True for a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> instance or its wire-form dict (<code class="docutils literal notranslate"><span class="pre">_tag</span></code> discriminator).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.content.put_content" title="dol.content.put_content"><code class="xref py py-obj docutils literal notranslate"><span class="pre">put_content</span></code></a>(store, item_id, data, *[, ...])</p></td>
+<td><p>Location-addressed write: store <code class="docutils literal notranslate"><span class="pre">data</span></code> under a caller-supplied <code class="docutils literal notranslate"><span class="pre">item_id</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.content.with_content_addressing" title="dol.content.with_content_addressing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_content_addressing</span></code></a>([store, hasher, ...])</p></td>
+<td><p>Wrap an injected backend as a <a class="reference internal" href="#dol.content.ContentAddressedStore" title="dol.content.ContentAddressedStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentAddressedStore</span></code></a> (<code class="docutils literal notranslate"><span class="pre">dict</span></code> if <code class="docutils literal notranslate"><span class="pre">None</span></code>).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.content.ContentAddressedStore" title="dol.content.ContentAddressedStore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContentAddressedStore</span></code></a>([store, hasher, ...])</p></td>
+<td><p>A bytes store whose keys are the content hash of the values (CAS facade).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContentRef</span></code></a>(item_id[, field, hash, url, ...])</p></td>
+<td><p>A small, serializable stand-in for stored content (bytes).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.content.SupportsUrlFor" title="dol.content.SupportsUrlFor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SupportsUrlFor</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A backend that can hand out a directly-fetchable URL for a stored key.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="dol.content.CONTENT_REF_TAG">
+<span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">CONTENT_REF_TAG</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ContentRef'</span></span><a class="headerlink" href="#dol.content.CONTENT_REF_TAG" title="Link to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">_tag</span></code> discriminator value carried on the JSON wire form (cross-language parity).</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.content.ContentAddressedStore">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">ContentAddressedStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hasher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;built-in</span> <span class="pre">function</span> <span class="pre">openssl_sha256&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'content'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#ContentAddressedStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.ContentAddressedStore" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="dol.base.html#dol.base.KvPersister" title="dol.base.KvPersister"><code class="xref py py-class docutils literal notranslate"><span class="pre">KvPersister</span></code></a></p>
+<p>A bytes store whose keys are the content hash of the values (CAS facade).</p>
+<p>Wraps any injected <code class="docutils literal notranslate"><span class="pre">MutableMapping</span></code> backend (<code class="docutils literal notranslate"><span class="pre">dict</span></code> for tests, <code class="xref py py-class docutils literal notranslate"><span class="pre">dol.Files</span></code>
+locally, an <code class="docutils literal notranslate"><span class="pre">s3dol</span></code> store in the cloud). Minting is via <a class="reference internal" href="#dol.content.ContentAddressedStore.add" title="dol.content.ContentAddressedStore.add"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add()</span></code></a> (the store
+picks the key); reads/iter/delete delegate to the backend. A direct
+<code class="docutils literal notranslate"><span class="pre">store[k]</span> <span class="pre">=</span> <span class="pre">v</span></code> is allowed only when <code class="docutils literal notranslate"><span class="pre">k</span></code> equals the content hash of <code class="docutils literal notranslate"><span class="pre">v</span></code> — so the
+CAS invariant can’t be silently violated.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cas</span> <span class="o">=</span> <span class="n">with_content_addressing</span><span class="p">()</span>   <span class="c1"># dict-backed</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">cas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">b</span><span class="s1">'hello'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'h.txt'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cas</span><span class="p">[</span><span class="n">ref</span><span class="o">.</span><span class="n">item_id</span><span class="p">]</span>
+<span class="go">b'hello'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">cas</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'hello'</span><span class="p">)]</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">b</span><span class="s1">'hello'</span><span class="p">)</span><span class="o">.</span><span class="n">item_id</span> <span class="o">==</span> <span class="n">ref</span><span class="o">.</span><span class="n">item_id</span>   <span class="c1"># idempotent / deduplicated</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.content.ContentAddressedStore.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">mime_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#ContentAddressedStore.add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.ContentAddressedStore.add" title="Link to this definition">¶</a></dt>
+<dd><p>Write <code class="docutils literal notranslate"><span class="pre">data</span></code> under its content hash (idempotent); return a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dol.content.ContentAddressedStore.url_for">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">url_for</span></span><a class="headerlink" href="#dol.content.ContentAddressedStore.url_for" title="Link to this definition">¶</a></dt>
+<dd><p>Delegate the <code class="docutils literal notranslate"><span class="pre">url_for</span></code> seam to the backend if it has one (else <code class="docutils literal notranslate"><span class="pre">None</span></code>).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.content.ContentRef">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">ContentRef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'content'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hash</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mime_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#ContentRef"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.ContentRef" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A small, serializable stand-in for stored content (bytes).</p>
+<p>Held <em>inside</em> a record in place of the bytes, so lists/queries stay light. It is
+addressed by <code class="docutils literal notranslate"><span class="pre">(item_id,</span> <span class="pre">field)</span></code> (a record may have several content fields);
+<code class="docutils literal notranslate"><span class="pre">hash</span></code> is populated for content-addressed writes and left <code class="docutils literal notranslate"><span class="pre">None</span></code> otherwise.
+<code class="docutils literal notranslate"><span class="pre">url</span></code> is an optional directly-fetchable location — normally left empty and
+resolved on demand via <a class="reference internal" href="#dol.content.content_url" title="dol.content.content_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_url()</span></code></a> (see the module docstring).</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.content.ContentRef.from_json">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#ContentRef.from_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.ContentRef.from_json" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a wire-form dict (camelCase) back into a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.content.ContentRef.to_json">
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#ContentRef.to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.ContentRef.to_json" title="Link to this definition">¶</a></dt>
+<dd><p>camelCase wire form matching <code class="docutils literal notranslate"><span class="pre">zodal</span></code>’s <code class="docutils literal notranslate"><span class="pre">ContentRef</span></code> (empty fields dropped).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="dol.content.HashFunc">
+<span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">HashFunc</span></span><a class="headerlink" href="#dol.content.HashFunc" title="Link to this definition">¶</a></dt>
+<dd><p>A key-minting hash constructor, e.g. <code class="docutils literal notranslate"><span class="pre">hashlib.sha256</span></code> — <code class="docutils literal notranslate"><span class="pre">bytes</span> <span class="pre">-&gt;</span> <span class="pre">hash</span> <span class="pre">object</span></code>.</p>
+<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></a>]</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.content.SupportsUrlFor">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">SupportsUrlFor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#SupportsUrlFor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.SupportsUrlFor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
+<p>A backend that can hand out a directly-fetchable URL for a stored key.</p>
+<p>The seam that lets <strong>reads</strong> redirect to a CDN / presigned URL / static route while
+<strong>writes</strong> stay on the injected backend. Local file stores typically don’t implement
+it (<a class="reference internal" href="#dol.content.content_url" title="dol.content.content_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_url()</span></code></a> then returns <code class="docutils literal notranslate"><span class="pre">None</span></code>); an <code class="docutils literal notranslate"><span class="pre">s3dol</span></code> store implements it with
+a presigned URL — so all S3 knowledge lives in <code class="docutils literal notranslate"><span class="pre">s3dol</span></code>, never here.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.content.add_content">
+<span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">add_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'content'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hasher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;built-in</span> <span class="pre">function</span> <span class="pre">openssl_sha256&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mime_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#add_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.add_content" title="Link to this definition">¶</a></dt>
+<dd><p>Content-addressed write: the key <em>is</em> the content hash; idempotent (CAS).</p>
+<p>A second call with identical bytes neither rewrites nor produces a different id, so
+identical content is stored once. Returns a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> with <code class="docutils literal notranslate"><span class="pre">hash</span></code> set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'xyz'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'xyz'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">item_id</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">item_id</span> <span class="o">==</span> <span class="n">a</span><span class="o">.</span><span class="n">hash</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.content.content_hash">
+<span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">content_hash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hasher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;built-in</span> <span class="pre">function</span> <span class="pre">openssl_sha256&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#content_hash"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.content_hash" title="Link to this definition">¶</a></dt>
+<dd><p>Hex content hash of <code class="docutils literal notranslate"><span class="pre">data</span></code> (sha256 by default), optionally truncated to <code class="docutils literal notranslate"><span class="pre">length</span></code>.</p>
+<p>Truncation trades key length for a higher collision probability (a 16-hex-char
+prefix is 64 bits) — leave <code class="docutils literal notranslate"><span class="pre">length</span></code> unset unless keys must be short and the
+corpus is small.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">)</span> <span class="o">==</span> <span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">16</span><span class="p">))</span>
+<span class="go">16</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.content.content_url">
+<span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">content_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_or_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#content_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.content_url" title="Link to this definition">¶</a></dt>
+<dd><p>A fetchable URL for content, resolved <strong>on demand</strong>.</p>
+<p>Prefers a URL the ref already carries; otherwise asks the backend’s <code class="docutils literal notranslate"><span class="pre">url_for</span></code>
+(the <a class="reference internal" href="#dol.content.SupportsUrlFor" title="dol.content.SupportsUrlFor"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupportsUrlFor</span></code></a> seam), returning <code class="docutils literal notranslate"><span class="pre">None</span></code> if it has none.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Served</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">url_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="k">return</span> <span class="sa">f</span><span class="s1">'https://cdn.example/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">(</span><span class="n">Served</span><span class="p">(),</span> <span class="s1">'k1'</span><span class="p">)</span>
+<span class="go">'https://cdn.example/k1'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">({},</span> <span class="s1">'k1'</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">({},</span> <span class="n">ContentRef</span><span class="p">(</span><span class="s1">'k1'</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">'https://carried/k1'</span><span class="p">))</span>  <span class="c1"># ref carries its own</span>
+<span class="go">'https://carried/k1'</span>
+</pre></div>
+</div>
+<p>The key is resolved <strong>through any wrapping layers</strong>, so a URL addresses the same object
+<code class="docutils literal notranslate"><span class="pre">store[key]</span></code> reads. Without this, a key-transforming wrap would hand the backend the
+outer key and silently return a URL for a different object:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeyCodecs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped</span> <span class="o">=</span> <span class="n">KeyCodecs</span><span class="o">.</span><span class="n">prefixed</span><span class="p">(</span><span class="s1">'a/'</span><span class="p">)(</span><span class="n">Served</span><span class="p">)({</span><span class="s1">'a/k1'</span><span class="p">:</span> <span class="sa">b</span><span class="s1">'v'</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wrapped</span><span class="p">[</span><span class="s1">'k1'</span><span class="p">]</span>
+<span class="go">b'v'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="s1">'k1'</span><span class="p">)</span>
+<span class="go">'https://cdn.example/a/k1'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.content.delete_content">
+<span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">delete_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_or_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#delete_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.delete_content" title="Link to this definition">¶</a></dt>
+<dd><p>Delete content by <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a>, wire dict, or bare key (<code class="docutils literal notranslate"><span class="pre">del</span> <span class="pre">store[key]</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'gone'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">delete_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">item_id</span> <span class="ow">in</span> <span class="n">s</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.content.get_content">
+<span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">get_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_or_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#get_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.get_content" title="Link to this definition">¶</a></dt>
+<dd><p>Read content bytes by <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a>, wire dict, or bare key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'data'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span> <span class="o">==</span> <span class="n">get_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">item_id</span><span class="p">)</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">'data'</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.content.guess_mime_type">
+<span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">guess_mime_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#guess_mime_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.guess_mime_type" title="Link to this definition">¶</a></dt>
+<dd><p>Guess a mime type from a filename/key by extension (stdlib <code class="docutils literal notranslate"><span class="pre">mimetypes</span></code>).</p>
+<p>Results depend on the platform’s mime registry, so treat them as best-effort.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">guess_mime_type</span><span class="p">(</span><span class="s1">'a.json'</span><span class="p">)</span>
+<span class="go">'application/json'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">guess_mime_type</span><span class="p">(</span><span class="s1">'no-extension'</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.content.is_content_ref">
+<span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">is_content_ref</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#is_content_ref"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.is_content_ref" title="Link to this definition">¶</a></dt>
+<dd><p>True for a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> instance or its wire-form dict (<code class="docutils literal notranslate"><span class="pre">_tag</span></code> discriminator).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">(</span><span class="n">ContentRef</span><span class="p">(</span><span class="s1">'id1'</span><span class="p">))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">({</span><span class="s1">'_tag'</span><span class="p">:</span> <span class="s1">'ContentRef'</span><span class="p">,</span> <span class="s1">'itemId'</span><span class="p">:</span> <span class="s1">'id1'</span><span class="p">})</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">({</span><span class="s1">'itemId'</span><span class="p">:</span> <span class="s1">'id1'</span><span class="p">})</span> <span class="ow">or</span> <span class="n">is_content_ref</span><span class="p">(</span><span class="s1">'id1'</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.content.put_content">
+<span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">put_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'content'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mime_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#put_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.put_content" title="Link to this definition">¶</a></dt>
+<dd><p>Location-addressed write: store <code class="docutils literal notranslate"><span class="pre">data</span></code> under a caller-supplied <code class="docutils literal notranslate"><span class="pre">item_id</span></code>.</p>
+<p>Backend <code class="docutils literal notranslate"><span class="pre">store</span></code> is injected. Returns a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> (mime guessed from
+<code class="docutils literal notranslate"><span class="pre">name</span></code> if not given; <code class="docutils literal notranslate"><span class="pre">url</span></code> left empty — resolve via <a class="reference internal" href="#dol.content.content_url" title="dol.content.content_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_url()</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">put_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s1">'clip1'</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'</span><span class="se">\x00\x01</span><span class="s1">'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'clip1.wav'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">item_id</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">hash</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="s1">'clip1'</span><span class="p">]</span>
+<span class="go">('clip1', None, b'\x00\x01')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">mime_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'audio/'</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.content.with_content_addressing">
+<span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">with_content_addressing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hasher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;built-in</span> <span class="pre">function</span> <span class="pre">openssl_sha256&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'content'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#with_content_addressing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.with_content_addressing" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap an injected backend as a <a class="reference internal" href="#dol.content.ContentAddressedStore" title="dol.content.ContentAddressedStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentAddressedStore</span></code></a> (<code class="docutils literal notranslate"><span class="pre">dict</span></code> if <code class="docutils literal notranslate"><span class="pre">None</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.content.ContentAddressedStore" title="dol.content.ContentAddressedStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentAddressedStore</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cas</span> <span class="o">=</span> <span class="n">with_content_addressing</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">cas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">)</span><span class="o">.</span><span class="n">item_id</span><span class="p">)</span>
+<span class="go">16</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="dol.dig.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">dol.dig</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="dol.caching.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">dol.caching</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">dol.content</a><ul>
+<li><a class="reference internal" href="#dol.content.CONTENT_REF_TAG"><code class="docutils literal notranslate"><span class="pre">CONTENT_REF_TAG</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.ContentAddressedStore"><code class="docutils literal notranslate"><span class="pre">ContentAddressedStore</span></code></a><ul>
+<li><a class="reference internal" href="#dol.content.ContentAddressedStore.add"><code class="docutils literal notranslate"><span class="pre">ContentAddressedStore.add()</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.ContentAddressedStore.url_for"><code class="docutils literal notranslate"><span class="pre">ContentAddressedStore.url_for</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dol.content.ContentRef"><code class="docutils literal notranslate"><span class="pre">ContentRef</span></code></a><ul>
+<li><a class="reference internal" href="#dol.content.ContentRef.from_json"><code class="docutils literal notranslate"><span class="pre">ContentRef.from_json()</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.ContentRef.to_json"><code class="docutils literal notranslate"><span class="pre">ContentRef.to_json()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dol.content.HashFunc"><code class="docutils literal notranslate"><span class="pre">HashFunc</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.SupportsUrlFor"><code class="docutils literal notranslate"><span class="pre">SupportsUrlFor</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.add_content"><code class="docutils literal notranslate"><span class="pre">add_content()</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.content_hash"><code class="docutils literal notranslate"><span class="pre">content_hash()</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.content_url"><code class="docutils literal notranslate"><span class="pre">content_url()</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.delete_content"><code class="docutils literal notranslate"><span class="pre">delete_content()</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.get_content"><code class="docutils literal notranslate"><span class="pre">get_content()</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.guess_mime_type"><code class="docutils literal notranslate"><span class="pre">guess_mime_type()</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.is_content_ref"><code class="docutils literal notranslate"><span class="pre">is_content_ref()</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.put_content"><code class="docutils literal notranslate"><span class="pre">put_content()</span></code></a></li>
+<li><a class="reference internal" href="#dol.content.with_content_addressing"><code class="docutils literal notranslate"><span class="pre">with_content_addressing()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    </body>
+</html>

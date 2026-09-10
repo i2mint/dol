@@ -1,4 +1,0 @@
-dol
-===
-.. automodule:: dol
-   :members:
