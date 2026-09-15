@@ -1,5 +1,14 @@
-"""
-This module is about generating, validating, and operating on (parametrized) fields (i.e. stings, e.g. paths).
+"""This module is about generating, validating, and operating on (parametrized) fields (i.e. strings, e.g. paths).
+
+Main entry points:
+
+- ``StrTupleDict``: convert a templated name between string, tuple and dict forms
+- ``mk_pattern_from_template_and_format_dict``: a compiled regex from a template
+- ``get_fields_from_template``: the field names of a template
+
+    >>> from dol.naming import get_fields_from_template
+    >>> get_fields_from_template('this{is}an{example}')
+    ['is', 'example']
 """
 
 import re
@@ -436,6 +445,12 @@ def _mk(self, *args, **kwargs):
 #
 # # @add_wrapper_method
 class StrTupleDict:
+    """Convert a parametrized name between its string, tuple and dict forms.
+
+    Built from a string template with ``{field}`` placeholders (and optional regexes
+    for the fields). See ``__init__`` for the parameters and an example.
+    """
+
     def __init__(
         self,
         template: str | tuple | list,

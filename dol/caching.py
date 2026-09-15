@@ -2330,6 +2330,9 @@ def ensure_clear_to_kv_store(store):
 
 # TODO: Normalize using store_decorator and add control over flush_cache method name
 def flush_on_exit(cls):
+    """Class decorator: a subclass whose ``__exit__`` calls ``flush_cache()`` (adding a
+    trivial ``__enter__`` if the class has none), so a write-cached store can be used as
+    a context manager that flushes on exit. Used by ``mk_write_cached_store``."""
     new_cls = type(cls.__name__, (cls,), {})
 
     if not hasattr(new_cls, "__enter__"):

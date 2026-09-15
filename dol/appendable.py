@@ -1,12 +1,17 @@
-"""
-Tools to add append-functionality to key-val stores. The main function is::
+"""Tools to add append-functionality to key-val stores.
 
-    appendable_store_cls = add_append_functionality_to_store_cls(store_cls, item2kv, ...)
+The main function is ``appendable(store_cls, item2kv=...)``: you give it the store
+class you want to subclass and an item -> (key, val) function, and you get a store
+(subclass) that has a ``store.append(item)`` method (and an ``extend``, which appends in
+a loop). ``mk_item2kv_for`` holds ready-made item2kv factories (timestamps, uuids,
+fields of the item, ...).
 
-You give it the `store_cls` you want to sub class, and a item -> (key, val) function, and you get a store (subclass) that
-has a `store.append(item)` method. Also includes an extend method (that just called appends in a loop.
-
-See add_append_functionality_to_store_cls docs for examples.
+    >>> from dol.appendable import appendable
+    >>> S = appendable(dict, item2kv=lambda item: (item['id'], item))
+    >>> s = S()
+    >>> s.append({'id': 1})
+    >>> s
+    {1: {'id': 1}}
 """
 
 import time

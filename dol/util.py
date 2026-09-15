@@ -1,4 +1,17 @@
-"""General util objects"""
+"""General util objects: function composition, grouping, partial classes, file helpers.
+
+Main entry points:
+
+- ``Pipe``: compose functions left to right
+- ``partialclass``: ``functools.partial`` for classes
+- ``groupby``, ``regroupby``, ``igroupby``: group items by a key function
+- ``chain_get``: first value found for a sequence of keys
+- ``written_bytes``, ``read_from_bytes``: turn file-writing/reading functions into bytes codecs
+
+    >>> from dol.util import Pipe
+    >>> Pipe(lambda x: x + 1, str)(1)
+    '2'
+"""
 
 import os
 import shutil

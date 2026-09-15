@@ -1,4 +1,22 @@
-"""Mixins"""
+"""Mixins that add or restrict store behaviours.
+
+Main entry points:
+
+- ``ReadOnlyMixin``: forbid writes and deletes
+- ``OverWritesNotAllowedMixin``: forbid writing to an existing key
+- ``SimpleJsonMixin``: JSON-encoded values
+- ``IterBasedSizedContainerMixin``: ``__len__`` and ``__contains__`` from ``__iter__``
+
+    >>> from dol.mixins import OverWritesNotAllowedMixin
+    >>> class P(OverWritesNotAllowedMixin, dict):
+    ...     pass
+    >>> p = P()
+    >>> p['a'] = 1
+    >>> p['a'] = 2  # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+      ...
+    dol.errors.OverWritesNotAllowedError: key a already exists and cannot be overwritten...
+"""
 
 import json
 from dol.errors import (

@@ -1,4 +1,25 @@
-"""Transformation/wrapping tools"""
+"""Tools to wrap stores with key/value transforms, filters, caches and other layers.
+
+A wrap leaves the backend untouched and builds a new class (or instance) around it.
+Every decorator here is a ``store_decorator``, so it can be applied to a class, to an
+instance, or used as a factory (``deco(**params)(store)``).
+
+Main entry points:
+
+- ``wrap_kvs``: key/value transforms (``key_of_id``, ``obj_of_data``, codecs, ...)
+- ``filt_iter``: restrict a store to a subset of its keys
+- ``cached_keys``: cache the key listing of a slow store
+- ``add_path_access``: read/write nested stores through key paths
+- ``kv_wrap``: wrap using an object that holds ``_id_of_key``/``_obj_of_data``-style methods
+
+    >>> from dol.trans import wrap_kvs
+    >>> s = wrap_kvs({}, key_of_id=str.upper, id_of_key=str.lower, obj_of_data=int, data_of_obj=str)
+    >>> s['a'] = 1
+    >>> s.store  # the backend holds the transformed key and value
+    {'a': '1'}
+    >>> list(s), s['A']
+    (['A'], 1)
+"""
 
 from functools import wraps, partial, reduce
 import types
@@ -591,18 +612,36 @@ def raise_disabled_error(functionality):
 
 
 def disable_delitem(o):
+    """Replace ``o.__delitem__`` (if any) with a function raising ``ValueError``.
+
+    Meant for classes: on an instance, ``del o[k]`` still uses the type's method.
+    """
     if hasattr(o, "__delitem__"):
         o.__delitem__ = raise_disabled_error("deletion")
     return o
 
 
 def disable_setitem(o):
+    """Replace ``o.__setitem__`` (if any) with a function raising ``ValueError``.
+
+    Meant for classes: on an instance, ``o[k] = v`` still uses the type's method.
+    """
     if hasattr(o, "__setitem__"):
         o.__setitem__ = raise_disabled_error("writing")
     return o
 
 
 def mk_read_only(o):
+    """Disable ``__setitem__`` and ``__delitem__`` on ``o`` (a store class, typically).
+
+    >>> class D(dict):
+    ...     pass
+    >>> D = mk_read_only(D)
+    >>> D()['a'] = 1
+    Traceback (most recent call last):
+      ...
+    ValueError: writing is disabled
+    """
     return disable_delitem(disable_setitem(o))
 
 
@@ -864,13 +903,9 @@ def cached_keys(
         keys_cache: An explicit collection of keys
         iter_to_container: The function that will be applied to existing __iter__() and assigned to cache.
             The default is list. Another useful one is the sorted function.
-        cache_update_method: Name of the keys_cache update method to use, if it is an attribute of keys_cache.
-            Note that this cache_update_method will be used only
-                if keys_cache is an explicit iterable and has that attribute
-                if keys_cache is a callable and has that attribute.
-
-            The default None
-
+        cache_update_method: Name of the keys_cache update method to use, if it is an
+            attribute of keys_cache (whether keys_cache is an explicit iterable or a
+            callable). Default None.
         name: The name of the new class
 
     Returns:
@@ -1959,7 +1994,7 @@ def wrap_kvs(
             The function is called with both `k` and `v` as inputs, and should output a transformed value.
             The intent use is to do ingoing value transformations conditioned on the key.
             For example, you may want to serialize an object depending on if you're writing to a
-             '.csv', or '.json', or '.pickle' file.
+            '.csv', or '.json', or '.pickle' file.
 
             Forms are `preset(k, obj)` or `preset(self, k, obj)`
         postget: A function that is called after the value `v` for a key `k` is be `__getitem__`.
@@ -2512,6 +2547,8 @@ def mk_confirm_overwrite_preset(
     """
 
     def confirm_overwrite(self, k, v):
+        """``preset`` that returns ``v`` unless ``k`` already holds a different value
+        and the user does not confirm; then the existing value is kept."""
         _sentinel = object()
         existing = self.get(k, _sentinel)
         if existing is not _sentinel and existing != v:
@@ -3122,7 +3159,7 @@ def autoviv(store=None, **kwargs):
 @store_decorator
 def flatten(store=None, *, levels=None, cache_keys=False):
     """
-    Flatten a nested store.
+    Give a nested store a flat view whose keys are the ``(a, b, c)`` key paths.
 
     Say you have a store that has three levels (or more), that is, that you can always
     ask for the value ``store[a][b][c]`` if ``a`` is a valid key of ``store``,

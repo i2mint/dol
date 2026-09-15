@@ -22,6 +22,19 @@ add this key interface layer.
 These key converters object serialization methods default to the identity (i.e. they return the input as is).
 This means that you don't have to implement these as all, and can choose to implement these concerns within
 the storage methods themselves.
+
+Main entry points:
+
+- ``KvReader``: base class for read-only stores (a ``Mapping`` with a ``head``)
+- ``KvPersister``: base class for read-write stores (a ``MutableMapping``, ``clear`` disabled)
+- ``Store``: a persister with the key/value transform hooks, wrapping a backend
+- ``kv_walk``: walk a nested mapping, yielding (path, key, value) triples by default
+
+    >>> from dol.base import Store
+    >>> s = Store({})
+    >>> s['a'] = 1
+    >>> s['a'], list(s)
+    (1, ['a'])
 """
 
 from functools import partial, update_wrapper
@@ -147,6 +160,10 @@ class Collection(CollectionABC):
 
 
 class MappingViewMixin:
+    """Make ``keys()``, ``values()`` and ``items()`` build their views from the
+    ``KeysView``, ``ValuesView`` and ``ItemsView`` class attributes, so a subclass can
+    swap in its own view classes."""
+
     KeysView: type = BaseKeysView
     ValuesView: type = BaseValuesView
     ItemsView: type = BaseItemsView
@@ -223,9 +240,9 @@ class KvPersister(KvReader, MutableMapping):
     Another example: `s.popitem()` will pop a `(k, v)` pair off of the `s` store.
     That is, retrieve the `v` for `k`, delete the entry for `k`, and return a `(k, v)`.
     Note that unlike modern dicts which will return the last item that was stored
-     -- that is, LIFO (last-in, first-out) order -- for KvPersisters,
-     there's no assurance as to what item will be, since it will depend on the backend storage system
-     and/or how the persister was implemented.
+    (that is, LIFO (last-in, first-out) order), for KvPersisters
+    there's no assurance as to what item will be, since it will depend on the backend storage system
+    and/or how the persister was implemented.
     """
 
     clear = _disabled_clear_method
@@ -600,7 +617,9 @@ class Store(KvPersister):
     """
     By store we mean key-value store. This could be files in a filesystem, objects in s3, or a database. Where and
     how the content is stored should be specified, but StoreInterface offers a dict-like interface to this.
+
     ::
+
         __getitem__ calls: _id_of_key			                    _obj_of_data
         __setitem__ calls: _id_of_key		        _data_of_obj
         __delitem__ calls: _id_of_key

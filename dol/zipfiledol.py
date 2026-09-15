@@ -1,5 +1,16 @@
-"""
-Data object layers and other utils to work with zip files.
+"""Data object layers and other utils to work with zip files.
+
+Main entry points:
+
+- ``FilesOfZip``: read-only bytes of the files in a zip archive
+- ``ZipReader``: same, but browsing folders as nested readers
+- ``ZipFiles``: read-write-delete access to files in a zip archive
+- ``FlatZipFilesReader``: the union of the contents of several zip files
+- ``zip_compress``, ``zip_decompress``: single-file zip bytes helpers
+
+    >>> from dol.zipfiledol import zip_compress, zip_decompress
+    >>> zip_decompress(zip_compress(b'hello'))
+    b'hello'
 """
 
 import os
@@ -276,8 +287,8 @@ class ZipReader(KvReader):
     When a file, the value return is bytes, as usual.
 
     When a directory, the value returned is a ``ZipReader`` itself, with all params the same,
-    except for the ``prefix``
-     which serves `to specify the subfolder (that is, ``prefix`` acts as a filter).
+    except for the ``prefix``, which serves to specify the subfolder (that is,
+    ``prefix`` acts as a filter).
 
     Note:
         If you get data zipped by a mac, you might get some junk along with it.
@@ -966,6 +977,11 @@ remove_mac_junk_from_zip.__doc__ = "Removes mac junk keys from zip"
 
 
 def tar_compress(data_bytes, file_name="data.bin"):
+    """Bytes of an (uncompressed) tar archive holding ``data_bytes`` as a single file.
+
+    >>> tar_decompress(tar_compress(b'hello', file_name='x.bin'))
+    b'hello'
+    """
     import tarfile
     import io
 
@@ -979,6 +995,7 @@ def tar_compress(data_bytes, file_name="data.bin"):
 
 
 def tar_decompress(tar_bytes):
+    """Bytes of the first file found in the tar archive ``tar_bytes`` (None if none)."""
     import tarfile
     import io
 

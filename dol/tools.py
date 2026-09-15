@@ -1,5 +1,24 @@
-"""
-Various tools to add functionality to stores
+"""Various tools to add functionality to stores.
+
+Main entry points:
+
+- ``store_aggregate``: aggregate a store's items into one object (a Markdown text by default)
+- ``confirm_overwrite``: a ``wrap_kvs`` preset that asks before overwriting a value
+- ``Forest``: a key-value tree view of nested objects
+
+    >>> from dol.tools import store_aggregate
+    >>> print(store_aggregate({'a': 'x', 'b': 'y'}))
+    ## a
+    <BLANKLINE>
+    x
+    <BLANKLINE>
+    <BLANKLINE>
+    <BLANKLINE>
+    ## b
+    <BLANKLINE>
+    y
+    <BLANKLINE>
+    <BLANKLINE>
 """
 
 from dol.trans import store_decorator

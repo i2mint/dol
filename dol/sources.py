@@ -1,5 +1,22 @@
-"""
-This module contains key-value views of disparate sources.
+"""Key-value views of disparate sources.
+
+Readers and persisters over things that are not stores to begin with: several stores
+at once (fan-out and cascades), sequences, functions, and the attributes of objects.
+
+Main entry points:
+
+- ``FanoutReader``, ``FanoutPersister``: one key, read from (written to) several stores
+- ``CascadedStores``: write to all stores, read from the first one that has the key
+- ``SequenceKvReader``: an iterable of elements, keyed by a key function (index by default)
+- ``FuncReader``: functions as a store, keyed by name
+- ``Attrs``: the attributes of an object as a (recursive) reader
+
+    >>> from dol.sources import FuncReader
+    >>> def foo():
+    ...     return 'bar'
+    >>> r = FuncReader([foo])
+    >>> list(r), r['foo']
+    (['foo'], 'bar')
 """
 
 from typing import Union, Any
@@ -124,9 +141,9 @@ class FanoutReader(KvReader):
     That is, when a key is requested, the key is passed to all the stores, and results
     accumulated in a dict that is then returned.
 
-    param stores: A mapping of store keys to stores.
-    param default: The value to return if the key is not in any of the stores.
-    param get_existing_values_only: If True, only return values for stores that contain
+    :param stores: A mapping of store keys to stores.
+    :param default: The value to return if the key is not in any of the stores.
+    :param get_existing_values_only: If True, only return values for stores that contain
         the key.
 
     Let's define the following sub-stores:

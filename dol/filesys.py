@@ -1,4 +1,26 @@
-"""File system access"""
+"""File system access: dict-like stores over folders and files.
+
+``Files`` gives a folder a ``MutableMapping`` interface: keys are paths relative to the
+root folder, values are the files' bytes. ``TextFiles``, ``JsonFiles`` and ``PickleFiles``
+add the corresponding value codecs. Writing under a sub-folder that does not exist raises
+``KeyError``; wrap the store with ``mk_dirs_if_missing`` to create folders on write.
+
+Main entry points:
+
+- ``Files``: bytes of the files under a root folder
+- ``TextFiles``: same, with text values
+- ``JsonFiles``: same, with JSON-decoded values
+- ``PickleFiles``: same, with pickled values
+- ``mk_dirs_if_missing``: make a file store create missing directories on write
+
+    >>> import tempfile
+    >>> s = Files(tempfile.mkdtemp())
+    >>> s['hello.txt'] = b'world'
+    >>> s['hello.txt']
+    b'world'
+    >>> list(s)
+    ['hello.txt']
+"""
 
 import os
 from os import stat as os_stat

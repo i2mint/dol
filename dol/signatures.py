@@ -1205,7 +1205,7 @@ class Sig(Signature, Mapping):
         - `__annotations__` (also extracted from `__signature__`)
         - does not write to `__module__`, `__name__`, `__qualname__`, `__doc__`
           (because again, we're basinig the injecton on a signature, not a function,
-            so we have no name, doc, etc...)
+          so we have no name, doc, etc...)
 
         WARNING:
             The fact that you've modified the signature of your function doesn't
@@ -1270,10 +1270,8 @@ class Sig(Signature, Mapping):
         Traceback (most recent call last):
           ...
         TypeError: f() takes from 0 to 3 positional arguments but 4 were given
-
-        TODO:
-            Give more explanations why this is.
         """
+        # TODO: Give more explanations why this is.
 
         # TODO: Should we make copy_function=False the default,
         #  so as to not override decorated function itself by default?
@@ -1702,7 +1700,8 @@ class Sig(Signature, Mapping):
 
     @property
     def has_var_kinds(self):
-        """
+        """Whether the signature has a VAR_POSITIONAL or a VAR_KEYWORD parameter.
+
         >>> Sig(lambda x, *, y: None).has_var_kinds
         False
         >>> Sig(lambda x, *y: None).has_var_kinds

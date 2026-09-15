@@ -1,5 +1,16 @@
-"""
-Functions to read from and write to misc sources
+"""Functions to read from and write to misc sources, choosing the codec from the key.
+
+``get_obj``/``set_obj`` read and write a file with the codec picked from its extension
+(``.json``, ``.csv``, ``.pkl``, ...); ``MiscReaderMixin``/``MiscStoreMixin`` add the same
+key-conditioned (de)serialization to any store.
+
+    >>> from dol.misc import MiscStoreMixin
+    >>> class M(MiscStoreMixin, dict):
+    ...     pass
+    >>> m = M()
+    >>> m['a.json'] = {'x': 1}
+    >>> dict.__getitem__(m, 'a.json'), m['a.json']
+    (b'{"x": 1}', {'x': 1})
 """
 
 # TODO: Completely redo this, using preset and postget and making it into a plugin

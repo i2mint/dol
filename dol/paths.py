@@ -1321,7 +1321,8 @@ def _prefix_filter_with_relativization(store, prefix: str):
 
 @store_decorator
 def add_prefix_filtering(store=None, *, relativize_prefix: bool = False):
-    """Add prefix filtering to a store.
+    """Make a missing key that is a prefix of existing keys return the sub-mapping of
+    those keys (so ``s['a/']`` lists everything "under" ``a/``).
 
     >>> d = {'a/b': 1, 'a/c': 2, 'd/e': 3, 'f': 4}
     >>> s = add_prefix_filtering(d)

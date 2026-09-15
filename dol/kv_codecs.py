@@ -1,5 +1,24 @@
-"""
-Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.
+"""Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.
+
+A codec is a store wrapper: ``ValueCodecs.json()`` encodes values on write and decodes
+them on read, ``KeyCodecs.suffixed('.json')`` adds the suffix on the way in and strips
+it on the way out. Codecs compose with ``+``.
+
+Main entry points:
+
+- ``ValueCodecs``: ready-made value codecs (json, pickle, gzip, csv, str_to_bytes, ...)
+- ``KeyCodecs``: ready-made key codecs (suffixed, prefixed, ...)
+- ``KeyValueCodecs``: key and value codecs in one
+
+    >>> from dol.kv_codecs import ValueCodecs, KeyCodecs
+    >>> s = ValueCodecs.json()({})
+    >>> s['a'] = {'x': 1}
+    >>> s.store, s['a']
+    ({'a': '{"x": 1}'}, {'x': 1})
+    >>> k = KeyCodecs.suffixed('.json')({})
+    >>> k['a'] = 1
+    >>> k.store, list(k)
+    ({'a.json': 1}, ['a'])
 """
 
 # ------------------------------------ Codecs ------------------------------------------
