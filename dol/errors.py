@@ -49,7 +49,8 @@ def items_with_caught_exceptions(
     :param catch_exceptions: A tuple of exceptions that should be caught
     :param callback: A function that will be called every time an exception is caught.
         It may take any subset of the arguments ``k`` (key), ``e`` (error obj),
-        ``d`` (mapping) and ``i`` (index), by name (see the examples below).
+        ``d`` (mapping) and ``i`` (index), by name (see the examples below); if its
+        signature cannot be inspected it is called with all four, positionally.
     :param yield_callback_output: If True, also yield the callback's output for the
         keys whose value raised.
     :return: An (key, val) generator with exceptions caught

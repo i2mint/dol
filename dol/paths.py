@@ -296,7 +296,7 @@ def split_if_str(obj, sep="."):
 
 
 def separate_keys_with_separator(obj, sep="."):
-    """Split a string path on ``sep``, casting numeric parts to ``int`` (a non-string is only cast)."""
+    """Split a string path on ``sep`` and cast numeric parts to ``int``; a non-string iterable is only cast element-wise."""
     return map(cast_to_int_if_numeric_str, split_if_str(obj, sep))
 
 

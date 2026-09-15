@@ -1,8 +1,9 @@
 """Tools to wrap stores with key/value transforms, filters, caches and other layers.
 
 A wrap leaves the backend untouched and builds a new class (or instance) around it.
-Every decorator here is a ``store_decorator``, so it can be applied to a class, to an
-instance, or used as a factory (``deco(**params)(store)``).
+The decorators built with ``store_decorator`` (``wrap_kvs``, ``filt_iter``,
+``cached_keys``, ``add_path_access``, ...) can be applied to a class, to an instance,
+or used as a factory (``deco(**params)(store)``).
 
 Main entry points:
 
@@ -682,7 +683,8 @@ from dol.errors import OverWritesNotAllowedError
 
 
 def disallow_overwrites(store, *, error_msg=None, disable_deletes=True):
-    """Class decorator making ``__setitem__`` raise ``OverWritesNotAllowedError`` when the key already exists (see ``disable_deletes``)."""
+    """Intended to make a store class's ``__setitem__`` raise ``OverWritesNotAllowedError`` on existing keys;
+    currently a no-op that returns ``None`` (the override is never attached). Use ``OverWritesNotAllowedMixin``."""
     assert isinstance(store, type), "store needs to be a type"
     if hasattr(store, "__setitem__"):
 
@@ -912,7 +914,7 @@ def cached_keys(
             The default is list. Another useful one is the sorted function.
         cache_update_method: Name of the keys_cache update method to use, if it is an
             attribute of keys_cache (whether keys_cache is an explicit iterable or a
-            callable). Default None.
+            callable). Default ``'update'``.
         name: The name of the new class
 
     Returns:
@@ -921,9 +923,9 @@ def cached_keys(
         wrapped instance that caches its keys.
 
         The instances of such key-cached classes have some extra attributes:
-        ``_explicit_keys`` (the actual cache, an iterable container) and
-        ``update_keys_cache`` (called if a user uses the instance to mutate the
-        store, i.e. write or delete).
+        ``_keys_cache`` (the actual cache), ``_explicit_keys`` (whether the cache was
+        given explicitly) and ``update_keys_cache`` (called on ``__setitem__`` and
+        ``update``).
 
     You have two ways of caching keys:
 

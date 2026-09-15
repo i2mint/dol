@@ -2622,7 +2622,8 @@ class HashableDict(HashableMixin, dict):
 
 # NOTE: cache uses (func, args, kwargs). Don't want to make more complex with a bind cast to (func, kwargs) only
 def cache_func_outputs(cache=HashableDict):
-    """Decorator factory caching a function's outputs in ``cache``, keyed by ``(func, args, kwargs)``."""
+    """Decorator factory intended to cache a function's outputs in ``cache``, keyed by ``(func, args, kwargs)``;
+    only positional-argument calls with an explicitly given ``cache`` actually hit the cache."""
     cache = get_cache(cache)
 
     def cache_method_decorator(func):

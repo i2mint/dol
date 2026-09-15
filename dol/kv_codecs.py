@@ -8,7 +8,7 @@ Main entry points:
 
 - ``ValueCodecs``: ready-made value codecs (json, pickle, gzip, csv, str_to_bytes, ...)
 - ``KeyCodecs``: ready-made key codecs (suffixed, prefixed, ...)
-- ``KeyValueCodecs``: key and value codecs in one
+- ``key_based_value_trans``: a value codec chosen from the key
 
     >>> from dol.kv_codecs import ValueCodecs, KeyCodecs
     >>> s = ValueCodecs.json()({})
@@ -226,7 +226,7 @@ def _codec_wrap(cls, encoder: Callable, decoder: Callable, **kwargs):
 
 
 def codec_wrap(cls, encoder: Callable, decoder: Callable, *, exclude=()):
-    """Make a ``cls`` codec factory from an ``encoder`` and a ``decoder``, with the merged signature of both (all keyword-only)."""
+    """Make a ``cls`` codec factory from an ``encoder`` and a ``decoder``, with the merged signature of both."""
     _cls_codec_wrap = partial(_codec_wrap, cls)
     factory = partial(_cls_codec_wrap, encoder, decoder)
     # TODO: Review this signature here. Should be keyword-only to match what

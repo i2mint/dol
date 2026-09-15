@@ -447,7 +447,7 @@ def delegate_to(
     ignore=frozenset(),
 ) -> Decorator:
     # turn include and ignore into sets, if they aren't already
-    """Class decorator factory: the decorated wrapper class constructs a ``wrapped`` instance and delegates its attributes (``include``, minus ``ignore``) to it through ``delegation_attr``."""
+    """Class decorator factory: the decorated wrapper class constructs a ``wrapped`` instance and delegates to it, through ``delegation_attr``, the attributes of ``wrapped`` (``dir(wrapped)`` minus ``ignore``, plus ``include``) not already defined on the wrapper."""
     if not isinstance(include, Set):
         include = set(include)
     if not isinstance(ignore, Set):
@@ -1170,7 +1170,7 @@ class KeyValidationABC(metaclass=ABCMeta):
 
 
 class stream_util:
-    """Small callbacks for ``Stream``: an always-true filter, a no-op, rewind, and skip lines."""
+    """Small callbacks for ``Stream``: an always-true filter, a no-op, and rewind (``skip_lines`` currently only rewinds)."""
     def always_true(*args, **kwargs):
         return True
 
