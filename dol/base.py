@@ -71,6 +71,7 @@ from dol.signatures import Sig
 
 
 class AttrNames:
+    """Name sets of the methods that make up each mapping interface (``Collection``, ``Mapping``, ``KvReader``, ``KvPersister``, ...)."""
     CollectionABC = {"__len__", "__iter__", "__contains__"}
     Mapping = CollectionABC | {
         "keys",
@@ -264,6 +265,7 @@ Persister = KvPersister  # alias for back-compatibility
 
 
 class NoSuchItem:
+    """Sentinel type; ``no_such_item`` is its instance."""
     pass
 
 
@@ -273,6 +275,7 @@ from collections.abc import Set
 
 
 class DelegatedAttribute:
+    """Descriptor forwarding ``attr_name`` lookups to the object held in the instance's ``delegate_name`` attribute."""
     def __init__(self, delegate_name, attr_name):
         self.attr_name = attr_name
         self.delegate_name = delegate_name
@@ -444,6 +447,7 @@ def delegate_to(
     ignore=frozenset(),
 ) -> Decorator:
     # turn include and ignore into sets, if they aren't already
+    """Class decorator factory: the decorated wrapper class constructs a ``wrapped`` instance and delegates its attributes (``include``, minus ``ignore``) to it through ``delegation_attr``."""
     if not isinstance(include, Set):
         include = set(include)
     if not isinstance(ignore, Set):
@@ -906,14 +910,17 @@ inf = float("infinity")
 
 
 def val_is_mapping(p: PT, k: KT, v: VT) -> bool:
+    """Whether the walked value ``v`` is a ``Mapping`` (a ``kv_walk`` ``walk_filt``)."""
     return isinstance(v, Mapping)
 
 
 def asis(p: PT, k: KT, v: VT) -> Any:
+    """Return ``(p, k, v)`` as is (the default ``kv_walk`` ``leaf_yield``)."""
     return p, k, v
 
 
 def tuple_keypath_and_val(p: PT, k: KT, v: VT) -> tuple[PT, VT]:
+    """Extend the path ``p`` with the key ``k`` and return ``(new_path, v)`` (the default ``kv_walk`` ``pkv_to_pv``)."""
     if p == ():  # we're just begining (the root),
         p = (k,)  # so begin the path with the first key.
     else:
@@ -1163,6 +1170,7 @@ class KeyValidationABC(metaclass=ABCMeta):
 
 
 class stream_util:
+    """Small callbacks for ``Stream``: an always-true filter, a no-op, rewind, and skip lines."""
     def always_true(*args, **kwargs):
         return True
 

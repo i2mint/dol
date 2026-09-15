@@ -2611,6 +2611,7 @@ def _mk_cache_method_local_path_key(
 
 
 class HashableMixin:
+    """Mixin making instances hashable by identity (``id(self)``)."""
     def __hash__(self):
         return id(self)
 
@@ -2621,6 +2622,7 @@ class HashableDict(HashableMixin, dict):
 
 # NOTE: cache uses (func, args, kwargs). Don't want to make more complex with a bind cast to (func, kwargs) only
 def cache_func_outputs(cache=HashableDict):
+    """Decorator factory caching a function's outputs in ``cache``, keyed by ``(func, args, kwargs)``."""
     cache = get_cache(cache)
 
     def cache_method_decorator(func):

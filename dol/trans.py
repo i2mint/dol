@@ -410,12 +410,14 @@ def store_decorator(func):
 
 
 def ensure_set(x):
+    """A set from ``x``, treating a string as a single element."""
     if isinstance(x, str):
         x = [x]
     return set(x)
 
 
 def get_class_name(cls, dflt_name=None):
+    """The ``__qualname__`` of ``cls`` (or of its class), else ``dflt_name``; raises ``ValueError`` if there is neither."""
     name = getattr(cls, "__qualname__", None)
     if name is None:
         name = getattr(getattr(cls, "__class__", object), "__qualname__", None)
@@ -428,6 +430,7 @@ def get_class_name(cls, dflt_name=None):
 
 
 def store_wrap(obj):
+    """Wrap a class or an instance in a ``Store`` (a class gets a ``Store`` subclass whose ``__init__`` builds the wrapped instance)."""
     if isinstance(obj, type):
 
         @wraps(type(obj), updated=())  # added this: test
@@ -580,6 +583,7 @@ class FirstArgIsMapping(LiteralVal):
 
 
 def transparent_key_method(self, k):
+    """Return the key as is (the default ``getitem`` of ``mk_kv_reader_from_kv_collection``)."""
     return k
 
 
@@ -605,6 +609,7 @@ def mk_kv_reader_from_kv_collection(
 
 
 def raise_disabled_error(functionality):
+    """Make a function that raises ``ValueError('<functionality> is disabled')`` whenever called."""
     def disabled_function(*args, **kwargs):
         raise ValueError(f"{functionality} is disabled")
 
@@ -646,6 +651,7 @@ def mk_read_only(o):
 
 
 def is_iterable(x):
+    """Whether ``x`` is an ``Iterable``."""
     return isinstance(x, Iterable)
 
 
@@ -676,6 +682,7 @@ from dol.errors import OverWritesNotAllowedError
 
 
 def disallow_overwrites(store, *, error_msg=None, disable_deletes=True):
+    """Class decorator making ``__setitem__`` raise ``OverWritesNotAllowedError`` when the key already exists (see ``disable_deletes``)."""
     assert isinstance(store, type), "store needs to be a type"
     if hasattr(store, "__setitem__"):
 
@@ -1451,6 +1458,7 @@ def catch_and_cache_error_keys(
 def iterate_values_and_accumulate_non_error_keys(
     store, cache_keys_here: list, errors_caught=Exception, error_callback=None
 ):
+    """Yield the values of ``store``, appending to ``cache_keys_here`` the keys whose value was fetched without error."""
     for k in store:
         try:
             v = store[k]
@@ -1466,6 +1474,7 @@ def iterate_values_and_accumulate_non_error_keys(
 
 
 def take_everything(key):
+    """Key filter that accepts every key."""
     return True
 
 
@@ -1677,6 +1686,7 @@ def filter_prefixes(prefixes):
 
 
 class FiltIter:
+    """Namespace of ``filt_iter`` factories (``regex``, ``suffixes``, ...); not meant to be instantiated."""
     def __init__(self, *args, **kwargs):
         raise ValueError(
             "This class is not meant to be instantiated, but only act as a collection "
@@ -2494,6 +2504,7 @@ _kv_wrap_trans_names = {
 
 
 class SimpleDelegator:
+    """Forward attribute access (and calls) to the wrapped ``obj``."""
     def __init__(self, obj):
         self._obj = obj
 
@@ -2765,6 +2776,7 @@ def _conditional_data_trans(v, condition, data_trans):
 
 @store_decorator
 def conditional_data_trans(store=None, *, condition, data_trans):
+    """Wrap ``store`` so that ``data_trans`` is applied to the read values satisfying ``condition`` (others pass through)."""
     _data_trans = partial(
         _conditional_data_trans, condition=condition, data_trans=data_trans
     )
@@ -3296,6 +3308,7 @@ def mk_level_walk_filt(levels):
 
 
 def leveled_paths_walk(m, levels):
+    """Yield the key paths of ``m``, down to ``levels`` levels."""
     yield from kv_walk(
         m, leaf_yield=lambda p, k, v: p, walk_filt=mk_level_walk_filt(levels)
     )
@@ -3434,6 +3447,7 @@ def condition_function_call(
         constant_output, None
     ),
 ):
+    """Decorator: call ``func`` only when ``condition(*args, **kwargs)`` holds, else ``callback_if_condition_not_met``."""
     @wraps(func)
     def wrapped_func(*args, **kwargs):
         if condition(*args, **kwargs):
@@ -3624,6 +3638,7 @@ def add_missing_key_handling(
 
 
 def ignore_if_error(store=None, *, errors=(KeyError,)):
+    """Wrap ``store`` so that ``__getitem__`` errors in ``errors`` return ``None`` instead of raising."""
     def _ignore(store, k):
         pass
 
@@ -3638,6 +3653,7 @@ def warn_and_ignore_if_error(
     errors=(KeyError,),
     warn_msg="Ignoring error in __getitem__ for key {k}: {e}",
 ):
+    """Like ``ignore_if_error``, but also emit a warning (``warn_msg``) for each ignored error."""
     def _warn(store, k):
         import sys
 
@@ -3651,6 +3667,7 @@ def warn_and_ignore_if_error(
 
 
 def return_default_if_error(store=None, *, default=None, errors=(KeyError,)):
+    """Wrap ``store`` so that ``__getitem__`` errors in ``errors`` return ``default`` instead of raising."""
     def _default(store, k):
         return default
 
@@ -3670,6 +3687,7 @@ DecodedType = TypeVar("DecodedType")
 # TODO: Want a way to specify Encoded type and Decoded type
 @dataclass
 class Codec(Generic[DecodedType, EncodedType]):
+    """An ``encoder``/``decoder`` pair; iterates as ``(encoder, decoder)`` and composes with ``compose_with``."""
     encoder: Callable[[DecodedType], EncodedType]
     decoder: Callable[[EncodedType], DecodedType]
 
@@ -3698,16 +3716,19 @@ _CodecT = (Generic[DecodedType, EncodedType], Codec[DecodedType, EncodedType])
 
 
 class ValueCodec(*_CodecT):
+    """A ``Codec`` that, called on a store, wraps its values (``data_of_obj``/``obj_of_data``)."""
     def __call__(self, obj):
         return wrap_kvs(obj, data_of_obj=self.encoder, obj_of_data=self.decoder)
 
 
 class KeyCodec(*_CodecT):
+    """A ``Codec`` that, called on a store, wraps its keys (``id_of_key``/``key_of_id``)."""
     def __call__(self, obj):
         return wrap_kvs(obj, id_of_key=self.encoder, key_of_id=self.decoder)
 
 
 class KeyValueCodec(*_CodecT):
+    """A ``Codec`` that, called on a store, wraps values with key context (``preset``/``postget``)."""
     def __call__(self, obj):
         return wrap_kvs(obj, preset=self.encoder, postget=self.decoder)
 

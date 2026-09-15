@@ -79,6 +79,7 @@ __csv_dict_sig = _string + _csv_rw_sig + _csv_dict_extra_sig
 # Note: @(_string + _csv_rw_sig) made (ax)black choke
 @__csv_rw_sig
 def csv_encode(string, *args, **kwargs):
+    """Encode rows (an iterable of iterables) into a CSV string (``csv.writer`` arguments accepted)."""
     with io.StringIO() as buffer:
         writer = csv.writer(buffer, *args, **kwargs)
         writer.writerows(string)
@@ -87,6 +88,7 @@ def csv_encode(string, *args, **kwargs):
 
 @__csv_rw_sig
 def csv_decode(string, *args, **kwargs):
+    """Decode a CSV string into a list of rows (``csv.reader`` arguments accepted)."""
     with io.StringIO(string) as buffer:
         reader = csv.reader(buffer, *args, **kwargs)
         return list(reader)
@@ -196,6 +198,7 @@ def _xml_tree_decode(
 
 
 def extract_arguments(func, args, kwargs):
+    """Map ``args``/``kwargs`` to ``func``'s parameter names, leniently (partial and excess allowed, kinds ignored)."""
     return Sig(func).map_arguments(
         args, kwargs, allow_partial=True, allow_excess=True, ignore_kind=True
     )
@@ -223,6 +226,7 @@ def _codec_wrap(cls, encoder: Callable, decoder: Callable, **kwargs):
 
 
 def codec_wrap(cls, encoder: Callable, decoder: Callable, *, exclude=()):
+    """Make a ``cls`` codec factory from an ``encoder`` and a ``decoder``, with the merged signature of both (all keyword-only)."""
     _cls_codec_wrap = partial(_codec_wrap, cls)
     factory = partial(_cls_codec_wrap, encoder, decoder)
     # TODO: Review this signature here. Should be keyword-only to match what

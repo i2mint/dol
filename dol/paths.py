@@ -205,14 +205,17 @@ path_sep = os.path.sep
 
 
 def raise_on_error(d: dict):
+    """``on_error`` policy for ``path_get``: re-raise the caught error."""
     raise
 
 
 def return_none_on_error(d: dict):
+    """``on_error`` policy for ``path_get``: return ``None``."""
     return None
 
 
 def return_empty_tuple_on_error(d: dict):
+    """``on_error`` policy for ``path_get``: return ``()``."""
     return ()
 
 
@@ -286,16 +289,19 @@ def _path_get(
 
 
 def split_if_str(obj, sep="."):
+    """Split ``obj`` on ``sep`` if it is a string; return it unchanged otherwise."""
     if isinstance(obj, str):
         return obj.split(sep)
     return obj
 
 
 def separate_keys_with_separator(obj, sep="."):
+    """Split a string path on ``sep``, casting numeric parts to ``int`` (a non-string is only cast)."""
     return map(cast_to_int_if_numeric_str, split_if_str(obj, sep))
 
 
 def getitem(obj, k):
+    """Return ``obj[k]``."""
     return obj[k]
 
 
@@ -600,6 +606,7 @@ def chain_of_getters(
 
 @add_as_attribute_of(path_get)
 def cast_to_int_if_numeric_str(k):
+    """Cast ``k`` to ``int`` if it is a numeric string; return it unchanged otherwise."""
     if isinstance(k, str) and str.isnumeric(k):
         return int(k)
     return k
@@ -1242,6 +1249,7 @@ def mk_relative_path_store(
 # TODO: Intended to replace the init-less PrefixRelativizationMixin
 #  (but should change name if so, since Mixins shouldn't have inits)
 class RelativePathKeyMapper:
+    """Key mapper adding ``prefix`` on the way in and removing it on the way out."""
     def __init__(self, prefix):
         self._prefix = prefix
         self._prefix_length = len(self._prefix)
@@ -1255,6 +1263,7 @@ class RelativePathKeyMapper:
 
 @store_decorator
 def prefixless_view(store=None, *, prefix=None):
+    """Wrap ``store`` so that keys are seen without ``prefix`` (added back on access)."""
     key_mapper = RelativePathKeyMapper(prefix)
     return wrap_kvs(
         store, id_of_key=key_mapper._id_of_key, key_of_id=key_mapper._key_of_id
@@ -1397,6 +1406,7 @@ from enum import Enum
 
 
 class PathKeyTypes(Enum):
+    """Enum of the path key forms: ``str``, ``dict``, ``tuple``, ``namedtuple``."""
     str = "str"
     dict = "dict"
     tuple = "tuple"
@@ -1619,6 +1629,7 @@ def _field_names(string_template):
 
 
 def identity(x):
+    """Return ``x``."""
     return x
 
 

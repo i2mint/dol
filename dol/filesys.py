@@ -53,6 +53,7 @@ def ensure_slash_suffix(path: str):
 
 
 def paths_in_dir(rootdir, include_hidden=False):
+    """Yield the paths of the entries of ``rootdir`` (directories with a trailing separator), skipping hidden ones unless ``include_hidden``."""
     try:
         for name in os.listdir(rootdir):
             if include_hidden or not name.startswith(
@@ -331,6 +332,7 @@ mk_tmp_dol_dir = temp_dir  # for backward compatibility
 
 
 def mk_absolute_path(path_format):
+    """Expand a leading ``~``, or make a leading ``.`` path absolute; other paths are returned as is."""
     if path_format.startswith("~"):
         path_format = os.path.expanduser(path_format)
     elif path_format.startswith("."):
@@ -347,11 +349,13 @@ _dflt_not_found_error_msg = "Key not found: {}"
 
 
 class KeyValidationError(KeyError):
+    """A ``KeyError`` for keys that fail a file-system store's validation."""
     pass
 
 
 # TODO: The validate and try/except is a frequent pattern. Make it a decorator.
 def validate_key_and_raise_key_error_on_exception(func):
+    """Method decorator: validate the key first, and re-raise any exception of the method as a ``KeyError``."""
     @wraps(func)
     def wrapped_method(self, k, *args, **kwargs):
         self.validate_key(k)
@@ -407,6 +411,7 @@ def _for_repr(obj, quote="'"):
 class FileSysCollection(Collection):
     # rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.
 
+    """Base collection of file-system paths under ``rootdir``, optionally restricted by ``subpath``, ``max_levels`` and hidden-file inclusion."""
     def __init__(
         self,
         rootdir,
@@ -458,6 +463,7 @@ class FileSysCollection(Collection):
 
 
 class DirCollection(FileSysCollection):
+    """Collection of the directory paths under ``rootdir``."""
     def __iter__(self):
         yield from filter(
             self.is_valid_key,
@@ -473,6 +479,7 @@ class DirCollection(FileSysCollection):
 
 
 class FileCollection(FileSysCollection):
+    """Collection of the file paths under ``rootdir``."""
     def __iter__(self):
         """
         Iterator of valid filepaths.
@@ -513,12 +520,14 @@ class FileCollection(FileSysCollection):
 
 
 class FileInfoReader(FileCollection, KvReader):
+    """Reader mapping file paths to their ``os.stat`` result."""
     def __getitem__(self, k):
         self.validate_key(k)
         return os_stat(k)
 
 
 class FileBytesReader(FileCollection, KvReader):
+    """Reader mapping file paths under ``rootdir`` to the files' bytes."""
     _read_open_kwargs = dict(
         mode="rb",
         buffering=-1,
@@ -667,10 +676,12 @@ RelPathFileBytesPersister = Files  # back-compatibility alias
 
 
 class FileStringReader(FileBytesReader):
+    """Reader mapping file paths to the files' text (files opened in text mode)."""
     _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
 
 
 class FileStringPersister(FileBytesPersister):
+    """Persister mapping file paths to the files' text (files opened in text mode)."""
     _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
     _write_open_kwargs = dict(FileBytesPersister._write_open_kwargs, mode="wt")
 
@@ -704,7 +715,7 @@ json_bytes_wrap = wrap_kvs(
 def mk_pickle_bytes_wrap(
     *, loads_kwargs: dict | None = None, dumps_kwargs: dict | None = None
 ) -> Callable:
-    """"""
+    """Make a ``wrap_kvs`` value-codec wrapper for pickle, with kwargs for ``pickle.loads``/``pickle.dumps``."""
     return wrap_kvs(
         value_decoder=partial(pickle.loads, **(loads_kwargs or {})),
         value_encoder=partial(pickle.dumps, **(dumps_kwargs or {})),
@@ -714,6 +725,7 @@ def mk_pickle_bytes_wrap(
 def mk_json_bytes_wrap(
     *, loads_kwargs: dict | None = None, dumps_kwargs: dict | None = None
 ) -> Callable:
+    """Make a ``wrap_kvs`` value-codec wrapper for JSON, with kwargs for ``json.loads``/``json.dumps``."""
     return wrap_kvs(
         value_decoder=partial(json.loads, **(loads_kwargs or {})),
         value_encoder=partial(json.dumps, **(dumps_kwargs or {})),
@@ -721,6 +733,7 @@ def mk_json_bytes_wrap(
 
 
 class ReprMixin:
+    """A ``__repr__`` showing the ``_init_kwargs`` the instance was created with."""
     def __repr__(self):
         input_str = ", ".join(
             f"{k}={_for_repr(v)}" for k, v in getattr(self, "_init_kwargs", {}).items()
@@ -754,6 +767,7 @@ class Jsons(ReprMixin, JsonFiles):
 # @wrap_kvs(key_of_id=lambda x: x[:-1], id_of_key=lambda x: x + path_sep)
 @mk_relative_path_store(prefix_attr="rootdir")
 class PickleStores(DirCollection):
+    """Reader mapping each sub-directory of ``rootdir`` to a ``PickleFiles`` store of it."""
     def __getitem__(self, k):
         return PickleFiles(k)
 
@@ -762,6 +776,7 @@ class PickleStores(DirCollection):
 
 
 class DirReader(DirCollection, KvReader):
+    """Reader mapping each sub-directory of ``rootdir`` to a ``DirReader`` of it."""
     def __getitem__(self, k):
         return DirReader(k)
 
