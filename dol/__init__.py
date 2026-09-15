@@ -1,4 +1,18 @@
-"""Core tools to build simple interfaces to complex data sources and bend the interface to your will (and need)"""
+"""Core tools to build simple interfaces to complex data sources and bend the interface to your will (and need).
+
+``dol`` wraps any storage backend (files, S3, databases, dicts) behind a dict-like
+interface, and transforms that interface with composable layers. Start with
+``wrap_kvs`` (key/value transforms), the file stores (``Files``, ``TextFiles``,
+``JsonFiles``, ``PickleFiles``), the ready-made codecs (``ValueCodecs``, ``KeyCodecs``),
+``filt_iter`` (key filtering) and ``cache_this`` (caching).
+
+    >>> from dol import wrap_kvs
+    >>> import json
+    >>> s = wrap_kvs({}, obj_of_data=json.loads, data_of_obj=json.dumps)
+    >>> s['a'] = {'x': 1}
+    >>> s['a'], s.store
+    ({'x': 1}, {'a': '{"x": 1}'})
+"""
 
 import os
 

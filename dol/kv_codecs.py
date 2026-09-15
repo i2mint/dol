@@ -1,5 +1,24 @@
-"""
-Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.
+"""Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.
+
+A codec is a store wrapper: ``ValueCodecs.json()`` encodes values on write and decodes
+them on read, ``KeyCodecs.suffixed('.json')`` adds the suffix on the way in and strips
+it on the way out. Codecs compose with ``+``.
+
+Main entry points:
+
+- ``ValueCodecs``: ready-made value codecs (json, pickle, gzip, csv, str_to_bytes, ...)
+- ``KeyCodecs``: ready-made key codecs (suffixed, prefixed, ...)
+- ``key_based_value_trans``: a value codec chosen from the key
+
+    >>> from dol.kv_codecs import ValueCodecs, KeyCodecs
+    >>> s = ValueCodecs.json()({})
+    >>> s['a'] = {'x': 1}
+    >>> s.store, s['a']
+    ({'a': '{"x": 1}'}, {'x': 1})
+    >>> k = KeyCodecs.suffixed('.json')({})
+    >>> k['a'] = 1
+    >>> k.store, list(k)
+    ({'a.json': 1}, ['a'])
 """
 
 # ------------------------------------ Codecs ------------------------------------------
@@ -60,6 +79,7 @@ __csv_dict_sig = _string + _csv_rw_sig + _csv_dict_extra_sig
 # Note: @(_string + _csv_rw_sig) made (ax)black choke
 @__csv_rw_sig
 def csv_encode(string, *args, **kwargs):
+    """Encode rows (an iterable of iterables) into a CSV string (``csv.writer`` arguments accepted)."""
     with io.StringIO() as buffer:
         writer = csv.writer(buffer, *args, **kwargs)
         writer.writerows(string)
@@ -68,6 +88,7 @@ def csv_encode(string, *args, **kwargs):
 
 @__csv_rw_sig
 def csv_decode(string, *args, **kwargs):
+    """Decode a CSV string into a list of rows (``csv.reader`` arguments accepted)."""
     with io.StringIO(string) as buffer:
         reader = csv.reader(buffer, *args, **kwargs)
         return list(reader)
@@ -81,7 +102,6 @@ def csv_dict_encode(string, *args, **kwargs):
     >>> encoded = csv_dict_encode(data, fieldnames=['a', 'b'])
     >>> encoded
     'a,b\r\n1,2\r\n3,4\r\n'
-
     """
     _ = kwargs.pop("fieldcasts", None)  # this one is for decoder only
     with io.StringIO() as buffer:
@@ -122,7 +142,6 @@ def csv_dict_decode(string, *args, **kwargs):
     [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]
     >>> csv_dict_decode(encoded, fieldnames=['a', 'b'], fieldcasts={'b': float})
     [{'a': '1', 'b': 2.0}, {'a': '3', 'b': 4.0}]
-
     """
     fieldcasts = kwargs.pop("fieldcasts", lambda row: row)
     if isinstance(fieldcasts, Iterable):
@@ -179,6 +198,7 @@ def _xml_tree_decode(
 
 
 def extract_arguments(func, args, kwargs):
+    """Map ``args``/``kwargs`` to ``func``'s parameter names, leniently (partial and excess allowed, kinds ignored)."""
     return Sig(func).map_arguments(
         args, kwargs, allow_partial=True, allow_excess=True, ignore_kind=True
     )
@@ -206,6 +226,7 @@ def _codec_wrap(cls, encoder: Callable, decoder: Callable, **kwargs):
 
 
 def codec_wrap(cls, encoder: Callable, decoder: Callable, *, exclude=()):
+    """Make a ``cls`` codec factory from an ``encoder`` and a ``decoder``, with the merged signature of both."""
     _cls_codec_wrap = partial(_codec_wrap, cls)
     factory = partial(_cls_codec_wrap, encoder, decoder)
     # TODO: Review this signature here. Should be keyword-only to match what
@@ -300,8 +321,6 @@ class ValueCodecs(CodecCollection):
     {
       "b": 2
     }
-
-
     """
 
     # TODO: Clean up module import polution?
@@ -547,7 +566,7 @@ def key_based_value_trans(
     """A factory that creates a value codec that uses the key to determine the
     codec to use.
 
-    # a key_func that gets the extension of a file path
+    Below, ``key_func`` gets the extension of a file path:
 
     >>> import json
     >>> from functools import partial
@@ -557,8 +576,6 @@ def key_based_value_trans(
     >>> trans = key_based_value_trans(
     ...     key_func, value_trans_mapping, default_factory=lambda: identity_func
     ... )
-
-
     """
     if k is NotGiven:
         return partial(

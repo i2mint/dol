@@ -1,5 +1,22 @@
-"""
-This module contains key-value views of disparate sources.
+"""Key-value views of disparate sources.
+
+Readers and persisters over things that are not stores to begin with: several stores
+at once (fan-out and cascades), sequences, functions, and the attributes of objects.
+
+Main entry points:
+
+- ``FanoutReader``, ``FanoutPersister``: one key, read from (written to) several stores
+- ``CascadedStores``: write to all stores, read from the first one that has the key
+- ``SequenceKvReader``: an iterable of elements, keyed by a key function (index by default)
+- ``FuncReader``: functions as a store, keyed by name
+- ``Attrs``: the attributes of an object as a (recursive) reader
+
+    >>> from dol.sources import FuncReader
+    >>> def foo():
+    ...     return 'bar'
+    >>> r = FuncReader([foo])
+    >>> list(r), r['foo']
+    (['foo'], 'bar')
 """
 
 from typing import Union, Any
@@ -124,9 +141,9 @@ class FanoutReader(KvReader):
     That is, when a key is requested, the key is passed to all the stores, and results
     accumulated in a dict that is then returned.
 
-    param stores: A mapping of store keys to stores.
-    param default: The value to return if the key is not in any of the stores.
-    param get_existing_values_only: If True, only return values for stores that contain
+    :param stores: A mapping of store keys to stores.
+    :param default: The value to return if the key is not in any of the stores.
+    :param get_existing_values_only: If True, only return values for stores that contain
         the key.
 
     Let's define the following sub-stores:
@@ -202,9 +219,9 @@ class FanoutReader(KvReader):
         """A way to create a fan-out store from a mix of args and kwargs, instead of a
         single dict.
 
-        param args: sub-stores used to fan-out the data. These stores will be
+        :param args: sub-stores used to fan-out the data. These stores will be
             represented by their index in the tuple.
-        param kwargs: sub-stores used to fan-out the data. These stores will be
+        :param kwargs: sub-stores used to fan-out the data. These stores will be
             represented by their name in the dict. __init__ arguments can also be passed
             as kwargs (i.e. `default`, `get_existing_values_only`, and any other subclass
             specific arguments).
@@ -295,13 +312,13 @@ class FanoutPersister(FanoutReader, KvPersister):
     """
     A fanout persister is a fanout reader that can also set and delete items.
 
-    param stores: A mapping of store keys to stores.
-    param default: The value to return if the key is not in any of the stores.
-    param get_existing_values_only: If True, only return values for stores that contain
+    :param stores: A mapping of store keys to stores.
+    :param default: The value to return if the key is not in any of the stores.
+    :param get_existing_values_only: If True, only return values for stores that contain
         the key.
-    param need_to_set_all_stores: If True, all stores must be set when setting a value.
+    :param need_to_set_all_stores: If True, all stores must be set when setting a value.
         If False, only the stores that are set will be updated.
-    param ignore_non_existing_store_keys: If True, ignore store keys from the value that
+    :param ignore_non_existing_store_keys: If True, ignore store keys from the value that
         are not in the persister. If False, a ValueError is raised.
 
     Let's create a persister from in-memory stores:
@@ -521,8 +538,6 @@ class CascadedStores(FanoutPersister):
 
     >>> remote
     {'f': 42}
-
-
     """
 
     # Note: Need to overwrite FanoutPersister's getitem to not read values from all stores
@@ -701,7 +716,6 @@ class SequenceKvReader(KvReader):
     Traceback (most recent call last):
       ...
     sources.NotUnique: iterator had more than one element
-
     """
 
     def __init__(
@@ -800,7 +814,6 @@ class FuncReader(KvReader):
     ['FU', 'Pie']
     >>> s['FU']
     'bar'
-
     """
 
     def __init__(self, funcs: Mapping[str, Callable] | Iterable[Callable]):
@@ -910,7 +923,6 @@ class ObjReader:
 
     >>> 'therefore should contain what I just said' in pr[file_where_this_code_is]
     True
-
     """
 
     def __init__(self, _obj_of_key: Callable):
@@ -940,8 +952,9 @@ class Attrs(ObjReader):
     """A simple recursive KvReader for the attributes of a python object.
     Keys are attr names, values are Attrs(attr_val) instances.
 
-    Note: A more significant version of Attrs, along with many tools based on it,
-    was moved to pypi package: guide.
+    Note:
+        A more significant version of Attrs, along with many tools based on it,
+        was moved to pypi package: guide.
 
 
         pip install guide

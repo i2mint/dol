@@ -1,4 +1,17 @@
-"""General util objects"""
+"""General util objects: function composition, grouping, partial classes, file helpers.
+
+Main entry points:
+
+- ``Pipe``: compose functions left to right
+- ``partialclass``: ``functools.partial`` for classes
+- ``groupby``, ``regroupby``, ``igroupby``: group items by a key function
+- ``chain_get``: first value found for a sequence of keys
+- ``written_bytes``, ``read_from_bytes``: turn file-writing/reading functions into bytes codecs
+
+    >>> from dol.util import Pipe
+    >>> Pipe(lambda x: x + 1, str)(1)
+    '2'
+"""
 
 import os
 import shutil
@@ -66,6 +79,7 @@ def non_colliding_key(
         collision_handler: Function taking (key, attempt_number) and returning a modified key.
                           For strings, defaults to appending " (N)" suffix before extension.
                           For other types, must be provided.
+
         max_attempts: Maximum number of transformation attempts
 
     Returns:
@@ -83,7 +97,6 @@ def non_colliding_key(
     'file (2).txt'
     >>> non_colliding_key(42, {42}, collision_handler=lambda k, n: k + n)
     43
-
     """
     if key not in exclude:
         return key
@@ -139,6 +152,7 @@ def safe_compile(path, normalize_path=True):
         re.Pattern: A compiled regular expression object for the given path.
 
     Examples:
+
         >>> import re
         >>> isinstance(safe_compile("/fun/paths/are/awesome"), re.Pattern)
         True
@@ -219,6 +233,7 @@ def is_unbound_method(obj):
         True if obj is an unbound method, False otherwise.
 
     Examples:
+
         >>> import sys
         >>> import types
         >>> def function():
@@ -282,7 +297,6 @@ def add_as_attribute_of(obj, name=None):
 
     In reality, any object that has a ``__name__`` can be added to the attribute of
     ``obj``, but the intention is to add helper functions to main "container" functions.
-
     """
 
     def _decorator(f):
@@ -299,8 +313,9 @@ def chain_get(d: Mapping, keys, default=None):
     """
     Returns the ``d[key]`` value for the first ``key`` in ``keys`` that is in ``d``, and default if none are found
 
-    Note: Think of ``collections.ChainMap`` where you can look for a single key in a sequence of maps until we find it.
-    Here we look for a sequence of keys in a single map, stopping as soon as we find a key that the map has.
+    Note:
+        Think of ``collections.ChainMap`` where you can look for a single key in a sequence of maps until we find it.
+        Here we look for a sequence of keys in a single map, stopping as soon as we find a key that the map has.
 
     >>> d = {'here': '&', 'there': 'and', 'every': 'where'}
     >>> chain_get(d, ['not there', 'not there either', 'there', 'every'])
@@ -316,7 +331,6 @@ def chain_get(d: Mapping, keys, default=None):
 
     >>> chain_get(d, ('none', 'of', 'these'), default='Not Found')
     'Not Found'
-
     """
     for key in keys:
         if key in d:
@@ -332,7 +346,6 @@ class LiteralVal:
     42
     >>> t()
     42
-
     """
 
     def __init__(self, val):
@@ -373,7 +386,6 @@ def decorate_callables(decorator, cls=None):
     'dry'
     >>> a.big()  # doctest: +SKIP
     'small'
-
     """
     if cls is None:
         return partial(decorate_callables, decorator)
@@ -495,6 +507,7 @@ def not_a_mac_junk_path(path: str):
 def inject_method(obj, method_function, method_name=None):
     """
     method_function could be:
+
         * a function
         * a {method_name: function, ...} dict (for multiple injections)
         * a list of functions or (function, method_name) pairs
@@ -533,7 +546,6 @@ def _disabled_clear_method(self):
                 del self[k]
             except KeyError:
                 pass
-
     """
     raise NotImplementedError(f"Instance of {type(self)}: {self.clear.__doc__}")
 
@@ -603,7 +615,6 @@ def truncate_string_with_marker(
     '12---90'
     >>> truncate_string('supercalifragilisticexpialidocious')
     'su---us'
-
     """
     middle_marker_len = len(middle_marker)
     if len(s) <= left_limit + right_limit:
@@ -660,6 +671,7 @@ class Pipe:
     3
 
     Notes:
+
         - Pipe instances don't have a __name__ etc. So some expectations of normal functions are not met.
         - Pipe instance are pickalable (as long as the functions that compose them are)
 
@@ -685,7 +697,6 @@ class Pipe:
     'map_and_sum'
     >>> f.__doc__
     'Apply func and add'
-
     """
 
     funcs = ()
@@ -804,7 +815,7 @@ def flatten_pipe(pipe):
 
 
 def partialclass(cls, *args, **kwargs):
-    """What partial(cls, *args, **kwargs) does, but returning a class instead of an object.
+    """What ``partial(cls, *args, **kwargs)`` does, but returning a class instead of an object.
 
     :param cls: Class to get the partial of
     :param kwargs: The kwargs to fix
@@ -858,14 +869,12 @@ def partialclass(cls, *args, **kwargs):
       ...
     TypeError: __init__() got multiple values for argument 'a'
 
-    On the other hand, you can use *args to specify the fixtures:
+    On the other hand, you can use ``*args`` to specify the fixtures:
 
     >>> AA = partialclass(A, 22)
     >>> assert str(AA()) == 'A(a=22, b=1)'
     >>> assert str(signature(AA)) == '(b=1)'
     >>> assert str(AA(3)) == 'A(a=22, b=3)'
-
-
     """
     assert isinstance(cls, type), f"cls should be a type, was a {type(cls)}: {cls}"
 
@@ -1074,7 +1083,6 @@ def format_invocation(name="", args=(), kwargs=None):
     a_func(1)
     >>> print(format_invocation('kw_func', kwargs=[('a', 1), ('b', 2)]))
     kw_func(a=1, b=2)
-
     """
     kwargs = kwargs or {}
     a_text = ", ".join([repr(a) for a in args])
@@ -1099,7 +1107,7 @@ def groupby(
     group_factory=list,
 ) -> dict:
     """Groups items according to group keys updated from those items through the given
-    (item_to_)key function.
+    ``key`` function (mapping an item to its group key).
 
     Args:
         items: iterable of items
@@ -1110,9 +1118,11 @@ def groupby(
             group_items.append(x) will be called to add x to that collection
             The default is `list`
 
-    Returns: A dict of {group_key: items_in_that_group, ...}
+    Returns:
+        A dict of {group_key: items_in_that_group, ...}
 
-    See Also: regroupby, itertools.groupby, and dol.source.SequenceKvReader
+    See Also:
+        regroupby, itertools.groupby, and dol.source.SequenceKvReader
 
     >>> groupby(range(11), key=lambda x: x % 3)
     {0: [0, 3, 6, 9], 1: [1, 4, 7, 10], 2: [2, 5, 8]}
@@ -1142,10 +1152,13 @@ def groupby(
 def regroupby(items, *key_funcs, **named_key_funcs):
     """Recursive groupby. Applies the groupby function recursively, using a sequence of key functions.
 
-    Note: The named_key_funcs argument names don't have any external effect.
+    Note:
+        The named_key_funcs argument names don't have any external effect.
+
         They just give a name to the key function, for code reading clarity purposes.
 
-    See Also: groupby, itertools.groupby, and dol.source.SequenceKvReader
+    See Also:
+        groupby, itertools.groupby, and dol.source.SequenceKvReader
 
     >>> # group by how big the number is, then by it's mod 3 value
     >>> # note that named_key_funcs argument names doesn't have any external effect (but give a name to the function)
@@ -1193,7 +1206,7 @@ def igroupby(
     grouper_mapping=defaultdict,
 ):
     """The generator version of dol groupby.
-    Groups items according to group keys updated from those items through the given (item_to_)key function,
+    Groups items according to group keys updated from those items through the given ``key`` function (mapping an item to its group key),
     yielding the groups according to a logic defined by ``group_release_cond``
 
     Args:
@@ -1213,7 +1226,8 @@ def igroupby(
             items in the grouping "cache". ``release_remainding`` is a boolean that indicates whether
             the contents of this cache should be released or not.
 
-    Yields: ``(group_key, items_in_that_group)`` pairs
+    Yields:
+        ``(group_key, items_in_that_group)`` pairs
 
 
     The following will group numbers according to their parity (0 for even, 1 for odd),
@@ -1264,7 +1278,6 @@ def igroupby(
     >>> kws.update(key=lambda w: ['words', 'stopwords'][int(w in stopwords)])
     >>> assert (dict(igroupby(**kws)) == groupby(**kws)
     ...         == {'stopwords': ['the', 'in', 'a'], 'words': ['fox', 'is', 'box']})
-
     """
     groups = grouper_mapping(group_factory)
 
@@ -1336,8 +1349,11 @@ def fill_with_dflts(d, dflt_dict=None):
 
     See examples to know how to use it.
 
-    ATTENTION: A shallow copy of the dict is made. Know how that affects you (or not).
-    ATTENTION: This is not recursive: It won't be filling any nested fields with defaults.
+    ATTENTION:
+        A shallow copy of the dict is made. Know how that affects you (or not).
+
+    ATTENTION:
+        This is not recursive: It won't be filling any nested fields with defaults.
 
     Args:
         d: The dict you want to "fill"
@@ -1799,8 +1815,9 @@ def written_bytes(
 
     This is the write version of the `read_from_bytes` function of the same module.
 
-    Note: If obj is not given, `write_bytes` will return a "bytes writer" function that
-    takes obj as the first argument, and uses the file_writer to write the bytes.
+    Note:
+        If obj is not given, `write_bytes` will return a "bytes writer" function that
+        takes obj as the first argument, and uses the file_writer to write the bytes.
 
     :param file_writer: A function that writes an object to a file-like object.
     :param obj: The object to write.
@@ -1823,21 +1840,15 @@ def written_bytes(
 
     Here's another example with pandas DataFrame.to_parquet:
 
-    >>> import pandas as pd  # doctest: +SKIP
-    >>> df = pd.DataFrame({  # doctest: +SKIP
-    ...     'column1': [1, 2, 3],
-    ...     'column2': ['A', 'B', 'C']
-    ... })
+    .. code-block:: python
 
-    Get a function that converts DataFrame to Parquet bytes
-
-    df_to_parquet_bytes = written_bytes(pd.DataFrame.to_parquet)
-
-    # Get the bytes of the DataFrame in Parquet format
-    parquet_bytes = df_to_parquet_bytes(df)
-    all(pd.read_parquet(io.BytesIO(parquet_bytes)) == df)
-
-
+        import pandas as pd
+        df = pd.DataFrame({'column1': [1, 2, 3], 'column2': ['A', 'B', 'C']})
+        # Get a function that converts DataFrame to Parquet bytes
+        df_to_parquet_bytes = written_bytes(pd.DataFrame.to_parquet)
+        # Get the bytes of the DataFrame in Parquet format
+        parquet_bytes = df_to_parquet_bytes(df)
+        all(pd.read_parquet(io.BytesIO(parquet_bytes)) == df)
     """
     if obj is None:
         return partial(
@@ -1902,8 +1913,9 @@ def read_from_bytes(
 
     This is the read version of the `written_bytes` function of the same module.
 
-    Note: If obj is not given, read_from_bytes will return a "bytes reader" function that
-    takes obj as the first argument, and uses the file_reader to read the bytes.
+    Note:
+        If obj is not given, read_from_bytes will return a "bytes reader" function that
+        takes obj as the first argument, and uses the file_reader to read the bytes.
 
     :param file_reader: A function that reads from a file-like object.
     :param obj: The bytes to read.
@@ -1983,7 +1995,7 @@ def written_key(
         If a string starting with '*', the '*' is replaced with a unique temporary filename.
         If a string that has a '*' somewhere in the middle, what's on the left of if is used as a directory
         and the '*' is replaced with a unique temporary filename. For example
-        '/tmp/*_file.ext' would be replaced with '/tmp/oiu8fj9873_file.ext'.
+        ``'/tmp/*_file.ext'`` would be replaced with ``'/tmp/oiu8fj9873_file.ext'``.
         If a callable, it will be called with obj as input to get the key. One use case
         is to use a function that generates a key based on the object.
     :param obj_arg_position_in_writer: Position of the object argument in writer function (0 or 1).
@@ -2066,7 +2078,6 @@ def written_key(
     '/var/folders/mc/c070wfh51kxd9lft8dl74q1r0000gn/T/tmp8yaczd8b.json'
     >>> json.loads(open(filepath).read())
     {'a': 1, 'b': 2}
-
     """
     if obj is None:
         return partial(
@@ -2204,7 +2215,7 @@ class AttributeMapping(SimpleNamespace, Mapping[str, Any]):
 
     Useful when you want mapping interface but don't need mutation.
 
-    Examples:
+    .. rubric:: Examples
 
     >>> ns = AttributeMapping(x=10, y=20)
     >>> ns.x
@@ -2245,7 +2256,7 @@ class AttributeMutableMapping(AttributeMapping, MutableMapping[str, Any]):
     Extends AttributeMapping with mutation capabilities,
     ensuring proper error handling and protocol compliance.
 
-    Examples:
+    .. rubric:: Examples
 
     >>> ns = AttributeMutableMapping(apple=1, banana=2)
     >>> ns.apple

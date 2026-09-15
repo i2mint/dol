@@ -5,6 +5,7 @@ This module provides comprehensive caching functionality for Python applications
 offering flexible and powerful caching solutions for both data stores and method calls.
 
 Main Use Cases:
+
 - Property caching: Cache expensive computations that only need to be run once
 - Method caching: Cache method results based on arguments, with smart key generation
 - Store caching: Add caching layers to data stores for improved performance
@@ -12,28 +13,19 @@ Main Use Cases:
 
 Key Tools:
 
-cache_this:
-    The main decorator for caching properties and methods. Automatically detects
-    whether to use property or method caching based on function signature.
-    Supports custom cache storage, key functions, parameter ignoring, and
-    serialization hooks.
-
-CachedProperty:
-    A descriptor for caching property values with flexible cache storage and
-    key generation strategies.
-
-CachedMethod:
-    A descriptor for caching method results based on arguments, with support
-    for parameter filtering and custom key functions.
-
-KeyStrategy Protocol:
-    Extensible system for defining how cache keys are generated, including
-    strategies for explicit keys, instance properties, method arguments, and
-    composite keys.
-
-Store Decorators:
-    Tools like cache_vals, mk_sourced_store, and store_cached for adding
-    caching layers to data stores.
+- ``cache_this``: The main decorator for caching properties and methods.
+  Automatically detects whether to use property or method caching based on
+  function signature. Supports custom cache storage, key functions, parameter
+  ignoring, and serialization hooks.
+- ``CachedProperty``: A descriptor for caching property values with flexible
+  cache storage and key generation strategies.
+- ``CachedMethod``: A descriptor for caching method results based on arguments,
+  with support for parameter filtering and custom key functions.
+- ``KeyStrategy`` protocol: Extensible system for defining how cache keys are
+  generated, including strategies for explicit keys, instance properties,
+  method arguments, and composite keys.
+- Store decorators: Tools like ``cache_vals``, ``mk_sourced_store``, and
+  ``store_cached`` for adding caching layers to data stores.
 
 Examples:
 
@@ -59,7 +51,6 @@ Examples:
     ...     @cache_this(cache='cache', ignore={'verbose'})
     ...     def process(self, data, mode='fast', verbose=False):
     ...         return len(data) if mode == 'fast' else sum(data)
-
 """
 
 # -------------------------------------------------------------------------------------
@@ -237,7 +228,7 @@ class FromMethodArgs:
     """
     Apply a function to method arguments to generate the key.
 
-    The function receives (self, *args, **kwargs) and should return a cache key.
+    The function receives ``(self, *args, **kwargs)`` and should return a cache key.
     """
 
     def __init__(self, func: Callable):
@@ -245,8 +236,8 @@ class FromMethodArgs:
         Initialize with a function to apply to method arguments.
 
         Args:
-            func: A function that takes (self, *args, **kwargs) and returns a key.
-                  Example: lambda self, x, y: f'{x}_{y}'
+            func: A function that takes ``(self, *args, **kwargs)`` and returns a key,
+                for example ``lambda self, x, y: f'{x}_{y}'``.
         """
         self.func = func
 
@@ -468,24 +459,26 @@ class CachedProperty:
         Args:
             func: The function whose result needs to be cached.
             cache: The cache storage. Can be:
+
                 - A MutableMapping instance (shared across all instances)
                 - A string naming an instance attribute that is a MutableMapping
                 - A callable that takes the instance and returns a MutableMapping
-                  (allows per-instance cache customization)
-                Example: cache=lambda self: Files(f'/tmp/cache_{self.user_id}/')
+                  (allows per-instance cache customization),
+                  e.g. ``cache=lambda self: Files(f'/tmp/cache_{self.user_id}/')``
+
             key: The key to store the cache value. Can be:
+
                 - A string (treated as an explicit key)
                 - A function (interpreted based on its signature)
                 - A KeyStrategy instance
+
             allow_none_keys: Whether to allow None as a valid key.
             lock_factory: Factory function to create a lock.
             pre_cache: If True or a MutableMapping, adds in-memory caching.
             serialize: Optional function to serialize values before storing in cache.
-                       Signature: (value) -> serialized_value
-                       Example: serialize=pickle.dumps
+                       Signature: ``(value) -> serialized_value``, e.g. ``pickle.dumps``.
             deserialize: Optional function to deserialize values retrieved from cache.
-                         Signature: (serialized_value) -> value
-                         Example: deserialize=pickle.loads
+                         Signature: ``(serialized_value) -> value``, e.g. ``pickle.loads``.
         """
         self.func = func
         self.attrname = None
@@ -569,6 +562,7 @@ class CachedProperty:
         Get the cache for the instance.
 
         This method handles the three main cache specification patterns:
+
         1. Cache factories (functions that create cache instances)
         2. Attribute names (strings referring to instance attributes)
         3. Direct cache objects (MutableMapping instances)
@@ -731,6 +725,7 @@ def _default_method_key(func, self, *args, ignore=None, **kwargs):
         A string like "x=1;y=2;mode=fast" representing all arguments
 
     Examples:
+
         >>> def sample_method(self, x, y, mode='fast'): pass
         >>> _default_method_key(sample_method, None, 1, 2)
         'x=1;y=2;mode=fast'
@@ -812,26 +807,26 @@ class CachedMethod:
         Args:
             func: The function whose results need to be cached.
             cache: The cache storage. Can be:
+
                 - A MutableMapping instance (shared across instances)
                 - A string naming an instance attribute containing a MutableMapping
                 - A callable taking (instance) and returning a MutableMapping
                   This enables instance-specific caching, e.g.:
                   cache=lambda self: Files(f'/cache/{self.user_id}/')
-            key: Callable that takes (self, *args, **kwargs) and returns a cache key.
+            key: Callable that takes ``(self, *args, **kwargs)`` and returns a cache key.
                  Defaults to a function that converts args/kwargs to a string.
             ignore: Parameter name(s) to exclude from cache key computation.
                 Can be a string (single parameter) or list of strings (multiple parameters).
                 Commonly used to ignore 'self' or parameters like 'verbose' that don't
                 affect the result.
+
             allow_none_keys: Whether to allow None as a valid key.
             lock_factory: Factory function to create a lock.
             pre_cache: If True or a MutableMapping, adds in-memory caching.
             serialize: Optional function to serialize values before storing in cache.
-                       Signature: (value) -> serialized_value
-                       Example: serialize=pickle.dumps
+                       Signature: ``(value) -> serialized_value``, e.g. ``pickle.dumps``.
             deserialize: Optional function to deserialize values retrieved from cache.
-                         Signature: (serialized_value) -> value
-                         Example: deserialize=pickle.loads
+                         Signature: ``(serialized_value) -> value``, e.g. ``pickle.loads``.
         """
         self.func = func
         self.attrname = None
@@ -1062,14 +1057,16 @@ def cache_this(
 
     :param func: The function to be decorated (usually left empty).
     :param cache: The cache storage. Can be:
+
         - A MutableMapping instance (shared across instances)
         - A string naming an instance attribute containing a MutableMapping
         - A callable taking (instance) and returning a MutableMapping
           This enables instance-specific caching, e.g.:
           cache=lambda self: Files(f'/cache/{self.user_id}/')
+
     :param key: For properties: the key to store the cache value, can be a callable
         that will be applied to the method name to make a key, or an explicit string.
-        For methods: a callable that takes (self, *args, **kwargs) and returns a cache key.
+        For methods: a callable that takes ``(self, *args, **kwargs)`` and returns a cache key.
     :param pre_cache: Default is False. If True, adds an in-memory cache to the method
         to (also) cache the results in memory. If a MutableMapping is given, it will be
         used as the pre-cache.
@@ -1081,13 +1078,13 @@ def cache_this(
         Can be a string (single parameter) or list of strings (multiple parameters).
         Commonly used to ignore 'self' or parameters like 'verbose' that don't
         affect the result.
-    :param serialize: Optional function to serialize values before caching.
-        Example: serialize=pickle.dumps for binary file storage
-    :param deserialize: Optional function to deserialize cached values.
-        Example: deserialize=pickle.loads
+    :param serialize: Optional function to serialize values before caching
+        (e.g. ``pickle.dumps`` for binary file storage).
+    :param deserialize: Optional function to deserialize cached values
+        (e.g. ``pickle.loads``).
     :return: The decorated function.
 
-    ## Comprehensive Example
+    .. rubric:: Comprehensive Example
 
     Here's a complete example showcasing all major features of cache_this:
 
@@ -1367,8 +1364,6 @@ def cache_this(
     In CacheA: getting value of foo.pkl
     b'\x80\x04K*.'
     >>> # == b'\x80\x04K*.'
-
-
     """
 
     import inspect
@@ -1492,9 +1487,10 @@ def add_extension(ext=None, name=None):
     >>> add_txt_ext('file')
     'file.txt'
 
-    Note: If you want to add an extension to a name that already has an extension,
-    you can do that, but it will add the extension to the end of the name,
-    not replace the existing extension.
+    Note:
+        If you want to add an extension to a name that already has an extension,
+        you can do that, but it will add the extension to the end of the name,
+        not replace the existing extension.
 
     >>> add_txt_ext('file.txt')
     'file.txt.txt'
@@ -1504,7 +1500,6 @@ def add_extension(ext=None, name=None):
 
     >>> add_extension('.txt', 'file') == add_extension('txt', 'file') == 'file.txt'
     True
-
     """
     if ext.startswith(extsep):
         ext = ext[1:]
@@ -1527,17 +1522,18 @@ def cached_method(func=None, *, maxsize=128, typed=False):
     to the method, excluding the first argument (typically `self`). This allows methods of a class to
     be cached while ignoring the instance (`self`) in the cache key.
 
-    Parameters:
-    - func (callable, optional): The method to be decorated. If not provided, a partially applied decorator
-      will be returned for later application.
-    - maxsize (int, optional): The maximum size of the cache. Defaults to 128.
-    - typed (bool, optional): If True, cache entries will be different based on argument types, such as
-      distinguishing between `1` and `1.0`. Defaults to False.
+    Args:
+        func: The method to be decorated. If not provided, a partially applied
+            decorator will be returned for later application.
+        maxsize: The maximum size of the cache.
+        typed: If True, cache entries will be different based on argument types,
+            such as distinguishing between `1` and `1.0`.
 
     Returns:
-    - callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).
+        A wrapped function with LRU caching applied, ignoring the first argument (`self`).
 
-    Example:
+    .. rubric:: Example
+
     >>> class MyClass:
     ...     @cached_method(maxsize=2, typed=True)
     ...     def add(self, x, y):
@@ -1583,17 +1579,17 @@ def lru_cache_method(func=None, *, maxsize=128, typed=False):
     to the method, excluding the first argument (typically `self`). This allows methods of a class to
     be cached while ignoring the instance (`self`) in the cache key.
 
-    Parameters:
-    - func (callable, optional): The method to be decorated. If not provided, a partially applied decorator
-      will be returned for later application.
-    - maxsize (int, optional): The maximum size of the cache. Defaults to 128.
-    - typed (bool, optional): If True, cache entries will be different based on argument types, such as
-      distinguishing between `1` and `1.0`. Defaults to False.
+    Args:
+        func: The method to be decorated. If not provided, a partially applied
+            decorator will be returned for later application.
+        maxsize: The maximum size of the cache.
+        typed: If True, cache entries will be different based on argument types,
+            such as distinguishing between `1` and `1.0`.
 
     Returns:
-    - callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).
+        A wrapped function with LRU caching applied, ignoring the first argument (`self`).
 
-    Example:
+    .. rubric:: Example
 
     >>> class MyClass:
     ...     @lru_cache_method
@@ -1659,7 +1655,7 @@ def cache_property_method(
             `cache_this`. One frequent use case would be to use `functools.partial` to
             fix the cache and key parameters of `cache_this` and inject that.
 
-    Example:
+    .. rubric:: Example
 
     >>> @cache_property_method(['normal_method', 'property_method'])
     ... class TestClass:
@@ -1716,8 +1712,6 @@ def cache_property_method(
     2
     >>> c.property_method
     2
-
-
     """
     if method_name is None:
         assert cls is not None, (
@@ -1803,8 +1797,9 @@ def mk_memoizer(cache):
     """
     Make a memoizer that caches the output of a getter function in a cache.
 
-    Note: This is a specialized memoizer for getter functions/methods, i.e.
-    functions/methods that have the signature (instance, key) and return a value.
+    Note:
+        This is a specialized memoizer for getter functions/methods, i.e.
+        functions/methods that have the signature (instance, key) and return a value.
 
     :param cache: The cache to use. Must have __getitem__ and __setitem__ methods.
     :return: A memoizer that caches the output of the function in the cache.
@@ -1820,7 +1815,6 @@ def mk_memoizer(cache):
     20
     >>> getter(None, 2)
     20
-
     """
 
     def memoize(method):
@@ -1854,7 +1848,6 @@ def _mk_cache_instance(cache=None, assert_attrs=()):
     Traceback (most recent call last):
         ...
     AssertionError: cache should have the __setitem__ method, but does not: ()
-
     """
     if isinstance(assert_attrs, str):
         assert_attrs = (assert_attrs,)
@@ -1888,7 +1881,8 @@ def cache_vals(store=None, *, cache=dict):
         cache: The store you want to use to cache. Anything with a __setitem__(k, v) and a __getitem__(k).
             By default, it will use a dict
 
-    Returns: A subclass of the input store, but with caching (to the cache store)
+    Returns:
+        A subclass of the input store, but with caching (to the cache store)
 
     >>> from dol.caching import cache_vals
     >>> import time
@@ -1985,8 +1979,11 @@ def mk_sourced_store(store=None, *, source=None, return_source_data=True):
         store: The class of the store you want to cache
         cache: The store you want to use to cache. Anything with a __setitem__(k, v) and a __getitem__(k).
             By default, it will use a dict
+
         return_source_data:
-    Returns: A subclass of the input store, but with caching (to the cache store)
+
+    Returns:
+        A subclass of the input store, but with caching (to the cache store)
 
 
     :param store: The class of the store you're talking to. This store acts as the cache
@@ -2023,7 +2020,7 @@ def mk_sourced_store(store=None, *, source=None, return_source_data=True):
     >>> list(s)  # the local store has one key
     ['some']
 
-    # but if we ask for a key that is in the remote store, it provides it
+    But if we ask for a key that is in the remote store, it provides it:
 
     >>> assert s['foo'] == 'bar'
     looking for foo in Local
@@ -2115,7 +2112,9 @@ def _pre_condition_containment(store=None, *, bool_key_func):
 def _slow_but_somewhat_general_hash(*args, **kwargs):
     """
     Attempts to create a hash of the inputs, recursively resolving the most common hurdles (dicts, sets, lists)
-    Returns: A hash value for the input
+
+    Returns:
+        A hash value for the input
 
     >>> _slow_but_somewhat_general_hash(1, [1, 2], a_set={1,2}, a_dict={'a': 1, 'b': [1,2]})
     ((1, (1, 2)), (('a_set', (1, 2)), ('a_dict', (('a', 1), ('b', (1, 2))))))
@@ -2145,6 +2144,7 @@ def store_cached(store, key_func: Callable):
     memory and a key_func to compute the key under which to store the output.
 
     The key can be
+
     - a single value under which the output should be stored, regardless of the input.
     - a key function that is called on the inputs to create a hash under which the function's output should be stored.
 
@@ -2152,11 +2152,8 @@ def store_cached(store, key_func: Callable):
         store: The key-value store to use for caching. Must support __getitem__ and __setitem__.
         key_func: The key function that is called on the input of the function to create the key value.
 
-    Note: Union[Callable, Any] is equivalent to just Any, but reveals the two cases of a key more clearly.
-    Note: No, Union[Callable, Hashable] is not better. For one, general store keys are not restricted to hashable keys.
-    Note: No, they shouldn't.
-
-    See Also: store_cached_with_single_key (for a version where the cache store key doesn't depend on function's args)
+    See Also:
+        store_cached_with_single_key (for a version where the cache store key doesn't depend on function's args)
 
     >>> # Note: Our doc test will use dict as the store, but to make the functionality useful beyond existing
     >>> # RAM-memorizer, you should use actual "persisting" stores that store in local files, or DBs, etc.
@@ -2211,20 +2208,19 @@ def store_cached_with_single_key(store, key):
 
     The key should be a single value under which the output should be stored, regardless of the input.
 
-    Note: The wrapped function comes with a empty_cache attribute, which when called, empties the cache (i.e. removes
-    the key from the store)
+    Note:
+        The wrapped function comes with a empty_cache attribute, which when called, empties the cache (i.e. removes
+        the key from the store)
 
-    Note: The wrapped function has a hidden `_cache` attribute pointing to the store in case you need to peep into it.
+    Note:
+        The wrapped function has a hidden `_cache` attribute pointing to the store in case you need to peep into it.
 
     Args:
         store: The cache. The key-value store to use for caching. Must support __getitem__ and __setitem__.
         key: The store key under which to store the output of the function.
 
-    Note: Union[Callable, Any] is equivalent to just Any, but reveals the two cases of a key more clearly.
-    Note: No, Union[Callable, Hashable] is not better. For one, general store keys are not restricted to hashable keys.
-    Note: No, they shouldn't.
-
-    See Also: store_cached (for a version whose keys are computed from the wrapped function's input.
+    See Also:
+        store_cached (for a version whose keys are computed from the wrapped function's input.
 
     >>> # Note: Our doc test will use dict as the store, but to make the functionality useful beyond existing
     >>> # RAM-memorizer, you should use actual "persisting" stores that store in local files, or DBs, etc.
@@ -2334,6 +2330,9 @@ def ensure_clear_to_kv_store(store):
 
 # TODO: Normalize using store_decorator and add control over flush_cache method name
 def flush_on_exit(cls):
+    """Class decorator: a subclass whose ``__exit__`` calls ``flush_cache()`` (adding a
+    trivial ``__enter__`` if the class has none), so a write-cached store can be used as
+    a context manager that flushes on exit. Used by ``mk_write_cached_store``."""
     new_cls = type(cls.__name__, (cls,), {})
 
     if not hasattr(new_cls, "__enter__"):
@@ -2551,13 +2550,13 @@ class WriteBackChainMap(ChainMap):
     Example use cases:
 
     - You're working with a local and a remote source of data. You'd like to list the
-    keys available in both, and use the local item if it's available, and if it's not,
-    you want it to be sourced from remote, but written in local for quicker access
-    next time.
+      keys available in both, and use the local item if it's available, and if it's not,
+      you want it to be sourced from remote, but written in local for quicker access
+      next time.
 
     - You have several sources to look for configuration values: a sequence of
-    configuration files/folders to look through (like a unix search path for command
-    resolution) and environment variables.
+      configuration files/folders to look through (like a unix search path for command
+      resolution) and environment variables.
     """
 
     max_key_search_depth = 1
@@ -2612,6 +2611,7 @@ def _mk_cache_method_local_path_key(
 
 
 class HashableMixin:
+    """Mixin making instances hashable by identity (``id(self)``)."""
     def __hash__(self):
         return id(self)
 
@@ -2622,6 +2622,8 @@ class HashableDict(HashableMixin, dict):
 
 # NOTE: cache uses (func, args, kwargs). Don't want to make more complex with a bind cast to (func, kwargs) only
 def cache_func_outputs(cache=HashableDict):
+    """Decorator factory intended to cache a function's outputs in ``cache``, keyed by ``(func, args, kwargs)``;
+    only positional-argument calls with an explicitly given ``cache`` actually hit the cache."""
     cache = get_cache(cache)
 
     def cache_method_decorator(func):

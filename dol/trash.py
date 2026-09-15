@@ -4,13 +4,13 @@ This module provides configurable file deletion strategies with support for
 moving files to trash/recycle bin instead of permanent deletion.
 
 Available deletion strategies:
+
     - default_delete_func: Safe trash with warning on fallback to os.remove
     - permanent_delete: Direct os.remove (no warnings)
     - trash_only: Error if trash unavailable
 
-Usage:
-    Configure deletion behavior when creating file stores by passing the
-    delete_func parameter or setting _delete_func class attribute.
+Configure deletion behavior when creating file stores by passing the
+``delete_func`` parameter or setting the ``_delete_func`` class attribute.
 """
 
 import os
@@ -31,6 +31,7 @@ def get_platform_trash_func() -> Optional[DeleteFunc]:
     Returns None if no trash function is available.
 
     Priority order:
+
     1. send2trash library (if installed)
     2. Platform-specific implementation (macOS, Windows, Linux)
     3. None (will fall back to os.remove)

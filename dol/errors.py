@@ -1,4 +1,13 @@
-"""Error objects and utils"""
+"""Error objects and utils.
+
+The exception classes dol raises (``NotAllowed``, ``OverWritesNotAllowedError``,
+``KeyValidationError``, ...) and ``items_with_caught_exceptions``, an ``items()``
+that skips (or reports) the keys whose value cannot be fetched.
+
+    >>> from dol.errors import items_with_caught_exceptions
+    >>> list(items_with_caught_exceptions({'a': 1}))
+    [('a', 1)]
+"""
 
 from collections.abc import Mapping
 from inspect import signature
@@ -39,9 +48,11 @@ def items_with_caught_exceptions(
     :param d: Any Mapping
     :param catch_exceptions: A tuple of exceptions that should be caught
     :param callback: A function that will be called every time an exception is caught.
-        The signature of the callback function is required to be:
-            k (key), e (error obj), d (mapping), i (index)
-        but
+        It may take any subset of the arguments ``k`` (key), ``e`` (error obj),
+        ``d`` (mapping) and ``i`` (index), by name (see the examples below); if its
+        signature cannot be inspected it is called with all four, positionally.
+    :param yield_callback_output: If True, also yield the callback's output for the
+        keys whose value raised.
     :return: An (key, val) generator with exceptions caught
 
     >>> from collections.abc import Mapping

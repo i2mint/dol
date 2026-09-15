@@ -1,10 +1,17 @@
-"""
-Tools to add append-functionality to key-val stores. The main function is
-    `appendable_store_cls = add_append_functionality_to_store_cls(store_cls, item2kv, ...)`
-You give it the `store_cls` you want to sub class, and a item -> (key, val) function, and you get a store (subclass) that
-has a `store.append(item)` method. Also includes an extend method (that just called appends in a loop.
+"""Tools to add append-functionality to key-val stores.
 
-See add_append_functionality_to_store_cls docs for examples.
+The main function is ``appendable(store_cls, item2kv=...)``: you give it the store
+class you want to subclass and an item -> (key, val) function, and you get a store
+(subclass) that has a ``store.append(item)`` method (and an ``extend``, which appends in
+a loop). ``mk_item2kv_for`` holds ready-made item2kv factories (timestamps, uuids,
+fields of the item, ...).
+
+    >>> from dol.appendable import appendable
+    >>> S = appendable(dict, item2kv=lambda item: (item['id'], item))
+    >>> s = S()
+    >>> s.append({'id': 1})
+    >>> s
+    {1: {'id': 1}}
 """
 
 import time
@@ -24,7 +31,8 @@ def define_extend_as_seq_of_appends(obj):
     Args:
         obj: Class (type) or instance of an object that has an "append" method.
 
-    Returns: The obj, but with that extend method.
+    Returns:
+        The obj, but with that extend method.
 
     >>> class A:
     ...     def __init__(self):
@@ -48,7 +56,6 @@ def define_extend_as_seq_of_appends(obj):
     >>> a.extend([10, 20])
     >>> a.t
     [1, 2, 3, 10, 20]
-
     """
     assert hasattr(obj, "append"), (
         f"Your object needs to have an append method! Object was: {obj}"
@@ -113,7 +120,9 @@ class mk_item2kv_for:
 
         Args:
             attr_name: The attribute name to use as the key
-        Returns: an item -> (key, val) function
+
+        Returns:
+            an item -> (key, val) function
 
         >>> ref_getter =mk_item2kv_for.attr("ref")
         >>> from collections import namedtuple
@@ -121,7 +130,6 @@ class mk_item2kv_for:
         >>> a = A(ref='some_ref')
         >>> ref_getter(a)
         ('some_ref', A(ref='some_ref'))
-
         """
 
         def item2kv(item):
@@ -147,7 +155,8 @@ class mk_item2kv_for:
         Args:
             item2key: an item -> key function
 
-        Returns: an item -> (key, val) function
+        Returns:
+            an item -> (key, val) function
 
         >>> item2key = lambda item: item['G']  # use value of 'L' as the key
         >>> item2key({'L': 'let', 'I': 'it', 'G': 'go'})
@@ -166,8 +175,9 @@ class mk_item2kv_for:
     def field(field, keep_field_in_value=True, dflt_if_missing=NotSpecified):
         """item2kv that uses a specific key of a (mapping) item as the key
 
-        Note: If keep_field_in_value=False, the field will be popped OUT of the item.
-         If that's not the desired effect, one should feed copies of the items (e.g. map(dict.copy, items))
+        Note:
+            If keep_field_in_value=False, the field will be popped OUT of the item.
+            If that's not the desired effect, one should feed copies of the items (e.g. map(dict.copy, items))
 
         :param field: The field (value) to use as the returned key
         :param keep_field_in_value: Whether to leave the field in the item. If False, will pop it out
@@ -183,7 +193,6 @@ class mk_item2kv_for:
         >>> item2kv = mk_item2kv_for.field('G', dflt_if_missing=None)
         >>> item2kv({'L': 'let', 'I': 'it', 'DIE': 'go'})
         (None, {'L': 'let', 'I': 'it', 'DIE': 'go'})
-
         """
         if dflt_if_missing is NotSpecified:
             if keep_field_in_value:
@@ -216,9 +225,11 @@ class mk_item2kv_for:
         or to get a more accurate timestamp of an event.
 
         Use case for offset_s:
+
             * Align to another system's clock
             * Get more accurate timestamping of an event. For example, in situations where the item is a chunk of live
-            streaming data and we want the key (timestamp) to represent the timestamp of the beginning of the chunk.
+              streaming data and we want the key (timestamp) to represent the timestamp of the beginning of the chunk.
+
             Without an offset_s, the timestamp would be the timestamp after the last byte of the chunk was produced,
             plus the time it took to reach the present function. If we know the data production rate (e.g. sample rate)
             and the average lag to get to the present function, we can get a more accurate timestamp for the beginning
@@ -227,14 +238,14 @@ class mk_item2kv_for:
         Args:
             offset_s: An offset (in seconds, possibly negative) to add to the current time.
 
-        Returns: an item -> (current_utc_s, item) function
+        Returns:
+            an item -> (current_utc_s, item) function
 
         >>> import time
         >>> item2key = mk_item2kv_for.utc_key()
         >>> k, v = item2key('some data')
         >>> assert abs(time.time() - k) < 0.01  # which asserts that k is indeed a (current) utc timestamp
         >>> assert v == 'some data'  # just the item itself
-
         """
         if time_postproc is None:
 
@@ -260,7 +271,8 @@ class mk_item2kv_for:
         One advantage though, is that the uuid is time-based, so it can be used to sort
         the keys in the order they were IDed.
 
-        Returns: an item -> (uuid, item) function
+        Returns:
+            an item -> (uuid, item) function
 
         >>> import uuid
         >>> item2key = mk_item2kv_for.uuid_key()
@@ -275,7 +287,6 @@ class mk_item2kv_for:
         >>> k, v = item2key('some data')
         >>> isinstance(k, uuid.UUID)
         True
-
         """
         import uuid
 
@@ -298,12 +309,11 @@ class mk_item2kv_for:
 
         Args:
             item_to_key_params_and_val: an item -> (key_params, val) function
-            key_str_format: A string format such that
-                    key_str_format.format(*key_params) or
-                    key_str_format.format(**key_params)
-                will produce the desired key string
+            key_str_format: A string format such that ``key_str_format.format(*key_params)``
+                or ``key_str_format.format(**key_params)`` will produce the desired key string
 
-        Returns: an item -> (key, val) function
+        Returns:
+            an item -> (key, val) function
 
         >>> # Using tuple key params with unnamed string format fields
         >>> item_to_kv = mk_item2kv_for.item_to_key_params_and_val(lambda x: ((x['L'], x['I']), x['G']), '{}/{}')
@@ -330,14 +340,16 @@ class mk_item2kv_for:
     def fields(fields, keep_field_in_value=False, key_as_tuple=False):
         """Make item2kv from specific fields of a Mapping (i.e. dict-like object) item.
 
-        Note: item2kv will not mutate item (even if keep_field_in_value=False).
+        Note:
+            item2kv will not mutate item (even if keep_field_in_value=False).
 
         Args:
             fields: The sequence (list, tuple, etc.) of item fields that should be used to create the key.
             keep_field_in_value: Set to True to return the item as is, as the value
             key_as_tuple: Set to True if you want keys to be tuples (note that the fields order is important here!)
 
-        Returns: an item -> (item[fields], item[not in fields]) function
+        Returns:
+            an item -> (item[fields], item[not in fields]) function
 
         >>> item_to_kv = mk_item2kv_for.fields('L')
         >>> item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})
@@ -351,7 +363,6 @@ class mk_item2kv_for:
         >>> item_to_kv = mk_item2kv_for.fields(('G', 'L'), key_as_tuple=True)  # but ('G', 'L') order is respected here
         >>> item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})
         (('go', 'let'), {'I': 'it'})
-
         """
         if isinstance(fields, str):
             fields_set = {fields}
@@ -392,7 +403,8 @@ def appendable(store_cls=None, *, item2kv, return_keys=False):
         item2kv: The function that produces a (key, val) pair from an item
         new_store_name: The name to give the new class (default will be 'Appendable' + store_cls.__name__)
 
-    Returns: A subclass of store_cls with two additional methods: append, and extend.
+    Returns:
+        A subclass of store_cls with two additional methods: append, and extend.
 
 
     >>> item_to_kv = lambda item: (item['L'], item)  # use value of 'L' as the key, and value is the item itself
@@ -516,7 +528,6 @@ class Extender:
     >>> b_extender += ' split'
     >>> store
     {'a': 'pplesauce', 'b': 'anana split'}
-
     """
 
     def __init__(

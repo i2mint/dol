@@ -149,7 +149,6 @@ def test_wrap_kvs_vs_class_and_static_methods():
 
     See issue "dol.base.Store.wrap breaks unbound method calls":
     https://github.com/i2mint/dol/issues/17
-
     """
 
     @Store.wrap

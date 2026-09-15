@@ -1,7 +1,6 @@
 """Module for path (and path-like) object manipulation
 
-
-Examples::
+Examples:
 
     >>> d = {'a': {'b': {'c': 1, 'd': 2}, 'e': 3}}
     >>> list(path_filter(lambda p, k, v: v == 2, d))
@@ -14,7 +13,6 @@ Examples::
     >>> path_set(d, ('a', 'b', 'new_ab_key'), 42)
     >>> d
     {'a': {'b': {'c': 1, 'd': 4, 'new_ab_key': 42}, 'e': 3}}
-
 """
 
 from functools import wraps, partial
@@ -122,6 +120,7 @@ def flatten_dict(
         d: The dictionary to flatten
         sep: The separator to use for joining keys, or a function that takes a path and
             a key and returns a new path.
+
         parent_path: The path to the parent of the current dict
         visit_nested: A function that returns True if a value should be visited
         egress: A function that takes a generator of key-value pairs and returns a mapping
@@ -131,7 +130,6 @@ def flatten_dict(
     {'a.b': 2, 'c': 3}
     >>> flatten_dict(d, sep='/')
     {'a/b': 2, 'c': 3}
-
     """
     return egress(
         flattened_dict_items(
@@ -164,10 +162,12 @@ def leaf_paths(
         d: The nested dictionary to get the leaf paths from
         sep: The separator to use for joining keys, or a function that takes a path and
             a key and returns a new path.
+
         parent_path: The path to the parent of the current dict
         egress: A function that takes a generator of key-value pairs and returns a mapping
 
-    Example:
+    .. rubric:: Example
+
     >>> leaf_paths({'a': {'b': 2}, 'c': 3})
     {'a': {'b': 'a.b'}, 'c': 'c'}
 
@@ -205,14 +205,17 @@ path_sep = os.path.sep
 
 
 def raise_on_error(d: dict):
+    """``on_error`` policy for ``path_get``: re-raise the caught error."""
     raise
 
 
 def return_none_on_error(d: dict):
+    """``on_error`` policy for ``path_get``: return ``None``."""
     return None
 
 
 def return_empty_tuple_on_error(d: dict):
+    """``on_error`` policy for ``path_get``: return ``()``."""
     return ()
 
 
@@ -251,7 +254,6 @@ def _path_get(
     # ...     'k': 'c',
     # ...     'error': KeyError('c')
     # ... }
-
     """
 
     if path_to_keys is not None:
@@ -287,16 +289,19 @@ def _path_get(
 
 
 def split_if_str(obj, sep="."):
+    """Split ``obj`` on ``sep`` if it is a string; return it unchanged otherwise."""
     if isinstance(obj, str):
         return obj.split(sep)
     return obj
 
 
 def separate_keys_with_separator(obj, sep="."):
+    """Split a string path on ``sep`` and cast numeric parts to ``int``; a non-string iterable is only cast element-wise."""
     return map(cast_to_int_if_numeric_str, split_if_str(obj, sep))
 
 
 def getitem(obj, k):
+    """Return ``obj[k]``."""
     return obj[k]
 
 
@@ -305,11 +310,13 @@ def get_attr_or_item(obj, k):
     If ``k`` is a string, tries to get ``k`` as an attribute of ``obj`` first,
     and if that fails, gets it as ``obj[k]``
 
-    WARNING: The hardcoded priority choices of this function regarding when to try
-    k as an item, index, or attribute, don't apply to every case, so you may want to
-    use an explicit value getter to be more robust!
+    WARNING:
+        The hardcoded priority choices of this function regarding when to try
+        k as an item, index, or attribute, don't apply to every case, so you may want to
+        use an explicit value getter to be more robust!
 
     # >>> d = {'a': [1, {'items': 2, '3': 33, 3: 42}]}
+
     >>> get_attr_or_item({'items': 2}, 'items')
     2
 
@@ -346,7 +353,6 @@ def get_attr_or_item(obj, k):
     Traceback (most recent call last):
     ...
     KeyError: 2
-
     """
     if isinstance(k, str):
         if str.isnumeric(k) and not isinstance(obj, Mapping):
@@ -382,7 +388,7 @@ def keys_and_indices_path(str_path, *, sep=".", index_pattern=r"\[(\d+)\]"):
     Returns:
         tuple: A tuple representation of the path, e.g., ("a21-59c", "message", 2, "user").
 
-    Example:
+    .. rubric:: Example
 
     >>> keys_and_indices_path("a21-59c.message[2].user")
     ('a21-59c', 'message', 2, 'user')
@@ -457,12 +463,14 @@ def path_get(
     >>> path_get([1, [4, 5, {'a': A}], 3], '1.2.a.an_attribute')
     42
 
-    Note: The underlying function is ``_path_get``, but `path_get` has defaults and
-    flexible input processing for more convenience.
+    Note:
+        The underlying function is ``_path_get``, but `path_get` has defaults and
+        flexible input processing for more convenience.
 
-    Note: ``path_get`` contains some ready-made ``OnErrorType`` functions in its
-    attributes. For example, see how we can make ``path_get`` have the same behavior
-    as ``dict.get`` by passing ``path_get.return_none_on_error`` as ``on_error``:
+    Note:
+        ``path_get`` contains some ready-made ``OnErrorType`` functions in its
+        attributes. For example, see how we can make ``path_get`` have the same behavior
+        as ``dict.get`` by passing ``path_get.return_none_on_error`` as ``on_error``:
 
     >>> dd = path_get({}, 'no.keys', on_error=path_get.return_none_on_error)
     >>> dd is None
@@ -470,7 +478,6 @@ def path_get(
 
     For example, ``path_get.raise_on_error``,
     ``path_get.return_none_on_error``, and ``path_get.return_empty_tuple_on_error``.
-
     """
     if sep is None:
         if isinstance(path, str):
@@ -528,8 +535,9 @@ def paths_getter(
     get multiple paths, returning the (path, value) pairs in a dict (by default),
     or via any pairs aggregator (``egress``) function.
 
-    Note: For reasons who's clarity is burried in historical legacy, the order of
-    obj and path are the opposite of path_get.
+    Note:
+        For reasons who's clarity is burried in historical legacy, the order of
+        obj and path are the opposite of path_get.
 
     :param paths: The paths to get
     :param obj: The object to get the paths from
@@ -555,7 +563,6 @@ def paths_getter(
     >>> path_extractor_2 = paths_getter({'california': 'a.c', 'dreaming': 'd'})
     >>> path_extractor_2(obj)
     {'california': 2, 'dreaming': 3}
-
     """
     kwargs = dict(
         on_error=on_error,
@@ -599,6 +606,7 @@ def chain_of_getters(
 
 @add_as_attribute_of(path_get)
 def cast_to_int_if_numeric_str(k):
+    """Cast ``k`` to ``int`` if it is a numeric string; return it unchanged otherwise."""
     if isinstance(k, str) and str.isnumeric(k):
         return int(k)
     return k
@@ -649,7 +657,7 @@ class PathMappedData(KeysReader):
         data: The mapping to extract data from
         paths: The paths to extract data from the mapping
 
-    Example::
+    .. rubric:: Example
 
     >>> data = {
     ...     'a': {
@@ -679,7 +687,6 @@ class PathMappedData(KeysReader):
     Traceback (most recent call last):
     ...
     KeyError: "Key a.b.1.c was not found....key_collection attribute)"
-
     """
 
     def __init__(
@@ -745,7 +752,6 @@ def path_edit(d: Mapping, edits: Edits = ()) -> Mapping:
 
     >>> path_edit(d, {'a': 4, 'd.e.f': 5})
     {'a': 4, 'b': {'c': 2}, 'd': {'e': {'f': 5}}}
-
     """
 
     if isinstance(edits, Mapping):
@@ -781,7 +787,7 @@ def path_filter(
         (instead of the default depth-first traversal).
     :return: An iterator of paths to values that pass the ``pkv_filt``
 
-    Example::
+    .. rubric:: Example
 
     >>> d = {'a': {'b': {'c': 1, 'd': 2}, 'e': 3}}
     >>> list(path_filter(lambda p, k, v: v == 2, d))
@@ -815,8 +821,9 @@ def path_filter(
     >>> vals
     [42, 'meaning of life']
 
-    Note: pkv_filt is first to match the order of the arguments of the
-    builtin filter function.
+    Note:
+        pkv_filt is first to match the order of the arguments of the
+        builtin filter function.
     """
     _leaf_yield = partial(_path_matcher_leaf_yield, pkv_filt, None)
     kwargs = dict(leaf_yield=_leaf_yield, breadth_first=breadth_first)
@@ -891,6 +898,7 @@ class KeyPath:
     Args:
         path_sep: The path separator (used to make string paths from iterable paths and
             visa versa
+
         _path_type: The type of the outcoming (inner) path. But really, any function to
         convert from a list to
             the outer path type we want.
@@ -936,19 +944,19 @@ class KeyPath:
     >>> s
     {'a': {'b': {}}}
 
-    Note: By default ``KeyPath`` reads with paths only when all the keys of the path
-    are valid (i.e. have a value), and, just like a ``dict``, will *not* create
-    intermediate nested values for you on write. Pass ``create_missing=True`` to opt
-    into write-through autovivification: missing intermediates are created on write
-    (like ``collections.defaultdict``, but with an optional contextual per-level
-    ``mk_missing(ctx)`` factory), and the change persists correctly even through
-    persistent / copy-semantics stores. See ``misc/docs/dol_issue16_design.md``.
+    Note:
+        By default ``KeyPath`` reads with paths only when all the keys of the path
+        are valid (i.e. have a value), and, just like a ``dict``, will *not* create
+        intermediate nested values for you on write. Pass ``create_missing=True`` to opt
+        into write-through autovivification: missing intermediates are created on write
+        (like ``collections.defaultdict``, but with an optional contextual per-level
+        ``mk_missing(ctx)`` factory), and the change persists correctly even through
+        persistent / copy-semantics stores. See ``misc/docs/dol_issue16_design.md``.
 
     >>> s = KeyPath('.', create_missing=True)({})
     >>> s['a.b.c'] = 42
     >>> s['a.b.c']
     42
-
     """
 
     path_sep: str = path_sep
@@ -1003,9 +1011,8 @@ class PrefixRelativizationMixin:
     (assumed to exist).
     The cannonical use case is when keys are absolute file paths, but we want to identify data through relative paths.
     Instead of referencing files through an absolute path such as
-        /A/VERY/LONG/ROOT/FOLDER/the/file/we.want
-    we can instead reference the file as
-        the/file/we.want
+    ``/A/VERY/LONG/ROOT/FOLDER/the/file/we.want`` we can instead reference the file
+    as ``the/file/we.want``.
 
     Note though, that PrefixRelativizationMixin can be used, not only for local paths,
     but when ever a string reference is involved.
@@ -1113,7 +1120,8 @@ def mk_relative_path_store(
         name: The name of the new store (by default 'RelPath' + store_cls.__name__)
         with_key_validation: Whether keys should be validated upon access (store_cls must have an is_valid_key method
 
-    Returns: A new class that uses relative paths (i.e. where _prefix is automatically added to incoming keys,
+    Returns:
+        A new class that uses relative paths (i.e. where _prefix is automatically added to incoming keys,
         and the len(_prefix) first characters are removed from outgoing keys.
 
     >>> # The dynamic way (if you try this at home, be aware of the pitfalls of the dynamic way
@@ -1147,7 +1155,6 @@ def mk_relative_path_store(
     >>>  # but under the hood, the dict we wrapped actually contains the '/ROOT/' prefix
     >>> dict(s.store)
     {'/ROOT/foo': 'bar'}
-
     """
     # name = name or ("RelPath" + store_cls.__name__)
     # __module__ = __module__ or getattr(store_cls, "__module__", None)
@@ -1242,6 +1249,7 @@ def mk_relative_path_store(
 # TODO: Intended to replace the init-less PrefixRelativizationMixin
 #  (but should change name if so, since Mixins shouldn't have inits)
 class RelativePathKeyMapper:
+    """Key mapper adding ``prefix`` on the way in and removing it on the way out."""
     def __init__(self, prefix):
         self._prefix = prefix
         self._prefix_length = len(self._prefix)
@@ -1255,6 +1263,7 @@ class RelativePathKeyMapper:
 
 @store_decorator
 def prefixless_view(store=None, *, prefix=None):
+    """Wrap ``store`` so that keys are seen without ``prefix`` (added back on access)."""
     key_mapper = RelativePathKeyMapper(prefix)
     return wrap_kvs(
         store, id_of_key=key_mapper._id_of_key, key_of_id=key_mapper._key_of_id
@@ -1321,7 +1330,8 @@ def _prefix_filter_with_relativization(store, prefix: str):
 
 @store_decorator
 def add_prefix_filtering(store=None, *, relativize_prefix: bool = False):
-    """Add prefix filtering to a store.
+    """Make a missing key that is a prefix of existing keys return the sub-mapping of
+    those keys (so ``s['a/']`` lists everything "under" ``a/``).
 
     >>> d = {'a/b': 1, 'a/c': 2, 'd/e': 3, 'f': 4}
     >>> s = add_prefix_filtering(d)
@@ -1333,7 +1343,6 @@ def add_prefix_filtering(store=None, *, relativize_prefix: bool = False):
     >>> D = add_prefix_filtering(UserDict)
     >>> s = D(d)
     >>> assert s['a/'] == {'a/b': 1, 'a/c': 2}
-
     """
     __prefix_filter = _prefix_filter
     if relativize_prefix:
@@ -1362,6 +1371,7 @@ def handle_prefixes(
         store: The store to wrap
         prefix: The prefix to use. If None and the store is an instance (not type),
                 will take the longest common prefix as the prefix.
+
         filter_prefix: Whether to filter out keys that don't start with the prefix
         relativize_prefix: Whether to relativize the prefix
         default_prefix: The default prefix to use if no prefix is given and the store
@@ -1374,7 +1384,6 @@ def handle_prefixes(
     {'every/thing': 42, 'this/too': 0, 'foo': 'bar'}
     >>> dict(dd.store)  # but see where the underlying store actually wrote 'bar':
     {'/ROOT/of/every/thing': 42, '/ROOT/of/this/too': 0, '/ROOT/of/foo': 'bar'}
-
     """
     if prefix is None:
         if isinstance(store, type):
@@ -1397,6 +1406,7 @@ from enum import Enum
 
 
 class PathKeyTypes(Enum):
+    """Enum of the path key forms: ``str``, ``dict``, ``tuple``, ``namedtuple``."""
     str = "str"
     dict = "dict"
     tuple = "tuple"
@@ -1505,7 +1515,6 @@ def rel_path_wrap(o, _prefix):
     >>> class MyStore(mk_relative_path_store(dict)):  # Indeed, mk_relative_path_store(dict) is a class you can subclass
     ...     def __init__(self, _prefix, *args, **kwargs):
     ...         self._prefix = _prefix
-
     """
 
     from dol import kv_wrap
@@ -1554,10 +1563,11 @@ def _return_none_if_none_input(func):
     >>> assert foo.bar(None) is None
     >>> assert foo.bar(x=None) is None
 
-    Note: On the other hand, this will not return `None`, but should:
-    ``foo.bar(y=3, x=None)``. To achieve this, we'd need to look into the signature,
-    which seems like overkill and I might not want that systematic overhead in my
-    methods.
+    Note:
+        On the other hand, this will not return `None`, but should:
+        ``foo.bar(y=3, x=None)``. To achieve this, we'd need to look into the signature,
+        which seems like overkill and I might not want that systematic overhead in my
+        methods.
     """
 
     @wraps(func)
@@ -1619,6 +1629,7 @@ def _field_names(string_template):
 
 
 def identity(x):
+    """Return ``x``."""
     return x
 
 
@@ -1659,7 +1670,7 @@ class KeyTemplate:
         from_str_funcs: A dictionary of field names and their functions to convert
             them from strings.
 
-    Examples:
+    .. rubric:: Examples
 
     >>> st = KeyTemplate(
     ...     'root/{name}/v_{version}.json',
@@ -1720,10 +1731,11 @@ class KeyTemplate:
     >>> store['root/i2/v_4.json']
     '{"downloads": 274, "type": "utility"}'
 
-    Note: If your store contains keys that don't fit the format, key_codec will
-    raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to
-    filter out keys that don't fit the format, before you wrap the store with
-    ``st.key_codec``.
+    Note:
+        If your store contains keys that don't fit the format, key_codec will
+        raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to
+        filter out keys that don't fit the format, before you wrap the store with
+        ``st.key_codec``.
 
     >>> store = {
     ...     'root/meshed/v_151.json': '{"downloads": 41, "type": "productivity"}',
@@ -1746,7 +1758,6 @@ class KeyTemplate:
     {'name': 'i2', 'version': 96}
     >>> key_codec.decoder({'name': 'fantastic', 'version': 4})
     ('fantastic', 4)
-
     """
 
     _formatter = string_formatter
@@ -1843,11 +1854,11 @@ class KeyTemplate:
         >>> store['root/i2/v_4.json']
         '{"downloads": 274, "type": "utility"}'
 
-        Note: If your store contains keys that don't fit the format, key_codec will
-        raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to
-        filter out keys that don't fit the format, before you wrap the store with
-        ``st.key_codec``.
-
+        Note:
+            If your store contains keys that don't fit the format, key_codec will
+            raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to
+            filter out keys that don't fit the format, before you wrap the store with
+            ``st.key_codec``.
         """
         self._assert_field_type(decoded, "decoded")
         self._assert_field_type(encoded, "encoded")
@@ -1869,7 +1880,6 @@ class KeyTemplate:
         >>> filtered_store = filt.filt_iter('str')(store)
         >>> list(filtered_store)
         ['root/meshed/v_151.json', 'root/dol/v_9.json']
-
         """
         if isinstance(field_type, Mapping):
             # The user wants to filter a store with the default
@@ -1888,7 +1898,6 @@ class KeyTemplate:
         ... )
         >>> st.str_to_dict('root/life/v_30.json')
         {'i01_': 'life', 'ver': 30}
-
         """
         if s is None:
             return None
@@ -1907,7 +1916,6 @@ class KeyTemplate:
         ... )
         >>> st.dict_to_str({'i01_': 'life', 'ver': 42})
         'root/life/v_042.json'
-
         """
         if params is None:
             return None
@@ -1923,7 +1931,6 @@ class KeyTemplate:
         ... )
         >>> st.str_to_tuple('root/life/v_42.json')
         ('life', 42)
-
         """
         if params is None:
             return None
@@ -2140,17 +2147,17 @@ class KeyTemplate:
         r"""Extracts information from the template. Namely:
 
         - normalized_template: A template where each placeholder has a field name
-        (if not given, dflt_field_name will be used, which by default is
-        'i{:02.0f}_'.format)
+          (if not given, dflt_field_name will be used, which by default is
+          'i{:02.0f}_'.format)
 
         - field_names: The tuple of field names in the order they appear in template
 
         - to_str_funcs: A dict of field names and their corresponding to_str functions,
-        which will be used to convert the field values to strings when generating a
-        string.
+          which will be used to convert the field values to strings when generating a
+          string.
 
-        - field_patterns_: A dict of field names and their corresponding regex patterns,
-        which will be used to extract the field values from a string.
+        - ``field_patterns_``: A dict of field names and their corresponding regex patterns,
+          which will be used to extract the field values from a string.
 
         These four values are used in the init to compute the parameters of the
         instance.
@@ -2169,7 +2176,6 @@ class KeyTemplate:
         '003'
         >>> to_str_funcs['name']('life')
         'life'
-
         """
 
         field_names = []

@@ -1,5 +1,16 @@
-"""
-Functions to read from and write to misc sources
+"""Functions to read from and write to misc sources, choosing the codec from the key.
+
+``get_obj``/``set_obj`` read and write a file with the codec picked from its extension
+(``.json``, ``.csv``, ``.pkl``, ...); ``MiscReaderMixin``/``MiscStoreMixin`` add the same
+key-conditioned (de)serialization to any store.
+
+    >>> from dol.misc import MiscStoreMixin
+    >>> class M(MiscStoreMixin, dict):
+    ...     pass
+    >>> m = M()
+    >>> m['a.json'] = {'x': 1}
+    >>> dict.__getitem__(m, 'a.json'), m['a.json']
+    (b'{"x": 1}', {'x': 1})
 """
 
 # TODO: Completely redo this, using preset and postget and making it into a plugin
@@ -307,9 +318,12 @@ misc_objs_get.dflt_incoming_val_trans_for_key = dflt_incoming_val_trans_for_key
 
 class MiscStoreMixin(MiscReaderMixin):
     r"""Mixin to transform incoming and outgoing vals according to the key their under.
-    Warning: If used as a subclass, this mixin should (in general) be placed before the store
 
-    See also: preset and postget args from wrap_kvs decorator from dol.trans.
+    Warning:
+        If used as a subclass, this mixin should (in general) be placed before the store
+
+    See also:
+        preset and postget args from wrap_kvs decorator from dol.trans.
 
     >>> # Make a class to wrap a dict with a layer that transforms written and read values
     >>> class MiscStore(MiscStoreMixin, dict):
@@ -355,7 +369,6 @@ class MiscStoreMixin(MiscReaderMixin):
     a.csv: b'event,year\r\n Magna Carta,1215\r\n Guido,1956\r\n'
     a.txt: b'this is not a text'
     a.json: b'{"str": "field", "int": 42, "float": 3.14, "array": [1, 2], "nested": {"a": 1, "b": 2}}'
-
     """
 
     _dflt_outgoing_val_trans_for_key = staticmethod(identity_method)
@@ -393,8 +406,8 @@ def set_obj(
     outgoing_val_trans_for_key=imdict(dflt_outgoing_val_trans_for_key),
     func_key=lambda k: os.path.splitext(k)[1],
 ):
-    """A quick way to get an object, with default...
-    # everything (but the key, you know, a clue of what you want)"""
+    """A quick way to set an object, with defaults for everything
+    (but the key and value, you know, a clue of what you want to store)."""
     if isinstance(store, Files) and store._prefix in {"", "/"}:
         k = os.path.abspath(os.path.expanduser(k))
 
@@ -438,7 +451,6 @@ class MiscGetterAndSetter(MiscGetter):
     >>> # using bin
     ... misc_objs[pjoin('tmp.bin')] = b'let us pretend these are bytes of an audio waveform'
     >>> assert misc_objs[pjoin('tmp.bin')] == b'let us pretend these are bytes of an audio waveform'
-
     """
 
     def __init__(

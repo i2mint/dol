@@ -1,4 +1,22 @@
-"""Mixins"""
+"""Mixins that add or restrict store behaviours.
+
+Main entry points:
+
+- ``ReadOnlyMixin``: forbid writes and deletes
+- ``OverWritesNotAllowedMixin``: forbid writing to an existing key
+- ``SimpleJsonMixin``: JSON-encoded values
+- ``IterBasedSizedContainerMixin``: ``__len__`` and ``__contains__`` from ``__iter__``
+
+    >>> from dol.mixins import OverWritesNotAllowedMixin
+    >>> class P(OverWritesNotAllowedMixin, dict):
+    ...     pass
+    >>> p = P()
+    >>> p['a'] = 1
+    >>> p['a'] = 2  # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+      ...
+    dol.errors.OverWritesNotAllowedError: key a already exists and cannot be overwritten...
+"""
 
 import json
 from dol.errors import (
@@ -32,6 +50,7 @@ class IdentityKeysWrapMixin:
         """
         Maps an interface identifier (key) to an internal identifier (_id) that is actually used to perform operations.
         Can also perform validation and permission checks.
+
         :param k: interface identifier of some data
         :return: internal identifier _id
         """
@@ -40,6 +59,7 @@ class IdentityKeysWrapMixin:
     def _key_of_id(self, _id):
         """
         The inverse of _id_of_key. Maps an internal identifier (_id) to an interface identifier (key)
+
         :param _id:
         :return:
         """
@@ -55,6 +75,7 @@ class IdentityValsWrapMixin:
     def _data_of_obj(self, v):
         """
         Serialization of a python object.
+
         :param v: A python object.
         :return: The serialization of this object, in a format that can be stored by __getitem__
         """
@@ -63,6 +84,7 @@ class IdentityValsWrapMixin:
     def _obj_of_data(self, data):
         """
         Deserialization. The inverse of _data_of_obj.
+
         :param data: Serialized data.
         :return: The python object corresponding to this data.
         """
@@ -96,8 +118,11 @@ class FilteredKeysMixin:
     def __contains__(self, k) -> bool:
         """
         Check if collection of keys contains k.
-        Note: This method iterates over all elements of the collection to check if k is present.
-        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.
+
+        Note:
+            This method iterates over all elements of the collection to check if k is present.
+            Therefore it is not efficient, and in most cases should be overridden with a more efficient version.
+
         :return: True if k is in the collection, and False if not
         """
         return self._key_filt(k) and super().__contains__(k)
@@ -132,7 +157,9 @@ from dol.util import copy_attrs
 
 class OverWritesNotAllowedMixin:
     """Mixin for only allowing a write to a key if they key doesn't already exist.
-    Note: Should be before the persister in the MRO.
+
+    Note:
+        Should be before the persister in the MRO.
 
     >>> class TestPersister(OverWritesNotAllowedMixin, dict):
     ...     pass
@@ -179,8 +206,11 @@ class GetBasedContainerMixin:
     def __contains__(self, k) -> bool:
         """
         Check if collection of keys contains k.
-        Note: This method actually fetches the contents for k, returning False if there's a key error trying to do so
-        Therefore it may not be efficient, and in most cases, a method specific to the case should be used.
+
+        Note:
+            This method actually fetches the contents for k, returning False if there's a key error trying to do so
+            Therefore it may not be efficient, and in most cases, a method specific to the case should be used.
+
         :return: True if k is in the collection, and False if not
         """
         try:
@@ -194,8 +224,11 @@ class IterBasedContainerMixin:
     def __contains__(self, k) -> bool:
         """
         Check if collection of keys contains k.
-        Note: This method iterates over all elements of the collection to check if k is present.
-        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.
+
+        Note:
+            This method iterates over all elements of the collection to check if k is present.
+            Therefore it is not efficient, and in most cases should be overridden with a more efficient version.
+
         :return: True if k is in the collection, and False if not
         """
         for collection_key in self.__iter__():
@@ -208,8 +241,11 @@ class IterBasedSizedMixin:
     def __len__(self) -> int:
         """
         Number of elements in collection of keys.
-        Note: This method iterates over all elements of the collection and counts them.
-        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.
+
+        Note:
+            This method iterates over all elements of the collection and counts them.
+            Therefore it is not efficient, and in most cases should be overridden with a more efficient version.
+
         :return: The number (int) of elements in the collection of keys.
         """
         # TODO: some other means to more quickly count files?
@@ -222,13 +258,15 @@ class IterBasedSizedMixin:
 
 class IterBasedSizedContainerMixin(IterBasedSizedMixin, IterBasedContainerMixin):
     """
-    An ABC that defines
-        (a) how to iterate over a collection of elements (keys) (__iter__)
-        (b) check that a key is contained in the collection (__contains__), and
-        (c) how to get the number of elements in the collection
+    An ABC that defines:
+
+    (a) how to iterate over a collection of elements (keys) (``__iter__``)
+    (b) check that a key is contained in the collection (``__contains__``), and
+    (c) how to get the number of elements in the collection (``__len__``)
+
     This is exactly what the collections.abc.Collection (from which Keys inherits) does.
     The difference here, besides the "Keys" purpose-explicit name, is that Keys offers default
-     __len__ and __contains__  definitions based on what ever __iter__ the concrete class defines.
+    ``__len__`` and ``__contains__`` definitions based on what ever ``__iter__`` the concrete class defines.
 
     Keys is a collection (i.e. a Sized (has __len__), Iterable (has __iter__), Container (has __contains__).
     It's purpose is to serve as a collection of object identifiers in a key->obj mapping.

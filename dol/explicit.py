@@ -1,5 +1,16 @@
-"""
-utils to make stores based on a the input data itself
+"""Stores whose keys are given explicitly, with values fetched lazily from a source.
+
+Main entry points:
+
+- ``KeysReader``: a collection of keys plus a ``getter(src, key)``
+- ``ExplicitKeysSource``: explicit keys plus a function reading the value for a key
+- ``ExplicitKeysStore``: wrap a store so that its keys come from an explicit iterable
+- ``ExplicitKeyMap``: a key mapper given as explicit dicts
+
+    >>> from dol.explicit import KeysReader
+    >>> r = KeysReader({'apple': 'pie', 'banana': 'split'}, ['banana'], lambda src, k: src[k])
+    >>> list(r), r['banana']
+    (['banana'], 'split')
 """
 
 from collections.abc import Mapping
@@ -36,7 +47,7 @@ class KeysReader(Mapping):
         key_error_msg: A function that takes a source and a key, and returns an error message.
 
 
-    Example::
+    .. rubric:: Example
 
     >>> src = {'apple': 'pie', 'banana': 'split', 'carrot': 'cake'}
     >>> key_collection = ['carrot', 'apple']
@@ -76,7 +87,6 @@ class KeysReader(Mapping):
     Traceback (most recent call last):
     ...
     KeyError: "Key banana was not found"
-
     """
 
     def __init__(
@@ -176,7 +186,6 @@ class ExplicitKeysSource(ExplicitKeys, ObjReader, KvReader):
     [1, 2, 3]
     >>> list(s.values())
     ['1', '2', '3']
-
     """
 
     def __init__(self, key_collection: CollectionType, _obj_of_key: Callable):
@@ -216,11 +225,16 @@ from dol.util import invertible_maps
 
 # TODO: Put on the path of deprecation, since KeyCodecs.mapped_keys is a better way to do this.
 class ExplicitKeyMap:
+    """A key mapper given as explicit ``key_of_id``/``id_of_key`` dicts (one is enough;
+    the other is derived, and both are checked to be inverse of each other).
+    Provides the ``_key_of_id``/``_id_of_key`` methods that ``kv_wrap`` looks for.
+    """
+
     def __init__(self, *, key_of_id: Mapping = None, id_of_key: Mapping = None):
         """
 
-        :param key_of_id:
-        :param id_of_key:
+        :param key_of_id: The {inner_key: outer_key, ...} mapping
+        :param id_of_key: The {outer_key: inner_key, ...} mapping
 
         >>> km = ExplicitKeyMap(key_of_id={'a': 1, 'b': 2})
         >>> km.id_of_key = {1: 'a', 2: 'b'}

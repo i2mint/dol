@@ -490,8 +490,8 @@ def _validate_stack_seams(stack):
 def _compile_method_plan(name, sites, leaf_method, sig, encoders, decoders):
     """Compile one boundary method: encode role args, call leaf, decode result.
 
-    ``sites``: {param_name_or_'return': ((role, path, ann), ...)}.
-    Returns a callable(*args, **kwargs) with the leaf method baked in.
+    ``sites``: ``{param_name_or_'return': ((role, path, ann), ...)}``.
+    Returns a ``callable(*args, **kwargs)`` with the leaf method baked in.
     """
     # Build per-parameter transformers (outer -> inner). Integer site keys
     # mean positional index (dict-form specs), resolved against the outer

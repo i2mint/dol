@@ -22,6 +22,19 @@ add this key interface layer.
 These key converters object serialization methods default to the identity (i.e. they return the input as is).
 This means that you don't have to implement these as all, and can choose to implement these concerns within
 the storage methods themselves.
+
+Main entry points:
+
+- ``KvReader``: base class for read-only stores (a ``Mapping`` with a ``head``)
+- ``KvPersister``: base class for read-write stores (a ``MutableMapping``, ``clear`` disabled)
+- ``Store``: a persister with the key/value transform hooks, wrapping a backend
+- ``kv_walk``: walk a nested mapping, yielding (path, key, value) triples by default
+
+    >>> from dol.base import Store
+    >>> s = Store({})
+    >>> s['a'] = 1
+    >>> s['a'], list(s)
+    (1, ['a'])
 """
 
 from functools import partial, update_wrapper
@@ -58,6 +71,7 @@ from dol.signatures import Sig
 
 
 class AttrNames:
+    """Name sets of the methods that make up each mapping interface (``Collection``, ``Mapping``, ``KvReader``, ``KvPersister``, ...)."""
     CollectionABC = {"__len__", "__iter__", "__contains__"}
     Mapping = CollectionABC | {
         "keys",
@@ -86,14 +100,18 @@ class AttrNames:
 #  point to.
 class Collection(CollectionABC):
     """The same as collections.abc.Collection, with some modifications:
+
     - Addition of a ``head``
     """
 
     def __contains__(self, x) -> bool:
         """
         Check if collection of keys contains k.
-        Note: This method loops through all contents of collection to see if query element exists.
-        Therefore it may not be efficient, and in most cases, a method specific to the case should be used.
+
+        Note:
+            This method loops through all contents of collection to see if query element exists.
+            Therefore it may not be efficient, and in most cases, a method specific to the case should be used.
+
         :return: True if k is in the collection, and False if not
         """
         for existing_x in iter(self):
@@ -104,8 +122,11 @@ class Collection(CollectionABC):
     def __len__(self) -> int:
         """
         Number of elements in collection of keys.
-        Note: This method iterates over all elements of the collection and counts them.
-        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.
+
+        Note:
+            This method iterates over all elements of the collection and counts them.
+            Therefore it is not efficient, and in most cases should be overridden with a more efficient version.
+
         :return: The number (int) of elements in the collection of keys.
         """
         # Note: Found that sum(1 for _ in self.__iter__()) was slower for small, slightly faster for big inputs.
@@ -140,6 +161,10 @@ class Collection(CollectionABC):
 
 
 class MappingViewMixin:
+    """Make ``keys()``, ``values()`` and ``items()`` build their views from the
+    ``KeysView``, ``ValuesView`` and ``ItemsView`` class attributes, so a subclass can
+    swap in its own view classes."""
+
     KeysView: type = BaseKeysView
     ValuesView: type = BaseValuesView
     ItemsView: type = BaseItemsView
@@ -184,7 +209,6 @@ class KvReader(MappingViewMixin, Collection, Mapping):
         .. code-block:: python
 
             reversed = sorted(self)[::-1]
-
         """
         raise NotImplementedError(__doc__)
 
@@ -210,16 +234,16 @@ class KvPersister(KvReader, MutableMapping):
 
     If `s` is a dict, this would have the effect of adding a ('b', 3) item under 'a'.
     But in the general case, this might
+
     - fail, because the `s['a']` doesn't support sub-scripting (doesn't have a `__getitem__`)
     - or, worse, will pass silently but not actually persist the write as expected (e.g. LocalFileStore)
 
     Another example: `s.popitem()` will pop a `(k, v)` pair off of the `s` store.
     That is, retrieve the `v` for `k`, delete the entry for `k`, and return a `(k, v)`.
     Note that unlike modern dicts which will return the last item that was stored
-     -- that is, LIFO (last-in, first-out) order -- for KvPersisters,
-     there's no assurance as to what item will be, since it will depend on the backend storage system
-     and/or how the persister was implemented.
-
+    (that is, LIFO (last-in, first-out) order), for KvPersisters
+    there's no assurance as to what item will be, since it will depend on the backend storage system
+    and/or how the persister was implemented.
     """
 
     clear = _disabled_clear_method
@@ -241,6 +265,7 @@ Persister = KvPersister  # alias for back-compatibility
 
 
 class NoSuchItem:
+    """Sentinel type; ``no_such_item`` is its instance."""
     pass
 
 
@@ -250,6 +275,7 @@ from collections.abc import Set
 
 
 class DelegatedAttribute:
+    """Descriptor forwarding ``attr_name`` lookups to the object held in the instance's ``delegate_name`` attribute."""
     def __init__(self, delegate_name, attr_name):
         self.attr_name = attr_name
         self.delegate_name = delegate_name
@@ -421,6 +447,7 @@ def delegate_to(
     ignore=frozenset(),
 ) -> Decorator:
     # turn include and ignore into sets, if they aren't already
+    """Class decorator factory: the decorated wrapper class constructs a ``wrapped`` instance and delegates to it, through ``delegation_attr``, the attributes of ``wrapped`` (``dir(wrapped)`` minus ``ignore``, plus ``include``) not already defined on the wrapper."""
     if not isinstance(include, Set):
         include = set(include)
     if not isinstance(ignore, Set):
@@ -564,7 +591,6 @@ def delegator_wrap(
     >>> WrappedA = Delegator.wrap(A)
     >>> hasattr(WrappedA, 'foo')
     True
-
     """
     if isinstance(obj, type):
         if isinstance(delegator, type):
@@ -595,7 +621,9 @@ class Store(KvPersister):
     """
     By store we mean key-value store. This could be files in a filesystem, objects in s3, or a database. Where and
     how the content is stored should be specified, but StoreInterface offers a dict-like interface to this.
+
     ::
+
         __getitem__ calls: _id_of_key			                    _obj_of_data
         __setitem__ calls: _id_of_key		        _data_of_obj
         __delitem__ calls: _id_of_key
@@ -699,7 +727,6 @@ class Store(KvPersister):
     override the `KeysView`, `ValuesView` or `ItemsView` classes that they use.
 
     For more, see: https://github.com/i2mint/dol/wiki/Mapping-Views
-
     """
 
     _state_attrs = ["store", "_class_wrapper"]
@@ -883,14 +910,17 @@ inf = float("infinity")
 
 
 def val_is_mapping(p: PT, k: KT, v: VT) -> bool:
+    """Whether the walked value ``v`` is a ``Mapping`` (a ``kv_walk`` ``walk_filt``)."""
     return isinstance(v, Mapping)
 
 
 def asis(p: PT, k: KT, v: VT) -> Any:
+    """Return ``(p, k, v)`` as is (the default ``kv_walk`` ``leaf_yield``)."""
     return p, k, v
 
 
 def tuple_keypath_and_val(p: PT, k: KT, v: VT) -> tuple[PT, VT]:
+    """Extend the path ``p`` with the key ``k`` and return ``(new_path, v)`` (the default ``kv_walk`` ``pkv_to_pv``)."""
     if p == ():  # we're just begining (the root),
         p = (k,)  # so begin the path with the first key.
     else:
@@ -978,10 +1008,11 @@ def kv_walk(
     ...         ]
     ... )
 
-    Tip: If you want to use ``kv_filt`` to search and extract stuff from a nested
-    mapping, you can have your ``leaf_yield`` return a sentinel (say, ``None``) to
-    indicate that the value should be skipped, and then filter out the ``None``s from
-    your results.
+    Tip:
+        If you want to use ``kv_filt`` to search and extract stuff from a nested
+        mapping, you can have your ``leaf_yield`` return a sentinel (say, ``None``) to
+        indicate that the value should be skipped, and then filter out the ``None`` values from
+        your results.
 
     >>> mm = {
     ...     'a': {'b': {'c': 42}},
@@ -1027,9 +1058,9 @@ def kv_walk(
     [('apple',), ('big', 'apple')]
 
     So now, you can get the first apple path by doing:
+
     >>> next(filter(None, walker3(d)))
     ('apple',)
-
     """
     if not breadth_first:
         # print(f"1: entered with: v={v}, p={p}")
@@ -1077,8 +1108,8 @@ def has_kv_store_interface(o):
     Args:
         o: object (class or instance)
 
-    Returns: True if kv has the four key (in/out) and value (in/out) transformation methods
-
+    Returns:
+        True if kv has the four key (in/out) and value (in/out) transformation methods
     """
     return (
         hasattr(o, "_id_of_key")
@@ -1139,6 +1170,7 @@ class KeyValidationABC(metaclass=ABCMeta):
 
 
 class stream_util:
+    """Small callbacks for ``Stream``: an always-true filter, a no-op, and rewind (``skip_lines`` currently only rewinds)."""
     def always_true(*args, **kwargs):
         return True
 

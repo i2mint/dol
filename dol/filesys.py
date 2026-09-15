@@ -1,4 +1,26 @@
-"""File system access"""
+"""File system access: dict-like stores over folders and files.
+
+``Files`` gives a folder a ``MutableMapping`` interface: keys are paths relative to the
+root folder, values are the files' bytes. ``TextFiles``, ``JsonFiles`` and ``PickleFiles``
+add the corresponding value codecs. Writing under a sub-folder that does not exist raises
+``KeyError``; wrap the store with ``mk_dirs_if_missing`` to create folders on write.
+
+Main entry points:
+
+- ``Files``: bytes of the files under a root folder
+- ``TextFiles``: same, with text values
+- ``JsonFiles``: same, with JSON-decoded values
+- ``PickleFiles``: same, with pickled values
+- ``mk_dirs_if_missing``: make a file store create missing directories on write
+
+    >>> import tempfile
+    >>> s = Files(tempfile.mkdtemp())
+    >>> s['hello.txt'] = b'world'
+    >>> s['hello.txt']
+    b'world'
+    >>> list(s)
+    ['hello.txt']
+"""
 
 import os
 from os import stat as os_stat
@@ -31,6 +53,7 @@ def ensure_slash_suffix(path: str):
 
 
 def paths_in_dir(rootdir, include_hidden=False):
+    """Yield the paths of the entries of ``rootdir`` (directories with a trailing separator), skipping hidden ones unless ``include_hidden``."""
     try:
         for name in os.listdir(rootdir):
             if include_hidden or not name.startswith(
@@ -85,17 +108,20 @@ def create_directories(dirpath, max_dirs_to_make: int | None = None):
     """
     Create directories up to a specified limit.
 
-    Parameters:
-    dirpath (str): The directory path to create.
-    max_dirs_to_make (int, optional): The maximum number of directories to create. If None, there's no limit.
+    Args:
+        dirpath: The directory path to create.
+        max_dirs_to_make: The maximum number of directories to create. If None,
+            there's no limit.
 
     Returns:
-    bool: True if the directory was created successfully, False otherwise.
+        True if the directory exists (already, or after creation); False if creating
+        it would need more than ``max_dirs_to_make`` new directories (none are made).
 
     Raises:
-    ValueError: If max_dirs_to_make is negative.
+        ValueError: If max_dirs_to_make is negative.
 
-    Examples:
+    .. rubric:: Examples
+
     >>> import tempfile, shutil
     >>> temp_dir = tempfile.mkdtemp()
     >>> target_dir = os.path.join(temp_dir, 'a', 'b', 'c')
@@ -183,7 +209,6 @@ def process_path(
     ... )
     >>> p == os.path.join('root_dir', 'a', 'b', 'c') + os.sep
     True
-
     """
     path = os.path.join(*path)
     if ensure_endswith_slash and ensure_does_not_end_with_slash:
@@ -232,14 +257,13 @@ def ensure_dir(
     - a ``bool``' a standard message will be printed
 
     - a ``callable``; will be called on dirpath before directory is created -- you
-    can use this to ask the user for confirmation for example
+      can use this to ask the user for confirmation for example
 
     - a ''string``; this string will be printed
 
 
     Usage note: If you want to string or the (argument-less) callable to be dependent
     on ``dirpath``, you need make them so when calling ensure_dir.
-
     """
     if not os.path.exists(dirpath):
         if verbose:
@@ -260,25 +284,17 @@ def temp_dir(dirname="", make_it_if_necessary=True, verbose=False):
     Create and return a path to a temporary directory that's guaranteed to be
     accessible to the user.
 
-    Parameters:
-    ----------
-    dirname : str
-        Optional subdirectory name to append to the temporary directory path
-    make_it_if_necessary : bool
-        Whether to create the directory if it doesn't exist
-    verbose : bool, str, or callable
-        Controls verbosity when creating directories
+    Args:
+        dirname: Optional subdirectory name to append to the temporary directory path
+        make_it_if_necessary: Whether to create the directory if it doesn't exist
+        verbose: Controls verbosity when creating directories
 
     Returns:
-    -------
-    str
         Path to a temporary directory that the user has access to
 
-    Notes:
-    -----
-    This function creates a user-specific temporary directory to avoid permission
-    issues with system-wide temporary directories. The directory is guaranteed to
-    be accessible to the current user.
+    Note:
+        This function creates a user-specific temporary directory to avoid permission
+        issues with system-wide temporary directories.
     """
     from tempfile import mkdtemp, gettempdir
     import uuid
@@ -316,6 +332,7 @@ mk_tmp_dol_dir = temp_dir  # for backward compatibility
 
 
 def mk_absolute_path(path_format):
+    """Expand a leading ``~``, or make a leading ``.`` path absolute; other paths are returned as is."""
     if path_format.startswith("~"):
         path_format = os.path.expanduser(path_format)
     elif path_format.startswith("."):
@@ -332,11 +349,13 @@ _dflt_not_found_error_msg = "Key not found: {}"
 
 
 class KeyValidationError(KeyError):
+    """A ``KeyError`` for keys that fail a file-system store's validation."""
     pass
 
 
 # TODO: The validate and try/except is a frequent pattern. Make it a decorator.
 def validate_key_and_raise_key_error_on_exception(func):
+    """Method decorator: validate the key first, and re-raise any exception of the method as a ``KeyError``."""
     @wraps(func)
     def wrapped_method(self, k, *args, **kwargs):
         self.validate_key(k)
@@ -392,6 +411,7 @@ def _for_repr(obj, quote="'"):
 class FileSysCollection(Collection):
     # rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.
 
+    """Base collection of file-system paths under ``rootdir``, optionally restricted by ``subpath``, ``max_levels`` and hidden-file inclusion."""
     def __init__(
         self,
         rootdir,
@@ -443,6 +463,7 @@ class FileSysCollection(Collection):
 
 
 class DirCollection(FileSysCollection):
+    """Collection of the directory paths under ``rootdir``."""
     def __iter__(self):
         yield from filter(
             self.is_valid_key,
@@ -458,6 +479,7 @@ class DirCollection(FileSysCollection):
 
 
 class FileCollection(FileSysCollection):
+    """Collection of the file paths under ``rootdir``."""
     def __iter__(self):
         """
         Iterator of valid filepaths.
@@ -498,12 +520,14 @@ class FileCollection(FileSysCollection):
 
 
 class FileInfoReader(FileCollection, KvReader):
+    """Reader mapping file paths to their ``os.stat`` result."""
     def __getitem__(self, k):
         self.validate_key(k)
         return os_stat(k)
 
 
 class FileBytesReader(FileCollection, KvReader):
+    """Reader mapping file paths under ``rootdir`` to the files' bytes."""
     _read_open_kwargs = dict(
         mode="rb",
         buffering=-1,
@@ -560,6 +584,7 @@ class LocalFileDeleteMixin:
     to os.remove (with warning).
 
     See dol.trash module for available deletion strategies:
+
     - default_delete_func: Safe trash with warning on fallback
     - permanent_delete: Direct os.remove (no warnings)
     - trash_only: Error if trash unavailable
@@ -607,9 +632,11 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
             delete_func: Optional custom deletion function.
                 If None, uses class default (safe trash with fallback).
                 Common options from dol.trash:
+
                 - default_delete_func (safe trash, warning on fallback)
                 - permanent_delete (os.remove, no warnings)
                 - trash_only (error if trash unavailable)
+
             **kwargs: Passed to parent classes
         """
         super().__init__(*args, **kwargs)
@@ -649,10 +676,12 @@ RelPathFileBytesPersister = Files  # back-compatibility alias
 
 
 class FileStringReader(FileBytesReader):
+    """Reader mapping file paths to the files' text (files opened in text mode)."""
     _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
 
 
 class FileStringPersister(FileBytesPersister):
+    """Persister mapping file paths to the files' text (files opened in text mode)."""
     _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
     _write_open_kwargs = dict(FileBytesPersister._write_open_kwargs, mode="wt")
 
@@ -686,7 +715,7 @@ json_bytes_wrap = wrap_kvs(
 def mk_pickle_bytes_wrap(
     *, loads_kwargs: dict | None = None, dumps_kwargs: dict | None = None
 ) -> Callable:
-    """"""
+    """Make a ``wrap_kvs`` value-codec wrapper for pickle, with kwargs for ``pickle.loads``/``pickle.dumps``."""
     return wrap_kvs(
         value_decoder=partial(pickle.loads, **(loads_kwargs or {})),
         value_encoder=partial(pickle.dumps, **(dumps_kwargs or {})),
@@ -696,6 +725,7 @@ def mk_pickle_bytes_wrap(
 def mk_json_bytes_wrap(
     *, loads_kwargs: dict | None = None, dumps_kwargs: dict | None = None
 ) -> Callable:
+    """Make a ``wrap_kvs`` value-codec wrapper for JSON, with kwargs for ``json.loads``/``json.dumps``."""
     return wrap_kvs(
         value_decoder=partial(json.loads, **(loads_kwargs or {})),
         value_encoder=partial(json.dumps, **(dumps_kwargs or {})),
@@ -703,6 +733,7 @@ def mk_json_bytes_wrap(
 
 
 class ReprMixin:
+    """A ``__repr__`` showing the ``_init_kwargs`` the instance was created with."""
     def __repr__(self):
         input_str = ", ".join(
             f"{k}={_for_repr(v)}" for k, v in getattr(self, "_init_kwargs", {}).items()
@@ -736,6 +767,7 @@ class Jsons(ReprMixin, JsonFiles):
 # @wrap_kvs(key_of_id=lambda x: x[:-1], id_of_key=lambda x: x + path_sep)
 @mk_relative_path_store(prefix_attr="rootdir")
 class PickleStores(DirCollection):
+    """Reader mapping each sub-directory of ``rootdir`` to a ``PickleFiles`` store of it."""
     def __getitem__(self, k):
         return PickleFiles(k)
 
@@ -744,6 +776,7 @@ class PickleStores(DirCollection):
 
 
 class DirReader(DirCollection, KvReader):
+    """Reader mapping each sub-directory of ``rootdir`` to a ``DirReader`` of it."""
     def __getitem__(self, k):
         return DirReader(k)
 
