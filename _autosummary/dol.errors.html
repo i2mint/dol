@@ -268,7 +268,15 @@
         <article role="main" id="furo-main-content">
           <section id="module-dol.errors">
 <span id="dol-errors"></span><h1>dol.errors<a class="headerlink" href="#module-dol.errors" title="Link to this heading">¶</a></h1>
-<p>Error objects and utils</p>
+<p>Error objects and utils.</p>
+<p>The exception classes dol raises (<code class="docutils literal notranslate"><span class="pre">NotAllowed</span></code>, <code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedError</span></code>,
+<code class="docutils literal notranslate"><span class="pre">KeyValidationError</span></code>, …) and <code class="docutils literal notranslate"><span class="pre">items_with_caught_exceptions</span></code>, an <code class="docutils literal notranslate"><span class="pre">items()</span></code>
+that skips (or reports) the keys whose value cannot be fetched.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">items_with_caught_exceptions</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">items_with_caught_exceptions</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">}))</span>
+<span class="go">[('a', 1)]</span>
+</pre></div>
+</div>
 <p class="rubric">Functions</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
@@ -331,7 +339,7 @@
 <dl class="py exception">
 <dt class="sig sig-object py" id="dol.errors.AlreadyExists">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.errors.</span></span><span class="sig-name descname"><span class="pre">AlreadyExists</span></span><a class="reference internal" href="../_modules/dol/errors.html#AlreadyExists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.errors.AlreadyExists" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
 <p>To use if an object already exists (and shouldn’t; for example, to protect overwrites)</p>
 </dd></dl>
 
@@ -373,28 +381,28 @@
 <dl class="py exception">
 <dt class="sig sig-object py" id="dol.errors.NoSuchKeyError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.errors.</span></span><span class="sig-name descname"><span class="pre">NoSuchKeyError</span></span><a class="reference internal" href="../_modules/dol/errors.html#NoSuchKeyError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.errors.NoSuchKeyError" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyError</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyError</span></code></a></p>
 <p>When a requested key doesn’t exist</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="dol.errors.NotAllowed">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.errors.</span></span><span class="sig-name descname"><span class="pre">NotAllowed</span></span><a class="reference internal" href="../_modules/dol/errors.html#NotAllowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.errors.NotAllowed" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#Exception" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
 <p>To use to indicate that something is not allowed</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="dol.errors.NotValid">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.errors.</span></span><span class="sig-name descname"><span class="pre">NotValid</span></span><a class="reference internal" href="../_modules/dol/errors.html#NotValid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.errors.NotValid" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code></a></p>
 <p>To use to indicate when an object doesn’t fit expected properties</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="dol.errors.OperationNotAllowed">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.errors.</span></span><span class="sig-name descname"><span class="pre">OperationNotAllowed</span></span><a class="reference internal" href="../_modules/dol/errors.html#OperationNotAllowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.errors.OperationNotAllowed" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#dol.errors.NotAllowed" title="dol.errors.NotAllowed"><code class="xref py py-class docutils literal notranslate"><span class="pre">NotAllowed</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">NotImplementedError</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#dol.errors.NotAllowed" title="dol.errors.NotAllowed"><code class="xref py py-class docutils literal notranslate"><span class="pre">NotAllowed</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#NotImplementedError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">NotImplementedError</span></code></a></p>
 <p>When a given operation is not allowed (through being disabled, conditioned, or just implemented)</p>
 </dd></dl>
 
@@ -449,13 +457,12 @@ will give you a value without exception
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>d</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a></span>) – Any Mapping</p></li>
 <li><p><strong>catch_exceptions</strong> – A tuple of exceptions that should be caught</p></li>
-<li><p><strong>callback</strong> – <p>A function that will be called every time an exception is caught.
-The signature of the callback function is required to be:</p>
-<blockquote>
-<div><p>k (key), e (error obj), d (mapping), i (index)</p>
-</div></blockquote>
-<p>but</p>
-</p></li>
+<li><p><strong>callback</strong> – A function that will be called every time an exception is caught.
+It may take any subset of the arguments <code class="docutils literal notranslate"><span class="pre">k</span></code> (key), <code class="docutils literal notranslate"><span class="pre">e</span></code> (error obj),
+<code class="docutils literal notranslate"><span class="pre">d</span></code> (mapping) and <code class="docutils literal notranslate"><span class="pre">i</span></code> (index), by name (see the examples below); if its
+signature cannot be inspected it is called with all four, positionally.</p></li>
+<li><p><strong>yield_callback_output</strong> – If True, also yield the callback’s output for the
+keys whose value raised.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -578,7 +585,7 @@ The signature of the callback function is required to be:</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

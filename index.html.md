@@ -17,6 +17,28 @@ To install:	`pip install dol`
 
 [Documentation here](https://i2mint.github.io/dol/)
 
+<!-- epythet:agentic-readme:start -->
+
+## For AI agents
+
+`dol` ships tooling for coding agents. If you are one, start here.
+
+**Skills** ([Agent Skills](https://agentskills.io) format), for any agent host.
+
+| Skill                 | Use it to                                                                                                                          |
+|-----------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| `dol-dev-portability` | keep dol working on Windows as well as Linux/macOS                                                                                 |
+| `dol-dev-wrap-kvs`    | understand and safely modify dol’s core wrapping machinery — wrap_kvs, store_decorator, Store.wrap, and how transforms are applied |
+| `dol-store-building`  | build a dol store: wrap any storage backend                                                                                        |
+
+**Instruction files**: `CLAUDE.md` (Claude Code).
+
+**The documentation, machine-readable**: [`llms.txt`](https://i2mint.github.io/dol/llms.txt) indexes every page; [`dol.md`](https://i2mint.github.io/dol/dol.md) is the whole documentation in one file; every page has a `.md` twin; [`objects.inv`](https://i2mint.github.io/dol/objects.inv) maps symbols to URLs. The full list, with install lines, is on the site’s [For AI agents](https://i2mint.github.io/dol/ai-agents.html) page.
+
+If you like writing your own code, the rest of this README is written for you, starting at [Example use]().
+
+<!-- epythet:agentic-readme:end -->
+
 ## Example use
 
 Say you have a source backend that has pickles of some lists-of-lists-of-strings,
@@ -216,13 +238,13 @@ __delitem__ calls: _id_of_key
 __iter__    calls:	            _key_of_id
 ```
 
-```pydocstring
+```python
 >>> from dol import Store
 ```
 
 A Store can be instantiated with no arguments. By default it will make a dict and wrap that.
 
-```pydocstring
+```python
 >>> # Default store: no key or value conversion ################################################
 >>> s = Store()
 >>> s['foo'] = 33
@@ -235,7 +257,7 @@ Now let’s make stores that have a key and value conversion layer
 input keys will be upper cased, and output keys lower cased
 input values (assumed int) will be converted to ascii string, and visa versa
 
-```pydocstring
+```python
 >>>
 >>> def test_store(s):
 ...     s['foo'] = 33  # write 33 to 'foo'
@@ -262,7 +284,7 @@ Here are few…
 
 ## by subclassing
 
-```pydocstring
+```python
 >>> # by subclassing ###############################################################################
 >>> class MyStore(Store):
 ...     def _id_of_key(self, k):
@@ -280,7 +302,7 @@ Here are few…
 
 ## by assigning functions to converters
 
-```pydocstring
+```python
 >>> # by assigning functions to converters ##########################################################
 >>> class MyStore(Store):
 ...     def __init__(self, store, _id_of_key, _key_of_id, _data_of_obj, _obj_of_data):
@@ -301,7 +323,7 @@ Here are few…
 
 ## using a Mixin class
 
-```pydocstring
+```python
 >>> # using a Mixin class #############################################################################
 >>> class Mixin:
 ...     def _id_of_key(self, k):
@@ -322,7 +344,7 @@ Here are few…
 
 ## adding wrapper methods to an already made Store instance
 
-```pydocstring
+```python
 >>> # adding wrapper methods to an already made Store instance #########################################
 >>> s = Store(dict())
 >>> s._id_of_key=lambda k: k.upper()

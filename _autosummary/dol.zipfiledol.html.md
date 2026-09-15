@@ -2,6 +2,19 @@
 
 Data object layers and other utils to work with zip files.
 
+Main entry points:
+
+- `FilesOfZip`: read-only bytes of the files in a zip archive
+- `ZipReader`: same, but browsing folders as nested readers
+- `ZipFiles`: read-write-delete access to files in a zip archive
+- `FlatZipFilesReader`: the union of the contents of several zip files
+- `zip_compress`, `zip_decompress`: single-file zip bytes helpers
+  ```pycon
+  >>> from dol.zipfiledol import zip_compress, zip_decompress
+  >>> zip_decompress(zip_compress(b'hello'))
+  b'hello'
+  ```
+
 ### Functions
 
 | [`zip_compress`](#dol.zipfiledol.zip_compress)(b[, filename, compression, ...])   | Compress input bytes, returning the compressed bytes                                                                           |
@@ -37,7 +50,7 @@ Data object layers and other utils to work with zip files.
 
 ### *exception* dol.zipfiledol.EmptyZipError
 
-Bases: [`KeyError`](https://docs.python.org/3/library/exceptions.html#KeyError), [`FileNotFoundError`](https://docs.python.org/3/library/exceptions.html#FileNotFoundError)
+Bases: [`KeyError`](https://docs.python.org/3/builtins/exceptions.html#KeyError), [`FileNotFoundError`](https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError)
 
 ### *class* dol.zipfiledol.FileStreamsOfZip(zip_file, prefix='', open_kws=None)
 
@@ -99,7 +112,7 @@ merged”.
 
 ### *exception* dol.zipfiledol.OverwriteNotAllowed
 
-Bases: [`FileExistsError`](https://docs.python.org/3/library/exceptions.html#FileExistsError), [`OverWritesNotAllowedError`](dol.errors.html.md#dol.errors.OverWritesNotAllowedError)
+Bases: [`FileExistsError`](https://docs.python.org/3/builtins/exceptions.html#FileExistsError), [`OverWritesNotAllowedError`](dol.errors.html.md#dol.errors.OverWritesNotAllowedError)
 
 ### *class* dol.zipfiledol.ZipFileStreamsReader(rootdir, subpath='.+\\\\.zip', pattern_for_field=None, max_levels=0, \*, zip_reader=<class 'dol.zipfiledol.FileStreamsOfZip'>, \*\*zip_reader_kwargs)
 
@@ -132,7 +145,7 @@ natural,
 makes for a not so efficient store, out of the box.
 
 I advise using one of the zip readers if all you need to do is read, or subclassing or
-: wrapping ZipFiles with caching layers if it is appropriate to you.
+wrapping ZipFiles with caching layers if it is appropriate to you.
 
 Let’s verify that a ZipFiles can indeed write data. First, we’ll set things up!
 
@@ -210,9 +223,8 @@ Both categories are distinguishable by the keys, through the “ends with slash�
 When a file, the value return is bytes, as usual.
 
 When a directory, the value returned is a `ZipReader` itself, with all params the same,
-except for the `prefix`
-
-> which serves `to specify the subfolder (that is, ``prefix`` acts as a filter).
+except for the `prefix`, which serves to specify the subfolder (that is,
+`prefix` acts as a filter).
 
 #### NOTE
 If you get data zipped by a mac, you might get some junk along with it.
@@ -329,7 +341,7 @@ Removes specific keys from a zip file.
 
 * **Parameters:**
   * **zip_source** – zip filepath, bytes, or whatever a `ZipFiles` can take
-  * **keys_to_be_removed** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/library/stdtypes.html#str)], [`bool`](https://docs.python.org/3/library/functions.html#bool)] | [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`str`](https://docs.python.org/3/library/stdtypes.html#str)]) – An iterable of keys or a boolean filter function
+  * **keys_to_be_removed** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)] | [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – An iterable of keys or a boolean filter function
   * **ask_before_before_deleting** – True (default) if the user should be
     presented with the keys first, and asked permission to delete.
 * **Returns:**
@@ -351,7 +363,7 @@ If you want to delete with no questions asked, use currying:
 Zip input bytes and save to a single-file zip file.
 
 * **Parameters:**
-  * **b** ([`bytes`](https://docs.python.org/3/library/stdtypes.html#bytes) | [`str`](https://docs.python.org/3/library/stdtypes.html#str)) – Input bytes or string
+  * **b** ([`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes) | [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Input bytes or string
   * **zip_filepath** – zip filepath to save the zipped input to
   * **filename** – The name/path of the zip entry we want to save to
   * **encoding** – In case the input is str, the encoding to use to convert to bytes
@@ -361,7 +373,7 @@ Zip input bytes and save to a single-file zip file.
 Compress input bytes, returning the compressed bytes
 
 * **Return type:**
-  [`bytes`](https://docs.python.org/3/library/stdtypes.html#bytes)
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
 
 ```pycon
 >>> b = b'x' * 1000 + b'y' * 1000  # 2000 (quite compressible) bytes
@@ -394,4 +406,4 @@ Decompress input bytes of a single file zip, returning the uncompressed bytes
 See `zip_compress` for usage examples.
 
 * **Return type:**
-  [`bytes`](https://docs.python.org/3/library/stdtypes.html#bytes)
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)

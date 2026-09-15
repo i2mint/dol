@@ -260,7 +260,21 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Core tools to build simple interfaces to complex data sources and bend the interface to your will (and need)"""</span>
+<span></span><span class="sd">"""Core tools to build simple interfaces to complex data sources and bend the interface to your will (and need).</span>
+
+<span class="sd">``dol`` wraps any storage backend (files, S3, databases, dicts) behind a dict-like</span>
+<span class="sd">interface, and transforms that interface with composable layers. Start with</span>
+<span class="sd">``wrap_kvs`` (key/value transforms), the file stores (``Files``, ``TextFiles``,</span>
+<span class="sd">``JsonFiles``, ``PickleFiles``), the ready-made codecs (``ValueCodecs``, ``KeyCodecs``),</span>
+<span class="sd">``filt_iter`` (key filtering) and ``cache_this`` (caching).</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol import wrap_kvs</span>
+<span class="sd">    &gt;&gt;&gt; import json</span>
+<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({}, obj_of_data=json.loads, data_of_obj=json.dumps)</span>
+<span class="sd">    &gt;&gt;&gt; s['a'] = {'x': 1}</span>
+<span class="sd">    &gt;&gt;&gt; s['a'], s.store</span>
+<span class="sd">    ({'x': 1}, {'a': '{"x": 1}'})</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
@@ -531,7 +545,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

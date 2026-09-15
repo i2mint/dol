@@ -1,17 +1,31 @@
 # dol.misc
 
-Functions to read from and write to misc sources
+Functions to read from and write to misc sources, choosing the codec from the key.
+
+`get_obj`/`set_obj` read and write a file with the codec picked from its extension
+(`.json`, `.csv`, `.pkl`, …); `MiscReaderMixin`/`MiscStoreMixin` add the same
+key-conditioned (de)serialization to any store.
+
+```pycon
+>>> from dol.misc import MiscStoreMixin
+>>> class M(MiscStoreMixin, dict):
+...     pass
+>>> m = M()
+>>> m['a.json'] = {'x': 1}
+>>> dict.__getitem__(m, 'a.json'), m['a.json']
+(b'{"x": 1}', {'x': 1})
+```
 
 ### Functions
 
-| `csv_fileobj`(csv_data, \*args, \*\*kwargs)                                  |                                               |
-|------------------------------------------------------------------------------|-----------------------------------------------|
-| `dflt_dflt_incoming_val_trans`(x)                                            |                                               |
-| `dflt_func_key`(self, k)                                                     |                                               |
-| [`get_obj`](#dol.misc.get_obj)(k[, store, ...])    | A quick way to get an object, with default.   |
-| `identity_method`(x)                                                         |                                               |
-| [`set_obj`](#dol.misc.set_obj)(k, v[, store, ...]) | A quick way to get an object, with default... |
-| `url_to_bytes`(url)                                                          |                                               |
+| `csv_fileobj`(csv_data, \*args, \*\*kwargs)                                  |                                                                                                                                 |
+|------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `dflt_dflt_incoming_val_trans`(x)                                            |                                                                                                                                 |
+| `dflt_func_key`(self, k)                                                     |                                                                                                                                 |
+| [`get_obj`](#dol.misc.get_obj)(k[, store, ...])    | A quick way to get an object, with default.                                                                                     |
+| `identity_method`(x)                                                         |                                                                                                                                 |
+| [`set_obj`](#dol.misc.set_obj)(k, v[, store, ...]) | A quick way to set an object, with defaults for everything (but the key and value, you know, a clue of what you want to store). |
+| `url_to_bytes`(url)                                                          |                                                                                                                                 |
 
 ### Classes
 
@@ -23,7 +37,7 @@ Functions to read from and write to misc sources
 
 ### *class* dol.misc.MiscGetter(store=Files(rootdir='', subpath='', pattern_for_field=None, max_levels=None, include_hidden=False, assert_rootdir_existence=False), incoming_val_trans_for_key={'.bin': <function identity_method>, '.csv': <function <lambda>>, '.gz': <function decompress>, '.gzip': <function decompress>, '.json': <function <lambda>>, '.pickle': <function <lambda>>, '.pkl': <function <lambda>>, '.txt': <function <lambda>>, '.zip': <class 'dol.zipfiledol.FilesOfZip'>}, dflt_incoming_val_trans=<function identity_method>, func_key=<function MiscGetter.<lambda>>)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 An object to write (and only write) to a store (default local files) with automatic deserialization
 according to a property of the key (default: file extension).
@@ -86,7 +100,7 @@ according to a property of the key (default: file extension).
 
 ### *class* dol.misc.MiscReaderMixin(incoming_val_trans_for_key=None, dflt_incoming_val_trans=None, func_key=None)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Mixin to transform incoming vals according to the key their under.
 
@@ -200,6 +214,5 @@ A quick way to get an object, with default… everything (but the key, you know,
 
 ### dol.misc.set_obj(k, v, store=Files(rootdir='', subpath='', pattern_for_field=None, max_levels=None, include_hidden=False, assert_rootdir_existence=False), outgoing_val_trans_for_key={'.bin': <function identity_method>, '.cnf': <function <lambda>>, '.conf': <function <lambda>>, '.config': <function <lambda>>, '.csv': <function csv_fileobj>, '.gz': <function compress>, '.gzip': <function compress>, '.ini': <function <lambda>>, '.json': <function <lambda>>, '.pickle': <function <lambda>>, '.pkl': <function <lambda>>, '.txt': <function <lambda>>}, func_key=<function <lambda>>)
 
-A quick way to get an object, with default…
-
-### everything (but the key, you know, a clue of what you want)
+A quick way to set an object, with defaults for everything
+(but the key and value, you know, a clue of what you want to store).

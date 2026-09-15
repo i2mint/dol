@@ -260,8 +260,19 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.explicit</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""</span>
-<span class="sd">utils to make stores based on a the input data itself</span>
+<span></span><span class="sd">"""Stores whose keys are given explicitly, with values fetched lazily from a source.</span>
+
+<span class="sd">Main entry points:</span>
+
+<span class="sd">- ``KeysReader``: a collection of keys plus a ``getter(src, key)``</span>
+<span class="sd">- ``ExplicitKeysSource``: explicit keys plus a function reading the value for a key</span>
+<span class="sd">- ``ExplicitKeysStore``: wrap a store so that its keys come from an explicit iterable</span>
+<span class="sd">- ``ExplicitKeyMap``: a key mapper given as explicit dicts</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.explicit import KeysReader</span>
+<span class="sd">    &gt;&gt;&gt; r = KeysReader({'apple': 'pie', 'banana': 'split'}, ['banana'], lambda src, k: src[k])</span>
+<span class="sd">    &gt;&gt;&gt; list(r), r['banana']</span>
+<span class="sd">    (['banana'], 'split')</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
@@ -300,7 +311,7 @@
 <span class="sd">        key_error_msg: A function that takes a source and a key, and returns an error message.</span>
 
 
-<span class="sd">    Example::</span>
+<span class="sd">    .. rubric:: Example</span>
 
 <span class="sd">    &gt;&gt;&gt; src = {'apple': 'pie', 'banana': 'split', 'carrot': 'cake'}</span>
 <span class="sd">    &gt;&gt;&gt; key_collection = ['carrot', 'apple']</span>
@@ -340,7 +351,6 @@
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">    ...</span>
 <span class="sd">    KeyError: "Key banana was not found"</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -446,7 +456,6 @@
 <span class="sd">    [1, 2, 3]</span>
 <span class="sd">    &gt;&gt;&gt; list(s.values())</span>
 <span class="sd">    ['1', '2', '3']</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_collection</span><span class="p">:</span> <span class="n">CollectionType</span><span class="p">,</span> <span class="n">_obj_of_key</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
@@ -489,12 +498,19 @@
 
 
 <span class="c1"># TODO: Put on the path of deprecation, since KeyCodecs.mapped_keys is a better way to do this.</span>
+<div class="viewcode-block" id="ExplicitKeyMap">
+<a class="viewcode-back" href="../../_autosummary/dol.explicit.html#dol.explicit.ExplicitKeyMap">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExplicitKeyMap</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A key mapper given as explicit ``key_of_id``/``id_of_key`` dicts (one is enough;</span>
+<span class="sd">    the other is derived, and both are checked to be inverse of each other).</span>
+<span class="sd">    Provides the ``_key_of_id``/``_id_of_key`` methods that ``kv_wrap`` looks for.</span>
+<span class="sd">    """</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">key_of_id</span><span class="p">:</span> <span class="n">Mapping</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">id_of_key</span><span class="p">:</span> <span class="n">Mapping</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 
-<span class="sd">        :param key_of_id:</span>
-<span class="sd">        :param id_of_key:</span>
+<span class="sd">        :param key_of_id: The {inner_key: outer_key, ...} mapping</span>
+<span class="sd">        :param id_of_key: The {outer_key: inner_key, ...} mapping</span>
 
 <span class="sd">        &gt;&gt;&gt; km = ExplicitKeyMap(key_of_id={'a': 1, 'b': 2})</span>
 <span class="sd">        &gt;&gt;&gt; km.id_of_key = {1: 'a', 2: 'b'}</span>
@@ -527,7 +543,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_of_id_map</span><span class="p">[</span><span class="n">_id</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_id_of_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_of_key_map</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_of_key_map</span><span class="p">[</span><span class="n">k</span><span class="p">]</span></div>
+
 
 
 <div class="viewcode-block" id="ExplicitKeymapReader">
@@ -594,7 +611,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

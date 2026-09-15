@@ -1,6 +1,11 @@
 # dol.dig
 
-Layers introspection
+Layers introspection: walk the layers of a wrapped store and trace a key through them.
+
+Main entry points:
+
+- `layers`: the list of nested layers (found through the `store` attribute), outermost first
+- `trace_getitem`, `print_trace_info`: the (layer, method, value) steps of a `__getitem__`
 
 ### Functions
 

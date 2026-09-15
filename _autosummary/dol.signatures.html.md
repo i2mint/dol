@@ -10,7 +10,7 @@ How to:
 > - give a function a specific signature (with a choice of validations)
 > - get an equivalent function with a different order of arguments
 > - get an equivalent function with a subset of arguments (like partial)
-> - get an equivalent function but with variadic \*args and/or \*\*kwargs replaced with
+> - get an equivalent function but with variadic `*args` and/or `**kwargs` replaced with
 >   non-variadic args (tuple) and kwargs (dict)
 > - make an f(a) function in to a f(a, b=None) function with b ignored
 
@@ -87,7 +87,7 @@ Both in the code and in the docs, we’ll use short hands for parameter (argumen
 | [`call_somewhat_forgivingly`](#dol.signatures.call_somewhat_forgivingly)(func, args, kwargs)      | Call function on given args and kwargs, but with controllable argument leniency.                                                  |
 | [`ch_func_to_all_pk`](#dol.signatures.ch_func_to_all_pk)(func)                            | Returns a decorated function where all arguments are of the PK kind.                                                              |
 | [`ch_signature_to_all_pk`](#dol.signatures.ch_signature_to_all_pk)(callable_or_signature)      | Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.                                                  |
-| [`ch_variadics_to_non_variadic_kind`](#dol.signatures.ch_variadics_to_non_variadic_kind)(func, \*[, ...]) | A decorator that will change a VAR_POSITIONAL (\*args) argument to a tuple (args) argument of the same name.                      |
+| [`ch_variadics_to_non_variadic_kind`](#dol.signatures.ch_variadics_to_non_variadic_kind)(func, \*[, ...]) | A decorator that will change a VAR_POSITIONAL (`*args`) argument to a tuple (args) argument of the same name.                     |
 | [`common_and_diff_argnames`](#dol.signatures.common_and_diff_argnames)(func1, func2)             | Get list of argument names that are common to two functions, as well as the two lists of names that are different                 |
 | `compare_signatures`(func1, func2[, ...])                                                           |                                                                                                                                   |
 | `convert_to_PK`(kinds)                                                                              |                                                                                                                                   |
@@ -153,13 +153,13 @@ Both in the code and in the docs, we’ll use short hands for parameter (argumen
 
 ### *exception* dol.signatures.FuncCallNotMatchingSignature
 
-Bases: [`TypeError`](https://docs.python.org/3/library/exceptions.html#TypeError)
+Bases: [`TypeError`](https://docs.python.org/3/builtins/exceptions.html#TypeError)
 
 Raise when the call signature is not valid
 
 ### *exception* dol.signatures.IncompatibleSignatures(\*args, sig1=None, sig2=None, \*\*kwargs)
 
-Bases: [`ValueError`](https://docs.python.org/3/library/exceptions.html#ValueError)
+Bases: [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
 
 #### pformat(indent=1, width=80, depth=None, , compact=False, sort_dicts=True, underscore_numbers=False)
 
@@ -167,13 +167,13 @@ Format a Python object into a pretty-printed representation.
 
 ### *exception* dol.signatures.InvalidSignature
 
-Bases: [`SyntaxError`](https://docs.python.org/3/library/exceptions.html#SyntaxError), [`ValueError`](https://docs.python.org/3/library/exceptions.html#ValueError)
+Bases: [`SyntaxError`](https://docs.python.org/3/builtins/exceptions.html#SyntaxError), [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
 
 Raise when a signature is not valid
 
 ### *class* dol.signatures.MissingArgValFor(argname)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A simple class to wrap an argument name, indicating that it was missing somewhere.
 
@@ -210,12 +210,12 @@ Bases: [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Sign
 A subclass of inspect.Signature that has a lot of extra api sugar,
 such as
 
-> - making a signature for a variety of input types (callable,
->   : iterable of callables, parameter lists, strings, etc.)
-> - has a dict-like interface
-> - signature merging (with operator interfaces)
-> - quick access to signature data
-> - positional/keyword argument mapping.
+- making a signature for a variety of input types (callable,
+  iterable of callables, parameter lists, strings, etc.)
+- has a dict-like interface
+- signature merging (with operator interfaces)
+- quick access to signature data
+- positional/keyword argument mapping.
 
 ### Positional/Keyword argument mapping
 
@@ -235,11 +235,11 @@ Two of the base methods for dealing with positional (args) and keyword (kwargs)
 inputs are:
 
 > - `map_arguments`: Map some args/kwargs input to a keyword-only
->   : expression of the inputs. This is useful if you need to do some processing
->     based on the argument names.
+>   expression of the inputs. This is useful if you need to do some processing
+>   based on the argument names.
 > - `mk_args_and_kwargs`: Translate a fully keyword expression of some
->   : inputs into an (args, kwargs) pair that can be used to call the function.
->     (Remember, your function can have constraints, so you may need to do this.
+>   inputs into an (args, kwargs) pair that can be used to call the function.
+>   (Remember, your function can have constraints, so you may need to do this.
 
 The usual pattern of use of these methods is to use `map_arguments`
 to map all the inputs to their corresponding name, do what needs to be done with
@@ -405,24 +405,24 @@ What `func.__annotations__` would give you.
 
 #### args_and_kwargs_from_kwargs(arguments, , apply_defaults=False, allow_partial=False, allow_excess=False, ignore_kind=False, args_limit=0)
 
-Extract args and kwargs such that func(\*args, \*\*kwargs) can be called,
+Extract args and kwargs such that `func(*args, **kwargs)` can be called,
 where func has instance’s signature.
 
 * **Parameters:**
-  * **arguments** ([`dict`](https://docs.python.org/3/library/stdtypes.html#dict)) – The {param_name: arg_val,…} dict to process
-  * **args_limit** ([`int`](https://docs.python.org/3/library/functions.html#int) | [`None`](https://docs.python.org/3/library/constants.html#None)) – 
+  * **arguments** ([`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)) – The {param_name: arg_val,…} dict to process
+  * **args_limit** ([`int`](https://docs.python.org/3/builtins/functions.html#int) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – 
 
     How “far” in the params should args (positional arguments)
     be searched for.
     - args_limit==0: Take the minimum number possible of args (positional
-      : arguments). Only those that are position only or before a var-positional.
+      arguments). Only those that are position only or before a var-positional.
     - args_limit is None: Take the maximum number of args (positional arguments).
-      : The only kwargs (keyword arguments) you should have are keyword-only
-        and var-keyword arguments.
+      The only kwargs (keyword arguments) you should have are keyword-only
+      and var-keyword arguments.
     - args_limit positive integer: Take the args_limit first argument names
-      : (of signature) as args, and the rest as kwargs.
+      (of signature) as args, and the rest as kwargs.
 * **Return type:**
-  [`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)[[`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple), [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)]
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple), [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)]
 
 ```pycon
 >>> def foo(w, /, x: float, y=1, *, z: int = 1):
@@ -606,61 +606,6 @@ wrapping with `Sig` objects takes care of that oversight!)
 >>> special_foo(5)  # should be 5 + 2 * 3 == 11
 11
 ```
-
-### TODO: Would like to make this work (reordering)
-
-### Now, if you want to set a default for a but not b and c for example, you’ll
-
-### get complaints:
-
-#
-# 
-
-```
-``
-```
-
-```
-`
-```
-
-### ValueError: non-default argument follows default argument
-
-# 
-
-```
-``
-```
-
-\`
-#
-
-### will tell you.
-
-#
-
-### It’s true. But if you’re fine with rearranging the argument order,
-
-# `ch_param_attrs` can take care of that for you.
-
-### You’ll have to tell it explicitly that you wish for this though, because
-
-### it’s conservative.
-
-#
-# >>> # Note that for time being, Sig.wraps doesn’t make a copy of the function
-# >>> #  so we need to redefine foo here@
-# >>> def foo(a, b, c):
-# …     return a + b \* c
-# >>> wrapper = Sig(foo).ch_param_attrs(
-# … ‘default’, a=10, \_allow_reordering=True
-# … )
-# >>> another_foo = wrapper(foo)
-# >>> Sig(another_foo)
-# <Sig (b, c, a=10)>
-# >>> another_foo(2, 3)  # should be 10 + (2 \* 3) =
-
-### 16
 
 #### *property* defaults
 
@@ -865,29 +810,16 @@ information as well. This will avoid having to check the kinds list twice.
 
 #### *property* has_var_kinds
 
-None).has_var_kinds
+Whether the signature has a VAR_POSITIONAL or a VAR_KEYWORD parameter.
+
+```pycon
+>>> Sig(lambda x, *, y: None).has_var_kinds
 False
->>> Sig(lambda x, 
-
-```
-*
-```
-
-y: None).has_var_kinds
+>>> Sig(lambda x, *y: None).has_var_kinds
 True
->>> Sig(lambda x, 
-
-```
-**
-```
-
-y: None).has_var_kinds
+>>> Sig(lambda x, **y: None).has_var_kinds
 True
-
-* **Type:**
-  ```pycon
-  >>> Sig(lambda x, *, y
-  ```
+```
 
 #### *property* has_var_positional
 
@@ -983,8 +915,8 @@ will extract their needs from it.
 That’s where  `Sig.map_arguments_from_variadics(*args, **kwargs)` is needed.
 
 * **Parameters:**
-  * **args** ([`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)) – The args the function will be called with.
-  * **kwargs** ([`dict`](https://docs.python.org/3/library/stdtypes.html#dict)) – The kwargs the function will be called with.
+  * **args** ([`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)) – The args the function will be called with.
+  * **kwargs** ([`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)) – The kwargs the function will be called with.
   * **apply_defaults** – (bool) Whether to apply signature defaults to the
     non-specified argument names
   * **allow_partial** – (bool) True iff you want to allow partial signature
@@ -998,7 +930,7 @@ That’s where  `Sig.map_arguments_from_variadics(*args, **kwargs)` is needed.
     (args that are supposed to be keyword only, and kwargs that are supposed
     to be positional only)
 * **Return type:**
-  [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 * **Returns:**
   An {param_name: arg_val, …} dict
 
@@ -1132,8 +1064,8 @@ will extract their needs from it.
 That’s where  `Sig.map_arguments_from_variadics(*args, **kwargs)` is needed.
 
 * **Parameters:**
-  * **args** ([`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)) – The args the function will be called with.
-  * **kwargs** ([`dict`](https://docs.python.org/3/library/stdtypes.html#dict)) – The kwargs the function will be called with.
+  * **args** ([`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)) – The args the function will be called with.
+  * **kwargs** ([`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)) – The kwargs the function will be called with.
   * **apply_defaults** – (bool) Whether to apply signature defaults to the
     non-specified argument names
   * **allow_partial** – (bool) True iff you want to allow partial signature
@@ -1147,7 +1079,7 @@ That’s where  `Sig.map_arguments_from_variadics(*args, **kwargs)` is needed.
     (args that are supposed to be keyword only, and kwargs that are supposed
     to be positional only)
 * **Return type:**
-  [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 * **Returns:**
   An {param_name: arg_val, …} dict
 
@@ -1327,8 +1259,8 @@ Insofar as it can, given the kind precedence rules, the arguments of self will
 appear first.
 
 * **Parameters:**
-  * **sig** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/library/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/library/stdtypes.html#str)]) – The signature to merge with.
-  * **ch_to_all_pk** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to change all kinds of both signatures to PK (
+  * **sig** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The signature to merge with.
+  * **ch_to_all_pk** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to change all kinds of both signatures to PK (
     POSITIONAL_OR_KEYWORD)
 * **Returns:**
 
@@ -1370,24 +1302,24 @@ If the kind of the params is not important, but order is, you can specify
 
 #### mk_args_and_kwargs(arguments, , apply_defaults=False, allow_partial=False, allow_excess=False, ignore_kind=False, args_limit=0)
 
-Extract args and kwargs such that func(\*args, \*\*kwargs) can be called,
+Extract args and kwargs such that `func(*args, **kwargs)` can be called,
 where func has instance’s signature.
 
 * **Parameters:**
-  * **arguments** ([`dict`](https://docs.python.org/3/library/stdtypes.html#dict)) – The {param_name: arg_val,…} dict to process
-  * **args_limit** ([`int`](https://docs.python.org/3/library/functions.html#int) | [`None`](https://docs.python.org/3/library/constants.html#None)) – 
+  * **arguments** ([`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)) – The {param_name: arg_val,…} dict to process
+  * **args_limit** ([`int`](https://docs.python.org/3/builtins/functions.html#int) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – 
 
     How “far” in the params should args (positional arguments)
     be searched for.
     - args_limit==0: Take the minimum number possible of args (positional
-      : arguments). Only those that are position only or before a var-positional.
+      arguments). Only those that are position only or before a var-positional.
     - args_limit is None: Take the maximum number of args (positional arguments).
-      : The only kwargs (keyword arguments) you should have are keyword-only
-        and var-keyword arguments.
+      The only kwargs (keyword arguments) you should have are keyword-only
+      and var-keyword arguments.
     - args_limit positive integer: Take the args_limit first argument names
-      : (of signature) as args, and the rest as kwargs.
+      (of signature) as args, and the rest as kwargs.
 * **Return type:**
-  [`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)[[`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple), [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)]
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple), [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)]
 
 ```pycon
 >>> def foo(w, /, x: float, y=1, *, z: int = 1):
@@ -1591,7 +1523,7 @@ defaults, these defaults will actually be used (unlike with `functools.wraps`).
 
 The number of required arguments.
 A required argument is one that doesn’t have a default, nor is VAR_POSITIONAL
-(\*args) or VAR_KEYWORD (\*\*kwargs).
+(`*args`) or VAR_KEYWORD (`**kwargs`).
 
 #### NOTE
 Sometimes a minimum number of arguments in VAR_POSITIONAL and
@@ -2031,7 +1963,7 @@ The dict of keyword arguments to make this signature instance.
 
 Note that this does NOT return:
 
-```text
+```python
 {'parameters': self.parameters,
 'return_annotation': self.return_annotation}
 ```
@@ -2082,12 +2014,12 @@ signature
 attribute, here we also write to
 
 - `__defaults__` and `__kwdefaults__`, extracting these from `__signature__`
-  : (functools.wraps doesn’t do that at the time of writing this
-    (see [https://github.com/python/cpython/pull/21379](https://github.com/python/cpython/pull/21379))).
+  (functools.wraps doesn’t do that at the time of writing this
+  (see [https://github.com/python/cpython/pull/21379](https://github.com/python/cpython/pull/21379))).
 - `__annotations__` (also extracted from `__signature__`)
 - does not write to `__module__`, `__name__`, `__qualname__`, `__doc__`
-  : (because again, we’re basinig the injecton on a signature, not a function,
-    so we have no name, doc, etc…)
+  (because again, we’re basinig the injecton on a signature, not a function,
+  so we have no name, doc, etc…)
 
 #### WARNING
 The fact that you’ve modified the signature of your function doesn’t
@@ -2163,7 +2095,7 @@ TypeError: f() takes from 0 to 3 positional arguments but 4 were given
 
 ### *class* dol.signatures.SigPair(sig1, sig2)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Class that operates on a pair of signatures.
 
@@ -2239,7 +2171,7 @@ Check if the signatures are call-compatible.
 Returns True if sig1 can be used to call sig2 or vice versa.
 
 * **Return type:**
-  [`bool`](https://docs.python.org/3/library/functions.html#bool)
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ```pycon
 >>> sig1 = Sig(lambda a, b, c=3: None)
@@ -2260,7 +2192,7 @@ True
 Get a dictionary of differences between the two signatures.
 
 * **Return type:**
-  [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ```pycon
 >>> from pprint import pprint
@@ -2289,7 +2221,7 @@ Get a dictionary of differences between the two signatures.
 Get a string representation of the differences between the two signatures.
 
 * **Return type:**
-  [`str`](https://docs.python.org/3/library/stdtypes.html#str)
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### *property* names_missing_in_sig1
 
@@ -2323,7 +2255,7 @@ Compare parameters between the two signatures using the provided comparator func
   * **comparator** – A function to compare two parameters.
   * **aggregation** – A function to aggregate the results of the comparisons.
 * **Return type:**
-  [`bool`](https://docs.python.org/3/library/functions.html#bool)
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 * **Returns:**
   Boolean result of the aggregated comparisons.
 
@@ -2340,7 +2272,7 @@ False
 Get a dictionary of parameter differences between the two signatures.
 
 * **Return type:**
-  [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 * **Returns:**
   A dict containing differences for each shared param that has any.
 
@@ -2396,7 +2328,7 @@ implementation though!
 <Sig (w, x: float, y=1, z: int = 1, **kwargs)>
 ```
 
-But note that the variadic arguments \*args and \*\*kwargs remain variadic:
+But note that the variadic arguments `*args` and `**kwargs` remain variadic:
 
 ```pycon
 >>> all_pk_signature(signature(bar))
@@ -2422,7 +2354,7 @@ attributes (like name).
 Get an interable of Parameter instances from an object.
 
 * **Parameters:**
-  **obj** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/library/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/library/stdtypes.html#str)])
+  **obj** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)])
 * **Returns:**
 
 From a callable:
@@ -2493,18 +2425,6 @@ An example of what happens when variadic kinds are involved:
 >>> call_forgivingly(bar, 1, 2, 3, y=4, z=5)
 (1, (2, 3), 4, {'z': 5})
 ```
-
-# >>> def bar(x, y=1, \*\*kwargs1):
-# …     return x, y, kwargs1
-# >>> call_forgivingly(bar, 1, 2, 3, y=4, z=5)
-# (1, 4, {‘z’: 5})
-
-# >>> call_forgivingly(bar, 1, 2, 3, y=4, z=5)
-
-# >>> def bar(x, \*args1, y=1):
-# …     return x, args1, y
-# >>> call_forgivingly(bar, 1, 2, 3, y=4, z=5)
-# (1, (2, 3), {‘z’: 5})
 
 ### dol.signatures.call_somewhat_forgivingly(func, args, kwargs, enforce_sig=None)
 
@@ -2609,17 +2529,6 @@ Returns a decorated function where all arguments are of the PK kind.
 (x, y=1, args=(), **kwargs)
 ```
 
-# >>> def h(x, \*y, z):
-# …     print(f”{x=}, {y=}, {z=}”)
-# >>> h(1, 2, 3, z=4)
-
-### x=1, y=(2, 3), z=4
-
-# >>> hh = ch_func_to_all_pk(h)
-# >>> hh(1, (2, 3), z=4)
-
-### x=1, y=(2, 3), z=4
-
 ### dol.signatures.ch_signature_to_all_pk(callable_or_signature)
 
 Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.
@@ -2644,7 +2553,7 @@ implementation though!
 <Sig (w, x: float, y=1, z: int = 1, **kwargs)>
 ```
 
-But note that the variadic arguments \*args and \*\*kwargs remain variadic:
+But note that the variadic arguments `*args` and `**kwargs` remain variadic:
 
 ```pycon
 >>> all_pk_signature(signature(bar))
@@ -2667,13 +2576,13 @@ attributes (like name).
 
 ### dol.signatures.ch_variadics_to_non_variadic_kind(func, , ch_variadic_keyword_to_keyword=True)
 
-A decorator that will change a VAR_POSITIONAL (\*args) argument to a tuple (args)
+A decorator that will change a VAR_POSITIONAL (`*args`) argument to a tuple (args)
 argument of the same name.
 
 Essentially, given a `func(a, *b, c, **d)` function want to get a
 `new_func(a, b=(), c=None, d={})` that has the same functionality
 (in fact, calls the original `func` function behind the scenes), but without
-where the variadic arguments \*b and \*\*d are replaced with a `b` expecting an
+where the variadic arguments `*b` and `**d` are replaced with a `b` expecting an
 iterable (e.g. tuple/list) and `d` expecting a `dict` to contain the
 desired inputs.
 
@@ -2737,7 +2646,7 @@ True
 ```
 
 If you only want the variadic positional to be handled, but leave leave any
-VARIADIC_KEYWORD kinds (\*\*kwargs) alone, you can do so by setting
+VARIADIC_KEYWORD kinds (`**kwargs`) alone, you can do so by setting
 `ch_variadic_keyword_to_keyword=False`.
 If you’ll need to use `ch_variadics_to_non_variadic_kind` in such a way
 repeatedly, we suggest you use `functools.partial` to not have to specify this
@@ -2766,7 +2675,7 @@ lists of names that are different
   * **func1** (`callable`) – First function
   * **func2** (`callable`) – Second function
 * **Return type:**
-  [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 * **Returns:**
   A dict with fields ‘common’, ‘func1_not_func2’, and ‘func2_not_func1’
 
@@ -2791,21 +2700,16 @@ Copy a function (not sure it works with all types of callables)
 
 Check if two defaults are the same when they are not empty.
 
-# >>> defaults_are_the_same_when_not_empty(1, 1)
-
-### True
-
-# >>> defaults_are_the_same_when_not_empty(1, 2)
-
-### False
-
-# >>> defaults_are_the_same_when_not_empty(1, None)
-
-### False
-
-# >>> defaults_are_the_same_when_not_empty(1, Parameter.empty)
-
-### True
+```pycon
+>>> defaults_are_the_same_when_not_empty(1, 1)
+True
+>>> defaults_are_the_same_when_not_empty(1, 2)
+False
+>>> defaults_are_the_same_when_not_empty(1, None)
+False
+>>> defaults_are_the_same_when_not_empty(1, Parameter.empty)
+True
+```
 
 ### dol.signatures.dflt1_is_empty_or_dflt2_is_not(dflt1, dflt2)
 
@@ -2836,9 +2740,9 @@ base param_comparator which requires strict equality (`eq`) for all attributes.
 A function that extracts the signatures of all callable attributes of a class.
 
 * **Parameters:**
-  **cls** ([`type`](https://docs.python.org/3/library/functions.html#type)) – The class that holds the the `(name, func)` pairs we want to extract.
+  **cls** ([`type`](https://docs.python.org/3/builtins/functions.html#type)) – The class that holds the the `(name, func)` pairs we want to extract.
 * **Return type:**
-  [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)[[`str`](https://docs.python.org/3/library/stdtypes.html#str), [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature)]
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature)]
 * **Returns:**
   A dict of `(name, signature(func))` pairs extracted from class.
 
@@ -2859,7 +2763,7 @@ decorator, like so:
 Get an interable of Parameter instances from an object.
 
 * **Parameters:**
-  **obj** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/library/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/library/stdtypes.html#str)])
+  **obj** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)])
 * **Returns:**
 
 From a callable:
@@ -2917,11 +2821,11 @@ but you have a kwargs dict of arguments in your hand. You can’t just to `func(
 **kwargs)`.
 But you can (now) do
 
-```text
-args, kwargs, remaining = extract_arguments(kwargs, func)  # extract from kwargs
-what you need for func
-# ... check if remaing is empty (or not, depending on your paranoia), and then
-call the func:
+```python
+# extract from kwargs what you need for func
+args, kwargs, remaining = extract_arguments(kwargs, func)
+# ... check if remaining is empty (or not, depending on your paranoia),
+# and then call the func:
 func(*args, **kwargs)
 ```
 
@@ -2980,7 +2884,7 @@ This is because we don’t want to assume that all the kwargs can actually be
 included in a call to the function behind the params.
 Instead, the user can chose whether to include the remainder by doing a:
 
-```text
+```python
 param_kwargs.update(remaining_kwargs)
 ```
 
@@ -3010,12 +2914,10 @@ If you’re expecting no remainder you might want to just get the args and kwarg
 not this third
 expected-to-be-empty remainder). You have two ways to do that, specifying:
 
-```default
-`what_to_do_with_remainding='ignore'`, which will just return the (args,
-kwargs) pair
-`what_to_do_with_remainding='assert_empty'`, which will do the same, but first
-assert the remainder is empty
-```
+- `what_to_do_with_remainding='ignore'`, which will just return the (args,
+  kwargs) pair
+- `what_to_do_with_remainding='assert_empty'`, which will do the same, but first
+  assert the remainder is empty
 
 We suggest to use `functools.partial` to configure the `argument_argument` you need.
 
@@ -3076,15 +2978,18 @@ in the remainder
 ```
 
 * **Parameters:**
-  * **params** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/library/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/library/stdtypes.html#str)]) – Specifies what PO arguments should be extracted.
+  * **params** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Specifies what PO arguments should be extracted.
     Could be a callable, Signature, iterable of Parameters…
   * **what_to_do_with_remainding** – ‘return’ (default): function will return `param_args`, `param_kwargs`,
     `remaining_kwargs`
     ‘ignore’: function will return `param_args`, `param_kwargs`
     ‘assert_empty’: function will assert that `remaining_kwargs` is empty and then
     return `param_args`, `param_kwargs`
-    :param include_all_when_var_keywords_in_params=False,
-    :param assert_no_missing_position_only_args=False,
+  * **include_all_when_var_keywords_in_params** – If True and `params` has a
+    VAR_KEYWORD parameter, the remaining kwargs are merged into `param_kwargs`
+    (leaving an empty remainder).
+  * **assert_no_missing_position_only_args** – If True, assert that no
+    position-only argument is missing from `kwargs`.
   * **kwargs** – The kwargs to extract the args from
 * **Returns:**
   A (param_args, param_kwargs, remaining_kwargs) tuple.
@@ -3107,11 +3012,11 @@ but you have a kwargs dict of arguments in your hand. You can’t just to `func(
 **kwargs)`.
 But you can (now) do
 
-```text
-args, kwargs, remaining = extract_arguments(kwargs, func)  # extract from kwargs
-what you need for func
-# ... check if remaing is empty (or not, depending on your paranoia), and then
-call the func:
+```python
+# extract from kwargs what you need for func
+args, kwargs, remaining = extract_arguments(kwargs, func)
+# ... check if remaining is empty (or not, depending on your paranoia),
+# and then call the func:
 func(*args, **kwargs)
 ```
 
@@ -3170,7 +3075,7 @@ This is because we don’t want to assume that all the kwargs can actually be
 included in a call to the function behind the params.
 Instead, the user can chose whether to include the remainder by doing a:
 
-```text
+```python
 param_kwargs.update(remaining_kwargs)
 ```
 
@@ -3200,12 +3105,10 @@ If you’re expecting no remainder you might want to just get the args and kwarg
 not this third
 expected-to-be-empty remainder). You have two ways to do that, specifying:
 
-```default
-`what_to_do_with_remainding='ignore'`, which will just return the (args,
-kwargs) pair
-`what_to_do_with_remainding='assert_empty'`, which will do the same, but first
-assert the remainder is empty
-```
+- `what_to_do_with_remainding='ignore'`, which will just return the (args,
+  kwargs) pair
+- `what_to_do_with_remainding='assert_empty'`, which will do the same, but first
+  assert the remainder is empty
 
 We suggest to use `functools.partial` to configure the `argument_argument` you need.
 
@@ -3273,8 +3176,11 @@ in the remainder
     ‘ignore’: function will return `param_args`, `param_kwargs`
     ‘assert_empty’: function will assert that `remaining_kwargs` is empty and then
     return `param_args`, `param_kwargs`
-    :param include_all_when_var_keywords_in_params=False,
-    :param assert_no_missing_position_only_args=False,
+  * **include_all_when_var_keywords_in_params** – If True and `params` has a
+    VAR_KEYWORD parameter, the remaining kwargs are merged into `param_kwargs`
+    (leaving an empty remainder).
+  * **assert_no_missing_position_only_args** – If True, assert that no
+    position-only argument is missing from `kwargs`.
   * **kwargs** – The kwargs to extract the args from
 * **Returns:**
   A (param_args, param_kwargs, remaining_kwargs) tuple.
@@ -3297,11 +3203,11 @@ but you have a kwargs dict of arguments in your hand. You can’t just to `func(
 **kwargs)`.
 But you can (now) do
 
-```text
-args, kwargs, remaining = extract_arguments(kwargs, func)  # extract from kwargs
-what you need for func
-# ... check if remaing is empty (or not, depending on your paranoia), and then
-call the func:
+```python
+# extract from kwargs what you need for func
+args, kwargs, remaining = extract_arguments(kwargs, func)
+# ... check if remaining is empty (or not, depending on your paranoia),
+# and then call the func:
 func(*args, **kwargs)
 ```
 
@@ -3360,7 +3266,7 @@ This is because we don’t want to assume that all the kwargs can actually be
 included in a call to the function behind the params.
 Instead, the user can chose whether to include the remainder by doing a:
 
-```text
+```python
 param_kwargs.update(remaining_kwargs)
 ```
 
@@ -3390,12 +3296,10 @@ If you’re expecting no remainder you might want to just get the args and kwarg
 not this third
 expected-to-be-empty remainder). You have two ways to do that, specifying:
 
-```default
-`what_to_do_with_remainding='ignore'`, which will just return the (args,
-kwargs) pair
-`what_to_do_with_remainding='assert_empty'`, which will do the same, but first
-assert the remainder is empty
-```
+- `what_to_do_with_remainding='ignore'`, which will just return the (args,
+  kwargs) pair
+- `what_to_do_with_remainding='assert_empty'`, which will do the same, but first
+  assert the remainder is empty
 
 We suggest to use `functools.partial` to configure the `argument_argument` you need.
 
@@ -3463,8 +3367,11 @@ in the remainder
     ‘ignore’: function will return `param_args`, `param_kwargs`
     ‘assert_empty’: function will assert that `remaining_kwargs` is empty and then
     return `param_args`, `param_kwargs`
-    :param include_all_when_var_keywords_in_params=False,
-    :param assert_no_missing_position_only_args=False,
+  * **include_all_when_var_keywords_in_params** – If True and `params` has a
+    VAR_KEYWORD parameter, the remaining kwargs are merged into `param_kwargs`
+    (leaving an empty remainder).
+  * **assert_no_missing_position_only_args** – If True, assert that no
+    position-only argument is missing from `kwargs`.
   * **kwargs** – The kwargs to extract the args from
 * **Returns:**
   A (param_args, param_kwargs, remaining_kwargs) tuple.
@@ -3523,9 +3430,9 @@ to call `sig1` are valid for `sig2`.
 * **Parameters:**
   * **sig1** ([`Sig`](#dol.signatures.Sig)) – The main signature.
   * **sig2** ([`Sig`](#dol.signatures.Sig)) – The signature to be compared with.
-  * **param_comparator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)] | [`None`](https://docs.python.org/3/library/constants.html#None)) – The function used to compare two parameters
+  * **param_comparator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – The function used to compare two parameters
 * **Return type:**
-  [`bool`](https://docs.python.org/3/library/functions.html#bool)
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ```pycon
 >>> is_call_compatible_with(
@@ -3575,7 +3482,7 @@ True
 Check if an exception is a signature error
 
 * **Return type:**
-  [`bool`](https://docs.python.org/3/library/functions.html#bool)
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### dol.signatures.keyed_comparator(comparator, key)
 
@@ -3644,7 +3551,7 @@ args_with_defaults.
 Tries to find the (or “a”) name for an object, even if `__name__` doesn’t exist.
 
 * **Return type:**
-  [`str`](https://docs.python.org/3/library/stdtypes.html#str) | [`None`](https://docs.python.org/3/library/constants.html#None)
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 ```pycon
 >>> name_of_obj(map)
@@ -4002,7 +3909,7 @@ Set the signature of a function, with sugar.
 Make a `class` (through `make_dataclass`) from the given signature.
 
 * **Parameters:**
-  * **sig** (`Union`[[`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/library/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/library/stdtypes.html#str)]) – A `SignatureAble`, that is, anything that ensure_signature can
+  * **sig** (`Union`[[`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A `SignatureAble`, that is, anything that ensure_signature can
     resolve into an `inspect.Signature` object, including a signature object
     itself, but also most callables, a list or params, etc.
   * **cls_name** – The same as `cls_name` of `dataclasses.make_dataclass`
@@ -4081,7 +3988,7 @@ Now you want to carry out this functionality using a function `f` that does what
 
 The solution to this is to \_adapt_ `f` to the `g` interface:
 
-```text
+```python
 def my_g(a, b):
     return f(a)
 ```

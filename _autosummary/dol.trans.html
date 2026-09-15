@@ -268,7 +268,29 @@
         <article role="main" id="furo-main-content">
           <section id="module-dol.trans">
 <span id="dol-trans"></span><h1>dol.trans<a class="headerlink" href="#module-dol.trans" title="Link to this heading">¶</a></h1>
-<p>Transformation/wrapping tools</p>
+<p>Tools to wrap stores with key/value transforms, filters, caches and other layers.</p>
+<p>A wrap leaves the backend untouched and builds a new class (or instance) around it.
+The decorators built with <code class="docutils literal notranslate"><span class="pre">store_decorator</span></code> (<code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code>, <code class="docutils literal notranslate"><span class="pre">filt_iter</span></code>,
+<code class="docutils literal notranslate"><span class="pre">cached_keys</span></code>, <code class="docutils literal notranslate"><span class="pre">add_path_access</span></code>, …) can be applied to a class, to an instance,
+or used as a factory (<code class="docutils literal notranslate"><span class="pre">deco(**params)(store)</span></code>).</p>
+<p>Main entry points:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code>: key/value transforms (<code class="docutils literal notranslate"><span class="pre">key_of_id</span></code>, <code class="docutils literal notranslate"><span class="pre">obj_of_data</span></code>, codecs, …)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">filt_iter</span></code>: restrict a store to a subset of its keys</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cached_keys</span></code>: cache the key listing of a slow store</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">add_path_access</span></code>: read/write nested stores through key paths</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kv_wrap</span></code>: wrap using an object that holds <code class="docutils literal notranslate"><span class="pre">_id_of_key</span></code>/<code class="docutils literal notranslate"><span class="pre">_obj_of_data</span></code>-style methods</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">({},</span> <span class="n">key_of_id</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">store</span>  <span class="c1"># the backend holds the transformed key and value</span>
+<span class="go">{'a': '1'}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">s</span><span class="p">[</span><span class="s1">'A'</span><span class="p">]</span>
+<span class="go">(['A'], 1)</span>
+</pre></div>
+</div>
+</li>
+</ul>
 <p class="rubric">Module Attributes</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
@@ -325,11 +347,11 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.catch_and_cache_error_keys" title="dol.trans.catch_and_cache_error_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">catch_and_cache_error_keys</span></code></a>([store, ...])</p></td>
 <td><p>Store that will cache keys as they're accessed, separating those that raised errors and those that didn't.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">condition_function_call</span></code>([func, condition, ...])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.condition_function_call" title="dol.trans.condition_function_call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">condition_function_call</span></code></a>([func, condition, ...])</p></td>
+<td><p>Decorator: call <code class="docutils literal notranslate"><span class="pre">func</span></code> only when <code class="docutils literal notranslate"><span class="pre">condition(*args,</span> <span class="pre">**kwargs)</span></code> holds, else <code class="docutils literal notranslate"><span class="pre">callback_if_condition_not_met</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">conditional_data_trans</span></code>([store, __module__, ...])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.conditional_data_trans" title="dol.trans.conditional_data_trans"><code class="xref py py-obj docutils literal notranslate"><span class="pre">conditional_data_trans</span></code></a>([store, __module__, ...])</p></td>
+<td><p>Wrap <code class="docutils literal notranslate"><span class="pre">store</span></code> so that <code class="docutils literal notranslate"><span class="pre">data_trans</span></code> is applied to the read values satisfying <code class="docutils literal notranslate"><span class="pre">condition</span></code> (others pass through).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.confirm_overwrite" title="dol.trans.confirm_overwrite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">confirm_overwrite</span></code></a>(self, k, v)</p></td>
 <td><p>A ready-to-use <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> <code class="docutils literal notranslate"><span class="pre">preset</span></code> that asks (via the builtin <code class="docutils literal notranslate"><span class="pre">input</span></code>) to confirm before overwriting an existing key with a different value (Issue #13).</p></td>
@@ -337,14 +359,14 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.constant_output" title="dol.trans.constant_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">constant_output</span></code></a>([return_val])</p></td>
 <td><p>Function that returns a constant value no matter what the inputs are.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">disable_delitem</span></code>(o)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.disable_delitem" title="dol.trans.disable_delitem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disable_delitem</span></code></a>(o)</p></td>
+<td><p>Replace <code class="docutils literal notranslate"><span class="pre">o.__delitem__</span></code> (if any) with a function raising <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">disable_setitem</span></code>(o)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.disable_setitem" title="dol.trans.disable_setitem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disable_setitem</span></code></a>(o)</p></td>
+<td><p>Replace <code class="docutils literal notranslate"><span class="pre">o.__setitem__</span></code> (if any) with a function raising <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">disallow_overwrites</span></code>(store, *[, error_msg, ...])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.disallow_overwrites" title="dol.trans.disallow_overwrites"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disallow_overwrites</span></code></a>(store, *[, error_msg, ...])</p></td>
+<td><p>Intended to make a store class's <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> raise <code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedError</span></code> on existing keys; currently a no-op that returns <code class="docutils literal notranslate"><span class="pre">None</span></code> (the override is never attached).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.double_up_as_factory" title="dol.trans.double_up_as_factory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">double_up_as_factory</span></code></a>(decorator_func)</p></td>
 <td><p>Repurpose a decorator both as it's original form, and as a decorator factory.</p></td>
@@ -352,8 +374,8 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.ensure_clear_method" title="dol.trans.ensure_clear_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_clear_method</span></code></a>([store, clear_method])</p></td>
 <td><p>If obj doesn't have an enabled clear method, will add one (a slow one that runs through keys and deletes them</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_set</span></code>(x)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.ensure_set" title="dol.trans.ensure_set"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_set</span></code></a>(x)</p></td>
+<td><p>A set from <code class="docutils literal notranslate"><span class="pre">x</span></code>, treating a string as a single element.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.filt_iter" title="dol.trans.filt_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filt_iter</span></code></a>([store, filt, name, __module__, ...])</p></td>
 <td><p>Make a wrapper that will transform a store (class or instance thereof) into a sub-store (i.e. subset of keys).</p></td>
@@ -368,13 +390,13 @@
 <td><p>Make a filter that returns True if a string ends with one of the given suffixes</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.flatten" title="dol.trans.flatten"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten</span></code></a>([store, levels, cache_keys, ...])</p></td>
-<td><p>Flatten a nested store.</p></td>
+<td><p>Give a nested store a flat view whose keys are the <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code> key paths.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_name</span></code>(cls[, dflt_name])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.get_class_name" title="dol.trans.get_class_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_name</span></code></a>(cls[, dflt_name])</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">__qualname__</span></code> of <code class="docutils literal notranslate"><span class="pre">cls</span></code> (or of its class), else <code class="docutils literal notranslate"><span class="pre">dflt_name</span></code>; raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if there is neither.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ignore_if_error</span></code>([store, errors])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.ignore_if_error" title="dol.trans.ignore_if_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ignore_if_error</span></code></a>([store, errors])</p></td>
+<td><p>Wrap <code class="docutils literal notranslate"><span class="pre">store</span></code> so that <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code> errors in <code class="docutils literal notranslate"><span class="pre">errors</span></code> return <code class="docutils literal notranslate"><span class="pre">None</span></code> instead of raising.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.insert_aliases" title="dol.trans.insert_aliases"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert_aliases</span></code></a>([store, write, read, delete, ...])</p></td>
 <td><p>Insert method aliases of CRUD operations of a store (class or instance).</p></td>
@@ -385,11 +407,11 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.insert_load_dump_aliases" title="dol.trans.insert_load_dump_aliases"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert_load_dump_aliases</span></code></a>([store, delete, ...])</p></td>
 <td><p>Insert load and dump methods, with familiar dump(obj, location) signature.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_iterable</span></code>(x)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.is_iterable" title="dol.trans.is_iterable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_iterable</span></code></a>(x)</p></td>
+<td><p>Whether <code class="docutils literal notranslate"><span class="pre">x</span></code> is an <code class="docutils literal notranslate"><span class="pre">Iterable</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">iterate_values_and_accumulate_non_error_keys</span></code>(...)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.iterate_values_and_accumulate_non_error_keys" title="dol.trans.iterate_values_and_accumulate_non_error_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iterate_values_and_accumulate_non_error_keys</span></code></a>(...)</p></td>
+<td><p>Yield the values of <code class="docutils literal notranslate"><span class="pre">store</span></code>, appending to <code class="docutils literal notranslate"><span class="pre">cache_keys_here</span></code> the keys whose value was fetched without error.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.kv_wrap" title="dol.trans.kv_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kv_wrap</span></code></a>(trans_obj)</p></td>
 <td><p>A function that makes a wrapper (a decorator) that will get the wrappers from methods of the input object.</p></td>
@@ -397,8 +419,8 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.kv_wrap_persister_cls" title="dol.trans.kv_wrap_persister_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kv_wrap_persister_cls</span></code></a>(persister_cls[, name])</p></td>
 <td><p>Make a class that wraps a persister into a dol.base.Store,</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">leveled_paths_walk</span></code>(m, levels)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.leveled_paths_walk" title="dol.trans.leveled_paths_walk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">leveled_paths_walk</span></code></a>(m, levels)</p></td>
+<td><p>Yield the key paths of <code class="docutils literal notranslate"><span class="pre">m</span></code>, down to <code class="docutils literal notranslate"><span class="pre">levels</span></code> levels.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.mk_confirm_overwrite_preset" title="dol.trans.mk_confirm_overwrite_preset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_confirm_overwrite_preset</span></code></a>(*[, get_input, ...])</p></td>
 <td><p>Make a <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> <code class="docutils literal notranslate"><span class="pre">preset</span></code> that asks for confirmation before overwriting an existing key that holds a <em>different</em> value.</p></td>
@@ -409,8 +431,8 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.mk_level_walk_filt" title="dol.trans.mk_level_walk_filt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_level_walk_filt</span></code></a>(levels)</p></td>
 <td><p>Makes a <code class="docutils literal notranslate"><span class="pre">walk_filt</span></code> function for <code class="docutils literal notranslate"><span class="pre">kv_walk</span></code> based on some level logic.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_read_only</span></code>(o)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.mk_read_only" title="dol.trans.mk_read_only"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_read_only</span></code></a>(o)</p></td>
+<td><p>Disable <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> and <code class="docutils literal notranslate"><span class="pre">__delitem__</span></code> on <code class="docutils literal notranslate"><span class="pre">o</span></code> (a store class, typically).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.mk_trans_obj" title="dol.trans.mk_trans_obj"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_trans_obj</span></code></a>(**kwargs)</p></td>
 <td><p>Convenience method to quickly make a trans_obj (just an object holding some trans functions</p></td>
@@ -418,29 +440,29 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.mk_wrapper" title="dol.trans.mk_wrapper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_wrapper</span></code></a>(wrap_cls)</p></td>
 <td><p>You have a wrapper class and you want to make a wrapper out of it, that is, a decorator factory with which you can make wrappers, like this:</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">raise_disabled_error</span></code>(functionality)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.raise_disabled_error" title="dol.trans.raise_disabled_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">raise_disabled_error</span></code></a>(functionality)</p></td>
+<td><p>Make a function that raises <code class="docutils literal notranslate"><span class="pre">ValueError('&lt;functionality&gt;</span> <span class="pre">is</span> <span class="pre">disabled')</span></code> whenever called.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.redirect_getattr_to_getitem" title="dol.trans.redirect_getattr_to_getitem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">redirect_getattr_to_getitem</span></code></a>([cls, ...])</p></td>
 <td><p>A mapping decorator that redirects attribute access to __getitem__.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">return_default_if_error</span></code>([store, default, errors])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.return_default_if_error" title="dol.trans.return_default_if_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">return_default_if_error</span></code></a>([store, default, errors])</p></td>
+<td><p>Wrap <code class="docutils literal notranslate"><span class="pre">store</span></code> so that <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code> errors in <code class="docutils literal notranslate"><span class="pre">errors</span></code> return <code class="docutils literal notranslate"><span class="pre">default</span></code> instead of raising.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.store_decorator" title="dol.trans.store_decorator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_decorator</span></code></a>(func)</p></td>
 <td><p>Helper to make store decorators.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_wrap</span></code>(obj)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.store_wrap" title="dol.trans.store_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_wrap</span></code></a>(obj)</p></td>
+<td><p>Wrap a class or an instance in a <code class="docutils literal notranslate"><span class="pre">Store</span></code> (a class gets a <code class="docutils literal notranslate"><span class="pre">Store</span></code> subclass whose <code class="docutils literal notranslate"><span class="pre">__init__</span></code> builds the wrapped instance).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">take_everything</span></code>(key)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.take_everything" title="dol.trans.take_everything"><code class="xref py py-obj docutils literal notranslate"><span class="pre">take_everything</span></code></a>(key)</p></td>
+<td><p>Key filter that accepts every key.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">transparent_key_method</span></code>(self, k)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.transparent_key_method" title="dol.trans.transparent_key_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transparent_key_method</span></code></a>(self, k)</p></td>
+<td><p>Return the key as is (the default <code class="docutils literal notranslate"><span class="pre">getitem</span></code> of <code class="docutils literal notranslate"><span class="pre">mk_kv_reader_from_kv_collection</span></code>).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">warn_and_ignore_if_error</span></code>([store, errors, ...])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.warn_and_ignore_if_error" title="dol.trans.warn_and_ignore_if_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">warn_and_ignore_if_error</span></code></a>([store, errors, ...])</p></td>
+<td><p>Like <code class="docutils literal notranslate"><span class="pre">ignore_if_error</span></code>, but also emit a warning (<code class="docutils literal notranslate"><span class="pre">warn_msg</span></code>) for each ignored error.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.wrap_kvs" title="dol.trans.wrap_kvs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_kvs</span></code></a>([store, wrapper, name, key_of_id, ...])</p></td>
 <td><p>Make a Store that is wrapped with the given key/val transformers.</p></td>
@@ -456,28 +478,28 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.Codec" title="dol.trans.Codec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Codec</span></code></a>(encoder, decoder)</p></td>
-<td><p></p></td>
+<td><p>An <code class="docutils literal notranslate"><span class="pre">encoder</span></code>/<code class="docutils literal notranslate"><span class="pre">decoder</span></code> pair; iterates as <code class="docutils literal notranslate"><span class="pre">(encoder,</span> <span class="pre">decoder)</span></code> and composes with <code class="docutils literal notranslate"><span class="pre">compose_with</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">FiltIter</span></code>(*args, **kwargs)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.FiltIter" title="dol.trans.FiltIter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FiltIter</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Namespace of <code class="docutils literal notranslate"><span class="pre">filt_iter</span></code> factories (<code class="docutils literal notranslate"><span class="pre">regex</span></code>, <code class="docutils literal notranslate"><span class="pre">suffixes</span></code>, ...); not meant to be instantiated.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.FirstArgIsMapping" title="dol.trans.FirstArgIsMapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FirstArgIsMapping</span></code></a>(val)</p></td>
 <td><p>Mark a transform so its first argument is the store (mapping), not the data.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.KeyCodec" title="dol.trans.KeyCodec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KeyCodec</span></code></a>(encoder, decoder)</p></td>
-<td><p></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps its keys (<code class="docutils literal notranslate"><span class="pre">id_of_key</span></code>/<code class="docutils literal notranslate"><span class="pre">key_of_id</span></code>).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.KeyValueCodec" title="dol.trans.KeyValueCodec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KeyValueCodec</span></code></a>(encoder, decoder)</p></td>
-<td><p></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps values with key context (<code class="docutils literal notranslate"><span class="pre">preset</span></code>/<code class="docutils literal notranslate"><span class="pre">postget</span></code>).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.OverWritesNotAllowedMixin" title="dol.trans.OverWritesNotAllowedMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OverWritesNotAllowedMixin</span></code></a>()</p></td>
 <td><p>Mixin for only allowing a write to a key if they key doesn't already exist.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimpleDelegator</span></code>(obj)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.SimpleDelegator" title="dol.trans.SimpleDelegator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimpleDelegator</span></code></a>(obj)</p></td>
+<td><p>Forward attribute access (and calls) to the wrapped <code class="docutils literal notranslate"><span class="pre">obj</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.ValueCodec" title="dol.trans.ValueCodec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueCodec</span></code></a>(encoder, decoder)</p></td>
-<td><p></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps its values (<code class="docutils literal notranslate"><span class="pre">data_of_obj</span></code>/<code class="docutils literal notranslate"><span class="pre">obj_of_data</span></code>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -495,7 +517,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.trans.CachedInvertibleTrans">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">CachedInvertibleTrans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trans_func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#CachedInvertibleTrans"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.CachedInvertibleTrans" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">CachedInvertibleTrans</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">ingress</span><span class="p">(</span><span class="s1">'ab'</span><span class="p">)</span>
 <span class="go">'b'</span>
@@ -515,6 +537,7 @@
 <dt class="sig sig-object py" id="dol.trans.Codec">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">Codec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#Codec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.Codec" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">EncodedType</span></code>]</p>
+<p>An <code class="docutils literal notranslate"><span class="pre">encoder</span></code>/<code class="docutils literal notranslate"><span class="pre">decoder</span></code> pair; iterates as <code class="docutils literal notranslate"><span class="pre">(encoder,</span> <span class="pre">decoder)</span></code> and composes with <code class="docutils literal notranslate"><span class="pre">compose_with</span></code>.</p>
 <dl class="field-list simple">
 </dl>
 <dl class="py method">
@@ -522,6 +545,67 @@
 <span class="sig-name descname"><span class="pre">invert</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#Codec.invert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.Codec.invert" title="Link to this definition">¶</a></dt>
 <dd><p>Return a codec that is the inverse of this one.
 That is, encoder and decoder will be swapped.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.trans.FiltIter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">FiltIter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#FiltIter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.FiltIter" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Namespace of <code class="docutils literal notranslate"><span class="pre">filt_iter</span></code> factories (<code class="docutils literal notranslate"><span class="pre">regex</span></code>, <code class="docutils literal notranslate"><span class="pre">suffixes</span></code>, …); not meant to be instantiated.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.trans.FiltIter.prefixes">
+<span class="sig-name descname"><span class="pre">prefixes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#FiltIter.prefixes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.FiltIter.prefixes" title="Link to this definition">¶</a></dt>
+<dd><p>Make a mapping-filtering decorator that filters keys with a prefixes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prefixes</strong> – A string or iterable of strings that are the prefixes to filter</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_test</span> <span class="o">=</span> <span class="n">filt_iter</span><span class="o">.</span><span class="n">prefixes</span><span class="p">(</span><span class="s1">'test'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'test.txt'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'report.doc'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'test_image.jpg'</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">is_test</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span>
+<span class="go">{'test.txt': 1, 'test_image.jpg': 3}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.trans.FiltIter.regex">
+<span class="sig-name descname"><span class="pre">regex</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#FiltIter.regex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.FiltIter.regex" title="Link to this definition">¶</a></dt>
+<dd><p>Make a mapping-filtering decorator that filters keys with a regex.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>regex</strong> – A regex string or compiled regex</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">contains_a</span> <span class="o">=</span> <span class="n">filt_iter</span><span class="o">.</span><span class="n">regex</span><span class="p">(</span><span class="sa">r</span><span class="s1">'a'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'apple'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'banana'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'cherry'</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">contains_a</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span>
+<span class="go">{'apple': 1, 'banana': 2}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.trans.FiltIter.suffixes">
+<span class="sig-name descname"><span class="pre">suffixes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#FiltIter.suffixes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.FiltIter.suffixes" title="Link to this definition">¶</a></dt>
+<dd><p>Make a mapping-filtering decorator that filters keys with a suffixes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>suffixes</strong> – A string or iterable of strings that are the suffixes to filter</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_text</span> <span class="o">=</span> <span class="n">filt_iter</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([</span><span class="s1">'.txt'</span><span class="p">,</span> <span class="s1">'.doc'</span><span class="p">,</span> <span class="s1">'.pdf'</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'test.txt'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'report.doc'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'image.jpg'</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">is_text</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span>
+<span class="go">{'test.txt': 1, 'report.doc': 2}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -551,6 +635,7 @@ alternative to naming a transform’s first parameter <code class="docutils lite
 <dt class="sig sig-object py" id="dol.trans.KeyCodec">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">KeyCodec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#KeyCodec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.KeyCodec" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">EncodedType</span></code>], <a class="reference internal" href="#dol.trans.Codec" title="dol.trans.Codec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Codec</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">EncodedType</span></code>]</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps its keys (<code class="docutils literal notranslate"><span class="pre">id_of_key</span></code>/<code class="docutils literal notranslate"><span class="pre">key_of_id</span></code>).</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -559,6 +644,7 @@ alternative to naming a transform’s first parameter <code class="docutils lite
 <dt class="sig sig-object py" id="dol.trans.KeyValueCodec">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">KeyValueCodec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#KeyValueCodec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.KeyValueCodec" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">EncodedType</span></code>], <a class="reference internal" href="#dol.trans.Codec" title="dol.trans.Codec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Codec</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">EncodedType</span></code>]</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps values with key context (<code class="docutils literal notranslate"><span class="pre">preset</span></code>/<code class="docutils literal notranslate"><span class="pre">postget</span></code>).</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -566,14 +652,14 @@ alternative to naming a transform’s first parameter <code class="docutils lite
 <dl class="py exception">
 <dt class="sig sig-object py" id="dol.trans.MapInvertabilityError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">MapInvertabilityError</span></span><a class="reference internal" href="../_modules/dol/trans.html#MapInvertabilityError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.MapInvertabilityError" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
 <p>To be used to indicate that a mapping isn’t, or wouldn’t be, invertible</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.trans.OverWritesNotAllowedMixin">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">OverWritesNotAllowedMixin</span></span><a class="reference internal" href="../_modules/dol/trans.html#OverWritesNotAllowedMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.OverWritesNotAllowedMixin" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Mixin for only allowing a write to a key if they key doesn’t already exist.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -600,9 +686,17 @@ alternative to naming a transform’s first parameter <code class="docutils lite
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="dol.trans.SimpleDelegator">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">SimpleDelegator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#SimpleDelegator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.SimpleDelegator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Forward attribute access (and calls) to the wrapped <code class="docutils literal notranslate"><span class="pre">obj</span></code>.</p>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="dol.trans.ValueCodec">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">ValueCodec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#ValueCodec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.ValueCodec" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">EncodedType</span></code>], <a class="reference internal" href="#dol.trans.Codec" title="dol.trans.Codec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Codec</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">EncodedType</span></code>]</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps its values (<code class="docutils literal notranslate"><span class="pre">data_of_obj</span></code>/<code class="docutils literal notranslate"><span class="pre">obj_of_data</span></code>).</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -647,8 +741,8 @@ dunder mapping methods (like <code class="docutils literal notranslate"><span cl
 <dd><p>Add tab completion that shows you the keys of the store.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>ipython already adds local path listing automatically,</p>
-<p>so you’ll still get those along with your valid store keys.</p>
+<p>ipython already adds local path listing automatically,
+so you’ll still get those along with your valid store keys.</p>
 </div>
 </dd></dl>
 
@@ -706,7 +800,7 @@ See issue: <a class="reference external" href="https://github.com/i2mint/dol/iss
 make it whatever you want, and/or use <code class="code docutils literal notranslate"><span class="pre">dol.paths.KeyPath</span></code> to map to and from
 forms like <code class="docutils literal notranslate"><span class="pre">'a.b.c'</span></code>, <code class="docutils literal notranslate"><span class="pre">'a/b/c'</span></code>, etc.</p>
 <p>Say you have some nested stores.
-You know… like a <code class="code docutils literal notranslate"><span class="pre">ZipFileReader</span></code> store whose values are <a href="#id1"><span class="problematic" id="id2">`</span></a>ZipReader`s,
+You know… like a <code class="code docutils literal notranslate"><span class="pre">ZipFileReader</span></code> store whose values are <code class="code docutils literal notranslate"><span class="pre">ZipReader</span></code> instances,
 whose values are bytes of the zipped files
 (and you can go on… whose (json) values are…).</p>
 <p>For our example, let’s take a nested dict instead:</p>
@@ -742,7 +836,7 @@ To do that you can use <code class="code docutils literal notranslate"><span cla
 <li><p><strong>store</strong> – The store (class or instance) you’re wrapping.
 If not specified, the function will return a decorator.</p></li>
 <li><p><strong>name</strong> – The name to give the class (not applicable to instance wrapping)</p></li>
-<li><p><strong>path_type</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a></span>) – The type that paths are expressed as. Needs to be an Iterable type.
+<li><p><strong>path_type</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a></span>) – The type that paths are expressed as. Needs to be an Iterable type.
 By default, a tuple.
 This is used to decide whether the key should be taken as a “normal”
 key of the store,
@@ -756,7 +850,7 @@ or should be used to iterate through, recursively getting values.</p></li>
 </dl>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p><code class="docutils literal notranslate"><span class="pre">KeyPath</span></code> in <span class="xref std std-doc">paths</span></p>
+<p><code class="docutils literal notranslate"><span class="pre">KeyPath</span></code> in <code class="docutils literal notranslate"><span class="pre">dol.paths</span></code></p>
 </div>
 <p>Wrapping a class</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">S</span> <span class="o">=</span> <span class="n">add_path_access</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
@@ -856,7 +950,7 @@ forms like <code class="docutils literal notranslate"><span class="pre">'a.b.c'<
 That is, it doesn’t work recursively.
 See issue: <a class="reference external" href="https://github.com/i2mint/dol/issues/10">https://github.com/i2mint/dol/issues/10</a>.)</p>
 <p>Say you have some nested stores.
-You know… like a <code class="code docutils literal notranslate"><span class="pre">ZipFileReader</span></code> store whose values are <a href="#id3"><span class="problematic" id="id4">`</span></a>ZipReader`s,
+You know… like a <code class="code docutils literal notranslate"><span class="pre">ZipFileReader</span></code> store whose values are <code class="code docutils literal notranslate"><span class="pre">ZipReader</span></code> instances,
 whose values are bytes of the zipped files
 (and you can go on… whose (json) values are…).</p>
 <p>For our example, let’s take a nested dict instead:</p>
@@ -882,7 +976,7 @@ To do that you can use <code class="code docutils literal notranslate"><span cla
 <li><p><strong>store</strong> – The store (class or instance) you’re wrapping.
 If not specified, the function will return a decorator.</p></li>
 <li><p><strong>name</strong> – The name to give the class (not applicable to instance wrapping)</p></li>
-<li><p><strong>path_type</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a></span>) – The type that paths are expressed as. Needs to be an Iterable type.
+<li><p><strong>path_type</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a></span>) – The type that paths are expressed as. Needs to be an Iterable type.
 By default, a tuple.
 This is used to decide whether the key should be taken as a “normal”
 key of the store,
@@ -896,7 +990,7 @@ or should be used to iterate through, recursively getting values.</p></li>
 </dl>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p><code class="docutils literal notranslate"><span class="pre">KeyPath</span></code> in <span class="xref std std-doc">paths</span></p>
+<p><code class="docutils literal notranslate"><span class="pre">KeyPath</span></code> in <code class="docutils literal notranslate"><span class="pre">dol.paths</span></code></p>
 </div>
 <p>Wrapping an instance</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add_path_get</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}})</span>
@@ -947,10 +1041,10 @@ You need to involve more tools. Like dol.paths.KeyPath…</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>store</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a></span>) – A store type or instance</p></li>
+<li><p><strong>store</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a></span>) – A store type or instance</p></li>
 <li><p><strong>method_func</strong> – The function of the method to be added</p></li>
 <li><p><strong>method_name</strong> – The name of the store attribute this function should be written to</p></li>
-<li><p><strong>validator</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – An optional validator. If not None, <code class="docutils literal notranslate"><span class="pre">validator(store,</span> <span class="pre">method_func)</span></code> will be called.
+<li><p><strong>validator</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – An optional validator. If not None, <code class="docutils literal notranslate"><span class="pre">validator(store,</span> <span class="pre">method_func)</span></code> will be called.
 If it doesn’t return True, a <code class="docutils literal notranslate"><span class="pre">SetattrNotAllowed</span></code> will be raised.
 Note that <code class="docutils literal notranslate"><span class="pre">validator</span></code> can also raise its own exception.</p></li>
 </ul>
@@ -1068,7 +1162,7 @@ all items of the generator and storing them in _keys_cache, and then will yield 
 <p>It is assumed, if you’re using the cached_keys transformation, that you’re dealing with static data
 (or data that can be considered static for the life of the store – for example, when conducting analytics).
 If you ever need to refresh the cache during the life of the store, you can to delete _keys_cache like this:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>del your_store._keys_cache
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">your_store</span><span class="o">.</span><span class="n">_keys_cache</span>
 </pre></div>
 </div>
 <p>Once you do that, the next time you try to ask something about the contents of the store, it will actually do
@@ -1091,32 +1185,23 @@ a <code class="code docutils literal notranslate"><span class="pre">remove</span
 <li><p><strong>keys_cache</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Collection</span></code></a></span>) – An explicit collection of keys</p></li>
 <li><p><strong>iter_to_container</strong> – The function that will be applied to existing __iter__() and assigned to cache.
 The default is list. Another useful one is the sorted function.</p></li>
-<li><p><strong>cache_update_method</strong> – <p>Name of the keys_cache update method to use, if it is an attribute of keys_cache.
-Note that this cache_update_method will be used only</p>
-<blockquote>
-<div><p>if keys_cache is an explicit iterable and has that attribute
-if keys_cache is a callable and has that attribute.</p>
-</div></blockquote>
-<p>The default None</p>
-</p></li>
-<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the new class</p></li>
+<li><p><strong>cache_update_method</strong> – Name of the keys_cache update method to use, if it is an
+attribute of keys_cache (whether keys_cache is an explicit iterable or a
+callable). Default <code class="docutils literal notranslate"><span class="pre">'update'</span></code>.</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the new class</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a> | <a class="reference internal" href="dol.base.html#dol.base.KvReader" title="dol.base.KvReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">KvReader</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><p>If store is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kc">None</span><span class="p">:</span> <span class="n">Will</span> <span class="k">return</span> <span class="n">a</span> <span class="n">decorator</span> <span class="n">that</span> <span class="n">can</span> <span class="n">be</span> <span class="n">applied</span> <span class="n">to</span> <span class="n">a</span> <span class="n">store</span>
-<span class="n">a</span> <span class="n">store</span> <span class="n">class</span><span class="p">:</span> <span class="n">Will</span> <span class="k">return</span> <span class="n">a</span> <span class="n">wrapped</span> <span class="k">class</span><span class="w"> </span><span class="nc">that</span> <span class="n">caches</span> <span class="n">it</span><span class="s1">'s keys</span>
-<span class="n">a</span> <span class="n">store</span> <span class="n">instance</span><span class="p">:</span> <span class="n">Will</span> <span class="k">return</span> <span class="n">a</span> <span class="n">wrapped</span> <span class="n">instance</span> <span class="n">that</span> <span class="n">caches</span> <span class="n">it</span><span class="s1">'s keys</span>
-</pre></div>
-</div>
-<p>The instances of such key-cached classes have some extra attributes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">_explicit_keys</span><span class="p">:</span> <span class="n">The</span> <span class="n">actual</span> <span class="n">cache</span><span class="o">.</span> <span class="n">An</span> <span class="n">iterable</span> <span class="n">container</span>
-<span class="n">update_keys_cache</span><span class="p">:</span> <span class="n">Is</span> <span class="n">called</span> <span class="k">if</span> <span class="n">a</span> <span class="n">user</span> <span class="n">uses</span> <span class="n">the</span> <span class="n">instance</span> <span class="n">to</span> <span class="n">mutate</span> <span class="n">the</span> <span class="n">store</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span> <span class="n">write</span> <span class="ow">or</span> <span class="n">delete</span><span class="p">)</span><span class="o">.</span>
-</pre></div>
-</div>
+<dd class="field-odd"><p><p>If store is None, a decorator that can be applied to a store; if store is a
+class, a wrapped class that caches its keys; if store is an instance, a
+wrapped instance that caches its keys.</p>
+<p>The instances of such key-cached classes have some extra attributes:
+<code class="docutils literal notranslate"><span class="pre">_keys_cache</span></code> (the actual cache), <code class="docutils literal notranslate"><span class="pre">_explicit_keys</span></code> (whether the cache was
+given explicitly) and <code class="docutils literal notranslate"><span class="pre">update_keys_cache</span></code> (called on <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> and
+<code class="docutils literal notranslate"><span class="pre">update</span></code>).</p>
 </p>
 </dd>
 </dl>
@@ -1301,7 +1386,7 @@ all items of the generator and storing them in _keys_cache, and then will yield 
 <p>It is assumed, if you’re using the cached_keys transformation, that you’re dealing with static data
 (or data that can be considered static for the life of the store – for example, when conducting analytics).
 If you ever need to refresh the cache during the life of the store, you can to delete _keys_cache like this:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>del your_store._keys_cache
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">your_store</span><span class="o">.</span><span class="n">_keys_cache</span>
 </pre></div>
 </div>
 <p>Once you do that, the next time you try to ask something about the contents of the store, it will actually do
@@ -1324,32 +1409,23 @@ a <code class="code docutils literal notranslate"><span class="pre">remove</span
 <li><p><strong>keys_cache</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Collection</span></code></a></span>) – An explicit collection of keys</p></li>
 <li><p><strong>iter_to_container</strong> – The function that will be applied to existing __iter__() and assigned to cache.
 The default is list. Another useful one is the sorted function.</p></li>
-<li><p><strong>cache_update_method</strong> – <p>Name of the keys_cache update method to use, if it is an attribute of keys_cache.
-Note that this cache_update_method will be used only</p>
-<blockquote>
-<div><p>if keys_cache is an explicit iterable and has that attribute
-if keys_cache is a callable and has that attribute.</p>
-</div></blockquote>
-<p>The default None</p>
-</p></li>
-<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the new class</p></li>
+<li><p><strong>cache_update_method</strong> – Name of the keys_cache update method to use, if it is an
+attribute of keys_cache (whether keys_cache is an explicit iterable or a
+callable). Default <code class="docutils literal notranslate"><span class="pre">'update'</span></code>.</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the new class</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a> | <a class="reference internal" href="dol.base.html#dol.base.KvReader" title="dol.base.KvReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">KvReader</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><p>If store is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kc">None</span><span class="p">:</span> <span class="n">Will</span> <span class="k">return</span> <span class="n">a</span> <span class="n">decorator</span> <span class="n">that</span> <span class="n">can</span> <span class="n">be</span> <span class="n">applied</span> <span class="n">to</span> <span class="n">a</span> <span class="n">store</span>
-<span class="n">a</span> <span class="n">store</span> <span class="n">class</span><span class="p">:</span> <span class="n">Will</span> <span class="k">return</span> <span class="n">a</span> <span class="n">wrapped</span> <span class="k">class</span><span class="w"> </span><span class="nc">that</span> <span class="n">caches</span> <span class="n">it</span><span class="s1">'s keys</span>
-<span class="n">a</span> <span class="n">store</span> <span class="n">instance</span><span class="p">:</span> <span class="n">Will</span> <span class="k">return</span> <span class="n">a</span> <span class="n">wrapped</span> <span class="n">instance</span> <span class="n">that</span> <span class="n">caches</span> <span class="n">it</span><span class="s1">'s keys</span>
-</pre></div>
-</div>
-<p>The instances of such key-cached classes have some extra attributes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">_explicit_keys</span><span class="p">:</span> <span class="n">The</span> <span class="n">actual</span> <span class="n">cache</span><span class="o">.</span> <span class="n">An</span> <span class="n">iterable</span> <span class="n">container</span>
-<span class="n">update_keys_cache</span><span class="p">:</span> <span class="n">Is</span> <span class="n">called</span> <span class="k">if</span> <span class="n">a</span> <span class="n">user</span> <span class="n">uses</span> <span class="n">the</span> <span class="n">instance</span> <span class="n">to</span> <span class="n">mutate</span> <span class="n">the</span> <span class="n">store</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span> <span class="n">write</span> <span class="ow">or</span> <span class="n">delete</span><span class="p">)</span><span class="o">.</span>
-</pre></div>
-</div>
+<dd class="field-odd"><p><p>If store is None, a decorator that can be applied to a store; if store is a
+class, a wrapped class that caches its keys; if store is an instance, a
+wrapped instance that caches its keys.</p>
+<p>The instances of such key-cached classes have some extra attributes:
+<code class="docutils literal notranslate"><span class="pre">_keys_cache</span></code> (the actual cache), <code class="docutils literal notranslate"><span class="pre">_explicit_keys</span></code> (whether the cache was
+given explicitly) and <code class="docutils literal notranslate"><span class="pre">update_keys_cache</span></code> (called on <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> and
+<code class="docutils literal notranslate"><span class="pre">update</span></code>).</p>
 </p>
 </dd>
 </dl>
@@ -1557,19 +1633,13 @@ dropped a key).</p>
 we get only two.</p>
 <p>You don’t like it? Neither do I. But</p>
 <ul class="simple">
-<li><dl class="simple">
-<dt>It’s not a completely outrageous behavior – if you’re talking to live data, it</dt><dd><p>often happens that you get more, or less, from one second to another.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>This store isn’t meant to be long living, but rather meant to solve the problem of</dt><dd><p>skiping items that are problematic (for example, malformatted files),
+<li><p>It’s not a completely outrageous behavior – if you’re talking to live data, it
+often happens that you get more, or less, from one second to another.</p></li>
+<li><p>This store isn’t meant to be long living, but rather meant to solve the problem of
+skiping items that are problematic (for example, malformatted files),
 with a trace of what was skipped and what’s valid (in case we need to iterate
 again and don’t want to bear the hit of requesting values for keys we already
-know are problematic.</p>
-</dd>
-</dl>
-</li>
+know are problematic.</p></li>
 </ul>
 <p>Here’s a little peep of what is happening under the hood.
 Meet <code class="docutils literal notranslate"><span class="pre">_keys_cache</span></code> and <code class="docutils literal notranslate"><span class="pre">_error_keys</span></code> sets (yes, unordered – so know it) that are meant
@@ -1615,6 +1685,20 @@ VALUE-PRODUCING iteration (i.e. entirely consuming <code class="code docutils li
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.condition_function_call">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">condition_function_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">functools.partial(&lt;function</span> <span class="pre">constant_output&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">True)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_if_condition_not_met</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">functools.partial(&lt;function</span> <span class="pre">constant_output&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">None)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#condition_function_call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.condition_function_call" title="Link to this definition">¶</a></dt>
+<dd><p>Decorator: call <code class="docutils literal notranslate"><span class="pre">func</span></code> only when <code class="docutils literal notranslate"><span class="pre">condition(*args,</span> <span class="pre">**kwargs)</span></code> holds, else <code class="docutils literal notranslate"><span class="pre">callback_if_condition_not_met</span></code>.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.conditional_data_trans">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">conditional_data_trans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_trans</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#conditional_data_trans"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.conditional_data_trans" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap <code class="docutils literal notranslate"><span class="pre">store</span></code> so that <code class="docutils literal notranslate"><span class="pre">data_trans</span></code> is applied to the read values satisfying <code class="docutils literal notranslate"><span class="pre">condition</span></code> (others pass through).</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.confirm_overwrite">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">confirm_overwrite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.trans.confirm_overwrite" title="Link to this definition">¶</a></dt>
 <dd><p>A ready-to-use <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> <code class="docutils literal notranslate"><span class="pre">preset</span></code> that asks (via the builtin <code class="docutils literal notranslate"><span class="pre">input</span></code>) to confirm
@@ -1641,6 +1725,27 @@ Is meant to be used with functools.partial to create custom versions.</p>
 <span class="go">True</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.disable_delitem">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">disable_delitem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#disable_delitem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.disable_delitem" title="Link to this definition">¶</a></dt>
+<dd><p>Replace <code class="docutils literal notranslate"><span class="pre">o.__delitem__</span></code> (if any) with a function raising <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
+<p>Meant for classes: on an instance, <code class="docutils literal notranslate"><span class="pre">del</span> <span class="pre">o[k]</span></code> still uses the type’s method.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.disable_setitem">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">disable_setitem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#disable_setitem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.disable_setitem" title="Link to this definition">¶</a></dt>
+<dd><p>Replace <code class="docutils literal notranslate"><span class="pre">o.__setitem__</span></code> (if any) with a function raising <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
+<p>Meant for classes: on an instance, <code class="docutils literal notranslate"><span class="pre">o[k]</span> <span class="pre">=</span> <span class="pre">v</span></code> still uses the type’s method.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.disallow_overwrites">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">disallow_overwrites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_msg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_deletes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#disallow_overwrites"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.disallow_overwrites" title="Link to this definition">¶</a></dt>
+<dd><p>Intended to make a store class’s <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> raise <code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedError</span></code> on existing keys;
+currently a no-op that returns <code class="docutils literal notranslate"><span class="pre">None</span></code> (the override is never attached). Use <code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedMixin</span></code>.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -1708,18 +1813,21 @@ to None and be the only argument that is not keyword-only (i.e. all other argume
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.ensure_set">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">ensure_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#ensure_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.ensure_set" title="Link to this definition">¶</a></dt>
+<dd><p>A set from <code class="docutils literal notranslate"><span class="pre">x</span></code>, treating a string as a single element.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.filt_iter">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">filt_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">take_everything&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#filt_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.filt_iter" title="Link to this definition">¶</a></dt>
 <dd><p>Make a wrapper that will transform a store (class or instance thereof) into a sub-store (i.e. subset of keys).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filt</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a></span>) – <p>A callable or iterable:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">callable</span><span class="p">:</span> <span class="n">Boolean</span> <span class="nb">filter</span> <span class="n">function</span><span class="o">.</span> <span class="n">A</span> <span class="n">func</span> <span class="n">taking</span> <span class="n">a</span> <span class="n">key</span> <span class="ow">and</span> <span class="ow">and</span> <span class="n">returns</span> <span class="kc">True</span> <span class="n">iff</span> <span class="n">the</span> <span class="n">key</span> <span class="n">should</span> <span class="n">be</span> <span class="n">included</span><span class="o">.</span>
-<span class="n">iterable</span><span class="p">:</span> <span class="n">The</span> <span class="n">collection</span> <span class="n">of</span> <span class="n">keys</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="nb">filter</span> <span class="s2">"in"</span>
-</pre></div>
-</div>
-</p></li>
+<li><p><strong>filt</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a></span>) – A callable or iterable. If a callable, a boolean filter function taking
+a key and returning True iff the key should be included. If an iterable,
+the collection of keys you want to filter “in”.</p></li>
 <li><p><strong>name</strong> – The name to give the wrapped class</p></li>
 </ul>
 </dd>
@@ -1830,7 +1938,7 @@ matched and the store raised <code class="docutils literal notranslate"><span cl
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.flatten">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.flatten" title="Link to this definition">¶</a></dt>
-<dd><p>Flatten a nested store.</p>
+<dd><p>Give a nested store a flat view whose keys are the <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code> key paths.</p>
 <p>Say you have a store that has three levels (or more), that is, that you can always
 ask for the value <code class="docutils literal notranslate"><span class="pre">store[a][b][c]</span></code> if <code class="docutils literal notranslate"><span class="pre">a</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store</span></code>,
 <code class="docutils literal notranslate"><span class="pre">b</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store[a]</span></code> and <code class="docutils literal notranslate"><span class="pre">c</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store[a][b]</span></code>.</p>
@@ -1909,6 +2017,18 @@ change the store itself, or it’s contents.</p>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.get_class_name">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">get_class_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dflt_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#get_class_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.get_class_name" title="Link to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">__qualname__</span></code> of <code class="docutils literal notranslate"><span class="pre">cls</span></code> (or of its class), else <code class="docutils literal notranslate"><span class="pre">dflt_name</span></code>; raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if there is neither.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.ignore_if_error">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">ignore_if_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(&lt;class</span> <span class="pre">'KeyError'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#ignore_if_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.ignore_if_error" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap <code class="docutils literal notranslate"><span class="pre">store</span></code> so that <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code> errors in <code class="docutils literal notranslate"><span class="pre">errors</span></code> return <code class="docutils literal notranslate"><span class="pre">None</span></code> instead of raising.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -2076,6 +2196,20 @@ to eachother:</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.is_iterable">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">is_iterable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#is_iterable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.is_iterable" title="Link to this definition">¶</a></dt>
+<dd><p>Whether <code class="docutils literal notranslate"><span class="pre">x</span></code> is an <code class="docutils literal notranslate"><span class="pre">Iterable</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.iterate_values_and_accumulate_non_error_keys">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">iterate_values_and_accumulate_non_error_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_keys_here</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors_caught</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'Exception'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#iterate_values_and_accumulate_non_error_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.iterate_values_and_accumulate_non_error_keys" title="Link to this definition">¶</a></dt>
+<dd><p>Yield the values of <code class="docutils literal notranslate"><span class="pre">store</span></code>, appending to <code class="docutils literal notranslate"><span class="pre">cache_keys_here</span></code> the keys whose value was fetched without error.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.kv_wrap">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">kv_wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trans_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#kv_wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.kv_wrap" title="Link to this definition">¶</a></dt>
 <dd><p>A function that makes a wrapper (a decorator) that will get the wrappers from
@@ -2113,12 +2247,9 @@ the wrapper are <code class="docutils literal notranslate"><span class="pre">_ke
 <span class="go">2</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">kv_wrap</span></code> also has convenience attributes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>``outcoming_keys``, ``ingoing_keys``, ``outcoming_vals``, ``ingoing_vals``,
-and ``val_reads_wrt_to_keys``
-</pre></div>
-</div>
-<p>which will only add a single specific wrapper (specified as a function),
+<p><code class="docutils literal notranslate"><span class="pre">kv_wrap</span></code> also has convenience attributes (<code class="docutils literal notranslate"><span class="pre">outcoming_keys</span></code>, <code class="docutils literal notranslate"><span class="pre">ingoing_keys</span></code>,
+<code class="docutils literal notranslate"><span class="pre">outcoming_vals</span></code>, <code class="docutils literal notranslate"><span class="pre">ingoing_vals</span></code>, and <code class="docutils literal notranslate"><span class="pre">val_reads_wrt_to_keys</span></code>)
+which will only add a single specific wrapper (specified as a function),
 when that’s what you need.</p>
 </dd></dl>
 
@@ -2201,6 +2332,12 @@ when that’s what you need.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.leveled_paths_walk">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">leveled_paths_walk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">levels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#leveled_paths_walk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.leveled_paths_walk" title="Link to this definition">¶</a></dt>
+<dd><p>Yield the key paths of <code class="docutils literal notranslate"><span class="pre">m</span></code>, down to <code class="docutils literal notranslate"><span class="pre">levels</span></code> levels.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.mk_confirm_overwrite_preset">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">mk_confirm_overwrite_preset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_dflt_overwrite_prompt&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#mk_confirm_overwrite_preset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.mk_confirm_overwrite_preset" title="Link to this definition">¶</a></dt>
 <dd><p>Make a <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> <code class="docutils literal notranslate"><span class="pre">preset</span></code> that asks for confirmation before overwriting an
@@ -2261,6 +2398,21 @@ if not it will just assert that <code class="docutils literal notranslate"><span
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.mk_read_only">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">mk_read_only</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#mk_read_only"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.mk_read_only" title="Link to this definition">¶</a></dt>
+<dd><p>Disable <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> and <code class="docutils literal notranslate"><span class="pre">__delitem__</span></code> on <code class="docutils literal notranslate"><span class="pre">o</span></code> (a store class, typically).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">D</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">D</span> <span class="o">=</span> <span class="n">mk_read_only</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">D</span><span class="p">()[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">writing is disabled</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.mk_trans_obj">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">mk_trans_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#mk_trans_obj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.mk_trans_obj" title="Link to this definition">¶</a></dt>
 <dd><p>Convenience method to quickly make a trans_obj (just an object holding some trans functions</p>
@@ -2271,11 +2423,11 @@ if not it will just assert that <code class="docutils literal notranslate"><span
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">mk_wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wrap_cls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#mk_wrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.mk_wrapper" title="Link to this definition">¶</a></dt>
 <dd><p>You have a wrapper class and you want to make a wrapper out of it,
 that is, a decorator factory with which you can make wrappers, like this:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>wrapper = mk_wrapper(wrap_cls)
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">wrapper</span> <span class="o">=</span> <span class="n">mk_wrapper</span><span class="p">(</span><span class="n">wrap_cls</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>that you can then use to transform stores like thiis:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>MyStore = wrapper(**wrapper_kwargs)(StoreYouWantToTransform)
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MyStore</span> <span class="o">=</span> <span class="n">wrapper</span><span class="p">(</span><span class="o">**</span><span class="n">wrapper_kwargs</span><span class="p">)(</span><span class="n">StoreYouWantToTransform</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="field-list simple">
@@ -2306,6 +2458,12 @@ that is, a decorator factory with which you can make wrappers, like this:</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.raise_disabled_error">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">raise_disabled_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">functionality</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#raise_disabled_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.raise_disabled_error" title="Link to this definition">¶</a></dt>
+<dd><p>Make a function that raises <code class="docutils literal notranslate"><span class="pre">ValueError('&lt;functionality&gt;</span> <span class="pre">is</span> <span class="pre">disabled')</span></code> whenever called.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.redirect_getattr_to_getitem">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">redirect_getattr_to_getitem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys_have_priority_over_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#redirect_getattr_to_getitem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.redirect_getattr_to_getitem" title="Link to this definition">¶</a></dt>
 <dd><p>A mapping decorator that redirects attribute access to __getitem__.</p>
@@ -2330,6 +2488,12 @@ that is, a decorator factory with which you can make wrappers, like this:</p>
 <span class="go">['a', 'b']</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.return_default_if_error">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">return_default_if_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(&lt;class</span> <span class="pre">'KeyError'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#return_default_if_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.return_default_if_error" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap <code class="docutils literal notranslate"><span class="pre">store</span></code> so that <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code> errors in <code class="docutils literal notranslate"><span class="pre">errors</span></code> return <code class="docutils literal notranslate"><span class="pre">default</span></code> instead of raising.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -2518,6 +2682,30 @@ before being passed on to the actual decorator.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.store_wrap">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">store_wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#store_wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.store_wrap" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap a class or an instance in a <code class="docutils literal notranslate"><span class="pre">Store</span></code> (a class gets a <code class="docutils literal notranslate"><span class="pre">Store</span></code> subclass whose <code class="docutils literal notranslate"><span class="pre">__init__</span></code> builds the wrapped instance).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.take_everything">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">take_everything</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#take_everything"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.take_everything" title="Link to this definition">¶</a></dt>
+<dd><p>Key filter that accepts every key.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.transparent_key_method">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">transparent_key_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#transparent_key_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.transparent_key_method" title="Link to this definition">¶</a></dt>
+<dd><p>Return the key as is (the default <code class="docutils literal notranslate"><span class="pre">getitem</span></code> of <code class="docutils literal notranslate"><span class="pre">mk_kv_reader_from_kv_collection</span></code>).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.trans.warn_and_ignore_if_error">
+<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">warn_and_ignore_if_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(&lt;class</span> <span class="pre">'KeyError'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warn_msg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Ignoring</span> <span class="pre">error</span> <span class="pre">in</span> <span class="pre">__getitem__</span> <span class="pre">for</span> <span class="pre">key</span> <span class="pre">{k}:</span> <span class="pre">{e}'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#warn_and_ignore_if_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.warn_and_ignore_if_error" title="Link to this definition">¶</a></dt>
+<dd><p>Like <code class="docutils literal notranslate"><span class="pre">ignore_if_error</span></code>, but also emit a warning (<code class="docutils literal notranslate"><span class="pre">warn_msg</span></code>) for each ignored error.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.wrap_kvs">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">wrap_kvs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrapper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_of_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_of_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_of_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_of_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">postget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_codec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_codec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_encoder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_decoder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_encoder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_decoder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcoming_key_methods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcoming_value_methods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ingoing_key_methods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ingoing_value_methods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#wrap_kvs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.wrap_kvs" title="Link to this definition">¶</a></dt>
 <dd><p>Make a Store that is wrapped with the given key/val transformers.</p>
@@ -2547,10 +2735,8 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">data
 <li><p><strong>preset</strong> – <p>A function that is called before doing a <code class="code docutils literal notranslate"><span class="pre">__setitem__</span></code>.
 The function is called with both <code class="code docutils literal notranslate"><span class="pre">k</span></code> and <code class="code docutils literal notranslate"><span class="pre">v</span></code> as inputs, and should output a transformed value.
 The intent use is to do ingoing value transformations conditioned on the key.
-For example, you may want to serialize an object depending on if you’re writing to a</p>
-<blockquote>
-<div><p>’.csv’, or ‘.json’, or ‘.pickle’ file.</p>
-</div></blockquote>
+For example, you may want to serialize an object depending on if you’re writing to a
+‘.csv’, or ‘.json’, or ‘.pickle’ file.</p>
 <p>Forms are <code class="code docutils literal notranslate"><span class="pre">preset(k,</span> <span class="pre">obj)</span></code> or <code class="code docutils literal notranslate"><span class="pre">preset(self,</span> <span class="pre">k,</span> <span class="pre">obj)</span></code></p>
 </p></li>
 <li><p><strong>postget</strong> – A function that is called after the value <code class="code docutils literal notranslate"><span class="pre">v</span></code> for a key <code class="code docutils literal notranslate"><span class="pre">k</span></code> is be <code class="code docutils literal notranslate"><span class="pre">__getitem__</span></code>.
@@ -2657,7 +2843,6 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">obj<
 <span class="go">[['a', 'b', 'c'], ['d', 'e', 'f']]</span>
 </pre></div>
 </div>
-<p class="rubric">TODO: Add tests for outcoming_key_methods etc.</p>
 </dd></dl>
 
 </section>
@@ -2719,11 +2904,18 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">obj<
 <li><a class="reference internal" href="#dol.trans.Codec.invert"><code class="docutils literal notranslate"><span class="pre">Codec.invert()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#dol.trans.FiltIter"><code class="docutils literal notranslate"><span class="pre">FiltIter</span></code></a><ul>
+<li><a class="reference internal" href="#dol.trans.FiltIter.prefixes"><code class="docutils literal notranslate"><span class="pre">FiltIter.prefixes()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.FiltIter.regex"><code class="docutils literal notranslate"><span class="pre">FiltIter.regex()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.FiltIter.suffixes"><code class="docutils literal notranslate"><span class="pre">FiltIter.suffixes()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#dol.trans.FirstArgIsMapping"><code class="docutils literal notranslate"><span class="pre">FirstArgIsMapping</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.KeyCodec"><code class="docutils literal notranslate"><span class="pre">KeyCodec</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.KeyValueCodec"><code class="docutils literal notranslate"><span class="pre">KeyValueCodec</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.MapInvertabilityError"><code class="docutils literal notranslate"><span class="pre">MapInvertabilityError</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.OverWritesNotAllowedMixin"><code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedMixin</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.SimpleDelegator"><code class="docutils literal notranslate"><span class="pre">SimpleDelegator</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.ValueCodec"><code class="docutils literal notranslate"><span class="pre">ValueCodec</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.add_aliases"><code class="docutils literal notranslate"><span class="pre">add_aliases()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.add_decoder"><code class="docutils literal notranslate"><span class="pre">add_decoder()</span></code></a></li>
@@ -2739,27 +2931,45 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">obj<
 <li><a class="reference internal" href="#dol.trans.cache_iter"><code class="docutils literal notranslate"><span class="pre">cache_iter()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.cached_keys"><code class="docutils literal notranslate"><span class="pre">cached_keys()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.catch_and_cache_error_keys"><code class="docutils literal notranslate"><span class="pre">catch_and_cache_error_keys()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.condition_function_call"><code class="docutils literal notranslate"><span class="pre">condition_function_call()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.conditional_data_trans"><code class="docutils literal notranslate"><span class="pre">conditional_data_trans()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.confirm_overwrite"><code class="docutils literal notranslate"><span class="pre">confirm_overwrite()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.constant_output"><code class="docutils literal notranslate"><span class="pre">constant_output()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.disable_delitem"><code class="docutils literal notranslate"><span class="pre">disable_delitem()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.disable_setitem"><code class="docutils literal notranslate"><span class="pre">disable_setitem()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.disallow_overwrites"><code class="docutils literal notranslate"><span class="pre">disallow_overwrites()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.double_up_as_factory"><code class="docutils literal notranslate"><span class="pre">double_up_as_factory()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.ensure_clear_method"><code class="docutils literal notranslate"><span class="pre">ensure_clear_method()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.ensure_set"><code class="docutils literal notranslate"><span class="pre">ensure_set()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.filt_iter"><code class="docutils literal notranslate"><span class="pre">filt_iter()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.filter_prefixes"><code class="docutils literal notranslate"><span class="pre">filter_prefixes()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.filter_regex"><code class="docutils literal notranslate"><span class="pre">filter_regex()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.filter_suffixes"><code class="docutils literal notranslate"><span class="pre">filter_suffixes()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.flatten"><code class="docutils literal notranslate"><span class="pre">flatten()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.get_class_name"><code class="docutils literal notranslate"><span class="pre">get_class_name()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.ignore_if_error"><code class="docutils literal notranslate"><span class="pre">ignore_if_error()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.insert_aliases"><code class="docutils literal notranslate"><span class="pre">insert_aliases()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.insert_hash_method"><code class="docutils literal notranslate"><span class="pre">insert_hash_method()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.insert_load_dump_aliases"><code class="docutils literal notranslate"><span class="pre">insert_load_dump_aliases()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.is_iterable"><code class="docutils literal notranslate"><span class="pre">is_iterable()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.iterate_values_and_accumulate_non_error_keys"><code class="docutils literal notranslate"><span class="pre">iterate_values_and_accumulate_non_error_keys()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.kv_wrap"><code class="docutils literal notranslate"><span class="pre">kv_wrap()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.kv_wrap_persister_cls"><code class="docutils literal notranslate"><span class="pre">kv_wrap_persister_cls()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.leveled_paths_walk"><code class="docutils literal notranslate"><span class="pre">leveled_paths_walk()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.mk_confirm_overwrite_preset"><code class="docutils literal notranslate"><span class="pre">mk_confirm_overwrite_preset()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.mk_kv_reader_from_kv_collection"><code class="docutils literal notranslate"><span class="pre">mk_kv_reader_from_kv_collection()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.mk_level_walk_filt"><code class="docutils literal notranslate"><span class="pre">mk_level_walk_filt()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.mk_read_only"><code class="docutils literal notranslate"><span class="pre">mk_read_only()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.mk_trans_obj"><code class="docutils literal notranslate"><span class="pre">mk_trans_obj()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.mk_wrapper"><code class="docutils literal notranslate"><span class="pre">mk_wrapper()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.raise_disabled_error"><code class="docutils literal notranslate"><span class="pre">raise_disabled_error()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.redirect_getattr_to_getitem"><code class="docutils literal notranslate"><span class="pre">redirect_getattr_to_getitem()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.return_default_if_error"><code class="docutils literal notranslate"><span class="pre">return_default_if_error()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.store_decorator"><code class="docutils literal notranslate"><span class="pre">store_decorator()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.store_wrap"><code class="docutils literal notranslate"><span class="pre">store_wrap()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.take_everything"><code class="docutils literal notranslate"><span class="pre">take_everything()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.transparent_key_method"><code class="docutils literal notranslate"><span class="pre">transparent_key_method()</span></code></a></li>
+<li><a class="reference internal" href="#dol.trans.warn_and_ignore_if_error"><code class="docutils literal notranslate"><span class="pre">warn_and_ignore_if_error()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.wrap_kvs"><code class="docutils literal notranslate"><span class="pre">wrap_kvs()</span></code></a></li>
 </ul>
 </li>
@@ -2772,7 +2982,7 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">obj<
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

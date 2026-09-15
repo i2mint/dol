@@ -2,9 +2,9 @@
 
 Module for path (and path-like) object manipulation
 
-Examples:
+### Examples
 
-```default
+```pycon
 >>> d = {'a': {'b': {'c': 1, 'd': 2}, 'e': 3}}
 >>> list(path_filter(lambda p, k, v: v == 2, d))
 [('a', 'b', 'd')]
@@ -20,47 +20,47 @@ Examples:
 
 ### Functions
 
-| [`add_prefix_filtering`](#dol.paths.add_prefix_filtering)([store, ...])                | Add prefix filtering to a store.                                                                                            |
-|----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
-| `cast_to_int_if_numeric_str`(k)                                                                    |                                                                                                                             |
-| [`chain_of_getters`](#dol.paths.chain_of_getters)(getters[, obj, k, ...])          | If `k` is a string, tries to get `k` as an attribute of `obj` first, and if that fails, gets it as `obj[k]`                 |
-| [`ensure_path_extender_func`](#dol.paths.ensure_path_extender_func)(path_extender)          | Ensure that the path_extender is a function that takes a path and a key and returns a new path.                             |
-| [`flatten_dict`](#dol.paths.flatten_dict)(d[, sep, parent_path, ...])          | Flatten a nested dictionary into a flat one, using key-paths as keys.                                                       |
-| [`flattened_dict_items`](#dol.paths.flattened_dict_items)(d[, sep, parent_path, ...])  | Yield flattened key-value pairs from a nested dictionary.                                                                   |
-| [`get_attr_or_item`](#dol.paths.get_attr_or_item)(obj, k)                          | If `k` is a string, tries to get `k` as an attribute of `obj` first, and if that fails, gets it as `obj[k]`                 |
-| `getitem`(obj, k)                                                                                  |                                                                                                                             |
-| [`handle_prefixes`](#dol.paths.handle_prefixes)([store, prefix, ...])             | A store decorator that handles prefixes.                                                                                    |
-| `identity`(x)                                                                                      |                                                                                                                             |
-| [`keys_and_indices_path`](#dol.paths.keys_and_indices_path)(str_path, \*[, sep, ...])   | Transforms a string path separated by a specified separator into a tuple of keys and indices.                               |
-| [`leaf_paths`](#dol.paths.leaf_paths)(d[, sep, parent_path, egress])         | Get a dictionary of leaf paths of a nested dictionary.                                                                      |
-| [`mk_relative_path_store`](#dol.paths.mk_relative_path_store)([store_cls, name, ...])    |                                                                                                                             |
-| [`path_edit`](#dol.paths.path_edit)(d[, edits])                             | Make a series of (in place) edits to a Mapping, specifying `(path, value)` pairs.                                           |
-| [`path_filter`](#dol.paths.path_filter)(pkv_filt, d, \*[, leafs_only, ...])   | Walk a dict, yielding paths to values that pass the `pkv_filt`                                                              |
-| [`path_get`](#dol.paths.path_get)(obj, path[, on_error, sep, ...])         | Get elements of a mapping through a path to be called recursively.                                                          |
-| [`paths_getter`](#dol.paths.paths_getter)(paths[, obj, egress, on_error, ...]) | Returns (path, values) pairs of the given paths in the given object.                                                        |
-| `prefixless_view`([store, prefix, \_\_module_\_, ...])                                             |                                                                                                                             |
-| `raise_on_error`(d)                                                                                |                                                                                                                             |
-| [`rel_path_wrap`](#dol.paths.rel_path_wrap)(o, \_prefix)                        |                                                                                                                             |
-| `return_empty_tuple_on_error`(d)                                                                   |                                                                                                                             |
-| `return_none_on_error`(d)                                                                          |                                                                                                                             |
-| [`search_paths`](#dol.paths.search_paths)(d, pkv_filt, \*[, leafs_only, ...])  | backwards compatibility quasi-alias (arguments are flipped) Use path_filter instead, since search_paths will be deprecated. |
-| `separate_keys_with_separator`(obj[, sep])                                                         |                                                                                                                             |
-| [`separator_based_path_extender`](#dol.paths.separator_based_path_extender)(path, key, sep)     | Extends a given path with a new key using the specified separator.                                                          |
-| `split_if_str`(obj[, sep])                                                                         |                                                                                                                             |
-| [`str_template_key_trans`](#dol.paths.str_template_key_trans)(template, key_type[, ...]) | Make a key trans object that translates from a string \_id to a dict, tuple, or namedtuple key (and back)                   |
-| [`string_unparse`](#dol.paths.string_unparse)(parsing_result)                    | The inverse of string.Formatter.parse                                                                                       |
+| [`add_prefix_filtering`](#dol.paths.add_prefix_filtering)([store, ...])                   | Make a missing key that is a prefix of existing keys return the sub-mapping of those keys (so `s['a/']` lists everything "under" `a/`).   |
+|-------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| [`cast_to_int_if_numeric_str`](#dol.paths.cast_to_int_if_numeric_str)(k)                        | Cast `k` to `int` if it is a numeric string; return it unchanged otherwise.                                                               |
+| [`chain_of_getters`](#dol.paths.chain_of_getters)(getters[, obj, k, ...])             | If `k` is a string, tries to get `k` as an attribute of `obj` first, and if that fails, gets it as `obj[k]`                               |
+| [`ensure_path_extender_func`](#dol.paths.ensure_path_extender_func)(path_extender)             | Ensure that the path_extender is a function that takes a path and a key and returns a new path.                                           |
+| [`flatten_dict`](#dol.paths.flatten_dict)(d[, sep, parent_path, ...])             | Flatten a nested dictionary into a flat one, using key-paths as keys.                                                                     |
+| [`flattened_dict_items`](#dol.paths.flattened_dict_items)(d[, sep, parent_path, ...])     | Yield flattened key-value pairs from a nested dictionary.                                                                                 |
+| [`get_attr_or_item`](#dol.paths.get_attr_or_item)(obj, k)                             | If `k` is a string, tries to get `k` as an attribute of `obj` first, and if that fails, gets it as `obj[k]`                               |
+| [`getitem`](#dol.paths.getitem)(obj, k)                                      | Return `obj[k]`.                                                                                                                          |
+| [`handle_prefixes`](#dol.paths.handle_prefixes)([store, prefix, ...])                | A store decorator that handles prefixes.                                                                                                  |
+| [`identity`](#dol.paths.identity)(x)                                          | Return `x`.                                                                                                                               |
+| [`keys_and_indices_path`](#dol.paths.keys_and_indices_path)(str_path, \*[, sep, ...])      | Transforms a string path separated by a specified separator into a tuple of keys and indices.                                             |
+| [`leaf_paths`](#dol.paths.leaf_paths)(d[, sep, parent_path, egress])            | Get a dictionary of leaf paths of a nested dictionary.                                                                                    |
+| [`mk_relative_path_store`](#dol.paths.mk_relative_path_store)([store_cls, name, ...])       |                                                                                                                                           |
+| [`path_edit`](#dol.paths.path_edit)(d[, edits])                                | Make a series of (in place) edits to a Mapping, specifying `(path, value)` pairs.                                                         |
+| [`path_filter`](#dol.paths.path_filter)(pkv_filt, d, \*[, leafs_only, ...])      | Walk a dict, yielding paths to values that pass the `pkv_filt`                                                                            |
+| [`path_get`](#dol.paths.path_get)(obj, path[, on_error, sep, ...])            | Get elements of a mapping through a path to be called recursively.                                                                        |
+| [`paths_getter`](#dol.paths.paths_getter)(paths[, obj, egress, on_error, ...])    | Returns (path, values) pairs of the given paths in the given object.                                                                      |
+| [`prefixless_view`](#dol.paths.prefixless_view)([store, prefix, \_\_module_\_, ...]) | Wrap `store` so that keys are seen without `prefix` (added back on access).                                                               |
+| [`raise_on_error`](#dol.paths.raise_on_error)(d)                                    | `on_error` policy for `path_get`: re-raise the caught error.                                                                              |
+| [`rel_path_wrap`](#dol.paths.rel_path_wrap)(o, \_prefix)                           |                                                                                                                                           |
+| [`return_empty_tuple_on_error`](#dol.paths.return_empty_tuple_on_error)(d)                       | `on_error` policy for `path_get`: return `()`.                                                                                            |
+| [`return_none_on_error`](#dol.paths.return_none_on_error)(d)                              | `on_error` policy for `path_get`: return `None`.                                                                                          |
+| [`search_paths`](#dol.paths.search_paths)(d, pkv_filt, \*[, leafs_only, ...])     | backwards compatibility quasi-alias (arguments are flipped) Use path_filter instead, since search_paths will be deprecated.               |
+| [`separate_keys_with_separator`](#dol.paths.separate_keys_with_separator)(obj[, sep])             | Split a string path on `sep` and cast numeric parts to `int`; a non-string iterable is only cast element-wise.                            |
+| [`separator_based_path_extender`](#dol.paths.separator_based_path_extender)(path, key, sep)        | Extends a given path with a new key using the specified separator.                                                                        |
+| [`split_if_str`](#dol.paths.split_if_str)(obj[, sep])                             | Split `obj` on `sep` if it is a string; return it unchanged otherwise.                                                                    |
+| [`str_template_key_trans`](#dol.paths.str_template_key_trans)(template, key_type[, ...])    | Make a key trans object that translates from a string \_id to a dict, tuple, or namedtuple key (and back)                                 |
+| [`string_unparse`](#dol.paths.string_unparse)(parsing_result)                       | The inverse of string.Formatter.parse                                                                                                     |
 
 ### Classes
 
-| [`ExplicitKeysWithPrefixRelativization`](#dol.paths.ExplicitKeysWithPrefixRelativization)(...[, ...])   | dol.base.Keys implementation that gets it's keys explicitly from a collection given at initialization time.                                                                                                                                                                                                                                                                                                                                                                                                                         |
-|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`KeyPath`](#dol.paths.KeyPath)([path_sep, \_path_type, ...])              | A key mapper that converts from an iterable key (default tuple) to a string (given a path-separator str)                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| [`KeyTemplate`](#dol.paths.KeyTemplate)(template, \*[, field_patterns, ...])   | A class for parsing and generating keys based on a template.                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| [`PathKeyTypes`](#dol.paths.PathKeyTypes)(\*values)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [`PathMappedData`](#dol.paths.PathMappedData)(src, key_collection[, ...])         | A collection of keys with a key_to_value function to lazy load values.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| [`PrefixRelativization`](#dol.paths.PrefixRelativization)([_prefix])                    | A key wrap that allows one to interface with absolute paths through relative paths.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [`PrefixRelativizationMixin`](#dol.paths.PrefixRelativizationMixin)()                        | Mixin that adds a intercepts the \_id_of_key an \_key_of_id methods, transforming absolute keys to relative ones. Designed to work with string keys, where absolute and relative are relative to a \_prefix attribute (assumed to exist). The cannonical use case is when keys are absolute file paths, but we want to identify data through relative paths. Instead of referencing files through an absolute path such as     /A/VERY/LONG/ROOT/FOLDER/the/file/we.want we can instead reference the file as     the/file/we.want. |
-| `RelativePathKeyMapper`(prefix)                                                                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [`ExplicitKeysWithPrefixRelativization`](#dol.paths.ExplicitKeysWithPrefixRelativization)(...[, ...])   | dol.base.Keys implementation that gets it's keys explicitly from a collection given at initialization time.       |
+|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| [`KeyPath`](#dol.paths.KeyPath)([path_sep, \_path_type, ...])              | A key mapper that converts from an iterable key (default tuple) to a string (given a path-separator str)          |
+| [`KeyTemplate`](#dol.paths.KeyTemplate)(template, \*[, field_patterns, ...])   | A class for parsing and generating keys based on a template.                                                      |
+| [`PathKeyTypes`](#dol.paths.PathKeyTypes)(\*values)                             | Enum of the path key forms: `str`, `dict`, `tuple`, `namedtuple`.                                                 |
+| [`PathMappedData`](#dol.paths.PathMappedData)(src, key_collection[, ...])         | A collection of keys with a key_to_value function to lazy load values.                                            |
+| [`PrefixRelativization`](#dol.paths.PrefixRelativization)([_prefix])                    | A key wrap that allows one to interface with absolute paths through relative paths.                               |
+| [`PrefixRelativizationMixin`](#dol.paths.PrefixRelativizationMixin)()                        | Mixin that adds a intercepts the \_id_of_key an \_key_of_id methods, transforming absolute keys to relative ones. |
+| [`RelativePathKeyMapper`](#dol.paths.RelativePathKeyMapper)(prefix)                      | Key mapper adding `prefix` on the way in and removing it on the way out.                                          |
 
 ### *class* dol.paths.ExplicitKeysWithPrefixRelativization(key_collection, \_prefix=None)
 
@@ -83,15 +83,15 @@ False
 
 ### *class* dol.paths.KeyPath(path_sep='/', \_path_type=<class 'tuple'>, \*, create_missing=False, mk_missing=None, explore_further=None, may_create=None, on_create=<function \_warn_on_create>, max_created=None, max_levels=20, verify_writeback=False, writeback_lock=None)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A key mapper that converts from an iterable key (default tuple) to a string
 (given a path-separator str)
 
 * **Parameters:**
-  * **path_sep** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – The path separator (used to make string paths from iterable paths and
+  * **path_sep** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The path separator (used to make string paths from iterable paths and
     visa versa
-  * **\_path_type** ([`type`](https://docs.python.org/3/library/functions.html#type) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – The type of the outcoming (inner) path. But really, any function to
+  * **\_path_type** ([`type`](https://docs.python.org/3/builtins/functions.html#type) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – The type of the outcoming (inner) path. But really, any function to
   * **to** (*convert from a list*) – the outer path type we want.
 
 With `'/'` as a separator:
@@ -166,26 +166,26 @@ branch; warning keeps opted-in creation from being silent. Pass
 `on_create=None` to silence (e.g. bulk tree building).
 
 * **Return type:**
-  [`None`](https://docs.python.org/3/library/constants.html#None)
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 ### *class* dol.paths.KeyTemplate(template, \*, field_patterns=None, to_str_funcs=None, from_str_funcs=None, simple_str_sep=', ', namedtuple_type_name='NamedTuple', dflt_pattern='.\*', dflt_field_name=<built-in method format of str object>, normalize_paths=False)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A class for parsing and generating keys based on a template.
 
 * **Parameters:**
-  * **template** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – A template string with fields to be extracted or filled in.
-  * **field_patterns** ([`dict`](https://docs.python.org/3/library/stdtypes.html#dict)) – A dictionary of field names and their regex patterns.
-  * **simple_str_sep** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – A separator string for simple strings (i.e. strings without
+  * **template** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – A template string with fields to be extracted or filled in.
+  * **field_patterns** ([`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)) – A dictionary of field names and their regex patterns.
+  * **simple_str_sep** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – A separator string for simple strings (i.e. strings without
     fields).
-  * **namedtuple_type_name** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – The name of the namedtuple type to use for namedtuple
+  * **namedtuple_type_name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The name of the namedtuple type to use for namedtuple
     fields.
-  * **dflt_pattern** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – The default pattern to use for fields that don’t have a pattern
+  * **dflt_pattern** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The default pattern to use for fields that don’t have a pattern
     specified.
-  * **to_str_funcs** ([`dict`](https://docs.python.org/3/library/stdtypes.html#dict)) – A dictionary of field names and their functions to convert them
+  * **to_str_funcs** ([`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)) – A dictionary of field names and their functions to convert them
     to strings.
-  * **from_str_funcs** ([`dict`](https://docs.python.org/3/library/stdtypes.html#dict)) – A dictionary of field names and their functions to convert
+  * **from_str_funcs** ([`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)) – A dictionary of field names and their functions to convert
     them from strings.
 
 ### Examples
@@ -306,7 +306,7 @@ NamedTuple(i01_='life', ver=42)
 Generates a string from the dictionary values based on the template.
 
 * **Return type:**
-  [`str`](https://docs.python.org/3/library/stdtypes.html#str)
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -321,7 +321,7 @@ Generates a string from the dictionary values based on the template.
 Generates a tuple from the dictionary values based on the template.
 
 * **Return type:**
-  [`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -401,7 +401,7 @@ filter out keys that don’t fit the format, before you wrap the store with
 Returns True iff the string matches the template.
 
 * **Return type:**
-  [`bool`](https://docs.python.org/3/library/functions.html#bool)
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -457,7 +457,7 @@ Converts a simple character-delimited string to a dict.
 Generates a string from the single value based on the template.
 
 * **Return type:**
-  [`str`](https://docs.python.org/3/library/stdtypes.html#str)
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -472,7 +472,7 @@ Generates a string from the single value based on the template.
 Parses the input string and returns a dictionary of extracted values.
 
 * **Return type:**
-  [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -531,7 +531,7 @@ Parses the input string and returns a single value.
 Parses the input string and returns a tuple of extracted values.
 
 * **Return type:**
-  [`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -546,7 +546,7 @@ Parses the input string and returns a tuple of extracted values.
 Generates a dictionary from the tuple values based on the template.
 
 * **Return type:**
-  [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -561,7 +561,7 @@ Generates a dictionary from the tuple values based on the template.
 Generates a string from the tuple values based on the template.
 
 * **Return type:**
-  [`str`](https://docs.python.org/3/library/stdtypes.html#str)
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -574,6 +574,8 @@ Generates a string from the tuple values based on the template.
 ### *class* dol.paths.PathKeyTypes(\*values)
 
 Bases: [`Enum`](https://docs.python.org/3/library/enum.html#enum.Enum)
+
+Enum of the path key forms: `str`, `dict`, `tuple`, `namedtuple`.
 
 ### *class* dol.paths.PathMappedData(src, key_collection, getter=<function path_get>, \*, key_to_value=None)
 
@@ -590,26 +592,25 @@ Keywords: Lazy-evaluation, Mapping
   * **data** – The mapping to extract data from
   * **paths** – The paths to extract data from the mapping
 
-Example:
+### Example
 
-```default
+```pycon
 >>> data = {
-```
-
-…     ‘a’: {
-…         ‘b’: [{‘c’: 1}, {‘c’: 2}],
-…         ‘d’: ‘bar’
-…     }
-… }
->>> paths = [‘a.d’, ‘a.b.0.c’]
+...     'a': {
+...         'b': [{'c': 1}, {'c': 2}],
+...         'd': 'bar'
+...     }
+... }
+>>> paths = ['a.d', 'a.b.0.c']
 >>>
 >>> d = PathMappedData(data, paths)
 >>> list(d)
-[‘a.d’, ‘a.b.0.c’]
->>> d[‘a.d’]
-‘bar’
->>> d[‘a.b.0.c’]
+['a.d', 'a.b.0.c']
+>>> d['a.d']
+'bar'
+>>> d['a.b.0.c']
 1
+```
 
 Now, data does contain a key path for ‘a.b.1.c’:
 
@@ -646,18 +647,15 @@ In fact, not only strings, but any key object that has a \_\_len_\_, \_\_add_\_,
 
 ### *class* dol.paths.PrefixRelativizationMixin
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Mixin that adds a intercepts the \_id_of_key an \_key_of_id methods, transforming absolute keys to relative ones.
 Designed to work with string keys, where absolute and relative are relative to a \_prefix attribute
 (assumed to exist).
 The cannonical use case is when keys are absolute file paths, but we want to identify data through relative paths.
 Instead of referencing files through an absolute path such as
-
-> /A/VERY/LONG/ROOT/FOLDER/the/file/we.want
-
-we can instead reference the file as
-: the/file/we.want
+`/A/VERY/LONG/ROOT/FOLDER/the/file/we.want` we can instead reference the file
+as `the/file/we.want`.
 
 Note though, that PrefixRelativizationMixin can be used, not only for local paths,
 but when ever a string reference is involved.
@@ -691,9 +689,16 @@ Also, assumes that a (string) \_prefix attribute will be available.
 dict_items([('/root/of/data/foo', 'bar'), ('/root/of/data/too', 'much')])
 ```
 
+### *class* dol.paths.RelativePathKeyMapper(prefix)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Key mapper adding `prefix` on the way in and removing it on the way out.
+
 ### dol.paths.add_prefix_filtering(store=None, , relativize_prefix=False, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
-Add prefix filtering to a store.
+Make a missing key that is a prefix of existing keys return the sub-mapping of
+those keys (so `s['a/']` lists everything “under” `a/`).
 
 ```pycon
 >>> d = {'a/b': 1, 'a/c': 2, 'd/e': 3, 'f': 4}
@@ -709,6 +714,10 @@ Demo usage on a `Mapping` type:
 >>> s = D(d)
 >>> assert s['a/'] == {'a/b': 1, 'a/c': 2}
 ```
+
+### dol.paths.cast_to_int_if_numeric_str(k)
+
+Cast `k` to `int` if it is a numeric string; return it unchanged otherwise.
 
 ### dol.paths.chain_of_getters(getters, obj=None, k=None, \*, caught_errors=(<class 'Exception'>, ))
 
@@ -731,11 +740,11 @@ See also `leaf_paths` for a related function that returns paths to leaf values.
 
 * **Parameters:**
   * **d** – The dictionary to flatten
-  * **sep** (`Union`[[`str`](https://docs.python.org/3/library/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]) – The separator to use for joining keys, or a function that takes a path and
+  * **sep** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]) – The separator to use for joining keys, or a function that takes a path and
     a key and returns a new path.
   * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]) – The path to the parent of the current dict
   * **visit_nested** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – A function that returns True if a value should be visited
-  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/library/constants.html#None), [`None`](https://docs.python.org/3/library/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
+  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
 
 ```pycon
 >>> d = {'a': {'b': 2}, 'c': 3}
@@ -750,7 +759,7 @@ See also `leaf_paths` for a related function that returns paths to leaf values.
 Yield flattened key-value pairs from a nested dictionary.
 
 * **Return type:**
-  [`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/library/constants.html#None), [`None`](https://docs.python.org/3/library/constants.html#None)]
+  [`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]
 
 ### dol.paths.get_attr_or_item(obj, k)
 
@@ -813,6 +822,10 @@ Traceback (most recent call last):
 KeyError: 2
 ```
 
+### dol.paths.getitem(obj, k)
+
+Return `obj[k]`.
+
 ### dol.paths.handle_prefixes(store=None, , prefix=None, filter_prefix=True, relativize_prefix=True, default_prefix='', \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
 A store decorator that handles prefixes.
@@ -826,8 +839,8 @@ If aggregates several prefix-related functionalities. It will (by default)
   * **store** – The store to wrap
   * **prefix** – The prefix to use. If None and the store is an instance (not type),
     will take the longest common prefix as the prefix.
-  * **filter_prefix** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to filter out keys that don’t start with the prefix
-  * **relativize_prefix** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to relativize the prefix
+  * **filter_prefix** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to filter out keys that don’t start with the prefix
+  * **relativize_prefix** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to relativize the prefix
   * **default_prefix** – The default prefix to use if no prefix is given and the store
     is a type (not instance)
 
@@ -841,6 +854,10 @@ If aggregates several prefix-related functionalities. It will (by default)
 {'/ROOT/of/every/thing': 42, '/ROOT/of/this/too': 0, '/ROOT/of/foo': 'bar'}
 ```
 
+### dol.paths.identity(x)
+
+Return `x`.
+
 ### dol.paths.keys_and_indices_path(str_path, , sep='.', index_pattern='\\\\[(\\\\d+)\\\\]')
 
 Transforms a string path separated by a specified separator into a tuple
@@ -849,13 +866,13 @@ of keys and indices. Bracketed indices are extracted as integers.
 This function is meant to be used in as the key_transformer argument of path_get etc.
 
 * **Parameters:**
-  * **path** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – The input path string, e.g., “a21-59c.message[2].user”.
-  * **sep** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – The separator used to split the path, default is ‘.’.
-  * **index_pattern** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – The regular expression pattern to match bracketed indices
+  * **path** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – The input path string, e.g., “a21-59c.message[2].user”.
+  * **sep** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – The separator used to split the path, default is ‘.’.
+  * **index_pattern** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – The regular expression pattern to match bracketed indices
 * **Returns:**
   A tuple representation of the path, e.g., (“a21-59c”, “message”, 2, “user”).
 * **Return type:**
-  [*tuple*](https://docs.python.org/3/library/stdtypes.html#tuple)
+  [*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple)
 
 ### Example
 
@@ -880,12 +897,12 @@ values are replaced by the paths that would be used to access them in a flat dic
 
 * **Parameters:**
   * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`), NestedMapping[KT, VT]]]]]) – The nested dictionary to get the leaf paths from
-  * **sep** (`Union`[[`str`](https://docs.python.org/3/library/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]) – The separator to use for joining keys, or a function that takes a path and
+  * **sep** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]) – The separator to use for joining keys, or a function that takes a path and
     a key and returns a new path.
   * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]) – The path to the parent of the current dict
-  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/library/constants.html#None), [`None`](https://docs.python.org/3/library/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
+  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
 * **Return type:**
-  [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]
 
 ### Example
 
@@ -912,7 +929,6 @@ values are replaced by the paths that would be used to access them in a flat dic
   * **with_key_validation** – Whether keys should be validated upon access (store_cls must have an is_valid_key method
 * **Returns:**
   A new class that uses relative paths (i.e. where \_prefix is automatically added to incoming keys,
-
   and the len(_prefix) first characters are removed from outgoing keys.
 
 ```pycon
@@ -959,7 +975,7 @@ Make a series of (in place) edits to a Mapping, specifying `(path, value)` pairs
 
 * **Parameters:**
   * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – The mapping to edit.
-  * **edits** (`Union`[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]]]) – An iterable of `(path, value)` tuples, or `path: value` Mapping.
+  * **edits** (`Union`[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]]]) – An iterable of `(path, value)` tuples, or `path: value` Mapping.
 * **Returns:**
   The edited mapping.
 * **Return type:**
@@ -990,26 +1006,25 @@ You can also pass a dict of edits.
 Walk a dict, yielding paths to values that pass the `pkv_filt`
 
 * **Parameters:**
-  * **pkv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/library/functions.html#bool)]) – A function that takes a path, key, and value, and returns
+  * **pkv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – A function that takes a path, key, and value, and returns
     `True` if the path should be yielded, and `False` otherwise
   * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – The `Mapping` to walk (scan through)
-  * **leafs_only** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to yield only paths to leafs (default), or to yield
+  * **leafs_only** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to yield only paths to leafs (default), or to yield
     paths to all values that pass the `pkv_filt`.
-  * **breadth_first** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to perform breadth-first traversal
+  * **breadth_first** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to perform breadth-first traversal
     (instead of the default depth-first traversal).
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`)]
 * **Returns:**
   An iterator of paths to values that pass the `pkv_filt`
 
-Example:
+### Example
 
-```default
+```pycon
 >>> d = {'a': {'b': {'c': 1, 'd': 2}, 'e': 3}}
 >>> list(path_filter(lambda p, k, v: v == 2, d))
+[('a', 'b', 'd')]
 ```
-
-[(‘a’, ‘b’, ‘d’)]
 
 ```pycon
 >>> mm = {
@@ -1056,8 +1071,8 @@ Get elements of a mapping through a path to be called recursively.
 * **Parameters:**
   * **obj** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – The object to get the path from
   * **path** – The path to get
-  * **on_error** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/library/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/library/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
-  * **sep** ([`str`](https://docs.python.org/3/library/stdtypes.html#str) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/library/constants.html#None)) – Determines a path is transforms into a tuple of keys.
+  * **on_error** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
+  * **sep** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Determines a path is transforms into a tuple of keys.
     If it’s a string, `lambda path: path.split(sep)` is used.
     If not, it should be a function which takes in a path object and returns an iterable of keys.
   * **key_transformer** – A function to transform the keys of the path
@@ -1120,8 +1135,8 @@ obj and path are the opposite of path_get.
   * **paths** – The paths to get
   * **obj** – The object to get the paths from
   * **egress** – The egress function to use (default: dict)
-  * **on_error** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/library/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/library/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
-  * **sep** ([`str`](https://docs.python.org/3/library/stdtypes.html#str) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/library/constants.html#None)) – The separator to use if the path is a string
+  * **on_error** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
+  * **sep** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – The separator to use if the path is a string
   * **key_transformer** – A function to transform the keys of the path
   * **get_value** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – A function to get the value of a key in a mapping
   * **caught_errors** – The errors to catch (default: Exception)
@@ -1145,6 +1160,14 @@ whose keys are the keys you want, and whose values are the paths to get:
 >>> path_extractor_2(obj)
 {'california': 2, 'dreaming': 3}
 ```
+
+### dol.paths.prefixless_view(store=None, , prefix=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+Wrap `store` so that keys are seen without `prefix` (added back on access).
+
+### dol.paths.raise_on_error(d)
+
+`on_error` policy for `path_get`: re-raise the caught error.
 
 ### dol.paths.rel_path_wrap(o, \_prefix)
 
@@ -1170,6 +1193,14 @@ whose keys are the keys you want, and whose values are the paths to get:
 ...         self._prefix = _prefix
 ```
 
+### dol.paths.return_empty_tuple_on_error(d)
+
+`on_error` policy for `path_get`: return `()`.
+
+### dol.paths.return_none_on_error(d)
+
+`on_error` policy for `path_get`: return `None`.
+
 ### dol.paths.search_paths(d, pkv_filt, , leafs_only=True, breadth_first=False)
 
 backwards compatibility quasi-alias (arguments are flipped)
@@ -1178,6 +1209,10 @@ Use path_filter instead, since search_paths will be deprecated.
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`)]
 
+### dol.paths.separate_keys_with_separator(obj, sep='.')
+
+Split a string path on `sep` and cast numeric parts to `int`; a non-string iterable is only cast element-wise.
+
 ### dol.paths.separator_based_path_extender(path, key, sep)
 
 Extends a given path with a new key using the specified separator.
@@ -1185,6 +1220,10 @@ If the path is empty, the key is returned as is.
 
 * **Return type:**
   [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)
+
+### dol.paths.split_if_str(obj, sep='.')
+
+Split `obj` on `sep` if it is a string; return it unchanged otherwise.
 
 ### dol.paths.str_template_key_trans(template, key_type, format_dict=None, process_kwargs=None, process_info_dict=None, named_tuple_type_name='NamedTuple', sep='/')
 

@@ -260,8 +260,25 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.sources</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""</span>
-<span class="sd">This module contains key-value views of disparate sources.</span>
+<span></span><span class="sd">"""Key-value views of disparate sources.</span>
+
+<span class="sd">Readers and persisters over things that are not stores to begin with: several stores</span>
+<span class="sd">at once (fan-out and cascades), sequences, functions, and the attributes of objects.</span>
+
+<span class="sd">Main entry points:</span>
+
+<span class="sd">- ``FanoutReader``, ``FanoutPersister``: one key, read from (written to) several stores</span>
+<span class="sd">- ``CascadedStores``: write to all stores, read from the first one that has the key</span>
+<span class="sd">- ``SequenceKvReader``: an iterable of elements, keyed by a key function (index by default)</span>
+<span class="sd">- ``FuncReader``: functions as a store, keyed by name</span>
+<span class="sd">- ``Attrs``: the attributes of an object as a (recursive) reader</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.sources import FuncReader</span>
+<span class="sd">    &gt;&gt;&gt; def foo():</span>
+<span class="sd">    ...     return 'bar'</span>
+<span class="sd">    &gt;&gt;&gt; r = FuncReader([foo])</span>
+<span class="sd">    &gt;&gt;&gt; list(r), r['foo']</span>
+<span class="sd">    (['foo'], 'bar')</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span>
@@ -394,9 +411,9 @@
 <span class="sd">    That is, when a key is requested, the key is passed to all the stores, and results</span>
 <span class="sd">    accumulated in a dict that is then returned.</span>
 
-<span class="sd">    param stores: A mapping of store keys to stores.</span>
-<span class="sd">    param default: The value to return if the key is not in any of the stores.</span>
-<span class="sd">    param get_existing_values_only: If True, only return values for stores that contain</span>
+<span class="sd">    :param stores: A mapping of store keys to stores.</span>
+<span class="sd">    :param default: The value to return if the key is not in any of the stores.</span>
+<span class="sd">    :param get_existing_values_only: If True, only return values for stores that contain</span>
 <span class="sd">        the key.</span>
 
 <span class="sd">    Let's define the following sub-stores:</span>
@@ -474,9 +491,9 @@
 <span class="w">        </span><span class="sd">"""A way to create a fan-out store from a mix of args and kwargs, instead of a</span>
 <span class="sd">        single dict.</span>
 
-<span class="sd">        param args: sub-stores used to fan-out the data. These stores will be</span>
+<span class="sd">        :param args: sub-stores used to fan-out the data. These stores will be</span>
 <span class="sd">            represented by their index in the tuple.</span>
-<span class="sd">        param kwargs: sub-stores used to fan-out the data. These stores will be</span>
+<span class="sd">        :param kwargs: sub-stores used to fan-out the data. These stores will be</span>
 <span class="sd">            represented by their name in the dict. __init__ arguments can also be passed</span>
 <span class="sd">            as kwargs (i.e. `default`, `get_existing_values_only`, and any other subclass</span>
 <span class="sd">            specific arguments).</span>
@@ -571,13 +588,13 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A fanout persister is a fanout reader that can also set and delete items.</span>
 
-<span class="sd">    param stores: A mapping of store keys to stores.</span>
-<span class="sd">    param default: The value to return if the key is not in any of the stores.</span>
-<span class="sd">    param get_existing_values_only: If True, only return values for stores that contain</span>
+<span class="sd">    :param stores: A mapping of store keys to stores.</span>
+<span class="sd">    :param default: The value to return if the key is not in any of the stores.</span>
+<span class="sd">    :param get_existing_values_only: If True, only return values for stores that contain</span>
 <span class="sd">        the key.</span>
-<span class="sd">    param need_to_set_all_stores: If True, all stores must be set when setting a value.</span>
+<span class="sd">    :param need_to_set_all_stores: If True, all stores must be set when setting a value.</span>
 <span class="sd">        If False, only the stores that are set will be updated.</span>
-<span class="sd">    param ignore_non_existing_store_keys: If True, ignore store keys from the value that</span>
+<span class="sd">    :param ignore_non_existing_store_keys: If True, ignore store keys from the value that</span>
 <span class="sd">        are not in the persister. If False, a ValueError is raised.</span>
 
 <span class="sd">    Let's create a persister from in-memory stores:</span>
@@ -800,8 +817,6 @@
 
 <span class="sd">    &gt;&gt;&gt; remote</span>
 <span class="sd">    {'f': 42}</span>
-
-
 <span class="sd">    """</span>
 
     <span class="c1"># Note: Need to overwrite FanoutPersister's getitem to not read values from all stores</span>
@@ -986,7 +1001,6 @@
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">      ...</span>
 <span class="sd">    sources.NotUnique: iterator had more than one element</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -1094,7 +1108,6 @@
 <span class="sd">    ['FU', 'Pie']</span>
 <span class="sd">    &gt;&gt;&gt; s['FU']</span>
 <span class="sd">    'bar'</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">funcs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Callable</span><span class="p">]):</span>
@@ -1210,7 +1223,6 @@
 
 <span class="sd">    &gt;&gt;&gt; 'therefore should contain what I just said' in pr[file_where_this_code_is]</span>
 <span class="sd">    True</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_obj_of_key</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
@@ -1243,8 +1255,9 @@
 <span class="w">    </span><span class="sd">"""A simple recursive KvReader for the attributes of a python object.</span>
 <span class="sd">    Keys are attr names, values are Attrs(attr_val) instances.</span>
 
-<span class="sd">    Note: A more significant version of Attrs, along with many tools based on it,</span>
-<span class="sd">    was moved to pypi package: guide.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        A more significant version of Attrs, along with many tools based on it,</span>
+<span class="sd">        was moved to pypi package: guide.</span>
 
 
 <span class="sd">        pip install guide</span>
@@ -1508,7 +1521,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

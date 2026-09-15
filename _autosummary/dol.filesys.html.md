@@ -1,41 +1,63 @@
 # dol.filesys
 
-File system access
+File system access: dict-like stores over folders and files.
+
+`Files` gives a folder a `MutableMapping` interface: keys are paths relative to the
+root folder, values are the files’ bytes. `TextFiles`, `JsonFiles` and `PickleFiles`
+add the corresponding value codecs. Writing under a sub-folder that does not exist raises
+`KeyError`; wrap the store with `mk_dirs_if_missing` to create folders on write.
+
+Main entry points:
+
+- `Files`: bytes of the files under a root folder
+- `TextFiles`: same, with text values
+- `JsonFiles`: same, with JSON-decoded values
+- `PickleFiles`: same, with pickled values
+- `mk_dirs_if_missing`: make a file store create missing directories on write
+  ```pycon
+  >>> import tempfile
+  >>> s = Files(tempfile.mkdtemp())
+  >>> s['hello.txt'] = b'world'
+  >>> s['hello.txt']
+  b'world'
+  >>> list(s)
+  ['hello.txt']
+  ```
 
 ### Functions
 
-| [`create_directories`](#dol.filesys.create_directories)(dirpath[, max_dirs_to_make])   | Create directories up to a specified limit.                                                                                                                                 |
-|----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`ensure_dir`](#dol.filesys.ensure_dir)(dirpath, \*[, max_dirs_to_make, ...])  | Ensure that a directory exists, creating it if necessary.                                                                                                                   |
-| [`ensure_slash_suffix`](#dol.filesys.ensure_slash_suffix)(path)                         | Add a file separation (/ or ) at the end of path str, if not already present.                                                                                               |
-| [`iter_dirpaths_in_folder_recursively`](#dol.filesys.iter_dirpaths_in_folder_recursively)(root_folder)  | Recursively generates dirpaths of folder (and subfolders, etc.) up to a given level                                                                                         |
-| [`iter_filepaths_in_folder_recursively`](#dol.filesys.iter_filepaths_in_folder_recursively)(root_folder) | Recursively generates filepaths of folder (and subfolders, etc.) up to a given level                                                                                        |
-| `mk_absolute_path`(path_format)                                                                    |                                                                                                                                                                             |
-| [`mk_dirs_if_missing`](#dol.filesys.mk_dirs_if_missing)([store_cls, ...])              | Store decorator that will make the store create directories on write as needed.                                                                                             |
-| [`mk_dirs_if_missing_preset`](#dol.filesys.mk_dirs_if_missing_preset)(self, k, v, \*[, ...])  | Preset function that will make the store create directories on write as needed.                                                                                             |
-| `mk_json_bytes_wrap`(\*[, loads_kwargs, ...])                                                      |                                                                                                                                                                             |
-| `mk_pickle_bytes_wrap`(\*[, loads_kwargs, ...])                                                    |                                                                                                                                                                             |
-| [`mk_tmp_dol_dir`](#dol.filesys.mk_tmp_dol_dir)([dirname, ...])                    | Create and return a path to a temporary directory that's guaranteed to be accessible to the user.                                                                           |
-| `paths_in_dir`(rootdir[, include_hidden])                                                          |                                                                                                                                                                             |
-| [`process_path`](#dol.filesys.process_path)(\*path[, ensure_dir_exists, ...])    | Process a path string, ensuring it exists, and optionally expanding user.                                                                                                   |
-| [`resolve_dir`](#dol.filesys.resolve_dir)(dirpath[, assert_existence, ...])     | Resolve a path to a full, real, path to a directory                                                                                                                         |
-| [`resolve_path`](#dol.filesys.resolve_path)(path[, assert_existence])            | Resolve a path to a full, real, (file or folder) path (opt assert existence).                                                                                               |
-| [`subfolder_stores`](#dol.filesys.subfolder_stores)(root_folder, \*[, ...])          | Create a store of subfolders of a given folder, where the keys are the subfolder paths (by default, relative and slash-less) and the values are stores of these subfolders. |
-| [`temp_dir`](#dol.filesys.temp_dir)([dirname, make_it_if_necessary, ...])    | Create and return a path to a temporary directory that's guaranteed to be accessible to the user.                                                                           |
-| `validate_key_and_raise_key_error_on_exception`(func)                                              |                                                                                                                                                                             |
+| [`create_directories`](#dol.filesys.create_directories)(dirpath[, max_dirs_to_make])     | Create directories up to a specified limit.                                                                                                                                 |
+|------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`ensure_dir`](#dol.filesys.ensure_dir)(dirpath, \*[, max_dirs_to_make, ...])    | Ensure that a directory exists, creating it if necessary.                                                                                                                   |
+| [`ensure_slash_suffix`](#dol.filesys.ensure_slash_suffix)(path)                           | Add a file separation (/ or ) at the end of path str, if not already present.                                                                                               |
+| [`iter_dirpaths_in_folder_recursively`](#dol.filesys.iter_dirpaths_in_folder_recursively)(root_folder)    | Recursively generates dirpaths of folder (and subfolders, etc.) up to a given level                                                                                         |
+| [`iter_filepaths_in_folder_recursively`](#dol.filesys.iter_filepaths_in_folder_recursively)(root_folder)   | Recursively generates filepaths of folder (and subfolders, etc.) up to a given level                                                                                        |
+| [`mk_absolute_path`](#dol.filesys.mk_absolute_path)(path_format)                       | Expand a leading `~`, or make a leading `.` path absolute; other paths are returned as is.                                                                                  |
+| [`mk_dirs_if_missing`](#dol.filesys.mk_dirs_if_missing)([store_cls, ...])                | Store decorator that will make the store create directories on write as needed.                                                                                             |
+| [`mk_dirs_if_missing_preset`](#dol.filesys.mk_dirs_if_missing_preset)(self, k, v, \*[, ...])    | Preset function that will make the store create directories on write as needed.                                                                                             |
+| [`mk_json_bytes_wrap`](#dol.filesys.mk_json_bytes_wrap)(\*[, loads_kwargs, ...])         | Make a `wrap_kvs` value-codec wrapper for JSON, with kwargs for `json.loads`/`json.dumps`.                                                                                  |
+| [`mk_pickle_bytes_wrap`](#dol.filesys.mk_pickle_bytes_wrap)(\*[, loads_kwargs, ...])       | Make a `wrap_kvs` value-codec wrapper for pickle, with kwargs for `pickle.loads`/`pickle.dumps`.                                                                            |
+| [`mk_tmp_dol_dir`](#dol.filesys.mk_tmp_dol_dir)([dirname, ...])                      | Create and return a path to a temporary directory that's guaranteed to be accessible to the user.                                                                           |
+| [`paths_in_dir`](#dol.filesys.paths_in_dir)(rootdir[, include_hidden])             | Yield the paths of the entries of `rootdir` (directories with a trailing separator), skipping hidden ones unless `include_hidden`.                                          |
+| [`process_path`](#dol.filesys.process_path)(\*path[, ensure_dir_exists, ...])      | Process a path string, ensuring it exists, and optionally expanding user.                                                                                                   |
+| [`resolve_dir`](#dol.filesys.resolve_dir)(dirpath[, assert_existence, ...])       | Resolve a path to a full, real, path to a directory                                                                                                                         |
+| [`resolve_path`](#dol.filesys.resolve_path)(path[, assert_existence])              | Resolve a path to a full, real, (file or folder) path (opt assert existence).                                                                                               |
+| [`subfolder_stores`](#dol.filesys.subfolder_stores)(root_folder, \*[, ...])            | Create a store of subfolders of a given folder, where the keys are the subfolder paths (by default, relative and slash-less) and the values are stores of these subfolders. |
+| [`temp_dir`](#dol.filesys.temp_dir)([dirname, make_it_if_necessary, ...])      | Create and return a path to a temporary directory that's guaranteed to be accessible to the user.                                                                           |
+| [`validate_key_and_raise_key_error_on_exception`](#dol.filesys.validate_key_and_raise_key_error_on_exception)(func) | Method decorator: validate the key first, and re-raise any exception of the method as a `KeyError`.                                                                         |
 
 ### Classes
 
-| [`DirCollection`](#dol.filesys.DirCollection)(rootdir[, subpath, ...])     |                                                                                                                                        |
+| [`DirCollection`](#dol.filesys.DirCollection)(rootdir[, subpath, ...])     | Collection of the directory paths under `rootdir`.                                                                                     |
 |---------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| [`DirReader`](#dol.filesys.DirReader)(rootdir[, subpath, ...])         |                                                                                                                                        |
+| [`DirReader`](#dol.filesys.DirReader)(rootdir[, subpath, ...])         | Reader mapping each sub-directory of `rootdir` to a `DirReader` of it.                                                                 |
 | [`FileBytesPersister`](#dol.filesys.FileBytesPersister)(\*args[, delete_func])  | File persistence with configurable deletion.                                                                                           |
-| [`FileBytesReader`](#dol.filesys.FileBytesReader)(rootdir[, subpath, ...])   |                                                                                                                                        |
-| [`FileCollection`](#dol.filesys.FileCollection)(rootdir[, subpath, ...])    |                                                                                                                                        |
-| [`FileInfoReader`](#dol.filesys.FileInfoReader)(rootdir[, subpath, ...])    |                                                                                                                                        |
-| [`FileStringPersister`](#dol.filesys.FileStringPersister)(\*args[, delete_func]) |                                                                                                                                        |
-| [`FileStringReader`](#dol.filesys.FileStringReader)(rootdir[, subpath, ...])  |                                                                                                                                        |
-| [`FileSysCollection`](#dol.filesys.FileSysCollection)(rootdir[, subpath, ...]) |                                                                                                                                        |
+| [`FileBytesReader`](#dol.filesys.FileBytesReader)(rootdir[, subpath, ...])   | Reader mapping file paths under `rootdir` to the files' bytes.                                                                         |
+| [`FileCollection`](#dol.filesys.FileCollection)(rootdir[, subpath, ...])    | Collection of the file paths under `rootdir`.                                                                                          |
+| [`FileInfoReader`](#dol.filesys.FileInfoReader)(rootdir[, subpath, ...])    | Reader mapping file paths to their `os.stat` result.                                                                                   |
+| [`FileStringPersister`](#dol.filesys.FileStringPersister)(\*args[, delete_func]) | Persister mapping file paths to the files' text (files opened in text mode).                                                           |
+| [`FileStringReader`](#dol.filesys.FileStringReader)(rootdir[, subpath, ...])  | Reader mapping file paths to the files' text (files opened in text mode).                                                              |
+| [`FileSysCollection`](#dol.filesys.FileSysCollection)(rootdir[, subpath, ...]) | Base collection of file-system paths under `rootdir`, optionally restricted by `subpath`, `max_levels` and hidden-file inclusion.      |
 | [`Files`](#dol.filesys.Files)(\*args[, delete_func])               | FileBytesPersister with relative paths                                                                                                 |
 | [`FilesReader`](#dol.filesys.FilesReader)(rootdir[, subpath, ...])       | FileBytesReader with relative paths                                                                                                    |
 | [`JsonFiles`](#dol.filesys.JsonFiles)(\*args[, delete_func])           | A store of json files                                                                                                                  |
@@ -44,27 +66,31 @@ File system access
 | [`MakeMissingDirsStoreMixin`](#dol.filesys.MakeMissingDirsStoreMixin)()                | Will make a local file store automatically create the directories needed to create a file.                                             |
 | [`PickleFiles`](#dol.filesys.PickleFiles)(\*args[, delete_func])         | A store of pickles                                                                                                                     |
 | [`PickleStore`](#dol.filesys.PickleStore)                                |                                                                                                                                        |
-| [`PickleStores`](#dol.filesys.PickleStores)(rootdir[, subpath, ...])      |                                                                                                                                        |
+| [`PickleStores`](#dol.filesys.PickleStores)(rootdir[, subpath, ...])      | Reader mapping each sub-directory of `rootdir` to a `PickleFiles` store of it.                                                         |
 | [`RelPathFileBytesPersister`](#dol.filesys.RelPathFileBytesPersister)                  |                                                                                                                                        |
 | [`RelPathFileBytesReader`](#dol.filesys.RelPathFileBytesReader)                     |                                                                                                                                        |
 | [`RelPathFileStringPersister`](#dol.filesys.RelPathFileStringPersister)                 |                                                                                                                                        |
 | [`RelPathFileStringReader`](#dol.filesys.RelPathFileStringReader)                    |                                                                                                                                        |
-| `ReprMixin`()                                                                               |                                                                                                                                        |
+| [`ReprMixin`](#dol.filesys.ReprMixin)()                                | A `__repr__` showing the `_init_kwargs` the instance was created with.                                                                 |
 | [`TextFiles`](#dol.filesys.TextFiles)(\*args[, delete_func])           | FileStringPersister with relative paths                                                                                                |
 | [`TextFilesReader`](#dol.filesys.TextFilesReader)(rootdir[, subpath, ...])   | FileStringReader with relative paths                                                                                                   |
 
 ### Exceptions
 
-| [`KeyValidationError`](#dol.filesys.KeyValidationError)   |    |
-|-----------------------------------------------------------------------|----|
+| [`KeyValidationError`](#dol.filesys.KeyValidationError)   | A `KeyError` for keys that fail a file-system store's validation.   |
+|-----------------------------------------------------------------------|---------------------------------------------------------------------|
 
 ### *class* dol.filesys.DirCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
 
 Bases: [`FileSysCollection`](#dol.filesys.FileSysCollection)
 
+Collection of the directory paths under `rootdir`.
+
 ### *class* dol.filesys.DirReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
 
 Bases: [`DirCollection`](#dol.filesys.DirCollection), [`KvReader`](dol.base.html.md#dol.base.KvReader)
+
+Reader mapping each sub-directory of `rootdir` to a `DirReader` of it.
 
 ### *class* dol.filesys.FileBytesPersister(\*args, delete_func=None, \*\*kwargs)
 
@@ -81,25 +107,37 @@ See dol.trash module for deletion strategies: permanent_delete, trash_only, etc.
 
 Bases: [`FileCollection`](#dol.filesys.FileCollection), [`KvReader`](dol.base.html.md#dol.base.KvReader)
 
+Reader mapping file paths under `rootdir` to the files’ bytes.
+
 ### *class* dol.filesys.FileCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
 
 Bases: [`FileSysCollection`](#dol.filesys.FileSysCollection)
+
+Collection of the file paths under `rootdir`.
 
 ### *class* dol.filesys.FileInfoReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
 
 Bases: [`FileCollection`](#dol.filesys.FileCollection), [`KvReader`](dol.base.html.md#dol.base.KvReader)
 
+Reader mapping file paths to their `os.stat` result.
+
 ### *class* dol.filesys.FileStringPersister(\*args, delete_func=None, \*\*kwargs)
 
 Bases: [`FileBytesPersister`](#dol.filesys.FileBytesPersister)
+
+Persister mapping file paths to the files’ text (files opened in text mode).
 
 ### *class* dol.filesys.FileStringReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
 
 Bases: [`FileBytesReader`](#dol.filesys.FileBytesReader)
 
+Reader mapping file paths to the files’ text (files opened in text mode).
+
 ### *class* dol.filesys.FileSysCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
 
 Bases: [`Collection`](dol.base.html.md#dol.base.Collection)
+
+Base collection of file-system paths under `rootdir`, optionally restricted by `subpath`, `max_levels` and hidden-file inclusion.
 
 #### with_relative_paths()
 
@@ -164,11 +202,13 @@ Namely: filtering for `.json` extensions but not showing the extension in keys
 
 ### *exception* dol.filesys.KeyValidationError
 
-Bases: [`KeyError`](https://docs.python.org/3/library/exceptions.html#KeyError)
+Bases: [`KeyError`](https://docs.python.org/3/builtins/exceptions.html#KeyError)
+
+A `KeyError` for keys that fail a file-system store’s validation.
 
 ### *class* dol.filesys.LocalFileDeleteMixin
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Mixin providing configurable file deletion.
 
@@ -187,7 +227,7 @@ See dol.trash module for available deletion strategies:
 
 ### *class* dol.filesys.MakeMissingDirsStoreMixin
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Will make a local file store automatically create the directories needed to create a file.
 Should be placed before the concrete perisister in the mro but in such a manner so that it receives full paths.
@@ -214,6 +254,8 @@ alias of [`PickleFiles`](#dol.filesys.PickleFiles)
 
 Bases: [`PrefixRelativizationMixin`](dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](dol.base.html.md#dol.base.Store)
 
+Reader mapping each sub-directory of `rootdir` to a `PickleFiles` store of it.
+
 #### is_valid_key(k, \*args, \_\_name='is_valid_key', \*\*kwargs)
 
 `is_valid_key` on the inner key – see `mk_relative_path_store`.
@@ -237,6 +279,12 @@ alias of [`TextFiles`](#dol.filesys.TextFiles)
 ### dol.filesys.RelPathFileStringReader
 
 alias of [`TextFilesReader`](#dol.filesys.TextFilesReader)
+
+### *class* dol.filesys.ReprMixin
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+A `__repr__` showing the `_init_kwargs` the instance was created with.
 
 ### *class* dol.filesys.TextFiles(\*args, delete_func=None, \*\*kwargs)
 
@@ -270,18 +318,15 @@ FileStringReader with relative paths
 
 Create directories up to a specified limit.
 
-### Parameters
-
-dirpath (str): The directory path to create.
-max_dirs_to_make (int, optional): The maximum number of directories to create. If None, there’s no limit.
-
-### Returns
-
-bool: True if the directory was created successfully, False otherwise.
-
-### Raises
-
-ValueError: If max_dirs_to_make is negative.
+* **Parameters:**
+  * **dirpath** – The directory path to create.
+  * **max_dirs_to_make** ([`int`](https://docs.python.org/3/builtins/functions.html#int) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – The maximum number of directories to create. If None,
+    there’s no limit.
+* **Returns:**
+  True if the directory exists (already, or after creation); False if creating
+  it would need more than `max_dirs_to_make` new directories (none are made).
+* **Raises:**
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – If max_dirs_to_make is negative.
 
 ### Examples
 
@@ -314,9 +359,9 @@ Ensure that a directory exists, creating it if necessary.
 
 * **Parameters:**
   * **dirpath** – path to the directory to create
-  * **max_dirs_to_make** ([`int`](https://docs.python.org/3/library/functions.html#int) | [`None`](https://docs.python.org/3/library/constants.html#None)) – the maximum number of directories to create.
+  * **max_dirs_to_make** ([`int`](https://docs.python.org/3/builtins/functions.html#int) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – the maximum number of directories to create.
     If None, there’s no limit.
-  * **verbose** ([`bool`](https://docs.python.org/3/library/functions.html#bool) | [`str`](https://docs.python.org/3/library/stdtypes.html#str) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – controls verbosity (the noise ensure_dir makes if it make folder)
+  * **verbose** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool) | [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – controls verbosity (the noise ensure_dir makes if it make folder)
 * **Returns:**
   the path to the directory
 
@@ -348,6 +393,10 @@ Recursively generates dirpaths of folder (and subfolders, etc.) up to a given le
 
 Recursively generates filepaths of folder (and subfolders, etc.) up to a given level
 
+### dol.filesys.mk_absolute_path(path_format)
+
+Expand a leading `~`, or make a leading `.` path absolute; other paths are returned as is.
+
 ### dol.filesys.mk_dirs_if_missing(store_cls=None, , max_dirs_to_make=None, verbose=False, key_condition=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
 Store decorator that will make the store create directories on write as
@@ -360,43 +409,58 @@ ensured to exist separatedly.
 
 Preset function that will make the store create directories on write as needed.
 
+### dol.filesys.mk_json_bytes_wrap(, loads_kwargs=None, dumps_kwargs=None)
+
+Make a `wrap_kvs` value-codec wrapper for JSON, with kwargs for `json.loads`/`json.dumps`.
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)
+
+### dol.filesys.mk_pickle_bytes_wrap(, loads_kwargs=None, dumps_kwargs=None)
+
+Make a `wrap_kvs` value-codec wrapper for pickle, with kwargs for `pickle.loads`/`pickle.dumps`.
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)
+
 ### dol.filesys.mk_tmp_dol_dir(dirname='', make_it_if_necessary=True, verbose=False)
 
 Create and return a path to a temporary directory that’s guaranteed to be
 accessible to the user.
 
-### Parameters
+* **Parameters:**
+  * **dirname** – Optional subdirectory name to append to the temporary directory path
+  * **make_it_if_necessary** – Whether to create the directory if it doesn’t exist
+  * **verbose** – Controls verbosity when creating directories
+* **Returns:**
+  Path to a temporary directory that the user has access to
 
-make_it_if_necessary
-: Whether to create the directory if it doesn’t exist
+#### NOTE
+This function creates a user-specific temporary directory to avoid permission
+issues with system-wide temporary directories.
 
-verbose
-: Controls verbosity when creating directories
+### dol.filesys.paths_in_dir(rootdir, include_hidden=False)
 
-### Returns
-
-### Notes
-
-be accessible to the current user.
+Yield the paths of the entries of `rootdir` (directories with a trailing separator), skipping hidden ones unless `include_hidden`.
 
 ### dol.filesys.process_path(\*path, ensure_dir_exists=False, assert_exists=False, ensure_endswith_slash=False, ensure_does_not_end_with_slash=False, expanduser=True, expandvars=True, abspath=True, rootdir='')
 
 Process a path string, ensuring it exists, and optionally expanding user.
 
 * **Parameters:**
-  * **path** ([`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`str`](https://docs.python.org/3/library/stdtypes.html#str)]) – The path to process. Can be multiple components of a path.
-  * **ensure_dir_exists** ([`int`](https://docs.python.org/3/library/functions.html#int) | [`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to ensure the path exists.
-  * **assert_exists** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to assert that the path exists.
-  * **ensure_endswith_slash** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to ensure the path ends with a slash.
-  * **ensure_does_not_end_with_slash** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to ensure the path does not end with a slash.
-  * **expanduser** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to expand the user in the path.
-  * **expandvars** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to expand environment variables in the path.
-  * **abspath** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to convert the path to an absolute path.
-  * **rootdir** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – The root directory to prepend to the path.
+  * **path** ([`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The path to process. Can be multiple components of a path.
+  * **ensure_dir_exists** ([`int`](https://docs.python.org/3/builtins/functions.html#int) | [`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to ensure the path exists.
+  * **assert_exists** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to assert that the path exists.
+  * **ensure_endswith_slash** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to ensure the path ends with a slash.
+  * **ensure_does_not_end_with_slash** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to ensure the path does not end with a slash.
+  * **expanduser** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to expand the user in the path.
+  * **expandvars** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to expand environment variables in the path.
+  * **abspath** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to convert the path to an absolute path.
+  * **rootdir** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The root directory to prepend to the path.
 * **Returns:**
   The processed path.
 * **Return type:**
-  [`str`](https://docs.python.org/3/library/stdtypes.html#str)
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 The result uses the running OS’s native separator, so these examples assert
 OS-independently (the literal forward-slash form is what you get on POSIX):
@@ -436,16 +500,17 @@ the `max_levels` parameter.
 Create and return a path to a temporary directory that’s guaranteed to be
 accessible to the user.
 
-### Parameters
+* **Parameters:**
+  * **dirname** – Optional subdirectory name to append to the temporary directory path
+  * **make_it_if_necessary** – Whether to create the directory if it doesn’t exist
+  * **verbose** – Controls verbosity when creating directories
+* **Returns:**
+  Path to a temporary directory that the user has access to
 
-make_it_if_necessary
-: Whether to create the directory if it doesn’t exist
+#### NOTE
+This function creates a user-specific temporary directory to avoid permission
+issues with system-wide temporary directories.
 
-verbose
-: Controls verbosity when creating directories
+### dol.filesys.validate_key_and_raise_key_error_on_exception(func)
 
-### Returns
-
-### Notes
-
-be accessible to the current user.
+Method decorator: validate the key first, and re-raise any exception of the method as a `KeyError`.

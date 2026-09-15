@@ -1,17 +1,38 @@
 # dol.explicit
 
-utils to make stores based on a the input data itself
+Stores whose keys are given explicitly, with values fetched lazily from a source.
+
+Main entry points:
+
+- `KeysReader`: a collection of keys plus a `getter(src, key)`
+- `ExplicitKeysSource`: explicit keys plus a function reading the value for a key
+- `ExplicitKeysStore`: wrap a store so that its keys come from an explicit iterable
+- `ExplicitKeyMap`: a key mapper given as explicit dicts
+  ```pycon
+  >>> from dol.explicit import KeysReader
+  >>> r = KeysReader({'apple': 'pie', 'banana': 'split'}, ['banana'], lambda src, k: src[k])
+  >>> list(r), r['banana']
+  (['banana'], 'split')
+  ```
 
 ### Classes
 
-| `ExplicitKeyMap`(\*[, key_of_id, id_of_key])                                                        |                                                                                                             |
-|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
-| [`ExplicitKeymapReader`](#dol.explicit.ExplicitKeymapReader)(store[, key_of_id, ...])      | Wrap a store (instance) so that it gets it's keys from an explicit iterable of keys.                        |
-| [`ExplicitKeys`](#dol.explicit.ExplicitKeys)(key_collection)                       | dol.base.Keys implementation that gets it's keys explicitly from a collection given at initialization time. |
-| [`ExplicitKeysSource`](#dol.explicit.ExplicitKeysSource)(key_collection, \_obj_of_key)   | An object source that uses an explicit keys collection and a specified function to read contents for a key. |
-| [`ExplicitKeysStore`](#dol.explicit.ExplicitKeysStore)(store, key_collection)           | Wrap a store (instance) so that it gets it's keys from an explicit iterable of keys.                        |
-| [`KeysReader`](#dol.explicit.KeysReader)(src, key_collection, getter, \*[, ...]) | Mapping defined by keys with a getter function that gets values from keys.                                  |
-| `ObjDumper`(save_data_to_key[, data_of_obj])                                                        |                                                                                                             |
+| [`ExplicitKeyMap`](#dol.explicit.ExplicitKeyMap)(\*[, key_of_id, id_of_key])         | A key mapper given as explicit `key_of_id`/`id_of_key` dicts (one is enough; the other is derived, and both are checked to be inverse of each other).   |
+|-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`ExplicitKeymapReader`](#dol.explicit.ExplicitKeymapReader)(store[, key_of_id, ...])      | Wrap a store (instance) so that it gets it's keys from an explicit iterable of keys.                                                                    |
+| [`ExplicitKeys`](#dol.explicit.ExplicitKeys)(key_collection)                       | dol.base.Keys implementation that gets it's keys explicitly from a collection given at initialization time.                                             |
+| [`ExplicitKeysSource`](#dol.explicit.ExplicitKeysSource)(key_collection, \_obj_of_key)   | An object source that uses an explicit keys collection and a specified function to read contents for a key.                                             |
+| [`ExplicitKeysStore`](#dol.explicit.ExplicitKeysStore)(store, key_collection)           | Wrap a store (instance) so that it gets it's keys from an explicit iterable of keys.                                                                    |
+| [`KeysReader`](#dol.explicit.KeysReader)(src, key_collection, getter, \*[, ...]) | Mapping defined by keys with a getter function that gets values from keys.                                                                              |
+| `ObjDumper`(save_data_to_key[, data_of_obj])                                                        |                                                                                                                                                         |
+
+### *class* dol.explicit.ExplicitKeyMap(, key_of_id=None, id_of_key=None)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+A key mapper given as explicit `key_of_id`/`id_of_key` dicts (one is enough;
+the other is derived, and both are checked to be inverse of each other).
+Provides the `_key_of_id`/`_id_of_key` methods that `kv_wrap` looks for.
 
 ### *class* dol.explicit.ExplicitKeymapReader(store, key_of_id=None, id_of_key=None)
 
@@ -115,11 +136,11 @@ Keywords: Lazy-evaluation, Mapping
   * **src** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Source`)) – The source where values will be extracted from.
   * **key_collection** ([`Collection`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)]) – A collection of keys that will be used to extract values from `src`.
   * **getter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Source`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]) – A function that takes a source and a key, and returns the value for that key.
-  * **key_error_msg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Source`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`str`](https://docs.python.org/3/library/stdtypes.html#str)]) – A function that takes a source and a key, and returns an error message.
+  * **key_error_msg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Source`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A function that takes a source and a key, and returns an error message.
 
-Example:
+### Example
 
-```default
+```pycon
 >>> src = {'apple': 'pie', 'banana': 'split', 'carrot': 'cake'}
 >>> key_collection = ['carrot', 'apple']
 >>> getter = lambda src, key: src[key]

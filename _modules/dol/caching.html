@@ -267,6 +267,7 @@
 <span class="sd">offering flexible and powerful caching solutions for both data stores and method calls.</span>
 
 <span class="sd">Main Use Cases:</span>
+
 <span class="sd">- Property caching: Cache expensive computations that only need to be run once</span>
 <span class="sd">- Method caching: Cache method results based on arguments, with smart key generation</span>
 <span class="sd">- Store caching: Add caching layers to data stores for improved performance</span>
@@ -274,28 +275,19 @@
 
 <span class="sd">Key Tools:</span>
 
-<span class="sd">cache_this:</span>
-<span class="sd">    The main decorator for caching properties and methods. Automatically detects</span>
-<span class="sd">    whether to use property or method caching based on function signature.</span>
-<span class="sd">    Supports custom cache storage, key functions, parameter ignoring, and</span>
-<span class="sd">    serialization hooks.</span>
-
-<span class="sd">CachedProperty:</span>
-<span class="sd">    A descriptor for caching property values with flexible cache storage and</span>
-<span class="sd">    key generation strategies.</span>
-
-<span class="sd">CachedMethod:</span>
-<span class="sd">    A descriptor for caching method results based on arguments, with support</span>
-<span class="sd">    for parameter filtering and custom key functions.</span>
-
-<span class="sd">KeyStrategy Protocol:</span>
-<span class="sd">    Extensible system for defining how cache keys are generated, including</span>
-<span class="sd">    strategies for explicit keys, instance properties, method arguments, and</span>
-<span class="sd">    composite keys.</span>
-
-<span class="sd">Store Decorators:</span>
-<span class="sd">    Tools like cache_vals, mk_sourced_store, and store_cached for adding</span>
-<span class="sd">    caching layers to data stores.</span>
+<span class="sd">- ``cache_this``: The main decorator for caching properties and methods.</span>
+<span class="sd">  Automatically detects whether to use property or method caching based on</span>
+<span class="sd">  function signature. Supports custom cache storage, key functions, parameter</span>
+<span class="sd">  ignoring, and serialization hooks.</span>
+<span class="sd">- ``CachedProperty``: A descriptor for caching property values with flexible</span>
+<span class="sd">  cache storage and key generation strategies.</span>
+<span class="sd">- ``CachedMethod``: A descriptor for caching method results based on arguments,</span>
+<span class="sd">  with support for parameter filtering and custom key functions.</span>
+<span class="sd">- ``KeyStrategy`` protocol: Extensible system for defining how cache keys are</span>
+<span class="sd">  generated, including strategies for explicit keys, instance properties,</span>
+<span class="sd">  method arguments, and composite keys.</span>
+<span class="sd">- Store decorators: Tools like ``cache_vals``, ``mk_sourced_store``, and</span>
+<span class="sd">  ``store_cached`` for adding caching layers to data stores.</span>
 
 <span class="sd">Examples:</span>
 
@@ -321,7 +313,6 @@
 <span class="sd">    ...     @cache_this(cache='cache', ignore={'verbose'})</span>
 <span class="sd">    ...     def process(self, data, mode='fast', verbose=False):</span>
 <span class="sd">    ...         return len(data) if mode == 'fast' else sum(data)</span>
-
 <span class="sd">"""</span>
 
 <span class="c1"># -------------------------------------------------------------------------------------</span>
@@ -546,7 +537,7 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply a function to method arguments to generate the key.</span>
 
-<span class="sd">    The function receives (self, *args, **kwargs) and should return a cache key.</span>
+<span class="sd">    The function receives ``(self, *args, **kwargs)`` and should return a cache key.</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
@@ -554,8 +545,8 @@
 <span class="sd">        Initialize with a function to apply to method arguments.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            func: A function that takes (self, *args, **kwargs) and returns a key.</span>
-<span class="sd">                  Example: lambda self, x, y: f'{x}_{y}'</span>
+<span class="sd">            func: A function that takes ``(self, *args, **kwargs)`` and returns a key,</span>
+<span class="sd">                for example ``lambda self, x, y: f'{x}_{y}'``.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
 
@@ -795,24 +786,26 @@
 <span class="sd">        Args:</span>
 <span class="sd">            func: The function whose result needs to be cached.</span>
 <span class="sd">            cache: The cache storage. Can be:</span>
+
 <span class="sd">                - A MutableMapping instance (shared across all instances)</span>
 <span class="sd">                - A string naming an instance attribute that is a MutableMapping</span>
 <span class="sd">                - A callable that takes the instance and returns a MutableMapping</span>
-<span class="sd">                  (allows per-instance cache customization)</span>
-<span class="sd">                Example: cache=lambda self: Files(f'/tmp/cache_{self.user_id}/')</span>
+<span class="sd">                  (allows per-instance cache customization),</span>
+<span class="sd">                  e.g. ``cache=lambda self: Files(f'/tmp/cache_{self.user_id}/')``</span>
+
 <span class="sd">            key: The key to store the cache value. Can be:</span>
+
 <span class="sd">                - A string (treated as an explicit key)</span>
 <span class="sd">                - A function (interpreted based on its signature)</span>
 <span class="sd">                - A KeyStrategy instance</span>
+
 <span class="sd">            allow_none_keys: Whether to allow None as a valid key.</span>
 <span class="sd">            lock_factory: Factory function to create a lock.</span>
 <span class="sd">            pre_cache: If True or a MutableMapping, adds in-memory caching.</span>
 <span class="sd">            serialize: Optional function to serialize values before storing in cache.</span>
-<span class="sd">                       Signature: (value) -&gt; serialized_value</span>
-<span class="sd">                       Example: serialize=pickle.dumps</span>
+<span class="sd">                       Signature: ``(value) -&gt; serialized_value``, e.g. ``pickle.dumps``.</span>
 <span class="sd">            deserialize: Optional function to deserialize values retrieved from cache.</span>
-<span class="sd">                         Signature: (serialized_value) -&gt; value</span>
-<span class="sd">                         Example: deserialize=pickle.loads</span>
+<span class="sd">                         Signature: ``(serialized_value) -&gt; value``, e.g. ``pickle.loads``.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span> <span class="o">=</span> <span class="kc">None</span>
@@ -896,6 +889,7 @@
 <span class="sd">        Get the cache for the instance.</span>
 
 <span class="sd">        This method handles the three main cache specification patterns:</span>
+
 <span class="sd">        1. Cache factories (functions that create cache instances)</span>
 <span class="sd">        2. Attribute names (strings referring to instance attributes)</span>
 <span class="sd">        3. Direct cache objects (MutableMapping instances)</span>
@@ -1059,6 +1053,7 @@
 <span class="sd">        A string like "x=1;y=2;mode=fast" representing all arguments</span>
 
 <span class="sd">    Examples:</span>
+
 <span class="sd">        &gt;&gt;&gt; def sample_method(self, x, y, mode='fast'): pass</span>
 <span class="sd">        &gt;&gt;&gt; _default_method_key(sample_method, None, 1, 2)</span>
 <span class="sd">        'x=1;y=2;mode=fast'</span>
@@ -1142,26 +1137,26 @@
 <span class="sd">        Args:</span>
 <span class="sd">            func: The function whose results need to be cached.</span>
 <span class="sd">            cache: The cache storage. Can be:</span>
+
 <span class="sd">                - A MutableMapping instance (shared across instances)</span>
 <span class="sd">                - A string naming an instance attribute containing a MutableMapping</span>
 <span class="sd">                - A callable taking (instance) and returning a MutableMapping</span>
 <span class="sd">                  This enables instance-specific caching, e.g.:</span>
 <span class="sd">                  cache=lambda self: Files(f'/cache/{self.user_id}/')</span>
-<span class="sd">            key: Callable that takes (self, *args, **kwargs) and returns a cache key.</span>
+<span class="sd">            key: Callable that takes ``(self, *args, **kwargs)`` and returns a cache key.</span>
 <span class="sd">                 Defaults to a function that converts args/kwargs to a string.</span>
 <span class="sd">            ignore: Parameter name(s) to exclude from cache key computation.</span>
 <span class="sd">                Can be a string (single parameter) or list of strings (multiple parameters).</span>
 <span class="sd">                Commonly used to ignore 'self' or parameters like 'verbose' that don't</span>
 <span class="sd">                affect the result.</span>
+
 <span class="sd">            allow_none_keys: Whether to allow None as a valid key.</span>
 <span class="sd">            lock_factory: Factory function to create a lock.</span>
 <span class="sd">            pre_cache: If True or a MutableMapping, adds in-memory caching.</span>
 <span class="sd">            serialize: Optional function to serialize values before storing in cache.</span>
-<span class="sd">                       Signature: (value) -&gt; serialized_value</span>
-<span class="sd">                       Example: serialize=pickle.dumps</span>
+<span class="sd">                       Signature: ``(value) -&gt; serialized_value``, e.g. ``pickle.dumps``.</span>
 <span class="sd">            deserialize: Optional function to deserialize values retrieved from cache.</span>
-<span class="sd">                         Signature: (serialized_value) -&gt; value</span>
-<span class="sd">                         Example: deserialize=pickle.loads</span>
+<span class="sd">                         Signature: ``(serialized_value) -&gt; value``, e.g. ``pickle.loads``.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1395,14 +1390,16 @@
 
 <span class="sd">    :param func: The function to be decorated (usually left empty).</span>
 <span class="sd">    :param cache: The cache storage. Can be:</span>
+
 <span class="sd">        - A MutableMapping instance (shared across instances)</span>
 <span class="sd">        - A string naming an instance attribute containing a MutableMapping</span>
 <span class="sd">        - A callable taking (instance) and returning a MutableMapping</span>
 <span class="sd">          This enables instance-specific caching, e.g.:</span>
 <span class="sd">          cache=lambda self: Files(f'/cache/{self.user_id}/')</span>
+
 <span class="sd">    :param key: For properties: the key to store the cache value, can be a callable</span>
 <span class="sd">        that will be applied to the method name to make a key, or an explicit string.</span>
-<span class="sd">        For methods: a callable that takes (self, *args, **kwargs) and returns a cache key.</span>
+<span class="sd">        For methods: a callable that takes ``(self, *args, **kwargs)`` and returns a cache key.</span>
 <span class="sd">    :param pre_cache: Default is False. If True, adds an in-memory cache to the method</span>
 <span class="sd">        to (also) cache the results in memory. If a MutableMapping is given, it will be</span>
 <span class="sd">        used as the pre-cache.</span>
@@ -1414,13 +1411,13 @@
 <span class="sd">        Can be a string (single parameter) or list of strings (multiple parameters).</span>
 <span class="sd">        Commonly used to ignore 'self' or parameters like 'verbose' that don't</span>
 <span class="sd">        affect the result.</span>
-<span class="sd">    :param serialize: Optional function to serialize values before caching.</span>
-<span class="sd">        Example: serialize=pickle.dumps for binary file storage</span>
-<span class="sd">    :param deserialize: Optional function to deserialize cached values.</span>
-<span class="sd">        Example: deserialize=pickle.loads</span>
+<span class="sd">    :param serialize: Optional function to serialize values before caching</span>
+<span class="sd">        (e.g. ``pickle.dumps`` for binary file storage).</span>
+<span class="sd">    :param deserialize: Optional function to deserialize cached values</span>
+<span class="sd">        (e.g. ``pickle.loads``).</span>
 <span class="sd">    :return: The decorated function.</span>
 
-<span class="sd">    ## Comprehensive Example</span>
+<span class="sd">    .. rubric:: Comprehensive Example</span>
 
 <span class="sd">    Here's a complete example showcasing all major features of cache_this:</span>
 
@@ -1700,8 +1697,6 @@
 <span class="sd">    In CacheA: getting value of foo.pkl</span>
 <span class="sd">    b'\x80\x04K*.'</span>
 <span class="sd">    &gt;&gt;&gt; # == b'\x80\x04K*.'</span>
-
-
 <span class="sd">    """</span>
 
     <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
@@ -1828,9 +1823,10 @@
 <span class="sd">    &gt;&gt;&gt; add_txt_ext('file')</span>
 <span class="sd">    'file.txt'</span>
 
-<span class="sd">    Note: If you want to add an extension to a name that already has an extension,</span>
-<span class="sd">    you can do that, but it will add the extension to the end of the name,</span>
-<span class="sd">    not replace the existing extension.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        If you want to add an extension to a name that already has an extension,</span>
+<span class="sd">        you can do that, but it will add the extension to the end of the name,</span>
+<span class="sd">        not replace the existing extension.</span>
 
 <span class="sd">    &gt;&gt;&gt; add_txt_ext('file.txt')</span>
 <span class="sd">    'file.txt.txt'</span>
@@ -1840,7 +1836,6 @@
 
 <span class="sd">    &gt;&gt;&gt; add_extension('.txt', 'file') == add_extension('txt', 'file') == 'file.txt'</span>
 <span class="sd">    True</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">ext</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">extsep</span><span class="p">):</span>
         <span class="n">ext</span> <span class="o">=</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
@@ -1866,17 +1861,18 @@
 <span class="sd">    to the method, excluding the first argument (typically `self`). This allows methods of a class to</span>
 <span class="sd">    be cached while ignoring the instance (`self`) in the cache key.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    - func (callable, optional): The method to be decorated. If not provided, a partially applied decorator</span>
-<span class="sd">      will be returned for later application.</span>
-<span class="sd">    - maxsize (int, optional): The maximum size of the cache. Defaults to 128.</span>
-<span class="sd">    - typed (bool, optional): If True, cache entries will be different based on argument types, such as</span>
-<span class="sd">      distinguishing between `1` and `1.0`. Defaults to False.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        func: The method to be decorated. If not provided, a partially applied</span>
+<span class="sd">            decorator will be returned for later application.</span>
+<span class="sd">        maxsize: The maximum size of the cache.</span>
+<span class="sd">        typed: If True, cache entries will be different based on argument types,</span>
+<span class="sd">            such as distinguishing between `1` and `1.0`.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">    - callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).</span>
+<span class="sd">        A wrapped function with LRU caching applied, ignoring the first argument (`self`).</span>
 
-<span class="sd">    Example:</span>
+<span class="sd">    .. rubric:: Example</span>
+
 <span class="sd">    &gt;&gt;&gt; class MyClass:</span>
 <span class="sd">    ...     @cached_method(maxsize=2, typed=True)</span>
 <span class="sd">    ...     def add(self, x, y):</span>
@@ -1925,17 +1921,17 @@
 <span class="sd">    to the method, excluding the first argument (typically `self`). This allows methods of a class to</span>
 <span class="sd">    be cached while ignoring the instance (`self`) in the cache key.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    - func (callable, optional): The method to be decorated. If not provided, a partially applied decorator</span>
-<span class="sd">      will be returned for later application.</span>
-<span class="sd">    - maxsize (int, optional): The maximum size of the cache. Defaults to 128.</span>
-<span class="sd">    - typed (bool, optional): If True, cache entries will be different based on argument types, such as</span>
-<span class="sd">      distinguishing between `1` and `1.0`. Defaults to False.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        func: The method to be decorated. If not provided, a partially applied</span>
+<span class="sd">            decorator will be returned for later application.</span>
+<span class="sd">        maxsize: The maximum size of the cache.</span>
+<span class="sd">        typed: If True, cache entries will be different based on argument types,</span>
+<span class="sd">            such as distinguishing between `1` and `1.0`.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">    - callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).</span>
+<span class="sd">        A wrapped function with LRU caching applied, ignoring the first argument (`self`).</span>
 
-<span class="sd">    Example:</span>
+<span class="sd">    .. rubric:: Example</span>
 
 <span class="sd">    &gt;&gt;&gt; class MyClass:</span>
 <span class="sd">    ...     @lru_cache_method</span>
@@ -2004,7 +2000,7 @@
 <span class="sd">            `cache_this`. One frequent use case would be to use `functools.partial` to</span>
 <span class="sd">            fix the cache and key parameters of `cache_this` and inject that.</span>
 
-<span class="sd">    Example:</span>
+<span class="sd">    .. rubric:: Example</span>
 
 <span class="sd">    &gt;&gt;&gt; @cache_property_method(['normal_method', 'property_method'])</span>
 <span class="sd">    ... class TestClass:</span>
@@ -2061,8 +2057,6 @@
 <span class="sd">    2</span>
 <span class="sd">    &gt;&gt;&gt; c.property_method</span>
 <span class="sd">    2</span>
-
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">method_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">assert</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
@@ -2157,8 +2151,9 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Make a memoizer that caches the output of a getter function in a cache.</span>
 
-<span class="sd">    Note: This is a specialized memoizer for getter functions/methods, i.e.</span>
-<span class="sd">    functions/methods that have the signature (instance, key) and return a value.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        This is a specialized memoizer for getter functions/methods, i.e.</span>
+<span class="sd">        functions/methods that have the signature (instance, key) and return a value.</span>
 
 <span class="sd">    :param cache: The cache to use. Must have __getitem__ and __setitem__ methods.</span>
 <span class="sd">    :return: A memoizer that caches the output of the function in the cache.</span>
@@ -2174,7 +2169,6 @@
 <span class="sd">    20</span>
 <span class="sd">    &gt;&gt;&gt; getter(None, 2)</span>
 <span class="sd">    20</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">memoize</span><span class="p">(</span><span class="n">method</span><span class="p">):</span>
@@ -2209,7 +2203,6 @@
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">        ...</span>
 <span class="sd">    AssertionError: cache should have the __setitem__ method, but does not: ()</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">assert_attrs</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">assert_attrs</span> <span class="o">=</span> <span class="p">(</span><span class="n">assert_attrs</span><span class="p">,)</span>
@@ -2245,7 +2238,8 @@
 <span class="sd">        cache: The store you want to use to cache. Anything with a __setitem__(k, v) and a __getitem__(k).</span>
 <span class="sd">            By default, it will use a dict</span>
 
-<span class="sd">    Returns: A subclass of the input store, but with caching (to the cache store)</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A subclass of the input store, but with caching (to the cache store)</span>
 
 <span class="sd">    &gt;&gt;&gt; from dol.caching import cache_vals</span>
 <span class="sd">    &gt;&gt;&gt; import time</span>
@@ -2345,8 +2339,11 @@
 <span class="sd">        store: The class of the store you want to cache</span>
 <span class="sd">        cache: The store you want to use to cache. Anything with a __setitem__(k, v) and a __getitem__(k).</span>
 <span class="sd">            By default, it will use a dict</span>
+
 <span class="sd">        return_source_data:</span>
-<span class="sd">    Returns: A subclass of the input store, but with caching (to the cache store)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A subclass of the input store, but with caching (to the cache store)</span>
 
 
 <span class="sd">    :param store: The class of the store you're talking to. This store acts as the cache</span>
@@ -2383,7 +2380,7 @@
 <span class="sd">    &gt;&gt;&gt; list(s)  # the local store has one key</span>
 <span class="sd">    ['some']</span>
 
-<span class="sd">    # but if we ask for a key that is in the remote store, it provides it</span>
+<span class="sd">    But if we ask for a key that is in the remote store, it provides it:</span>
 
 <span class="sd">    &gt;&gt;&gt; assert s['foo'] == 'bar'</span>
 <span class="sd">    looking for foo in Local</span>
@@ -2476,7 +2473,9 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_slow_but_somewhat_general_hash</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Attempts to create a hash of the inputs, recursively resolving the most common hurdles (dicts, sets, lists)</span>
-<span class="sd">    Returns: A hash value for the input</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A hash value for the input</span>
 
 <span class="sd">    &gt;&gt;&gt; _slow_but_somewhat_general_hash(1, [1, 2], a_set={1,2}, a_dict={'a': 1, 'b': [1,2]})</span>
 <span class="sd">    ((1, (1, 2)), (('a_set', (1, 2)), ('a_dict', (('a', 1), ('b', (1, 2))))))</span>
@@ -2508,6 +2507,7 @@
 <span class="sd">    memory and a key_func to compute the key under which to store the output.</span>
 
 <span class="sd">    The key can be</span>
+
 <span class="sd">    - a single value under which the output should be stored, regardless of the input.</span>
 <span class="sd">    - a key function that is called on the inputs to create a hash under which the function's output should be stored.</span>
 
@@ -2515,11 +2515,8 @@
 <span class="sd">        store: The key-value store to use for caching. Must support __getitem__ and __setitem__.</span>
 <span class="sd">        key_func: The key function that is called on the input of the function to create the key value.</span>
 
-<span class="sd">    Note: Union[Callable, Any] is equivalent to just Any, but reveals the two cases of a key more clearly.</span>
-<span class="sd">    Note: No, Union[Callable, Hashable] is not better. For one, general store keys are not restricted to hashable keys.</span>
-<span class="sd">    Note: No, they shouldn't.</span>
-
-<span class="sd">    See Also: store_cached_with_single_key (for a version where the cache store key doesn't depend on function's args)</span>
+<span class="sd">    See Also:</span>
+<span class="sd">        store_cached_with_single_key (for a version where the cache store key doesn't depend on function's args)</span>
 
 <span class="sd">    &gt;&gt;&gt; # Note: Our doc test will use dict as the store, but to make the functionality useful beyond existing</span>
 <span class="sd">    &gt;&gt;&gt; # RAM-memorizer, you should use actual "persisting" stores that store in local files, or DBs, etc.</span>
@@ -2577,20 +2574,19 @@
 
 <span class="sd">    The key should be a single value under which the output should be stored, regardless of the input.</span>
 
-<span class="sd">    Note: The wrapped function comes with a empty_cache attribute, which when called, empties the cache (i.e. removes</span>
-<span class="sd">    the key from the store)</span>
+<span class="sd">    Note:</span>
+<span class="sd">        The wrapped function comes with a empty_cache attribute, which when called, empties the cache (i.e. removes</span>
+<span class="sd">        the key from the store)</span>
 
-<span class="sd">    Note: The wrapped function has a hidden `_cache` attribute pointing to the store in case you need to peep into it.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        The wrapped function has a hidden `_cache` attribute pointing to the store in case you need to peep into it.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        store: The cache. The key-value store to use for caching. Must support __getitem__ and __setitem__.</span>
 <span class="sd">        key: The store key under which to store the output of the function.</span>
 
-<span class="sd">    Note: Union[Callable, Any] is equivalent to just Any, but reveals the two cases of a key more clearly.</span>
-<span class="sd">    Note: No, Union[Callable, Hashable] is not better. For one, general store keys are not restricted to hashable keys.</span>
-<span class="sd">    Note: No, they shouldn't.</span>
-
-<span class="sd">    See Also: store_cached (for a version whose keys are computed from the wrapped function's input.</span>
+<span class="sd">    See Also:</span>
+<span class="sd">        store_cached (for a version whose keys are computed from the wrapped function's input.</span>
 
 <span class="sd">    &gt;&gt;&gt; # Note: Our doc test will use dict as the store, but to make the functionality useful beyond existing</span>
 <span class="sd">    &gt;&gt;&gt; # RAM-memorizer, you should use actual "persisting" stores that store in local files, or DBs, etc.</span>
@@ -2703,7 +2699,12 @@
 
 
 <span class="c1"># TODO: Normalize using store_decorator and add control over flush_cache method name</span>
+<div class="viewcode-block" id="flush_on_exit">
+<a class="viewcode-back" href="../../_autosummary/dol.caching.html#dol.caching.flush_on_exit">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">flush_on_exit</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Class decorator: a subclass whose ``__exit__`` calls ``flush_cache()`` (adding a</span>
+<span class="sd">    trivial ``__enter__`` if the class has none), so a write-cached store can be used as</span>
+<span class="sd">    a context manager that flushes on exit. Used by ``mk_write_cached_store``."""</span>
     <span class="n">new_cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="p">(</span><span class="bp">cls</span><span class="p">,),</span> <span class="p">{})</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">new_cls</span><span class="p">,</span> <span class="s2">"__enter__"</span><span class="p">):</span>
@@ -2727,7 +2728,8 @@
 
     <span class="n">new_cls</span><span class="o">.</span><span class="fm">__exit__</span> <span class="o">=</span> <span class="fm">__exit__</span>
 
-    <span class="k">return</span> <span class="n">new_cls</span>
+    <span class="k">return</span> <span class="n">new_cls</span></div>
+
 
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">has_enabled_clear_method</span>
@@ -2926,13 +2928,13 @@
 <span class="sd">    Example use cases:</span>
 
 <span class="sd">    - You're working with a local and a remote source of data. You'd like to list the</span>
-<span class="sd">    keys available in both, and use the local item if it's available, and if it's not,</span>
-<span class="sd">    you want it to be sourced from remote, but written in local for quicker access</span>
-<span class="sd">    next time.</span>
+<span class="sd">      keys available in both, and use the local item if it's available, and if it's not,</span>
+<span class="sd">      you want it to be sourced from remote, but written in local for quicker access</span>
+<span class="sd">      next time.</span>
 
 <span class="sd">    - You have several sources to look for configuration values: a sequence of</span>
-<span class="sd">    configuration files/folders to look through (like a unix search path for command</span>
-<span class="sd">    resolution) and environment variables.</span>
+<span class="sd">      configuration files/folders to look through (like a unix search path for command</span>
+<span class="sd">      resolution) and environment variables.</span>
 <span class="sd">    """</span>
 
     <span class="n">max_key_search_depth</span> <span class="o">=</span> <span class="mi">1</span>
@@ -2987,9 +2989,14 @@
     <span class="p">)</span>
 
 
+<div class="viewcode-block" id="HashableMixin">
+<a class="viewcode-back" href="../../_autosummary/dol.caching.html#dol.caching.HashableMixin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HashableMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Mixin making instances hashable by identity (``id(self)``)."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="HashableDict">
@@ -3000,7 +3007,11 @@
 
 
 <span class="c1"># NOTE: cache uses (func, args, kwargs). Don't want to make more complex with a bind cast to (func, kwargs) only</span>
+<div class="viewcode-block" id="cache_func_outputs">
+<a class="viewcode-back" href="../../_autosummary/dol.caching.html#dol.caching.cache_func_outputs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">cache_func_outputs</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="n">HashableDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Decorator factory intended to cache a function's outputs in ``cache``, keyed by ``(func, args, kwargs)``;</span>
+<span class="sd">    only positional-argument calls with an explicitly given ``cache`` actually hit the cache."""</span>
     <span class="n">cache</span> <span class="o">=</span> <span class="n">get_cache</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">cache_method_decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
@@ -3016,7 +3027,8 @@
 
         <span class="k">return</span> <span class="n">_func</span>
 
-    <span class="k">return</span> <span class="n">cache_method_decorator</span>
+    <span class="k">return</span> <span class="n">cache_method_decorator</span></div>
+
 
 
 <span class="c1"># from dol import StrTupleDict</span>
@@ -3061,7 +3073,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

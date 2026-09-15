@@ -260,13 +260,20 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.appendable</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""</span>
-<span class="sd">Tools to add append-functionality to key-val stores. The main function is</span>
-<span class="sd">    `appendable_store_cls = add_append_functionality_to_store_cls(store_cls, item2kv, ...)`</span>
-<span class="sd">You give it the `store_cls` you want to sub class, and a item -&gt; (key, val) function, and you get a store (subclass) that</span>
-<span class="sd">has a `store.append(item)` method. Also includes an extend method (that just called appends in a loop.</span>
+<span></span><span class="sd">"""Tools to add append-functionality to key-val stores.</span>
 
-<span class="sd">See add_append_functionality_to_store_cls docs for examples.</span>
+<span class="sd">The main function is ``appendable(store_cls, item2kv=...)``: you give it the store</span>
+<span class="sd">class you want to subclass and an item -&gt; (key, val) function, and you get a store</span>
+<span class="sd">(subclass) that has a ``store.append(item)`` method (and an ``extend``, which appends in</span>
+<span class="sd">a loop). ``mk_item2kv_for`` holds ready-made item2kv factories (timestamps, uuids,</span>
+<span class="sd">fields of the item, ...).</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.appendable import appendable</span>
+<span class="sd">    &gt;&gt;&gt; S = appendable(dict, item2kv=lambda item: (item['id'], item))</span>
+<span class="sd">    &gt;&gt;&gt; s = S()</span>
+<span class="sd">    &gt;&gt;&gt; s.append({'id': 1})</span>
+<span class="sd">    &gt;&gt;&gt; s</span>
+<span class="sd">    {1: {'id': 1}}</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
@@ -286,7 +293,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        obj: Class (type) or instance of an object that has an "append" method.</span>
 
-<span class="sd">    Returns: The obj, but with that extend method.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The obj, but with that extend method.</span>
 
 <span class="sd">    &gt;&gt;&gt; class A:</span>
 <span class="sd">    ...     def __init__(self):</span>
@@ -310,7 +318,6 @@
 <span class="sd">    &gt;&gt;&gt; a.extend([10, 20])</span>
 <span class="sd">    &gt;&gt;&gt; a.t</span>
 <span class="sd">    [1, 2, 3, 10, 20]</span>
-
 <span class="sd">    """</span>
     <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"append"</span><span class="p">),</span> <span class="p">(</span>
         <span class="sa">f</span><span class="s2">"Your object needs to have an append method! Object was: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">"</span>
@@ -375,7 +382,9 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            attr_name: The attribute name to use as the key</span>
-<span class="sd">        Returns: an item -&gt; (key, val) function</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            an item -&gt; (key, val) function</span>
 
 <span class="sd">        &gt;&gt;&gt; ref_getter =mk_item2kv_for.attr("ref")</span>
 <span class="sd">        &gt;&gt;&gt; from collections import namedtuple</span>
@@ -383,7 +392,6 @@
 <span class="sd">        &gt;&gt;&gt; a = A(ref='some_ref')</span>
 <span class="sd">        &gt;&gt;&gt; ref_getter(a)</span>
 <span class="sd">        ('some_ref', A(ref='some_ref'))</span>
-
 <span class="sd">        """</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">item2kv</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
@@ -409,7 +417,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            item2key: an item -&gt; key function</span>
 
-<span class="sd">        Returns: an item -&gt; (key, val) function</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            an item -&gt; (key, val) function</span>
 
 <span class="sd">        &gt;&gt;&gt; item2key = lambda item: item['G']  # use value of 'L' as the key</span>
 <span class="sd">        &gt;&gt;&gt; item2key({'L': 'let', 'I': 'it', 'G': 'go'})</span>
@@ -428,8 +437,9 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">field</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">keep_field_in_value</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dflt_if_missing</span><span class="o">=</span><span class="n">NotSpecified</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""item2kv that uses a specific key of a (mapping) item as the key</span>
 
-<span class="sd">        Note: If keep_field_in_value=False, the field will be popped OUT of the item.</span>
-<span class="sd">         If that's not the desired effect, one should feed copies of the items (e.g. map(dict.copy, items))</span>
+<span class="sd">        Note:</span>
+<span class="sd">            If keep_field_in_value=False, the field will be popped OUT of the item.</span>
+<span class="sd">            If that's not the desired effect, one should feed copies of the items (e.g. map(dict.copy, items))</span>
 
 <span class="sd">        :param field: The field (value) to use as the returned key</span>
 <span class="sd">        :param keep_field_in_value: Whether to leave the field in the item. If False, will pop it out</span>
@@ -445,7 +455,6 @@
 <span class="sd">        &gt;&gt;&gt; item2kv = mk_item2kv_for.field('G', dflt_if_missing=None)</span>
 <span class="sd">        &gt;&gt;&gt; item2kv({'L': 'let', 'I': 'it', 'DIE': 'go'})</span>
 <span class="sd">        (None, {'L': 'let', 'I': 'it', 'DIE': 'go'})</span>
-
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">dflt_if_missing</span> <span class="ow">is</span> <span class="n">NotSpecified</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">keep_field_in_value</span><span class="p">:</span>
@@ -478,9 +487,11 @@
 <span class="sd">        or to get a more accurate timestamp of an event.</span>
 
 <span class="sd">        Use case for offset_s:</span>
+
 <span class="sd">            * Align to another system's clock</span>
 <span class="sd">            * Get more accurate timestamping of an event. For example, in situations where the item is a chunk of live</span>
-<span class="sd">            streaming data and we want the key (timestamp) to represent the timestamp of the beginning of the chunk.</span>
+<span class="sd">              streaming data and we want the key (timestamp) to represent the timestamp of the beginning of the chunk.</span>
+
 <span class="sd">            Without an offset_s, the timestamp would be the timestamp after the last byte of the chunk was produced,</span>
 <span class="sd">            plus the time it took to reach the present function. If we know the data production rate (e.g. sample rate)</span>
 <span class="sd">            and the average lag to get to the present function, we can get a more accurate timestamp for the beginning</span>
@@ -489,14 +500,14 @@
 <span class="sd">        Args:</span>
 <span class="sd">            offset_s: An offset (in seconds, possibly negative) to add to the current time.</span>
 
-<span class="sd">        Returns: an item -&gt; (current_utc_s, item) function</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            an item -&gt; (current_utc_s, item) function</span>
 
 <span class="sd">        &gt;&gt;&gt; import time</span>
 <span class="sd">        &gt;&gt;&gt; item2key = mk_item2kv_for.utc_key()</span>
 <span class="sd">        &gt;&gt;&gt; k, v = item2key('some data')</span>
 <span class="sd">        &gt;&gt;&gt; assert abs(time.time() - k) &lt; 0.01  # which asserts that k is indeed a (current) utc timestamp</span>
 <span class="sd">        &gt;&gt;&gt; assert v == 'some data'  # just the item itself</span>
-
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">time_postproc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 
@@ -522,7 +533,8 @@
 <span class="sd">        One advantage though, is that the uuid is time-based, so it can be used to sort</span>
 <span class="sd">        the keys in the order they were IDed.</span>
 
-<span class="sd">        Returns: an item -&gt; (uuid, item) function</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            an item -&gt; (uuid, item) function</span>
 
 <span class="sd">        &gt;&gt;&gt; import uuid</span>
 <span class="sd">        &gt;&gt;&gt; item2key = mk_item2kv_for.uuid_key()</span>
@@ -537,7 +549,6 @@
 <span class="sd">        &gt;&gt;&gt; k, v = item2key('some data')</span>
 <span class="sd">        &gt;&gt;&gt; isinstance(k, uuid.UUID)</span>
 <span class="sd">        True</span>
-
 <span class="sd">        """</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 
@@ -560,12 +571,11 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            item_to_key_params_and_val: an item -&gt; (key_params, val) function</span>
-<span class="sd">            key_str_format: A string format such that</span>
-<span class="sd">                    key_str_format.format(*key_params) or</span>
-<span class="sd">                    key_str_format.format(**key_params)</span>
-<span class="sd">                will produce the desired key string</span>
+<span class="sd">            key_str_format: A string format such that ``key_str_format.format(*key_params)``</span>
+<span class="sd">                or ``key_str_format.format(**key_params)`` will produce the desired key string</span>
 
-<span class="sd">        Returns: an item -&gt; (key, val) function</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            an item -&gt; (key, val) function</span>
 
 <span class="sd">        &gt;&gt;&gt; # Using tuple key params with unnamed string format fields</span>
 <span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.item_to_key_params_and_val(lambda x: ((x['L'], x['I']), x['G']), '{}/{}')</span>
@@ -592,14 +602,16 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">fields</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">keep_field_in_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">key_as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Make item2kv from specific fields of a Mapping (i.e. dict-like object) item.</span>
 
-<span class="sd">        Note: item2kv will not mutate item (even if keep_field_in_value=False).</span>
+<span class="sd">        Note:</span>
+<span class="sd">            item2kv will not mutate item (even if keep_field_in_value=False).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            fields: The sequence (list, tuple, etc.) of item fields that should be used to create the key.</span>
 <span class="sd">            keep_field_in_value: Set to True to return the item as is, as the value</span>
 <span class="sd">            key_as_tuple: Set to True if you want keys to be tuples (note that the fields order is important here!)</span>
 
-<span class="sd">        Returns: an item -&gt; (item[fields], item[not in fields]) function</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            an item -&gt; (item[fields], item[not in fields]) function</span>
 
 <span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields('L')</span>
 <span class="sd">        &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
@@ -613,7 +625,6 @@
 <span class="sd">        &gt;&gt;&gt; item_to_kv = mk_item2kv_for.fields(('G', 'L'), key_as_tuple=True)  # but ('G', 'L') order is respected here</span>
 <span class="sd">        &gt;&gt;&gt; item_to_kv({'L': 'let', 'I': 'it', 'G': 'go'})</span>
 <span class="sd">        (('go', 'let'), {'I': 'it'})</span>
-
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">fields_set</span> <span class="o">=</span> <span class="p">{</span><span class="n">fields</span><span class="p">}</span>
@@ -656,7 +667,8 @@
 <span class="sd">        item2kv: The function that produces a (key, val) pair from an item</span>
 <span class="sd">        new_store_name: The name to give the new class (default will be 'Appendable' + store_cls.__name__)</span>
 
-<span class="sd">    Returns: A subclass of store_cls with two additional methods: append, and extend.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A subclass of store_cls with two additional methods: append, and extend.</span>
 
 
 <span class="sd">    &gt;&gt;&gt; item_to_kv = lambda item: (item['L'], item)  # use value of 'L' as the key, and value is the item itself</span>
@@ -781,7 +793,6 @@
 <span class="sd">    &gt;&gt;&gt; b_extender += ' split'</span>
 <span class="sd">    &gt;&gt;&gt; store</span>
 <span class="sd">    {'a': 'pplesauce', 'b': 'anana split'}</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -964,7 +975,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

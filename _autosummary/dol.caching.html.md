@@ -14,43 +14,19 @@ Main Use Cases:
 
 Key Tools:
 
-cache_this:
-
-```default
-The main decorator for caching properties and methods. Automatically detects
-whether to use property or method caching based on function signature.
-Supports custom cache storage, key functions, parameter ignoring, and
-serialization hooks.
-```
-
-CachedProperty:
-
-```default
-A descriptor for caching property values with flexible cache storage and
-key generation strategies.
-```
-
-CachedMethod:
-
-```default
-A descriptor for caching method results based on arguments, with support
-for parameter filtering and custom key functions.
-```
-
-KeyStrategy Protocol:
-
-```default
-Extensible system for defining how cache keys are generated, including
-strategies for explicit keys, instance properties, method arguments, and
-composite keys.
-```
-
-Store Decorators:
-
-```default
-Tools like cache_vals, mk_sourced_store, and store_cached for adding
-caching layers to data stores.
-```
+- `cache_this`: The main decorator for caching properties and methods.
+  Automatically detects whether to use property or method caching based on
+  function signature. Supports custom cache storage, key functions, parameter
+  ignoring, and serialization hooks.
+- `CachedProperty`: A descriptor for caching property values with flexible
+  cache storage and key generation strategies.
+- `CachedMethod`: A descriptor for caching method results based on arguments,
+  with support for parameter filtering and custom key functions.
+- `KeyStrategy` protocol: Extensible system for defining how cache keys are
+  generated, including strategies for explicit keys, instance properties,
+  method arguments, and composite keys.
+- Store decorators: Tools like `cache_vals`, `mk_sourced_store`, and
+  `store_cached` for adding caching layers to data stores.
 
 ### Examples
 
@@ -85,26 +61,26 @@ Custom cache storage and key functions:
 
 ### Functions
 
-| [`add_extension`](#dol.caching.add_extension)([ext, name])                          | Add an extension to a name.                                                                                                                                 |
-|------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `cache_func_outputs`([cache])                                                                        |                                                                                                                                                             |
-| [`cache_property_method`](#dol.caching.cache_property_method)([cls, method_name, ...])      | Converts a method of a class into a CachedProperty.                                                                                                         |
-| [`cache_this`](#dol.caching.cache_this)([func, cache, key, pre_cache, ...])      | Unified caching decorator for properties and methods with persistent storage support.                                                                       |
-| [`cache_vals`](#dol.caching.cache_vals)([store, cache, \_\_module_\_, ...])      |                                                                                                                                                             |
-| [`cached_method`](#dol.caching.cached_method)([func, maxsize, typed])               | A decorator to cache the result of a method, ignoring the first argument (usually `self`).                                                                  |
-| [`ensure_clear_to_kv_store`](#dol.caching.ensure_clear_to_kv_store)(store)                     | Ensures the store has a working clear method.                                                                                                               |
-| `flush_on_exit`(cls)                                                                                 |                                                                                                                                                             |
-| [`get_cache`](#dol.caching.get_cache)(cache)                                    | Convenience function to get a cache (whether it's already an instance, or needs to be validated).                                                           |
-| [`identity`](#dol.caching.identity)(x)                                         | Identity function that returns its input unchanged.                                                                                                         |
-| [`is_a_cache`](#dol.caching.is_a_cache)(obj)                                     | Check if an object implements the cache interface.                                                                                                          |
-| [`lru_cache_method`](#dol.caching.lru_cache_method)([func, maxsize, typed])            | A decorator to cache the result of a method, ignoring the first argument (usually `self`).                                                                  |
-| [`mk_cached_store`](#dol.caching.mk_cached_store)([store, cache, \_\_module_\_, ...]) |                                                                                                                                                             |
-| [`mk_memoizer`](#dol.caching.mk_memoizer)(cache)                                  | Make a memoizer that caches the output of a getter function in a cache.                                                                                     |
-| [`mk_sourced_store`](#dol.caching.mk_sourced_store)([store, source, ...])              |                                                                                                                                                             |
-| [`mk_write_cached_store`](#dol.caching.mk_write_cached_store)([store, w_cache, ...])        | Wrap a write cache around a store.                                                                                                                          |
-| [`register_key_strategy`](#dol.caching.register_key_strategy)(cls)                          | Register a class as a KeyStrategy.                                                                                                                          |
-| [`store_cached`](#dol.caching.store_cached)(store, key_func)                       | Function output memorizer but using a specific (usually persisting) store as it's memory and a key_func to compute the key under which to store the output. |
-| [`store_cached_with_single_key`](#dol.caching.store_cached_with_single_key)(store, key)            | Function output memorizer but using a specific store and key as its memory.                                                                                 |
+| [`add_extension`](#dol.caching.add_extension)([ext, name])                          | Add an extension to a name.                                                                                                                                                                             |
+|------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`cache_func_outputs`](#dol.caching.cache_func_outputs)([cache])                         | Decorator factory intended to cache a function's outputs in `cache`, keyed by `(func, args, kwargs)`; only positional-argument calls with an explicitly given `cache` actually hit the cache.           |
+| [`cache_property_method`](#dol.caching.cache_property_method)([cls, method_name, ...])      | Converts a method of a class into a CachedProperty.                                                                                                                                                     |
+| [`cache_this`](#dol.caching.cache_this)([func, cache, key, pre_cache, ...])      | Unified caching decorator for properties and methods with persistent storage support.                                                                                                                   |
+| [`cache_vals`](#dol.caching.cache_vals)([store, cache, \_\_module_\_, ...])      |                                                                                                                                                                                                         |
+| [`cached_method`](#dol.caching.cached_method)([func, maxsize, typed])               | A decorator to cache the result of a method, ignoring the first argument (usually `self`).                                                                                                              |
+| [`ensure_clear_to_kv_store`](#dol.caching.ensure_clear_to_kv_store)(store)                     | Ensures the store has a working clear method.                                                                                                                                                           |
+| [`flush_on_exit`](#dol.caching.flush_on_exit)(cls)                                  | Class decorator: a subclass whose `__exit__` calls `flush_cache()` (adding a trivial `__enter__` if the class has none), so a write-cached store can be used as a context manager that flushes on exit. |
+| [`get_cache`](#dol.caching.get_cache)(cache)                                    | Convenience function to get a cache (whether it's already an instance, or needs to be validated).                                                                                                       |
+| [`identity`](#dol.caching.identity)(x)                                         | Identity function that returns its input unchanged.                                                                                                                                                     |
+| [`is_a_cache`](#dol.caching.is_a_cache)(obj)                                     | Check if an object implements the cache interface.                                                                                                                                                      |
+| [`lru_cache_method`](#dol.caching.lru_cache_method)([func, maxsize, typed])            | A decorator to cache the result of a method, ignoring the first argument (usually `self`).                                                                                                              |
+| [`mk_cached_store`](#dol.caching.mk_cached_store)([store, cache, \_\_module_\_, ...]) |                                                                                                                                                                                                         |
+| [`mk_memoizer`](#dol.caching.mk_memoizer)(cache)                                  | Make a memoizer that caches the output of a getter function in a cache.                                                                                                                                 |
+| [`mk_sourced_store`](#dol.caching.mk_sourced_store)([store, source, ...])              |                                                                                                                                                                                                         |
+| [`mk_write_cached_store`](#dol.caching.mk_write_cached_store)([store, w_cache, ...])        | Wrap a write cache around a store.                                                                                                                                                                      |
+| [`register_key_strategy`](#dol.caching.register_key_strategy)(cls)                          | Register a class as a KeyStrategy.                                                                                                                                                                      |
+| [`store_cached`](#dol.caching.store_cached)(store, key_func)                       | Function output memorizer but using a specific (usually persisting) store as it's memory and a key_func to compute the key under which to store the output.                                             |
+| [`store_cached_with_single_key`](#dol.caching.store_cached_with_single_key)(store, key)            | Function output memorizer but using a specific store and key as its memory.                                                                                                                             |
 
 ### Classes
 
@@ -117,14 +93,14 @@ Custom cache storage and key functions:
 | [`ExplicitKey`](#dol.caching.ExplicitKey)(key)                              | Use an explicitly provided key value.                                       |
 | [`FromMethodArgs`](#dol.caching.FromMethodArgs)(func)                          | Apply a function to method arguments to generate the key.                   |
 | [`HashableDict`](#dol.caching.HashableDict)                                  | Just a dict, but hashable                                                   |
-| `HashableMixin`()                                                                              |                                                                             |
+| [`HashableMixin`](#dol.caching.HashableMixin)()                               | Mixin making instances hashable by identity (`id(self)`).                   |
 | [`InstanceProp`](#dol.caching.InstanceProp)(prop_name)                       | Get a key from an instance property.                                        |
 | [`KeyStrategy`](#dol.caching.KeyStrategy)(\*args, \*\*kwargs)               | Protocol defining how a key strategy should behave.                         |
 | [`WriteBackChainMap`](#dol.caching.WriteBackChainMap)(\*maps)                     | A collections.ChainMap that also 'writes back' when a key is found.         |
 
 ### *class* dol.caching.ApplyToInstance(func)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Apply a function to the instance to generate the key.
 
@@ -133,7 +109,7 @@ Apply a function to the instance to generate the key.
 Cannot resolve at definition time, need the instance.
 
 * **Return type:**
-  [`None`](https://docs.python.org/3/library/constants.html#None)
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 #### resolve_at_runtime(instance, method_name)
 
@@ -144,7 +120,7 @@ Apply the function to the instance at runtime.
 
 ### *class* dol.caching.ApplyToMethodName(func)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Apply a function to the method name to generate the key.
 
@@ -163,7 +139,7 @@ Apply the function to the method name at definition time.
 
 ### *class* dol.caching.CachedMethod(func, cache=None, key=None, \*, ignore=None, allow_none_keys=False, lock_factory=<class '_thread.RLock'>, pre_cache=False, serialize=None, deserialize=None)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Descriptor that caches the result of method calls based on their arguments.
 
@@ -172,7 +148,7 @@ based on unique combinations of arguments (excluding self).
 
 ### *class* dol.caching.CachedProperty(func, cache=None, key=None, \*, allow_none_keys=False, lock_factory=<class '_thread.RLock'>, pre_cache=False, serialize=None, deserialize=None)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Descriptor that caches the result of the first call to a method.
 
@@ -181,7 +157,7 @@ specify a cache object and a key to store the cache value.
 
 ### *class* dol.caching.CompositeKey(\*strategies, separator='_')
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Combine multiple key strategies into a single composite key.
 
@@ -192,7 +168,7 @@ Useful for creating keys that depend on both instance properties and method argu
 Try to resolve all strategies at definition time.
 
 * **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any) | [`None`](https://docs.python.org/3/library/constants.html#None)
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 #### resolve_at_runtime(instance, method_name, \*args, \*\*kwargs)
 
@@ -203,7 +179,7 @@ Resolve all strategies at runtime and combine them.
 
 ### *class* dol.caching.ExplicitKey(key)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Use an explicitly provided key value.
 
@@ -222,18 +198,18 @@ Return the explicit key value at definition time.
 
 ### *class* dol.caching.FromMethodArgs(func)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Apply a function to method arguments to generate the key.
 
-The function receives (self, \*args, \*\*kwargs) and should return a cache key.
+The function receives `(self, *args, **kwargs)` and should return a cache key.
 
 #### resolve_at_definition(method_name)
 
 Cannot resolve at definition time, need the arguments.
 
 * **Return type:**
-  [`None`](https://docs.python.org/3/library/constants.html#None)
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 #### resolve_at_runtime(instance, method_name, \*args, \*\*kwargs)
 
@@ -244,13 +220,19 @@ Apply the function to the instance and method arguments at runtime.
 
 ### *class* dol.caching.HashableDict
 
-Bases: `HashableMixin`, [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)
+Bases: [`HashableMixin`](#dol.caching.HashableMixin), [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 Just a dict, but hashable
 
+### *class* dol.caching.HashableMixin
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Mixin making instances hashable by identity (`id(self)`).
+
 ### *class* dol.caching.InstanceProp(prop_name)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Get a key from an instance property.
 
@@ -259,7 +241,7 @@ Get a key from an instance property.
 Cannot resolve at definition time, need the instance.
 
 * **Return type:**
-  [`None`](https://docs.python.org/3/library/constants.html#None)
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 #### resolve_at_runtime(instance, method_name)
 
@@ -279,9 +261,9 @@ Protocol defining how a key strategy should behave.
 Attempt to resolve the key at class definition time.
 
 * **Parameters:**
-  **method_name** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – The name of the method being decorated.
+  **method_name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The name of the method being decorated.
 * **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any) | [`None`](https://docs.python.org/3/library/constants.html#None)
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 * **Returns:**
   The resolved key or None if it can’t be resolved at definition time.
 
@@ -292,7 +274,7 @@ By default, this will call resolve_at_definition on method_name.
 
 * **Parameters:**
   * **instance** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – The instance the property is being accessed on.
-  * **method_name** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – The name of the method being decorated.
+  * **method_name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The name of the method being decorated.
 * **Return type:**
   [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
 * **Returns:**
@@ -398,6 +380,11 @@ Also, bare in mind that if ext starts with the system’s extension separator,
 True
 ```
 
+### dol.caching.cache_func_outputs(cache=<class 'dol.caching.HashableDict'>)
+
+Decorator factory intended to cache a function’s outputs in `cache`, keyed by `(func, args, kwargs)`;
+only positional-argument calls with an explicitly given `cache` actually hit the cache.
+
 ### dol.caching.cache_property_method(cls=None, method_name=None, \*, cache_decorator=<function cache_this>)
 
 Converts a method of a class into a CachedProperty.
@@ -407,8 +394,8 @@ the `__set_name__` problem that you’d run into doing it that way.
 Note that here, you need to say `cache_property_method(A, 'method')`.
 
 * **Parameters:**
-  * **cls** ([*type*](https://docs.python.org/3/library/functions.html#type)) – The class containing the method.
-  * **method_name** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – The name of the method to convert to a cached property.
+  * **cls** ([*type*](https://docs.python.org/3/builtins/functions.html#type)) – The class containing the method.
+  * **method_name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The name of the method to convert to a cached property.
   * **cache_decorator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – The decorator to use to cache the method. Defaults to
     `cache_this`. One frequent use case would be to use `functools.partial` to
     fix the cache and key parameters of `cache_this` and inject that.
@@ -493,7 +480,7 @@ cache_this provides a unified interface for both use cases with persistent stora
 
 * **Parameters:**
   * **func** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]) – The function to be decorated (usually left empty).
-  * **cache** (`Union`[[`str`](https://docs.python.org/3/library/stdtypes.html#str), [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/library/constants.html#None)]) – 
+  * **cache** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – 
 
     The cache storage. Can be:
     - A MutableMapping instance (shared across instances)
@@ -501,32 +488,24 @@ cache_this provides a unified interface for both use cases with persistent stora
     - A callable taking (instance) and returning a MutableMapping
       This enables instance-specific caching, e.g.:
       cache=lambda self: Files(f’/cache/{self.user_id}/’)
-  * **key** (`Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/library/stdtypes.html#str)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`None`](https://docs.python.org/3/library/constants.html#None)]) – For properties: the key to store the cache value, can be a callable
+  * **key** (`Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – For properties: the key to store the cache value, can be a callable
     that will be applied to the method name to make a key, or an explicit string.
-    For methods: a callable that takes (self, \*args, \*\*kwargs) and returns a cache key.
-  * **pre_cache** ([`bool`](https://docs.python.org/3/library/functions.html#bool) | [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)) – Default is False. If True, adds an in-memory cache to the method
+    For methods: a callable that takes `(self, *args, **kwargs)` and returns a cache key.
+  * **pre_cache** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool) | [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)) – Default is False. If True, adds an in-memory cache to the method
     to (also) cache the results in memory. If a MutableMapping is given, it will be
     used as the pre-cache.
     This is useful when you want a persistent cache but also want to speed up
     access to the method in the same session.
-  * **as_property** ([`bool`](https://docs.python.org/3/library/functions.html#bool) | [`None`](https://docs.python.org/3/library/constants.html#None)) – If True, force use of CachedProperty. If False, force use of
+  * **as_property** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – If True, force use of CachedProperty. If False, force use of
     CachedMethod. If None (default), auto-detect based on function signature.
-  * **ignore** ([`str`](https://docs.python.org/3/library/stdtypes.html#str) | [`list`](https://docs.python.org/3/library/stdtypes.html#list)[[`str`](https://docs.python.org/3/library/stdtypes.html#str)] | [`None`](https://docs.python.org/3/library/constants.html#None)) – Parameter name(s) to exclude from cache key computation.
+  * **ignore** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Parameter name(s) to exclude from cache key computation.
     Can be a string (single parameter) or list of strings (multiple parameters).
     Commonly used to ignore ‘self’ or parameters like ‘verbose’ that don’t
     affect the result.
-  * **serialize** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`None`](https://docs.python.org/3/library/constants.html#None)) – 
-
-    Optional function to serialize values before caching.
-
-    Example:
-    : serialize=pickle.dumps for binary file storage
-  * **deserialize** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`None`](https://docs.python.org/3/library/constants.html#None)) – 
-
-    Optional function to deserialize cached values.
-
-    Example:
-    : deserialize=pickle.loads
+  * **serialize** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional function to serialize values before caching
+    (e.g. `pickle.dumps` for binary file storage).
+  * **deserialize** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional function to deserialize cached values
+    (e.g. `pickle.loads`).
 * **Returns:**
   The decorated function.
 
@@ -910,17 +889,14 @@ This decorator uses `functools.lru_cache` to cache the method result based on th
 to the method, excluding the first argument (typically `self`). This allows methods of a class to
 be cached while ignoring the instance (`self`) in the cache key.
 
-### Parameters
-
-- func (callable, optional): The method to be decorated. If not provided, a partially applied decorator
-  will be returned for later application.
-- maxsize (int, optional): The maximum size of the cache. Defaults to 128.
-- typed (bool, optional): If True, cache entries will be different based on argument types, such as
-  distinguishing between `1` and `1.0`. Defaults to False.
-
-### Returns
-
-- callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).
+* **Parameters:**
+  * **func** – The method to be decorated. If not provided, a partially applied
+    decorator will be returned for later application.
+  * **maxsize** – The maximum size of the cache.
+  * **typed** – If True, cache entries will be different based on argument types,
+    such as distinguishing between `1` and `1.0`.
+* **Returns:**
+  A wrapped function with LRU caching applied, ignoring the first argument (`self`).
 
 ### Example
 
@@ -965,6 +941,12 @@ adds a proper implementation that safely removes all items.
 >>> len(d)
 0
 ```
+
+### dol.caching.flush_on_exit(cls)
+
+Class decorator: a subclass whose `__exit__` calls `flush_cache()` (adding a
+trivial `__enter__` if the class has none), so a write-cached store can be used as
+a context manager that flushes on exit. Used by `mk_write_cached_store`.
 
 ### dol.caching.get_cache(cache)
 
@@ -1017,17 +999,14 @@ This decorator uses `functools.lru_cache` to cache the method result based on th
 to the method, excluding the first argument (typically `self`). This allows methods of a class to
 be cached while ignoring the instance (`self`) in the cache key.
 
-### Parameters
-
-- func (callable, optional): The method to be decorated. If not provided, a partially applied decorator
-  will be returned for later application.
-- maxsize (int, optional): The maximum size of the cache. Defaults to 128.
-- typed (bool, optional): If True, cache entries will be different based on argument types, such as
-  distinguishing between `1` and `1.0`. Defaults to False.
-
-### Returns
-
-- callable: A wrapped function with LRU caching applied, ignoring the first argument (`self`).
+* **Parameters:**
+  * **func** – The method to be decorated. If not provided, a partially applied
+    decorator will be returned for later application.
+  * **maxsize** – The maximum size of the cache.
+  * **typed** – If True, cache entries will be different based on argument types,
+    such as distinguishing between `1` and `1.0`.
+* **Returns:**
+  A wrapped function with LRU caching applied, ignoring the first argument (`self`).
 
 ### Example
 
@@ -1206,7 +1185,7 @@ if it can’t find it locally.
 ['some']
 ```
 
-### but if we ask for a key that is in the remote store, it provides it
+But if we ask for a key that is in the remote store, it provides it:
 
 ```pycon
 >>> assert s['foo'] == 'bar'
@@ -1349,15 +1328,6 @@ The key can be
   * **store** – The key-value store to use for caching. Must support \_\_getitem_\_ and \_\_setitem_\_.
   * **key_func** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – The key function that is called on the input of the function to create the key value.
 
-#### NOTE
-Union[Callable, Any] is equivalent to just Any, but reveals the two cases of a key more clearly.
-
-#### NOTE
-No, Union[Callable, Hashable] is not better. For one, general store keys are not restricted to hashable keys.
-
-#### NOTE
-No, they shouldn’t.
-
 #### SEE ALSO
 store_cached_with_single_key (for a version where the cache store key doesn’t depend on function’s args)
 
@@ -1402,15 +1372,6 @@ The wrapped function has a hidden `_cache` attribute pointing to the store in ca
 * **Parameters:**
   * **store** – The cache. The key-value store to use for caching. Must support \_\_getitem_\_ and \_\_setitem_\_.
   * **key** – The store key under which to store the output of the function.
-
-#### NOTE
-Union[Callable, Any] is equivalent to just Any, but reveals the two cases of a key more clearly.
-
-#### NOTE
-No, Union[Callable, Hashable] is not better. For one, general store keys are not restricted to hashable keys.
-
-#### NOTE
-No, they shouldn’t.
 
 #### SEE ALSO
 store_cached (for a version whose keys are computed from the wrapped function’s input.

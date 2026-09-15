@@ -279,6 +279,36 @@ But simply put, what <code class="docutils literal notranslate"><span class="pre
 <p>The package is light-weight: Pure python; no third-party dependencies.</p>
 <p>To install:	<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">dol</span></code></p>
 <p><a class="reference external" href="https://i2mint.github.io/dol/">Documentation here</a></p>
+<!-- epythet:agentic-readme:start -->
+<section id="for-ai-agents">
+<h2>For AI agents<a class="headerlink" href="#for-ai-agents" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">dol</span></code> ships tooling for coding agents. If you are one, start here.</p>
+<p><strong>Skills</strong> (<a class="reference external" href="https://agentskills.io">Agent Skills</a> format), for any agent host.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Skill</p></th>
+<th class="head"><p>Use it to</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dol-dev-portability</span></code></p></td>
+<td><p>keep dol working on Windows as well as Linux/macOS</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dol-dev-wrap-kvs</span></code></p></td>
+<td><p>understand and safely modify dol’s core wrapping machinery — wrap_kvs, store_decorator, Store.wrap, and how transforms are applied</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dol-store-building</span></code></p></td>
+<td><p>build a dol store: wrap any storage backend</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Instruction files</strong>: <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code> (Claude Code).</p>
+<p><strong>The documentation, machine-readable</strong>: <a class="reference external" href="https://i2mint.github.io/dol/llms.txt"><code class="docutils literal notranslate"><span class="pre">llms.txt</span></code></a> indexes every page; <a class="reference external" href="https://i2mint.github.io/dol/dol.md"><code class="docutils literal notranslate"><span class="pre">dol.md</span></code></a> is the whole documentation in one file; every page has a <code class="docutils literal notranslate"><span class="pre">.md</span></code> twin; <a class="reference external" href="https://i2mint.github.io/dol/objects.inv"><code class="docutils literal notranslate"><span class="pre">objects.inv</span></code></a> maps symbols to URLs. The full list, with install lines, is on the site’s <a class="reference external" href="https://i2mint.github.io/dol/ai-agents.html">For AI agents</a> page.</p>
+<p>If you like writing your own code, the rest of this README is written for you, starting at <a class="reference internal" href="#example-use">Example use</a>.</p>
+<!-- epythet:agentic-readme:end -->
+</section>
 <section id="example-use">
 <h2>Example use<a class="headerlink" href="#example-use" title="Link to this heading">¶</a></h2>
 <p>Say you have a source backend that has pickles of some lists-of-lists-of-strings,
@@ -455,112 +485,112 @@ __delitem__ calls: _id_of_key
 __iter__    calls:	            _key_of_id
 </pre></div>
 </div>
-<div class="highlight-pydocstring notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; from dol import Store
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">Store</span>
 </pre></div>
 </div>
 <p>A Store can be instantiated with no arguments. By default it will make a dict and wrap that.</p>
-<div class="highlight-pydocstring notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; # Default store: no key or value conversion ################################################
-&gt;&gt;&gt; s = Store()
-&gt;&gt;&gt; s['foo'] = 33
-&gt;&gt;&gt; s['bar'] = 65
-&gt;&gt;&gt; assert list(s.items()) == [('foo', 33), ('bar', 65)]
-&gt;&gt;&gt; assert list(s.store.items()) == [('foo', 33), ('bar', 65)]  # see that the store contains the same thing
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Default store: no key or value conversion ################################################</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Store</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'foo'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">33</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'bar'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">65</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">'foo'</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="p">(</span><span class="s1">'bar'</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">'foo'</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="p">(</span><span class="s1">'bar'</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>  <span class="c1"># see that the store contains the same thing</span>
 </pre></div>
 </div>
 <p>Now let’s make stores that have a key and value conversion layer
 input keys will be upper cased, and output keys lower cased
 input values (assumed int) will be converted to ascii string, and visa versa</p>
-<div class="highlight-pydocstring notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;
-&gt;&gt;&gt; def test_store(s):
-...     s['foo'] = 33  # write 33 to 'foo'
-...     assert 'foo' in s  # __contains__ works
-...     assert 'no_such_key' not in s  # __nin__ works
-...     s['bar'] = 65  # write 65 to 'bar'
-...     assert len(s) == 2  # there are indeed two elements
-...     assert list(s) == ['foo', 'bar']  # these are the keys
-...     assert list(s.keys()) == ['foo', 'bar']  # the keys() method works!
-...     assert list(s.values()) == [33, 65]  # the values() method works!
-...     assert list(s.items()) == [('foo', 33), ('bar', 65)]  # these are the items
-...     assert list(s.store.items()) == [('FOO', '!'), ('BAR', 'A')]  # but note the internal representation
-...     assert s.get('foo') == 33  # the get method works
-...     assert s.get('no_such_key', 'something') == 'something'  # return a default value
-...     del(s['foo'])  # you can delete an item given its key
-...     assert len(s) == 1  # see, only one item left!
-...     assert list(s.items()) == [('bar', 65)]  # here it is
-&gt;&gt;&gt;
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">test_store</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">s</span><span class="p">[</span><span class="s1">'foo'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">33</span>  <span class="c1"># write 33 to 'foo'</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="s1">'foo'</span> <span class="ow">in</span> <span class="n">s</span>  <span class="c1"># __contains__ works</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="s1">'no_such_key'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">s</span>  <span class="c1"># __nin__ works</span>
+<span class="gp">... </span>    <span class="n">s</span><span class="p">[</span><span class="s1">'bar'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">65</span>  <span class="c1"># write 65 to 'bar'</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>  <span class="c1"># there are indeed two elements</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="s1">'foo'</span><span class="p">,</span> <span class="s1">'bar'</span><span class="p">]</span>  <span class="c1"># these are the keys</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="p">[</span><span class="s1">'foo'</span><span class="p">,</span> <span class="s1">'bar'</span><span class="p">]</span>  <span class="c1"># the keys() method works!</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">==</span> <span class="p">[</span><span class="mi">33</span><span class="p">,</span> <span class="mi">65</span><span class="p">]</span>  <span class="c1"># the values() method works!</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">'foo'</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="p">(</span><span class="s1">'bar'</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>  <span class="c1"># these are the items</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">'FOO'</span><span class="p">,</span> <span class="s1">'!'</span><span class="p">),</span> <span class="p">(</span><span class="s1">'BAR'</span><span class="p">,</span> <span class="s1">'A'</span><span class="p">)]</span>  <span class="c1"># but note the internal representation</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">33</span>  <span class="c1"># the get method works</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'no_such_key'</span><span class="p">,</span> <span class="s1">'something'</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'something'</span>  <span class="c1"># return a default value</span>
+<span class="gp">... </span>    <span class="k">del</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">'foo'</span><span class="p">])</span>  <span class="c1"># you can delete an item given its key</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>  <span class="c1"># see, only one item left!</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">'bar'</span><span class="p">,</span> <span class="mi">65</span><span class="p">)]</span>  <span class="c1"># here it is</span>
+<span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
 <p>We can introduce this conversion layer in several ways.</p>
 <p>Here are few…</p>
 <section id="by-subclassing">
 <h2>by subclassing<a class="headerlink" href="#by-subclassing" title="Link to this heading">¶</a></h2>
-<div class="highlight-pydocstring notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; # by subclassing ###############################################################################
-&gt;&gt;&gt; class MyStore(Store):
-...     def _id_of_key(self, k):
-...         return k.upper()
-...     def _key_of_id(self, _id):
-...         return _id.lower()
-...     def _data_of_obj(self, obj):
-...         return chr(obj)
-...     def _obj_of_data(self, data):
-...         return ord(data)
-&gt;&gt;&gt; s = MyStore(store=dict())  # note that you don't need to specify dict(), since it's the default
-&gt;&gt;&gt; test_store(s)
-&gt;&gt;&gt;
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># by subclassing ###############################################################################</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyStore</span><span class="p">(</span><span class="n">Store</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_id_of_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">k</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_key_of_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_id</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">_id</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_data_of_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="nb">dict</span><span class="p">())</span>  <span class="c1"># note that you don't need to specify dict(), since it's the default</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_store</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
 </section>
 <section id="by-assigning-functions-to-converters">
 <h2>by assigning functions to converters<a class="headerlink" href="#by-assigning-functions-to-converters" title="Link to this heading">¶</a></h2>
-<div class="highlight-pydocstring notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; # by assigning functions to converters ##########################################################
-&gt;&gt;&gt; class MyStore(Store):
-...     def __init__(self, store, _id_of_key, _key_of_id, _data_of_obj, _obj_of_data):
-...         super().__init__(store)
-...         self._id_of_key = _id_of_key
-...         self._key_of_id = _key_of_id
-...         self._data_of_obj = _data_of_obj
-...         self._obj_of_data = _obj_of_data
-...
-&gt;&gt;&gt; s = MyStore(dict(),
-...             _id_of_key=lambda k: k.upper(),
-...             _key_of_id=lambda _id: _id.lower(),
-...             _data_of_obj=lambda obj: chr(obj),
-...             _obj_of_data=lambda data: ord(data))
-&gt;&gt;&gt; test_store(s)
-&gt;&gt;&gt;
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># by assigning functions to converters ##########################################################</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyStore</span><span class="p">(</span><span class="n">Store</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="p">,</span> <span class="n">_id_of_key</span><span class="p">,</span> <span class="n">_key_of_id</span><span class="p">,</span> <span class="n">_data_of_obj</span><span class="p">,</span> <span class="n">_obj_of_data</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_id_of_key</span> <span class="o">=</span> <span class="n">_id_of_key</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_key_of_id</span> <span class="o">=</span> <span class="n">_key_of_id</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_data_of_obj</span> <span class="o">=</span> <span class="n">_data_of_obj</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">_obj_of_data</span> <span class="o">=</span> <span class="n">_obj_of_data</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">(</span><span class="nb">dict</span><span class="p">(),</span>
+<span class="gp">... </span>            <span class="n">_id_of_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+<span class="gp">... </span>            <span class="n">_key_of_id</span><span class="o">=</span><span class="k">lambda</span> <span class="n">_id</span><span class="p">:</span> <span class="n">_id</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+<span class="gp">... </span>            <span class="n">_data_of_obj</span><span class="o">=</span><span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">chr</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span>
+<span class="gp">... </span>            <span class="n">_obj_of_data</span><span class="o">=</span><span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_store</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
 </section>
 <section id="using-a-mixin-class">
 <h2>using a Mixin class<a class="headerlink" href="#using-a-mixin-class" title="Link to this heading">¶</a></h2>
-<div class="highlight-pydocstring notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; # using a Mixin class #############################################################################
-&gt;&gt;&gt; class Mixin:
-...     def _id_of_key(self, k):
-...         return k.upper()
-...     def _key_of_id(self, _id):
-...         return _id.lower()
-...     def _data_of_obj(self, obj):
-...         return chr(obj)
-...     def _obj_of_data(self, data):
-...         return ord(data)
-...
-&gt;&gt;&gt; class MyStore(Mixin, Store):  # note that the Mixin must come before Store in the mro
-...     pass
-...
-&gt;&gt;&gt; s = MyStore()  # no dict()? No, because default anyway
-&gt;&gt;&gt; test_store(s)
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># using a Mixin class #############################################################################</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Mixin</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_id_of_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">k</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_key_of_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_id</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">_id</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_data_of_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyStore</span><span class="p">(</span><span class="n">Mixin</span><span class="p">,</span> <span class="n">Store</span><span class="p">):</span>  <span class="c1"># note that the Mixin must come before Store in the mro</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">MyStore</span><span class="p">()</span>  <span class="c1"># no dict()? No, because default anyway</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_store</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="adding-wrapper-methods-to-an-already-made-store-instance">
 <h2>adding wrapper methods to an already made Store instance<a class="headerlink" href="#adding-wrapper-methods-to-an-already-made-store-instance" title="Link to this heading">¶</a></h2>
-<div class="highlight-pydocstring notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; # adding wrapper methods to an already made Store instance #########################################
-&gt;&gt;&gt; s = Store(dict())
-&gt;&gt;&gt; s._id_of_key=lambda k: k.upper()
-&gt;&gt;&gt; s._key_of_id=lambda _id: _id.lower()
-&gt;&gt;&gt; s._data_of_obj=lambda obj: chr(obj)
-&gt;&gt;&gt; s._obj_of_data=lambda data: ord(data)
-&gt;&gt;&gt; test_store(s)
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># adding wrapper methods to an already made Store instance #########################################</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Store</span><span class="p">(</span><span class="nb">dict</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_id_of_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_key_of_id</span><span class="o">=</span><span class="k">lambda</span> <span class="n">_id</span><span class="p">:</span> <span class="n">_id</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_data_of_obj</span><span class="o">=</span><span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">chr</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">_obj_of_data</span><span class="o">=</span><span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_store</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -590,6 +620,7 @@ functionalities that use <code class="docutils literal notranslate"><span class=
 </section>
 </section>
 
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-09-15 09:53 UTC from <a href="https://github.com/i2mint/dol/commit/c20dc595d77d931effd7af9a494fdb83927537bb">c20dc59</a> (master) · dol 0.3.67 · <a href="about-this-build.html">about this build</a></p>
         </article>
       </div>
       <footer>
@@ -632,6 +663,7 @@ functionalities that use <code class="docutils literal notranslate"><span class=
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">dol</a><ul>
+<li><a class="reference internal" href="#for-ai-agents">For AI agents</a></li>
 <li><a class="reference internal" href="#example-use">Example use</a></li>
 <li><a class="reference internal" href="#a-list-various-packages-that-use-dol">A list various packages that use dol</a></li>
 </ul>
@@ -666,7 +698,7 @@ functionalities that use <code class="docutils literal notranslate"><span class=
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

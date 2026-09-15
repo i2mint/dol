@@ -260,7 +260,16 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.errors</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Error objects and utils"""</span>
+<span></span><span class="sd">"""Error objects and utils.</span>
+
+<span class="sd">The exception classes dol raises (``NotAllowed``, ``OverWritesNotAllowedError``,</span>
+<span class="sd">``KeyValidationError``, ...) and ``items_with_caught_exceptions``, an ``items()``</span>
+<span class="sd">that skips (or reports) the keys whose value cannot be fetched.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.errors import items_with_caught_exceptions</span>
+<span class="sd">    &gt;&gt;&gt; list(items_with_caught_exceptions({'a': 1}))</span>
+<span class="sd">    [('a', 1)]</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="kn">import</span> <span class="n">signature</span>
@@ -303,9 +312,11 @@
 <span class="sd">    :param d: Any Mapping</span>
 <span class="sd">    :param catch_exceptions: A tuple of exceptions that should be caught</span>
 <span class="sd">    :param callback: A function that will be called every time an exception is caught.</span>
-<span class="sd">        The signature of the callback function is required to be:</span>
-<span class="sd">            k (key), e (error obj), d (mapping), i (index)</span>
-<span class="sd">        but</span>
+<span class="sd">        It may take any subset of the arguments ``k`` (key), ``e`` (error obj),</span>
+<span class="sd">        ``d`` (mapping) and ``i`` (index), by name (see the examples below); if its</span>
+<span class="sd">        signature cannot be inspected it is called with all four, positionally.</span>
+<span class="sd">    :param yield_callback_output: If True, also yield the callback's output for the</span>
+<span class="sd">        keys whose value raised.</span>
 <span class="sd">    :return: An (key, val) generator with exceptions caught</span>
 
 <span class="sd">    &gt;&gt;&gt; from collections.abc import Mapping</span>
@@ -503,7 +514,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

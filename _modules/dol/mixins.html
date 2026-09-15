@@ -260,7 +260,25 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.mixins</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Mixins"""</span>
+<span></span><span class="sd">"""Mixins that add or restrict store behaviours.</span>
+
+<span class="sd">Main entry points:</span>
+
+<span class="sd">- ``ReadOnlyMixin``: forbid writes and deletes</span>
+<span class="sd">- ``OverWritesNotAllowedMixin``: forbid writing to an existing key</span>
+<span class="sd">- ``SimpleJsonMixin``: JSON-encoded values</span>
+<span class="sd">- ``IterBasedSizedContainerMixin``: ``__len__`` and ``__contains__`` from ``__iter__``</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.mixins import OverWritesNotAllowedMixin</span>
+<span class="sd">    &gt;&gt;&gt; class P(OverWritesNotAllowedMixin, dict):</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; p = P()</span>
+<span class="sd">    &gt;&gt;&gt; p['a'] = 1</span>
+<span class="sd">    &gt;&gt;&gt; p['a'] = 2  # doctest: +ELLIPSIS</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    dol.errors.OverWritesNotAllowedError: key a already exists and cannot be overwritten...</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.errors</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -299,6 +317,7 @@
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Maps an interface identifier (key) to an internal identifier (_id) that is actually used to perform operations.</span>
 <span class="sd">        Can also perform validation and permission checks.</span>
+
 <span class="sd">        :param k: interface identifier of some data</span>
 <span class="sd">        :return: internal identifier _id</span>
 <span class="sd">        """</span>
@@ -307,6 +326,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_key_of_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_id</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        The inverse of _id_of_key. Maps an internal identifier (_id) to an interface identifier (key)</span>
+
 <span class="sd">        :param _id:</span>
 <span class="sd">        :return:</span>
 <span class="sd">        """</span>
@@ -325,6 +345,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_data_of_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Serialization of a python object.</span>
+
 <span class="sd">        :param v: A python object.</span>
 <span class="sd">        :return: The serialization of this object, in a format that can be stored by __getitem__</span>
 <span class="sd">        """</span>
@@ -333,6 +354,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Deserialization. The inverse of _data_of_obj.</span>
+
 <span class="sd">        :param data: Serialized data.</span>
 <span class="sd">        :return: The python object corresponding to this data.</span>
 <span class="sd">        """</span>
@@ -375,8 +397,11 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check if collection of keys contains k.</span>
-<span class="sd">        Note: This method iterates over all elements of the collection to check if k is present.</span>
-<span class="sd">        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method iterates over all elements of the collection to check if k is present.</span>
+<span class="sd">            Therefore it is not efficient, and in most cases should be overridden with a more efficient version.</span>
+
 <span class="sd">        :return: True if k is in the collection, and False if not</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_filt</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__contains__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
@@ -417,7 +442,9 @@
 <a class="viewcode-back" href="../../_autosummary/dol.mixins.html#dol.mixins.OverWritesNotAllowedMixin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OverWritesNotAllowedMixin</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Mixin for only allowing a write to a key if they key doesn't already exist.</span>
-<span class="sd">    Note: Should be before the persister in the MRO.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Should be before the persister in the MRO.</span>
 
 <span class="sd">    &gt;&gt;&gt; class TestPersister(OverWritesNotAllowedMixin, dict):</span>
 <span class="sd">    ...     pass</span>
@@ -465,8 +492,11 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check if collection of keys contains k.</span>
-<span class="sd">        Note: This method actually fetches the contents for k, returning False if there's a key error trying to do so</span>
-<span class="sd">        Therefore it may not be efficient, and in most cases, a method specific to the case should be used.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method actually fetches the contents for k, returning False if there's a key error trying to do so</span>
+<span class="sd">            Therefore it may not be efficient, and in most cases, a method specific to the case should be used.</span>
+
 <span class="sd">        :return: True if k is in the collection, and False if not</span>
 <span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
@@ -480,8 +510,11 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check if collection of keys contains k.</span>
-<span class="sd">        Note: This method iterates over all elements of the collection to check if k is present.</span>
-<span class="sd">        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method iterates over all elements of the collection to check if k is present.</span>
+<span class="sd">            Therefore it is not efficient, and in most cases should be overridden with a more efficient version.</span>
+
 <span class="sd">        :return: True if k is in the collection, and False if not</span>
 <span class="sd">        """</span>
         <span class="k">for</span> <span class="n">collection_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">():</span>
@@ -494,8 +527,11 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of elements in collection of keys.</span>
-<span class="sd">        Note: This method iterates over all elements of the collection and counts them.</span>
-<span class="sd">        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method iterates over all elements of the collection and counts them.</span>
+<span class="sd">            Therefore it is not efficient, and in most cases should be overridden with a more efficient version.</span>
+
 <span class="sd">        :return: The number (int) of elements in the collection of keys.</span>
 <span class="sd">        """</span>
         <span class="c1"># TODO: some other means to more quickly count files?</span>
@@ -510,13 +546,15 @@
 <a class="viewcode-back" href="../../_autosummary/dol.mixins.html#dol.mixins.IterBasedSizedContainerMixin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">IterBasedSizedContainerMixin</span><span class="p">(</span><span class="n">IterBasedSizedMixin</span><span class="p">,</span> <span class="n">IterBasedContainerMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    An ABC that defines</span>
-<span class="sd">        (a) how to iterate over a collection of elements (keys) (__iter__)</span>
-<span class="sd">        (b) check that a key is contained in the collection (__contains__), and</span>
-<span class="sd">        (c) how to get the number of elements in the collection</span>
+<span class="sd">    An ABC that defines:</span>
+
+<span class="sd">    (a) how to iterate over a collection of elements (keys) (``__iter__``)</span>
+<span class="sd">    (b) check that a key is contained in the collection (``__contains__``), and</span>
+<span class="sd">    (c) how to get the number of elements in the collection (``__len__``)</span>
+
 <span class="sd">    This is exactly what the collections.abc.Collection (from which Keys inherits) does.</span>
 <span class="sd">    The difference here, besides the "Keys" purpose-explicit name, is that Keys offers default</span>
-<span class="sd">     __len__ and __contains__  definitions based on what ever __iter__ the concrete class defines.</span>
+<span class="sd">    ``__len__`` and ``__contains__`` definitions based on what ever ``__iter__`` the concrete class defines.</span>
 
 <span class="sd">    Keys is a collection (i.e. a Sized (has __len__), Iterable (has __iter__), Container (has __contains__).</span>
 <span class="sd">    It's purpose is to serve as a collection of object identifiers in a key-&gt;obj mapping.</span>
@@ -563,7 +601,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

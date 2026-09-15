@@ -118,7 +118,7 @@ Delegate the `url_for` seam to the backend if it has one (else `None`).
 
 ### *class* dol.content.ContentRef(item_id, field='content', hash=None, url=None, mime_type=None, size=None)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A small, serializable stand-in for stored content (bytes).
 
@@ -140,13 +140,13 @@ Parse a wire-form dict (camelCase) back into a [`ContentRef`](#dol.content.Conte
 camelCase wire form matching `zodal`’s `ContentRef` (empty fields dropped).
 
 * **Return type:**
-  [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ### dol.content.HashFunc
 
 A key-minting hash constructor, e.g. `hashlib.sha256` — `bytes -> hash object`.
 
-alias of `Callable`[[[`bytes`](https://docs.python.org/3/library/stdtypes.html#bytes)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]
+alias of `Callable`[[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]
 
 ### *class* dol.content.SupportsUrlFor(\*args, \*\*kwargs)
 
@@ -186,7 +186,7 @@ prefix is 64 bits) — leave `length` unset unless keys must be short and the
 corpus is small.
 
 * **Return type:**
-  [`str`](https://docs.python.org/3/library/stdtypes.html#str)
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ```pycon
 >>> content_hash(b'abc') == content_hash(b'abc')
@@ -203,7 +203,7 @@ Prefers a URL the ref already carries; otherwise asks the backend’s `url_for`
 (the [`SupportsUrlFor`](#dol.content.SupportsUrlFor) seam), returning `None` if it has none.
 
 * **Return type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/library/stdtypes.html#str)]
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ```pycon
 >>> class Served(dict):
@@ -234,7 +234,7 @@ b'v'
 Delete content by [`ContentRef`](#dol.content.ContentRef), wire dict, or bare key (`del store[key]`).
 
 * **Return type:**
-  [`None`](https://docs.python.org/3/library/constants.html#None)
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 ```pycon
 >>> s = {}
@@ -249,7 +249,7 @@ False
 Read content bytes by [`ContentRef`](#dol.content.ContentRef), wire dict, or bare key.
 
 * **Return type:**
-  [`bytes`](https://docs.python.org/3/library/stdtypes.html#bytes)
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
 
 ```pycon
 >>> s = {}
@@ -265,7 +265,7 @@ Guess a mime type from a filename/key by extension (stdlib `mimetypes`).
 Results depend on the platform’s mime registry, so treat them as best-effort.
 
 * **Return type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/library/stdtypes.html#str)]
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ```pycon
 >>> guess_mime_type('a.json')
@@ -279,7 +279,7 @@ True
 True for a [`ContentRef`](#dol.content.ContentRef) instance or its wire-form dict (`_tag` discriminator).
 
 * **Return type:**
-  [`bool`](https://docs.python.org/3/library/functions.html#bool)
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ```pycon
 >>> is_content_ref(ContentRef('id1'))

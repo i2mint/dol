@@ -1,6 +1,16 @@
 # dol.errors
 
-Error objects and utils
+Error objects and utils.
+
+The exception classes dol raises (`NotAllowed`, `OverWritesNotAllowedError`,
+`KeyValidationError`, …) and `items_with_caught_exceptions`, an `items()`
+that skips (or reports) the keys whose value cannot be fetched.
+
+```pycon
+>>> from dol.errors import items_with_caught_exceptions
+>>> list(items_with_caught_exceptions({'a': 1}))
+[('a', 1)]
+```
 
 ### Functions
 
@@ -27,7 +37,7 @@ Error objects and utils
 
 ### *exception* dol.errors.AlreadyExists
 
-Bases: [`ValueError`](https://docs.python.org/3/library/exceptions.html#ValueError)
+Bases: [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
 
 To use if an object already exists (and shouldn’t; for example, to protect overwrites)
 
@@ -63,25 +73,25 @@ To use when a method name already exists (and shouldn’t)
 
 ### *exception* dol.errors.NoSuchKeyError
 
-Bases: [`KeyError`](https://docs.python.org/3/library/exceptions.html#KeyError)
+Bases: [`KeyError`](https://docs.python.org/3/builtins/exceptions.html#KeyError)
 
 When a requested key doesn’t exist
 
 ### *exception* dol.errors.NotAllowed
 
-Bases: [`Exception`](https://docs.python.org/3/library/exceptions.html#Exception)
+Bases: [`Exception`](https://docs.python.org/3/builtins/exceptions.html#Exception)
 
 To use to indicate that something is not allowed
 
 ### *exception* dol.errors.NotValid
 
-Bases: [`ValueError`](https://docs.python.org/3/library/exceptions.html#ValueError), [`TypeError`](https://docs.python.org/3/library/exceptions.html#TypeError)
+Bases: [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError), [`TypeError`](https://docs.python.org/3/builtins/exceptions.html#TypeError)
 
 To use to indicate when an object doesn’t fit expected properties
 
 ### *exception* dol.errors.OperationNotAllowed
 
-Bases: [`NotAllowed`](#dol.errors.NotAllowed), [`NotImplementedError`](https://docs.python.org/3/library/exceptions.html#NotImplementedError)
+Bases: [`NotAllowed`](#dol.errors.NotAllowed), [`NotImplementedError`](https://docs.python.org/3/builtins/exceptions.html#NotImplementedError)
 
 When a given operation is not allowed (through being disabled, conditioned, or just implemented)
 
@@ -135,13 +145,12 @@ Or, in many cases, you can just use `items_with_caught_exceptions`.
 * **Parameters:**
   * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – Any Mapping
   * **catch_exceptions** – A tuple of exceptions that should be caught
-  * **callback** – 
-
-    A function that will be called every time an exception is caught.
-    The signature of the callback function is required to be:
-    > k (key), e (error obj), d (mapping), i (index)
-
-    but
+  * **callback** – A function that will be called every time an exception is caught.
+    It may take any subset of the arguments `k` (key), `e` (error obj),
+    `d` (mapping) and `i` (index), by name (see the examples below); if its
+    signature cannot be inspected it is called with all four, positionally.
+  * **yield_callback_output** – If True, also yield the callback’s output for the
+    keys whose value raised.
 * **Returns:**
   An (key, val) generator with exceptions caught
 

@@ -287,15 +287,30 @@ add this key interface layer.</p>
 <p>These key converters object serialization methods default to the identity (i.e. they return the input as is).
 This means that you don’t have to implement these as all, and can choose to implement these concerns within
 the storage methods themselves.</p>
+<p>Main entry points:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">KvReader</span></code>: base class for read-only stores (a <code class="docutils literal notranslate"><span class="pre">Mapping</span></code> with a <code class="docutils literal notranslate"><span class="pre">head</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KvPersister</span></code>: base class for read-write stores (a <code class="docutils literal notranslate"><span class="pre">MutableMapping</span></code>, <code class="docutils literal notranslate"><span class="pre">clear</span></code> disabled)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Store</span></code>: a persister with the key/value transform hooks, wrapping a backend</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kv_walk</span></code>: walk a nested mapping, yielding (path, key, value) triples by default</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Store</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Store</span><span class="p">({})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="go">(1, ['a'])</span>
+</pre></div>
+</div>
+</li>
+</ul>
 <p class="rubric">Functions</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">asis</span></code>(p, k, v)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.base.asis" title="dol.base.asis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asis</span></code></a>(p, k, v)</p></td>
+<td><p>Return <code class="docutils literal notranslate"><span class="pre">(p,</span> <span class="pre">k,</span> <span class="pre">v)</span></code> as is (the default <code class="docutils literal notranslate"><span class="pre">kv_walk</span></code> <code class="docutils literal notranslate"><span class="pre">leaf_yield</span></code>).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">delegate_to</span></code>(wrapped[, class_trans, ...])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.base.delegate_to" title="dol.base.delegate_to"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delegate_to</span></code></a>(wrapped[, class_trans, ...])</p></td>
+<td><p>Class decorator factory: the decorated wrapper class constructs a <code class="docutils literal notranslate"><span class="pre">wrapped</span></code> instance and delegates to it, through <code class="docutils literal notranslate"><span class="pre">delegation_attr</span></code>, the attributes of <code class="docutils literal notranslate"><span class="pre">wrapped</span></code> (<code class="docutils literal notranslate"><span class="pre">dir(wrapped)</span></code> minus <code class="docutils literal notranslate"><span class="pre">ignore</span></code>, plus <code class="docutils literal notranslate"><span class="pre">include</span></code>) not already defined on the wrapper.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.base.delegator_wrap" title="dol.base.delegator_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delegator_wrap</span></code></a>(delegator, obj[, ...])</p></td>
 <td><p>Wrap a <code class="docutils literal notranslate"><span class="pre">obj</span></code> (type or instance) with <code class="docutils literal notranslate"><span class="pre">delegator</span></code>.</p></td>
@@ -306,11 +321,11 @@ the storage methods themselves.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.base.kv_walk" title="dol.base.kv_walk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kv_walk</span></code></a>(v[, leaf_yield, walk_filt, ...])</p></td>
 <td><p>Walks a nested structure of mappings, yielding stuff on the way.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple_keypath_and_val</span></code>(p, k, v)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.base.tuple_keypath_and_val" title="dol.base.tuple_keypath_and_val"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple_keypath_and_val</span></code></a>(p, k, v)</p></td>
+<td><p>Extend the path <code class="docutils literal notranslate"><span class="pre">p</span></code> with the key <code class="docutils literal notranslate"><span class="pre">k</span></code> and return <code class="docutils literal notranslate"><span class="pre">(new_path,</span> <span class="pre">v)</span></code> (the default <code class="docutils literal notranslate"><span class="pre">kv_walk</span></code> <code class="docutils literal notranslate"><span class="pre">pkv_to_pv</span></code>).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">val_is_mapping</span></code>(p, k, v)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.base.val_is_mapping" title="dol.base.val_is_mapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">val_is_mapping</span></code></a>(p, k, v)</p></td>
+<td><p>Whether the walked value <code class="docutils literal notranslate"><span class="pre">v</span></code> is a <code class="docutils literal notranslate"><span class="pre">Mapping</span></code> (a <code class="docutils literal notranslate"><span class="pre">kv_walk</span></code> <code class="docutils literal notranslate"><span class="pre">walk_filt</span></code>).</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrapped_delegator_reconstruct</span></code>(wrapped_cls, ...)</p></td>
 <td><p></p></td>
@@ -325,14 +340,14 @@ the storage methods themselves.</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">AttrNames</span></code>()</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.base.AttrNames" title="dol.base.AttrNames"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AttrNames</span></code></a>()</p></td>
+<td><p>Name sets of the methods that make up each mapping interface (<code class="docutils literal notranslate"><span class="pre">Collection</span></code>, <code class="docutils literal notranslate"><span class="pre">Mapping</span></code>, <code class="docutils literal notranslate"><span class="pre">KvReader</span></code>, <code class="docutils literal notranslate"><span class="pre">KvPersister</span></code>, ...).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.base.Collection" title="dol.base.Collection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Collection</span></code></a>()</p></td>
 <td><p>The same as collections.abc.Collection, with some modifications:</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DelegatedAttribute</span></code>(delegate_name, attr_name)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.base.DelegatedAttribute" title="dol.base.DelegatedAttribute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DelegatedAttribute</span></code></a>(delegate_name, attr_name)</p></td>
+<td><p>Descriptor forwarding <code class="docutils literal notranslate"><span class="pre">attr_name</span></code> lookups to the object held in the instance's <code class="docutils literal notranslate"><span class="pre">delegate_name</span></code> attribute.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.base.KeyValidationABC" title="dol.base.KeyValidationABC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KeyValidationABC</span></code></a>()</p></td>
 <td><p>An ABC for an object writer.</p></td>
@@ -346,11 +361,11 @@ the storage methods themselves.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.base.KvStore" title="dol.base.KvStore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KvStore</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">MappingViewMixin</span></code>()</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.base.MappingViewMixin" title="dol.base.MappingViewMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MappingViewMixin</span></code></a>()</p></td>
+<td><p>Make <code class="docutils literal notranslate"><span class="pre">keys()</span></code>, <code class="docutils literal notranslate"><span class="pre">values()</span></code> and <code class="docutils literal notranslate"><span class="pre">items()</span></code> build their views from the <code class="docutils literal notranslate"><span class="pre">KeysView</span></code>, <code class="docutils literal notranslate"><span class="pre">ValuesView</span></code> and <code class="docutils literal notranslate"><span class="pre">ItemsView</span></code> class attributes, so a subclass can swap in its own view classes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">NoSuchItem</span></code>()</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.base.NoSuchItem" title="dol.base.NoSuchItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NoSuchItem</span></code></a>()</p></td>
+<td><p>Sentinel type; <code class="docutils literal notranslate"><span class="pre">no_such_item</span></code> is its instance.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.base.Persister" title="dol.base.Persister"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Persister</span></code></a></p></td>
 <td><p></p></td>
@@ -359,17 +374,24 @@ the storage methods themselves.</p>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.base.Store" title="dol.base.Store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Store</span></code></a>([store])</p></td>
-<td><p>By store we mean key-value store. This could be files in a filesystem, objects in s3, or a database. Where and how the content is stored should be specified, but StoreInterface offers a dict-like interface to this. ::     __getitem__ calls: _id_of_key                                       _obj_of_data     __setitem__ calls: _id_of_key                   _data_of_obj     __delitem__ calls: _id_of_key     __iter__    calls:                  _key_of_id.</p></td>
+<td><p>By store we mean key-value store.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.base.Stream" title="dol.base.Stream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stream</span></code></a>(stream)</p></td>
 <td><p>A layer-able version of the stream interface</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stream_util</span></code>()</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.base.stream_util" title="dol.base.stream_util"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stream_util</span></code></a>()</p></td>
+<td><p>Small callbacks for <code class="docutils literal notranslate"><span class="pre">Stream</span></code>: an always-true filter, a no-op, and rewind (<code class="docutils literal notranslate"><span class="pre">skip_lines</span></code> currently only rewinds).</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.base.AttrNames">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">AttrNames</span></span><a class="reference internal" href="../_modules/dol/base.html#AttrNames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.AttrNames" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Name sets of the methods that make up each mapping interface (<code class="docutils literal notranslate"><span class="pre">Collection</span></code>, <code class="docutils literal notranslate"><span class="pre">Mapping</span></code>, <code class="docutils literal notranslate"><span class="pre">KvReader</span></code>, <code class="docutils literal notranslate"><span class="pre">KvPersister</span></code>, …).</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.base.Collection">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">Collection</span></span><a class="reference internal" href="../_modules/dol/base.html#Collection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.Collection" title="Link to this definition">¶</a></dt>
@@ -381,9 +403,16 @@ the storage methods themselves.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="dol.base.DelegatedAttribute">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">DelegatedAttribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delegate_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/base.html#DelegatedAttribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.DelegatedAttribute" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Descriptor forwarding <code class="docutils literal notranslate"><span class="pre">attr_name</span></code> lookups to the object held in the instance’s <code class="docutils literal notranslate"><span class="pre">delegate_name</span></code> attribute.</p>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="dol.base.KeyValidationABC">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">KeyValidationABC</span></span><a class="reference internal" href="../_modules/dol/base.html#KeyValidationABC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.KeyValidationABC" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An ABC for an object writer.
 Single purpose: store an object under a given key.
 How the object is serialized and or physically stored should be defined in a concrete subclass.</p>
@@ -410,12 +439,10 @@ But in the general case, this might</p>
 </ul>
 <p>Another example: <code class="code docutils literal notranslate"><span class="pre">s.popitem()</span></code> will pop a <code class="code docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">v)</span></code> pair off of the <code class="code docutils literal notranslate"><span class="pre">s</span></code> store.
 That is, retrieve the <code class="code docutils literal notranslate"><span class="pre">v</span></code> for <code class="code docutils literal notranslate"><span class="pre">k</span></code>, delete the entry for <code class="code docutils literal notranslate"><span class="pre">k</span></code>, and return a <code class="code docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">v)</span></code>.
-Note that unlike modern dicts which will return the last item that was stored</p>
-<blockquote>
-<div><p>– that is, LIFO (last-in, first-out) order – for KvPersisters,
+Note that unlike modern dicts which will return the last item that was stored
+(that is, LIFO (last-in, first-out) order), for KvPersisters
 there’s no assurance as to what item will be, since it will depend on the backend storage system
 and/or how the persister was implemented.</p>
-</div></blockquote>
 <dl class="py method">
 <dt class="sig sig-object py" id="dol.base.KvPersister.clear">
 <span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dol.base.KvPersister.clear" title="Link to this definition">¶</a></dt>
@@ -441,7 +468,7 @@ If you really want to delete all your data, you can do so by doing something lik
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.base.KvReader">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">KvReader</span></span><a class="reference internal" href="../_modules/dol/base.html#KvReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.KvReader" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MappingViewMixin</span></code>, <a class="reference internal" href="#dol.base.Collection" title="dol.base.Collection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Collection</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#dol.base.MappingViewMixin" title="dol.base.MappingViewMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">MappingViewMixin</span></code></a>, <a class="reference internal" href="#dol.base.Collection" title="dol.base.Collection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Collection</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a></p>
 <p>Acts as a Mapping abc, but with default __len__ (implemented by counting keys)
 and head method to get the first (k, v) item of the store</p>
 <dl class="py method">
@@ -456,6 +483,34 @@ and head method to get the first (k, v) item of the store</p>
 <dt class="sig sig-object py" id="dol.base.KvStore">
 <span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">KvStore</span></span><a class="headerlink" href="#dol.base.KvStore" title="Link to this definition">¶</a></dt>
 <dd><p>alias of <a class="reference internal" href="#dol.base.Store" title="dol.base.Store"><code class="xref py py-class docutils literal notranslate"><span class="pre">Store</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.base.MappingViewMixin">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">MappingViewMixin</span></span><a class="reference internal" href="../_modules/dol/base.html#MappingViewMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.MappingViewMixin" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Make <code class="docutils literal notranslate"><span class="pre">keys()</span></code>, <code class="docutils literal notranslate"><span class="pre">values()</span></code> and <code class="docutils literal notranslate"><span class="pre">items()</span></code> build their views from the
+<code class="docutils literal notranslate"><span class="pre">KeysView</span></code>, <code class="docutils literal notranslate"><span class="pre">ValuesView</span></code> and <code class="docutils literal notranslate"><span class="pre">ItemsView</span></code> class attributes, so a subclass can
+swap in its own view classes.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.base.MappingViewMixin.ItemsView">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ItemsView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.base.MappingViewMixin.ItemsView" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.MappingView" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MappingView</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Set" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.base.MappingViewMixin.KeysView">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">KeysView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.base.MappingViewMixin.KeysView" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.MappingView" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MappingView</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Set" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.base.NoSuchItem">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">NoSuchItem</span></span><a class="reference internal" href="../_modules/dol/base.html#NoSuchItem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.NoSuchItem" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Sentinel type; <code class="docutils literal notranslate"><span class="pre">no_such_item</span></code> is its instance.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -685,7 +740,7 @@ So let’s test this on dictionaries, using the following test function:</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.base.Stream">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">Stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stream</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/base.html#Stream"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.Stream" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A layer-able version of the stream interface</p>
 <blockquote>
 <div><p>__iter__    calls: _obj_of_data(map)</p>
@@ -845,6 +900,28 @@ So let’s test this on dictionaries, using the following test function:</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.base.asis">
+<span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">asis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/base.html#asis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.asis" title="Link to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">(p,</span> <span class="pre">k,</span> <span class="pre">v)</span></code> as is (the default <code class="docutils literal notranslate"><span class="pre">kv_walk</span></code> <code class="docutils literal notranslate"><span class="pre">leaf_yield</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.base.delegate_to">
+<span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">delegate_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wrapped</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_trans</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delegation_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'store'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">frozenset({})</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">frozenset({})</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/base.html#delegate_to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.delegate_to" title="Link to this definition">¶</a></dt>
+<dd><p>Class decorator factory: the decorated wrapper class constructs a <code class="docutils literal notranslate"><span class="pre">wrapped</span></code> instance and delegates to it, through <code class="docutils literal notranslate"><span class="pre">delegation_attr</span></code>, the attributes of <code class="docutils literal notranslate"><span class="pre">wrapped</span></code> (<code class="docutils literal notranslate"><span class="pre">dir(wrapped)</span></code> minus <code class="docutils literal notranslate"><span class="pre">ignore</span></code>, plus <code class="docutils literal notranslate"><span class="pre">include</span></code>) not already defined on the wrapper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.base.delegator_wrap">
 <span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">delegator_wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delegator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_trans</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delegation_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'store'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/base.html#delegator_wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.delegator_wrap" title="Link to this definition">¶</a></dt>
 <dd><p>Wrap a <code class="docutils literal notranslate"><span class="pre">obj</span></code> (type or instance) with <code class="docutils literal notranslate"><span class="pre">delegator</span></code>.</p>
@@ -857,7 +934,7 @@ same signature as obj, but that produces instances that are wrapped by <code cla
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>delegator</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></span>) – An instance wrapper. A Callable (type or function – with only
 one required input) that will return a wrapped version of it’s input instance.</p></li>
-<li><p><strong>obj</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span>) – The object (class or instance) to be wrapped.</p></li>
+<li><p><strong>obj</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span>) – The object (class or instance) to be wrapped.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -950,12 +1027,12 @@ So let’s test this on dictionaries, using the following test function:</p>
 <li><p><strong>v</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a></span>) – A nested structure of mappings</p></li>
 <li><p><strong>leaf_yield</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">PT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">KT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">VT</span></code>)], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span>) – (pp, k, vv) -&gt; Any, what you want to yield when you encounter
 a leaf node (as define by walk_filt resolving to False)</p></li>
-<li><p><strong>walk_filt</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">PT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">KT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">VT</span></code>)], <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]</span>) – (p, k, vv) -&gt; (bool) whether to explore the nested structure v further</p></li>
-<li><p><strong>pkv_to_pv</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">PT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">KT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">VT</span></code>)], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">PT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">VT</span></code>)]]</span>) – (p, k, v) -&gt; (pp, vv)
+<li><p><strong>walk_filt</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">PT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">KT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">VT</span></code>)], <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]</span>) – (p, k, vv) -&gt; (bool) whether to explore the nested structure v further</p></li>
+<li><p><strong>pkv_to_pv</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">PT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">KT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">VT</span></code>)], <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">PT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">VT</span></code>)]]</span>) – (p, k, v) -&gt; (pp, vv)
 where pp is a form of p + k (update of the path with the new node k)
 and vv is the value that will be used by both walk_filt and leaf_yield</p></li>
 <li><p><strong>p</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">PT</span></code>)</span>) – The path to v (used internally, mainly, to keep track of the path)</p></li>
-<li><p><strong>breadth_first</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to perform breadth-first traversal
+<li><p><strong>breadth_first</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to perform breadth-first traversal
 (instead of the default depth-first traversal).</p></li>
 <li><p><strong>branch_yield</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">PT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">KT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">VT</span></code>)], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span>) – (pp, k, vv) -&gt; Any, optional yield function to yield before
 the recursive walk of a branch. This is useful if you want to yield something
@@ -1021,7 +1098,7 @@ This can be done as follows:</p>
 <p class="admonition-title">Tip</p>
 <p>If you want to use <code class="docutils literal notranslate"><span class="pre">kv_filt</span></code> to search and extract stuff from a nested
 mapping, you can have your <code class="docutils literal notranslate"><span class="pre">leaf_yield</span></code> return a sentinel (say, <code class="docutils literal notranslate"><span class="pre">None</span></code>) to
-indicate that the value should be skipped, and then filter out the <a href="#id1"><span class="problematic" id="id2">``</span></a>None``s from
+indicate that the value should be skipped, and then filter out the <code class="docutils literal notranslate"><span class="pre">None</span></code> values from
 your results.</p>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mm</span> <span class="o">=</span> <span class="p">{</span>
@@ -1072,6 +1149,35 @@ traversal, just say it:</p>
 <span class="go">('apple',)</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.base.stream_util">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">stream_util</span></span><a class="reference internal" href="../_modules/dol/base.html#stream_util"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.stream_util" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Small callbacks for <code class="docutils literal notranslate"><span class="pre">Stream</span></code>: an always-true filter, a no-op, and rewind (<code class="docutils literal notranslate"><span class="pre">skip_lines</span></code> currently only rewinds).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.base.tuple_keypath_and_val">
+<span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">tuple_keypath_and_val</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/base.html#tuple_keypath_and_val"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.tuple_keypath_and_val" title="Link to this definition">¶</a></dt>
+<dd><p>Extend the path <code class="docutils literal notranslate"><span class="pre">p</span></code> with the key <code class="docutils literal notranslate"><span class="pre">k</span></code> and return <code class="docutils literal notranslate"><span class="pre">(new_path,</span> <span class="pre">v)</span></code> (the default <code class="docutils literal notranslate"><span class="pre">kv_walk</span></code> <code class="docutils literal notranslate"><span class="pre">pkv_to_pv</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">PT</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">VT</span></code>)]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.base.val_is_mapping">
+<span class="sig-prename descclassname"><span class="pre">dol.base.</span></span><span class="sig-name descname"><span class="pre">val_is_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/base.html#val_is_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.base.val_is_mapping" title="Link to this definition">¶</a></dt>
+<dd><p>Whether the walked value <code class="docutils literal notranslate"><span class="pre">v</span></code> is a <code class="docutils literal notranslate"><span class="pre">Mapping</span></code> (a <code class="docutils literal notranslate"><span class="pre">kv_walk</span></code> <code class="docutils literal notranslate"><span class="pre">walk_filt</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -1173,7 +1279,9 @@ are transform-equivalent, so either answer is correct).</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">dol.base</a><ul>
+<li><a class="reference internal" href="#dol.base.AttrNames"><code class="docutils literal notranslate"><span class="pre">AttrNames</span></code></a></li>
 <li><a class="reference internal" href="#dol.base.Collection"><code class="docutils literal notranslate"><span class="pre">Collection</span></code></a></li>
+<li><a class="reference internal" href="#dol.base.DelegatedAttribute"><code class="docutils literal notranslate"><span class="pre">DelegatedAttribute</span></code></a></li>
 <li><a class="reference internal" href="#dol.base.KeyValidationABC"><code class="docutils literal notranslate"><span class="pre">KeyValidationABC</span></code></a></li>
 <li><a class="reference internal" href="#dol.base.KvPersister"><code class="docutils literal notranslate"><span class="pre">KvPersister</span></code></a><ul>
 <li><a class="reference internal" href="#dol.base.KvPersister.clear"><code class="docutils literal notranslate"><span class="pre">KvPersister.clear()</span></code></a></li>
@@ -1184,6 +1292,12 @@ are transform-equivalent, so either answer is correct).</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#dol.base.KvStore"><code class="docutils literal notranslate"><span class="pre">KvStore</span></code></a></li>
+<li><a class="reference internal" href="#dol.base.MappingViewMixin"><code class="docutils literal notranslate"><span class="pre">MappingViewMixin</span></code></a><ul>
+<li><a class="reference internal" href="#dol.base.MappingViewMixin.ItemsView"><code class="docutils literal notranslate"><span class="pre">MappingViewMixin.ItemsView</span></code></a></li>
+<li><a class="reference internal" href="#dol.base.MappingViewMixin.KeysView"><code class="docutils literal notranslate"><span class="pre">MappingViewMixin.KeysView</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dol.base.NoSuchItem"><code class="docutils literal notranslate"><span class="pre">NoSuchItem</span></code></a></li>
 <li><a class="reference internal" href="#dol.base.Persister"><code class="docutils literal notranslate"><span class="pre">Persister</span></code></a></li>
 <li><a class="reference internal" href="#dol.base.Reader"><code class="docutils literal notranslate"><span class="pre">Reader</span></code></a></li>
 <li><a class="reference internal" href="#dol.base.Store"><code class="docutils literal notranslate"><span class="pre">Store</span></code></a><ul>
@@ -1196,9 +1310,14 @@ are transform-equivalent, so either answer is correct).</p>
 <li><a class="reference internal" href="#dol.base.Stream.wrap"><code class="docutils literal notranslate"><span class="pre">Stream.wrap()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#dol.base.asis"><code class="docutils literal notranslate"><span class="pre">asis()</span></code></a></li>
+<li><a class="reference internal" href="#dol.base.delegate_to"><code class="docutils literal notranslate"><span class="pre">delegate_to()</span></code></a></li>
 <li><a class="reference internal" href="#dol.base.delegator_wrap"><code class="docutils literal notranslate"><span class="pre">delegator_wrap()</span></code></a></li>
 <li><a class="reference internal" href="#dol.base.has_kv_store_interface"><code class="docutils literal notranslate"><span class="pre">has_kv_store_interface()</span></code></a></li>
 <li><a class="reference internal" href="#dol.base.kv_walk"><code class="docutils literal notranslate"><span class="pre">kv_walk()</span></code></a></li>
+<li><a class="reference internal" href="#dol.base.stream_util"><code class="docutils literal notranslate"><span class="pre">stream_util</span></code></a></li>
+<li><a class="reference internal" href="#dol.base.tuple_keypath_and_val"><code class="docutils literal notranslate"><span class="pre">tuple_keypath_and_val()</span></code></a></li>
+<li><a class="reference internal" href="#dol.base.val_is_mapping"><code class="docutils literal notranslate"><span class="pre">val_is_mapping()</span></code></a></li>
 <li><a class="reference internal" href="#dol.base.wrapped_self"><code class="docutils literal notranslate"><span class="pre">wrapped_self()</span></code></a></li>
 </ul>
 </li>
@@ -1211,7 +1330,7 @@ are transform-equivalent, so either answer is correct).</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

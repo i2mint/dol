@@ -1,171 +1,60 @@
 # dol.naming
 
-This module is about generating, validating, and operating on (parametrized) fields (i.e. stings, e.g. paths).
+This module is about generating, validating, and operating on (parametrized) fields (i.e. strings, e.g. paths).
+
+Main entry points:
+
+- `StrTupleDict`: convert a templated name between string, tuple and dict forms
+- `mk_pattern_from_template_and_format_dict`: a compiled regex from a template
+- `get_fields_from_template`: the field names of a template
+  ```pycon
+  >>> from dol.naming import get_fields_from_template
+  >>> get_fields_from_template('this{is}an{example}')
+  ['is', 'example']
+  ```
 
 ### Functions
 
-| [`dict_to_namedtuple`](#dol.naming.dict_to_namedtuple)(d[, namedtuple_obj])           |                                                                                                                                                                                                                      |
-|----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`get_fields_from_template`](#dol.naming.get_fields_from_template)(template)                | Get list from {item} items of template string                                                                                                                                                                        |
-| `mk_capture_patterns`(mapping_dict)                                                                |                                                                                                                                                                                                                      |
-| `mk_extract_pattern`(template[, format_dict, ...])                                                 |                                                                                                                                                                                                                      |
-| `mk_format_mapping_dict`(format_dict, ...[, sep])                                                  |                                                                                                                                                                                                                      |
-| [`mk_kwargs_trans`](#dol.naming.mk_kwargs_trans)(\*\*trans_func_for_key)           | Make a dict transformer from functions that depends solely on keys (of the dict to be transformed) Used to easily make process_kwargs and process_info_dict arguments for LinearNaming.                              |
-| `mk_named_capture_patterns`(mapping_dict)                                                          |                                                                                                                                                                                                                      |
-| [`mk_pattern_from_template_and_format_dict`](#dol.naming.mk_pattern_from_template_and_format_dict)(...)     | Make a compiled regex to match template :type template:  :param template: A format string :type format_dict:  :param format_dict: A dict whose keys are template fields and values are regex strings to capture them |
-| `mk_prefix_templates_dicts`(template)                                                              |                                                                                                                                                                                                                      |
-| [`mk_store_from_path_format_store_cls`](#dol.naming.mk_store_from_path_format_store_cls)([store, ...]) | Wrap a store (instance or class) that uses string keys to make it into a store that uses a specific key format.                                                                                                      |
-| [`mk_tupled_store_from_path_format_store_cls`](#dol.naming.mk_tupled_store_from_path_format_store_cls)([...]) | Wrap a store (instance or class) that uses string keys to make it into a store that uses a specific key format.                                                                                                      |
-| [`namedtuple_to_dict`](#dol.naming.namedtuple_to_dict)(nt)                            |                                                                                                                                                                                                                      |
-| [`template_to_pattern`](#dol.naming.template_to_pattern)(mapping_dict, template)       | Weave a `{field}` template into a regex, substituting each field with its capture pattern and **regex-escaping the literal text between fields**.                                                                    |
-| [`update_fields_of_namedtuple`](#dol.naming.update_fields_of_namedtuple)(nt, \*[, ...])        | Replace fields of namedtuple                                                                                                                                                                                         |
-| [`validate_kwargs`](#dol.naming.validate_kwargs)(kwargs_to_validate, ...[, ...])   | Utility to validate a dict.                                                                                                                                                                                          |
+| [`dict_to_namedtuple`](#dol.naming.dict_to_namedtuple)(d[, namedtuple_obj])           |                                                                                                                                                                                         |
+|----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`get_fields_from_template`](#dol.naming.get_fields_from_template)(template)                | Get list from {item} items of template string                                                                                                                                           |
+| `mk_capture_patterns`(mapping_dict)                                                                |                                                                                                                                                                                         |
+| `mk_extract_pattern`(template[, format_dict, ...])                                                 |                                                                                                                                                                                         |
+| `mk_format_mapping_dict`(format_dict, ...[, sep])                                                  |                                                                                                                                                                                         |
+| [`mk_kwargs_trans`](#dol.naming.mk_kwargs_trans)(\*\*trans_func_for_key)           | Make a dict transformer from functions that depends solely on keys (of the dict to be transformed) Used to easily make process_kwargs and process_info_dict arguments for LinearNaming. |
+| `mk_named_capture_patterns`(mapping_dict)                                                          |                                                                                                                                                                                         |
+| [`mk_pattern_from_template_and_format_dict`](#dol.naming.mk_pattern_from_template_and_format_dict)(...)     | Make a compiled regex to match template                                                                                                                                                 |
+| `mk_prefix_templates_dicts`(template)                                                              |                                                                                                                                                                                         |
+| [`mk_store_from_path_format_store_cls`](#dol.naming.mk_store_from_path_format_store_cls)([store, ...]) | Wrap a store (instance or class) that uses string keys to make it into a store that uses a specific key format.                                                                         |
+| [`mk_tupled_store_from_path_format_store_cls`](#dol.naming.mk_tupled_store_from_path_format_store_cls)([...]) | Wrap a store (instance or class) that uses string keys to make it into a store that uses a specific key format.                                                                         |
+| [`namedtuple_to_dict`](#dol.naming.namedtuple_to_dict)(nt)                            |                                                                                                                                                                                         |
+| [`template_to_pattern`](#dol.naming.template_to_pattern)(mapping_dict, template)       | Weave a `{field}` template into a regex, substituting each field with its capture pattern and **regex-escaping the literal text between fields**.                                       |
+| [`update_fields_of_namedtuple`](#dol.naming.update_fields_of_namedtuple)(nt, \*[, ...])        | Replace fields of namedtuple                                                                                                                                                            |
+| [`validate_kwargs`](#dol.naming.validate_kwargs)(kwargs_to_validate, ...[, ...])   | Utility to validate a dict.                                                                                                                                                             |
 
 ### Classes
 
-| [`BigDocTest`](#dol.naming.BigDocTest)()                             |                                                                                             |
-|-------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
-| [`KeyMapNames`](#dol.naming.KeyMapNames)                              |                                                                                             |
-| [`KeyMaps`](#dol.naming.KeyMaps)(key_of_id, id_of_key)            |                                                                                             |
-| [`LinearNaming`](#dol.naming.LinearNaming)                             |                                                                                             |
-| `NamingInterface`([params, validation_funs, ...])                                         |                                                                                             |
-| [`ParametricKeyStore`](#dol.naming.ParametricKeyStore)(store[, keymap])      |                                                                                             |
-| [`PartialFormatter`](#dol.naming.PartialFormatter)()                       | A string formatter that won't complain if the fields are only partially formatted.          |
-| [`StoreWithDictKeys`](#dol.naming.StoreWithDictKeys)(store[, keymap])       |                                                                                             |
-| [`StoreWithNamedTupleKeys`](#dol.naming.StoreWithNamedTupleKeys)(store[, keymap]) |                                                                                             |
-| [`StoreWithTupleKeys`](#dol.naming.StoreWithTupleKeys)(store[, keymap])      |                                                                                             |
-| `StrTupleDict`(template[, format_dict, ...])                                              |                                                                                             |
-| [`StrTupleDictWithPrefix`](#dol.naming.StrTupleDictWithPrefix)(template[, ...])  | Converting from and to strings, tuples, and dicts, but with partial "prefix" specs allowed. |
+| [`BigDocTest`](#dol.naming.BigDocTest)()                               | Naming-scheme example holder whose (large) doctest is currently disabled.                   |
+|---------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| [`KeyMapNames`](#dol.naming.KeyMapNames)                                |                                                                                             |
+| [`KeyMaps`](#dol.naming.KeyMaps)(key_of_id, id_of_key)              |                                                                                             |
+| [`LinearNaming`](#dol.naming.LinearNaming)                               |                                                                                             |
+| `NamingInterface`([params, validation_funs, ...])                                           |                                                                                             |
+| [`ParametricKeyStore`](#dol.naming.ParametricKeyStore)(store[, keymap])        |                                                                                             |
+| [`PartialFormatter`](#dol.naming.PartialFormatter)()                         | A string formatter that won't complain if the fields are only partially formatted.          |
+| [`StoreWithDictKeys`](#dol.naming.StoreWithDictKeys)(store[, keymap])         |                                                                                             |
+| [`StoreWithNamedTupleKeys`](#dol.naming.StoreWithNamedTupleKeys)(store[, keymap])   |                                                                                             |
+| [`StoreWithTupleKeys`](#dol.naming.StoreWithTupleKeys)(store[, keymap])        |                                                                                             |
+| [`StrTupleDict`](#dol.naming.StrTupleDict)(template[, format_dict, ...]) | Convert a parametrized name between its string, tuple and dict forms.                       |
+| [`StrTupleDictWithPrefix`](#dol.naming.StrTupleDictWithPrefix)(template[, ...])    | Converting from and to strings, tuples, and dicts, but with partial "prefix" specs allowed. |
 
 ### *class* dol.naming.BigDocTest
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
-### TODO: Fix this test (maybe test assertions aren’t correct)
+Naming-scheme example holder whose (large) doctest is currently disabled.
 
-### This happened when we changed some re.compile to safe_compile
-
-# >>>
-# >>> e_name = BigDocTest.mk_e_naming()
-# >>> u_name = BigDocTest.mk_u_naming()
-# >>> e_sref = ‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469’
-# >>> u_sref = “s3://uploads/GROUP/upload/files/USER/2017-01-24/SUBUSER/a_file.wav”
-# >>> u_name_2 = “s3://uploads/ANOTHER_GROUP/upload/files/ANOTHER_USER/2017-01-24/SUBUSER/a_file.wav”
-# >>>
-# >>> ####### is_valid(self, name): ######
-# >>> e_name.is_valid(e_sref)
-
-### True
-
-# >>> e_name.is_valid(u_sref)
-
-### False
-
-# >>> u_name.is_valid(u_sref)
-
-### True
-
-# >>>
-# >>> ####### is_valid_prefix(self, name): ######
-# >>> e_name.is_valid_prefix(‘s3://bucket-‘)
-
-### True
-
-# >>> e_name.is_valid_prefix(‘s3://bucket-GROUP’)
-
-### False
-
-# >>> e_name.is_valid_prefix(‘s3://bucket-GROUP/example/’)
-
-### False
-
-# >>> e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files’)
-
-### False
-
-# >>> e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files/’)
-
-### True
-
-# >>> e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/’)
-
-### True
-
-# >>> e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/0_0’)
-
-### True
-
-# >>>
-# >>> ####### info_dict(self, name): ######
-# >>> e_name.info_dict(e_sref)  # see that utc_ms args were cast to ints
-# {‘group’: ‘GROUP’, ‘user’: ‘USER’, ‘subuser’: ‘SUBUSER’, ‘day’: ‘2017-01-24’, ‘s_ums’: 1485272231982, ‘e_ums’: 1485261448469}
-# >>> u_name.info_dict(u_sref)  # returns None (because self was made for example!
-# {‘group’: ‘GROUP’, ‘user’: ‘USER’, ‘day’: ‘2017-01-24’, ‘subuser’: ‘SUBUSER’, ‘filename’: ‘a_file.wav’}
-# >>> # but with a u_name, it will work
-# >>> u_name.info_dict(u_sref)
-# {‘group’: ‘GROUP’, ‘user’: ‘USER’, ‘day’: ‘2017-01-24’, ‘subuser’: ‘SUBUSER’, ‘filename’: ‘a_file.wav’}
-# >>>
-# >>> ####### extract(self, item, name): ######
-# >>> e_name.extract(‘group’, e_sref)
-# ‘GROUP’
-# >>> e_name.extract(‘user’, e_sref)
-# ‘USER’
-# >>> u_name.extract(‘group’, u_name_2)
-# ‘ANOTHER_GROUP’
-# >>> u_name.extract(‘user’, u_name_2)
-# ‘ANOTHER_USER’
-# >>>
-
-#
-# >>> ####### mk_prefix(self, \*args, \*\*kwargs): ######
-# >>> e_name.mk_prefix()
-# ‘s3://bucket-’
-# >>> e_name.mk_prefix(group=’GROUP’)
-# ‘s3://bucket-GROUP/example/files/’
-# >>> e_name.mk_prefix(group=’GROUP’, user=’USER’)
-# ‘s3://bucket-GROUP/example/files/USER/’
-# >>> e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/’
-# >>> e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/’
-# >>> e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’,
-# … s_ums=1485272231982)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/
-
-```
-1485272231982_
-```
-
-’
-# >>> e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’,
-# … s_ums=1485272231982, e_ums=1485261448469)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469’
-# >>>
-# >>> u_name.mk_prefix()
-# ‘s3://uploads/’
-# >>> u_name.mk_prefix(group=’GROUP’)
-# ‘s3://uploads/GROUP/upload/files/’
-# >>> u_name.mk_prefix(group=’GROUP’, user=’USER’)
-# ‘s3://uploads/GROUP/upload/files/USER/’
-# >>> u_name.mk_prefix(group=’GROUP’, user=’USER’, day=’DAY’)
-# ‘s3://uploads/GROUP/upload/files/USER/DAY/’
-# >>> u_name.mk_prefix(group=’GROUP’, user=’USER’, day=’DAY’)
-# ‘s3://uploads/GROUP/upload/files/USER/DAY/’
-# >>> u_name.mk_prefix(group=’GROUP’, user=’USER’, day=’DAY’, subuser=’SUBUSER’)
-# ‘s3://uploads/GROUP/upload/files/USER/DAY/SUBUSER/’
-# >>>
-# >>> ####### mk(self, \*args, \*\*kwargs): ######
-# >>> e_name.mk(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’,
-# …             s_ums=1485272231982, e_ums=1485261448469)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469’
-# >>> e_name.mk(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’from_s_ums’,
-# …             s_ums=1485272231982, e_ums=1485261448469)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469’
-# >>>
-# >>> ####### replace_name_elements(self, \*args, \*\*kwargs): ######
-# >>> name = ‘s3://bucket-redrum/example/files/oopsy@domain.com/ozeip/2008-11-04/1225779243969_1225779246969’
-# >>> e_name.replace_name_elements(name, user=’NEW_USER’, group=’NEW_GROUP’)
-# ‘s3://bucket-NEW_GROUP/example/files/NEW_USER/ozeip/2008-11-04/1225779243969_1225779246969’
+The former doctest is kept as comments in the class body.
 
 ### dol.naming.KeyMapNames
 
@@ -173,7 +62,7 @@ alias of [`KeyMaps`](#dol.naming.KeyMaps)
 
 ### *class* dol.naming.KeyMaps(key_of_id, id_of_key)
 
-Bases: [`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)
+Bases: [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
 
 #### id_of_key
 
@@ -209,7 +98,7 @@ if not foo is given – but {foo} will remain).
 #### NOTE
 If you only need a formatting function (not the transformed formatting string), a simpler solution may be:
 
-```text
+```python
 import functools
 format_str = functools.partial(str_template.format, bar="BAR", b=34)
 ```
@@ -228,14 +117,75 @@ Bases: [`ParametricKeyStore`](#dol.naming.ParametricKeyStore)
 
 Bases: [`ParametricKeyStore`](#dol.naming.ParametricKeyStore)
 
+### *class* dol.naming.StrTupleDict(template, format_dict=None, process_kwargs=None, process_info_dict=None, named_tuple_type_name='NamedTuple', sep='/')
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Convert a parametrized name between its string, tuple and dict forms.
+
+Built from a string template with `{field}` placeholders (and optional regexes
+for the fields). See `__init__` for the parameters and an example.
+
+#### extract(field, s)
+
+Extract a single item from an name
+
+* **Parameters:**
+  * **field** – field of the item to extract
+  * **s** – the string from which to extract it
+* **Returns:**
+  the value for name
+
+#### info_dict(s)
+
+Get a dict with the arguments of an name (for example group, user, subuser, etc.)
+
+* **Parameters:**
+  **s** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str))
+* **Returns:**
+  a dict holding the argument fields and values
+
+#### is_valid(s)
+
+Check if the name has the “upload format” (i.e. the kind of fields that are \_ids of fv_mgc, and what
+name means in most of the iatis system.
+
+* **Parameters:**
+  **s** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – the string to check
+* **Returns:**
+  True iff name has the upload format
+
+#### replace_name_elements(s, \*\*elements_kwargs)
+
+Replace specific name argument values with others
+
+* **Parameters:**
+  * **s** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – the string to replace
+  * **elements_kwargs** – the arguments to replace (and their values)
+* **Returns:**
+  a new name
+
+#### str_to_dict(s)
+
+Get a dict with the arguments of an name (for example group, user, subuser, etc.)
+
+* **Parameters:**
+  **s** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str))
+* **Returns:**
+  a dict holding the argument fields and values
+
+#### super_dict_to_str(d)
+
+Like dict_to_str, but the input dict can have extra keys that are not used by dict_to_str
+
 ### *class* dol.naming.StrTupleDictWithPrefix(template, format_dict=None, process_kwargs=None, process_info_dict=None, named_tuple_type_name='NamedTuple', sep='/')
 
-Bases: `StrTupleDict`
+Bases: [`StrTupleDict`](#dol.naming.StrTupleDict)
 
 Converting from and to strings, tuples, and dicts, but with partial “prefix” specs allowed.
 
 * **Parameters:**
-  * **template** ([`str`](https://docs.python.org/3/library/stdtypes.html#str) | [`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple) | [`list`](https://docs.python.org/3/library/stdtypes.html#list)) – The string format template
+  * **template** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple) | [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)) – The string format template
   * **format_dict** – A {field_name: field_value_format_regex, …} dict
   * **process_kwargs** – A function taking the field=value pairs and producing a dict of processed
     {field: value,…} dict (where both fields and values could have been processed.
@@ -323,11 +273,10 @@ Used to easily make process_kwargs and process_info_dict arguments for LinearNam
 ### dol.naming.mk_pattern_from_template_and_format_dict(template, format_dict=None, sep='/')
 
 Make a compiled regex to match template
-:type template: 
-:param template: A format string
-:type format_dict: 
-:param format_dict: A dict whose keys are template fields and values are regex strings to capture them
 
+* **Parameters:**
+  * **template** – A format string
+  * **format_dict** – A dict whose keys are template fields and values are regex strings to capture them
 * **Returns:**
   a compiled regex
 
@@ -356,12 +305,8 @@ Wrap a store (instance or class) that uses string keys to make it into a store t
   * **store** – The instance or class to wrap
   * **subpath** – The subpath (defining the subset of the data pointed at by the URI
   * **store_cls_kwargs** – # if store is a class, the kwargs that you would have given the store_cls to make itself
-  * **key_type** – 
-
-    The key type you want to interface with:
-    ```default
-    dict, tuple, namedtuple, str or 'dict', 'tuple', 'namedtuple', 'str'
-    ```
+  * **key_type** – The key type you want to interface with: `dict`, `tuple`,
+    `namedtuple`, `str`, or one of those names as a string
   * **keymap** – # the keymap instance or class you want to use to map keys
   * **keymap_kwargs** – # if keymap is a cls, the kwargs to give it (besides the subpath)
   * **name** – The name to give the class the function will make here
@@ -370,7 +315,7 @@ Wrap a store (instance or class) that uses string keys to make it into a store t
 
 ### Example
 
-```text
+```python
 # Get a (session, bt) indexed LocalJsonStore
 s = mk_store_from_path_format_store_cls(LocalJsonStore,
                                                os.path.join(root_dir, 'd'),
@@ -386,12 +331,8 @@ Wrap a store (instance or class) that uses string keys to make it into a store t
   * **store** – The instance or class to wrap
   * **subpath** – The subpath (defining the subset of the data pointed at by the URI
   * **store_cls_kwargs** – # if store is a class, the kwargs that you would have given the store_cls to make itself
-  * **key_type** – 
-
-    The key type you want to interface with:
-    ```default
-    dict, tuple, namedtuple, str or 'dict', 'tuple', 'namedtuple', 'str'
-    ```
+  * **key_type** – The key type you want to interface with: `dict`, `tuple`,
+    `namedtuple`, `str`, or one of those names as a string
   * **keymap** – # the keymap instance or class you want to use to map keys
   * **keymap_kwargs** – # if keymap is a cls, the kwargs to give it (besides the subpath)
   * **name** – The name to give the class the function will make here
@@ -400,7 +341,7 @@ Wrap a store (instance or class) that uses string keys to make it into a store t
 
 ### Example
 
-```text
+```python
 # Get a (session, bt) indexed LocalJsonStore
 s = mk_store_from_path_format_store_cls(LocalJsonStore,
                                                os.path.join(root_dir, 'd'),

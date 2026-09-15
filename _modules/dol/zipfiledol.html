@@ -260,8 +260,19 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.zipfiledol</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""</span>
-<span class="sd">Data object layers and other utils to work with zip files.</span>
+<span></span><span class="sd">"""Data object layers and other utils to work with zip files.</span>
+
+<span class="sd">Main entry points:</span>
+
+<span class="sd">- ``FilesOfZip``: read-only bytes of the files in a zip archive</span>
+<span class="sd">- ``ZipReader``: same, but browsing folders as nested readers</span>
+<span class="sd">- ``ZipFiles``: read-write-delete access to files in a zip archive</span>
+<span class="sd">- ``FlatZipFilesReader``: the union of the contents of several zip files</span>
+<span class="sd">- ``zip_compress``, ``zip_decompress``: single-file zip bytes helpers</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.zipfiledol import zip_compress, zip_decompress</span>
+<span class="sd">    &gt;&gt;&gt; zip_decompress(zip_compress(b'hello'))</span>
+<span class="sd">    b'hello'</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -447,7 +458,6 @@
 <span class="sd">    :param zip_filepath: zip filepath to save the zipped input to</span>
 <span class="sd">    :param filename: The name/path of the zip entry we want to save to</span>
 <span class="sd">    :param encoding: In case the input is str, the encoding to use to convert to bytes</span>
-
 <span class="sd">    """</span>
     <span class="n">z</span> <span class="o">=</span> <span class="n">ZipFiles</span><span class="p">(</span>
         <span class="n">zip_filepath</span><span class="p">,</span>
@@ -556,14 +566,15 @@
 <span class="sd">    When a file, the value return is bytes, as usual.</span>
 
 <span class="sd">    When a directory, the value returned is a ``ZipReader`` itself, with all params the same,</span>
-<span class="sd">    except for the ``prefix``</span>
-<span class="sd">     which serves `to specify the subfolder (that is, ``prefix`` acts as a filter).</span>
+<span class="sd">    except for the ``prefix``, which serves to specify the subfolder (that is,</span>
+<span class="sd">    ``prefix`` acts as a filter).</span>
 
-<span class="sd">    Note: If you get data zipped by a mac, you might get some junk along with it.</span>
-<span class="sd">    Namely `__MACOSX` folders `.DS_Store` files. I won't rant about it, since others have.</span>
-<span class="sd">    But you might find it useful to remove them from view. One choice is to use</span>
-<span class="sd">    `dol.trans.filt_iter`</span>
-<span class="sd">    to get a filtered view of the zips contents. In most cases, this should do the job:</span>
+<span class="sd">    Note:</span>
+<span class="sd">        If you get data zipped by a mac, you might get some junk along with it.</span>
+<span class="sd">        Namely `__MACOSX` folders `.DS_Store` files. I won't rant about it, since others have.</span>
+<span class="sd">        But you might find it useful to remove them from view. One choice is to use</span>
+<span class="sd">        `dol.trans.filt_iter`</span>
+<span class="sd">        to get a filtered view of the zips contents. In most cases, this should do the job:</span>
 
 <span class="sd">    .. code-block::</span>
 
@@ -579,7 +590,7 @@
 <span class="sd">        zip -d filename.zip \*/.DS_Store</span>
 
 
-<span class="sd">    Examples:</span>
+<span class="sd">    .. rubric:: Examples</span>
 
 <span class="sd">    .. code-block::</span>
 
@@ -764,7 +775,6 @@
 <span class="sd">        z = FileStreamsOfZip(rootdir)</span>
 <span class="sd">        with z[relpath] as fp:</span>
 <span class="sd">            ...  # do stuff with fp, like fp.readlines() or such...</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
@@ -868,7 +878,6 @@
 <span class="sd">    Well, one solution, provided through FlatZipFilesReader, is to not unzip at all,</span>
 <span class="sd">    but instead, give you a store that provides you a view "as if you unzipped and</span>
 <span class="sd">    merged".</span>
-
 <span class="sd">    """</span>
 
     <span class="fm">__init__</span> <span class="o">=</span> <span class="n">ZipFilesReader</span><span class="o">.</span><span class="fm">__init__</span>
@@ -1013,7 +1022,7 @@
 <span class="sd">    makes for a not so efficient store, out of the box.</span>
 
 <span class="sd">    I advise using one of the zip readers if all you need to do is read, or subclassing or</span>
-<span class="sd">     wrapping ZipFiles with caching layers if it is appropriate to you.</span>
+<span class="sd">    wrapping ZipFiles with caching layers if it is appropriate to you.</span>
 
 <span class="sd">    Let's verify that a ZipFiles can indeed write data. First, we'll set things up!</span>
 
@@ -1049,7 +1058,6 @@
 <span class="sd">    And indeed we have a zip file now:</span>
 
 <span class="sd">    &gt;&gt;&gt; assert os.path.isfile(test_zipfile)</span>
-
 <span class="sd">    """</span>
 
     <span class="n">_zipfile_init_kw</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
@@ -1213,14 +1221,14 @@
 <span class="sd">        presented with the keys first, and asked permission to delete.</span>
 <span class="sd">    :return: The ZipFiles (in case you want to do further work with it)</span>
 
-<span class="sd">    Tip: If you want to delete with no questions asked, use currying:</span>
+<span class="sd">    Tip:</span>
+<span class="sd">        If you want to delete with no questions asked, use currying:</span>
 
 <span class="sd">    &gt;&gt;&gt; from functools import partial</span>
 <span class="sd">    &gt;&gt;&gt; rm_keys_without_asking = partial(</span>
 <span class="sd">    ...     remove_some_entries_from_zip,</span>
 <span class="sd">    ...     ask_before_before_deleting=False</span>
 <span class="sd">    ... )</span>
-
 <span class="sd">    """</span>
     <span class="n">z</span> <span class="o">=</span> <span class="n">zip_source</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
@@ -1282,6 +1290,11 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">tar_compress</span><span class="p">(</span><span class="n">data_bytes</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">"data.bin"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Bytes of an (uncompressed) tar archive holding ``data_bytes`` as a single file.</span>
+
+<span class="sd">    &gt;&gt;&gt; tar_decompress(tar_compress(b'hello', file_name='x.bin'))</span>
+<span class="sd">    b'hello'</span>
+<span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">tarfile</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 
@@ -1295,6 +1308,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">tar_decompress</span><span class="p">(</span><span class="n">tar_bytes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Bytes of the first file found in the tar archive ``tar_bytes`` (None if none)."""</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">tarfile</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 
@@ -1333,7 +1347,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

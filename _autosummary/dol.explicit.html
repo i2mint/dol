@@ -268,13 +268,27 @@
         <article role="main" id="furo-main-content">
           <section id="module-dol.explicit">
 <span id="dol-explicit"></span><h1>dol.explicit<a class="headerlink" href="#module-dol.explicit" title="Link to this heading">¶</a></h1>
-<p>utils to make stores based on a the input data itself</p>
+<p>Stores whose keys are given explicitly, with values fetched lazily from a source.</p>
+<p>Main entry points:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">KeysReader</span></code>: a collection of keys plus a <code class="docutils literal notranslate"><span class="pre">getter(src,</span> <span class="pre">key)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ExplicitKeysSource</span></code>: explicit keys plus a function reading the value for a key</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ExplicitKeysStore</span></code>: wrap a store so that its keys come from an explicit iterable</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ExplicitKeyMap</span></code>: a key mapper given as explicit dicts</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.explicit</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeysReader</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">KeysReader</span><span class="p">({</span><span class="s1">'apple'</span><span class="p">:</span> <span class="s1">'pie'</span><span class="p">,</span> <span class="s1">'banana'</span><span class="p">:</span> <span class="s1">'split'</span><span class="p">},</span> <span class="p">[</span><span class="s1">'banana'</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">src</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">src</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="n">r</span><span class="p">[</span><span class="s1">'banana'</span><span class="p">]</span>
+<span class="go">(['banana'], 'split')</span>
+</pre></div>
+</div>
+</li>
+</ul>
 <p class="rubric">Classes</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplicitKeyMap</span></code>(*[, key_of_id, id_of_key])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.explicit.ExplicitKeyMap" title="dol.explicit.ExplicitKeyMap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplicitKeyMap</span></code></a>(*[, key_of_id, id_of_key])</p></td>
+<td><p>A key mapper given as explicit <code class="docutils literal notranslate"><span class="pre">key_of_id</span></code>/<code class="docutils literal notranslate"><span class="pre">id_of_key</span></code> dicts (one is enough; the other is derived, and both are checked to be inverse of each other).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.explicit.ExplicitKeymapReader" title="dol.explicit.ExplicitKeymapReader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplicitKeymapReader</span></code></a>(store[, key_of_id, ...])</p></td>
 <td><p>Wrap a store (instance) so that it gets it's keys from an explicit iterable of keys.</p></td>
@@ -297,6 +311,17 @@
 </tbody>
 </table>
 </div>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.explicit.ExplicitKeyMap">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.explicit.</span></span><span class="sig-name descname"><span class="pre">ExplicitKeyMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_of_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_of_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/explicit.html#ExplicitKeyMap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.explicit.ExplicitKeyMap" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A key mapper given as explicit <code class="docutils literal notranslate"><span class="pre">key_of_id</span></code>/<code class="docutils literal notranslate"><span class="pre">id_of_key</span></code> dicts (one is enough;
+the other is derived, and both are checked to be inverse of each other).
+Provides the <code class="docutils literal notranslate"><span class="pre">_key_of_id</span></code>/<code class="docutils literal notranslate"><span class="pre">_id_of_key</span></code> methods that <code class="docutils literal notranslate"><span class="pre">kv_wrap</span></code> looks for.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.explicit.ExplicitKeymapReader">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.explicit.</span></span><span class="sig-name descname"><span class="pre">ExplicitKeymapReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_of_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_of_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/explicit.html#ExplicitKeymapReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.explicit.ExplicitKeymapReader" title="Link to this definition">¶</a></dt>
@@ -399,12 +424,12 @@ that lazy-load values for keys from an explicit collection.</p>
 <li><p><strong>src</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">Source</span></code>)</span>) – The source where values will be extracted from.</p></li>
 <li><p><strong>key_collection</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Collection</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">KT</span></code>)]</span>) – A collection of keys that will be used to extract values from <code class="code docutils literal notranslate"><span class="pre">src</span></code>.</p></li>
 <li><p><strong>getter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">Source</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">KT</span></code>)], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">VT</span></code>)]</span>) – A function that takes a source and a key, and returns the value for that key.</p></li>
-<li><p><strong>key_error_msg</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">Source</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">KT</span></code>)], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – A function that takes a source and a key, and returns an error message.</p></li>
+<li><p><strong>key_error_msg</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">Source</span></code>), <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypeVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">KT</span></code>)], <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – A function that takes a source and a key, and returns an error message.</p></li>
 </ul>
 </dd>
 </dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">src</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'apple'</span><span class="p">:</span> <span class="s1">'pie'</span><span class="p">,</span> <span class="s1">'banana'</span><span class="p">:</span> <span class="s1">'split'</span><span class="p">,</span> <span class="s1">'carrot'</span><span class="p">:</span> <span class="s1">'cake'</span><span class="p">}</span>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">src</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'apple'</span><span class="p">:</span> <span class="s1">'pie'</span><span class="p">,</span> <span class="s1">'banana'</span><span class="p">:</span> <span class="s1">'split'</span><span class="p">,</span> <span class="s1">'carrot'</span><span class="p">:</span> <span class="s1">'cake'</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">key_collection</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'carrot'</span><span class="p">,</span> <span class="s1">'apple'</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">getter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">src</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">src</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">key_reader</span> <span class="o">=</span> <span class="n">KeysReader</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">key_collection</span><span class="p">,</span> <span class="n">getter</span><span class="p">)</span>
@@ -501,6 +526,7 @@ first argument.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">dol.explicit</a><ul>
+<li><a class="reference internal" href="#dol.explicit.ExplicitKeyMap"><code class="docutils literal notranslate"><span class="pre">ExplicitKeyMap</span></code></a></li>
 <li><a class="reference internal" href="#dol.explicit.ExplicitKeymapReader"><code class="docutils literal notranslate"><span class="pre">ExplicitKeymapReader</span></code></a></li>
 <li><a class="reference internal" href="#dol.explicit.ExplicitKeys"><code class="docutils literal notranslate"><span class="pre">ExplicitKeys</span></code></a></li>
 <li><a class="reference internal" href="#dol.explicit.ExplicitKeysSource"><code class="docutils literal notranslate"><span class="pre">ExplicitKeysSource</span></code></a></li>
@@ -517,7 +543,7 @@ first argument.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

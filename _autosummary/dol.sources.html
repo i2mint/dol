@@ -268,7 +268,26 @@
         <article role="main" id="furo-main-content">
           <section id="module-dol.sources">
 <span id="dol-sources"></span><h1>dol.sources<a class="headerlink" href="#module-dol.sources" title="Link to this heading">¶</a></h1>
-<p>This module contains key-value views of disparate sources.</p>
+<p>Key-value views of disparate sources.</p>
+<p>Readers and persisters over things that are not stores to begin with: several stores
+at once (fan-out and cascades), sequences, functions, and the attributes of objects.</p>
+<p>Main entry points:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">FanoutReader</span></code>, <code class="docutils literal notranslate"><span class="pre">FanoutPersister</span></code>: one key, read from (written to) several stores</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CascadedStores</span></code>: write to all stores, read from the first one that has the key</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SequenceKvReader</span></code>: an iterable of elements, keyed by a key function (index by default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FuncReader</span></code>: functions as a store, keyed by name</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Attrs</span></code>: the attributes of an object as a (recursive) reader</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.sources</span><span class="w"> </span><span class="kn">import</span> <span class="n">FuncReader</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="s1">'bar'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">FuncReader</span><span class="p">([</span><span class="n">foo</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="n">r</span><span class="p">[</span><span class="s1">'foo'</span><span class="p">]</span>
+<span class="go">(['foo'], 'bar')</span>
+</pre></div>
+</div>
+</li>
+</ul>
 <p class="rubric">Functions</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
@@ -362,7 +381,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.sources.AttrContainer">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.sources.</span></span><span class="sig-name descname"><span class="pre">AttrContainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*objects</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_object_namer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_dflt_object_namer&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**named_objects</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/sources.html#AttrContainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.sources.AttrContainer" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Convenience class to hold Key-Val pairs as attribute-val pairs, with all the
 magic methods of mappings.</p>
 <p>On the other hand, you will not get the usuall non-dunders (non magic methods) of
@@ -600,12 +619,16 @@ and return it.</p>
 <span class="sig-name descname"><span class="pre">from_variadics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.sources.CascadedStores.from_variadics" title="Link to this definition">¶</a></dt>
 <dd><p>A way to create a fan-out store from a mix of args and kwargs, instead of a
 single dict.</p>
-<dl class="simple">
-<dt>param args: sub-stores used to fan-out the data. These stores will be</dt><dd><p>represented by their index in the tuple.</p>
-</dd>
-<dt>param kwargs: sub-stores used to fan-out the data. These stores will be</dt><dd><p>represented by their name in the dict. __init__ arguments can also be passed
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> – sub-stores used to fan-out the data. These stores will be
+represented by their index in the tuple.</p></li>
+<li><p><strong>kwargs</strong> – sub-stores used to fan-out the data. These stores will be
+represented by their name in the dict. __init__ arguments can also be passed
 as kwargs (i.e. <code class="code docutils literal notranslate"><span class="pre">default</span></code>, <code class="code docutils literal notranslate"><span class="pre">get_existing_values_only</span></code>, and any other subclass
-specific arguments).</p>
+specific arguments).</p></li>
+</ul>
 </dd>
 </dl>
 <p>Let’s use the same sub-stores:</p>
@@ -662,16 +685,18 @@ kwargs.</p>
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.sources.</span></span><span class="sig-name descname"><span class="pre">FanoutPersister</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_existing_values_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">need_to_set_all_stores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_non_existing_store_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/sources.html#FanoutPersister"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.sources.FanoutPersister" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dol.sources.FanoutReader" title="dol.sources.FanoutReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">FanoutReader</span></code></a>, <a class="reference internal" href="dol.base.html#dol.base.KvPersister" title="dol.base.KvPersister"><code class="xref py py-class docutils literal notranslate"><span class="pre">KvPersister</span></code></a></p>
 <p>A fanout persister is a fanout reader that can also set and delete items.</p>
-<p>param stores: A mapping of store keys to stores.
-param default: The value to return if the key is not in any of the stores.
-param get_existing_values_only: If True, only return values for stores that contain</p>
-<blockquote>
-<div><p>the key.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>param need_to_set_all_stores: If True, all stores must be set when setting a value.</dt><dd><p>If False, only the stores that are set will be updated.</p>
-</dd>
-<dt>param ignore_non_existing_store_keys: If True, ignore store keys from the value that</dt><dd><p>are not in the persister. If False, a ValueError is raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stores</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>]</span>) – A mapping of store keys to stores.</p></li>
+<li><p><strong>default</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span>) – The value to return if the key is not in any of the stores.</p></li>
+<li><p><strong>get_existing_values_only</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, only return values for stores that contain
+the key.</p></li>
+<li><p><strong>need_to_set_all_stores</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, all stores must be set when setting a value.
+If False, only the stores that are set will be updated.</p></li>
+<li><p><strong>ignore_non_existing_store_keys</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, ignore store keys from the value that
+are not in the persister. If False, a ValueError is raised.</p></li>
+</ul>
 </dd>
 </dl>
 <p>Let’s create a persister from in-memory stores:</p>
@@ -768,8 +793,6 @@ from the stores where it is present:</p>
 <span class="go">False</span>
 </pre></div>
 </div>
-<dl class="field-list simple">
-</dl>
 </dd></dl>
 
 <dl class="py class">
@@ -779,12 +802,16 @@ from the stores where it is present:</p>
 <p>Get a ‘fanout view’ of a store of stores.
 That is, when a key is requested, the key is passed to all the stores, and results
 accumulated in a dict that is then returned.</p>
-<p>param stores: A mapping of store keys to stores.
-param default: The value to return if the key is not in any of the stores.
-param get_existing_values_only: If True, only return values for stores that contain</p>
-<blockquote>
-<div><p>the key.</p>
-</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stores</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>]</span>) – A mapping of store keys to stores.</p></li>
+<li><p><strong>default</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span>) – The value to return if the key is not in any of the stores.</p></li>
+<li><p><strong>get_existing_values_only</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, only return values for stores that contain
+the key.</p></li>
+</ul>
+</dd>
+</dl>
 <p>Let’s define the following sub-stores:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bytes_store</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">a</span><span class="o">=</span><span class="sa">b</span><span class="s1">'a'</span><span class="p">,</span>
@@ -833,19 +860,21 @@ that contain the key:</p>
 <span class="go">{'bytes_store': b'a'}</span>
 </pre></div>
 </div>
-<dl class="field-list simple">
-</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="dol.sources.FanoutReader.from_variadics">
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_variadics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/sources.html#FanoutReader.from_variadics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.sources.FanoutReader.from_variadics" title="Link to this definition">¶</a></dt>
 <dd><p>A way to create a fan-out store from a mix of args and kwargs, instead of a
 single dict.</p>
-<dl class="simple">
-<dt>param args: sub-stores used to fan-out the data. These stores will be</dt><dd><p>represented by their index in the tuple.</p>
-</dd>
-<dt>param kwargs: sub-stores used to fan-out the data. These stores will be</dt><dd><p>represented by their name in the dict. __init__ arguments can also be passed
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> – sub-stores used to fan-out the data. These stores will be
+represented by their index in the tuple.</p></li>
+<li><p><strong>kwargs</strong> – sub-stores used to fan-out the data. These stores will be
+represented by their name in the dict. __init__ arguments can also be passed
 as kwargs (i.e. <code class="code docutils literal notranslate"><span class="pre">default</span></code>, <code class="code docutils literal notranslate"><span class="pre">get_existing_values_only</span></code>, and any other subclass
-specific arguments).</p>
+specific arguments).</p></li>
+</ul>
 </dd>
 </dl>
 <p>Let’s use the same sub-stores:</p>
@@ -996,14 +1025,14 @@ when you need fallback across multiple read-only backends.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="dol.sources.NotUnique">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.sources.</span></span><span class="sig-name descname"><span class="pre">NotUnique</span></span><a class="reference internal" href="../_modules/dol/sources.html#NotUnique"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.sources.NotUnique" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
 <p>Raised when an iterator was expected to have only one element, but had more</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.sources.ObjReader">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.sources.</span></span><span class="sig-name descname"><span class="pre">ObjReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_obj_of_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/sources.html#ObjReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.sources.ObjReader" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A reader that uses a specified function to get the contents for a given key.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># define a contents_of_key that reads stuff from a dict</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'foo'</span><span class="p">:</span> <span class="s1">'bar'</span><span class="p">,</span> <span class="mi">42</span><span class="p">:</span> <span class="s2">"everything"</span><span class="p">}</span>
@@ -1232,7 +1261,7 @@ you can specify this with <code class="docutils literal notranslate"><span class
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

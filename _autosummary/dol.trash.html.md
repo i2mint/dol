@@ -11,12 +11,8 @@ Available deletion strategies:
 > - permanent_delete: Direct os.remove (no warnings)
 > - trash_only: Error if trash unavailable
 
-Usage:
-
-```default
 Configure deletion behavior when creating file stores by passing the
-delete_func parameter or setting _delete_func class attribute.
-```
+`delete_func` parameter or setting the `_delete_func` class attribute.
 
 ### Functions
 
@@ -32,7 +28,7 @@ delete_func parameter or setting _delete_func class attribute.
 Try trash, fall back to permanent delete on failure.
 
 * **Return type:**
-  [`None`](https://docs.python.org/3/library/constants.html#None)
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 ### dol.trash.get_platform_trash_func()
 
@@ -47,7 +43,7 @@ Priority order:
 3. None (will fall back to os.remove)
 
 * **Return type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/library/stdtypes.html#str)], [`None`](https://docs.python.org/3/library/constants.html#None)]]
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`None`](https://docs.python.org/3/builtins/constants.html#None)]]
 * **Returns:**
   Deletion function that moves files to trash, or None if unavailable
 
@@ -56,10 +52,10 @@ Priority order:
 Create a deletion function that tries trash first, falls back to permanent delete.
 
 * **Parameters:**
-  * **permanent_delete_func** ([`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/library/stdtypes.html#str)], [`None`](https://docs.python.org/3/library/constants.html#None)]) – Function to use if trash is unavailable
-  * **warn_on_fallback** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to warn when falling back to permanent delete
+  * **permanent_delete_func** ([`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – Function to use if trash is unavailable
+  * **warn_on_fallback** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to warn when falling back to permanent delete
 * **Return type:**
-  [`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/library/stdtypes.html#str)], [`None`](https://docs.python.org/3/library/constants.html#None)]
+  [`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`None`](https://docs.python.org/3/builtins/constants.html#None)]
 * **Returns:**
   A deletion function that tries trash with fallback
 
@@ -68,9 +64,9 @@ Create a deletion function that tries trash first, falls back to permanent delet
 Permanently delete a file (no trash, no warnings).
 
 * **Parameters:**
-  **filepath** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – Path to file to delete
+  **filepath** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Path to file to delete
 * **Return type:**
-  [`None`](https://docs.python.org/3/library/constants.html#None)
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 Use this function when you want permanent deletion without warnings.
 Pass it as delete_func parameter: Files(‘/my/data’, delete_func=permanent_delete)
@@ -80,11 +76,11 @@ Pass it as delete_func parameter: Files(‘/my/data’, delete_func=permanent_de
 Move to trash only - raise error if trash unavailable.
 
 * **Parameters:**
-  **filepath** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – Path to file to trash
+  **filepath** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Path to file to trash
 * **Raises:**
-  [**RuntimeError**](https://docs.python.org/3/library/exceptions.html#RuntimeError) – If trash functionality not available
+  [**RuntimeError**](https://docs.python.org/3/builtins/exceptions.html#RuntimeError) – If trash functionality not available
 * **Return type:**
-  [`None`](https://docs.python.org/3/library/constants.html#None)
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 Use this function when you want to ensure files are only moved to trash,
 never permanently deleted. Raises error if trash is unavailable.

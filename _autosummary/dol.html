@@ -268,7 +268,20 @@
         <article role="main" id="furo-main-content">
           <section id="module-dol">
 <span id="dol"></span><h1>dol<a class="headerlink" href="#module-dol" title="Link to this heading">¶</a></h1>
-<p>Core tools to build simple interfaces to complex data sources and bend the interface to your will (and need)</p>
+<p>Core tools to build simple interfaces to complex data sources and bend the interface to your will (and need).</p>
+<p><code class="docutils literal notranslate"><span class="pre">dol</span></code> wraps any storage backend (files, S3, databases, dicts) behind a dict-like
+interface, and transforms that interface with composable layers. Start with
+<code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> (key/value transforms), the file stores (<code class="docutils literal notranslate"><span class="pre">Files</span></code>, <code class="docutils literal notranslate"><span class="pre">TextFiles</span></code>,
+<code class="docutils literal notranslate"><span class="pre">JsonFiles</span></code>, <code class="docutils literal notranslate"><span class="pre">PickleFiles</span></code>), the ready-made codecs (<code class="docutils literal notranslate"><span class="pre">ValueCodecs</span></code>, <code class="docutils literal notranslate"><span class="pre">KeyCodecs</span></code>),
+<code class="docutils literal notranslate"><span class="pre">filt_iter</span></code> (key filtering) and <code class="docutils literal notranslate"><span class="pre">cache_this</span></code> (caching).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">({},</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'x'</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">],</span> <span class="n">s</span><span class="o">.</span><span class="n">store</span>
+<span class="go">({'x': 1}, {'a': '{"x": 1}'})</span>
+</pre></div>
+</div>
 <p class="rubric">Functions</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
@@ -311,28 +324,28 @@
 <td><p>Content references and content-addressed storage — the flat &quot;blob&quot; layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="dol.dig.html#module-dol.dig" title="dol.dig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dig</span></code></a></p></td>
-<td><p>Layers introspection</p></td>
+<td><p>Layers introspection: walk the layers of a wrapped store and trace a key through them.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="dol.errors.html#module-dol.errors" title="dol.errors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">errors</span></code></a></p></td>
-<td><p>Error objects and utils</p></td>
+<td><p>Error objects and utils.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="dol.explicit.html#module-dol.explicit" title="dol.explicit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">explicit</span></code></a></p></td>
-<td><p>utils to make stores based on a the input data itself</p></td>
+<td><p>Stores whose keys are given explicitly, with values fetched lazily from a source.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="dol.filesys.html#module-dol.filesys" title="dol.filesys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filesys</span></code></a></p></td>
-<td><p>File system access</p></td>
+<td><p>File system access: dict-like stores over folders and files.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="dol.kv_codecs.html#module-dol.kv_codecs" title="dol.kv_codecs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kv_codecs</span></code></a></p></td>
 <td><p>Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="dol.misc.html#module-dol.misc" title="dol.misc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc</span></code></a></p></td>
-<td><p>Functions to read from and write to misc sources</p></td>
+<td><p>Functions to read from and write to misc sources, choosing the codec from the key.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="dol.mixins.html#module-dol.mixins" title="dol.mixins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mixins</span></code></a></p></td>
-<td><p>Mixins</p></td>
+<td><p>Mixins that add or restrict store behaviours.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="dol.naming.html#module-dol.naming" title="dol.naming"><code class="xref py py-obj docutils literal notranslate"><span class="pre">naming</span></code></a></p></td>
-<td><p>This module is about generating, validating, and operating on (parametrized) fields (i.e. stings, e.g. paths).</p></td>
+<td><p>This module is about generating, validating, and operating on (parametrized) fields (i.e. strings, e.g. paths).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="dol.paths.html#module-dol.paths" title="dol.paths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">paths</span></code></a></p></td>
 <td><p>Module for path (and path-like) object manipulation</p></td>
@@ -344,19 +357,19 @@
 <td><p>Signature calculus: Tools to make it easier to work with function's signatures.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="dol.sources.html#module-dol.sources" title="dol.sources"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sources</span></code></a></p></td>
-<td><p>This module contains key-value views of disparate sources.</p></td>
+<td><p>Key-value views of disparate sources.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="dol.tools.html#module-dol.tools" title="dol.tools"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tools</span></code></a></p></td>
-<td><p>Various tools to add functionality to stores</p></td>
+<td><p>Various tools to add functionality to stores.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="dol.trans.html#module-dol.trans" title="dol.trans"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trans</span></code></a></p></td>
-<td><p>Transformation/wrapping tools</p></td>
+<td><p>Tools to wrap stores with key/value transforms, filters, caches and other layers.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="dol.trash.html#module-dol.trash" title="dol.trash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trash</span></code></a></p></td>
 <td><p>Cross-platform file trash/recycle bin functionality for dol.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="dol.util.html#module-dol.util" title="dol.util"><code class="xref py py-obj docutils literal notranslate"><span class="pre">util</span></code></a></p></td>
-<td><p>General util objects</p></td>
+<td><p>General util objects: function composition, grouping, partial classes, file helpers.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="dol.zipfiledol.html#module-dol.zipfiledol" title="dol.zipfiledol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zipfiledol</span></code></a></p></td>
 <td><p>Data object layers and other utils to work with zip files.</p></td>
@@ -431,7 +444,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

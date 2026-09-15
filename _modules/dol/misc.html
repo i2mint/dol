@@ -260,8 +260,19 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.misc</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""</span>
-<span class="sd">Functions to read from and write to misc sources</span>
+<span></span><span class="sd">"""Functions to read from and write to misc sources, choosing the codec from the key.</span>
+
+<span class="sd">``get_obj``/``set_obj`` read and write a file with the codec picked from its extension</span>
+<span class="sd">(``.json``, ``.csv``, ``.pkl``, ...); ``MiscReaderMixin``/``MiscStoreMixin`` add the same</span>
+<span class="sd">key-conditioned (de)serialization to any store.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.misc import MiscStoreMixin</span>
+<span class="sd">    &gt;&gt;&gt; class M(MiscStoreMixin, dict):</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; m = M()</span>
+<span class="sd">    &gt;&gt;&gt; m['a.json'] = {'x': 1}</span>
+<span class="sd">    &gt;&gt;&gt; dict.__getitem__(m, 'a.json'), m['a.json']</span>
+<span class="sd">    (b'{"x": 1}', {'x': 1})</span>
 <span class="sd">"""</span>
 
 <span class="c1"># TODO: Completely redo this, using preset and postget and making it into a plugin</span>
@@ -580,9 +591,12 @@
 <a class="viewcode-back" href="../../_autosummary/dol.misc.html#dol.misc.MiscStoreMixin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MiscStoreMixin</span><span class="p">(</span><span class="n">MiscReaderMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""Mixin to transform incoming and outgoing vals according to the key their under.</span>
-<span class="sd">    Warning: If used as a subclass, this mixin should (in general) be placed before the store</span>
 
-<span class="sd">    See also: preset and postget args from wrap_kvs decorator from dol.trans.</span>
+<span class="sd">    Warning:</span>
+<span class="sd">        If used as a subclass, this mixin should (in general) be placed before the store</span>
+
+<span class="sd">    See also:</span>
+<span class="sd">        preset and postget args from wrap_kvs decorator from dol.trans.</span>
 
 <span class="sd">    &gt;&gt;&gt; # Make a class to wrap a dict with a layer that transforms written and read values</span>
 <span class="sd">    &gt;&gt;&gt; class MiscStore(MiscStoreMixin, dict):</span>
@@ -628,7 +642,6 @@
 <span class="sd">    a.csv: b'event,year\r\n Magna Carta,1215\r\n Guido,1956\r\n'</span>
 <span class="sd">    a.txt: b'this is not a text'</span>
 <span class="sd">    a.json: b'{"str": "field", "int": 42, "float": 3.14, "array": [1, 2], "nested": {"a": 1, "b": 2}}'</span>
-
 <span class="sd">    """</span>
 
     <span class="n">_dflt_outgoing_val_trans_for_key</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">identity_method</span><span class="p">)</span>
@@ -669,8 +682,8 @@
     <span class="n">outgoing_val_trans_for_key</span><span class="o">=</span><span class="n">imdict</span><span class="p">(</span><span class="n">dflt_outgoing_val_trans_for_key</span><span class="p">),</span>
     <span class="n">func_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">"""A quick way to get an object, with default...</span>
-<span class="sd">    # everything (but the key, you know, a clue of what you want)"""</span>
+<span class="w">    </span><span class="sd">"""A quick way to set an object, with defaults for everything</span>
+<span class="sd">    (but the key and value, you know, a clue of what you want to store)."""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">Files</span><span class="p">)</span> <span class="ow">and</span> <span class="n">store</span><span class="o">.</span><span class="n">_prefix</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">""</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">}:</span>
         <span class="n">k</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
 
@@ -717,7 +730,6 @@
 <span class="sd">    &gt;&gt;&gt; # using bin</span>
 <span class="sd">    ... misc_objs[pjoin('tmp.bin')] = b'let us pretend these are bytes of an audio waveform'</span>
 <span class="sd">    &gt;&gt;&gt; assert misc_objs[pjoin('tmp.bin')] == b'let us pretend these are bytes of an audio waveform'</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -768,7 +780,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

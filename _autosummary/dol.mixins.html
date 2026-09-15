@@ -268,7 +268,26 @@
         <article role="main" id="furo-main-content">
           <section id="module-dol.mixins">
 <span id="dol-mixins"></span><h1>dol.mixins<a class="headerlink" href="#module-dol.mixins" title="Link to this heading">¶</a></h1>
-<p>Mixins</p>
+<p>Mixins that add or restrict store behaviours.</p>
+<p>Main entry points:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">ReadOnlyMixin</span></code>: forbid writes and deletes</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedMixin</span></code>: forbid writing to an existing key</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SimpleJsonMixin</span></code>: JSON-encoded values</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">IterBasedSizedContainerMixin</span></code>: <code class="docutils literal notranslate"><span class="pre">__len__</span></code> and <code class="docutils literal notranslate"><span class="pre">__contains__</span></code> from <code class="docutils literal notranslate"><span class="pre">__iter__</span></code></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.mixins</span><span class="w"> </span><span class="kn">import</span> <span class="n">OverWritesNotAllowedMixin</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">P</span><span class="p">(</span><span class="n">OverWritesNotAllowedMixin</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">P</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">dol.errors.OverWritesNotAllowedError</span>: <span class="n">key a already exists and cannot be overwritten...</span>
+</pre></div>
+</div>
+</li>
+</ul>
 <p class="rubric">Classes</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
@@ -295,7 +314,7 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.mixins.IterBasedSizedContainerMixin" title="dol.mixins.IterBasedSizedContainerMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IterBasedSizedContainerMixin</span></code></a>()</p></td>
-<td><p>An ABC that defines</p></td>
+<td><p>An ABC that defines:</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">IterBasedSizedMixin</span></code>()</p></td>
 <td><p></p></td>
@@ -318,14 +337,14 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.mixins.FilteredKeysMixin">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.mixins.</span></span><span class="sig-name descname"><span class="pre">FilteredKeysMixin</span></span><a class="reference internal" href="../_modules/dol/mixins.html#FilteredKeysMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.mixins.FilteredKeysMixin" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Filters __iter__ and __contains__ with (the boolean filter function attribute) _key_filt.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.mixins.IdentityKeysWrapMixin">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.mixins.</span></span><span class="sig-name descname"><span class="pre">IdentityKeysWrapMixin</span></span><a class="reference internal" href="../_modules/dol/mixins.html#IdentityKeysWrapMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.mixins.IdentityKeysWrapMixin" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Transparent KeysWrapABC. Often placed in the mro to satisfy the KeysWrapABC need in a neutral way.
 This is useful in cases where the keys the persistence functions work with are the same as those you want to work
 with.</p>
@@ -341,7 +360,7 @@ with.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.mixins.IdentityValsWrapMixin">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.mixins.</span></span><span class="sig-name descname"><span class="pre">IdentityValsWrapMixin</span></span><a class="reference internal" href="../_modules/dol/mixins.html#IdentityValsWrapMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.mixins.IdentityValsWrapMixin" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Transparent ValsWrapABC. Often placed in the mro to satisfy the KeysWrapABC need in a neutral way.
 This is useful in cases where the values can be persisted by __setitem__ as is (or the serialization is
 handled somewhere in the __setitem__ method.</p>
@@ -351,19 +370,15 @@ handled somewhere in the __setitem__ method.</p>
 <dt class="sig sig-object py" id="dol.mixins.IterBasedSizedContainerMixin">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.mixins.</span></span><span class="sig-name descname"><span class="pre">IterBasedSizedContainerMixin</span></span><a class="reference internal" href="../_modules/dol/mixins.html#IterBasedSizedContainerMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.mixins.IterBasedSizedContainerMixin" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IterBasedSizedMixin</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">IterBasedContainerMixin</span></code></p>
-<dl class="simple">
-<dt>An ABC that defines</dt><dd><ol class="loweralpha simple">
-<li><p>how to iterate over a collection of elements (keys) (__iter__)</p></li>
-<li><p>check that a key is contained in the collection (__contains__), and</p></li>
-<li><p>how to get the number of elements in the collection</p></li>
+<p>An ABC that defines:</p>
+<ol class="loweralpha simple">
+<li><p>how to iterate over a collection of elements (keys) (<code class="docutils literal notranslate"><span class="pre">__iter__</span></code>)</p></li>
+<li><p>check that a key is contained in the collection (<code class="docutils literal notranslate"><span class="pre">__contains__</span></code>), and</p></li>
+<li><p>how to get the number of elements in the collection (<code class="docutils literal notranslate"><span class="pre">__len__</span></code>)</p></li>
 </ol>
-</dd>
-</dl>
 <p>This is exactly what the collections.abc.Collection (from which Keys inherits) does.
-The difference here, besides the “Keys” purpose-explicit name, is that Keys offers default</p>
-<blockquote>
-<div><p>__len__ and __contains__  definitions based on what ever __iter__ the concrete class defines.</p>
-</div></blockquote>
+The difference here, besides the “Keys” purpose-explicit name, is that Keys offers default
+<code class="docutils literal notranslate"><span class="pre">__len__</span></code> and <code class="docutils literal notranslate"><span class="pre">__contains__</span></code> definitions based on what ever <code class="docutils literal notranslate"><span class="pre">__iter__</span></code> the concrete class defines.</p>
 <p>Keys is a collection (i.e. a Sized (has __len__), Iterable (has __iter__), Container (has __contains__).
 It’s purpose is to serve as a collection of object identifiers in a key-&gt;obj mapping.
 The Keys class doesn’t implement __iter__ (so needs to be subclassed with a concrete class), but
@@ -374,7 +389,7 @@ Note that usually __len__ and __contains__ should be overridden to more, context
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.mixins.OverWritesNotAllowedMixin">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.mixins.</span></span><span class="sig-name descname"><span class="pre">OverWritesNotAllowedMixin</span></span><a class="reference internal" href="../_modules/dol/mixins.html#OverWritesNotAllowedMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.mixins.OverWritesNotAllowedMixin" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Mixin for only allowing a write to a key if they key doesn’t already exist.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -403,14 +418,14 @@ Note that usually __len__ and __contains__ should be overridden to more, context
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.mixins.ReadOnlyMixin">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.mixins.</span></span><span class="sig-name descname"><span class="pre">ReadOnlyMixin</span></span><a class="reference internal" href="../_modules/dol/mixins.html#ReadOnlyMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.mixins.ReadOnlyMixin" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Put this as your first parent class to disallow write/delete operations</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.mixins.SimpleJsonMixin">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.mixins.</span></span><span class="sig-name descname"><span class="pre">SimpleJsonMixin</span></span><a class="reference internal" href="../_modules/dol/mixins.html#SimpleJsonMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.mixins.SimpleJsonMixin" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>simple json serialization.
 Useful to store and retrieve</p>
 </dd></dl>
@@ -495,7 +510,7 @@ Useful to store and retrieve</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

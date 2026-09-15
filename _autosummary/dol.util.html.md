@@ -1,6 +1,19 @@
 # dol.util
 
-General util objects
+General util objects: function composition, grouping, partial classes, file helpers.
+
+Main entry points:
+
+- `Pipe`: compose functions left to right
+- `partialclass`: `functools.partial` for classes
+- `groupby`, `regroupby`, `igroupby`: group items by a key function
+- `chain_get`: first value found for a sequence of keys
+- `written_bytes`, `read_from_bytes`: turn file-writing/reading functions into bytes codecs
+  ```pycon
+  >>> from dol.util import Pipe
+  >>> Pipe(lambda x: x + 1, str)(1)
+  '2'
+  ```
 
 ### Functions
 
@@ -19,7 +32,7 @@ General util objects
 | `fullpath`(path)                                                                                    |                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `function_info_string`(func)                                                                        |                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [`get_app_folder`](#dol.util.get_app_folder)([folder_kind])                      | Get the full path of a directory suitable for storing application-specific configs, (or data, or cache, or state or runtime)                                                                                                                                                                                                                                                                                                 |
-| [`groupby`](#dol.util.groupby)(items, key[, val, group_factory])          | Groups items according to group keys updated from those items through the given (<br/><br/>```<br/>item_to_<br/>```<br/><br/>)key function.                                                                                                                                                                                                                                                                                  |
+| [`groupby`](#dol.util.groupby)(items, key[, val, group_factory])          | Groups items according to group keys updated from those items through the given `key` function (mapping an item to its group key).                                                                                                                                                                                                                                                                                           |
 | [`has_enabled_clear_method`](#dol.util.has_enabled_clear_method)(store)                    | Returns True iff obj has a clear method that is enabled (i.e. not disabled).                                                                                                                                                                                                                                                                                                                                                 |
 | `identity_func`(x)                                                                                  |                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [`igroupby`](#dol.util.igroupby)(items, key[, val, group_factory, ...])    | The generator version of dol groupby.                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -38,7 +51,7 @@ General util objects
 | `ntup`(\*\*kwargs)                                                                                  |                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [`num_of_args`](#dol.util.num_of_args)(func)                                  | Number of arguments (parameters) of the function.                                                                                                                                                                                                                                                                                                                                                                            |
 | [`num_of_required_args`](#dol.util.num_of_required_args)(func)                         | Number or REQUIRED arguments of a function.                                                                                                                                                                                                                                                                                                                                                                                  |
-| [`partialclass`](#dol.util.partialclass)(cls, \*args, \*\*kwargs)              | What partial(cls, \*args, \*\*kwargs) does, but returning a class instead of an object.                                                                                                                                                                                                                                                                                                                                      |
+| [`partialclass`](#dol.util.partialclass)(cls, \*args, \*\*kwargs)              | What `partial(cls, *args, **kwargs)` does, but returning a class instead of an object.                                                                                                                                                                                                                                                                                                                                       |
 | [`read_from_bytes`](#dol.util.read_from_bytes)(file_reader[, obj, ...])           | Takes a file reading function that expects a file-like object, and returns a function that instead of reading from a file, reads from bytes.                                                                                                                                                                                                                                                                                 |
 | [`regroupby`](#dol.util.regroupby)(items, \*key_funcs, \*\*named_key_funcs) | Recursive groupby.                                                                                                                                                                                                                                                                                                                                                                                                           |
 | [`safe_compile`](#dol.util.safe_compile)(path[, normalize_path])               | Compile a *literal file path* into a regex pattern that matches that path, normalizing separators and escaping regex-special characters on Windows.                                                                                                                                                                                                                                                                          |
@@ -75,7 +88,7 @@ General util objects
 
 ### *class* dol.util.AttributeMapping
 
-Bases: [`SimpleNamespace`](https://docs.python.org/3/library/types.html#types.SimpleNamespace), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/library/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]
+Bases: [`SimpleNamespace`](https://docs.python.org/3/library/types.html#types.SimpleNamespace), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]
 
 A read-only mapping with attribute access.
 
@@ -105,7 +118,7 @@ into an AttributeMapping for attribute-style access.
 
 ### *class* dol.util.AttributeMutableMapping
 
-Bases: [`AttributeMapping`](#dol.util.AttributeMapping), [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)[[`str`](https://docs.python.org/3/library/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]
+Bases: [`AttributeMapping`](#dol.util.AttributeMapping), [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]
 
 A mutable mapping that provides both attribute and dictionary-style access.
 
@@ -136,7 +149,7 @@ False
 
 ### *class* dol.util.FolderSpec(env_var, default_path)
 
-Bases: [`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)
+Bases: [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
 
 #### default_path
 
@@ -148,7 +161,7 @@ Alias for field number 0
 
 ### *class* dol.util.LiteralVal(val)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 An object to indicate that the value should be considered literally.
 
@@ -173,7 +186,7 @@ get a value.
 
 ### *class* dol.util.Pipe(\*funcs, \*\*named_funcs)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Simple function composition. That is, gives you a callable that implements input -> f_1 -> … -> f_n -> output.
 
@@ -455,7 +468,7 @@ On macOS, this is typically ~/.config.
 On Linux, this is typically ~/.config.
 
 * **Parameters:**
-  **folder_kind** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
+  **folder_kind** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
   Defaults to ‘config’.
   Here are concise explanations for each folder kind:
   **config**: User preferences and settings files (e.g., API keys, theme preferences, editor settings). Files users might edit manually or that define how the app behaves.
@@ -467,7 +480,7 @@ On Linux, this is typically ~/.config.
 * **Returns:**
   The full path of the app data folder.
 * **Return type:**
-  [*str*](https://docs.python.org/3/library/stdtypes.html#str)
+  [*str*](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 See [https://github.com/i2mint/i2mint/issues/1](https://github.com/i2mint/i2mint/issues/1).
 
@@ -481,7 +494,7 @@ On macOS, this is typically ~/.config.
 On Linux, this is typically ~/.config.
 
 * **Parameters:**
-  **folder_kind** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
+  **folder_kind** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
   Defaults to ‘config’.
   Here are concise explanations for each folder kind:
   **config**: User preferences and settings files (e.g., API keys, theme preferences, editor settings). Files users might edit manually or that define how the app behaves.
@@ -493,7 +506,7 @@ On Linux, this is typically ~/.config.
 * **Returns:**
   The full path of the app data folder.
 * **Return type:**
-  [*str*](https://docs.python.org/3/library/stdtypes.html#str)
+  [*str*](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 See [https://github.com/i2mint/i2mint/issues/1](https://github.com/i2mint/i2mint/issues/1).
 
@@ -519,25 +532,19 @@ On Linux, this is typically ~/.config.
 * **Returns:**
   The full path of the app data folder.
 * **Return type:**
-  [*str*](https://docs.python.org/3/library/stdtypes.html#str)
+  [*str*](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 See [https://github.com/i2mint/i2mint/issues/1](https://github.com/i2mint/i2mint/issues/1).
 
 ### dol.util.groupby(items, key, val=None, group_factory=<class 'list'>)
 
 Groups items according to group keys updated from those items through the given
-(
-
-```
-item_to_
-```
-
-)key function.
+`key` function (mapping an item to its group key).
 
 * **Parameters:**
   * **items** ([`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – iterable of items
   * **key** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable)]) – The function that computes a key from an item. Needs to return a hashable.
-  * **val** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`None`](https://docs.python.org/3/library/constants.html#None)) – An optional function that computes a val from an item. If not given, the item itself will be taken.
+  * **val** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – An optional function that computes a val from an item. If not given, the item itself will be taken.
   * **group_factory** – The function to make new (empty) group objects and accumulate group items.
     group_items = group_factory() will be called to make a new empty group collection
     group_items.append(x) will be called to add x to that collection
@@ -545,7 +552,7 @@ item_to_
 * **Returns:**
   items_in_that_group, …}
 * **Return type:**
-  [`dict`](https://docs.python.org/3/library/stdtypes.html#dict)
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 #### SEE ALSO
 regroupby, itertools.groupby, and dol.source.SequenceKvReader
@@ -574,24 +581,18 @@ Returns True iff obj has a clear method that is enabled (i.e. not disabled)
 ### dol.util.igroupby(items, key, val=None, group_factory=<class 'list'>, group_release_cond=<function <lambda>>, release_remainding=True, append_to_group_items=<method 'append' of 'list' objects>, grouper_mapping=<class 'collections.defaultdict'>)
 
 The generator version of dol groupby.
-Groups items according to group keys updated from those items through the given (
-
-```
-item_to_
-```
-
-)key function,
+Groups items according to group keys updated from those items through the given `key` function (mapping an item to its group key),
 yielding the groups according to a logic defined by `group_release_cond`
 
 * **Parameters:**
   * **items** ([`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – iterable of items
   * **key** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable)]) – The function that computes a key from an item. Needs to return a hashable.
-  * **val** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`None`](https://docs.python.org/3/library/constants.html#None)) – An optional function that computes a val from an item. If not given, the item itself will be taken.
+  * **val** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – An optional function that computes a val from an item. If not given, the item itself will be taken.
   * **group_factory** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[], [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]) – The function to make new (empty) group objects and accumulate group items.
     group_items = group_collector() will be called to make a new empty group collection
     group_items.append(x) will be called to add x to that collection
     The default is `list`
-  * **group_release_cond** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/library/functions.html#bool)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/library/stdtypes.html#dict), [`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/library/functions.html#bool)]]) – A boolean function that will be applied, at every iteration,
+  * **group_release_cond** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]]) – A boolean function that will be applied, at every iteration,
     to the accumulated items of the group that was just updated,
     and determines (if True) if the (group_key, group_items) should be yielded.
     The default is False, which results in
@@ -658,7 +659,7 @@ and release_remainding=True\`\` we have `dict(igroupby(...)) == groupby(...)`
 
 ### *class* dol.util.imdict
 
-Bases: `ImmutableMixin`, [`dict`](https://docs.python.org/3/library/stdtypes.html#dict), `HashableMixin`
+Bases: `ImmutableMixin`, [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), `HashableMixin`
 
 A frozen hashable dict
 
@@ -693,7 +694,7 @@ each other.
 Get a pair of invertible maps
 
 * **Return type:**
-  [`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]
 
 ```pycon
 >>> invertible_maps({1: 11, 2: 22})
@@ -794,7 +795,7 @@ False
 
 ### *class* dol.util.lazyprop(func)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A descriptor implementation of lazyprop (cached property).
 Made based on David Beazley’s “Python Cookbook” book and enhanced with boltons.cacheutils ideas.
@@ -929,16 +930,16 @@ Otherwise, applies a collision_handler until a unique key is found.
 * **Parameters:**
   * **key** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)) – The candidate key to check/modify
   * **exclude** ([`Container`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Container)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)]) – Container of keys to avoid
-  * **collision_handler** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`int`](https://docs.python.org/3/library/functions.html#int)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)]) – Function taking (key, attempt_number) and returning a modified key.
+  * **collision_handler** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`int`](https://docs.python.org/3/builtins/functions.html#int)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)]) – Function taking (key, attempt_number) and returning a modified key.
     For strings, defaults to appending “ (N)” suffix before extension.
     For other types, must be provided.
-  * **max_attempts** ([`int`](https://docs.python.org/3/library/functions.html#int)) – Maximum number of transformation attempts
+  * **max_attempts** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – Maximum number of transformation attempts
 * **Return type:**
   [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)
 * **Returns:**
   A key not present in the exclude container
 * **Raises:**
-  [**ValueError**](https://docs.python.org/3/library/exceptions.html#ValueError) – If no unique key found within max_attempts, or if collision_handler
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – If no unique key found within max_attempts, or if collision_handler
       is None for non-string keys
 
 ```pycon
@@ -979,7 +980,7 @@ new_filt_func = lambda k, v: your_filt_func(..., key=k, ..., value=v, ...)
 and all will be fine.
 
 * **Parameters:**
-  **kv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`bool`](https://docs.python.org/3/library/functions.html#bool)]) – callable (starting with signature (k), (v), or (k, v)), and returning  a boolean
+  **kv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – callable (starting with signature (k), (v), or (k, v)), and returning  a boolean
 * **Returns:**
   A normalized callable.
 
@@ -1045,7 +1046,7 @@ parameters, including the variadics and defaulted ones.
 
 ### dol.util.partialclass(cls, \*args, \*\*kwargs)
 
-What partial(cls, \*args, \*\*kwargs) does, but returning a class instead of an object.
+What `partial(cls, *args, **kwargs)` does, but returning a class instead of an object.
 
 * **Parameters:**
   * **cls** – Class to get the partial of
@@ -1106,7 +1107,7 @@ Traceback (most recent call last):
 TypeError: __init__() got multiple values for argument 'a'
 ```
 
-On the other hand, you can use \*args to specify the fixtures:
+On the other hand, you can use `*args` to specify the fixtures:
 
 ```pycon
 >>> AA = partialclass(A, 22)
@@ -1128,9 +1129,9 @@ takes obj as the first argument, and uses the file_reader to read the bytes.
 
 * **Parameters:**
   * **file_reader** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – A function that reads from a file-like object.
-  * **obj** ([`bytes`](https://docs.python.org/3/library/stdtypes.html#bytes)) – The bytes to read.
-  * **buffer_arg_position** ([`int`](https://docs.python.org/3/library/functions.html#int)) – The position of the file-like object in file_reader’s arguments.
-  * **buffer_arg_name** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – The name of the file-like object argument in file_reader.
+  * **obj** ([`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)) – The bytes to read.
+  * **buffer_arg_position** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – The position of the file-like object in file_reader’s arguments.
+  * **buffer_arg_name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The name of the file-like object argument in file_reader.
 * **Returns:**
   The result of reading from the bytes.
 
@@ -1201,7 +1202,7 @@ Its output is intentionally platform-dependent (Windows paths get escaped),
 so callers must not rely on a specific `.pattern` across OSes.
 
 * **Parameters:**
-  **path** ([*str*](https://docs.python.org/3/library/stdtypes.html#str)) – The file path to be compiled into a regex pattern.
+  **path** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – The file path to be compiled into a regex pattern.
 * **Returns:**
   A compiled regular expression object for the given path.
 * **Return type:**
@@ -1219,7 +1220,7 @@ True
 
 ### *class* dol.util.staticproperty(function)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A decorator for defining static properties in classes.
 
@@ -1240,7 +1241,7 @@ Make a valid python variable string from the input string.
 Left untouched if already valid.
 
 * **Return type:**
-  [`str`](https://docs.python.org/3/library/stdtypes.html#str)
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ```pycon
 >>> str_to_var_str('this_is_a_valid_var_name')
@@ -1326,22 +1327,15 @@ function that will act as `json.dumps` like so:
 
 Here’s another example with pandas DataFrame.to_parquet:
 
-```pycon
->>> import pandas as pd
->>> df = pd.DataFrame({
-...     'column1': [1, 2, 3],
-...     'column2': ['A', 'B', 'C']
-... })
-```
-
-Get a function that converts DataFrame to Parquet bytes
-
+```python
+import pandas as pd
+df = pd.DataFrame({'column1': [1, 2, 3], 'column2': ['A', 'B', 'C']})
+# Get a function that converts DataFrame to Parquet bytes
 df_to_parquet_bytes = written_bytes(pd.DataFrame.to_parquet)
-
-### Get the bytes of the DataFrame in Parquet format
-
+# Get the bytes of the DataFrame in Parquet format
 parquet_bytes = df_to_parquet_bytes(df)
 all(pd.read_parquet(io.BytesIO(parquet_bytes)) == df)
+```
 
 ### dol.util.written_key(obj=None, writer=<function write_to_file>, \*, key=None, obj_arg_position_in_writer=0, encoder=<function identity_func>)
 
@@ -1351,15 +1345,15 @@ If key is not given, a temporary file is created and its path is returned.
 * **Parameters:**
   * **obj** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)) – The object to write.
   * **writer** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]) – A function that writes an object to a file.
-  * **key** (`Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`None`](https://docs.python.org/3/library/constants.html#None)]) – The key (by default, filepath) to write to.
+  * **key** (`Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – The key (by default, filepath) to write to.
     If None, a temporary file is created.
     If a string starting with ‘\*’, the ‘\*’ is replaced with a unique temporary filename.
     If a string that has a ‘\*’ somewhere in the middle, what’s on the left of if is used as a directory
     and the ‘\*’ is replaced with a unique temporary filename. For example
-    ‘/tmp/\*_file.ext’ would be replaced with ‘/tmp/oiu8fj9873_file.ext’.
+    `'/tmp/*_file.ext'` would be replaced with `'/tmp/oiu8fj9873_file.ext'`.
     If a callable, it will be called with obj as input to get the key. One use case
     is to use a function that generates a key based on the object.
-  * **obj_arg_position_in_writer** ([`int`](https://docs.python.org/3/library/functions.html#int)) – Position of the object argument in writer function (0 or 1).
+  * **obj_arg_position_in_writer** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – Position of the object argument in writer function (0 or 1).
   * **encoder** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – A function that encodes the object before writing it.
 * **Returns:**
   The file path where the object was written.

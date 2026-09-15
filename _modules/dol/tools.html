@@ -260,8 +260,27 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.tools</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""</span>
-<span class="sd">Various tools to add functionality to stores</span>
+<span></span><span class="sd">"""Various tools to add functionality to stores.</span>
+
+<span class="sd">Main entry points:</span>
+
+<span class="sd">- ``store_aggregate``: aggregate a store's items into one object (a Markdown text by default)</span>
+<span class="sd">- ``confirm_overwrite``: a ``wrap_kvs`` preset that asks before overwriting a value</span>
+<span class="sd">- ``Forest``: a key-value tree view of nested objects</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.tools import store_aggregate</span>
+<span class="sd">    &gt;&gt;&gt; print(store_aggregate({'a': 'x', 'b': 'y'}))</span>
+<span class="sd">    ## a</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    x</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    ## b</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    y</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">store_decorator</span>
@@ -311,7 +330,6 @@
 <span class="sd">        If you want to overwrite it with alligator, confirm by typing alligator here:</span>
 
 <span class="sd">    And we'll have to type `alligator` and press RETURN to make the write go through.</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">existing_v</span> <span class="o">:=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">NoSuchKey</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">NoSuchKey</span> <span class="ow">and</span> <span class="n">existing_v</span> <span class="o">!=</span> <span class="n">v</span><span class="p">:</span>
         <span class="n">user_input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">user_input_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span> <span class="n">existing_v</span><span class="o">=</span><span class="n">existing_v</span><span class="p">))</span>
@@ -404,22 +422,22 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        content_store (Union[Mapping[KT, VT], str]): Path to the folder or dol store to read from.</span>
-<span class="sd">        kv_to_item (Callable[[KT, VT], Item]):</span>
-<span class="sd">            Function to convert key-value pairs to an Item (usually a string).</span>
-<span class="sd">        aggregator (Callable[[Iterable[Item]], Aggregate]):</span>
-<span class="sd">            The function that will aggregate the items that `kv_to_item` produces.</span>
+<span class="sd">        kv_to_item (Callable[[KT, VT], Item]): Function to convert key-value pairs to an Item (usually a string).</span>
+
+<span class="sd">        aggregator (Callable[[Iterable[Item]], Aggregate]): The function that will aggregate the items that `kv_to_item` produces.</span>
 <span class="sd">            Defaults to '\n\n'.join.</span>
-<span class="sd">        egress (Union[Callable[[Aggregate], Any], str]):</span>
-<span class="sd">            The function that will be called on the aggregate before returning it.</span>
+
+<span class="sd">        egress (Union[Callable[[Aggregate], Any], str]): The function that will be called on the aggregate before returning it.</span>
 <span class="sd">            Defaults to identity.</span>
 <span class="sd">            Note that if you provide a string, the function will save the aggregate</span>
 <span class="sd">            text to a file, assuming it is indeed text.</span>
-<span class="sd">        key_filter (Optional[Callable[[KT], bool]]):</span>
-<span class="sd">            Optional filter for keys. Defaults to None (no filtering).</span>
-<span class="sd">        value_filter (Optional[Callable[[VT], bool]]):</span>
-<span class="sd">            Optional filter for values. Defaults to None (no filtering).</span>
-<span class="sd">        kv_filter (Optional[Callable[[Tuple[KT, VT]], bool]]):</span>
-<span class="sd">            Optional filter for key-value pairs. Defaults to None (no filtering).</span>
+
+<span class="sd">        key_filter (Optional[Callable[[KT], bool]]): Optional filter for keys. Defaults to None (no filtering).</span>
+
+<span class="sd">        value_filter (Optional[Callable[[VT], bool]]): Optional filter for values. Defaults to None (no filtering).</span>
+
+<span class="sd">        kv_filter (Optional[Callable[[Tuple[KT, VT]], bool]]): Optional filter for key-value pairs. Defaults to None (no filtering).</span>
+
 <span class="sd">        local_store_factory (Callable[[str], Mapping[KT, VT]]): Factory function for the local store,</span>
 <span class="sd">            used only if `content_store` is an existing folder path. Defaults to Latin1TextFiles.</span>
 
@@ -779,7 +797,6 @@
 <span class="sd">    True</span>
 <span class="sd">    &gt;&gt;&gt; list(fff)</span>
 <span class="sd">    ['granny', 'fuji']</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -891,7 +908,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

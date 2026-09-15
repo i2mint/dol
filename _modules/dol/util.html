@@ -260,7 +260,20 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.util</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""General util objects"""</span>
+<span></span><span class="sd">"""General util objects: function composition, grouping, partial classes, file helpers.</span>
+
+<span class="sd">Main entry points:</span>
+
+<span class="sd">- ``Pipe``: compose functions left to right</span>
+<span class="sd">- ``partialclass``: ``functools.partial`` for classes</span>
+<span class="sd">- ``groupby``, ``regroupby``, ``igroupby``: group items by a key function</span>
+<span class="sd">- ``chain_get``: first value found for a sequence of keys</span>
+<span class="sd">- ``written_bytes``, ``read_from_bytes``: turn file-writing/reading functions into bytes codecs</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.util import Pipe</span>
+<span class="sd">    &gt;&gt;&gt; Pipe(lambda x: x + 1, str)(1)</span>
+<span class="sd">    '2'</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
@@ -330,6 +343,7 @@
 <span class="sd">        collision_handler: Function taking (key, attempt_number) and returning a modified key.</span>
 <span class="sd">                          For strings, defaults to appending " (N)" suffix before extension.</span>
 <span class="sd">                          For other types, must be provided.</span>
+
 <span class="sd">        max_attempts: Maximum number of transformation attempts</span>
 
 <span class="sd">    Returns:</span>
@@ -347,7 +361,6 @@
 <span class="sd">    'file (2).txt'</span>
 <span class="sd">    &gt;&gt;&gt; non_colliding_key(42, {42}, collision_handler=lambda k, n: k + n)</span>
 <span class="sd">    43</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">key</span>
@@ -406,6 +419,7 @@
 <span class="sd">        re.Pattern: A compiled regular expression object for the given path.</span>
 
 <span class="sd">    Examples:</span>
+
 <span class="sd">        &gt;&gt;&gt; import re</span>
 <span class="sd">        &gt;&gt;&gt; isinstance(safe_compile("/fun/paths/are/awesome"), re.Pattern)</span>
 <span class="sd">        True</span>
@@ -495,6 +509,7 @@
 <span class="sd">        True if obj is an unbound method, False otherwise.</span>
 
 <span class="sd">    Examples:</span>
+
 <span class="sd">        &gt;&gt;&gt; import sys</span>
 <span class="sd">        &gt;&gt;&gt; import types</span>
 <span class="sd">        &gt;&gt;&gt; def function():</span>
@@ -564,7 +579,6 @@
 
 <span class="sd">    In reality, any object that has a ``__name__`` can be added to the attribute of</span>
 <span class="sd">    ``obj``, but the intention is to add helper functions to main "container" functions.</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_decorator</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
@@ -584,8 +598,9 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns the ``d[key]`` value for the first ``key`` in ``keys`` that is in ``d``, and default if none are found</span>
 
-<span class="sd">    Note: Think of ``collections.ChainMap`` where you can look for a single key in a sequence of maps until we find it.</span>
-<span class="sd">    Here we look for a sequence of keys in a single map, stopping as soon as we find a key that the map has.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        Think of ``collections.ChainMap`` where you can look for a single key in a sequence of maps until we find it.</span>
+<span class="sd">        Here we look for a sequence of keys in a single map, stopping as soon as we find a key that the map has.</span>
 
 <span class="sd">    &gt;&gt;&gt; d = {'here': '&amp;', 'there': 'and', 'every': 'where'}</span>
 <span class="sd">    &gt;&gt;&gt; chain_get(d, ['not there', 'not there either', 'there', 'every'])</span>
@@ -601,7 +616,6 @@
 
 <span class="sd">    &gt;&gt;&gt; chain_get(d, ('none', 'of', 'these'), default='Not Found')</span>
 <span class="sd">    'Not Found'</span>
-
 <span class="sd">    """</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
@@ -620,7 +634,6 @@
 <span class="sd">    42</span>
 <span class="sd">    &gt;&gt;&gt; t()</span>
 <span class="sd">    42</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
@@ -667,7 +680,6 @@
 <span class="sd">    'dry'</span>
 <span class="sd">    &gt;&gt;&gt; a.big()  # doctest: +SKIP</span>
 <span class="sd">    'small'</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">decorate_callables</span><span class="p">,</span> <span class="n">decorator</span><span class="p">)</span>
@@ -798,6 +810,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">inject_method</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">method_function</span><span class="p">,</span> <span class="n">method_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    method_function could be:</span>
+
 <span class="sd">        * a function</span>
 <span class="sd">        * a {method_name: function, ...} dict (for multiple injections)</span>
 <span class="sd">        * a list of functions or (function, method_name) pairs</span>
@@ -837,7 +850,6 @@
 <span class="sd">                del self[k]</span>
 <span class="sd">            except KeyError:</span>
 <span class="sd">                pass</span>
-
 <span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Instance of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="o">.</span><span class="vm">__doc__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
@@ -912,7 +924,6 @@
 <span class="sd">    '12---90'</span>
 <span class="sd">    &gt;&gt;&gt; truncate_string('supercalifragilisticexpialidocious')</span>
 <span class="sd">    'su---us'</span>
-
 <span class="sd">    """</span>
     <span class="n">middle_marker_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">middle_marker</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">left_limit</span> <span class="o">+</span> <span class="n">right_limit</span><span class="p">:</span>
@@ -972,6 +983,7 @@
 <span class="sd">    3</span>
 
 <span class="sd">    Notes:</span>
+
 <span class="sd">        - Pipe instances don't have a __name__ etc. So some expectations of normal functions are not met.</span>
 <span class="sd">        - Pipe instance are pickalable (as long as the functions that compose them are)</span>
 
@@ -997,7 +1009,6 @@
 <span class="sd">    'map_and_sum'</span>
 <span class="sd">    &gt;&gt;&gt; f.__doc__</span>
 <span class="sd">    'Apply func and add'</span>
-
 <span class="sd">    """</span>
 
     <span class="n">funcs</span> <span class="o">=</span> <span class="p">()</span>
@@ -1122,7 +1133,7 @@
 <div class="viewcode-block" id="partialclass">
 <a class="viewcode-back" href="../../_autosummary/dol.util.html#dol.util.partialclass">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">partialclass</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""What partial(cls, *args, **kwargs) does, but returning a class instead of an object.</span>
+<span class="w">    </span><span class="sd">"""What ``partial(cls, *args, **kwargs)`` does, but returning a class instead of an object.</span>
 
 <span class="sd">    :param cls: Class to get the partial of</span>
 <span class="sd">    :param kwargs: The kwargs to fix</span>
@@ -1176,14 +1187,12 @@
 <span class="sd">      ...</span>
 <span class="sd">    TypeError: __init__() got multiple values for argument 'a'</span>
 
-<span class="sd">    On the other hand, you can use *args to specify the fixtures:</span>
+<span class="sd">    On the other hand, you can use ``*args`` to specify the fixtures:</span>
 
 <span class="sd">    &gt;&gt;&gt; AA = partialclass(A, 22)</span>
 <span class="sd">    &gt;&gt;&gt; assert str(AA()) == 'A(a=22, b=1)'</span>
 <span class="sd">    &gt;&gt;&gt; assert str(signature(AA)) == '(b=1)'</span>
 <span class="sd">    &gt;&gt;&gt; assert str(AA(3)) == 'A(a=22, b=3)'</span>
-
-
 <span class="sd">    """</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="nb">type</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"cls should be a type, was a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s2">"</span>
 
@@ -1404,7 +1413,6 @@
 <span class="sd">    a_func(1)</span>
 <span class="sd">    &gt;&gt;&gt; print(format_invocation('kw_func', kwargs=[('a', 1), ('b', 2)]))</span>
 <span class="sd">    kw_func(a=1, b=2)</span>
-
 <span class="sd">    """</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
     <span class="n">a_text</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span>
@@ -1432,7 +1440,7 @@
     <span class="n">group_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Groups items according to group keys updated from those items through the given</span>
-<span class="sd">    (item_to_)key function.</span>
+<span class="sd">    ``key`` function (mapping an item to its group key).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        items: iterable of items</span>
@@ -1443,9 +1451,11 @@
 <span class="sd">            group_items.append(x) will be called to add x to that collection</span>
 <span class="sd">            The default is `list`</span>
 
-<span class="sd">    Returns: A dict of {group_key: items_in_that_group, ...}</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A dict of {group_key: items_in_that_group, ...}</span>
 
-<span class="sd">    See Also: regroupby, itertools.groupby, and dol.source.SequenceKvReader</span>
+<span class="sd">    See Also:</span>
+<span class="sd">        regroupby, itertools.groupby, and dol.source.SequenceKvReader</span>
 
 <span class="sd">    &gt;&gt;&gt; groupby(range(11), key=lambda x: x % 3)</span>
 <span class="sd">    {0: [0, 3, 6, 9], 1: [1, 4, 7, 10], 2: [2, 5, 8]}</span>
@@ -1478,10 +1488,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">regroupby</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="o">*</span><span class="n">key_funcs</span><span class="p">,</span> <span class="o">**</span><span class="n">named_key_funcs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Recursive groupby. Applies the groupby function recursively, using a sequence of key functions.</span>
 
-<span class="sd">    Note: The named_key_funcs argument names don't have any external effect.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        The named_key_funcs argument names don't have any external effect.</span>
+
 <span class="sd">        They just give a name to the key function, for code reading clarity purposes.</span>
 
-<span class="sd">    See Also: groupby, itertools.groupby, and dol.source.SequenceKvReader</span>
+<span class="sd">    See Also:</span>
+<span class="sd">        groupby, itertools.groupby, and dol.source.SequenceKvReader</span>
 
 <span class="sd">    &gt;&gt;&gt; # group by how big the number is, then by it's mod 3 value</span>
 <span class="sd">    &gt;&gt;&gt; # note that named_key_funcs argument names doesn't have any external effect (but give a name to the function)</span>
@@ -1532,7 +1545,7 @@
     <span class="n">grouper_mapping</span><span class="o">=</span><span class="n">defaultdict</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The generator version of dol groupby.</span>
-<span class="sd">    Groups items according to group keys updated from those items through the given (item_to_)key function,</span>
+<span class="sd">    Groups items according to group keys updated from those items through the given ``key`` function (mapping an item to its group key),</span>
 <span class="sd">    yielding the groups according to a logic defined by ``group_release_cond``</span>
 
 <span class="sd">    Args:</span>
@@ -1552,7 +1565,8 @@
 <span class="sd">            items in the grouping "cache". ``release_remainding`` is a boolean that indicates whether</span>
 <span class="sd">            the contents of this cache should be released or not.</span>
 
-<span class="sd">    Yields: ``(group_key, items_in_that_group)`` pairs</span>
+<span class="sd">    Yields:</span>
+<span class="sd">        ``(group_key, items_in_that_group)`` pairs</span>
 
 
 <span class="sd">    The following will group numbers according to their parity (0 for even, 1 for odd),</span>
@@ -1603,7 +1617,6 @@
 <span class="sd">    &gt;&gt;&gt; kws.update(key=lambda w: ['words', 'stopwords'][int(w in stopwords)])</span>
 <span class="sd">    &gt;&gt;&gt; assert (dict(igroupby(**kws)) == groupby(**kws)</span>
 <span class="sd">    ...         == {'stopwords': ['the', 'in', 'a'], 'words': ['fox', 'is', 'box']})</span>
-
 <span class="sd">    """</span>
     <span class="n">groups</span> <span class="o">=</span> <span class="n">grouper_mapping</span><span class="p">(</span><span class="n">group_factory</span><span class="p">)</span>
 
@@ -1681,8 +1694,11 @@
 
 <span class="sd">    See examples to know how to use it.</span>
 
-<span class="sd">    ATTENTION: A shallow copy of the dict is made. Know how that affects you (or not).</span>
-<span class="sd">    ATTENTION: This is not recursive: It won't be filling any nested fields with defaults.</span>
+<span class="sd">    ATTENTION:</span>
+<span class="sd">        A shallow copy of the dict is made. Know how that affects you (or not).</span>
+
+<span class="sd">    ATTENTION:</span>
+<span class="sd">        This is not recursive: It won't be filling any nested fields with defaults.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        d: The dict you want to "fill"</span>
@@ -2165,8 +2181,9 @@
 
 <span class="sd">    This is the write version of the `read_from_bytes` function of the same module.</span>
 
-<span class="sd">    Note: If obj is not given, `write_bytes` will return a "bytes writer" function that</span>
-<span class="sd">    takes obj as the first argument, and uses the file_writer to write the bytes.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        If obj is not given, `write_bytes` will return a "bytes writer" function that</span>
+<span class="sd">        takes obj as the first argument, and uses the file_writer to write the bytes.</span>
 
 <span class="sd">    :param file_writer: A function that writes an object to a file-like object.</span>
 <span class="sd">    :param obj: The object to write.</span>
@@ -2189,21 +2206,15 @@
 
 <span class="sd">    Here's another example with pandas DataFrame.to_parquet:</span>
 
-<span class="sd">    &gt;&gt;&gt; import pandas as pd  # doctest: +SKIP</span>
-<span class="sd">    &gt;&gt;&gt; df = pd.DataFrame({  # doctest: +SKIP</span>
-<span class="sd">    ...     'column1': [1, 2, 3],</span>
-<span class="sd">    ...     'column2': ['A', 'B', 'C']</span>
-<span class="sd">    ... })</span>
+<span class="sd">    .. code-block:: python</span>
 
-<span class="sd">    Get a function that converts DataFrame to Parquet bytes</span>
-
-<span class="sd">    df_to_parquet_bytes = written_bytes(pd.DataFrame.to_parquet)</span>
-
-<span class="sd">    # Get the bytes of the DataFrame in Parquet format</span>
-<span class="sd">    parquet_bytes = df_to_parquet_bytes(df)</span>
-<span class="sd">    all(pd.read_parquet(io.BytesIO(parquet_bytes)) == df)</span>
-
-
+<span class="sd">        import pandas as pd</span>
+<span class="sd">        df = pd.DataFrame({'column1': [1, 2, 3], 'column2': ['A', 'B', 'C']})</span>
+<span class="sd">        # Get a function that converts DataFrame to Parquet bytes</span>
+<span class="sd">        df_to_parquet_bytes = written_bytes(pd.DataFrame.to_parquet)</span>
+<span class="sd">        # Get the bytes of the DataFrame in Parquet format</span>
+<span class="sd">        parquet_bytes = df_to_parquet_bytes(df)</span>
+<span class="sd">        all(pd.read_parquet(io.BytesIO(parquet_bytes)) == df)</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
@@ -2271,8 +2282,9 @@
 
 <span class="sd">    This is the read version of the `written_bytes` function of the same module.</span>
 
-<span class="sd">    Note: If obj is not given, read_from_bytes will return a "bytes reader" function that</span>
-<span class="sd">    takes obj as the first argument, and uses the file_reader to read the bytes.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        If obj is not given, read_from_bytes will return a "bytes reader" function that</span>
+<span class="sd">        takes obj as the first argument, and uses the file_reader to read the bytes.</span>
 
 <span class="sd">    :param file_reader: A function that reads from a file-like object.</span>
 <span class="sd">    :param obj: The bytes to read.</span>
@@ -2355,7 +2367,7 @@
 <span class="sd">        If a string starting with '*', the '*' is replaced with a unique temporary filename.</span>
 <span class="sd">        If a string that has a '*' somewhere in the middle, what's on the left of if is used as a directory</span>
 <span class="sd">        and the '*' is replaced with a unique temporary filename. For example</span>
-<span class="sd">        '/tmp/*_file.ext' would be replaced with '/tmp/oiu8fj9873_file.ext'.</span>
+<span class="sd">        ``'/tmp/*_file.ext'`` would be replaced with ``'/tmp/oiu8fj9873_file.ext'``.</span>
 <span class="sd">        If a callable, it will be called with obj as input to get the key. One use case</span>
 <span class="sd">        is to use a function that generates a key based on the object.</span>
 <span class="sd">    :param obj_arg_position_in_writer: Position of the object argument in writer function (0 or 1).</span>
@@ -2438,7 +2450,6 @@
 <span class="sd">    '/var/folders/mc/c070wfh51kxd9lft8dl74q1r0000gn/T/tmp8yaczd8b.json'</span>
 <span class="sd">    &gt;&gt;&gt; json.loads(open(filepath).read())</span>
 <span class="sd">    {'a': 1, 'b': 2}</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
@@ -2582,7 +2593,7 @@
 
 <span class="sd">    Useful when you want mapping interface but don't need mutation.</span>
 
-<span class="sd">    Examples:</span>
+<span class="sd">    .. rubric:: Examples</span>
 
 <span class="sd">    &gt;&gt;&gt; ns = AttributeMapping(x=10, y=20)</span>
 <span class="sd">    &gt;&gt;&gt; ns.x</span>
@@ -2629,7 +2640,7 @@
 <span class="sd">    Extends AttributeMapping with mutation capabilities,</span>
 <span class="sd">    ensuring proper error handling and protocol compliance.</span>
 
-<span class="sd">    Examples:</span>
+<span class="sd">    .. rubric:: Examples</span>
 
 <span class="sd">    &gt;&gt;&gt; ns = AttributeMutableMapping(apple=1, banana=2)</span>
 <span class="sd">    &gt;&gt;&gt; ns.apple</span>
@@ -2770,7 +2781,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

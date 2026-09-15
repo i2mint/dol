@@ -268,7 +268,19 @@
         <article role="main" id="furo-main-content">
           <section id="module-dol.naming">
 <span id="dol-naming"></span><h1>dol.naming<a class="headerlink" href="#module-dol.naming" title="Link to this heading">¶</a></h1>
-<p>This module is about generating, validating, and operating on (parametrized) fields (i.e. stings, e.g. paths).</p>
+<p>This module is about generating, validating, and operating on (parametrized) fields (i.e. strings, e.g. paths).</p>
+<p>Main entry points:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">StrTupleDict</span></code>: convert a templated name between string, tuple and dict forms</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mk_pattern_from_template_and_format_dict</span></code>: a compiled regex from a template</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_fields_from_template</span></code>: the field names of a template</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.naming</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_fields_from_template</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_fields_from_template</span><span class="p">(</span><span class="s1">'this</span><span class="si">{is}</span><span class="s1">an</span><span class="si">{example}</span><span class="s1">'</span><span class="p">)</span>
+<span class="go">['is', 'example']</span>
+</pre></div>
+</div>
+</li>
+</ul>
 <p class="rubric">Functions</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
@@ -295,7 +307,7 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.mk_pattern_from_template_and_format_dict" title="dol.naming.mk_pattern_from_template_and_format_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_pattern_from_template_and_format_dict</span></code></a>(...)</p></td>
-<td><p>Make a compiled regex to match template :type template:  :param template: A format string :type format_dict:  :param format_dict: A dict whose keys are template fields and values are regex strings to capture them</p></td>
+<td><p>Make a compiled regex to match template</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_prefix_templates_dicts</span></code>(template)</p></td>
 <td><p></p></td>
@@ -326,7 +338,7 @@
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.naming.BigDocTest" title="dol.naming.BigDocTest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BigDocTest</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>Naming-scheme example holder whose (large) doctest is currently disabled.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.KeyMapNames" title="dol.naming.KeyMapNames"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KeyMapNames</span></code></a></p></td>
 <td><p></p></td>
@@ -355,8 +367,8 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.StoreWithTupleKeys" title="dol.naming.StoreWithTupleKeys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StoreWithTupleKeys</span></code></a>(store[, keymap])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">StrTupleDict</span></code>(template[, format_dict, ...])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.naming.StrTupleDict" title="dol.naming.StrTupleDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StrTupleDict</span></code></a>(template[, format_dict, ...])</p></td>
+<td><p>Convert a parametrized name between its string, tuple and dict forms.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.naming.StrTupleDictWithPrefix" title="dol.naming.StrTupleDictWithPrefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StrTupleDictWithPrefix</span></code></a>(template[, ...])</p></td>
 <td><p>Converting from and to strings, tuples, and dicts, but with partial &quot;prefix&quot; specs allowed.</p></td>
@@ -367,103 +379,9 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.naming.BigDocTest">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">BigDocTest</span></span><a class="reference internal" href="../_modules/dol/naming.html#BigDocTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.BigDocTest" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p class="rubric">TODO: Fix this test (maybe test assertions aren’t correct)</p>
-<p class="rubric">This happened when we changed some re.compile to safe_compile</p>
-<p># &gt;&gt;&gt;
-# &gt;&gt;&gt; e_name = BigDocTest.mk_e_naming()
-# &gt;&gt;&gt; u_name = BigDocTest.mk_u_naming()
-# &gt;&gt;&gt; e_sref = ‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469’
-# &gt;&gt;&gt; u_sref = “s3://uploads/GROUP/upload/files/USER/2017-01-24/SUBUSER/a_file.wav”
-# &gt;&gt;&gt; u_name_2 = “s3://uploads/ANOTHER_GROUP/upload/files/ANOTHER_USER/2017-01-24/SUBUSER/a_file.wav”
-# &gt;&gt;&gt;
-# &gt;&gt;&gt; ####### is_valid(self, name): ######
-# &gt;&gt;&gt; e_name.is_valid(e_sref)</p>
-<p class="rubric">True</p>
-<p># &gt;&gt;&gt; e_name.is_valid(u_sref)</p>
-<p class="rubric">False</p>
-<p># &gt;&gt;&gt; u_name.is_valid(u_sref)</p>
-<p class="rubric">True</p>
-<p># &gt;&gt;&gt;
-# &gt;&gt;&gt; ####### is_valid_prefix(self, name): ######
-# &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-‘)</p>
-<p class="rubric">True</p>
-<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP’)</p>
-<p class="rubric">False</p>
-<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP/example/’)</p>
-<p class="rubric">False</p>
-<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files’)</p>
-<p class="rubric">False</p>
-<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files/’)</p>
-<p class="rubric">True</p>
-<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/’)</p>
-<p class="rubric">True</p>
-<p># &gt;&gt;&gt; e_name.is_valid_prefix(‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/0_0’)</p>
-<p class="rubric">True</p>
-<p># &gt;&gt;&gt;
-# &gt;&gt;&gt; ####### info_dict(self, name): ######
-# &gt;&gt;&gt; e_name.info_dict(e_sref)  # see that utc_ms args were cast to ints
-# {‘group’: ‘GROUP’, ‘user’: ‘USER’, ‘subuser’: ‘SUBUSER’, ‘day’: ‘2017-01-24’, ‘s_ums’: 1485272231982, ‘e_ums’: 1485261448469}
-# &gt;&gt;&gt; u_name.info_dict(u_sref)  # returns None (because self was made for example!
-# {‘group’: ‘GROUP’, ‘user’: ‘USER’, ‘day’: ‘2017-01-24’, ‘subuser’: ‘SUBUSER’, ‘filename’: ‘a_file.wav’}
-# &gt;&gt;&gt; # but with a u_name, it will work
-# &gt;&gt;&gt; u_name.info_dict(u_sref)
-# {‘group’: ‘GROUP’, ‘user’: ‘USER’, ‘day’: ‘2017-01-24’, ‘subuser’: ‘SUBUSER’, ‘filename’: ‘a_file.wav’}
-# &gt;&gt;&gt;
-# &gt;&gt;&gt; ####### extract(self, item, name): ######
-# &gt;&gt;&gt; e_name.extract(‘group’, e_sref)
-# ‘GROUP’
-# &gt;&gt;&gt; e_name.extract(‘user’, e_sref)
-# ‘USER’
-# &gt;&gt;&gt; u_name.extract(‘group’, u_name_2)
-# ‘ANOTHER_GROUP’
-# &gt;&gt;&gt; u_name.extract(‘user’, u_name_2)
-# ‘ANOTHER_USER’
-# &gt;&gt;&gt;</p>
-<p>#
-# &gt;&gt;&gt; ####### mk_prefix(self, *args, **kwargs): ######
-# &gt;&gt;&gt; e_name.mk_prefix()
-# ‘s3://bucket-’
-# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’)
-# ‘s3://bucket-GROUP/example/files/’
-# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’, user=’USER’)
-# ‘s3://bucket-GROUP/example/files/USER/’
-# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/’
-# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/’
-# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’,
-# … s_ums=1485272231982)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/<a href="#id1"><span class="problematic" id="id2">1485272231982_</span></a>’
-# &gt;&gt;&gt; e_name.mk_prefix(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’,
-# … s_ums=1485272231982, e_ums=1485261448469)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469’
-# &gt;&gt;&gt;
-# &gt;&gt;&gt; u_name.mk_prefix()
-# ‘s3://uploads/’
-# &gt;&gt;&gt; u_name.mk_prefix(group=’GROUP’)
-# ‘s3://uploads/GROUP/upload/files/’
-# &gt;&gt;&gt; u_name.mk_prefix(group=’GROUP’, user=’USER’)
-# ‘s3://uploads/GROUP/upload/files/USER/’
-# &gt;&gt;&gt; u_name.mk_prefix(group=’GROUP’, user=’USER’, day=’DAY’)
-# ‘s3://uploads/GROUP/upload/files/USER/DAY/’
-# &gt;&gt;&gt; u_name.mk_prefix(group=’GROUP’, user=’USER’, day=’DAY’)
-# ‘s3://uploads/GROUP/upload/files/USER/DAY/’
-# &gt;&gt;&gt; u_name.mk_prefix(group=’GROUP’, user=’USER’, day=’DAY’, subuser=’SUBUSER’)
-# ‘s3://uploads/GROUP/upload/files/USER/DAY/SUBUSER/’
-# &gt;&gt;&gt;
-# &gt;&gt;&gt; ####### mk(self, *args, **kwargs): ######
-# &gt;&gt;&gt; e_name.mk(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’0000-00-00’,
-# …             s_ums=1485272231982, e_ums=1485261448469)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469’
-# &gt;&gt;&gt; e_name.mk(group=’GROUP’, user=’USER’, subuser=’SUBUSER’, day=’from_s_ums’,
-# …             s_ums=1485272231982, e_ums=1485261448469)
-# ‘s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469’
-# &gt;&gt;&gt;
-# &gt;&gt;&gt; ####### replace_name_elements(self, *args, **kwargs): ######
-# &gt;&gt;&gt; name = ‘s3://bucket-redrum/example/files/oopsy&#64;domain.com/ozeip/2008-11-04/1225779243969_1225779246969’
-# &gt;&gt;&gt; e_name.replace_name_elements(name, user=’NEW_USER’, group=’NEW_GROUP’)
-# ‘s3://bucket-NEW_GROUP/example/files/NEW_USER/ozeip/2008-11-04/1225779243969_1225779246969’</p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Naming-scheme example holder whose (large) doctest is currently disabled.</p>
+<p>The former doctest is kept as comments in the class body.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -475,7 +393,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.naming.KeyMaps">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">KeyMaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_of_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_of_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.naming.KeyMaps" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dol.naming.KeyMaps.id_of_key">
 <span class="sig-name descname"><span class="pre">id_of_key</span></span><a class="headerlink" href="#dol.naming.KeyMaps.id_of_key" title="Link to this definition">¶</a></dt>
@@ -519,8 +437,8 @@ if not foo is given – but {foo} will remain).</p>
 <p class="admonition-title">Note</p>
 <p>If you only need a formatting function (not the transformed formatting string), a simpler solution may be:</p>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>import functools
-format_str = functools.partial(str_template.format, bar="BAR", b=34)
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="n">format_str</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">str_template</span><span class="o">.</span><span class="n">format</span><span class="p">,</span> <span class="n">bar</span><span class="o">=</span><span class="s2">"BAR"</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">34</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>See <a class="reference external" href="https://stackoverflow.com/questions/11283961/partial-string-formatting">https://stackoverflow.com/questions/11283961/partial-string-formatting</a> for more options and discussions.</p>
@@ -545,14 +463,110 @@ format_str = functools.partial(str_template.format, bar="BAR", b=34)
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="dol.naming.StrTupleDict">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">StrTupleDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_info_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_tuple_type_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NamedTuple'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StrTupleDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StrTupleDict" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Convert a parametrized name between its string, tuple and dict forms.</p>
+<p>Built from a string template with <code class="docutils literal notranslate"><span class="pre">{field}</span></code> placeholders (and optional regexes
+for the fields). See <code class="docutils literal notranslate"><span class="pre">__init__</span></code> for the parameters and an example.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.naming.StrTupleDict.extract">
+<span class="sig-name descname"><span class="pre">extract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StrTupleDict.extract"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StrTupleDict.extract" title="Link to this definition">¶</a></dt>
+<dd><p>Extract a single item from an name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field</strong> – field of the item to extract</p></li>
+<li><p><strong>s</strong> – the string from which to extract it</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value for name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.naming.StrTupleDict.info_dict">
+<span class="sig-name descname"><span class="pre">info_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.naming.StrTupleDict.info_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Get a dict with the arguments of an name (for example group, user, subuser, etc.)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a dict holding the argument fields and values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.naming.StrTupleDict.is_valid">
+<span class="sig-name descname"><span class="pre">is_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StrTupleDict.is_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StrTupleDict.is_valid" title="Link to this definition">¶</a></dt>
+<dd><p>Check if the name has the “upload format” (i.e. the kind of fields that are _ids of fv_mgc, and what
+name means in most of the iatis system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – the string to check</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True iff name has the upload format</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.naming.StrTupleDict.replace_name_elements">
+<span class="sig-name descname"><span class="pre">replace_name_elements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">elements_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StrTupleDict.replace_name_elements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StrTupleDict.replace_name_elements" title="Link to this definition">¶</a></dt>
+<dd><p>Replace specific name argument values with others</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – the string to replace</p></li>
+<li><p><strong>elements_kwargs</strong> – the arguments to replace (and their values)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a new name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.naming.StrTupleDict.str_to_dict">
+<span class="sig-name descname"><span class="pre">str_to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StrTupleDict.str_to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StrTupleDict.str_to_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Get a dict with the arguments of an name (for example group, user, subuser, etc.)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a dict holding the argument fields and values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.naming.StrTupleDict.super_dict_to_str">
+<span class="sig-name descname"><span class="pre">super_dict_to_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StrTupleDict.super_dict_to_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StrTupleDict.super_dict_to_str" title="Link to this definition">¶</a></dt>
+<dd><p>Like dict_to_str, but the input dict can have extra keys that are not used by dict_to_str</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="dol.naming.StrTupleDictWithPrefix">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">StrTupleDictWithPrefix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_info_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_tuple_type_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NamedTuple'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#StrTupleDictWithPrefix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.StrTupleDictWithPrefix" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StrTupleDict</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#dol.naming.StrTupleDict" title="dol.naming.StrTupleDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">StrTupleDict</span></code></a></p>
 <p>Converting from and to strings, tuples, and dicts, but with partial “prefix” specs allowed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>template</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span>) – The string format template</p></li>
+<li><p><strong>template</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span>) – The string format template</p></li>
 <li><p><strong>format_dict</strong> – A {field_name: field_value_format_regex, …} dict</p></li>
 <li><p><strong>process_kwargs</strong> – A function taking the field=value pairs and producing a dict of processed
 {field: value,…} dict (where both fields and values could have been processed.
@@ -656,14 +670,16 @@ Used to easily make process_kwargs and process_info_dict arguments for LinearNam
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.naming.mk_pattern_from_template_and_format_dict">
 <span class="sig-prename descclassname"><span class="pre">dol.naming.</span></span><span class="sig-name descname"><span class="pre">mk_pattern_from_template_and_format_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/naming.html#mk_pattern_from_template_and_format_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.naming.mk_pattern_from_template_and_format_dict" title="Link to this definition">¶</a></dt>
-<dd><p>Make a compiled regex to match template
-:type template: 
-:param template: A format string
-:type format_dict: 
-:param format_dict: A dict whose keys are template fields and values are regex strings to capture them</p>
+<dd><p>Make a compiled regex to match template</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>a compiled regex</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template</strong> – A format string</p></li>
+<li><p><strong>format_dict</strong> – A dict whose keys are template fields and values are regex strings to capture them</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a compiled regex</p>
 </dd>
 </dl>
 <p>Assert on <em>behavior</em> (matching) rather than the exact pattern string, so the
@@ -693,11 +709,8 @@ capture class – is <code class="docutils literal notranslate"><span class="pre
 <li><p><strong>store</strong> – The instance or class to wrap</p></li>
 <li><p><strong>subpath</strong> – The subpath (defining the subset of the data pointed at by the URI</p></li>
 <li><p><strong>store_cls_kwargs</strong> – # if store is a class, the kwargs that you would have given the store_cls to make itself</p></li>
-<li><p><strong>key_type</strong> – <p>The key type you want to interface with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">dict</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">namedtuple</span><span class="p">,</span> <span class="nb">str</span> <span class="ow">or</span> <span class="s1">'dict'</span><span class="p">,</span> <span class="s1">'tuple'</span><span class="p">,</span> <span class="s1">'namedtuple'</span><span class="p">,</span> <span class="s1">'str'</span>
-</pre></div>
-</div>
-</p></li>
+<li><p><strong>key_type</strong> – The key type you want to interface with: <code class="docutils literal notranslate"><span class="pre">dict</span></code>, <code class="docutils literal notranslate"><span class="pre">tuple</span></code>,
+<code class="docutils literal notranslate"><span class="pre">namedtuple</span></code>, <code class="docutils literal notranslate"><span class="pre">str</span></code>, or one of those names as a string</p></li>
 <li><p><strong>keymap</strong> – # the keymap instance or class you want to use to map keys</p></li>
 <li><p><strong>keymap_kwargs</strong> – # if keymap is a cls, the kwargs to give it (besides the subpath)</p></li>
 <li><p><strong>name</strong> – The name to give the class the function will make here</p></li>
@@ -708,11 +721,11 @@ capture class – is <code class="docutils literal notranslate"><span class="pre
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># Get a (session, bt) indexed LocalJsonStore
-s = mk_store_from_path_format_store_cls(LocalJsonStore,
-                                               os.path.join(root_dir, 'd'),
-                                               subpath='{session}/d/{bt}',
-                                               keymap_kwargs=dict(process_info_dict={'session': int, 'bt': int}))
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get a (session, bt) indexed LocalJsonStore</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">mk_store_from_path_format_store_cls</span><span class="p">(</span><span class="n">LocalJsonStore</span><span class="p">,</span>
+                                               <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="s1">'d'</span><span class="p">),</span>
+                                               <span class="n">subpath</span><span class="o">=</span><span class="s1">'</span><span class="si">{session}</span><span class="s1">/d/</span><span class="si">{bt}</span><span class="s1">'</span><span class="p">,</span>
+                                               <span class="n">keymap_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">process_info_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">'session'</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="s1">'bt'</span><span class="p">:</span> <span class="nb">int</span><span class="p">}))</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -727,11 +740,8 @@ s = mk_store_from_path_format_store_cls(LocalJsonStore,
 <li><p><strong>store</strong> – The instance or class to wrap</p></li>
 <li><p><strong>subpath</strong> – The subpath (defining the subset of the data pointed at by the URI</p></li>
 <li><p><strong>store_cls_kwargs</strong> – # if store is a class, the kwargs that you would have given the store_cls to make itself</p></li>
-<li><p><strong>key_type</strong> – <p>The key type you want to interface with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">dict</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">namedtuple</span><span class="p">,</span> <span class="nb">str</span> <span class="ow">or</span> <span class="s1">'dict'</span><span class="p">,</span> <span class="s1">'tuple'</span><span class="p">,</span> <span class="s1">'namedtuple'</span><span class="p">,</span> <span class="s1">'str'</span>
-</pre></div>
-</div>
-</p></li>
+<li><p><strong>key_type</strong> – The key type you want to interface with: <code class="docutils literal notranslate"><span class="pre">dict</span></code>, <code class="docutils literal notranslate"><span class="pre">tuple</span></code>,
+<code class="docutils literal notranslate"><span class="pre">namedtuple</span></code>, <code class="docutils literal notranslate"><span class="pre">str</span></code>, or one of those names as a string</p></li>
 <li><p><strong>keymap</strong> – # the keymap instance or class you want to use to map keys</p></li>
 <li><p><strong>keymap_kwargs</strong> – # if keymap is a cls, the kwargs to give it (besides the subpath)</p></li>
 <li><p><strong>name</strong> – The name to give the class the function will make here</p></li>
@@ -742,11 +752,11 @@ s = mk_store_from_path_format_store_cls(LocalJsonStore,
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># Get a (session, bt) indexed LocalJsonStore
-s = mk_store_from_path_format_store_cls(LocalJsonStore,
-                                               os.path.join(root_dir, 'd'),
-                                               subpath='{session}/d/{bt}',
-                                               keymap_kwargs=dict(process_info_dict={'session': int, 'bt': int}))
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get a (session, bt) indexed LocalJsonStore</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">mk_store_from_path_format_store_cls</span><span class="p">(</span><span class="n">LocalJsonStore</span><span class="p">,</span>
+                                               <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="s1">'d'</span><span class="p">),</span>
+                                               <span class="n">subpath</span><span class="o">=</span><span class="s1">'</span><span class="si">{session}</span><span class="s1">/d/</span><span class="si">{bt}</span><span class="s1">'</span><span class="p">,</span>
+                                               <span class="n">keymap_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">process_info_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">'session'</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="s1">'bt'</span><span class="p">:</span> <span class="nb">int</span><span class="p">}))</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -931,6 +941,15 @@ tell you so!</p></li>
 <li><a class="reference internal" href="#dol.naming.StoreWithDictKeys"><code class="docutils literal notranslate"><span class="pre">StoreWithDictKeys</span></code></a></li>
 <li><a class="reference internal" href="#dol.naming.StoreWithNamedTupleKeys"><code class="docutils literal notranslate"><span class="pre">StoreWithNamedTupleKeys</span></code></a></li>
 <li><a class="reference internal" href="#dol.naming.StoreWithTupleKeys"><code class="docutils literal notranslate"><span class="pre">StoreWithTupleKeys</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.StrTupleDict"><code class="docutils literal notranslate"><span class="pre">StrTupleDict</span></code></a><ul>
+<li><a class="reference internal" href="#dol.naming.StrTupleDict.extract"><code class="docutils literal notranslate"><span class="pre">StrTupleDict.extract()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.StrTupleDict.info_dict"><code class="docutils literal notranslate"><span class="pre">StrTupleDict.info_dict()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.StrTupleDict.is_valid"><code class="docutils literal notranslate"><span class="pre">StrTupleDict.is_valid()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.StrTupleDict.replace_name_elements"><code class="docutils literal notranslate"><span class="pre">StrTupleDict.replace_name_elements()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.StrTupleDict.str_to_dict"><code class="docutils literal notranslate"><span class="pre">StrTupleDict.str_to_dict()</span></code></a></li>
+<li><a class="reference internal" href="#dol.naming.StrTupleDict.super_dict_to_str"><code class="docutils literal notranslate"><span class="pre">StrTupleDict.super_dict_to_str()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#dol.naming.StrTupleDictWithPrefix"><code class="docutils literal notranslate"><span class="pre">StrTupleDictWithPrefix</span></code></a><ul>
 <li><a class="reference internal" href="#dol.naming.StrTupleDictWithPrefix.is_valid_prefix"><code class="docutils literal notranslate"><span class="pre">StrTupleDictWithPrefix.is_valid_prefix()</span></code></a></li>
 </ul>
@@ -956,7 +975,7 @@ tell you so!</p></li>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

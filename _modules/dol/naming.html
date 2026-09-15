@@ -260,8 +260,17 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.naming</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""</span>
-<span class="sd">This module is about generating, validating, and operating on (parametrized) fields (i.e. stings, e.g. paths).</span>
+<span></span><span class="sd">"""This module is about generating, validating, and operating on (parametrized) fields (i.e. strings, e.g. paths).</span>
+
+<span class="sd">Main entry points:</span>
+
+<span class="sd">- ``StrTupleDict``: convert a templated name between string, tuple and dict forms</span>
+<span class="sd">- ``mk_pattern_from_template_and_format_dict``: a compiled regex from a template</span>
+<span class="sd">- ``get_fields_from_template``: the field names of a template</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.naming import get_fields_from_template</span>
+<span class="sd">    &gt;&gt;&gt; get_fields_from_template('this{is}an{example}')</span>
+<span class="sd">    ['is', 'example']</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
@@ -314,6 +323,7 @@
 <span class="sd">    Utility to validate a dict. It's main use is to validate function arguments (expressing the validation checks</span>
 <span class="sd">    in validation_dict) by doing validate_kwargs(locals()), usually in the beginning of the function</span>
 <span class="sd">    (to avoid having more accumulated variables than we need in locals())</span>
+
 <span class="sd">    :param kwargs_to_validate: as the name implies...</span>
 <span class="sd">    :param validation_dict: A dict specifying what to validate. Keys are usually name of variables (when feeding</span>
 <span class="sd">        locals()) and values are dicts, themselves specifying check:check_val pairs where check is a string that</span>
@@ -490,8 +500,9 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_fields_from_template</span><span class="p">(</span><span class="n">template</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get list from {item} items of template string</span>
+
 <span class="sd">    :param template: a "template" string (a string with {item} items</span>
-<span class="sd">    -- the kind that is used to mark token for str.format)</span>
+<span class="sd">        -- the kind that is used to mark token for str.format)</span>
 <span class="sd">    :return: a list of the token items of the string, in the order they appear</span>
 
 <span class="sd">    &gt;&gt;&gt; get_fields_from_template('this{is}an{example}of{a}template')</span>
@@ -600,10 +611,13 @@
 <a class="viewcode-back" href="../../_autosummary/dol.naming.html#dol.naming.mk_pattern_from_template_and_format_dict">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">mk_pattern_from_template_and_format_dict</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">format_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">path_sep</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""Make a compiled regex to match template</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        template: A format string</span>
 <span class="sd">        format_dict: A dict whose keys are template fields and values are regex strings to capture them</span>
-<span class="sd">    Returns: a compiled regex</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        a compiled regex</span>
 
 <span class="sd">    Assert on *behavior* (matching) rather than the exact pattern string, so the</span>
 <span class="sd">    examples hold on every OS (the field separator -- and therefore the default</span>
@@ -694,6 +708,7 @@
 <span class="sd">    function.</span>
 <span class="sd">    The required fields are in self.fields.</span>
 <span class="sd">    Does NOT check for validity of the vals.</span>
+
 <span class="sd">    :param kwargs: The name=val arguments needed to construct a valid name</span>
 <span class="sd">    :return: an name</span>
 <span class="sd">    """</span>
@@ -715,7 +730,15 @@
 <span class="c1"># from dol.trans import add_wrapper_method</span>
 <span class="c1">#</span>
 <span class="c1"># # @add_wrapper_method</span>
+<div class="viewcode-block" id="StrTupleDict">
+<a class="viewcode-back" href="../../_autosummary/dol.naming.html#dol.naming.StrTupleDict">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StrTupleDict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Convert a parametrized name between its string, tuple and dict forms.</span>
+
+<span class="sd">    Built from a string template with ``{field}`` placeholders (and optional regexes</span>
+<span class="sd">    for the fields). See ``__init__`` for the parameters and an example.</span>
+<span class="sd">    """</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span><span class="p">,</span>
@@ -739,6 +762,7 @@
 <span class="sd">            process_info_dict: A sort of converse of format_dict.</span>
 <span class="sd">                This is a {field_name: field_conversion_func, ...} dict that is used to convert info_dict values</span>
 <span class="sd">                before returning them.</span>
+
 <span class="sd">            name_separator: Used</span>
 
 <span class="sd">        &gt;&gt;&gt; ln = StrTupleDict('/home/{user}/fav/{num}.txt',</span>
@@ -824,6 +848,7 @@
 <span class="sd">            function.</span>
 <span class="sd">            The required fields are in self.fields.</span>
 <span class="sd">            Does NOT check for validity of the vals.</span>
+
 <span class="sd">            :param kwargs: The name=val arguments needed to construct a valid name</span>
 <span class="sd">            :return: an name</span>
 <span class="sd">            """</span>
@@ -845,17 +870,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mk</span> <span class="o">=</span> <span class="n">MethodType</span><span class="p">(</span><span class="n">_mk</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">NamedTuple</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="n">named_tuple_type_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span>
 
+<div class="viewcode-block" id="StrTupleDict.is_valid">
+<a class="viewcode-back" href="../../_autosummary/dol.naming.html#dol.naming.StrTupleDict.is_valid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Check if the name has the "upload format" (i.e. the kind of fields that are _ids of fv_mgc, and what</span>
 <span class="sd">        name means in most of the iatis system.</span>
+
 <span class="sd">        :param s: the string to check</span>
 <span class="sd">        :return: True iff name has the upload format</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s</span><span class="p">))</span></div>
 
+
+<div class="viewcode-block" id="StrTupleDict.str_to_dict">
+<a class="viewcode-back" href="../../_autosummary/dol.naming.html#dol.naming.StrTupleDict.str_to_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">str_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a dict with the arguments of an name (for example group, user, subuser, etc.)</span>
+
 <span class="sd">        :param s:</span>
 <span class="sd">        :return: a dict holding the argument fields and values</span>
 <span class="sd">        """</span>
@@ -867,7 +899,8 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">info_dict</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid string format: </span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid string format: </span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">str_to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">info_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">str_to_dict</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
@@ -882,9 +915,12 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">simple_str_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ss</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tuple_to_str</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">))</span>
 
+<div class="viewcode-block" id="StrTupleDict.super_dict_to_str">
+<a class="viewcode-back" href="../../_autosummary/dol.naming.html#dol.naming.StrTupleDict.super_dict_to_str">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">super_dict_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Like dict_to_str, but the input dict can have extra keys that are not used by dict_to_str"""</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mk</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">})</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mk</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">})</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">dict_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mk</span><span class="p">(</span><span class="o">**</span><span class="n">d</span><span class="p">)</span>
@@ -918,19 +954,26 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">namedtuple_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict_to_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">namedtuple_to_dict</span><span class="p">(</span><span class="n">nt</span><span class="p">))</span>
 
+<div class="viewcode-block" id="StrTupleDict.extract">
+<a class="viewcode-back" href="../../_autosummary/dol.naming.html#dol.naming.StrTupleDict.extract">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Extract a single item from an name</span>
+
 <span class="sd">        :param field: field of the item to extract</span>
 <span class="sd">        :param s: the string from which to extract it</span>
 <span class="sd">        :return: the value for name</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_pattern</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_pattern</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
 
     <span class="n">info_dict</span> <span class="o">=</span> <span class="n">str_to_dict</span>  <span class="c1"># alias</span>
     <span class="n">info_tuple</span> <span class="o">=</span> <span class="n">str_to_tuple</span>  <span class="c1"># alias</span>
 
+<div class="viewcode-block" id="StrTupleDict.replace_name_elements">
+<a class="viewcode-back" href="../../_autosummary/dol.naming.html#dol.naming.StrTupleDict.replace_name_elements">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">replace_name_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">elements_kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Replace specific name argument values with others</span>
+
 <span class="sd">        :param s: the string to replace</span>
 <span class="sd">        :param elements_kwargs: the arguments to replace (and their values)</span>
 <span class="sd">        :return: a new name</span>
@@ -938,7 +981,8 @@
         <span class="n">name_info_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">info_dict</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">elements_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">name_info_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mk</span><span class="p">(</span><span class="o">**</span><span class="n">name_info_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mk</span><span class="p">(</span><span class="o">**</span><span class="n">name_info_dict</span><span class="p">)</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_info_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">kv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -964,7 +1008,8 @@
         <span class="k">return</span> <span class="n">s</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_print_info_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_info_str</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_info_str</span><span class="p">())</span></div>
+
 
 
 <span class="c1"># TODO: mk_prefix has wrong signature. Repair.</span>
@@ -985,6 +1030,7 @@
 <span class="sd">        process_info_dict: A sort of converse of format_dict.</span>
 <span class="sd">            This is a {field_name: field_conversion_func, ...} dict that is used to convert info_dict values</span>
 <span class="sd">            before returning them.</span>
+
 <span class="sd">        name_separator: Used</span>
 
 <span class="sd">    &gt;&gt;&gt; ln = StrTupleDictWithPrefix('/home/{user}/fav/{num}.txt',</span>
@@ -1035,6 +1081,7 @@
         <span class="k">def</span><span class="w"> </span><span class="nf">_mk_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">"""</span>
 <span class="sd">            Make a prefix for an uploads name that has has the path up to the first None argument.</span>
+
 <span class="sd">            :return: A string that is the prefix of a valid name</span>
 <span class="sd">            """</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_fields</span><span class="p">,</span> <span class="p">(</span>
@@ -1075,6 +1122,7 @@
 <a class="viewcode-back" href="../../_autosummary/dol.naming.html#dol.naming.StrTupleDictWithPrefix.is_valid_prefix">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_valid_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Check if name is a valid prefix.</span>
+
 <span class="sd">        :param s: a string (that might or might not be a valid prefix)</span>
 <span class="sd">        :return: True iff name is a valid prefix</span>
 <span class="sd">        """</span>
@@ -1246,106 +1294,107 @@
 <div class="viewcode-block" id="BigDocTest">
 <a class="viewcode-back" href="../../_autosummary/dol.naming.html#dol.naming.BigDocTest">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BigDocTest</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">"""Naming-scheme example holder whose (large) doctest is currently disabled.</span>
 
-<span class="sd">    # TODO: Fix this test (maybe test assertions aren't correct)</span>
-<span class="sd">    #   This happened when we changed some re.compile to safe_compile</span>
-<span class="sd">    # &gt;&gt;&gt;</span>
-<span class="sd">    # &gt;&gt;&gt; e_name = BigDocTest.mk_e_naming()</span>
-<span class="sd">    # &gt;&gt;&gt; u_name = BigDocTest.mk_u_naming()</span>
-<span class="sd">    # &gt;&gt;&gt; e_sref = 's3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469'</span>
-<span class="sd">    # &gt;&gt;&gt; u_sref = "s3://uploads/GROUP/upload/files/USER/2017-01-24/SUBUSER/a_file.wav"</span>
-<span class="sd">    # &gt;&gt;&gt; u_name_2 = "s3://uploads/ANOTHER_GROUP/upload/files/ANOTHER_USER/2017-01-24/SUBUSER/a_file.wav"</span>
-<span class="sd">    # &gt;&gt;&gt;</span>
-<span class="sd">    # &gt;&gt;&gt; ####### is_valid(self, name): ######</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.is_valid(e_sref)</span>
-<span class="sd">    # True</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.is_valid(u_sref)</span>
-<span class="sd">    # False</span>
-<span class="sd">    # &gt;&gt;&gt; u_name.is_valid(u_sref)</span>
-<span class="sd">    # True</span>
-<span class="sd">    # &gt;&gt;&gt;</span>
-<span class="sd">    # &gt;&gt;&gt; ####### is_valid_prefix(self, name): ######</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-')</span>
-<span class="sd">    # True</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP')</span>
-<span class="sd">    # False</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP/example/')</span>
-<span class="sd">    # False</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP/example/files')</span>
-<span class="sd">    # False</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP/example/files/')</span>
-<span class="sd">    # True</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/')</span>
-<span class="sd">    # True</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/0_0')</span>
-<span class="sd">    # True</span>
-<span class="sd">    # &gt;&gt;&gt;</span>
-<span class="sd">    # &gt;&gt;&gt; ####### info_dict(self, name): ######</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.info_dict(e_sref)  # see that utc_ms args were cast to ints</span>
-<span class="sd">    # {'group': 'GROUP', 'user': 'USER', 'subuser': 'SUBUSER', 'day': '2017-01-24', 's_ums': 1485272231982, 'e_ums': 1485261448469}</span>
-<span class="sd">    # &gt;&gt;&gt; u_name.info_dict(u_sref)  # returns None (because self was made for example!</span>
-<span class="sd">    # {'group': 'GROUP', 'user': 'USER', 'day': '2017-01-24', 'subuser': 'SUBUSER', 'filename': 'a_file.wav'}</span>
-<span class="sd">    # &gt;&gt;&gt; # but with a u_name, it will work</span>
-<span class="sd">    # &gt;&gt;&gt; u_name.info_dict(u_sref)</span>
-<span class="sd">    # {'group': 'GROUP', 'user': 'USER', 'day': '2017-01-24', 'subuser': 'SUBUSER', 'filename': 'a_file.wav'}</span>
-<span class="sd">    # &gt;&gt;&gt;</span>
-<span class="sd">    # &gt;&gt;&gt; ####### extract(self, item, name): ######</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.extract('group', e_sref)</span>
-<span class="sd">    # 'GROUP'</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.extract('user', e_sref)</span>
-<span class="sd">    # 'USER'</span>
-<span class="sd">    # &gt;&gt;&gt; u_name.extract('group', u_name_2)</span>
-<span class="sd">    # 'ANOTHER_GROUP'</span>
-<span class="sd">    # &gt;&gt;&gt; u_name.extract('user', u_name_2)</span>
-<span class="sd">    # 'ANOTHER_USER'</span>
-<span class="sd">    # &gt;&gt;&gt;</span>
-
-<span class="sd">    #</span>
-<span class="sd">    # &gt;&gt;&gt; ####### mk_prefix(self, *args, **kwargs): ######</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.mk_prefix()</span>
-<span class="sd">    # 's3://bucket-'</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.mk_prefix(group='GROUP')</span>
-<span class="sd">    # 's3://bucket-GROUP/example/files/'</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.mk_prefix(group='GROUP', user='USER')</span>
-<span class="sd">    # 's3://bucket-GROUP/example/files/USER/'</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER')</span>
-<span class="sd">    # 's3://bucket-GROUP/example/files/USER/SUBUSER/'</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00')</span>
-<span class="sd">    # 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/'</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',</span>
-<span class="sd">    # ... s_ums=1485272231982)</span>
-<span class="sd">    # 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_'</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',</span>
-<span class="sd">    # ... s_ums=1485272231982, e_ums=1485261448469)</span>
-<span class="sd">    # 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469'</span>
-<span class="sd">    # &gt;&gt;&gt;</span>
-<span class="sd">    # &gt;&gt;&gt; u_name.mk_prefix()</span>
-<span class="sd">    # 's3://uploads/'</span>
-<span class="sd">    # &gt;&gt;&gt; u_name.mk_prefix(group='GROUP')</span>
-<span class="sd">    # 's3://uploads/GROUP/upload/files/'</span>
-<span class="sd">    # &gt;&gt;&gt; u_name.mk_prefix(group='GROUP', user='USER')</span>
-<span class="sd">    # 's3://uploads/GROUP/upload/files/USER/'</span>
-<span class="sd">    # &gt;&gt;&gt; u_name.mk_prefix(group='GROUP', user='USER', day='DAY')</span>
-<span class="sd">    # 's3://uploads/GROUP/upload/files/USER/DAY/'</span>
-<span class="sd">    # &gt;&gt;&gt; u_name.mk_prefix(group='GROUP', user='USER', day='DAY')</span>
-<span class="sd">    # 's3://uploads/GROUP/upload/files/USER/DAY/'</span>
-<span class="sd">    # &gt;&gt;&gt; u_name.mk_prefix(group='GROUP', user='USER', day='DAY', subuser='SUBUSER')</span>
-<span class="sd">    # 's3://uploads/GROUP/upload/files/USER/DAY/SUBUSER/'</span>
-<span class="sd">    # &gt;&gt;&gt;</span>
-<span class="sd">    # &gt;&gt;&gt; ####### mk(self, *args, **kwargs): ######</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.mk(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',</span>
-<span class="sd">    # ...             s_ums=1485272231982, e_ums=1485261448469)</span>
-<span class="sd">    # 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469'</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.mk(group='GROUP', user='USER', subuser='SUBUSER', day='from_s_ums',</span>
-<span class="sd">    # ...             s_ums=1485272231982, e_ums=1485261448469)</span>
-<span class="sd">    # 's3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469'</span>
-<span class="sd">    # &gt;&gt;&gt;</span>
-<span class="sd">    # &gt;&gt;&gt; ####### replace_name_elements(self, *args, **kwargs): ######</span>
-<span class="sd">    # &gt;&gt;&gt; name = 's3://bucket-redrum/example/files/oopsy@domain.com/ozeip/2008-11-04/1225779243969_1225779246969'</span>
-<span class="sd">    # &gt;&gt;&gt; e_name.replace_name_elements(name, user='NEW_USER', group='NEW_GROUP')</span>
-<span class="sd">    # 's3://bucket-NEW_GROUP/example/files/NEW_USER/ozeip/2008-11-04/1225779243969_1225779246969'</span>
+<span class="sd">    The former doctest is kept as comments in the class body.</span>
 <span class="sd">    """</span>
+
+    <span class="c1"># TODO: Fix this test (maybe test assertions aren't correct)</span>
+    <span class="c1"># This happened when we changed some re.compile to safe_compile</span>
+    <span class="c1"># &gt;&gt;&gt;</span>
+    <span class="c1"># &gt;&gt;&gt; e_name = BigDocTest.mk_e_naming()</span>
+    <span class="c1"># &gt;&gt;&gt; u_name = BigDocTest.mk_u_naming()</span>
+    <span class="c1"># &gt;&gt;&gt; e_sref = 's3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469'</span>
+    <span class="c1"># &gt;&gt;&gt; u_sref = "s3://uploads/GROUP/upload/files/USER/2017-01-24/SUBUSER/a_file.wav"</span>
+    <span class="c1"># &gt;&gt;&gt; u_name_2 = "s3://uploads/ANOTHER_GROUP/upload/files/ANOTHER_USER/2017-01-24/SUBUSER/a_file.wav"</span>
+    <span class="c1"># &gt;&gt;&gt;</span>
+    <span class="c1"># &gt;&gt;&gt; ####### is_valid(self, name): ######</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.is_valid(e_sref)</span>
+    <span class="c1"># True</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.is_valid(u_sref)</span>
+    <span class="c1"># False</span>
+    <span class="c1"># &gt;&gt;&gt; u_name.is_valid(u_sref)</span>
+    <span class="c1"># True</span>
+    <span class="c1"># &gt;&gt;&gt;</span>
+    <span class="c1"># &gt;&gt;&gt; ####### is_valid_prefix(self, name): ######</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-')</span>
+    <span class="c1"># True</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP')</span>
+    <span class="c1"># False</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP/example/')</span>
+    <span class="c1"># False</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP/example/files')</span>
+    <span class="c1"># False</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP/example/files/')</span>
+    <span class="c1"># True</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/')</span>
+    <span class="c1"># True</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.is_valid_prefix('s3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/0_0')</span>
+    <span class="c1"># True</span>
+    <span class="c1"># &gt;&gt;&gt;</span>
+    <span class="c1"># &gt;&gt;&gt; ####### info_dict(self, name): ######</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.info_dict(e_sref)  # see that utc_ms args were cast to ints</span>
+    <span class="c1"># {'group': 'GROUP', 'user': 'USER', 'subuser': 'SUBUSER', 'day': '2017-01-24', 's_ums': 1485272231982, 'e_ums': 1485261448469}</span>
+    <span class="c1"># &gt;&gt;&gt; u_name.info_dict(u_sref)  # returns None (because self was made for example!</span>
+    <span class="c1"># {'group': 'GROUP', 'user': 'USER', 'day': '2017-01-24', 'subuser': 'SUBUSER', 'filename': 'a_file.wav'}</span>
+    <span class="c1"># &gt;&gt;&gt; # but with a u_name, it will work</span>
+    <span class="c1"># &gt;&gt;&gt; u_name.info_dict(u_sref)</span>
+    <span class="c1"># {'group': 'GROUP', 'user': 'USER', 'day': '2017-01-24', 'subuser': 'SUBUSER', 'filename': 'a_file.wav'}</span>
+    <span class="c1"># &gt;&gt;&gt;</span>
+    <span class="c1"># &gt;&gt;&gt; ####### extract(self, item, name): ######</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.extract('group', e_sref)</span>
+    <span class="c1"># 'GROUP'</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.extract('user', e_sref)</span>
+    <span class="c1"># 'USER'</span>
+    <span class="c1"># &gt;&gt;&gt; u_name.extract('group', u_name_2)</span>
+    <span class="c1"># 'ANOTHER_GROUP'</span>
+    <span class="c1"># &gt;&gt;&gt; u_name.extract('user', u_name_2)</span>
+    <span class="c1"># 'ANOTHER_USER'</span>
+    <span class="c1"># &gt;&gt;&gt;</span>
+    <span class="c1">#</span>
+    <span class="c1"># &gt;&gt;&gt; ####### mk_prefix(self, *args, **kwargs): ######</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.mk_prefix()</span>
+    <span class="c1"># 's3://bucket-'</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.mk_prefix(group='GROUP')</span>
+    <span class="c1"># 's3://bucket-GROUP/example/files/'</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.mk_prefix(group='GROUP', user='USER')</span>
+    <span class="c1"># 's3://bucket-GROUP/example/files/USER/'</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER')</span>
+    <span class="c1"># 's3://bucket-GROUP/example/files/USER/SUBUSER/'</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00')</span>
+    <span class="c1"># 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/'</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',</span>
+    <span class="c1"># ... s_ums=1485272231982)</span>
+    <span class="c1"># 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_'</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.mk_prefix(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',</span>
+    <span class="c1"># ... s_ums=1485272231982, e_ums=1485261448469)</span>
+    <span class="c1"># 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469'</span>
+    <span class="c1"># &gt;&gt;&gt;</span>
+    <span class="c1"># &gt;&gt;&gt; u_name.mk_prefix()</span>
+    <span class="c1"># 's3://uploads/'</span>
+    <span class="c1"># &gt;&gt;&gt; u_name.mk_prefix(group='GROUP')</span>
+    <span class="c1"># 's3://uploads/GROUP/upload/files/'</span>
+    <span class="c1"># &gt;&gt;&gt; u_name.mk_prefix(group='GROUP', user='USER')</span>
+    <span class="c1"># 's3://uploads/GROUP/upload/files/USER/'</span>
+    <span class="c1"># &gt;&gt;&gt; u_name.mk_prefix(group='GROUP', user='USER', day='DAY')</span>
+    <span class="c1"># 's3://uploads/GROUP/upload/files/USER/DAY/'</span>
+    <span class="c1"># &gt;&gt;&gt; u_name.mk_prefix(group='GROUP', user='USER', day='DAY')</span>
+    <span class="c1"># 's3://uploads/GROUP/upload/files/USER/DAY/'</span>
+    <span class="c1"># &gt;&gt;&gt; u_name.mk_prefix(group='GROUP', user='USER', day='DAY', subuser='SUBUSER')</span>
+    <span class="c1"># 's3://uploads/GROUP/upload/files/USER/DAY/SUBUSER/'</span>
+    <span class="c1"># &gt;&gt;&gt;</span>
+    <span class="c1"># &gt;&gt;&gt; ####### mk(self, *args, **kwargs): ######</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.mk(group='GROUP', user='USER', subuser='SUBUSER', day='0000-00-00',</span>
+    <span class="c1"># ...             s_ums=1485272231982, e_ums=1485261448469)</span>
+    <span class="c1"># 's3://bucket-GROUP/example/files/USER/SUBUSER/0000-00-00/1485272231982_1485261448469'</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.mk(group='GROUP', user='USER', subuser='SUBUSER', day='from_s_ums',</span>
+    <span class="c1"># ...             s_ums=1485272231982, e_ums=1485261448469)</span>
+    <span class="c1"># 's3://bucket-GROUP/example/files/USER/SUBUSER/2017-01-24/1485272231982_1485261448469'</span>
+    <span class="c1"># &gt;&gt;&gt;</span>
+    <span class="c1"># &gt;&gt;&gt; ####### replace_name_elements(self, *args, **kwargs): ######</span>
+    <span class="c1"># &gt;&gt;&gt; name = 's3://bucket-redrum/example/files/oopsy@domain.com/ozeip/2008-11-04/1225779243969_1225779246969'</span>
+    <span class="c1"># &gt;&gt;&gt; e_name.replace_name_elements(name, user='NEW_USER', group='NEW_GROUP')</span>
+    <span class="c1"># 's3://bucket-NEW_GROUP/example/files/NEW_USER/ozeip/2008-11-04/1225779243969_1225779246969'</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">process_info_dict_for_example</span><span class="p">(</span><span class="o">**</span><span class="n">info_dict</span><span class="p">):</span>
@@ -1468,23 +1517,25 @@
 <span class="sd">        store: The instance or class to wrap</span>
 <span class="sd">        subpath: The subpath (defining the subset of the data pointed at by the URI</span>
 <span class="sd">        store_cls_kwargs:  # if store is a class, the kwargs that you would have given the store_cls to make itself</span>
-<span class="sd">        key_type: The key type you want to interface with:</span>
-<span class="sd">            dict, tuple, namedtuple, str or 'dict', 'tuple', 'namedtuple', 'str'</span>
+<span class="sd">        key_type: The key type you want to interface with: ``dict``, ``tuple``,</span>
+<span class="sd">            ``namedtuple``, ``str``, or one of those names as a string</span>
 <span class="sd">        keymap:  # the keymap instance or class you want to use to map keys</span>
 <span class="sd">        keymap_kwargs:  # if keymap is a cls, the kwargs to give it (besides the subpath)</span>
 <span class="sd">        name: The name to give the class the function will make here</span>
 
-<span class="sd">    Returns: An instance of a wrapped class</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        An instance of a wrapped class</span>
 
 
-<span class="sd">    Example:</span>
-<span class="sd">    ```</span>
-<span class="sd">    # Get a (session, bt) indexed LocalJsonStore</span>
-<span class="sd">    s = mk_store_from_path_format_store_cls(LocalJsonStore,</span>
-<span class="sd">                                                   os.path.join(root_dir, 'd'),</span>
-<span class="sd">                                                   subpath='{session}/d/{bt}',</span>
-<span class="sd">                                                   keymap_kwargs=dict(process_info_dict={'session': int, 'bt': int}))</span>
-<span class="sd">    ```</span>
+<span class="sd">    .. rubric:: Example</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # Get a (session, bt) indexed LocalJsonStore</span>
+<span class="sd">        s = mk_store_from_path_format_store_cls(LocalJsonStore,</span>
+<span class="sd">                                                       os.path.join(root_dir, 'd'),</span>
+<span class="sd">                                                       subpath='{session}/d/{bt}',</span>
+<span class="sd">                                                       keymap_kwargs=dict(process_info_dict={'session': int, 'bt': int}))</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keymap</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
         <span class="n">keymap</span> <span class="o">=</span> <span class="n">keymap</span><span class="p">(</span><span class="n">subpath</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">keymap_kwargs</span> <span class="ow">or</span> <span class="p">{}))</span>  <span class="c1"># make the keymap instance</span>
@@ -1530,11 +1581,14 @@
 <span class="sd">    &gt;&gt;&gt; partial_formatter.format(str_template, bar="BAR", b=34)</span>
 <span class="sd">    'foo:{foo} bar=BAR a={a} b=34.00 c={c}'</span>
 
-<span class="sd">    Note: If you only need a formatting function (not the transformed formatting string), a simpler solution may be:</span>
-<span class="sd">    ```</span>
-<span class="sd">    import functools</span>
-<span class="sd">    format_str = functools.partial(str_template.format, bar="BAR", b=34)</span>
-<span class="sd">    ```</span>
+<span class="sd">    Note:</span>
+<span class="sd">        If you only need a formatting function (not the transformed formatting string), a simpler solution may be:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import functools</span>
+<span class="sd">        format_str = functools.partial(str_template.format, bar="BAR", b=34)</span>
+
 <span class="sd">    See https://stackoverflow.com/questions/11283961/partial-string-formatting for more options and discussions.</span>
 <span class="sd">    """</span>
 
@@ -1582,7 +1636,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

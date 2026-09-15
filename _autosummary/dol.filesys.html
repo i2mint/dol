@@ -268,7 +268,29 @@
         <article role="main" id="furo-main-content">
           <section id="module-dol.filesys">
 <span id="dol-filesys"></span><h1>dol.filesys<a class="headerlink" href="#module-dol.filesys" title="Link to this heading">¶</a></h1>
-<p>File system access</p>
+<p>File system access: dict-like stores over folders and files.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Files</span></code> gives a folder a <code class="docutils literal notranslate"><span class="pre">MutableMapping</span></code> interface: keys are paths relative to the
+root folder, values are the files’ bytes. <code class="docutils literal notranslate"><span class="pre">TextFiles</span></code>, <code class="docutils literal notranslate"><span class="pre">JsonFiles</span></code> and <code class="docutils literal notranslate"><span class="pre">PickleFiles</span></code>
+add the corresponding value codecs. Writing under a sub-folder that does not exist raises
+<code class="docutils literal notranslate"><span class="pre">KeyError</span></code>; wrap the store with <code class="docutils literal notranslate"><span class="pre">mk_dirs_if_missing</span></code> to create folders on write.</p>
+<p>Main entry points:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Files</span></code>: bytes of the files under a root folder</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TextFiles</span></code>: same, with text values</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">JsonFiles</span></code>: same, with JSON-decoded values</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PickleFiles</span></code>: same, with pickled values</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mk_dirs_if_missing</span></code>: make a file store create missing directories on write</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Files</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'hello.txt'</span><span class="p">]</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">'world'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'hello.txt'</span><span class="p">]</span>
+<span class="go">b'world'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="go">['hello.txt']</span>
+</pre></div>
+</div>
+</li>
+</ul>
 <p class="rubric">Functions</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
@@ -288,8 +310,8 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.iter_filepaths_in_folder_recursively" title="dol.filesys.iter_filepaths_in_folder_recursively"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_filepaths_in_folder_recursively</span></code></a>(root_folder)</p></td>
 <td><p>Recursively generates filepaths of folder (and subfolders, etc.) up to a given level</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_absolute_path</span></code>(path_format)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.mk_absolute_path" title="dol.filesys.mk_absolute_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_absolute_path</span></code></a>(path_format)</p></td>
+<td><p>Expand a leading <code class="docutils literal notranslate"><span class="pre">~</span></code>, or make a leading <code class="docutils literal notranslate"><span class="pre">.</span></code> path absolute; other paths are returned as is.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.mk_dirs_if_missing" title="dol.filesys.mk_dirs_if_missing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_dirs_if_missing</span></code></a>([store_cls, ...])</p></td>
 <td><p>Store decorator that will make the store create directories on write as needed.</p></td>
@@ -297,17 +319,17 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.mk_dirs_if_missing_preset" title="dol.filesys.mk_dirs_if_missing_preset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_dirs_if_missing_preset</span></code></a>(self, k, v, *[, ...])</p></td>
 <td><p>Preset function that will make the store create directories on write as needed.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_json_bytes_wrap</span></code>(*[, loads_kwargs, ...])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.mk_json_bytes_wrap" title="dol.filesys.mk_json_bytes_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_json_bytes_wrap</span></code></a>(*[, loads_kwargs, ...])</p></td>
+<td><p>Make a <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> value-codec wrapper for JSON, with kwargs for <code class="docutils literal notranslate"><span class="pre">json.loads</span></code>/<code class="docutils literal notranslate"><span class="pre">json.dumps</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_pickle_bytes_wrap</span></code>(*[, loads_kwargs, ...])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.mk_pickle_bytes_wrap" title="dol.filesys.mk_pickle_bytes_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_pickle_bytes_wrap</span></code></a>(*[, loads_kwargs, ...])</p></td>
+<td><p>Make a <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> value-codec wrapper for pickle, with kwargs for <code class="docutils literal notranslate"><span class="pre">pickle.loads</span></code>/<code class="docutils literal notranslate"><span class="pre">pickle.dumps</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.mk_tmp_dol_dir" title="dol.filesys.mk_tmp_dol_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_tmp_dol_dir</span></code></a>([dirname, ...])</p></td>
 <td><p>Create and return a path to a temporary directory that's guaranteed to be accessible to the user.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">paths_in_dir</span></code>(rootdir[, include_hidden])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.paths_in_dir" title="dol.filesys.paths_in_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">paths_in_dir</span></code></a>(rootdir[, include_hidden])</p></td>
+<td><p>Yield the paths of the entries of <code class="docutils literal notranslate"><span class="pre">rootdir</span></code> (directories with a trailing separator), skipping hidden ones unless <code class="docutils literal notranslate"><span class="pre">include_hidden</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.process_path" title="dol.filesys.process_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_path</span></code></a>(*path[, ensure_dir_exists, ...])</p></td>
 <td><p>Process a path string, ensuring it exists, and optionally expanding user.</p></td>
@@ -324,8 +346,8 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.temp_dir" title="dol.filesys.temp_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">temp_dir</span></code></a>([dirname, make_it_if_necessary, ...])</p></td>
 <td><p>Create and return a path to a temporary directory that's guaranteed to be accessible to the user.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_key_and_raise_key_error_on_exception</span></code>(func)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.validate_key_and_raise_key_error_on_exception" title="dol.filesys.validate_key_and_raise_key_error_on_exception"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_key_and_raise_key_error_on_exception</span></code></a>(func)</p></td>
+<td><p>Method decorator: validate the key first, and re-raise any exception of the method as a <code class="docutils literal notranslate"><span class="pre">KeyError</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -335,31 +357,31 @@
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.DirCollection" title="dol.filesys.DirCollection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DirCollection</span></code></a>(rootdir[, subpath, ...])</p></td>
-<td><p></p></td>
+<td><p>Collection of the directory paths under <code class="docutils literal notranslate"><span class="pre">rootdir</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.DirReader" title="dol.filesys.DirReader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DirReader</span></code></a>(rootdir[, subpath, ...])</p></td>
-<td><p></p></td>
+<td><p>Reader mapping each sub-directory of <code class="docutils literal notranslate"><span class="pre">rootdir</span></code> to a <code class="docutils literal notranslate"><span class="pre">DirReader</span></code> of it.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.FileBytesPersister" title="dol.filesys.FileBytesPersister"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileBytesPersister</span></code></a>(*args[, delete_func])</p></td>
 <td><p>File persistence with configurable deletion.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.FileBytesReader" title="dol.filesys.FileBytesReader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileBytesReader</span></code></a>(rootdir[, subpath, ...])</p></td>
-<td><p></p></td>
+<td><p>Reader mapping file paths under <code class="docutils literal notranslate"><span class="pre">rootdir</span></code> to the files' bytes.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.FileCollection" title="dol.filesys.FileCollection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileCollection</span></code></a>(rootdir[, subpath, ...])</p></td>
-<td><p></p></td>
+<td><p>Collection of the file paths under <code class="docutils literal notranslate"><span class="pre">rootdir</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.FileInfoReader" title="dol.filesys.FileInfoReader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileInfoReader</span></code></a>(rootdir[, subpath, ...])</p></td>
-<td><p></p></td>
+<td><p>Reader mapping file paths to their <code class="docutils literal notranslate"><span class="pre">os.stat</span></code> result.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.FileStringPersister" title="dol.filesys.FileStringPersister"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileStringPersister</span></code></a>(*args[, delete_func])</p></td>
-<td><p></p></td>
+<td><p>Persister mapping file paths to the files' text (files opened in text mode).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.FileStringReader" title="dol.filesys.FileStringReader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileStringReader</span></code></a>(rootdir[, subpath, ...])</p></td>
-<td><p></p></td>
+<td><p>Reader mapping file paths to the files' text (files opened in text mode).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.FileSysCollection" title="dol.filesys.FileSysCollection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileSysCollection</span></code></a>(rootdir[, subpath, ...])</p></td>
-<td><p></p></td>
+<td><p>Base collection of file-system paths under <code class="docutils literal notranslate"><span class="pre">rootdir</span></code>, optionally restricted by <code class="docutils literal notranslate"><span class="pre">subpath</span></code>, <code class="docutils literal notranslate"><span class="pre">max_levels</span></code> and hidden-file inclusion.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.Files" title="dol.filesys.Files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Files</span></code></a>(*args[, delete_func])</p></td>
 <td><p>FileBytesPersister with relative paths</p></td>
@@ -386,7 +408,7 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.PickleStores" title="dol.filesys.PickleStores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PickleStores</span></code></a>(rootdir[, subpath, ...])</p></td>
-<td><p></p></td>
+<td><p>Reader mapping each sub-directory of <code class="docutils literal notranslate"><span class="pre">rootdir</span></code> to a <code class="docutils literal notranslate"><span class="pre">PickleFiles</span></code> store of it.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.RelPathFileBytesPersister" title="dol.filesys.RelPathFileBytesPersister"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RelPathFileBytesPersister</span></code></a></p></td>
 <td><p></p></td>
@@ -400,8 +422,8 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.RelPathFileStringReader" title="dol.filesys.RelPathFileStringReader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RelPathFileStringReader</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReprMixin</span></code>()</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.ReprMixin" title="dol.filesys.ReprMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReprMixin</span></code></a>()</p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">__repr__</span></code> showing the <code class="docutils literal notranslate"><span class="pre">_init_kwargs</span></code> the instance was created with.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.TextFiles" title="dol.filesys.TextFiles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TextFiles</span></code></a>(*args[, delete_func])</p></td>
 <td><p>FileStringPersister with relative paths</p></td>
@@ -417,7 +439,7 @@
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.KeyValidationError" title="dol.filesys.KeyValidationError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KeyValidationError</span></code></a></p></td>
-<td><p></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">KeyError</span></code> for keys that fail a file-system store's validation.</p></td>
 </tr>
 </tbody>
 </table>
@@ -426,12 +448,14 @@
 <dt class="sig sig-object py" id="dol.filesys.DirCollection">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">DirCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern_for_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assert_rootdir_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#DirCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.DirCollection" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dol.filesys.FileSysCollection" title="dol.filesys.FileSysCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileSysCollection</span></code></a></p>
+<p>Collection of the directory paths under <code class="docutils literal notranslate"><span class="pre">rootdir</span></code>.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.filesys.DirReader">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">DirReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern_for_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assert_rootdir_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#DirReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.DirReader" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dol.filesys.DirCollection" title="dol.filesys.DirCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">DirCollection</span></code></a>, <a class="reference internal" href="dol.base.html#dol.base.KvReader" title="dol.base.KvReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">KvReader</span></code></a></p>
+<p>Reader mapping each sub-directory of <code class="docutils literal notranslate"><span class="pre">rootdir</span></code> to a <code class="docutils literal notranslate"><span class="pre">DirReader</span></code> of it.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -448,36 +472,42 @@ See dol.trash module for deletion strategies: permanent_delete, trash_only, etc.
 <dt class="sig sig-object py" id="dol.filesys.FileBytesReader">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">FileBytesReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern_for_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assert_rootdir_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#FileBytesReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.FileBytesReader" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dol.filesys.FileCollection" title="dol.filesys.FileCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileCollection</span></code></a>, <a class="reference internal" href="dol.base.html#dol.base.KvReader" title="dol.base.KvReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">KvReader</span></code></a></p>
+<p>Reader mapping file paths under <code class="docutils literal notranslate"><span class="pre">rootdir</span></code> to the files’ bytes.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.filesys.FileCollection">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">FileCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern_for_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assert_rootdir_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#FileCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.FileCollection" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dol.filesys.FileSysCollection" title="dol.filesys.FileSysCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileSysCollection</span></code></a></p>
+<p>Collection of the file paths under <code class="docutils literal notranslate"><span class="pre">rootdir</span></code>.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.filesys.FileInfoReader">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">FileInfoReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern_for_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assert_rootdir_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#FileInfoReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.FileInfoReader" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dol.filesys.FileCollection" title="dol.filesys.FileCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileCollection</span></code></a>, <a class="reference internal" href="dol.base.html#dol.base.KvReader" title="dol.base.KvReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">KvReader</span></code></a></p>
+<p>Reader mapping file paths to their <code class="docutils literal notranslate"><span class="pre">os.stat</span></code> result.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.filesys.FileStringPersister">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">FileStringPersister</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#FileStringPersister"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.FileStringPersister" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dol.filesys.FileBytesPersister" title="dol.filesys.FileBytesPersister"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBytesPersister</span></code></a></p>
+<p>Persister mapping file paths to the files’ text (files opened in text mode).</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.filesys.FileStringReader">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">FileStringReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern_for_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assert_rootdir_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#FileStringReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.FileStringReader" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dol.filesys.FileBytesReader" title="dol.filesys.FileBytesReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBytesReader</span></code></a></p>
+<p>Reader mapping file paths to the files’ text (files opened in text mode).</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.filesys.FileSysCollection">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">FileSysCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern_for_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assert_rootdir_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#FileSysCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.FileSysCollection" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="dol.base.html#dol.base.Collection" title="dol.base.Collection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Collection</span></code></a></p>
+<p>Base collection of file-system paths under <code class="docutils literal notranslate"><span class="pre">rootdir</span></code>, optionally restricted by <code class="docutils literal notranslate"><span class="pre">subpath</span></code>, <code class="docutils literal notranslate"><span class="pre">max_levels</span></code> and hidden-file inclusion.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dol.filesys.FileSysCollection.with_relative_paths">
 <span class="sig-name descname"><span class="pre">with_relative_paths</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#FileSysCollection.with_relative_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.FileSysCollection.with_relative_paths" title="Link to this definition">¶</a></dt>
@@ -566,13 +596,14 @@ Namely: filtering for <code class="code docutils literal notranslate"><span clas
 <dl class="py exception">
 <dt class="sig sig-object py" id="dol.filesys.KeyValidationError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">KeyValidationError</span></span><a class="reference internal" href="../_modules/dol/filesys.html#KeyValidationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.KeyValidationError" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyError</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyError</span></code></a></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">KeyError</span></code> for keys that fail a file-system store’s validation.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.filesys.LocalFileDeleteMixin">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">LocalFileDeleteMixin</span></span><a class="reference internal" href="../_modules/dol/filesys.html#LocalFileDeleteMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.LocalFileDeleteMixin" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Mixin providing configurable file deletion.</p>
 <p>The deletion function can be configured either at class level by setting
 the _delete_func class attribute, or at instance level by setting the
@@ -590,7 +621,7 @@ to os.remove (with warning).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.filesys.MakeMissingDirsStoreMixin">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">MakeMissingDirsStoreMixin</span></span><a class="reference internal" href="../_modules/dol/filesys.html#MakeMissingDirsStoreMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.MakeMissingDirsStoreMixin" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Will make a local file store automatically create the directories needed to create a file.
 Should be placed before the concrete perisister in the mro but in such a manner so that it receives full paths.</p>
 </dd></dl>
@@ -624,6 +655,7 @@ Should be placed before the concrete perisister in the mro but in such a manner 
 <dt class="sig sig-object py" id="dol.filesys.PickleStores">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">PickleStores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern_for_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assert_rootdir_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#PickleStores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.PickleStores" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="dol.paths.html#dol.paths.PrefixRelativizationMixin" title="dol.paths.PrefixRelativizationMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrefixRelativizationMixin</span></code></a>, <a class="reference internal" href="dol.base.html#dol.base.Store" title="dol.base.Store"><code class="xref py py-class docutils literal notranslate"><span class="pre">Store</span></code></a></p>
+<p>Reader mapping each sub-directory of <code class="docutils literal notranslate"><span class="pre">rootdir</span></code> to a <code class="docutils literal notranslate"><span class="pre">PickleFiles</span></code> store of it.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dol.filesys.PickleStores.is_valid_key">
 <span class="sig-name descname"><span class="pre">is_valid_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'is_valid_key'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.filesys.PickleStores.is_valid_key" title="Link to this definition">¶</a></dt>
@@ -660,6 +692,13 @@ Should be placed before the concrete perisister in the mro but in such a manner 
 <dt class="sig sig-object py" id="dol.filesys.RelPathFileStringReader">
 <span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">RelPathFileStringReader</span></span><a class="headerlink" href="#dol.filesys.RelPathFileStringReader" title="Link to this definition">¶</a></dt>
 <dd><p>alias of <a class="reference internal" href="#dol.filesys.TextFilesReader" title="dol.filesys.TextFilesReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">TextFilesReader</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.filesys.ReprMixin">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">ReprMixin</span></span><a class="reference internal" href="../_modules/dol/filesys.html#ReprMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.ReprMixin" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">__repr__</span></code> showing the <code class="docutils literal notranslate"><span class="pre">_init_kwargs</span></code> the instance was created with.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -704,13 +743,22 @@ Should be placed before the concrete perisister in the mro but in such a manner 
 <dt class="sig sig-object py" id="dol.filesys.create_directories">
 <span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">create_directories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dirs_to_make</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#create_directories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.create_directories" title="Link to this definition">¶</a></dt>
 <dd><p>Create directories up to a specified limit.</p>
-<p class="rubric">Parameters</p>
-<p>dirpath (str): The directory path to create.
-max_dirs_to_make (int, optional): The maximum number of directories to create. If None, there’s no limit.</p>
-<p class="rubric">Returns</p>
-<p>bool: True if the directory was created successfully, False otherwise.</p>
-<p class="rubric">Raises</p>
-<p>ValueError: If max_dirs_to_make is negative.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dirpath</strong> – The directory path to create.</p></li>
+<li><p><strong>max_dirs_to_make</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – The maximum number of directories to create. If None,
+there’s no limit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the directory exists (already, or after creation); False if creating
+it would need more than <code class="docutils literal notranslate"><span class="pre">max_dirs_to_make</span></code> new directories (none are made).</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If max_dirs_to_make is negative.</p>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span><span class="o">,</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
@@ -733,8 +781,6 @@ max_dirs_to_make (int, optional): The maximum number of directories to create. I
 <span class="gp">&gt;&gt;&gt; </span><span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">)</span>  <span class="c1"># Cleanup</span>
 </pre></div>
 </div>
-<dl class="field-list simple">
-</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -745,9 +791,9 @@ max_dirs_to_make (int, optional): The maximum number of directories to create. I
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dirpath</strong> – path to the directory to create</p></li>
-<li><p><strong>max_dirs_to_make</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – the maximum number of directories to create.
+<li><p><strong>max_dirs_to_make</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – the maximum number of directories to create.
 If None, there’s no limit.</p></li>
-<li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></span>) – controls verbosity (the noise ensure_dir makes if it make folder)</p></li>
+<li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></span>) – controls verbosity (the noise ensure_dir makes if it make folder)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -791,6 +837,12 @@ absolute keys, as in <code class="docutils literal notranslate"><span class="pre
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.filesys.mk_absolute_path">
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">mk_absolute_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_format</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#mk_absolute_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.mk_absolute_path" title="Link to this definition">¶</a></dt>
+<dd><p>Expand a leading <code class="docutils literal notranslate"><span class="pre">~</span></code>, or make a leading <code class="docutils literal notranslate"><span class="pre">.</span></code> path absolute; other paths are returned as is.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.filesys.mk_dirs_if_missing">
 <span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">mk_dirs_if_missing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dirs_to_make</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_condition</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#mk_dirs_if_missing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.mk_dirs_if_missing" title="Link to this definition">¶</a></dt>
 <dd><p>Store decorator that will make the store create directories on write as
@@ -810,20 +862,55 @@ ensured to exist separatedly.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.filesys.mk_json_bytes_wrap">
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">mk_json_bytes_wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dumps_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#mk_json_bytes_wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.mk_json_bytes_wrap" title="Link to this definition">¶</a></dt>
+<dd><p>Make a <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> value-codec wrapper for JSON, with kwargs for <code class="docutils literal notranslate"><span class="pre">json.loads</span></code>/<code class="docutils literal notranslate"><span class="pre">json.dumps</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.filesys.mk_pickle_bytes_wrap">
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">mk_pickle_bytes_wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dumps_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#mk_pickle_bytes_wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.mk_pickle_bytes_wrap" title="Link to this definition">¶</a></dt>
+<dd><p>Make a <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> value-codec wrapper for pickle, with kwargs for <code class="docutils literal notranslate"><span class="pre">pickle.loads</span></code>/<code class="docutils literal notranslate"><span class="pre">pickle.dumps</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.filesys.mk_tmp_dol_dir">
 <span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">mk_tmp_dol_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_it_if_necessary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.filesys.mk_tmp_dol_dir" title="Link to this definition">¶</a></dt>
 <dd><p>Create and return a path to a temporary directory that’s guaranteed to be
 accessible to the user.</p>
-<p class="rubric">Parameters</p>
-<dl class="simple">
-<dt>make_it_if_necessary<span class="classifier">bool</span></dt><dd><p>Whether to create the directory if it doesn’t exist</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dirname</strong> – Optional subdirectory name to append to the temporary directory path</p></li>
+<li><p><strong>make_it_if_necessary</strong> – Whether to create the directory if it doesn’t exist</p></li>
+<li><p><strong>verbose</strong> – Controls verbosity when creating directories</p></li>
+</ul>
 </dd>
-<dt>verbose<span class="classifier">bool, str, or callable</span></dt><dd><p>Controls verbosity when creating directories</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to a temporary directory that the user has access to</p>
 </dd>
 </dl>
-<p class="rubric">Returns</p>
-<p class="rubric">Notes</p>
-<p>be accessible to the current user.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function creates a user-specific temporary directory to avoid permission
+issues with system-wide temporary directories.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.filesys.paths_in_dir">
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">paths_in_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#paths_in_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.paths_in_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Yield the paths of the entries of <code class="docutils literal notranslate"><span class="pre">rootdir</span></code> (directories with a trailing separator), skipping hidden ones unless <code class="docutils literal notranslate"><span class="pre">include_hidden</span></code>.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -833,22 +920,22 @@ accessible to the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – The path to process. Can be multiple components of a path.</p></li>
-<li><p><strong>ensure_dir_exists</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to ensure the path exists.</p></li>
-<li><p><strong>assert_exists</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to assert that the path exists.</p></li>
-<li><p><strong>ensure_endswith_slash</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to ensure the path ends with a slash.</p></li>
-<li><p><strong>ensure_does_not_end_with_slash</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to ensure the path does not end with a slash.</p></li>
-<li><p><strong>expanduser</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to expand the user in the path.</p></li>
-<li><p><strong>expandvars</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to expand environment variables in the path.</p></li>
-<li><p><strong>abspath</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to convert the path to an absolute path.</p></li>
-<li><p><strong>rootdir</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The root directory to prepend to the path.</p></li>
+<li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – The path to process. Can be multiple components of a path.</p></li>
+<li><p><strong>ensure_dir_exists</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to ensure the path exists.</p></li>
+<li><p><strong>assert_exists</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to assert that the path exists.</p></li>
+<li><p><strong>ensure_endswith_slash</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to ensure the path ends with a slash.</p></li>
+<li><p><strong>ensure_does_not_end_with_slash</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to ensure the path does not end with a slash.</p></li>
+<li><p><strong>expanduser</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to expand the user in the path.</p></li>
+<li><p><strong>expandvars</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to expand environment variables in the path.</p></li>
+<li><p><strong>abspath</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Whether to convert the path to an absolute path.</p></li>
+<li><p><strong>rootdir</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The root directory to prepend to the path.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The processed path.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
 </dd>
 </dl>
 <p>The result uses the running OS’s native separator, so these examples assert
@@ -900,16 +987,29 @@ the <code class="code docutils literal notranslate"><span class="pre">max_levels
 <span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">temp_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_it_if_necessary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#temp_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.temp_dir" title="Link to this definition">¶</a></dt>
 <dd><p>Create and return a path to a temporary directory that’s guaranteed to be
 accessible to the user.</p>
-<p class="rubric">Parameters</p>
-<dl class="simple">
-<dt>make_it_if_necessary<span class="classifier">bool</span></dt><dd><p>Whether to create the directory if it doesn’t exist</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dirname</strong> – Optional subdirectory name to append to the temporary directory path</p></li>
+<li><p><strong>make_it_if_necessary</strong> – Whether to create the directory if it doesn’t exist</p></li>
+<li><p><strong>verbose</strong> – Controls verbosity when creating directories</p></li>
+</ul>
 </dd>
-<dt>verbose<span class="classifier">bool, str, or callable</span></dt><dd><p>Controls verbosity when creating directories</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to a temporary directory that the user has access to</p>
 </dd>
 </dl>
-<p class="rubric">Returns</p>
-<p class="rubric">Notes</p>
-<p>be accessible to the current user.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function creates a user-specific temporary directory to avoid permission
+issues with system-wide temporary directories.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.filesys.validate_key_and_raise_key_error_on_exception">
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">validate_key_and_raise_key_error_on_exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#validate_key_and_raise_key_error_on_exception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.validate_key_and_raise_key_error_on_exception" title="Link to this definition">¶</a></dt>
+<dd><p>Method decorator: validate the key first, and re-raise any exception of the method as a <code class="docutils literal notranslate"><span class="pre">KeyError</span></code>.</p>
 </dd></dl>
 
 </section>
@@ -1016,6 +1116,7 @@ accessible to the user.</p>
 <li><a class="reference internal" href="#dol.filesys.RelPathFileBytesReader"><code class="docutils literal notranslate"><span class="pre">RelPathFileBytesReader</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.RelPathFileStringPersister"><code class="docutils literal notranslate"><span class="pre">RelPathFileStringPersister</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.RelPathFileStringReader"><code class="docutils literal notranslate"><span class="pre">RelPathFileStringReader</span></code></a></li>
+<li><a class="reference internal" href="#dol.filesys.ReprMixin"><code class="docutils literal notranslate"><span class="pre">ReprMixin</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.TextFiles"><code class="docutils literal notranslate"><span class="pre">TextFiles</span></code></a><ul>
 <li><a class="reference internal" href="#dol.filesys.TextFiles.is_valid_key"><code class="docutils literal notranslate"><span class="pre">TextFiles.is_valid_key()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.TextFiles.validate_key"><code class="docutils literal notranslate"><span class="pre">TextFiles.validate_key()</span></code></a></li>
@@ -1031,14 +1132,19 @@ accessible to the user.</p>
 <li><a class="reference internal" href="#dol.filesys.ensure_slash_suffix"><code class="docutils literal notranslate"><span class="pre">ensure_slash_suffix()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.iter_dirpaths_in_folder_recursively"><code class="docutils literal notranslate"><span class="pre">iter_dirpaths_in_folder_recursively()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.iter_filepaths_in_folder_recursively"><code class="docutils literal notranslate"><span class="pre">iter_filepaths_in_folder_recursively()</span></code></a></li>
+<li><a class="reference internal" href="#dol.filesys.mk_absolute_path"><code class="docutils literal notranslate"><span class="pre">mk_absolute_path()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.mk_dirs_if_missing"><code class="docutils literal notranslate"><span class="pre">mk_dirs_if_missing()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.mk_dirs_if_missing_preset"><code class="docutils literal notranslate"><span class="pre">mk_dirs_if_missing_preset()</span></code></a></li>
+<li><a class="reference internal" href="#dol.filesys.mk_json_bytes_wrap"><code class="docutils literal notranslate"><span class="pre">mk_json_bytes_wrap()</span></code></a></li>
+<li><a class="reference internal" href="#dol.filesys.mk_pickle_bytes_wrap"><code class="docutils literal notranslate"><span class="pre">mk_pickle_bytes_wrap()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.mk_tmp_dol_dir"><code class="docutils literal notranslate"><span class="pre">mk_tmp_dol_dir()</span></code></a></li>
+<li><a class="reference internal" href="#dol.filesys.paths_in_dir"><code class="docutils literal notranslate"><span class="pre">paths_in_dir()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.process_path"><code class="docutils literal notranslate"><span class="pre">process_path()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.resolve_dir"><code class="docutils literal notranslate"><span class="pre">resolve_dir()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.resolve_path"><code class="docutils literal notranslate"><span class="pre">resolve_path()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.subfolder_stores"><code class="docutils literal notranslate"><span class="pre">subfolder_stores()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.temp_dir"><code class="docutils literal notranslate"><span class="pre">temp_dir()</span></code></a></li>
+<li><a class="reference internal" href="#dol.filesys.validate_key_and_raise_key_error_on_exception"><code class="docutils literal notranslate"><span class="pre">validate_key_and_raise_key_error_on_exception()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1050,7 +1156,7 @@ accessible to the user.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

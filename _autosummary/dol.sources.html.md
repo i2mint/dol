@@ -1,6 +1,25 @@
 # dol.sources
 
-This module contains key-value views of disparate sources.
+Key-value views of disparate sources.
+
+Readers and persisters over things that are not stores to begin with: several stores
+at once (fan-out and cascades), sequences, functions, and the attributes of objects.
+
+Main entry points:
+
+- `FanoutReader`, `FanoutPersister`: one key, read from (written to) several stores
+- `CascadedStores`: write to all stores, read from the first one that has the key
+- `SequenceKvReader`: an iterable of elements, keyed by a key function (index by default)
+- `FuncReader`: functions as a store, keyed by name
+- `Attrs`: the attributes of an object as a (recursive) reader
+  ```pycon
+  >>> from dol.sources import FuncReader
+  >>> def foo():
+  ...     return 'bar'
+  >>> r = FuncReader([foo])
+  >>> list(r), r['foo']
+  (['foo'], 'bar')
+  ```
 
 ### Functions
 
@@ -39,7 +58,7 @@ This module contains key-value views of disparate sources.
 
 ### *class* dol.sources.AttrContainer(\*objects, \_object_namer=<function \_dflt_object_namer>, \*\*named_objects)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Convenience class to hold Key-Val pairs as attribute-val pairs, with all the
 magic methods of mappings.
@@ -288,13 +307,13 @@ But `remote` still only has `f`:
 A way to create a fan-out store from a mix of args and kwargs, instead of a
 single dict.
 
-param args: sub-stores used to fan-out the data. These stores will be
-: represented by their index in the tuple.
-
-param kwargs: sub-stores used to fan-out the data. These stores will be
-: represented by their name in the dict. \_\_init_\_ arguments can also be passed
-  as kwargs (i.e. `default`, `get_existing_values_only`, and any other subclass
-  specific arguments).
+* **Parameters:**
+  * **args** – sub-stores used to fan-out the data. These stores will be
+    represented by their index in the tuple.
+  * **kwargs** – sub-stores used to fan-out the data. These stores will be
+    represented by their name in the dict. \_\_init_\_ arguments can also be passed
+    as kwargs (i.e. `default`, `get_existing_values_only`, and any other subclass
+    specific arguments).
 
 Let’s use the same sub-stores:
 
@@ -356,17 +375,15 @@ Bases: [`FanoutReader`](#dol.sources.FanoutReader), [`KvPersister`](dol.base.htm
 
 A fanout persister is a fanout reader that can also set and delete items.
 
-param stores: A mapping of store keys to stores.
-param default: The value to return if the key is not in any of the stores.
-param get_existing_values_only: If True, only return values for stores that contain
-
-> the key.
-
-param need_to_set_all_stores: If True, all stores must be set when setting a value.
-: If False, only the stores that are set will be updated.
-
-param ignore_non_existing_store_keys: If True, ignore store keys from the value that
-: are not in the persister. If False, a ValueError is raised.
+* **Parameters:**
+  * **stores** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A mapping of store keys to stores.
+  * **default** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – The value to return if the key is not in any of the stores.
+  * **get_existing_values_only** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – If True, only return values for stores that contain
+    the key.
+  * **need_to_set_all_stores** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – If True, all stores must be set when setting a value.
+    If False, only the stores that are set will be updated.
+  * **ignore_non_existing_store_keys** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – If True, ignore store keys from the value that
+    are not in the persister. If False, a ValueError is raised.
 
 Let’s create a persister from in-memory stores:
 
@@ -493,11 +510,11 @@ Get a ‘fanout view’ of a store of stores.
 That is, when a key is requested, the key is passed to all the stores, and results
 accumulated in a dict that is then returned.
 
-param stores: A mapping of store keys to stores.
-param default: The value to return if the key is not in any of the stores.
-param get_existing_values_only: If True, only return values for stores that contain
-
-> the key.
+* **Parameters:**
+  * **stores** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A mapping of store keys to stores.
+  * **default** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – The value to return if the key is not in any of the stores.
+  * **get_existing_values_only** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – If True, only return values for stores that contain
+    the key.
 
 Let’s define the following sub-stores:
 
@@ -563,13 +580,13 @@ that contain the key:
 A way to create a fan-out store from a mix of args and kwargs, instead of a
 single dict.
 
-param args: sub-stores used to fan-out the data. These stores will be
-: represented by their index in the tuple.
-
-param kwargs: sub-stores used to fan-out the data. These stores will be
-: represented by their name in the dict. \_\_init_\_ arguments can also be passed
-  as kwargs (i.e. `default`, `get_existing_values_only`, and any other subclass
-  specific arguments).
+* **Parameters:**
+  * **args** – sub-stores used to fan-out the data. These stores will be
+    represented by their index in the tuple.
+  * **kwargs** – sub-stores used to fan-out the data. These stores will be
+    represented by their name in the dict. \_\_init_\_ arguments can also be passed
+    as kwargs (i.e. `default`, `get_existing_values_only`, and any other subclass
+    specific arguments).
 
 Let’s use the same sub-stores:
 
@@ -726,13 +743,13 @@ KeyError: 'z'
 
 ### *exception* dol.sources.NotUnique
 
-Bases: [`ValueError`](https://docs.python.org/3/library/exceptions.html#ValueError)
+Bases: [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
 
 Raised when an iterator was expected to have only one element, but had more
 
 ### *class* dol.sources.ObjReader(\_obj_of_key)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A reader that uses a specified function to get the contents for a given key.
 

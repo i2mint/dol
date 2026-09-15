@@ -1,6 +1,26 @@
 # dol.tools
 
-Various tools to add functionality to stores
+Various tools to add functionality to stores.
+
+Main entry points:
+
+- `store_aggregate`: aggregate a store’s items into one object (a Markdown text by default)
+- `confirm_overwrite`: a `wrap_kvs` preset that asks before overwriting a value
+- `Forest`: a key-value tree view of nested objects
+  ```pycon
+  >>> from dol.tools import store_aggregate
+  >>> print(store_aggregate({'a': 'x', 'b': 'y'}))
+  ## a
+
+  x
+
+
+
+  ## b
+
+  y
+
+  ```
 
 ### Functions
 
@@ -119,9 +139,9 @@ given a chance to enter the value they want to write.
 
 * **Parameters:**
   * **store** – The store (instance or class) to wrap
-  * **value_preprocessor** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/library/constants.html#None)) – Function to transform the user value before trying to
+  * **value_preprocessor** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Function to transform the user value before trying to
     write it (bearing in mind all user specified values are strings)
-  * **on_missing_msg** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – String that will be displayed to prompt the user to enter a
+  * **on_missing_msg** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – String that will be displayed to prompt the user to enter a
     value
 * **Returns:**
 
@@ -256,18 +276,18 @@ pairs to items (usually text), and (if you specify a filepath as the `egress`)
 saves the aggregate (text) before returning it.
 
 * **Parameters:**
-  * **content_store** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)] | [`str`](https://docs.python.org/3/library/stdtypes.html#str)) – Path to the folder or dol store to read from.
+  * **content_store** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)] | [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Path to the folder or dol store to read from.
   * **kv_to_item** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Item`)]) – Function to convert key-value pairs to an Item (usually a string).
   * **aggregator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Item`)]], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Aggregate`)]) – The function that will aggregate the items that `kv_to_item` produces.
     Defaults to ‘nn’.join.
-  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Aggregate`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`str`](https://docs.python.org/3/library/stdtypes.html#str)) – The function that will be called on the aggregate before returning it.
+  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Aggregate`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The function that will be called on the aggregate before returning it.
     Defaults to identity.
     Note that if you provide a string, the function will save the aggregate
     text to a file, assuming it is indeed text.
-  * **key_filter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`bool`](https://docs.python.org/3/library/functions.html#bool)] | [`None`](https://docs.python.org/3/library/constants.html#None)) – Optional filter for keys. Defaults to None (no filtering).
-  * **value_filter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/library/functions.html#bool)] | [`None`](https://docs.python.org/3/library/constants.html#None)) – Optional filter for values. Defaults to None (no filtering).
-  * **kv_filter** ([`None`](https://docs.python.org/3/library/constants.html#None) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]], [`bool`](https://docs.python.org/3/library/functions.html#bool)]) – Optional filter for key-value pairs. Defaults to None (no filtering).
-  * **local_store_factory** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/library/stdtypes.html#str)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]]) – Factory function for the local store,
+  * **key_filter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional filter for keys. Defaults to None (no filtering).
+  * **value_filter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional filter for values. Defaults to None (no filtering).
+  * **kv_filter** ([`None`](https://docs.python.org/3/builtins/constants.html#None) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – Optional filter for key-value pairs. Defaults to None (no filtering).
+  * **local_store_factory** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]]) – Factory function for the local store,
     used only if `content_store` is an existing folder path. Defaults to Latin1TextFiles.
 * **Returns:**
   Usually the aggregate object, which is usually the concatenated text.

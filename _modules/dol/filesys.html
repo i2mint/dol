@@ -260,7 +260,29 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.filesys</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""File system access"""</span>
+<span></span><span class="sd">"""File system access: dict-like stores over folders and files.</span>
+
+<span class="sd">``Files`` gives a folder a ``MutableMapping`` interface: keys are paths relative to the</span>
+<span class="sd">root folder, values are the files' bytes. ``TextFiles``, ``JsonFiles`` and ``PickleFiles``</span>
+<span class="sd">add the corresponding value codecs. Writing under a sub-folder that does not exist raises</span>
+<span class="sd">``KeyError``; wrap the store with ``mk_dirs_if_missing`` to create folders on write.</span>
+
+<span class="sd">Main entry points:</span>
+
+<span class="sd">- ``Files``: bytes of the files under a root folder</span>
+<span class="sd">- ``TextFiles``: same, with text values</span>
+<span class="sd">- ``JsonFiles``: same, with JSON-decoded values</span>
+<span class="sd">- ``PickleFiles``: same, with pickled values</span>
+<span class="sd">- ``mk_dirs_if_missing``: make a file store create missing directories on write</span>
+
+<span class="sd">    &gt;&gt;&gt; import tempfile</span>
+<span class="sd">    &gt;&gt;&gt; s = Files(tempfile.mkdtemp())</span>
+<span class="sd">    &gt;&gt;&gt; s['hello.txt'] = b'world'</span>
+<span class="sd">    &gt;&gt;&gt; s['hello.txt']</span>
+<span class="sd">    b'world'</span>
+<span class="sd">    &gt;&gt;&gt; list(s)</span>
+<span class="sd">    ['hello.txt']</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">stat</span> <span class="k">as</span> <span class="n">os_stat</span>
@@ -295,7 +317,10 @@
 
 
 
+<div class="viewcode-block" id="paths_in_dir">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.paths_in_dir">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">paths_in_dir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">include_hidden</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Yield the paths of the entries of ``rootdir`` (directories with a trailing separator), skipping hidden ones unless ``include_hidden``."""</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">include_hidden</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
@@ -311,7 +336,8 @@
         <span class="c1"># than crashing the (recursive) walk. Notably, OS-protected directories such as</span>
         <span class="c1"># macOS's ``.../com.apple.*/TemporaryItems/`` under the temp dir raise</span>
         <span class="c1"># PermissionError from ``os.listdir`` (Issue #3).</span>
-        <span class="k">pass</span>
+        <span class="k">pass</span></div>
+
 
 
 <div class="viewcode-block" id="iter_filepaths_in_folder_recursively">
@@ -358,17 +384,20 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create directories up to a specified limit.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    dirpath (str): The directory path to create.</span>
-<span class="sd">    max_dirs_to_make (int, optional): The maximum number of directories to create. If None, there's no limit.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        dirpath: The directory path to create.</span>
+<span class="sd">        max_dirs_to_make: The maximum number of directories to create. If None,</span>
+<span class="sd">            there's no limit.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">    bool: True if the directory was created successfully, False otherwise.</span>
+<span class="sd">        True if the directory exists (already, or after creation); False if creating</span>
+<span class="sd">        it would need more than ``max_dirs_to_make`` new directories (none are made).</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">    ValueError: If max_dirs_to_make is negative.</span>
+<span class="sd">        ValueError: If max_dirs_to_make is negative.</span>
 
-<span class="sd">    Examples:</span>
+<span class="sd">    .. rubric:: Examples</span>
+
 <span class="sd">    &gt;&gt;&gt; import tempfile, shutil</span>
 <span class="sd">    &gt;&gt;&gt; temp_dir = tempfile.mkdtemp()</span>
 <span class="sd">    &gt;&gt;&gt; target_dir = os.path.join(temp_dir, 'a', 'b', 'c')</span>
@@ -459,7 +488,6 @@
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; p == os.path.join('root_dir', 'a', 'b', 'c') + os.sep</span>
 <span class="sd">    True</span>
-
 <span class="sd">    """</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="o">*</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ensure_endswith_slash</span> <span class="ow">and</span> <span class="n">ensure_does_not_end_with_slash</span><span class="p">:</span>
@@ -511,14 +539,13 @@
 <span class="sd">    - a ``bool``' a standard message will be printed</span>
 
 <span class="sd">    - a ``callable``; will be called on dirpath before directory is created -- you</span>
-<span class="sd">    can use this to ask the user for confirmation for example</span>
+<span class="sd">      can use this to ask the user for confirmation for example</span>
 
 <span class="sd">    - a ''string``; this string will be printed</span>
 
 
 <span class="sd">    Usage note: If you want to string or the (argument-less) callable to be dependent</span>
 <span class="sd">    on ``dirpath``, you need make them so when calling ensure_dir.</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dirpath</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
@@ -542,25 +569,17 @@
 <span class="sd">    Create and return a path to a temporary directory that's guaranteed to be</span>
 <span class="sd">    accessible to the user.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    ----------</span>
-<span class="sd">    dirname : str</span>
-<span class="sd">        Optional subdirectory name to append to the temporary directory path</span>
-<span class="sd">    make_it_if_necessary : bool</span>
-<span class="sd">        Whether to create the directory if it doesn't exist</span>
-<span class="sd">    verbose : bool, str, or callable</span>
-<span class="sd">        Controls verbosity when creating directories</span>
+<span class="sd">    Args:</span>
+<span class="sd">        dirname: Optional subdirectory name to append to the temporary directory path</span>
+<span class="sd">        make_it_if_necessary: Whether to create the directory if it doesn't exist</span>
+<span class="sd">        verbose: Controls verbosity when creating directories</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">    -------</span>
-<span class="sd">    str</span>
 <span class="sd">        Path to a temporary directory that the user has access to</span>
 
-<span class="sd">    Notes:</span>
-<span class="sd">    -----</span>
-<span class="sd">    This function creates a user-specific temporary directory to avoid permission</span>
-<span class="sd">    issues with system-wide temporary directories. The directory is guaranteed to</span>
-<span class="sd">    be accessible to the current user.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        This function creates a user-specific temporary directory to avoid permission</span>
+<span class="sd">        issues with system-wide temporary directories.</span>
 <span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">tempfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">mkdtemp</span><span class="p">,</span> <span class="n">gettempdir</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
@@ -598,12 +617,16 @@
 <span class="n">mk_tmp_dol_dir</span> <span class="o">=</span> <span class="n">temp_dir</span>  <span class="c1"># for backward compatibility</span>
 
 
+<div class="viewcode-block" id="mk_absolute_path">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.mk_absolute_path">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">mk_absolute_path</span><span class="p">(</span><span class="n">path_format</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Expand a leading ``~``, or make a leading ``.`` path absolute; other paths are returned as is."""</span>
     <span class="k">if</span> <span class="n">path_format</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"~"</span><span class="p">):</span>
         <span class="n">path_format</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">path_format</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">path_format</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"."</span><span class="p">):</span>
         <span class="n">path_format</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path_format</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">path_format</span>
+    <span class="k">return</span> <span class="n">path_format</span></div>
+
 
 
 <span class="c1"># TODO: subpath: Need to be able to allow named and unnamed file format markers (i.e {} and {named})</span>
@@ -617,12 +640,18 @@
 <div class="viewcode-block" id="KeyValidationError">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.KeyValidationError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">KeyValidationError</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A ``KeyError`` for keys that fail a file-system store's validation."""</span>
+
     <span class="k">pass</span></div>
 
 
 
 <span class="c1"># TODO: The validate and try/except is a frequent pattern. Make it a decorator.</span>
+<div class="viewcode-block" id="validate_key_and_raise_key_error_on_exception">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.validate_key_and_raise_key_error_on_exception">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">validate_key_and_raise_key_error_on_exception</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Method decorator: validate the key first, and re-raise any exception of the method as a ``KeyError``."""</span>
+
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">validate_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
@@ -631,7 +660,8 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
 
-    <span class="k">return</span> <span class="n">wrapped_method</span>
+    <span class="k">return</span> <span class="n">wrapped_method</span></div>
+
 
 
 <div class="viewcode-block" id="resolve_path">
@@ -685,6 +715,8 @@
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileSysCollection">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FileSysCollection</span><span class="p">(</span><span class="n">Collection</span><span class="p">):</span>
     <span class="c1"># rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.</span>
+
+<span class="w">    </span><span class="sd">"""Base collection of file-system paths under ``rootdir``, optionally restricted by ``subpath``, ``max_levels`` and hidden-file inclusion."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -743,6 +775,8 @@
 <div class="viewcode-block" id="DirCollection">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.DirCollection">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DirCollection</span><span class="p">(</span><span class="n">FileSysCollection</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Collection of the directory paths under ``rootdir``."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield from</span> <span class="nb">filter</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">is_valid_key</span><span class="p">,</span>
@@ -761,6 +795,8 @@
 <div class="viewcode-block" id="FileCollection">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileCollection">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FileCollection</span><span class="p">(</span><span class="n">FileSysCollection</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Collection of the file paths under ``rootdir``."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Iterator of valid filepaths.</span>
@@ -804,6 +840,8 @@
 <div class="viewcode-block" id="FileInfoReader">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileInfoReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FileInfoReader</span><span class="p">(</span><span class="n">FileCollection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reader mapping file paths to their ``os.stat`` result."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">validate_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">os_stat</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
@@ -813,6 +851,8 @@
 <div class="viewcode-block" id="FileBytesReader">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileBytesReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FileBytesReader</span><span class="p">(</span><span class="n">FileCollection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reader mapping file paths under ``rootdir`` to the files' bytes."""</span>
+
     <span class="n">_read_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
         <span class="n">mode</span><span class="o">=</span><span class="s2">"rb"</span><span class="p">,</span>
         <span class="n">buffering</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
@@ -872,6 +912,7 @@
 <span class="sd">    to os.remove (with warning).</span>
 
 <span class="sd">    See dol.trash module for available deletion strategies:</span>
+
 <span class="sd">    - default_delete_func: Safe trash with warning on fallback</span>
 <span class="sd">    - permanent_delete: Direct os.remove (no warnings)</span>
 <span class="sd">    - trash_only: Error if trash unavailable</span>
@@ -922,9 +963,11 @@
 <span class="sd">            delete_func: Optional custom deletion function.</span>
 <span class="sd">                If None, uses class default (safe trash with fallback).</span>
 <span class="sd">                Common options from dol.trash:</span>
+
 <span class="sd">                - default_delete_func (safe trash, warning on fallback)</span>
 <span class="sd">                - permanent_delete (os.remove, no warnings)</span>
 <span class="sd">                - trash_only (error if trash unavailable)</span>
+
 <span class="sd">            **kwargs: Passed to parent classes</span>
 <span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -973,6 +1016,8 @@
 <div class="viewcode-block" id="FileStringReader">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileStringReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FileStringReader</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reader mapping file paths to the files' text (files opened in text mode)."""</span>
+
     <span class="n">_read_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="o">.</span><span class="n">_read_open_kwargs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"rt"</span><span class="p">)</span></div>
 
 
@@ -980,6 +1025,8 @@
 <div class="viewcode-block" id="FileStringPersister">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileStringPersister">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FileStringPersister</span><span class="p">(</span><span class="n">FileBytesPersister</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Persister mapping file paths to the files' text (files opened in text mode)."""</span>
+
     <span class="n">_read_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">FileBytesReader</span><span class="o">.</span><span class="n">_read_open_kwargs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"rt"</span><span class="p">)</span>
     <span class="n">_write_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">FileBytesPersister</span><span class="o">.</span><span class="n">_write_open_kwargs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"wt"</span><span class="p">)</span></div>
 
@@ -1017,31 +1064,43 @@
 
 
 <span class="c1"># And two factories to make the above more configurable:</span>
+<div class="viewcode-block" id="mk_pickle_bytes_wrap">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.mk_pickle_bytes_wrap">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">mk_pickle_bytes_wrap</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span> <span class="n">loads_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dumps_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">""""""</span>
+<span class="w">    </span><span class="sd">"""Make a ``wrap_kvs`` value-codec wrapper for pickle, with kwargs for ``pickle.loads``/``pickle.dumps``."""</span>
     <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span>
         <span class="n">value_decoder</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">loads_kwargs</span> <span class="ow">or</span> <span class="p">{})),</span>
         <span class="n">value_encoder</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">dumps_kwargs</span> <span class="ow">or</span> <span class="p">{})),</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="mk_json_bytes_wrap">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.mk_json_bytes_wrap">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">mk_json_bytes_wrap</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span> <span class="n">loads_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dumps_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Make a ``wrap_kvs`` value-codec wrapper for JSON, with kwargs for ``json.loads``/``json.dumps``."""</span>
     <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span>
         <span class="n">value_decoder</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">loads_kwargs</span> <span class="ow">or</span> <span class="p">{})),</span>
         <span class="n">value_encoder</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">dumps_kwargs</span> <span class="ow">or</span> <span class="p">{})),</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="ReprMixin">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.ReprMixin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ReprMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A ``__repr__`` showing the ``_init_kwargs`` the instance was created with."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">input_str</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">_for_repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_init_kwargs"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">input_str</span><span class="si">}</span><span class="s2">)"</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">input_str</span><span class="si">}</span><span class="s2">)"</span></div>
+
 
 
 <div class="viewcode-block" id="PickleFiles">
@@ -1081,6 +1140,8 @@
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.PickleStores">[docs]</a>
 <span class="nd">@mk_relative_path_store</span><span class="p">(</span><span class="n">prefix_attr</span><span class="o">=</span><span class="s2">"rootdir"</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">PickleStores</span><span class="p">(</span><span class="n">DirCollection</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reader mapping each sub-directory of ``rootdir`` to a ``PickleFiles`` store of it."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">PickleFiles</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
@@ -1092,6 +1153,8 @@
 <div class="viewcode-block" id="DirReader">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.DirReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DirReader</span><span class="p">(</span><span class="n">DirCollection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reader mapping each sub-directory of ``rootdir`` to a ``DirReader`` of it."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">DirReader</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
 
@@ -1269,7 +1332,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

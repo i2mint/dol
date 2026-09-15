@@ -260,7 +260,29 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for dol.trans</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Transformation/wrapping tools"""</span>
+<span></span><span class="sd">"""Tools to wrap stores with key/value transforms, filters, caches and other layers.</span>
+
+<span class="sd">A wrap leaves the backend untouched and builds a new class (or instance) around it.</span>
+<span class="sd">The decorators built with ``store_decorator`` (``wrap_kvs``, ``filt_iter``,</span>
+<span class="sd">``cached_keys``, ``add_path_access``, ...) can be applied to a class, to an instance,</span>
+<span class="sd">or used as a factory (``deco(**params)(store)``).</span>
+
+<span class="sd">Main entry points:</span>
+
+<span class="sd">- ``wrap_kvs``: key/value transforms (``key_of_id``, ``obj_of_data``, codecs, ...)</span>
+<span class="sd">- ``filt_iter``: restrict a store to a subset of its keys</span>
+<span class="sd">- ``cached_keys``: cache the key listing of a slow store</span>
+<span class="sd">- ``add_path_access``: read/write nested stores through key paths</span>
+<span class="sd">- ``kv_wrap``: wrap using an object that holds ``_id_of_key``/``_obj_of_data``-style methods</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.trans import wrap_kvs</span>
+<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({}, key_of_id=str.upper, id_of_key=str.lower, obj_of_data=int, data_of_obj=str)</span>
+<span class="sd">    &gt;&gt;&gt; s['a'] = 1</span>
+<span class="sd">    &gt;&gt;&gt; s.store  # the backend holds the transformed key and value</span>
+<span class="sd">    {'a': '1'}</span>
+<span class="sd">    &gt;&gt;&gt; list(s), s['A']</span>
+<span class="sd">    (['A'], 1)</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">reduce</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
@@ -310,9 +332,10 @@
 <span class="sd">    That is, from a decorator that is defined do ``wrapped_func = decorator(func, **params)``,</span>
 <span class="sd">    make it also be able to do ``wrapped_func = decorator(**params)(func)``.</span>
 
-<span class="sd">    Note: You'll only be able to do this if all but the first argument are keyword-only,</span>
-<span class="sd">    and the first argument (the function to decorate) has a default of ``None`` (this is for your own good).</span>
-<span class="sd">    This is validated before making the "double up as factory" decorator.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        You'll only be able to do this if all but the first argument are keyword-only,</span>
+<span class="sd">        and the first argument (the function to decorate) has a default of ``None`` (this is for your own good).</span>
+<span class="sd">        This is validated before making the "double up as factory" decorator.</span>
 
 <span class="sd">    &gt;&gt;&gt; @double_up_as_factory</span>
 <span class="sd">    ... def decorator(func=None, *, multiplier=2):</span>
@@ -356,7 +379,6 @@
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">      ...</span>
 <span class="sd">    AssertionError: All arguments (besides the first) need to be keyword-only</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">validate_decorator_func</span><span class="p">(</span><span class="n">decorator_func</span><span class="p">):</span>
@@ -410,6 +432,7 @@
 
 <span class="sd">    ``store_decorator`` takes that ``func`` and provides an enhanced class decorator specialized for stores.</span>
 <span class="sd">    Namely it will:</span>
+
 <span class="sd">    - Add ``__module__``, ``__qualname__``, ``__name__`` and ``__doc__`` arguments to it</span>
 <span class="sd">    - Copy the aforementioned arguments to the decorated class, or copy the attributes of the original if not specified.</span>
 <span class="sd">    - Output a decorator that can be used in four different ways: a class/instance decorator/factory.</span>
@@ -417,6 +440,7 @@
 <span class="sd">    By class/instance decorator/factory we mean that if ``A`` is a class, ``a`` an instance of it,</span>
 <span class="sd">    and ``deco`` a decorator obtained with ``store_decorator(func)``,</span>
 <span class="sd">    we can use ``deco`` to</span>
+
 <span class="sd">    - class decorator: decorate a class</span>
 <span class="sd">    - class decorator factory: make a function that decorates classes</span>
 <span class="sd">    - instance decorator: decorate an instance of a store</span>
@@ -491,7 +515,8 @@
 <span class="sd">    &gt;&gt;&gt; b = deco(a, x=42); assert b.x == 42  # b has an x and it's 42</span>
 <span class="sd">    &gt;&gt;&gt; b = deco(x=42)(a); assert b.x == 42; # b has an x and it's 42</span>
 
-<span class="sd">    WARNING: Note though that the type of ``b`` is not the same type as ``a``</span>
+<span class="sd">    WARNING:</span>
+<span class="sd">        Note though that the type of ``b`` is not the same type as ``a``</span>
 
 <span class="sd">    &gt;&gt;&gt; isinstance(b, a.__class__)</span>
 <span class="sd">    False</span>
@@ -581,7 +606,6 @@
 <span class="sd">    &gt;&gt;&gt; wd = remove_deletion(d, msg='No way. I do not trust you!!')</span>
 <span class="sd">    &gt;&gt;&gt; assert wd == d  # same as far as dict comparison goes</span>
 <span class="sd">    &gt;&gt;&gt; assert wd.__delitem__('x') == 'No way. I do not trust you!!'</span>
-
 <span class="sd">    """</span>
 
     <span class="c1"># wrapper_assignments = ('__module__', '__qualname__', '__name__', '__doc__', '__annotations__')</span>
@@ -654,13 +678,20 @@
 
 
 
+<div class="viewcode-block" id="ensure_set">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.ensure_set">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ensure_set</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A set from ``x``, treating a string as a single element."""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
-    <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="get_class_name">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.get_class_name">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_class_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dflt_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The ``__qualname__`` of ``cls`` (or of its class), else ``dflt_name``; raises ``ValueError`` if there is neither."""</span>
     <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">"__class__"</span><span class="p">,</span> <span class="nb">object</span><span class="p">),</span> <span class="s2">"__qualname__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -669,10 +700,14 @@
                 <span class="k">return</span> <span class="n">dflt_name</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s2"> has no name I could extract"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">name</span>
+    <span class="k">return</span> <span class="n">name</span></div>
 
 
+
+<div class="viewcode-block" id="store_wrap">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.store_wrap">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">store_wrap</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Wrap a class or an instance in a ``Store`` (a class gets a ``Store`` subclass whose ``__init__`` builds the wrapped instance)."""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
 
         <span class="nd">@wraps</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="n">updated</span><span class="o">=</span><span class="p">())</span>  <span class="c1"># added this: test</span>
@@ -684,7 +719,8 @@
 
         <span class="k">return</span> <span class="n">StoreWrap</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Store</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Store</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_bound</span><span class="p">(</span><span class="n">method</span><span class="p">):</span>
@@ -827,8 +863,12 @@
 
 
 
+<div class="viewcode-block" id="transparent_key_method">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.transparent_key_method">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">transparent_key_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">k</span>
+<span class="w">    </span><span class="sd">"""Return the key as is (the default ``getitem`` of ``mk_kv_reader_from_kv_collection``)."""</span>
+    <span class="k">return</span> <span class="n">k</span></div>
+
 
 
 <div class="viewcode-block" id="mk_kv_reader_from_kv_collection">
@@ -845,7 +885,8 @@
 <span class="sd">            By default, getitem will be transparent_key_method, returning the key as is.</span>
 <span class="sd">            This default is useful when you want to delegate the actual getting to a _obj_of_data wrapper.</span>
 
-<span class="sd">    Returns: A KvReader class that subclasses the input kv_collection</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A KvReader class that subclasses the input kv_collection</span>
 <span class="sd">    """</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">kv_collection</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">+</span> <span class="s2">"Reader"</span>
@@ -854,39 +895,77 @@
 
 
 
+<div class="viewcode-block" id="raise_disabled_error">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.raise_disabled_error">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">raise_disabled_error</span><span class="p">(</span><span class="n">functionality</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Make a function that raises ``ValueError('&lt;functionality&gt; is disabled')`` whenever called."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">disabled_function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">functionality</span><span class="si">}</span><span class="s2"> is disabled"</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">disabled_function</span>
+    <span class="k">return</span> <span class="n">disabled_function</span></div>
 
 
+
+<div class="viewcode-block" id="disable_delitem">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.disable_delitem">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">disable_delitem</span><span class="p">(</span><span class="n">o</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Replace ``o.__delitem__`` (if any) with a function raising ``ValueError``.</span>
+
+<span class="sd">    Meant for classes: on an instance, ``del o[k]`` still uses the type's method.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">"__delitem__"</span><span class="p">):</span>
         <span class="n">o</span><span class="o">.</span><span class="fm">__delitem__</span> <span class="o">=</span> <span class="n">raise_disabled_error</span><span class="p">(</span><span class="s2">"deletion"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">o</span>
+    <span class="k">return</span> <span class="n">o</span></div>
 
 
+
+<div class="viewcode-block" id="disable_setitem">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.disable_setitem">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">disable_setitem</span><span class="p">(</span><span class="n">o</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Replace ``o.__setitem__`` (if any) with a function raising ``ValueError``.</span>
+
+<span class="sd">    Meant for classes: on an instance, ``o[k] = v`` still uses the type's method.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">"__setitem__"</span><span class="p">):</span>
         <span class="n">o</span><span class="o">.</span><span class="fm">__setitem__</span> <span class="o">=</span> <span class="n">raise_disabled_error</span><span class="p">(</span><span class="s2">"writing"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">o</span>
+    <span class="k">return</span> <span class="n">o</span></div>
 
 
+
+<div class="viewcode-block" id="mk_read_only">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.mk_read_only">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">mk_read_only</span><span class="p">(</span><span class="n">o</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">disable_delitem</span><span class="p">(</span><span class="n">disable_setitem</span><span class="p">(</span><span class="n">o</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">"""Disable ``__setitem__`` and ``__delitem__`` on ``o`` (a store class, typically).</span>
+
+<span class="sd">    &gt;&gt;&gt; class D(dict):</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; D = mk_read_only(D)</span>
+<span class="sd">    &gt;&gt;&gt; D()['a'] = 1</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    ValueError: writing is disabled</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">disable_delitem</span><span class="p">(</span><span class="n">disable_setitem</span><span class="p">(</span><span class="n">o</span><span class="p">))</span></div>
 
 
+
+<div class="viewcode-block" id="is_iterable">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.is_iterable">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_iterable</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""Whether ``x`` is an ``Iterable``."""</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="add_ipython_key_completions">
 <a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.add_ipython_key_completions">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_ipython_key_completions</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Add tab completion that shows you the keys of the store.</span>
-<span class="sd">    Note: ipython already adds local path listing automatically,</span>
-<span class="sd">     so you'll still get those along with your valid store keys.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        ipython already adds local path listing automatically,</span>
+<span class="sd">        so you'll still get those along with your valid store keys.</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_ipython_key_completions_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -908,7 +987,11 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">OverWritesNotAllowedError</span>
 
 
+<div class="viewcode-block" id="disallow_overwrites">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.disallow_overwrites">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">disallow_overwrites</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">error_msg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">disable_deletes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Intended to make a store class's ``__setitem__`` raise ``OverWritesNotAllowedError`` on existing keys;</span>
+<span class="sd">    currently a no-op that returns ``None`` (the override is never attached). Use ``OverWritesNotAllowedMixin``."""</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="nb">type</span><span class="p">),</span> <span class="s2">"store needs to be a type"</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">"__setitem__"</span><span class="p">):</span>
 
@@ -920,14 +1003,17 @@
                         <span class="n">k</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="OverWritesNotAllowedMixin">
 <a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.OverWritesNotAllowedMixin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OverWritesNotAllowedMixin</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Mixin for only allowing a write to a key if they key doesn't already exist.</span>
-<span class="sd">    Note: Should be before the persister in the MRO.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Should be before the persister in the MRO.</span>
 
 <span class="sd">    &gt;&gt;&gt; class TestPersister(OverWritesNotAllowedMixin, dict):</span>
 <span class="sd">    ...     pass</span>
@@ -1062,7 +1148,6 @@
 <span class="sd">    ...     pass</span>
 <span class="sd">    &gt;&gt;&gt; hash(F({1: 2, 3: 4}))</span>
 <span class="sd">    6</span>
-
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_wrap_store</span><span class="p">(</span><span class="n">_insert_hash_method</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span></div>
 
@@ -1119,17 +1204,20 @@
 <span class="sd">    It is assumed, if you're using the cached_keys transformation, that you're dealing with static data</span>
 <span class="sd">    (or data that can be considered static for the life of the store -- for example, when conducting analytics).</span>
 <span class="sd">    If you ever need to refresh the cache during the life of the store, you can to delete _keys_cache like this:</span>
-<span class="sd">    ```</span>
-<span class="sd">    del your_store._keys_cache</span>
-<span class="sd">    ```</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        del your_store._keys_cache</span>
+
 <span class="sd">    Once you do that, the next time you try to ask something about the contents of the store, it will actually do</span>
 <span class="sd">    a live query again, as for the first time.</span>
 
-<span class="sd">    Note: The default keys_cache is list though in many cases, you'd probably should use set, or an explicitly</span>
-<span class="sd">    computer set instead. The reason list is used as the default is because (1) we didn't want to assume that</span>
-<span class="sd">    order did not matter (maybe it does to you) and (2) we didn't want to assume that your keys were hashable.</span>
-<span class="sd">    That said, if you're keys are hashable, and order does not matter, use set. That'll give you two things:</span>
-<span class="sd">    (a) your `key in store` checks will be faster (O(1) instead of O(n)) and (b) you'll enforce unicity of keys.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        The default keys_cache is list though in many cases, you'd probably should use set, or an explicitly</span>
+<span class="sd">        computer set instead. The reason list is used as the default is because (1) we didn't want to assume that</span>
+<span class="sd">        order did not matter (maybe it does to you) and (2) we didn't want to assume that your keys were hashable.</span>
+<span class="sd">        That said, if you're keys are hashable, and order does not matter, use set. That'll give you two things:</span>
+<span class="sd">        (a) your `key in store` checks will be faster (O(1) instead of O(n)) and (b) you'll enforce unicity of keys.</span>
 
 <span class="sd">    Know also that if you precompute the keys you want to cache with a container that has an update</span>
 <span class="sd">    method (by default `update`) your cache updates will be faster and if the container you use has</span>
@@ -1140,24 +1228,23 @@
 <span class="sd">        keys_cache: An explicit collection of keys</span>
 <span class="sd">        iter_to_container: The function that will be applied to existing __iter__() and assigned to cache.</span>
 <span class="sd">            The default is list. Another useful one is the sorted function.</span>
-<span class="sd">        cache_update_method: Name of the keys_cache update method to use, if it is an attribute of keys_cache.</span>
-<span class="sd">            Note that this cache_update_method will be used only</span>
-<span class="sd">                if keys_cache is an explicit iterable and has that attribute</span>
-<span class="sd">                if keys_cache is a callable and has that attribute.</span>
-<span class="sd">            The default None</span>
+<span class="sd">        cache_update_method: Name of the keys_cache update method to use, if it is an</span>
+<span class="sd">            attribute of keys_cache (whether keys_cache is an explicit iterable or a</span>
+<span class="sd">            callable). Default ``'update'``.</span>
 <span class="sd">        name: The name of the new class</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        If store is:</span>
-<span class="sd">            None: Will return a decorator that can be applied to a store</span>
-<span class="sd">            a store class: Will return a wrapped class that caches it's keys</span>
-<span class="sd">            a store instance: Will return a wrapped instance that caches it's keys</span>
+<span class="sd">        If store is None, a decorator that can be applied to a store; if store is a</span>
+<span class="sd">        class, a wrapped class that caches its keys; if store is an instance, a</span>
+<span class="sd">        wrapped instance that caches its keys.</span>
 
 <span class="sd">        The instances of such key-cached classes have some extra attributes:</span>
-<span class="sd">            _explicit_keys: The actual cache. An iterable container</span>
-<span class="sd">            update_keys_cache: Is called if a user uses the instance to mutate the store (i.e. write or delete).</span>
+<span class="sd">        ``_keys_cache`` (the actual cache), ``_explicit_keys`` (whether the cache was</span>
+<span class="sd">        given explicitly) and ``update_keys_cache`` (called on ``__setitem__`` and</span>
+<span class="sd">        ``update``).</span>
 
 <span class="sd">    You have two ways of caching keys:</span>
+
 <span class="sd">    - By providing the explicit list of keys you want cache (and use)</span>
 <span class="sd">    - By providing a callable that will iterate through your store and collect an explicit list of keys</span>
 
@@ -1540,13 +1627,13 @@
 <span class="sd">    You don't like it? Neither do I. But</span>
 
 <span class="sd">    - It's not a completely outrageous behavior -- if you're talking to live data, it</span>
-<span class="sd">        often happens that you get more, or less, from one second to another.</span>
+<span class="sd">      often happens that you get more, or less, from one second to another.</span>
 
 <span class="sd">    - This store isn't meant to be long living, but rather meant to solve the problem of</span>
-<span class="sd">        skiping items that are problematic (for example, malformatted files),</span>
-<span class="sd">        with a trace of what was skipped and what's valid (in case we need to iterate</span>
-<span class="sd">        again and don't want to bear the hit of requesting values for keys we already</span>
-<span class="sd">        know are problematic.</span>
+<span class="sd">      skiping items that are problematic (for example, malformatted files),</span>
+<span class="sd">      with a trace of what was skipped and what's valid (in case we need to iterate</span>
+<span class="sd">      again and don't want to bear the hit of requesting values for keys we already</span>
+<span class="sd">      know are problematic.</span>
 
 <span class="sd">    Here's a little peep of what is happening under the hood.</span>
 <span class="sd">    Meet ``_keys_cache`` and ``_error_keys`` sets (yes, unordered -- so know it) that are meant</span>
@@ -1588,7 +1675,6 @@
 <span class="sd">    &gt;&gt;&gt; sorted(s.values())  # sorting to get consistent output</span>
 <span class="sd">    Error with black key: "Nope, that's from the black list!"</span>
 <span class="sd">    [13, 20]</span>
-
 <span class="sd">    """</span>
 
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="nb">type</span><span class="p">),</span> <span class="p">(</span>
@@ -1691,9 +1777,12 @@
 
 
 
+<div class="viewcode-block" id="iterate_values_and_accumulate_non_error_keys">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.iterate_values_and_accumulate_non_error_keys">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">iterate_values_and_accumulate_non_error_keys</span><span class="p">(</span>
     <span class="n">store</span><span class="p">,</span> <span class="n">cache_keys_here</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">errors_caught</span><span class="o">=</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">error_callback</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Yield the values of ``store``, appending to ``cache_keys_here`` the keys whose value was fetched without error."""</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">store</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -1701,15 +1790,20 @@
             <span class="k">yield</span> <span class="n">v</span>
         <span class="k">except</span> <span class="n">errors_caught</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">error_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">error_callback</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+                <span class="n">error_callback</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span></div>
+
 
 
 <span class="c1">########################################################################################################################</span>
 <span class="c1"># Filtering iteration</span>
 
 
+<div class="viewcode-block" id="take_everything">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.take_everything">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">take_everything</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
-    <span class="k">return</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">"""Key filter that accepts every key."""</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
 
 
 <span class="n">FiltFunc</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
@@ -1730,12 +1824,13 @@
 <span class="w">    </span><span class="sd">"""Make a wrapper that will transform a store (class or instance thereof) into a sub-store (i.e. subset of keys).</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        filt: A callable or iterable:</span>
-<span class="sd">            callable: Boolean filter function. A func taking a key and and returns True iff the key should be included.</span>
-<span class="sd">            iterable: The collection of keys you want to filter "in"</span>
+<span class="sd">        filt: A callable or iterable. If a callable, a boolean filter function taking</span>
+<span class="sd">            a key and returning True iff the key should be included. If an iterable,</span>
+<span class="sd">            the collection of keys you want to filter "in".</span>
 <span class="sd">        name: The name to give the wrapped class</span>
 
-<span class="sd">    Returns: A wrapper (that then needs to be applied to a store instance or class.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A wrapper (that then needs to be applied to a store instance or class.</span>
 
 <span class="sd">    &gt;&gt;&gt; filtered_dict = filt_iter(filt=lambda k: (len(k) % 2) == 1)(dict)  # keep only odd length keys</span>
 <span class="sd">    &gt;&gt;&gt;</span>
@@ -1899,7 +1994,6 @@
 <span class="sd">    True</span>
 <span class="sd">    &gt;&gt;&gt; is_text("image.jpg")</span>
 <span class="sd">    False</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">suffixes</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">suffixes</span> <span class="o">=</span> <span class="p">[</span><span class="n">suffixes</span><span class="p">]</span>
@@ -1924,7 +2018,6 @@
 <span class="sd">    True</span>
 <span class="sd">    &gt;&gt;&gt; is_test_or_report("image.jpg")</span>
 <span class="sd">    False</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prefixes</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">prefixes</span> <span class="o">=</span> <span class="p">[</span><span class="n">prefixes</span><span class="p">]</span>
@@ -1932,13 +2025,19 @@
 
 
 
+<div class="viewcode-block" id="FiltIter">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.FiltIter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FiltIter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Namespace of ``filt_iter`` factories (``regex``, ``suffixes``, ...); not meant to be instantiated."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s2">"This class is not meant to be instantiated, but only act as a collection "</span>
             <span class="s2">"of functions to make mapping filtering decorators."</span>
         <span class="p">)</span>
 
+<div class="viewcode-block" id="FiltIter.regex">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.FiltIter.regex">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">regex</span><span class="p">(</span><span class="n">regex</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Make a mapping-filtering decorator that filters keys with a regex.</span>
 
@@ -1950,8 +2049,11 @@
 <span class="sd">        &gt;&gt;&gt; dict(dd)</span>
 <span class="sd">        {'apple': 1, 'banana': 2}</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="n">filter_regex</span><span class="p">(</span><span class="n">regex</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="n">filter_regex</span><span class="p">(</span><span class="n">regex</span><span class="p">))</span></div>
 
+
+<div class="viewcode-block" id="FiltIter.prefixes">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.FiltIter.prefixes">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prefixes</span><span class="p">(</span><span class="n">prefixes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Make a mapping-filtering decorator that filters keys with a prefixes.</span>
 
@@ -1963,8 +2065,11 @@
 <span class="sd">        &gt;&gt;&gt; dict(dd)</span>
 <span class="sd">        {'test.txt': 1, 'test_image.jpg': 3}</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="n">filter_prefixes</span><span class="p">(</span><span class="n">prefixes</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="n">filter_prefixes</span><span class="p">(</span><span class="n">prefixes</span><span class="p">))</span></div>
 
+
+<div class="viewcode-block" id="FiltIter.suffixes">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.FiltIter.suffixes">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">suffixes</span><span class="p">(</span><span class="n">suffixes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Make a mapping-filtering decorator that filters keys with a suffixes.</span>
 
@@ -1976,7 +2081,9 @@
 <span class="sd">        &gt;&gt;&gt; dict(dd)</span>
 <span class="sd">        {'test.txt': 1, 'report.doc': 2}</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="n">filter_suffixes</span><span class="p">(</span><span class="n">suffixes</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">filt_iter</span><span class="p">(</span><span class="n">filt</span><span class="o">=</span><span class="n">filter_suffixes</span><span class="p">(</span><span class="n">suffixes</span><span class="p">))</span></div>
+</div>
+
 
 
 <span class="c1"># TODO: Is there a better way to solve the tab-completion problem</span>
@@ -2010,7 +2117,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        persister_cls: The persister class to wrap</span>
 
-<span class="sd">    Returns: A Store wrapping the persister (see dol.base)</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A Store wrapping the persister (see dol.base)</span>
 
 <span class="sd">    &gt;&gt;&gt; A = kv_wrap_persister_cls(dict)</span>
 <span class="sd">    &gt;&gt;&gt; a = A()</span>
@@ -2122,7 +2230,8 @@
 <span class="sd">        trans_func: The transformation function.</span>
 <span class="sd">        wrap_arg_idx: The index of the</span>
 
-<span class="sd">    Returns: Nothing. It transforms the class in-place</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Nothing. It transforms the class in-place</span>
 
 <span class="sd">    &gt;&gt;&gt; from dol.trans import store_wrap</span>
 <span class="sd">    &gt;&gt;&gt; S = store_wrap(dict)</span>
@@ -2227,7 +2336,8 @@
 <span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""Make a Store that is wrapped with the given key/val transformers.</span>
 
-<span class="sd">    Naming convention:</span>
+<span class="sd">    Naming convention::</span>
+
 <span class="sd">        Morphemes:</span>
 <span class="sd">            key: outer key</span>
 <span class="sd">            _id: inner key</span>
@@ -2252,7 +2362,8 @@
 <span class="sd">            The function is called with both `k` and `v` as inputs, and should output a transformed value.</span>
 <span class="sd">            The intent use is to do ingoing value transformations conditioned on the key.</span>
 <span class="sd">            For example, you may want to serialize an object depending on if you're writing to a</span>
-<span class="sd">             '.csv', or '.json', or '.pickle' file.</span>
+<span class="sd">            '.csv', or '.json', or '.pickle' file.</span>
+
 <span class="sd">            Forms are `preset(k, obj)` or `preset(self, k, obj)`</span>
 <span class="sd">        postget: A function that is called after the value `v` for a key `k` is be `__getitem__`.</span>
 <span class="sd">            The function is called with both `k` and `v` as inputs, and should output a transformed value.</span>
@@ -2261,7 +2372,8 @@
 <span class="sd">            For example, you may want to deserialize the bytes of a '.csv', or '.json', or '.pickle' in different ways.</span>
 <span class="sd">            Forms are `obj = postget(k, data)` or `obj = postget(self, k, data)`</span>
 
-<span class="sd">    Returns: A key and/or value transformed wrapped (or wrapper) class (or instance).</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A key and/or value transformed wrapped (or wrapper) class (or instance).</span>
 
 <span class="sd">    &gt;&gt;&gt; def key_of_id(_id):</span>
 <span class="sd">    ...     return _id.upper()</span>
@@ -2354,8 +2466,8 @@
 <span class="sd">    &gt;&gt;&gt; d['foo.pkl']</span>
 <span class="sd">    [['a', 'b', 'c'], ['d', 'e', 'f']]</span>
 
-<span class="sd">    # TODO: Add tests for outcoming_key_methods etc.</span>
 <span class="sd">    """</span>
+    <span class="c1"># TODO: Add tests for outcoming_key_methods etc.</span>
     <span class="c1"># kwargs = dict(</span>
     <span class="c1">#     locals(), wrapper=wrapper or Store, name=store.__qualname__ + "Wrapped"</span>
     <span class="c1"># )</span>
@@ -2374,7 +2486,8 @@
 <span class="w">    </span><span class="sd">"""Handle the key_codec and data_codec kwargs, converting them to key_of_id</span>
 <span class="sd">    and obj_of_data.</span>
 
-<span class="sd">    Warning: Mutates kwargs in place.</span>
+<span class="sd">    Warning:</span>
+<span class="sd">        Mutates kwargs in place.</span>
 
 <span class="sd">    &gt;&gt;&gt; kwargs = {'value_decoder': int, 'value_encoder': str}</span>
 <span class="sd">    &gt;&gt;&gt; _handle_codecs(kwargs)</span>
@@ -2385,7 +2498,6 @@
 <span class="sd">    &gt;&gt;&gt; _handle_codecs(kwargs)</span>
 <span class="sd">    &gt;&gt;&gt; assert kwargs['key_of_id'] == int</span>
 <span class="sd">    &gt;&gt;&gt; assert kwargs['id_of_key'] == str</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">key_codec</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"key_codec"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"key_of_id"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
@@ -2477,7 +2589,8 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">add_decoder</span><span class="p">(</span><span class="n">store_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">decoder</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Add a decoder layer to a store.</span>
 
-<span class="sd">    Note: This is a convenience function for ``wrap_kvs(..., obj_of_data=decoder)``.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        This is a convenience function for ``wrap_kvs(..., obj_of_data=decoder)``.</span>
 
 <span class="sd">    &gt;&gt;&gt; s = {'a': "42"}</span>
 <span class="sd">    &gt;&gt;&gt; ss = add_decoder(s, decoder=int)</span>
@@ -2588,8 +2701,9 @@
 <span class="sd">    Use this when you wouldn't use the keys in their original format,</span>
 <span class="sd">    or when you want to extract information from it.</span>
 
-<span class="sd">    Warning: If you haven't also wrapped incoming keys with a corresponding inverse transformation,</span>
-<span class="sd">    you won't be able to use the outcoming keys to fetch data.</span>
+<span class="sd">    Warning:</span>
+<span class="sd">        If you haven't also wrapped incoming keys with a corresponding inverse transformation,</span>
+<span class="sd">        you won't be able to use the outcoming keys to fetch data.</span>
 
 <span class="sd">    &gt;&gt;&gt; from collections import UserDict</span>
 <span class="sd">    &gt;&gt;&gt; S = kv_wrap.outcoming_keys(lambda x: x[5:])(UserDict)</span>
@@ -2599,10 +2713,10 @@
 <span class="sd">    &gt;&gt;&gt; list(s.keys())</span>
 <span class="sd">    ['foo', 'bar']</span>
 
-<span class="sd">    # TODO: Asymmetric key trans breaks getting items (therefore items()). Resolve (remove items() for asym keys?)</span>
-<span class="sd">    # &gt;&gt;&gt; list(s.items())</span>
-<span class="sd">    # [('foo', 10), ('bar', 'xo')]</span>
 <span class="sd">    """</span>
+    <span class="c1"># TODO: Asymmetric key trans breaks getting items (therefore items()). Resolve (remove items() for asym keys?)</span>
+    <span class="c1"># &gt;&gt;&gt; list(s.items())</span>
+    <span class="c1"># [('foo', 10), ('bar', 'xo')]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
@@ -2622,8 +2736,9 @@
 <span class="sd">    (because you shouldn't) 'manually' extract that information and construct the key manually every time you need</span>
 <span class="sd">    to write something or fetch some existing data.</span>
 
-<span class="sd">    Warning: If you haven't also wrapped outcoming keys with a corresponding inverse transformation,</span>
-<span class="sd">    you won't be able to use the incoming keys to fetch data.</span>
+<span class="sd">    Warning:</span>
+<span class="sd">        If you haven't also wrapped outcoming keys with a corresponding inverse transformation,</span>
+<span class="sd">        you won't be able to use the incoming keys to fetch data.</span>
 
 <span class="sd">    &gt;&gt;&gt; from collections import UserDict</span>
 <span class="sd">    &gt;&gt;&gt; S = kv_wrap.ingoing_keys(lambda x: 'root/' + x)(UserDict)</span>
@@ -2635,10 +2750,10 @@
 <span class="sd">    &gt;&gt;&gt; list(s.keys())</span>
 <span class="sd">    ['root/foo', 'root/bar']</span>
 
-<span class="sd">    # TODO: Asymmetric key trans breaks getting items (therefore items()). Resolve (remove items() for asym keys?)</span>
-<span class="sd">    # &gt;&gt;&gt; list(s.items())</span>
-<span class="sd">    # [('root/foo', 10), ('root/bar', 'xo')]</span>
 <span class="sd">    """</span>
+    <span class="c1"># TODO: Asymmetric key trans breaks getting items (therefore items()). Resolve (remove items() for asym keys?)</span>
+    <span class="c1"># &gt;&gt;&gt; list(s.items())</span>
+    <span class="c1"># [('root/foo', 10), ('root/bar', 'xo')]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
@@ -2659,7 +2774,8 @@
 <span class="sd">    but you want it to be interpreted as a JSON formatted text and get a dict instead. Both of these are</span>
 <span class="sd">    de-serialization layers, or out-coming value transformations.</span>
 
-<span class="sd">    Warning: If it matters, make sure you also wrapped with a corresponding inverse serialization.</span>
+<span class="sd">    Warning:</span>
+<span class="sd">        If it matters, make sure you also wrapped with a corresponding inverse serialization.</span>
 
 <span class="sd">    &gt;&gt;&gt; from collections import UserDict</span>
 <span class="sd">    &gt;&gt;&gt; S = kv_wrap.outcoming_vals(lambda x: x * 2)(UserDict)</span>
@@ -2687,7 +2803,8 @@
 
 <span class="sd">    For example, say you have a list of audio samples, and you want to save these in a WAV format.</span>
 
-<span class="sd">    Warning: If it matters, make sure you also wrapped with a corresponding inverse de-serialization.</span>
+<span class="sd">    Warning:</span>
+<span class="sd">        If it matters, make sure you also wrapped with a corresponding inverse de-serialization.</span>
 
 <span class="sd">    &gt;&gt;&gt; from collections import UserDict</span>
 <span class="sd">    &gt;&gt;&gt; S = kv_wrap.ingoing_vals(lambda x: x * 2)(UserDict)</span>
@@ -2751,7 +2868,11 @@
 <span class="p">}</span>
 
 
+<div class="viewcode-block" id="SimpleDelegator">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.SimpleDelegator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimpleDelegator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Forward attribute access (and calls) to the wrapped ``obj``."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span> <span class="o">=</span> <span class="n">obj</span>
 
@@ -2762,7 +2883,8 @@
         <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="si">=}</span><span class="s2"> is not callable"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="si">=}</span><span class="s2"> is not callable"</span><span class="p">)</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dflt_overwrite_prompt</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">existing</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
@@ -2807,6 +2929,8 @@
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">confirm_overwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""``preset`` that returns ``v`` unless ``k`` already holds a different value</span>
+<span class="sd">        and the user does not confirm; then the existing value is kept."""</span>
         <span class="n">_sentinel</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
         <span class="n">existing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">_sentinel</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">existing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_sentinel</span> <span class="ow">and</span> <span class="n">existing</span> <span class="o">!=</span> <span class="n">v</span><span class="p">:</span>
@@ -2840,7 +2964,6 @@
 
 <span class="sd">    See also, and not to be confused with ``insert_aliases``, which adds aliases to</span>
 <span class="sd">    dunder mapping methods (like ``__iter__``, ``__getitem__``) etc.</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">aliases</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">obj</span>
@@ -2889,12 +3012,10 @@
 <span class="sd">    &gt;&gt;&gt; d['d', 'e']</span>
 <span class="sd">    2</span>
 
-<span class="sd">    ``kv_wrap`` also has convenience attributes:</span>
-<span class="sd">        ``outcoming_keys``, ``ingoing_keys``, ``outcoming_vals``, ``ingoing_vals``,</span>
-<span class="sd">        and ``val_reads_wrt_to_keys``</span>
+<span class="sd">    ``kv_wrap`` also has convenience attributes (``outcoming_keys``, ``ingoing_keys``,</span>
+<span class="sd">    ``outcoming_vals``, ``ingoing_vals``, and ``val_reads_wrt_to_keys``)</span>
 <span class="sd">    which will only add a single specific wrapper (specified as a function),</span>
 <span class="sd">    when that's what you need.</span>
-
 <span class="sd">    """</span>
 
     <span class="n">key_of_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">trans_obj</span><span class="p">,</span> <span class="s2">"_key_of_id"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -2940,13 +3061,17 @@
 
 <span class="sd">    You have a wrapper class and you want to make a wrapper out of it,</span>
 <span class="sd">    that is, a decorator factory with which you can make wrappers, like this:</span>
-<span class="sd">    ```</span>
-<span class="sd">    wrapper = mk_wrapper(wrap_cls)</span>
-<span class="sd">    ```</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        wrapper = mk_wrapper(wrap_cls)</span>
+
 <span class="sd">    that you can then use to transform stores like thiis:</span>
-<span class="sd">    ```</span>
-<span class="sd">    MyStore = wrapper(**wrapper_kwargs)(StoreYouWantToTransform)</span>
-<span class="sd">    ```</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        MyStore = wrapper(**wrapper_kwargs)(StoreYouWantToTransform)</span>
+
 
 <span class="sd">    :param wrap_cls:</span>
 <span class="sd">    :return:</span>
@@ -3033,12 +3158,16 @@
     <span class="k">return</span> <span class="n">v</span>
 
 
+<div class="viewcode-block" id="conditional_data_trans">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.conditional_data_trans">[docs]</a>
 <span class="nd">@store_decorator</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">conditional_data_trans</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">data_trans</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Wrap ``store`` so that ``data_trans`` is applied to the read values satisfying ``condition`` (others pass through)."""</span>
     <span class="n">_data_trans</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
         <span class="n">_conditional_data_trans</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="n">condition</span><span class="p">,</span> <span class="n">data_trans</span><span class="o">=</span><span class="n">data_trans</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">data_trans</span><span class="p">,</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">_data_trans</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">data_trans</span><span class="p">,</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">_data_trans</span><span class="p">))</span></div>
+
 
 
 <div class="viewcode-block" id="add_path_get">
@@ -3057,7 +3186,7 @@
 <span class="sd">    See issue: https://github.com/i2mint/dol/issues/10.)</span>
 
 <span class="sd">    Say you have some nested stores.</span>
-<span class="sd">    You know... like a `ZipFileReader` store whose values are `ZipReader`s,</span>
+<span class="sd">    You know... like a `ZipFileReader` store whose values are `ZipReader` instances,</span>
 <span class="sd">    whose values are bytes of the zipped files</span>
 <span class="sd">    (and you can go on... whose (json) values are...).</span>
 
@@ -3082,6 +3211,7 @@
 <span class="sd">    Args:</span>
 <span class="sd">        store: The store (class or instance) you're wrapping.</span>
 <span class="sd">            If not specified, the function will return a decorator.</span>
+
 <span class="sd">        name: The name to give the class (not applicable to instance wrapping)</span>
 <span class="sd">        path_type: The type that paths are expressed as. Needs to be an Iterable type.</span>
 <span class="sd">            By default, a tuple.</span>
@@ -3095,7 +3225,7 @@
 
 <span class="sd">    .. seealso::</span>
 
-<span class="sd">        ``KeyPath`` in :doc:`paths`</span>
+<span class="sd">        ``KeyPath`` in ``dol.paths``</span>
 
 <span class="sd">    Wrapping an instance</span>
 
@@ -3194,7 +3324,7 @@
 <span class="sd">    forms like ``'a.b.c'``, ``'a/b/c'``, etc.</span>
 
 <span class="sd">    Say you have some nested stores.</span>
-<span class="sd">    You know... like a `ZipFileReader` store whose values are `ZipReader`s,</span>
+<span class="sd">    You know... like a `ZipFileReader` store whose values are `ZipReader` instances,</span>
 <span class="sd">    whose values are bytes of the zipped files</span>
 <span class="sd">    (and you can go on... whose (json) values are...).</span>
 
@@ -3229,6 +3359,7 @@
 <span class="sd">    Args:</span>
 <span class="sd">        store: The store (class or instance) you're wrapping.</span>
 <span class="sd">            If not specified, the function will return a decorator.</span>
+
 <span class="sd">        name: The name to give the class (not applicable to instance wrapping)</span>
 <span class="sd">        path_type: The type that paths are expressed as. Needs to be an Iterable type.</span>
 <span class="sd">            By default, a tuple.</span>
@@ -3242,7 +3373,7 @@
 
 <span class="sd">    .. seealso::</span>
 
-<span class="sd">        ``KeyPath`` in :doc:`paths`</span>
+<span class="sd">        ``KeyPath`` in ``dol.paths``</span>
 
 <span class="sd">    Wrapping a class</span>
 
@@ -3292,7 +3423,8 @@
 <span class="sd">    &gt;&gt;&gt; s</span>
 <span class="sd">    {'a': {'b': {}}}</span>
 
-<span class="sd">    Note: The add_path_access doesn't carry on to values.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        The add_path_access doesn't carry on to values.</span>
 
 <span class="sd">    &gt;&gt;&gt; s = add_path_access({'a': {'b': {'c': 42}}})</span>
 <span class="sd">    &gt;&gt;&gt; s['a', 'b', 'c']</span>
@@ -3324,7 +3456,6 @@
 <span class="sd">    &gt;&gt;&gt; # But now this works:</span>
 <span class="sd">    &gt;&gt;&gt; s['a']['b', 'c']</span>
 <span class="sd">    42</span>
-
 <span class="sd">    """</span>
     <span class="n">store_cls</span> <span class="o">=</span> <span class="n">kv_wrap_persister_cls</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">store_cls</span> <span class="o">=</span> <span class="n">add_path_get</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">path_type</span><span class="o">=</span><span class="n">path_type</span><span class="p">)</span>
@@ -3438,7 +3569,7 @@
 <span class="nd">@store_decorator</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Flatten a nested store.</span>
+<span class="sd">    Give a nested store a flat view whose keys are the ``(a, b, c)`` key paths.</span>
 
 <span class="sd">    Say you have a store that has three levels (or more), that is, that you can always</span>
 <span class="sd">    ask for the value ``store[a][b][c]`` if ``a`` is a valid key of ``store``,</span>
@@ -3466,8 +3597,9 @@
 <span class="sd">    cases. The only reason it is not the default is because if you have millions of</span>
 <span class="sd">    keys, but little memory, that's not what you might want.</span>
 
-<span class="sd">    Note: Flattening just provides a wrapper giving you a "flattened view". It doesn't</span>
-<span class="sd">    change the store itself, or it's contents.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        Flattening just provides a wrapper giving you a "flattened view". It doesn't</span>
+<span class="sd">        change the store itself, or it's contents.</span>
 
 <span class="sd">    :param store: The store instance or class to be wrapped</span>
 <span class="sd">    :param levels: The number of nested levels to flatten</span>
@@ -3577,10 +3709,14 @@
 
 
 
+<div class="viewcode-block" id="leveled_paths_walk">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.leveled_paths_walk">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">leveled_paths_walk</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Yield the key paths of ``m``, down to ``levels`` levels."""</span>
     <span class="k">yield from</span> <span class="n">kv_walk</span><span class="p">(</span>
         <span class="n">m</span><span class="p">,</span> <span class="n">leaf_yield</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">p</span><span class="p">,</span> <span class="n">walk_filt</span><span class="o">=</span><span class="n">mk_level_walk_filt</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_insert_alias</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -3598,8 +3734,9 @@
 <span class="sd">    If store is a class, you'll get a copy of the class with those methods added.</span>
 <span class="sd">    If store is an instance, the methods will be added in place (no copy will be made).</span>
 
-<span class="sd">    Note: If an operation (write, read, delete, list, count) is not specified, no alias will be created for</span>
-<span class="sd">    that operation.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        If an operation (write, read, delete, list, count) is not specified, no alias will be created for</span>
+<span class="sd">        that operation.</span>
 
 <span class="sd">    IMPORTANT NOTE: The signatures of the methods the aliases will point to will not change.</span>
 <span class="sd">    We say this because, you can call the write method "dump", but you'll have to use it as</span>
@@ -3617,7 +3754,8 @@
 <span class="sd">        list: Desired method name for __iter__</span>
 <span class="sd">        count: Desired method name for __len__</span>
 
-<span class="sd">    Returns: A store with the desired aliases.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A store with the desired aliases.</span>
 
 <span class="sd">    &gt;&gt;&gt; # Example of extending a class</span>
 <span class="sd">    &gt;&gt;&gt; mydict = insert_aliases(dict, write='dump', read='load', delete='rm', list='peek', count='size')</span>
@@ -3669,7 +3807,8 @@
 <span class="sd">        list: Desired method name for __iter__</span>
 <span class="sd">        count: Desired method name for __len__</span>
 
-<span class="sd">    Returns: A store with the desired aliases.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A store with the desired aliases.</span>
 
 <span class="sd">    &gt;&gt;&gt; mydict = insert_load_dump_aliases(dict)</span>
 <span class="sd">    &gt;&gt;&gt; s = mydict()</span>
@@ -3708,12 +3847,13 @@
 <span class="sd">    &gt;&gt;&gt; always_true = partial(constant_output, True)</span>
 <span class="sd">    &gt;&gt;&gt; always_true('regardless', 'of', the='input', will='return True')</span>
 <span class="sd">    True</span>
-
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">return_val</span></div>
 
 
 
+<div class="viewcode-block" id="condition_function_call">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.condition_function_call">[docs]</a>
 <span class="nd">@double_up_as_factory</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">condition_function_call</span><span class="p">(</span>
     <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FuncInput</span><span class="p">],</span> <span class="n">FuncOutput</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3723,6 +3863,8 @@
         <span class="n">constant_output</span><span class="p">,</span> <span class="kc">None</span>
     <span class="p">),</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Decorator: call ``func`` only when ``condition(*args, **kwargs)`` holds, else ``callback_if_condition_not_met``."""</span>
+
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">condition</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -3730,7 +3872,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">callback_if_condition_not_met</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">wrapped_func</span>
+    <span class="k">return</span> <span class="n">wrapped_func</span></div>
+
 
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
@@ -3883,7 +4026,8 @@
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Overrides the ``__missing__`` method of a store with a custom callback.</span>
 
-<span class="sd">    Note: The callback must have two arguments: the store and the key.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        The callback must have two arguments: the store and the key.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        store: The store class to wrap.</span>
@@ -3929,21 +4073,30 @@
 
 
 
+<div class="viewcode-block" id="ignore_if_error">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.ignore_if_error">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ignore_if_error</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,)):</span>
+<span class="w">    </span><span class="sd">"""Wrap ``store`` so that ``__getitem__`` errors in ``errors`` return ``None`` instead of raising."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_ignore</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">pass</span>
 
     <span class="k">return</span> <span class="n">add_missing_key_handling</span><span class="p">(</span>
         <span class="n">store</span><span class="p">,</span> <span class="n">missing_key_callback</span><span class="o">=</span><span class="n">_ignore</span><span class="p">,</span> <span class="n">errors_that_trigger_missing</span><span class="o">=</span><span class="n">errors</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="warn_and_ignore_if_error">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.warn_and_ignore_if_error">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">warn_and_ignore_if_error</span><span class="p">(</span>
     <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">errors</span><span class="o">=</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,),</span>
     <span class="n">warn_msg</span><span class="o">=</span><span class="s2">"Ignoring error in __getitem__ for key </span><span class="si">{k}</span><span class="s2">: </span><span class="si">{e}</span><span class="s2">"</span><span class="p">,</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Like ``ignore_if_error``, but also emit a warning (``warn_msg``) for each ignored error."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_warn</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 
@@ -3953,16 +4106,22 @@
 
     <span class="k">return</span> <span class="n">add_missing_key_handling</span><span class="p">(</span>
         <span class="n">store</span><span class="p">,</span> <span class="n">missing_key_callback</span><span class="o">=</span><span class="n">_warn</span><span class="p">,</span> <span class="n">errors_that_trigger_missing</span><span class="o">=</span><span class="n">errors</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="return_default_if_error">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.return_default_if_error">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">return_default_if_error</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,)):</span>
+<span class="w">    </span><span class="sd">"""Wrap ``store`` so that ``__getitem__`` errors in ``errors`` return ``default`` instead of raising."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_default</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">default</span>
 
     <span class="k">return</span> <span class="n">add_missing_key_handling</span><span class="p">(</span>
         <span class="n">store</span><span class="p">,</span> <span class="n">missing_key_callback</span><span class="o">=</span><span class="n">_default</span><span class="p">,</span> <span class="n">errors_that_trigger_missing</span><span class="o">=</span><span class="n">errors</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
+
 
 
 <span class="c1"># --------------------------------------------------------------------------------------</span>
@@ -3978,6 +4137,8 @@
 <a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.Codec">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Codec</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">DecodedType</span><span class="p">,</span> <span class="n">EncodedType</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""An ``encoder``/``decoder`` pair; iterates as ``(encoder, decoder)`` and composes with ``compose_with``."""</span>
+
     <span class="n">encoder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">DecodedType</span><span class="p">],</span> <span class="n">EncodedType</span><span class="p">]</span>
     <span class="n">decoder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">EncodedType</span><span class="p">],</span> <span class="n">DecodedType</span><span class="p">]</span>
 
@@ -4012,6 +4173,8 @@
 <div class="viewcode-block" id="ValueCodec">
 <a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.ValueCodec">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ValueCodec</span><span class="p">(</span><span class="o">*</span><span class="n">_CodecT</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A ``Codec`` that, called on a store, wraps its values (``data_of_obj``/``obj_of_data``)."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">)</span></div>
 
@@ -4020,6 +4183,8 @@
 <div class="viewcode-block" id="KeyCodec">
 <a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.KeyCodec">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">KeyCodec</span><span class="p">(</span><span class="o">*</span><span class="n">_CodecT</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A ``Codec`` that, called on a store, wraps its keys (``id_of_key``/``key_of_id``)."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span> <span class="n">key_of_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">)</span></div>
 
@@ -4028,6 +4193,8 @@
 <div class="viewcode-block" id="KeyValueCodec">
 <a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.KeyValueCodec">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">KeyValueCodec</span><span class="p">(</span><span class="o">*</span><span class="n">_CodecT</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A ``Codec`` that, called on a store, wraps values with key context (``preset``/``postget``)."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span> <span class="n">postget</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">)</span></div>
 
@@ -4039,6 +4206,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_affix_encoder</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span> <span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Affix a prefix and suffix to a string</span>
+
 <span class="sd">    &gt;&gt;&gt; _affix_encoder('name', prefix='/folder/', suffix='.txt')</span>
 <span class="sd">    '/folder/name.txt'</span>
 <span class="sd">    """</span>
@@ -4047,6 +4215,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_affix_decoder</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span> <span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Remove prefix and suffix from string</span>
+
 <span class="sd">    &gt;&gt;&gt; _affix_decoder('/folder/name.txt', prefix='/folder/', suffix='.txt')</span>
 <span class="sd">    'name'</span>
 <span class="sd">    """</span>
@@ -4078,7 +4247,8 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">redirect_getattr_to_getitem</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">keys_have_priority_over_attributes</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""A mapping decorator that redirects attribute access to __getitem__.</span>
 
-<span class="sd">    Warning: This decorator will make your class un-pickleable.</span>
+<span class="sd">    Warning:</span>
+<span class="sd">        This decorator will make your class un-pickleable.</span>
 
 <span class="sd">    :param keys_have_priority_over_attributes: If True, keys will have priority over existing attributes.</span>
 
@@ -4092,7 +4262,6 @@
 <span class="sd">    2</span>
 <span class="sd">    &gt;&gt;&gt; list(d)</span>
 <span class="sd">    ['a', 'b']</span>
-
 <span class="sd">    """</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">RidirectGetattrToGetitem</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
@@ -4142,7 +4311,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

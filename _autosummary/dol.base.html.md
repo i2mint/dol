@@ -24,36 +24,56 @@ These key converters object serialization methods default to the identity (i.e. 
 This means that you don’t have to implement these as all, and can choose to implement these concerns within
 the storage methods themselves.
 
+Main entry points:
+
+- `KvReader`: base class for read-only stores (a `Mapping` with a `head`)
+- `KvPersister`: base class for read-write stores (a `MutableMapping`, `clear` disabled)
+- `Store`: a persister with the key/value transform hooks, wrapping a backend
+- `kv_walk`: walk a nested mapping, yielding (path, key, value) triples by default
+  ```pycon
+  >>> from dol.base import Store
+  >>> s = Store({})
+  >>> s['a'] = 1
+  >>> s['a'], list(s)
+  (1, ['a'])
+  ```
+
 ### Functions
 
-| `asis`(p, k, v)                                                                           |                                                                                  |
-|-------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| `delegate_to`(wrapped[, class_trans, ...])                                                |                                                                                  |
-| [`delegator_wrap`](#dol.base.delegator_wrap)(delegator, obj[, ...])    | Wrap a `obj` (type or instance) with `delegator`.                                |
-| [`has_kv_store_interface`](#dol.base.has_kv_store_interface)(o)                | Check if object has the KvStore interface (that is, has the kv wrapper methods   |
-| [`kv_walk`](#dol.base.kv_walk)(v[, leaf_yield, walk_filt, ...]) | Walks a nested structure of mappings, yielding stuff on the way.                 |
-| `tuple_keypath_and_val`(p, k, v)                                                          |                                                                                  |
-| `val_is_mapping`(p, k, v)                                                                 |                                                                                  |
-| `wrapped_delegator_reconstruct`(wrapped_cls, ...)                                         |                                                                                  |
-| [`wrapped_self`](#dol.base.wrapped_self)(obj)                        | Return the outermost transform-applying store wrapping `obj`, else `obj` itself. |
+| [`asis`](#dol.base.asis)(p, k, v)                            | Return `(p, k, v)` as is (the default `kv_walk` `leaf_yield`).                                                                                                                                                                                       |
+|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`delegate_to`](#dol.base.delegate_to)(wrapped[, class_trans, ...]) | Class decorator factory: the decorated wrapper class constructs a `wrapped` instance and delegates to it, through `delegation_attr`, the attributes of `wrapped` (`dir(wrapped)` minus `ignore`, plus `include`) not already defined on the wrapper. |
+| [`delegator_wrap`](#dol.base.delegator_wrap)(delegator, obj[, ...])    | Wrap a `obj` (type or instance) with `delegator`.                                                                                                                                                                                                    |
+| [`has_kv_store_interface`](#dol.base.has_kv_store_interface)(o)                | Check if object has the KvStore interface (that is, has the kv wrapper methods                                                                                                                                                                       |
+| [`kv_walk`](#dol.base.kv_walk)(v[, leaf_yield, walk_filt, ...]) | Walks a nested structure of mappings, yielding stuff on the way.                                                                                                                                                                                     |
+| [`tuple_keypath_and_val`](#dol.base.tuple_keypath_and_val)(p, k, v)           | Extend the path `p` with the key `k` and return `(new_path, v)` (the default `kv_walk` `pkv_to_pv`).                                                                                                                                                 |
+| [`val_is_mapping`](#dol.base.val_is_mapping)(p, k, v)                  | Whether the walked value `v` is a `Mapping` (a `kv_walk` `walk_filt`).                                                                                                                                                                               |
+| `wrapped_delegator_reconstruct`(wrapped_cls, ...)                                         |                                                                                                                                                                                                                                                      |
+| [`wrapped_self`](#dol.base.wrapped_self)(obj)                        | Return the outermost transform-applying store wrapping `obj`, else `obj` itself.                                                                                                                                                                     |
 
 ### Classes
 
-| `AttrNames`()                                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-|---------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`Collection`](#dol.base.Collection)()       | The same as collections.abc.Collection, with some modifications:                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `DelegatedAttribute`(delegate_name, attr_name)                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [`KeyValidationABC`](#dol.base.KeyValidationABC)() | An ABC for an object writer.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| [`KvPersister`](#dol.base.KvPersister)()      | Acts as a MutableMapping abc, but disabling the clear and \_\_reversed_\_ method, and computing \_\_len_\_ by iterating over all keys, and counting them.                                                                                                                                                                                                                                                                                                                               |
-| [`KvReader`](#dol.base.KvReader)()         | Acts as a Mapping abc, but with default \_\_len_\_ (implemented by counting keys) and head method to get the first (k, v) item of the store                                                                                                                                                                                                                                                                                                                                             |
-| [`KvStore`](#dol.base.KvStore)            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `MappingViewMixin`()                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `NoSuchItem`()                                                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [`Persister`](#dol.base.Persister)          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [`Reader`](#dol.base.Reader)             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [`Store`](#dol.base.Store)([store])     | By store we mean key-value store. This could be files in a filesystem, objects in s3, or a database. Where and how the content is stored should be specified, but StoreInterface offers a dict-like interface to this. ::     \_\_getitem_\_ calls: \_id_of_key                                       \_obj_of_data     \_\_setitem_\_ calls: \_id_of_key                   \_data_of_obj     \_\_delitem_\_ calls: \_id_of_key     \_\_iter_\_    calls:                  \_key_of_id. |
-| [`Stream`](#dol.base.Stream)(stream)     | A layer-able version of the stream interface                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `stream_util`()                                                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [`AttrNames`](#dol.base.AttrNames)()                                  | Name sets of the methods that make up each mapping interface (`Collection`, `Mapping`, `KvReader`, `KvPersister`, ...).                                                       |
+|-----------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`Collection`](#dol.base.Collection)()                                 | The same as collections.abc.Collection, with some modifications:                                                                                                              |
+| [`DelegatedAttribute`](#dol.base.DelegatedAttribute)(delegate_name, attr_name) | Descriptor forwarding `attr_name` lookups to the object held in the instance's `delegate_name` attribute.                                                                     |
+| [`KeyValidationABC`](#dol.base.KeyValidationABC)()                           | An ABC for an object writer.                                                                                                                                                  |
+| [`KvPersister`](#dol.base.KvPersister)()                                | Acts as a MutableMapping abc, but disabling the clear and \_\_reversed_\_ method, and computing \_\_len_\_ by iterating over all keys, and counting them.                     |
+| [`KvReader`](#dol.base.KvReader)()                                   | Acts as a Mapping abc, but with default \_\_len_\_ (implemented by counting keys) and head method to get the first (k, v) item of the store                                   |
+| [`KvStore`](#dol.base.KvStore)                                      |                                                                                                                                                                               |
+| [`MappingViewMixin`](#dol.base.MappingViewMixin)()                           | Make `keys()`, `values()` and `items()` build their views from the `KeysView`, `ValuesView` and `ItemsView` class attributes, so a subclass can swap in its own view classes. |
+| [`NoSuchItem`](#dol.base.NoSuchItem)()                                 | Sentinel type; `no_such_item` is its instance.                                                                                                                                |
+| [`Persister`](#dol.base.Persister)                                    |                                                                                                                                                                               |
+| [`Reader`](#dol.base.Reader)                                       |                                                                                                                                                                               |
+| [`Store`](#dol.base.Store)([store])                               | By store we mean key-value store.                                                                                                                                             |
+| [`Stream`](#dol.base.Stream)(stream)                               | A layer-able version of the stream interface                                                                                                                                  |
+| [`stream_util`](#dol.base.stream_util)()                                | Small callbacks for `Stream`: an always-true filter, a no-op, and rewind (`skip_lines` currently only rewinds).                                                               |
+
+### *class* dol.base.AttrNames
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Name sets of the methods that make up each mapping interface (`Collection`, `Mapping`, `KvReader`, `KvPersister`, …).
 
 ### *class* dol.base.Collection
 
@@ -63,9 +83,15 @@ The same as collections.abc.Collection, with some modifications:
 
 - Addition of a `head`
 
+### *class* dol.base.DelegatedAttribute(delegate_name, attr_name)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Descriptor forwarding `attr_name` lookups to the object held in the instance’s `delegate_name` attribute.
+
 ### *class* dol.base.KeyValidationABC
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 An ABC for an object writer.
 Single purpose: store an object under a given key.
@@ -97,10 +123,9 @@ But in the general case, this might
 Another example: `s.popitem()` will pop a `(k, v)` pair off of the `s` store.
 That is, retrieve the `v` for `k`, delete the entry for `k`, and return a `(k, v)`.
 Note that unlike modern dicts which will return the last item that was stored
-
-> – that is, LIFO (last-in, first-out) order – for KvPersisters,
-> there’s no assurance as to what item will be, since it will depend on the backend storage system
-> and/or how the persister was implemented.
+(that is, LIFO (last-in, first-out) order), for KvPersisters
+there’s no assurance as to what item will be, since it will depend on the backend storage system
+and/or how the persister was implemented.
 
 #### clear()
 
@@ -125,7 +150,7 @@ for k in self:
 
 ### *class* dol.base.KvReader
 
-Bases: `MappingViewMixin`, [`Collection`](#dol.base.Collection), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)
+Bases: [`MappingViewMixin`](#dol.base.MappingViewMixin), [`Collection`](#dol.base.Collection), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)
 
 Acts as a Mapping abc, but with default \_\_len_\_ (implemented by counting keys)
 and head method to get the first (k, v) item of the store
@@ -137,6 +162,28 @@ Get the first (key, value) pair
 ### dol.base.KvStore
 
 alias of [`Store`](#dol.base.Store)
+
+### *class* dol.base.MappingViewMixin
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Make `keys()`, `values()` and `items()` build their views from the
+`KeysView`, `ValuesView` and `ItemsView` class attributes, so a subclass can
+swap in its own view classes.
+
+#### *class* ItemsView(mapping)
+
+Bases: [`MappingView`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MappingView), [`Set`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Set)
+
+#### *class* KeysView(mapping)
+
+Bases: [`MappingView`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MappingView), [`Set`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Set)
+
+### *class* dol.base.NoSuchItem
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Sentinel type; `no_such_item` is its instance.
 
 ### dol.base.Persister
 
@@ -365,7 +412,7 @@ True
 
 ### *class* dol.base.Stream(stream)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A layer-able version of the stream interface
 
@@ -526,6 +573,20 @@ True
 True
 ```
 
+### dol.base.asis(p, k, v)
+
+Return `(p, k, v)` as is (the default `kv_walk` `leaf_yield`).
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
+### dol.base.delegate_to(wrapped, class_trans=None, delegation_attr='store', include=frozenset({}), ignore=frozenset({}))
+
+Class decorator factory: the decorated wrapper class constructs a `wrapped` instance and delegates to it, through `delegation_attr`, the attributes of `wrapped` (`dir(wrapped)` minus `ignore`, plus `include`) not already defined on the wrapper.
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]
+
 ### dol.base.delegator_wrap(delegator, obj, class_trans=None, delegation_attr='store')
 
 Wrap a `obj` (type or instance) with `delegator`.
@@ -539,7 +600,7 @@ same signature as obj, but that produces instances that are wrapped by `delegato
 * **Parameters:**
   * **delegator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – An instance wrapper. A Callable (type or function – with only
     one required input) that will return a wrapped version of it’s input instance.
-  * **obj** ([`type`](https://docs.python.org/3/library/functions.html#type) | [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – The object (class or instance) to be wrapped.
+  * **obj** ([`type`](https://docs.python.org/3/builtins/functions.html#type) | [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – The object (class or instance) to be wrapped.
 * **Returns:**
   A wrapped object
 
@@ -634,12 +695,12 @@ Walks a nested structure of mappings, yielding stuff on the way.
   * **v** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – A nested structure of mappings
   * **leaf_yield** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – (pp, k, vv) -> Any, what you want to yield when you encounter
     a leaf node (as define by walk_filt resolving to False)
-  * **walk_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/library/functions.html#bool)]) – (p, k, vv) -> (bool) whether to explore the nested structure v further
-  * **pkv_to_pv** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`tuple`](https://docs.python.org/3/library/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]]) – (p, k, v) -> (pp, vv)
+  * **walk_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – (p, k, vv) -> (bool) whether to explore the nested structure v further
+  * **pkv_to_pv** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]]) – (p, k, v) -> (pp, vv)
     where pp is a form of p + k (update of the path with the new node k)
     and vv is the value that will be used by both walk_filt and leaf_yield
   * **p** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`)) – The path to v (used internally, mainly, to keep track of the path)
-  * **breadth_first** ([`bool`](https://docs.python.org/3/library/functions.html#bool)) – Whether to perform breadth-first traversal
+  * **breadth_first** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to perform breadth-first traversal
     (instead of the default depth-first traversal).
   * **branch_yield** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – (pp, k, vv) -> Any, optional yield function to yield before
     the recursive walk of a branch. This is useful if you want to yield something
@@ -705,13 +766,7 @@ This can be done as follows:
 #### TIP
 If you want to use `kv_filt` to search and extract stuff from a nested
 mapping, you can have your `leaf_yield` return a sentinel (say, `None`) to
-indicate that the value should be skipped, and then filter out the 
-
-```
-``
-```
-
-None\`\`s from
+indicate that the value should be skipped, and then filter out the `None` values from
 your results.
 
 ```pycon
@@ -773,6 +828,26 @@ So now, you can get the first apple path by doing:
 >>> next(filter(None, walker3(d)))
 ('apple',)
 ```
+
+### *class* dol.base.stream_util
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Small callbacks for `Stream`: an always-true filter, a no-op, and rewind (`skip_lines` currently only rewinds).
+
+### dol.base.tuple_keypath_and_val(p, k, v)
+
+Extend the path `p` with the key `k` and return `(new_path, v)` (the default `kv_walk` `pkv_to_pv`).
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]
+
+### dol.base.val_is_mapping(p, k, v)
+
+Whether the walked value `v` is a `Mapping` (a `kv_walk` `walk_filt`).
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### dol.base.wrapped_self(obj)
 

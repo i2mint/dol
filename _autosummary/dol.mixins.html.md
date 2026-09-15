@@ -1,6 +1,24 @@
 # dol.mixins
 
-Mixins
+Mixins that add or restrict store behaviours.
+
+Main entry points:
+
+- `ReadOnlyMixin`: forbid writes and deletes
+- `OverWritesNotAllowedMixin`: forbid writing to an existing key
+- `SimpleJsonMixin`: JSON-encoded values
+- `IterBasedSizedContainerMixin`: `__len__` and `__contains__` from `__iter__`
+  ```pycon
+  >>> from dol.mixins import OverWritesNotAllowedMixin
+  >>> class P(OverWritesNotAllowedMixin, dict):
+  ...     pass
+  >>> p = P()
+  >>> p['a'] = 1
+  >>> p['a'] = 2
+  Traceback (most recent call last):
+    ...
+  dol.errors.OverWritesNotAllowedError: key a already exists and cannot be overwritten...
+  ```
 
 ### Classes
 
@@ -12,7 +30,7 @@ Mixins
 | [`IdentityKvWrapMixin`](#dol.mixins.IdentityKvWrapMixin)()          | Transparent Keys and Vals Wrap                                                                     |
 | [`IdentityValsWrapMixin`](#dol.mixins.IdentityValsWrapMixin)()        | Transparent ValsWrapABC.                                                                           |
 | `IterBasedContainerMixin`()                                                     |                                                                                                    |
-| [`IterBasedSizedContainerMixin`](#dol.mixins.IterBasedSizedContainerMixin)() | An ABC that defines                                                                                |
+| [`IterBasedSizedContainerMixin`](#dol.mixins.IterBasedSizedContainerMixin)() | An ABC that defines:                                                                               |
 | `IterBasedSizedMixin`()                                                         |                                                                                                    |
 | [`OverWritesNotAllowedMixin`](#dol.mixins.OverWritesNotAllowedMixin)()    | Mixin for only allowing a write to a key if they key doesn't already exist.                        |
 | [`ReadOnlyMixin`](#dol.mixins.ReadOnlyMixin)()                | Put this as your first parent class to disallow write/delete operations                            |
@@ -21,13 +39,13 @@ Mixins
 
 ### *class* dol.mixins.FilteredKeysMixin
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Filters \_\_iter_\_ and \_\_contains_\_ with (the boolean filter function attribute) \_key_filt.
 
 ### *class* dol.mixins.IdentityKeysWrapMixin
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Transparent KeysWrapABC. Often placed in the mro to satisfy the KeysWrapABC need in a neutral way.
 This is useful in cases where the keys the persistence functions work with are the same as those you want to work
@@ -41,7 +59,7 @@ Transparent Keys and Vals Wrap
 
 ### *class* dol.mixins.IdentityValsWrapMixin
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Transparent ValsWrapABC. Often placed in the mro to satisfy the KeysWrapABC need in a neutral way.
 This is useful in cases where the values can be persisted by \_\_setitem_\_ as is (or the serialization is
@@ -51,15 +69,15 @@ handled somewhere in the \_\_setitem_\_ method.
 
 Bases: `IterBasedSizedMixin`, `IterBasedContainerMixin`
 
-An ABC that defines
-: 1. how to iterate over a collection of elements (keys) (_\_iter_\_)
-  2. check that a key is contained in the collection (_\_contains_\_), and
-  3. how to get the number of elements in the collection
+An ABC that defines:
+
+1. how to iterate over a collection of elements (keys) (`__iter__`)
+2. check that a key is contained in the collection (`__contains__`), and
+3. how to get the number of elements in the collection (`__len__`)
 
 This is exactly what the collections.abc.Collection (from which Keys inherits) does.
 The difference here, besides the “Keys” purpose-explicit name, is that Keys offers default
-
-> \_\_len_\_ and \_\_contains_\_  definitions based on what ever \_\_iter_\_ the concrete class defines.
+`__len__` and `__contains__` definitions based on what ever `__iter__` the concrete class defines.
 
 Keys is a collection (i.e. a Sized (has \_\_len_\_), Iterable (has \_\_iter_\_), Container (has \_\_contains_\_).
 It’s purpose is to serve as a collection of object identifiers in a key->obj mapping.
@@ -69,7 +87,7 @@ Note that usually \_\_len_\_ and \_\_contains_\_ should be overridden to more, c
 
 ### *class* dol.mixins.OverWritesNotAllowedMixin
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Mixin for only allowing a write to a key if they key doesn’t already exist.
 
@@ -97,13 +115,13 @@ dol.errors.OverWritesNotAllowedError: key foo already exists and cannot be overw
 
 ### *class* dol.mixins.ReadOnlyMixin
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Put this as your first parent class to disallow write/delete operations
 
 ### *class* dol.mixins.SimpleJsonMixin
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 simple json serialization.
 Useful to store and retrieve

@@ -262,8 +262,7 @@
           <h1>Source code for dol.paths</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""Module for path (and path-like) object manipulation</span>
 
-
-<span class="sd">Examples::</span>
+<span class="sd">Examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; d = {'a': {'b': {'c': 1, 'd': 2}, 'e': 3}}</span>
 <span class="sd">    &gt;&gt;&gt; list(path_filter(lambda p, k, v: v == 2, d))</span>
@@ -276,7 +275,6 @@
 <span class="sd">    &gt;&gt;&gt; path_set(d, ('a', 'b', 'new_ab_key'), 42)</span>
 <span class="sd">    &gt;&gt;&gt; d</span>
 <span class="sd">    {'a': {'b': {'c': 1, 'd': 4, 'new_ab_key': 42}, 'e': 3}}</span>
-
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
@@ -395,6 +393,7 @@
 <span class="sd">        d: The dictionary to flatten</span>
 <span class="sd">        sep: The separator to use for joining keys, or a function that takes a path and</span>
 <span class="sd">            a key and returns a new path.</span>
+
 <span class="sd">        parent_path: The path to the parent of the current dict</span>
 <span class="sd">        visit_nested: A function that returns True if a value should be visited</span>
 <span class="sd">        egress: A function that takes a generator of key-value pairs and returns a mapping</span>
@@ -404,7 +403,6 @@
 <span class="sd">    {'a.b': 2, 'c': 3}</span>
 <span class="sd">    &gt;&gt;&gt; flatten_dict(d, sep='/')</span>
 <span class="sd">    {'a/b': 2, 'c': 3}</span>
-
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">egress</span><span class="p">(</span>
         <span class="n">flattened_dict_items</span><span class="p">(</span>
@@ -440,10 +438,12 @@
 <span class="sd">        d: The nested dictionary to get the leaf paths from</span>
 <span class="sd">        sep: The separator to use for joining keys, or a function that takes a path and</span>
 <span class="sd">            a key and returns a new path.</span>
+
 <span class="sd">        parent_path: The path to the parent of the current dict</span>
 <span class="sd">        egress: A function that takes a generator of key-value pairs and returns a mapping</span>
 
-<span class="sd">    Example:</span>
+<span class="sd">    .. rubric:: Example</span>
+
 <span class="sd">    &gt;&gt;&gt; leaf_paths({'a': {'b': 2}, 'c': 3})</span>
 <span class="sd">    {'a': {'b': 'a.b'}, 'c': 'c'}</span>
 
@@ -481,16 +481,28 @@
 <span class="n">path_sep</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
 
 
+<div class="viewcode-block" id="raise_on_error">
+<a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.raise_on_error">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">raise_on_error</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
-    <span class="k">raise</span>
+<span class="w">    </span><span class="sd">"""``on_error`` policy for ``path_get``: re-raise the caught error."""</span>
+    <span class="k">raise</span></div>
 
 
+
+<div class="viewcode-block" id="return_none_on_error">
+<a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.return_none_on_error">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">return_none_on_error</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
-    <span class="k">return</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""``on_error`` policy for ``path_get``: return ``None``."""</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
 
 
+
+<div class="viewcode-block" id="return_empty_tuple_on_error">
+<a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.return_empty_tuple_on_error">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">return_empty_tuple_on_error</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">()</span>
+<span class="w">    </span><span class="sd">"""``on_error`` policy for ``path_get``: return ``()``."""</span>
+    <span class="k">return</span> <span class="p">()</span></div>
+
 
 
 <span class="n">OnErrorType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
@@ -528,7 +540,6 @@
 <span class="sd">    # ...     'k': 'c',</span>
 <span class="sd">    # ...     'error': KeyError('c')</span>
 <span class="sd">    # ... }</span>
-
 <span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">path_to_keys</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -563,18 +574,30 @@
     <span class="k">return</span> <span class="n">result</span>
 
 
+<div class="viewcode-block" id="split_if_str">
+<a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.split_if_str">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">split_if_str</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"."</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Split ``obj`` on ``sep`` if it is a string; return it unchanged otherwise."""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">return</span> <span class="n">obj</span></div>
 
 
+
+<div class="viewcode-block" id="separate_keys_with_separator">
+<a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.separate_keys_with_separator">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">separate_keys_with_separator</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"."</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="n">cast_to_int_if_numeric_str</span><span class="p">,</span> <span class="n">split_if_str</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">"""Split a string path on ``sep`` and cast numeric parts to ``int``; a non-string iterable is only cast element-wise."""</span>
+    <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="n">cast_to_int_if_numeric_str</span><span class="p">,</span> <span class="n">split_if_str</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sep</span><span class="p">))</span></div>
 
 
+
+<div class="viewcode-block" id="getitem">
+<a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.getitem">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">getitem</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">"""Return ``obj[k]``."""</span>
+    <span class="k">return</span> <span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span></div>
+
 
 
 <div class="viewcode-block" id="get_attr_or_item">
@@ -584,11 +607,13 @@
 <span class="sd">    If ``k`` is a string, tries to get ``k`` as an attribute of ``obj`` first,</span>
 <span class="sd">    and if that fails, gets it as ``obj[k]``</span>
 
-<span class="sd">    WARNING: The hardcoded priority choices of this function regarding when to try</span>
-<span class="sd">    k as an item, index, or attribute, don't apply to every case, so you may want to</span>
-<span class="sd">    use an explicit value getter to be more robust!</span>
+<span class="sd">    WARNING:</span>
+<span class="sd">        The hardcoded priority choices of this function regarding when to try</span>
+<span class="sd">        k as an item, index, or attribute, don't apply to every case, so you may want to</span>
+<span class="sd">        use an explicit value getter to be more robust!</span>
 
 <span class="sd">    # &gt;&gt;&gt; d = {'a': [1, {'items': 2, '3': 33, 3: 42}]}</span>
+
 <span class="sd">    &gt;&gt;&gt; get_attr_or_item({'items': 2}, 'items')</span>
 <span class="sd">    2</span>
 
@@ -625,7 +650,6 @@
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">    ...</span>
 <span class="sd">    KeyError: 2</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">str</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
@@ -664,7 +688,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        tuple: A tuple representation of the path, e.g., ("a21-59c", "message", 2, "user").</span>
 
-<span class="sd">    Example:</span>
+<span class="sd">    .. rubric:: Example</span>
 
 <span class="sd">    &gt;&gt;&gt; keys_and_indices_path("a21-59c.message[2].user")</span>
 <span class="sd">    ('a21-59c', 'message', 2, 'user')</span>
@@ -742,12 +766,14 @@
 <span class="sd">    &gt;&gt;&gt; path_get([1, [4, 5, {'a': A}], 3], '1.2.a.an_attribute')</span>
 <span class="sd">    42</span>
 
-<span class="sd">    Note: The underlying function is ``_path_get``, but `path_get` has defaults and</span>
-<span class="sd">    flexible input processing for more convenience.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        The underlying function is ``_path_get``, but `path_get` has defaults and</span>
+<span class="sd">        flexible input processing for more convenience.</span>
 
-<span class="sd">    Note: ``path_get`` contains some ready-made ``OnErrorType`` functions in its</span>
-<span class="sd">    attributes. For example, see how we can make ``path_get`` have the same behavior</span>
-<span class="sd">    as ``dict.get`` by passing ``path_get.return_none_on_error`` as ``on_error``:</span>
+<span class="sd">    Note:</span>
+<span class="sd">        ``path_get`` contains some ready-made ``OnErrorType`` functions in its</span>
+<span class="sd">        attributes. For example, see how we can make ``path_get`` have the same behavior</span>
+<span class="sd">        as ``dict.get`` by passing ``path_get.return_none_on_error`` as ``on_error``:</span>
 
 <span class="sd">    &gt;&gt;&gt; dd = path_get({}, 'no.keys', on_error=path_get.return_none_on_error)</span>
 <span class="sd">    &gt;&gt;&gt; dd is None</span>
@@ -755,7 +781,6 @@
 
 <span class="sd">    For example, ``path_get.raise_on_error``,</span>
 <span class="sd">    ``path_get.return_none_on_error``, and ``path_get.return_empty_tuple_on_error``.</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -816,8 +841,9 @@
 <span class="sd">    get multiple paths, returning the (path, value) pairs in a dict (by default),</span>
 <span class="sd">    or via any pairs aggregator (``egress``) function.</span>
 
-<span class="sd">    Note: For reasons who's clarity is burried in historical legacy, the order of</span>
-<span class="sd">    obj and path are the opposite of path_get.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        For reasons who's clarity is burried in historical legacy, the order of</span>
+<span class="sd">        obj and path are the opposite of path_get.</span>
 
 <span class="sd">    :param paths: The paths to get</span>
 <span class="sd">    :param obj: The object to get the paths from</span>
@@ -843,7 +869,6 @@
 <span class="sd">    &gt;&gt;&gt; path_extractor_2 = paths_getter({'california': 'a.c', 'dreaming': 'd'})</span>
 <span class="sd">    &gt;&gt;&gt; path_extractor_2(obj)</span>
 <span class="sd">    {'california': 2, 'dreaming': 3}</span>
-
 <span class="sd">    """</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
         <span class="n">on_error</span><span class="o">=</span><span class="n">on_error</span><span class="p">,</span>
@@ -889,11 +914,15 @@
 
 
 
+<div class="viewcode-block" id="cast_to_int_if_numeric_str">
+<a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.cast_to_int_if_numeric_str">[docs]</a>
 <span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_get</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">cast_to_int_if_numeric_str</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Cast ``k`` to ``int`` if it is a numeric string; return it unchanged otherwise."""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">str</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">k</span>
+    <span class="k">return</span> <span class="n">k</span></div>
+
 
 
 <span class="nd">@add_as_attribute_of</span><span class="p">(</span><span class="n">path_get</span><span class="p">)</span>
@@ -943,7 +972,7 @@
 <span class="sd">        data: The mapping to extract data from</span>
 <span class="sd">        paths: The paths to extract data from the mapping</span>
 
-<span class="sd">    Example::</span>
+<span class="sd">    .. rubric:: Example</span>
 
 <span class="sd">    &gt;&gt;&gt; data = {</span>
 <span class="sd">    ...     'a': {</span>
@@ -973,7 +1002,6 @@
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">    ...</span>
 <span class="sd">    KeyError: "Key a.b.1.c was not found....key_collection attribute)"</span>
-
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -1042,7 +1070,6 @@
 
 <span class="sd">    &gt;&gt;&gt; path_edit(d, {'a': 4, 'd.e.f': 5})</span>
 <span class="sd">    {'a': 4, 'b': {'c': 2}, 'd': {'e': {'f': 5}}}</span>
-
 <span class="sd">    """</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">edits</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
@@ -1081,7 +1108,7 @@
 <span class="sd">        (instead of the default depth-first traversal).</span>
 <span class="sd">    :return: An iterator of paths to values that pass the ``pkv_filt``</span>
 
-<span class="sd">    Example::</span>
+<span class="sd">    .. rubric:: Example</span>
 
 <span class="sd">    &gt;&gt;&gt; d = {'a': {'b': {'c': 1, 'd': 2}, 'e': 3}}</span>
 <span class="sd">    &gt;&gt;&gt; list(path_filter(lambda p, k, v: v == 2, d))</span>
@@ -1115,8 +1142,9 @@
 <span class="sd">    &gt;&gt;&gt; vals</span>
 <span class="sd">    [42, 'meaning of life']</span>
 
-<span class="sd">    Note: pkv_filt is first to match the order of the arguments of the</span>
-<span class="sd">    builtin filter function.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        pkv_filt is first to match the order of the arguments of the</span>
+<span class="sd">        builtin filter function.</span>
 <span class="sd">    """</span>
     <span class="n">_leaf_yield</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_path_matcher_leaf_yield</span><span class="p">,</span> <span class="n">pkv_filt</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">leaf_yield</span><span class="o">=</span><span class="n">_leaf_yield</span><span class="p">,</span> <span class="n">breadth_first</span><span class="o">=</span><span class="n">breadth_first</span><span class="p">)</span>
@@ -1197,6 +1225,7 @@
 <span class="sd">    Args:</span>
 <span class="sd">        path_sep: The path separator (used to make string paths from iterable paths and</span>
 <span class="sd">            visa versa</span>
+
 <span class="sd">        _path_type: The type of the outcoming (inner) path. But really, any function to</span>
 <span class="sd">        convert from a list to</span>
 <span class="sd">            the outer path type we want.</span>
@@ -1242,19 +1271,19 @@
 <span class="sd">    &gt;&gt;&gt; s</span>
 <span class="sd">    {'a': {'b': {}}}</span>
 
-<span class="sd">    Note: By default ``KeyPath`` reads with paths only when all the keys of the path</span>
-<span class="sd">    are valid (i.e. have a value), and, just like a ``dict``, will *not* create</span>
-<span class="sd">    intermediate nested values for you on write. Pass ``create_missing=True`` to opt</span>
-<span class="sd">    into write-through autovivification: missing intermediates are created on write</span>
-<span class="sd">    (like ``collections.defaultdict``, but with an optional contextual per-level</span>
-<span class="sd">    ``mk_missing(ctx)`` factory), and the change persists correctly even through</span>
-<span class="sd">    persistent / copy-semantics stores. See ``misc/docs/dol_issue16_design.md``.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        By default ``KeyPath`` reads with paths only when all the keys of the path</span>
+<span class="sd">        are valid (i.e. have a value), and, just like a ``dict``, will *not* create</span>
+<span class="sd">        intermediate nested values for you on write. Pass ``create_missing=True`` to opt</span>
+<span class="sd">        into write-through autovivification: missing intermediates are created on write</span>
+<span class="sd">        (like ``collections.defaultdict``, but with an optional contextual per-level</span>
+<span class="sd">        ``mk_missing(ctx)`` factory), and the change persists correctly even through</span>
+<span class="sd">        persistent / copy-semantics stores. See ``misc/docs/dol_issue16_design.md``.</span>
 
 <span class="sd">    &gt;&gt;&gt; s = KeyPath('.', create_missing=True)({})</span>
 <span class="sd">    &gt;&gt;&gt; s['a.b.c'] = 42</span>
 <span class="sd">    &gt;&gt;&gt; s['a.b.c']</span>
 <span class="sd">    42</span>
-
 <span class="sd">    """</span>
 
     <span class="n">path_sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">path_sep</span>
@@ -1312,9 +1341,8 @@
 <span class="sd">    (assumed to exist).</span>
 <span class="sd">    The cannonical use case is when keys are absolute file paths, but we want to identify data through relative paths.</span>
 <span class="sd">    Instead of referencing files through an absolute path such as</span>
-<span class="sd">        /A/VERY/LONG/ROOT/FOLDER/the/file/we.want</span>
-<span class="sd">    we can instead reference the file as</span>
-<span class="sd">        the/file/we.want</span>
+<span class="sd">    ``/A/VERY/LONG/ROOT/FOLDER/the/file/we.want`` we can instead reference the file</span>
+<span class="sd">    as ``the/file/we.want``.</span>
 
 <span class="sd">    Note though, that PrefixRelativizationMixin can be used, not only for local paths,</span>
 <span class="sd">    but when ever a string reference is involved.</span>
@@ -1431,7 +1459,8 @@
 <span class="sd">        name: The name of the new store (by default 'RelPath' + store_cls.__name__)</span>
 <span class="sd">        with_key_validation: Whether keys should be validated upon access (store_cls must have an is_valid_key method</span>
 
-<span class="sd">    Returns: A new class that uses relative paths (i.e. where _prefix is automatically added to incoming keys,</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A new class that uses relative paths (i.e. where _prefix is automatically added to incoming keys,</span>
 <span class="sd">        and the len(_prefix) first characters are removed from outgoing keys.</span>
 
 <span class="sd">    &gt;&gt;&gt; # The dynamic way (if you try this at home, be aware of the pitfalls of the dynamic way</span>
@@ -1465,7 +1494,6 @@
 <span class="sd">    &gt;&gt;&gt;  # but under the hood, the dict we wrapped actually contains the '/ROOT/' prefix</span>
 <span class="sd">    &gt;&gt;&gt; dict(s.store)</span>
 <span class="sd">    {'/ROOT/foo': 'bar'}</span>
-
 <span class="sd">    """</span>
     <span class="c1"># name = name or ("RelPath" + store_cls.__name__)</span>
     <span class="c1"># __module__ = __module__ or getattr(store_cls, "__module__", None)</span>
@@ -1560,7 +1588,11 @@
 
 <span class="c1"># TODO: Intended to replace the init-less PrefixRelativizationMixin</span>
 <span class="c1">#  (but should change name if so, since Mixins shouldn't have inits)</span>
+<div class="viewcode-block" id="RelativePathKeyMapper">
+<a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.RelativePathKeyMapper">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RelativePathKeyMapper</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Key mapper adding ``prefix`` on the way in and removing it on the way out."""</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prefix_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span><span class="p">)</span>
@@ -1569,15 +1601,20 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">+</span> <span class="n">k</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_key_of_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_id</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix_length</span> <span class="p">:]</span>
+        <span class="k">return</span> <span class="n">_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix_length</span> <span class="p">:]</span></div>
 
 
+
+<div class="viewcode-block" id="prefixless_view">
+<a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.prefixless_view">[docs]</a>
 <span class="nd">@store_decorator</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">prefixless_view</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Wrap ``store`` so that keys are seen without ``prefix`` (added back on access)."""</span>
     <span class="n">key_mapper</span> <span class="o">=</span> <span class="n">RelativePathKeyMapper</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span>
         <span class="n">store</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="n">key_mapper</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">,</span> <span class="n">key_of_id</span><span class="o">=</span><span class="n">key_mapper</span><span class="o">.</span><span class="n">_key_of_id</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_fallback_startswith</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
@@ -1642,7 +1679,8 @@
 <a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.add_prefix_filtering">[docs]</a>
 <span class="nd">@store_decorator</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_prefix_filtering</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">relativize_prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Add prefix filtering to a store.</span>
+<span class="w">    </span><span class="sd">"""Make a missing key that is a prefix of existing keys return the sub-mapping of</span>
+<span class="sd">    those keys (so ``s['a/']`` lists everything "under" ``a/``).</span>
 
 <span class="sd">    &gt;&gt;&gt; d = {'a/b': 1, 'a/c': 2, 'd/e': 3, 'f': 4}</span>
 <span class="sd">    &gt;&gt;&gt; s = add_prefix_filtering(d)</span>
@@ -1654,7 +1692,6 @@
 <span class="sd">    &gt;&gt;&gt; D = add_prefix_filtering(UserDict)</span>
 <span class="sd">    &gt;&gt;&gt; s = D(d)</span>
 <span class="sd">    &gt;&gt;&gt; assert s['a/'] == {'a/b': 1, 'a/c': 2}</span>
-
 <span class="sd">    """</span>
     <span class="n">__prefix_filter</span> <span class="o">=</span> <span class="n">_prefix_filter</span>
     <span class="k">if</span> <span class="n">relativize_prefix</span><span class="p">:</span>
@@ -1686,6 +1723,7 @@
 <span class="sd">        store: The store to wrap</span>
 <span class="sd">        prefix: The prefix to use. If None and the store is an instance (not type),</span>
 <span class="sd">                will take the longest common prefix as the prefix.</span>
+
 <span class="sd">        filter_prefix: Whether to filter out keys that don't start with the prefix</span>
 <span class="sd">        relativize_prefix: Whether to relativize the prefix</span>
 <span class="sd">        default_prefix: The default prefix to use if no prefix is given and the store</span>
@@ -1698,7 +1736,6 @@
 <span class="sd">    {'every/thing': 42, 'this/too': 0, 'foo': 'bar'}</span>
 <span class="sd">    &gt;&gt;&gt; dict(dd.store)  # but see where the underlying store actually wrote 'bar':</span>
 <span class="sd">    {'/ROOT/of/every/thing': 42, '/ROOT/of/this/too': 0, '/ROOT/of/foo': 'bar'}</span>
-
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
@@ -1724,6 +1761,8 @@
 <div class="viewcode-block" id="PathKeyTypes">
 <a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.PathKeyTypes">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PathKeyTypes</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Enum of the path key forms: ``str``, ``dict``, ``tuple``, ``namedtuple``."""</span>
+
     <span class="nb">str</span> <span class="o">=</span> <span class="s2">"str"</span>
     <span class="nb">dict</span> <span class="o">=</span> <span class="s2">"dict"</span>
     <span class="nb">tuple</span> <span class="o">=</span> <span class="s2">"tuple"</span>
@@ -1838,7 +1877,6 @@
 <span class="sd">    &gt;&gt;&gt; class MyStore(mk_relative_path_store(dict)):  # Indeed, mk_relative_path_store(dict) is a class you can subclass</span>
 <span class="sd">    ...     def __init__(self, _prefix, *args, **kwargs):</span>
 <span class="sd">    ...         self._prefix = _prefix</span>
-
 <span class="sd">    """</span>
 
     <span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">kv_wrap</span>
@@ -1888,10 +1926,11 @@
 <span class="sd">    &gt;&gt;&gt; assert foo.bar(None) is None</span>
 <span class="sd">    &gt;&gt;&gt; assert foo.bar(x=None) is None</span>
 
-<span class="sd">    Note: On the other hand, this will not return `None`, but should:</span>
-<span class="sd">    ``foo.bar(y=3, x=None)``. To achieve this, we'd need to look into the signature,</span>
-<span class="sd">    which seems like overkill and I might not want that systematic overhead in my</span>
-<span class="sd">    methods.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        On the other hand, this will not return `None`, but should:</span>
+<span class="sd">        ``foo.bar(y=3, x=None)``. To achieve this, we'd need to look into the signature,</span>
+<span class="sd">        which seems like overkill and I might not want that systematic overhead in my</span>
+<span class="sd">        methods.</span>
 <span class="sd">    """</span>
 
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
@@ -1955,8 +1994,12 @@
     <span class="p">)</span>
 
 
+<div class="viewcode-block" id="identity">
+<a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.identity">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">x</span>
+<span class="w">    </span><span class="sd">"""Return ``x``."""</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
 
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeyCodec</span><span class="p">,</span> <span class="n">filt_iter</span>
@@ -1998,7 +2041,7 @@
 <span class="sd">        from_str_funcs: A dictionary of field names and their functions to convert</span>
 <span class="sd">            them from strings.</span>
 
-<span class="sd">    Examples:</span>
+<span class="sd">    .. rubric:: Examples</span>
 
 <span class="sd">    &gt;&gt;&gt; st = KeyTemplate(</span>
 <span class="sd">    ...     'root/{name}/v_{version}.json',</span>
@@ -2059,10 +2102,11 @@
 <span class="sd">    &gt;&gt;&gt; store['root/i2/v_4.json']</span>
 <span class="sd">    '{"downloads": 274, "type": "utility"}'</span>
 
-<span class="sd">    Note: If your store contains keys that don't fit the format, key_codec will</span>
-<span class="sd">    raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to</span>
-<span class="sd">    filter out keys that don't fit the format, before you wrap the store with</span>
-<span class="sd">    ``st.key_codec``.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        If your store contains keys that don't fit the format, key_codec will</span>
+<span class="sd">        raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to</span>
+<span class="sd">        filter out keys that don't fit the format, before you wrap the store with</span>
+<span class="sd">        ``st.key_codec``.</span>
 
 <span class="sd">    &gt;&gt;&gt; store = {</span>
 <span class="sd">    ...     'root/meshed/v_151.json': '{"downloads": 41, "type": "productivity"}',</span>
@@ -2085,7 +2129,6 @@
 <span class="sd">    {'name': 'i2', 'version': 96}</span>
 <span class="sd">    &gt;&gt;&gt; key_codec.decoder({'name': 'fantastic', 'version': 4})</span>
 <span class="sd">    ('fantastic', 4)</span>
-
 <span class="sd">    """</span>
 
     <span class="n">_formatter</span> <span class="o">=</span> <span class="n">string_formatter</span>
@@ -2184,11 +2227,11 @@
 <span class="sd">        &gt;&gt;&gt; store['root/i2/v_4.json']</span>
 <span class="sd">        '{"downloads": 274, "type": "utility"}'</span>
 
-<span class="sd">        Note: If your store contains keys that don't fit the format, key_codec will</span>
-<span class="sd">        raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to</span>
-<span class="sd">        filter out keys that don't fit the format, before you wrap the store with</span>
-<span class="sd">        ``st.key_codec``.</span>
-
+<span class="sd">        Note:</span>
+<span class="sd">            If your store contains keys that don't fit the format, key_codec will</span>
+<span class="sd">            raise a ``ValueError``. To remedy this, you can use the ``st.filt_iter`` to</span>
+<span class="sd">            filter out keys that don't fit the format, before you wrap the store with</span>
+<span class="sd">            ``st.key_codec``.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_assert_field_type</span><span class="p">(</span><span class="n">decoded</span><span class="p">,</span> <span class="s2">"decoded"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_assert_field_type</span><span class="p">(</span><span class="n">encoded</span><span class="p">,</span> <span class="s2">"encoded"</span><span class="p">)</span>
@@ -2213,7 +2256,6 @@
 <span class="sd">        &gt;&gt;&gt; filtered_store = filt.filt_iter('str')(store)</span>
 <span class="sd">        &gt;&gt;&gt; list(filtered_store)</span>
 <span class="sd">        ['root/meshed/v_151.json', 'root/dol/v_9.json']</span>
-
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">field_type</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
             <span class="c1"># The user wants to filter a store with the default</span>
@@ -2235,7 +2277,6 @@
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.str_to_dict('root/life/v_30.json')</span>
 <span class="sd">        {'i01_': 'life', 'ver': 30}</span>
-
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -2257,7 +2298,6 @@
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.dict_to_str({'i01_': 'life', 'ver': 42})</span>
 <span class="sd">        'root/life/v_042.json'</span>
-
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -2276,7 +2316,6 @@
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; st.str_to_tuple('root/life/v_42.json')</span>
 <span class="sd">        ('life', 42)</span>
-
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -2530,17 +2569,17 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""Extracts information from the template. Namely:</span>
 
 <span class="sd">        - normalized_template: A template where each placeholder has a field name</span>
-<span class="sd">        (if not given, dflt_field_name will be used, which by default is</span>
-<span class="sd">        'i{:02.0f}_'.format)</span>
+<span class="sd">          (if not given, dflt_field_name will be used, which by default is</span>
+<span class="sd">          'i{:02.0f}_'.format)</span>
 
 <span class="sd">        - field_names: The tuple of field names in the order they appear in template</span>
 
 <span class="sd">        - to_str_funcs: A dict of field names and their corresponding to_str functions,</span>
-<span class="sd">        which will be used to convert the field values to strings when generating a</span>
-<span class="sd">        string.</span>
+<span class="sd">          which will be used to convert the field values to strings when generating a</span>
+<span class="sd">          string.</span>
 
-<span class="sd">        - field_patterns_: A dict of field names and their corresponding regex patterns,</span>
-<span class="sd">        which will be used to extract the field values from a string.</span>
+<span class="sd">        - ``field_patterns_``: A dict of field names and their corresponding regex patterns,</span>
+<span class="sd">          which will be used to extract the field values from a string.</span>
 
 <span class="sd">        These four values are used in the init to compute the parameters of the</span>
 <span class="sd">        instance.</span>
@@ -2559,7 +2598,6 @@
 <span class="sd">        '003'</span>
 <span class="sd">        &gt;&gt;&gt; to_str_funcs['name']('life')</span>
 <span class="sd">        'life'</span>
-
 <span class="sd">        """</span>
 
         <span class="n">field_names</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2674,7 +2712,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=739cd28f"></script>
+</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

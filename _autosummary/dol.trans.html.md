@@ -1,6 +1,28 @@
 # dol.trans
 
-Transformation/wrapping tools
+Tools to wrap stores with key/value transforms, filters, caches and other layers.
+
+A wrap leaves the backend untouched and builds a new class (or instance) around it.
+The decorators built with `store_decorator` (`wrap_kvs`, `filt_iter`,
+`cached_keys`, `add_path_access`, …) can be applied to a class, to an instance,
+or used as a factory (`deco(**params)(store)`).
+
+Main entry points:
+
+- `wrap_kvs`: key/value transforms (`key_of_id`, `obj_of_data`, codecs, …)
+- `filt_iter`: restrict a store to a subset of its keys
+- `cached_keys`: cache the key listing of a slow store
+- `add_path_access`: read/write nested stores through key paths
+- `kv_wrap`: wrap using an object that holds `_id_of_key`/`_obj_of_data`-style methods
+  ```pycon
+  >>> from dol.trans import wrap_kvs
+  >>> s = wrap_kvs({}, key_of_id=str.upper, id_of_key=str.lower, obj_of_data=int, data_of_obj=str)
+  >>> s['a'] = 1
+  >>> s.store  # the backend holds the transformed key and value
+  {'a': '1'}
+  >>> list(s), s['A']
+  (['A'], 1)
+  ```
 
 ### Module Attributes
 
@@ -9,74 +31,74 @@ Transformation/wrapping tools
 
 ### Functions
 
-| [`add_aliases`](#dol.trans.add_aliases)(obj, \*\*aliases)                      | A function that wraps the object instance and adds aliases.                                                                                              |
-|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`add_decoder`](#dol.trans.add_decoder)([store_cls, decoder, name, ...])       | Add a decoder layer to a store.                                                                                                                          |
-| [`add_ipython_key_completions`](#dol.trans.add_ipython_key_completions)(store)                 | Add tab completion that shows you the keys of the store.                                                                                                 |
-| [`add_missing_key_handling`](#dol.trans.add_missing_key_handling)([store, ...])             | Overrides the `__missing__` method of a store with a custom callback.                                                                                    |
-| [`add_path_access`](#dol.trans.add_path_access)([store, name, path_type, ...])     | Make nested stores (read/write) accessible through key paths (iterable of keys).                                                                         |
-| [`add_path_get`](#dol.trans.add_path_get)([store, name, path_type, ...])        | Make nested stores accessible through key paths.                                                                                                         |
-| [`add_store_method`](#dol.trans.add_store_method)(store, \*, method_func[, ...])    | Add methods to store classes or instances                                                                                                                |
-| [`add_wrapper_method`](#dol.trans.add_wrapper_method)([wrap_cls, method_name])        | Decorator that adds a wrapper method (itself a decorator) to a wrapping class Clear? See `mk_wrapper` function and doctest example if not.               |
-| [`affix_key_codec`](#dol.trans.affix_key_codec)([prefix, suffix])                  | A factory that creates a key codec that affixes a prefix and suffix to the key                                                                           |
-| [`assert_min_num_of_args`](#dol.trans.assert_min_num_of_args)(func, num_of_args)          | Assert that a function can be a store method.                                                                                                            |
-| [`autoviv`](#dol.trans.autoviv)([store])                                   | Opt-in write-through autovivification for key-paths.                                                                                                     |
-| [`cache_iter`](#dol.trans.cache_iter)([store, keys_cache, ...])               | Make a class that wraps input class's \_\_iter_\_ becomes cached.                                                                                        |
-| [`cached_keys`](#dol.trans.cached_keys)([store, keys_cache, ...])              | Make a class that wraps input class's \_\_iter_\_ becomes cached.                                                                                        |
-| [`catch_and_cache_error_keys`](#dol.trans.catch_and_cache_error_keys)([store, ...])           | Store that will cache keys as they're accessed, separating those that raised errors and those that didn't.                                               |
-| `condition_function_call`([func, condition, ...])                                                   |                                                                                                                                                          |
-| `conditional_data_trans`([store, \_\_module_\_, ...])                                               |                                                                                                                                                          |
-| [`confirm_overwrite`](#dol.trans.confirm_overwrite)(self, k, v)                      | A ready-to-use `wrap_kvs` `preset` that asks (via the builtin `input`) to confirm before overwriting an existing key with a different value (Issue #13). |
-| [`constant_output`](#dol.trans.constant_output)([return_val])                      | Function that returns a constant value no matter what the inputs are.                                                                                    |
-| `disable_delitem`(o)                                                                                |                                                                                                                                                          |
-| `disable_setitem`(o)                                                                                |                                                                                                                                                          |
-| `disallow_overwrites`(store, \*[, error_msg, ...])                                                  |                                                                                                                                                          |
-| [`double_up_as_factory`](#dol.trans.double_up_as_factory)(decorator_func)               | Repurpose a decorator both as it's original form, and as a decorator factory.                                                                            |
-| [`ensure_clear_method`](#dol.trans.ensure_clear_method)([store, clear_method])         | If obj doesn't have an enabled clear method, will add one (a slow one that runs through keys and deletes them                                            |
-| `ensure_set`(x)                                                                                     |                                                                                                                                                          |
-| [`filt_iter`](#dol.trans.filt_iter)([store, filt, name, \_\_module_\_, ...]) | Make a wrapper that will transform a store (class or instance thereof) into a sub-store (i.e. subset of keys).                                           |
-| [`filter_prefixes`](#dol.trans.filter_prefixes)(prefixes)                          | Make a filter that returns True if a string starts with one of the given prefixes                                                                        |
-| [`filter_regex`](#dol.trans.filter_regex)(regex, \*[, return_search_func])      | Make a filter that returns True if a string matches the given regex                                                                                      |
-| [`filter_suffixes`](#dol.trans.filter_suffixes)(suffixes)                          | Make a filter that returns True if a string ends with one of the given suffixes                                                                          |
-| [`flatten`](#dol.trans.flatten)([store, levels, cache_keys, ...])          | Flatten a nested store.                                                                                                                                  |
-| `get_class_name`(cls[, dflt_name])                                                                  |                                                                                                                                                          |
-| `ignore_if_error`([store, errors])                                                                  |                                                                                                                                                          |
-| [`insert_aliases`](#dol.trans.insert_aliases)([store, write, read, delete, ...])  | Insert method aliases of CRUD operations of a store (class or instance).                                                                                 |
-| [`insert_hash_method`](#dol.trans.insert_hash_method)([store, hash_method, ...])      | Make a store hashable using the specified `hash_method`.                                                                                                 |
-| [`insert_load_dump_aliases`](#dol.trans.insert_load_dump_aliases)([store, delete, ...])     | Insert load and dump methods, with familiar dump(obj, location) signature.                                                                               |
-| `is_iterable`(x)                                                                                    |                                                                                                                                                          |
-| `iterate_values_and_accumulate_non_error_keys`(...)                                                 |                                                                                                                                                          |
-| [`kv_wrap`](#dol.trans.kv_wrap)(trans_obj)                                 | A function that makes a wrapper (a decorator) that will get the wrappers from methods of the input object.                                               |
-| [`kv_wrap_persister_cls`](#dol.trans.kv_wrap_persister_cls)(persister_cls[, name])       | Make a class that wraps a persister into a dol.base.Store,                                                                                               |
-| `leveled_paths_walk`(m, levels)                                                                     |                                                                                                                                                          |
-| [`mk_confirm_overwrite_preset`](#dol.trans.mk_confirm_overwrite_preset)(\*[, get_input, ...])  | Make a `wrap_kvs` `preset` that asks for confirmation before overwriting an existing key that holds a *different* value.                                 |
-| [`mk_kv_reader_from_kv_collection`](#dol.trans.mk_kv_reader_from_kv_collection)(kv_collection)     | Make a KvReader class from a Collection class.                                                                                                           |
-| [`mk_level_walk_filt`](#dol.trans.mk_level_walk_filt)(levels)                         | Makes a `walk_filt` function for `kv_walk` based on some level logic.                                                                                    |
-| `mk_read_only`(o)                                                                                   |                                                                                                                                                          |
-| [`mk_trans_obj`](#dol.trans.mk_trans_obj)(\*\*kwargs)                           | Convenience method to quickly make a trans_obj (just an object holding some trans functions                                                              |
-| [`mk_wrapper`](#dol.trans.mk_wrapper)(wrap_cls)                               | You have a wrapper class and you want to make a wrapper out of it, that is, a decorator factory with which you can make wrappers, like this:             |
-| `raise_disabled_error`(functionality)                                                               |                                                                                                                                                          |
-| [`redirect_getattr_to_getitem`](#dol.trans.redirect_getattr_to_getitem)([cls, ...])            | A mapping decorator that redirects attribute access to \_\_getitem_\_.                                                                                   |
-| `return_default_if_error`([store, default, errors])                                                 |                                                                                                                                                          |
-| [`store_decorator`](#dol.trans.store_decorator)(func)                              | Helper to make store decorators.                                                                                                                         |
-| `store_wrap`(obj)                                                                                   |                                                                                                                                                          |
-| `take_everything`(key)                                                                              |                                                                                                                                                          |
-| `transparent_key_method`(self, k)                                                                   |                                                                                                                                                          |
-| `warn_and_ignore_if_error`([store, errors, ...])                                                    |                                                                                                                                                          |
-| [`wrap_kvs`](#dol.trans.wrap_kvs)([store, wrapper, name, key_of_id, ...])   | Make a Store that is wrapped with the given key/val transformers.                                                                                        |
+| [`add_aliases`](#dol.trans.add_aliases)(obj, \*\*aliases)                       | A function that wraps the object instance and adds aliases.                                                                                                                |
+|------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`add_decoder`](#dol.trans.add_decoder)([store_cls, decoder, name, ...])        | Add a decoder layer to a store.                                                                                                                                            |
+| [`add_ipython_key_completions`](#dol.trans.add_ipython_key_completions)(store)                  | Add tab completion that shows you the keys of the store.                                                                                                                   |
+| [`add_missing_key_handling`](#dol.trans.add_missing_key_handling)([store, ...])              | Overrides the `__missing__` method of a store with a custom callback.                                                                                                      |
+| [`add_path_access`](#dol.trans.add_path_access)([store, name, path_type, ...])      | Make nested stores (read/write) accessible through key paths (iterable of keys).                                                                                           |
+| [`add_path_get`](#dol.trans.add_path_get)([store, name, path_type, ...])         | Make nested stores accessible through key paths.                                                                                                                           |
+| [`add_store_method`](#dol.trans.add_store_method)(store, \*, method_func[, ...])     | Add methods to store classes or instances                                                                                                                                  |
+| [`add_wrapper_method`](#dol.trans.add_wrapper_method)([wrap_cls, method_name])         | Decorator that adds a wrapper method (itself a decorator) to a wrapping class Clear? See `mk_wrapper` function and doctest example if not.                                 |
+| [`affix_key_codec`](#dol.trans.affix_key_codec)([prefix, suffix])                   | A factory that creates a key codec that affixes a prefix and suffix to the key                                                                                             |
+| [`assert_min_num_of_args`](#dol.trans.assert_min_num_of_args)(func, num_of_args)           | Assert that a function can be a store method.                                                                                                                              |
+| [`autoviv`](#dol.trans.autoviv)([store])                                    | Opt-in write-through autovivification for key-paths.                                                                                                                       |
+| [`cache_iter`](#dol.trans.cache_iter)([store, keys_cache, ...])                | Make a class that wraps input class's \_\_iter_\_ becomes cached.                                                                                                          |
+| [`cached_keys`](#dol.trans.cached_keys)([store, keys_cache, ...])               | Make a class that wraps input class's \_\_iter_\_ becomes cached.                                                                                                          |
+| [`catch_and_cache_error_keys`](#dol.trans.catch_and_cache_error_keys)([store, ...])            | Store that will cache keys as they're accessed, separating those that raised errors and those that didn't.                                                                 |
+| [`condition_function_call`](#dol.trans.condition_function_call)([func, condition, ...])     | Decorator: call `func` only when `condition(*args, **kwargs)` holds, else `callback_if_condition_not_met`.                                                                 |
+| [`conditional_data_trans`](#dol.trans.conditional_data_trans)([store, \_\_module_\_, ...]) | Wrap `store` so that `data_trans` is applied to the read values satisfying `condition` (others pass through).                                                              |
+| [`confirm_overwrite`](#dol.trans.confirm_overwrite)(self, k, v)                       | A ready-to-use `wrap_kvs` `preset` that asks (via the builtin `input`) to confirm before overwriting an existing key with a different value (Issue #13).                   |
+| [`constant_output`](#dol.trans.constant_output)([return_val])                       | Function that returns a constant value no matter what the inputs are.                                                                                                      |
+| [`disable_delitem`](#dol.trans.disable_delitem)(o)                                  | Replace `o.__delitem__` (if any) with a function raising `ValueError`.                                                                                                     |
+| [`disable_setitem`](#dol.trans.disable_setitem)(o)                                  | Replace `o.__setitem__` (if any) with a function raising `ValueError`.                                                                                                     |
+| [`disallow_overwrites`](#dol.trans.disallow_overwrites)(store, \*[, error_msg, ...])    | Intended to make a store class's `__setitem__` raise `OverWritesNotAllowedError` on existing keys; currently a no-op that returns `None` (the override is never attached). |
+| [`double_up_as_factory`](#dol.trans.double_up_as_factory)(decorator_func)                | Repurpose a decorator both as it's original form, and as a decorator factory.                                                                                              |
+| [`ensure_clear_method`](#dol.trans.ensure_clear_method)([store, clear_method])          | If obj doesn't have an enabled clear method, will add one (a slow one that runs through keys and deletes them                                                              |
+| [`ensure_set`](#dol.trans.ensure_set)(x)                                       | A set from `x`, treating a string as a single element.                                                                                                                     |
+| [`filt_iter`](#dol.trans.filt_iter)([store, filt, name, \_\_module_\_, ...])  | Make a wrapper that will transform a store (class or instance thereof) into a sub-store (i.e. subset of keys).                                                             |
+| [`filter_prefixes`](#dol.trans.filter_prefixes)(prefixes)                           | Make a filter that returns True if a string starts with one of the given prefixes                                                                                          |
+| [`filter_regex`](#dol.trans.filter_regex)(regex, \*[, return_search_func])       | Make a filter that returns True if a string matches the given regex                                                                                                        |
+| [`filter_suffixes`](#dol.trans.filter_suffixes)(suffixes)                           | Make a filter that returns True if a string ends with one of the given suffixes                                                                                            |
+| [`flatten`](#dol.trans.flatten)([store, levels, cache_keys, ...])           | Give a nested store a flat view whose keys are the `(a, b, c)` key paths.                                                                                                  |
+| [`get_class_name`](#dol.trans.get_class_name)(cls[, dflt_name])                    | The `__qualname__` of `cls` (or of its class), else `dflt_name`; raises `ValueError` if there is neither.                                                                  |
+| [`ignore_if_error`](#dol.trans.ignore_if_error)([store, errors])                    | Wrap `store` so that `__getitem__` errors in `errors` return `None` instead of raising.                                                                                    |
+| [`insert_aliases`](#dol.trans.insert_aliases)([store, write, read, delete, ...])   | Insert method aliases of CRUD operations of a store (class or instance).                                                                                                   |
+| [`insert_hash_method`](#dol.trans.insert_hash_method)([store, hash_method, ...])       | Make a store hashable using the specified `hash_method`.                                                                                                                   |
+| [`insert_load_dump_aliases`](#dol.trans.insert_load_dump_aliases)([store, delete, ...])      | Insert load and dump methods, with familiar dump(obj, location) signature.                                                                                                 |
+| [`is_iterable`](#dol.trans.is_iterable)(x)                                      | Whether `x` is an `Iterable`.                                                                                                                                              |
+| [`iterate_values_and_accumulate_non_error_keys`](#dol.trans.iterate_values_and_accumulate_non_error_keys)(...)   | Yield the values of `store`, appending to `cache_keys_here` the keys whose value was fetched without error.                                                                |
+| [`kv_wrap`](#dol.trans.kv_wrap)(trans_obj)                                  | A function that makes a wrapper (a decorator) that will get the wrappers from methods of the input object.                                                                 |
+| [`kv_wrap_persister_cls`](#dol.trans.kv_wrap_persister_cls)(persister_cls[, name])        | Make a class that wraps a persister into a dol.base.Store,                                                                                                                 |
+| [`leveled_paths_walk`](#dol.trans.leveled_paths_walk)(m, levels)                       | Yield the key paths of `m`, down to `levels` levels.                                                                                                                       |
+| [`mk_confirm_overwrite_preset`](#dol.trans.mk_confirm_overwrite_preset)(\*[, get_input, ...])   | Make a `wrap_kvs` `preset` that asks for confirmation before overwriting an existing key that holds a *different* value.                                                   |
+| [`mk_kv_reader_from_kv_collection`](#dol.trans.mk_kv_reader_from_kv_collection)(kv_collection)      | Make a KvReader class from a Collection class.                                                                                                                             |
+| [`mk_level_walk_filt`](#dol.trans.mk_level_walk_filt)(levels)                          | Makes a `walk_filt` function for `kv_walk` based on some level logic.                                                                                                      |
+| [`mk_read_only`](#dol.trans.mk_read_only)(o)                                     | Disable `__setitem__` and `__delitem__` on `o` (a store class, typically).                                                                                                 |
+| [`mk_trans_obj`](#dol.trans.mk_trans_obj)(\*\*kwargs)                            | Convenience method to quickly make a trans_obj (just an object holding some trans functions                                                                                |
+| [`mk_wrapper`](#dol.trans.mk_wrapper)(wrap_cls)                                | You have a wrapper class and you want to make a wrapper out of it, that is, a decorator factory with which you can make wrappers, like this:                               |
+| [`raise_disabled_error`](#dol.trans.raise_disabled_error)(functionality)                 | Make a function that raises `ValueError('<functionality> is disabled')` whenever called.                                                                                   |
+| [`redirect_getattr_to_getitem`](#dol.trans.redirect_getattr_to_getitem)([cls, ...])             | A mapping decorator that redirects attribute access to \_\_getitem_\_.                                                                                                     |
+| [`return_default_if_error`](#dol.trans.return_default_if_error)([store, default, errors])   | Wrap `store` so that `__getitem__` errors in `errors` return `default` instead of raising.                                                                                 |
+| [`store_decorator`](#dol.trans.store_decorator)(func)                               | Helper to make store decorators.                                                                                                                                           |
+| [`store_wrap`](#dol.trans.store_wrap)(obj)                                     | Wrap a class or an instance in a `Store` (a class gets a `Store` subclass whose `__init__` builds the wrapped instance).                                                   |
+| [`take_everything`](#dol.trans.take_everything)(key)                                | Key filter that accepts every key.                                                                                                                                         |
+| [`transparent_key_method`](#dol.trans.transparent_key_method)(self, k)                     | Return the key as is (the default `getitem` of `mk_kv_reader_from_kv_collection`).                                                                                         |
+| [`warn_and_ignore_if_error`](#dol.trans.warn_and_ignore_if_error)([store, errors, ...])      | Like `ignore_if_error`, but also emit a warning (`warn_msg`) for each ignored error.                                                                                       |
+| [`wrap_kvs`](#dol.trans.wrap_kvs)([store, wrapper, name, key_of_id, ...])    | Make a Store that is wrapped with the given key/val transformers.                                                                                                          |
 
 ### Classes
 
-| [`CachedInvertibleTrans`](#dol.trans.CachedInvertibleTrans)(trans_func)   |                                                                              |
-|--------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| [`Codec`](#dol.trans.Codec)(encoder, decoder)             |                                                                              |
-| `FiltIter`(\*args, \*\*kwargs)                                                       |                                                                              |
-| [`FirstArgIsMapping`](#dol.trans.FirstArgIsMapping)(val)              | Mark a transform so its first argument is the store (mapping), not the data. |
-| [`KeyCodec`](#dol.trans.KeyCodec)(encoder, decoder)          |                                                                              |
-| [`KeyValueCodec`](#dol.trans.KeyValueCodec)(encoder, decoder)     |                                                                              |
-| [`OverWritesNotAllowedMixin`](#dol.trans.OverWritesNotAllowedMixin)()         | Mixin for only allowing a write to a key if they key doesn't already exist.  |
-| `SimpleDelegator`(obj)                                                               |                                                                              |
-| [`ValueCodec`](#dol.trans.ValueCodec)(encoder, decoder)        |                                                                              |
+| [`CachedInvertibleTrans`](#dol.trans.CachedInvertibleTrans)(trans_func)   |                                                                                                 |
+|--------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| [`Codec`](#dol.trans.Codec)(encoder, decoder)             | An `encoder`/`decoder` pair; iterates as `(encoder, decoder)` and composes with `compose_with`. |
+| [`FiltIter`](#dol.trans.FiltIter)(\*args, \*\*kwargs)        | Namespace of `filt_iter` factories (`regex`, `suffixes`, ...); not meant to be instantiated.    |
+| [`FirstArgIsMapping`](#dol.trans.FirstArgIsMapping)(val)              | Mark a transform so its first argument is the store (mapping), not the data.                    |
+| [`KeyCodec`](#dol.trans.KeyCodec)(encoder, decoder)          | A `Codec` that, called on a store, wraps its keys (`id_of_key`/`key_of_id`).                    |
+| [`KeyValueCodec`](#dol.trans.KeyValueCodec)(encoder, decoder)     | A `Codec` that, called on a store, wraps values with key context (`preset`/`postget`).          |
+| [`OverWritesNotAllowedMixin`](#dol.trans.OverWritesNotAllowedMixin)()         | Mixin for only allowing a write to a key if they key doesn't already exist.                     |
+| [`SimpleDelegator`](#dol.trans.SimpleDelegator)(obj)                | Forward attribute access (and calls) to the wrapped `obj`.                                      |
+| [`ValueCodec`](#dol.trans.ValueCodec)(encoder, decoder)        | A `Codec` that, called on a store, wraps its values (`data_of_obj`/`obj_of_data`).              |
 
 ### Exceptions
 
@@ -85,7 +107,7 @@ Transformation/wrapping tools
 
 ### *class* dol.trans.CachedInvertibleTrans(trans_func)
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 ```pycon
 >>> t = CachedInvertibleTrans(lambda x: x[1])
@@ -103,10 +125,63 @@ Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
 
 Bases: [`Generic`](https://docs.python.org/3/library/typing.html#typing.Generic)[`DecodedType`, `EncodedType`]
 
+An `encoder`/`decoder` pair; iterates as `(encoder, decoder)` and composes with `compose_with`.
+
 #### invert()
 
 Return a codec that is the inverse of this one.
 That is, encoder and decoder will be swapped.
+
+### *class* dol.trans.FiltIter(\*args, \*\*kwargs)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Namespace of `filt_iter` factories (`regex`, `suffixes`, …); not meant to be instantiated.
+
+#### prefixes()
+
+Make a mapping-filtering decorator that filters keys with a prefixes.
+
+* **Parameters:**
+  **prefixes** – A string or iterable of strings that are the prefixes to filter
+
+```pycon
+>>> is_test = filt_iter.prefixes('test')
+>>> d = {'test.txt': 1, 'report.doc': 2, 'test_image.jpg': 3}
+>>> dd = is_test(d)
+>>> dict(dd)
+{'test.txt': 1, 'test_image.jpg': 3}
+```
+
+#### regex()
+
+Make a mapping-filtering decorator that filters keys with a regex.
+
+* **Parameters:**
+  **regex** – A regex string or compiled regex
+
+```pycon
+>>> contains_a = filt_iter.regex(r'a')
+>>> d = {'apple': 1, 'banana': 2, 'cherry': 3}
+>>> dd = contains_a(d)
+>>> dict(dd)
+{'apple': 1, 'banana': 2}
+```
+
+#### suffixes()
+
+Make a mapping-filtering decorator that filters keys with a suffixes.
+
+* **Parameters:**
+  **suffixes** – A string or iterable of strings that are the suffixes to filter
+
+```pycon
+>>> is_text = filt_iter.suffixes(['.txt', '.doc', '.pdf'])
+>>> d = {'test.txt': 1, 'report.doc': 2, 'image.jpg': 3}
+>>> dd = is_text(d)
+>>> dict(dd)
+{'test.txt': 1, 'report.doc': 2}
+```
 
 ### *class* dol.trans.FirstArgIsMapping(val)
 
@@ -134,19 +209,23 @@ alternative to naming a transform’s first parameter `self`/`store`/`mapping`.
 
 Bases: [`Generic`](https://docs.python.org/3/library/typing.html#typing.Generic)[`DecodedType`, `EncodedType`], [`Codec`](#dol.trans.Codec)[`DecodedType`, `EncodedType`]
 
+A `Codec` that, called on a store, wraps its keys (`id_of_key`/`key_of_id`).
+
 ### *class* dol.trans.KeyValueCodec(encoder, decoder)
 
 Bases: [`Generic`](https://docs.python.org/3/library/typing.html#typing.Generic)[`DecodedType`, `EncodedType`], [`Codec`](#dol.trans.Codec)[`DecodedType`, `EncodedType`]
 
+A `Codec` that, called on a store, wraps values with key context (`preset`/`postget`).
+
 ### *exception* dol.trans.MapInvertabilityError
 
-Bases: [`ValueError`](https://docs.python.org/3/library/exceptions.html#ValueError)
+Bases: [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
 
 To be used to indicate that a mapping isn’t, or wouldn’t be, invertible
 
 ### *class* dol.trans.OverWritesNotAllowedMixin
 
-Bases: [`object`](https://docs.python.org/3/library/functions.html#object)
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Mixin for only allowing a write to a key if they key doesn’t already exist.
 
@@ -172,9 +251,17 @@ dol.errors.OverWritesNotAllowedError: key foo already exists and cannot be overw
 'this value WILL be stored'
 ```
 
+### *class* dol.trans.SimpleDelegator(obj)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Forward attribute access (and calls) to the wrapped `obj`.
+
 ### *class* dol.trans.ValueCodec(encoder, decoder)
 
 Bases: [`Generic`](https://docs.python.org/3/library/typing.html#typing.Generic)[`DecodedType`, `EncodedType`], [`Codec`](#dol.trans.Codec)[`DecodedType`, `EncodedType`]
+
+A `Codec` that, called on a store, wraps its values (`data_of_obj`/`obj_of_data`).
 
 ### dol.trans.add_aliases(obj, \*\*aliases)
 
@@ -213,7 +300,6 @@ Add tab completion that shows you the keys of the store.
 
 #### NOTE
 ipython already adds local path listing automatically,
-
 so you’ll still get those along with your valid store keys.
 
 ### dol.trans.add_missing_key_handling(store=None, \*, missing_key_callback, errors_that_trigger_missing=(<class 'KeyError'>, ), \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
@@ -268,13 +354,7 @@ make it whatever you want, and/or use `dol.paths.KeyPath` to map to and from
 forms like `'a.b.c'`, `'a/b/c'`, etc.
 
 Say you have some nested stores.
-You know… like a `ZipFileReader` store whose values are 
-
-```
-`
-```
-
-ZipReader\`s,
+You know… like a `ZipFileReader` store whose values are `ZipReader` instances,
 whose values are bytes of the zipped files
 (and you can go on… whose (json) values are…).
 
@@ -318,7 +398,7 @@ To do that you can use `dol.paths.KeyPath` in combination with
   * **store** – The store (class or instance) you’re wrapping.
     If not specified, the function will return a decorator.
   * **name** – The name to give the class (not applicable to instance wrapping)
-  * **path_type** ([`type`](https://docs.python.org/3/library/functions.html#type)) – The type that paths are expressed as. Needs to be an Iterable type.
+  * **path_type** ([`type`](https://docs.python.org/3/builtins/functions.html#type)) – The type that paths are expressed as. Needs to be an Iterable type.
     By default, a tuple.
     This is used to decide whether the key should be taken as a “normal”
     key of the store,
@@ -328,7 +408,7 @@ To do that you can use `dol.paths.KeyPath` in combination with
   (if store is not specified)
 
 #### SEE ALSO
-`KeyPath` in paths
+`KeyPath` in `dol.paths`
 
 Wrapping a class
 
@@ -437,13 +517,7 @@ That is, it doesn’t work recursively.
 See issue: [https://github.com/i2mint/dol/issues/10](https://github.com/i2mint/dol/issues/10).)
 
 Say you have some nested stores.
-You know… like a `ZipFileReader` store whose values are 
-
-```
-`
-```
-
-ZipReader\`s,
+You know… like a `ZipFileReader` store whose values are `ZipReader` instances,
 whose values are bytes of the zipped files
 (and you can go on… whose (json) values are…).
 
@@ -475,7 +549,7 @@ To do that you can use `dol.paths.KeyPath` in combination with
   * **store** – The store (class or instance) you’re wrapping.
     If not specified, the function will return a decorator.
   * **name** – The name to give the class (not applicable to instance wrapping)
-  * **path_type** ([`type`](https://docs.python.org/3/library/functions.html#type)) – The type that paths are expressed as. Needs to be an Iterable type.
+  * **path_type** ([`type`](https://docs.python.org/3/builtins/functions.html#type)) – The type that paths are expressed as. Needs to be an Iterable type.
     By default, a tuple.
     This is used to decide whether the key should be taken as a “normal”
     key of the store,
@@ -485,7 +559,7 @@ To do that you can use `dol.paths.KeyPath` in combination with
   (if store is not specified)
 
 #### SEE ALSO
-`KeyPath` in paths
+`KeyPath` in `dol.paths`
 
 Wrapping an instance
 
@@ -540,10 +614,10 @@ You need to involve more tools. Like dol.paths.KeyPath…
 Add methods to store classes or instances
 
 * **Parameters:**
-  * **store** ([`type`](https://docs.python.org/3/library/functions.html#type)) – A store type or instance
+  * **store** ([`type`](https://docs.python.org/3/builtins/functions.html#type)) – A store type or instance
   * **method_func** – The function of the method to be added
   * **method_name** – The name of the store attribute this function should be written to
-  * **validator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`type`](https://docs.python.org/3/library/functions.html#type), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)], [`bool`](https://docs.python.org/3/library/functions.html#bool)] | [`None`](https://docs.python.org/3/library/constants.html#None)) – An optional validator. If not None, `validator(store, method_func)` will be called.
+  * **validator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`type`](https://docs.python.org/3/builtins/functions.html#type), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – An optional validator. If not None, `validator(store, method_func)` will be called.
     If it doesn’t return True, a `SetattrNotAllowed` will be raised.
     Note that `validator` can also raise its own exception.
 * **Returns:**
@@ -651,7 +725,7 @@ It is assumed, if you’re using the cached_keys transformation, that you’re d
 (or data that can be considered static for the life of the store – for example, when conducting analytics).
 If you ever need to refresh the cache during the life of the store, you can to delete \_keys_cache like this:
 
-```text
+```python
 del your_store._keys_cache
 ```
 
@@ -674,30 +748,21 @@ a `remove` method, you’ll be able to delete as well.
   * **keys_cache** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`Collection`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection)) – An explicit collection of keys
   * **iter_to_container** – The function that will be applied to existing \_\_iter_\_() and assigned to cache.
     The default is list. Another useful one is the sorted function.
-  * **cache_update_method** – 
-
-    Name of the keys_cache update method to use, if it is an attribute of keys_cache.
-    Note that this cache_update_method will be used only
-    > if keys_cache is an explicit iterable and has that attribute
-    > if keys_cache is a callable and has that attribute.
-
-    The default None
-  * **name** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – The name of the new class
+  * **cache_update_method** – Name of the keys_cache update method to use, if it is an
+    attribute of keys_cache (whether keys_cache is an explicit iterable or a
+    callable). Default `'update'`.
+  * **name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The name of the new class
 * **Return type:**
   [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`KvReader`](dol.base.html.md#dol.base.KvReader)
 * **Returns:**
-  If store is:
-  ```default
-  None: Will return a decorator that can be applied to a store
-  a store class: Will return a wrapped class that caches it's keys
-  a store instance: Will return a wrapped instance that caches it's keys
-  ```
+  If store is None, a decorator that can be applied to a store; if store is a
+  class, a wrapped class that caches its keys; if store is an instance, a
+  wrapped instance that caches its keys.
 
   The instances of such key-cached classes have some extra attributes:
-  ```default
-  _explicit_keys: The actual cache. An iterable container
-  update_keys_cache: Is called if a user uses the instance to mutate the store (i.e. write or delete).
-  ```
+  `_keys_cache` (the actual cache), `_explicit_keys` (whether the cache was
+  given explicitly) and `update_keys_cache` (called on `__setitem__` and
+  `update`).
 
 You have two ways of caching keys:
 
@@ -921,7 +986,7 @@ It is assumed, if you’re using the cached_keys transformation, that you’re d
 (or data that can be considered static for the life of the store – for example, when conducting analytics).
 If you ever need to refresh the cache during the life of the store, you can to delete \_keys_cache like this:
 
-```text
+```python
 del your_store._keys_cache
 ```
 
@@ -944,30 +1009,21 @@ a `remove` method, you’ll be able to delete as well.
   * **keys_cache** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`Collection`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection)) – An explicit collection of keys
   * **iter_to_container** – The function that will be applied to existing \_\_iter_\_() and assigned to cache.
     The default is list. Another useful one is the sorted function.
-  * **cache_update_method** – 
-
-    Name of the keys_cache update method to use, if it is an attribute of keys_cache.
-    Note that this cache_update_method will be used only
-    > if keys_cache is an explicit iterable and has that attribute
-    > if keys_cache is a callable and has that attribute.
-
-    The default None
-  * **name** ([`str`](https://docs.python.org/3/library/stdtypes.html#str)) – The name of the new class
+  * **cache_update_method** – Name of the keys_cache update method to use, if it is an
+    attribute of keys_cache (whether keys_cache is an explicit iterable or a
+    callable). Default `'update'`.
+  * **name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The name of the new class
 * **Return type:**
   [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`KvReader`](dol.base.html.md#dol.base.KvReader)
 * **Returns:**
-  If store is:
-  ```default
-  None: Will return a decorator that can be applied to a store
-  a store class: Will return a wrapped class that caches it's keys
-  a store instance: Will return a wrapped instance that caches it's keys
-  ```
+  If store is None, a decorator that can be applied to a store; if store is a
+  class, a wrapped class that caches its keys; if store is an instance, a
+  wrapped instance that caches its keys.
 
   The instances of such key-cached classes have some extra attributes:
-  ```default
-  _explicit_keys: The actual cache. An iterable container
-  update_keys_cache: Is called if a user uses the instance to mutate the store (i.e. write or delete).
-  ```
+  `_keys_cache` (the actual cache), `_explicit_keys` (whether the cache was
+  given explicitly) and `update_keys_cache` (called on `__setitem__` and
+  `update`).
 
 You have two ways of caching keys:
 
@@ -1214,12 +1270,12 @@ we get only two.
 You don’t like it? Neither do I. But
 
 - It’s not a completely outrageous behavior – if you’re talking to live data, it
-  : often happens that you get more, or less, from one second to another.
+  often happens that you get more, or less, from one second to another.
 - This store isn’t meant to be long living, but rather meant to solve the problem of
-  : skiping items that are problematic (for example, malformatted files),
-    with a trace of what was skipped and what’s valid (in case we need to iterate
-    again and don’t want to bear the hit of requesting values for keys we already
-    know are problematic.
+  skiping items that are problematic (for example, malformatted files),
+  with a trace of what was skipped and what’s valid (in case we need to iterate
+  again and don’t want to bear the hit of requesting values for keys we already
+  know are problematic.
 
 Here’s a little peep of what is happening under the hood.
 Meet `_keys_cache` and `_error_keys` sets (yes, unordered – so know it) that are meant
@@ -1270,6 +1326,14 @@ Error with black key: "Nope, that's from the black list!"
 [13, 20]
 ```
 
+### dol.trans.condition_function_call(func=None, \*, condition=functools.partial(<function constant_output>, True), callback_if_condition_not_met=functools.partial(<function constant_output>, None))
+
+Decorator: call `func` only when `condition(*args, **kwargs)` holds, else `callback_if_condition_not_met`.
+
+### dol.trans.conditional_data_trans(store=None, , condition, data_trans, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+Wrap `store` so that `data_trans` is applied to the read values satisfying `condition` (others pass through).
+
 ### dol.trans.confirm_overwrite(self, k, v)
 
 A ready-to-use `wrap_kvs` `preset` that asks (via the builtin `input`) to confirm
@@ -1296,6 +1360,23 @@ Is meant to be used with functools.partial to create custom versions.
 >>> always_true('regardless', 'of', the='input', will='return True')
 True
 ```
+
+### dol.trans.disable_delitem(o)
+
+Replace `o.__delitem__` (if any) with a function raising `ValueError`.
+
+Meant for classes: on an instance, `del o[k]` still uses the type’s method.
+
+### dol.trans.disable_setitem(o)
+
+Replace `o.__setitem__` (if any) with a function raising `ValueError`.
+
+Meant for classes: on an instance, `o[k] = v` still uses the type’s method.
+
+### dol.trans.disallow_overwrites(store, , error_msg=None, disable_deletes=True)
+
+Intended to make a store class’s `__setitem__` raise `OverWritesNotAllowedError` on existing keys;
+currently a no-op that returns `None` (the override is never attached). Use `OverWritesNotAllowedMixin`.
 
 ### dol.trans.double_up_as_factory(decorator_func)
 
@@ -1359,18 +1440,18 @@ AssertionError: All arguments (besides the first) need to be keyword-only
 
 If obj doesn’t have an enabled clear method, will add one (a slow one that runs through keys and deletes them
 
+### dol.trans.ensure_set(x)
+
+A set from `x`, treating a string as a single element.
+
 ### dol.trans.filt_iter(store=None, \*, filt=<function take_everything>, name=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
 Make a wrapper that will transform a store (class or instance thereof) into a sub-store (i.e. subset of keys).
 
 * **Parameters:**
-  * **filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)) – 
-
-    A callable or iterable:
-    ```default
-    callable: Boolean filter function. A func taking a key and and returns True iff the key should be included.
-    iterable: The collection of keys you want to filter "in"
-    ```
+  * **filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)) – A callable or iterable. If a callable, a boolean filter function taking
+    a key and returning True iff the key should be included. If an iterable,
+    the collection of keys you want to filter “in”.
   * **name** – The name to give the wrapped class
 * **Returns:**
   A wrapper (that then needs to be applied to a store instance or class.
@@ -1475,7 +1556,7 @@ False
 
 ### dol.trans.flatten(store=None, , levels=None, cache_keys=False, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
-Flatten a nested store.
+Give a nested store a flat view whose keys are the `(a, b, c)` key paths.
 
 Say you have a store that has three levels (or more), that is, that you can always
 ask for the value `store[a][b][c]` if `a` is a valid key of `store`,
@@ -1562,6 +1643,14 @@ Finally, you can wrap a class itself.
 ...         ]
 ... )
 ```
+
+### dol.trans.get_class_name(cls, dflt_name=None)
+
+The `__qualname__` of `cls` (or of its class), else `dflt_name`; raises `ValueError` if there is neither.
+
+### dol.trans.ignore_if_error(store=None, \*, errors=(<class 'KeyError'>, ))
+
+Wrap `store` so that `__getitem__` errors in `errors` return `None` instead of raising.
 
 ### dol.trans.insert_aliases(store=None, , write=None, read=None, delete=None, list=None, count=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
@@ -1730,6 +1819,14 @@ Insert load and dump methods, with familiar dump(obj, location) signature.
 {'true': 'love'}
 ```
 
+### dol.trans.is_iterable(x)
+
+Whether `x` is an `Iterable`.
+
+### dol.trans.iterate_values_and_accumulate_non_error_keys(store, cache_keys_here, errors_caught=<class 'Exception'>, error_callback=None)
+
+Yield the values of `store`, appending to `cache_keys_here` the keys whose value was fetched without error.
+
 ### dol.trans.kv_wrap(trans_obj)
 
 A function that makes a wrapper (a decorator) that will get the wrappers from
@@ -1768,13 +1865,8 @@ If your `trans_obj` uses different names for these functions, you can use the
 2
 ```
 
-`kv_wrap` also has convenience attributes:
-
-```default
-``outcoming_keys``, ``ingoing_keys``, ``outcoming_vals``, ``ingoing_vals``,
-and ``val_reads_wrt_to_keys``
-```
-
+`kv_wrap` also has convenience attributes (`outcoming_keys`, `ingoing_keys`,
+`outcoming_vals`, `ingoing_vals`, and `val_reads_wrt_to_keys`)
 which will only add a single specific wrapper (specified as a function),
 when that’s what you need.
 
@@ -1852,6 +1944,10 @@ Make a class that wraps a persister into a dol.base.Store,
 >>> # before the key/val transformers are in place to do their jobs.
 ```
 
+### dol.trans.leveled_paths_walk(m, levels)
+
+Yield the key paths of `m`, down to `levels` levels.
+
 ### dol.trans.mk_confirm_overwrite_preset(\*, get_input=None, prompt=<function \_dflt_overwrite_prompt>)
 
 Make a `wrap_kvs` `preset` that asks for confirmation before overwriting an
@@ -1901,6 +1997,20 @@ Makes a `walk_filt` function for `kv_walk` based on some level logic.
 If `levels` is an integer, will consider it as the max path length,
 if not it will just assert that `levels` is callable, and return it
 
+### dol.trans.mk_read_only(o)
+
+Disable `__setitem__` and `__delitem__` on `o` (a store class, typically).
+
+```pycon
+>>> class D(dict):
+...     pass
+>>> D = mk_read_only(D)
+>>> D()['a'] = 1
+Traceback (most recent call last):
+  ...
+ValueError: writing is disabled
+```
+
 ### dol.trans.mk_trans_obj(\*\*kwargs)
 
 Convenience method to quickly make a trans_obj (just an object holding some trans functions
@@ -1910,13 +2020,13 @@ Convenience method to quickly make a trans_obj (just an object holding some tran
 You have a wrapper class and you want to make a wrapper out of it,
 that is, a decorator factory with which you can make wrappers, like this:
 
-```text
+```python
 wrapper = mk_wrapper(wrap_cls)
 ```
 
 that you can then use to transform stores like thiis:
 
-```text
+```python
 MyStore = wrapper(**wrapper_kwargs)(StoreYouWantToTransform)
 ```
 
@@ -1942,6 +2052,10 @@ MyStore = wrapper(**wrapper_kwargs)(StoreYouWantToTransform)
 >>> assert str(s) == "{'foo/bar': 42}"  # reveals that actually, behind the scenes, there's a "foo/" prefix
 ```
 
+### dol.trans.raise_disabled_error(functionality)
+
+Make a function that raises `ValueError('<functionality> is disabled')` whenever called.
+
 ### dol.trans.redirect_getattr_to_getitem(cls=None, , keys_have_priority_over_attributes=False, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
 A mapping decorator that redirects attribute access to \_\_getitem_\_.
@@ -1964,6 +2078,10 @@ This decorator will make your class un-pickleable.
 >>> list(d)
 ['a', 'b']
 ```
+
+### dol.trans.return_default_if_error(store=None, \*, default=None, errors=(<class 'KeyError'>, ))
+
+Wrap `store` so that `__getitem__` errors in `errors` return `default` instead of raising.
 
 ### dol.trans.store_decorator(func)
 
@@ -2186,6 +2304,22 @@ before being passed on to the actual decorator.
 >>> assert wd.__delitem__('x') == 'No way. I do not trust you!!'
 ```
 
+### dol.trans.store_wrap(obj)
+
+Wrap a class or an instance in a `Store` (a class gets a `Store` subclass whose `__init__` builds the wrapped instance).
+
+### dol.trans.take_everything(key)
+
+Key filter that accepts every key.
+
+### dol.trans.transparent_key_method(self, k)
+
+Return the key as is (the default `getitem` of `mk_kv_reader_from_kv_collection`).
+
+### dol.trans.warn_and_ignore_if_error(store=None, \*, errors=(<class 'KeyError'>, ), warn_msg='Ignoring error in \_\_getitem_\_ for key {k}: {e}')
+
+Like `ignore_if_error`, but also emit a warning (`warn_msg`) for each ignored error.
+
 ### dol.trans.wrap_kvs(store=None, , wrapper=None, name=None, key_of_id=None, id_of_key=None, obj_of_data=None, data_of_obj=None, preset=None, postget=None, key_codec=None, value_codec=None, key_encoder=None, key_decoder=None, value_encoder=None, value_decoder=None, \_\_module_\_=None, outcoming_key_methods=(), outcoming_value_methods=(), ingoing_key_methods=(), ingoing_value_methods=(), \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
 Make a Store that is wrapped with the given key/val transformers.
@@ -2219,7 +2353,7 @@ Grammar:
     The function is called with both `k` and `v` as inputs, and should output a transformed value.
     The intent use is to do ingoing value transformations conditioned on the key.
     For example, you may want to serialize an object depending on if you’re writing to a
-    > ’.csv’, or ‘.json’, or ‘.pickle’ file.
+    ‘.csv’, or ‘.json’, or ‘.pickle’ file.
 
     Forms are `preset(k, obj)` or `preset(self, k, obj)`
   * **postget** – A function that is called after the value `v` for a key `k` is be `__getitem__`.
@@ -2323,5 +2457,3 @@ Grammar:
 >>> d['foo.pkl']
 [['a', 'b', 'c'], ['d', 'e', 'f']]
 ```
-
-### TODO: Add tests for outcoming_key_methods etc.
