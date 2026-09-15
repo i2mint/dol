@@ -1250,6 +1250,7 @@ def mk_relative_path_store(
 #  (but should change name if so, since Mixins shouldn't have inits)
 class RelativePathKeyMapper:
     """Key mapper adding ``prefix`` on the way in and removing it on the way out."""
+
     def __init__(self, prefix):
         self._prefix = prefix
         self._prefix_length = len(self._prefix)
@@ -1407,6 +1408,7 @@ from enum import Enum
 
 class PathKeyTypes(Enum):
     """Enum of the path key forms: ``str``, ``dict``, ``tuple``, ``namedtuple``."""
+
     str = "str"
     dict = "dict"
     tuple = "tuple"

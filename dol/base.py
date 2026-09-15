@@ -72,6 +72,7 @@ from dol.signatures import Sig
 
 class AttrNames:
     """Name sets of the methods that make up each mapping interface (``Collection``, ``Mapping``, ``KvReader``, ``KvPersister``, ...)."""
+
     CollectionABC = {"__len__", "__iter__", "__contains__"}
     Mapping = CollectionABC | {
         "keys",
@@ -266,6 +267,7 @@ Persister = KvPersister  # alias for back-compatibility
 
 class NoSuchItem:
     """Sentinel type; ``no_such_item`` is its instance."""
+
     pass
 
 
@@ -276,6 +278,7 @@ from collections.abc import Set
 
 class DelegatedAttribute:
     """Descriptor forwarding ``attr_name`` lookups to the object held in the instance's ``delegate_name`` attribute."""
+
     def __init__(self, delegate_name, attr_name):
         self.attr_name = attr_name
         self.delegate_name = delegate_name
@@ -1171,6 +1174,7 @@ class KeyValidationABC(metaclass=ABCMeta):
 
 class stream_util:
     """Small callbacks for ``Stream``: an always-true filter, a no-op, and rewind (``skip_lines`` currently only rewinds)."""
+
     def always_true(*args, **kwargs):
         return True
 

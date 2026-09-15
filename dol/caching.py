@@ -2612,6 +2612,7 @@ def _mk_cache_method_local_path_key(
 
 class HashableMixin:
     """Mixin making instances hashable by identity (``id(self)``)."""
+
     def __hash__(self):
         return id(self)
 

@@ -611,6 +611,7 @@ def mk_kv_reader_from_kv_collection(
 
 def raise_disabled_error(functionality):
     """Make a function that raises ``ValueError('<functionality> is disabled')`` whenever called."""
+
     def disabled_function(*args, **kwargs):
         raise ValueError(f"{functionality} is disabled")
 
@@ -1689,6 +1690,7 @@ def filter_prefixes(prefixes):
 
 class FiltIter:
     """Namespace of ``filt_iter`` factories (``regex``, ``suffixes``, ...); not meant to be instantiated."""
+
     def __init__(self, *args, **kwargs):
         raise ValueError(
             "This class is not meant to be instantiated, but only act as a collection "
@@ -2507,6 +2509,7 @@ _kv_wrap_trans_names = {
 
 class SimpleDelegator:
     """Forward attribute access (and calls) to the wrapped ``obj``."""
+
     def __init__(self, obj):
         self._obj = obj
 
@@ -3450,6 +3453,7 @@ def condition_function_call(
     ),
 ):
     """Decorator: call ``func`` only when ``condition(*args, **kwargs)`` holds, else ``callback_if_condition_not_met``."""
+
     @wraps(func)
     def wrapped_func(*args, **kwargs):
         if condition(*args, **kwargs):
@@ -3641,6 +3645,7 @@ def add_missing_key_handling(
 
 def ignore_if_error(store=None, *, errors=(KeyError,)):
     """Wrap ``store`` so that ``__getitem__`` errors in ``errors`` return ``None`` instead of raising."""
+
     def _ignore(store, k):
         pass
 
@@ -3656,6 +3661,7 @@ def warn_and_ignore_if_error(
     warn_msg="Ignoring error in __getitem__ for key {k}: {e}",
 ):
     """Like ``ignore_if_error``, but also emit a warning (``warn_msg``) for each ignored error."""
+
     def _warn(store, k):
         import sys
 
@@ -3670,6 +3676,7 @@ def warn_and_ignore_if_error(
 
 def return_default_if_error(store=None, *, default=None, errors=(KeyError,)):
     """Wrap ``store`` so that ``__getitem__`` errors in ``errors`` return ``default`` instead of raising."""
+
     def _default(store, k):
         return default
 
@@ -3690,6 +3697,7 @@ DecodedType = TypeVar("DecodedType")
 @dataclass
 class Codec(Generic[DecodedType, EncodedType]):
     """An ``encoder``/``decoder`` pair; iterates as ``(encoder, decoder)`` and composes with ``compose_with``."""
+
     encoder: Callable[[DecodedType], EncodedType]
     decoder: Callable[[EncodedType], DecodedType]
 
@@ -3719,18 +3727,21 @@ _CodecT = (Generic[DecodedType, EncodedType], Codec[DecodedType, EncodedType])
 
 class ValueCodec(*_CodecT):
     """A ``Codec`` that, called on a store, wraps its values (``data_of_obj``/``obj_of_data``)."""
+
     def __call__(self, obj):
         return wrap_kvs(obj, data_of_obj=self.encoder, obj_of_data=self.decoder)
 
 
 class KeyCodec(*_CodecT):
     """A ``Codec`` that, called on a store, wraps its keys (``id_of_key``/``key_of_id``)."""
+
     def __call__(self, obj):
         return wrap_kvs(obj, id_of_key=self.encoder, key_of_id=self.decoder)
 
 
 class KeyValueCodec(*_CodecT):
     """A ``Codec`` that, called on a store, wraps values with key context (``preset``/``postget``)."""
+
     def __call__(self, obj):
         return wrap_kvs(obj, preset=self.encoder, postget=self.decoder)
 
