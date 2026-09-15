@@ -443,7 +443,7 @@ from dol._interface_wrap import UnderAnnotatedSpecError
 
 
 def test_var_positional_role_maps_elementwise():
-    """*keys: KT must encode each element, not the tuple (was a silent bug)."""
+    """``*keys: KT`` must encode each element, not the tuple (was a silent bug)."""
 
     class VarSpec(Protocol[KT]):
         def delete(self, *keys: KT) -> None: ...

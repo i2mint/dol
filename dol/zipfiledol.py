@@ -177,7 +177,6 @@ def to_zip_file(
     :param zip_filepath: zip filepath to save the zipped input to
     :param filename: The name/path of the zip entry we want to save to
     :param encoding: In case the input is str, the encoding to use to convert to bytes
-
     """
     z = ZipFiles(
         zip_filepath,
@@ -280,11 +279,12 @@ class ZipReader(KvReader):
     except for the ``prefix``
      which serves `to specify the subfolder (that is, ``prefix`` acts as a filter).
 
-    Note: If you get data zipped by a mac, you might get some junk along with it.
-    Namely `__MACOSX` folders `.DS_Store` files. I won't rant about it, since others have.
-    But you might find it useful to remove them from view. One choice is to use
-    `dol.trans.filt_iter`
-    to get a filtered view of the zips contents. In most cases, this should do the job:
+    Note:
+        If you get data zipped by a mac, you might get some junk along with it.
+        Namely `__MACOSX` folders `.DS_Store` files. I won't rant about it, since others have.
+        But you might find it useful to remove them from view. One choice is to use
+        `dol.trans.filt_iter`
+        to get a filtered view of the zips contents. In most cases, this should do the job:
 
     .. code-block::
 
@@ -300,7 +300,7 @@ class ZipReader(KvReader):
         zip -d filename.zip \*/.DS_Store
 
 
-    Examples:
+    .. rubric:: Examples
 
     .. code-block::
 
@@ -476,7 +476,6 @@ class FileStreamsOfZip(FilesOfZip):
         z = FileStreamsOfZip(rootdir)
         with z[relpath] as fp:
             ...  # do stuff with fp, like fp.readlines() or such...
-
     """
 
     def __getitem__(self, k):
@@ -571,7 +570,6 @@ class FlatZipFilesReader(FlatReader, ZipFilesReader):
     Well, one solution, provided through FlatZipFilesReader, is to not unzip at all,
     but instead, give you a store that provides you a view "as if you unzipped and
     merged".
-
     """
 
     __init__ = ZipFilesReader.__init__
@@ -704,7 +702,7 @@ class ZipFiles(KvPersister):
     makes for a not so efficient store, out of the box.
 
     I advise using one of the zip readers if all you need to do is read, or subclassing or
-     wrapping ZipFiles with caching layers if it is appropriate to you.
+    wrapping ZipFiles with caching layers if it is appropriate to you.
 
     Let's verify that a ZipFiles can indeed write data. First, we'll set things up!
 
@@ -740,7 +738,6 @@ class ZipFiles(KvPersister):
     And indeed we have a zip file now:
 
     >>> assert os.path.isfile(test_zipfile)
-
     """
 
     _zipfile_init_kw = dict(
@@ -901,14 +898,14 @@ def remove_some_entries_from_zip(
         presented with the keys first, and asked permission to delete.
     :return: The ZipFiles (in case you want to do further work with it)
 
-    Tip: If you want to delete with no questions asked, use currying:
+    Tip:
+        If you want to delete with no questions asked, use currying:
 
     >>> from functools import partial
     >>> rm_keys_without_asking = partial(
     ...     remove_some_entries_from_zip,
     ...     ask_before_before_deleting=False
     ... )
-
     """
     z = zip_source
     if not isinstance(z, Mapping):

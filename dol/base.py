@@ -86,14 +86,18 @@ class AttrNames:
 #  point to.
 class Collection(CollectionABC):
     """The same as collections.abc.Collection, with some modifications:
+
     - Addition of a ``head``
     """
 
     def __contains__(self, x) -> bool:
         """
         Check if collection of keys contains k.
-        Note: This method loops through all contents of collection to see if query element exists.
-        Therefore it may not be efficient, and in most cases, a method specific to the case should be used.
+
+        Note:
+            This method loops through all contents of collection to see if query element exists.
+            Therefore it may not be efficient, and in most cases, a method specific to the case should be used.
+
         :return: True if k is in the collection, and False if not
         """
         for existing_x in iter(self):
@@ -104,8 +108,11 @@ class Collection(CollectionABC):
     def __len__(self) -> int:
         """
         Number of elements in collection of keys.
-        Note: This method iterates over all elements of the collection and counts them.
-        Therefore it is not efficient, and in most cases should be overridden with a more efficient version.
+
+        Note:
+            This method iterates over all elements of the collection and counts them.
+            Therefore it is not efficient, and in most cases should be overridden with a more efficient version.
+
         :return: The number (int) of elements in the collection of keys.
         """
         # Note: Found that sum(1 for _ in self.__iter__()) was slower for small, slightly faster for big inputs.
@@ -184,7 +191,6 @@ class KvReader(MappingViewMixin, Collection, Mapping):
         .. code-block:: python
 
             reversed = sorted(self)[::-1]
-
         """
         raise NotImplementedError(__doc__)
 
@@ -210,6 +216,7 @@ class KvPersister(KvReader, MutableMapping):
 
     If `s` is a dict, this would have the effect of adding a ('b', 3) item under 'a'.
     But in the general case, this might
+
     - fail, because the `s['a']` doesn't support sub-scripting (doesn't have a `__getitem__`)
     - or, worse, will pass silently but not actually persist the write as expected (e.g. LocalFileStore)
 
@@ -219,7 +226,6 @@ class KvPersister(KvReader, MutableMapping):
      -- that is, LIFO (last-in, first-out) order -- for KvPersisters,
      there's no assurance as to what item will be, since it will depend on the backend storage system
      and/or how the persister was implemented.
-
     """
 
     clear = _disabled_clear_method
@@ -564,7 +570,6 @@ def delegator_wrap(
     >>> WrappedA = Delegator.wrap(A)
     >>> hasattr(WrappedA, 'foo')
     True
-
     """
     if isinstance(obj, type):
         if isinstance(delegator, type):
@@ -699,7 +704,6 @@ class Store(KvPersister):
     override the `KeysView`, `ValuesView` or `ItemsView` classes that they use.
 
     For more, see: https://github.com/i2mint/dol/wiki/Mapping-Views
-
     """
 
     _state_attrs = ["store", "_class_wrapper"]
@@ -978,10 +982,11 @@ def kv_walk(
     ...         ]
     ... )
 
-    Tip: If you want to use ``kv_filt`` to search and extract stuff from a nested
-    mapping, you can have your ``leaf_yield`` return a sentinel (say, ``None``) to
-    indicate that the value should be skipped, and then filter out the ``None``s from
-    your results.
+    Tip:
+        If you want to use ``kv_filt`` to search and extract stuff from a nested
+        mapping, you can have your ``leaf_yield`` return a sentinel (say, ``None``) to
+        indicate that the value should be skipped, and then filter out the ``None`` values from
+        your results.
 
     >>> mm = {
     ...     'a': {'b': {'c': 42}},
@@ -1027,9 +1032,9 @@ def kv_walk(
     [('apple',), ('big', 'apple')]
 
     So now, you can get the first apple path by doing:
+
     >>> next(filter(None, walker3(d)))
     ('apple',)
-
     """
     if not breadth_first:
         # print(f"1: entered with: v={v}, p={p}")
@@ -1077,8 +1082,8 @@ def has_kv_store_interface(o):
     Args:
         o: object (class or instance)
 
-    Returns: True if kv has the four key (in/out) and value (in/out) transformation methods
-
+    Returns:
+        True if kv has the four key (in/out) and value (in/out) transformation methods
     """
     return (
         hasattr(o, "_id_of_key")

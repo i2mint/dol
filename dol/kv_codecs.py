@@ -81,7 +81,6 @@ def csv_dict_encode(string, *args, **kwargs):
     >>> encoded = csv_dict_encode(data, fieldnames=['a', 'b'])
     >>> encoded
     'a,b\r\n1,2\r\n3,4\r\n'
-
     """
     _ = kwargs.pop("fieldcasts", None)  # this one is for decoder only
     with io.StringIO() as buffer:
@@ -122,7 +121,6 @@ def csv_dict_decode(string, *args, **kwargs):
     [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]
     >>> csv_dict_decode(encoded, fieldnames=['a', 'b'], fieldcasts={'b': float})
     [{'a': '1', 'b': 2.0}, {'a': '3', 'b': 4.0}]
-
     """
     fieldcasts = kwargs.pop("fieldcasts", lambda row: row)
     if isinstance(fieldcasts, Iterable):
@@ -300,8 +298,6 @@ class ValueCodecs(CodecCollection):
     {
       "b": 2
     }
-
-
     """
 
     # TODO: Clean up module import polution?
@@ -547,7 +543,7 @@ def key_based_value_trans(
     """A factory that creates a value codec that uses the key to determine the
     codec to use.
 
-    # a key_func that gets the extension of a file path
+    Below, ``key_func`` gets the extension of a file path:
 
     >>> import json
     >>> from functools import partial
@@ -557,8 +553,6 @@ def key_based_value_trans(
     >>> trans = key_based_value_trans(
     ...     key_func, value_trans_mapping, default_factory=lambda: identity_func
     ... )
-
-
     """
     if k is NotGiven:
         return partial(

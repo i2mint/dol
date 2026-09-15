@@ -307,9 +307,12 @@ misc_objs_get.dflt_incoming_val_trans_for_key = dflt_incoming_val_trans_for_key
 
 class MiscStoreMixin(MiscReaderMixin):
     r"""Mixin to transform incoming and outgoing vals according to the key their under.
-    Warning: If used as a subclass, this mixin should (in general) be placed before the store
 
-    See also: preset and postget args from wrap_kvs decorator from dol.trans.
+    Warning:
+        If used as a subclass, this mixin should (in general) be placed before the store
+
+    See also:
+        preset and postget args from wrap_kvs decorator from dol.trans.
 
     >>> # Make a class to wrap a dict with a layer that transforms written and read values
     >>> class MiscStore(MiscStoreMixin, dict):
@@ -355,7 +358,6 @@ class MiscStoreMixin(MiscReaderMixin):
     a.csv: b'event,year\r\n Magna Carta,1215\r\n Guido,1956\r\n'
     a.txt: b'this is not a text'
     a.json: b'{"str": "field", "int": 42, "float": 3.14, "array": [1, 2], "nested": {"a": 1, "b": 2}}'
-
     """
 
     _dflt_outgoing_val_trans_for_key = staticmethod(identity_method)
@@ -393,8 +395,8 @@ def set_obj(
     outgoing_val_trans_for_key=imdict(dflt_outgoing_val_trans_for_key),
     func_key=lambda k: os.path.splitext(k)[1],
 ):
-    """A quick way to get an object, with default...
-    # everything (but the key, you know, a clue of what you want)"""
+    """A quick way to set an object, with defaults for everything
+    (but the key and value, you know, a clue of what you want to store)."""
     if isinstance(store, Files) and store._prefix in {"", "/"}:
         k = os.path.abspath(os.path.expanduser(k))
 
@@ -438,7 +440,6 @@ class MiscGetterAndSetter(MiscGetter):
     >>> # using bin
     ... misc_objs[pjoin('tmp.bin')] = b'let us pretend these are bytes of an audio waveform'
     >>> assert misc_objs[pjoin('tmp.bin')] == b'let us pretend these are bytes of an audio waveform'
-
     """
 
     def __init__(

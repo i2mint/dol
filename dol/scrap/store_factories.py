@@ -24,9 +24,11 @@ Deleter = NewType("Deleter", Callable[[Mapping, KT], Any])
 def count_by_iteration(collection: Collection) -> int:
     """
     Number of elements in collection of keys.
-    Note: This method iterates over all elements of the collection and counts them.
-    Therefore it is not efficient, and in most cases should be overridden with a more
-    efficient method.
+
+    Note:
+        This method iterates over all elements of the collection and counts them.
+        Therefore it is not efficient, and in most cases should be overridden with a more
+        efficient method.
     """
     count = 0
     for _ in iter(collection):
@@ -39,8 +41,11 @@ def count_by_iteration(collection: Collection) -> int:
 def check_by_iteration(collection: Collection[KT], x: KT) -> bool:
     """
     Check if collection of keys contains k.
-    Note: Method loops through contents of collection to see if query element exists.
-    Therefore it may not be efficient, and in most cases, a method specific to the case should be used.
+
+    Note:
+        Method loops through contents of collection to see if query element exists.
+        Therefore it may not be efficient, and in most cases, a method specific to the case should be used.
+
     :return: True if k is in the collection, and False if not
     """
     for existing_x in iter(collection):
@@ -52,9 +57,12 @@ def check_by_iteration(collection: Collection[KT], x: KT) -> bool:
 def check_by_trying_to_get(mapping: Mapping, x: KT, false_on_error=(KeyError,)) -> bool:
     """
     Check if mapping contains x.
-    Note: This method tries to get x from the mapping, returning ``False`` if it fails.
-    Therefore it may not be efficient, and in most cases,
-    a method specific to the case should be used.
+
+    Note:
+        This method tries to get x from the mapping, returning ``False`` if it fails.
+        Therefore it may not be efficient, and in most cases,
+        a method specific to the case should be used.
+
     :return: True if x is in the mapping, and False if not
     """
     try:
@@ -100,8 +108,6 @@ class KvReaderShell(KvReader):
     True
     >>> s['__add__']((4, 5))
     (1, 2, 3, 4, 5)
-
-
     """
 
     src: Any

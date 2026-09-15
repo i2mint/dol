@@ -50,6 +50,7 @@ def validate_kwargs(
     Utility to validate a dict. It's main use is to validate function arguments (expressing the validation checks
     in validation_dict) by doing validate_kwargs(locals()), usually in the beginning of the function
     (to avoid having more accumulated variables than we need in locals())
+
     :param kwargs_to_validate: as the name implies...
     :param validation_dict: A dict specifying what to validate. Keys are usually name of variables (when feeding
         locals()) and values are dicts, themselves specifying check:check_val pairs where check is a string that
@@ -214,8 +215,9 @@ empty_field_p = re.compile("{}")
 def get_fields_from_template(template):
     """
     Get list from {item} items of template string
+
     :param template: a "template" string (a string with {item} items
-    -- the kind that is used to mark token for str.format)
+        -- the kind that is used to mark token for str.format)
     :return: a list of the token items of the string, in the order they appear
 
     >>> get_fields_from_template('this{is}an{example}of{a}template')
@@ -318,10 +320,13 @@ def mk_extract_pattern(
 # TODO: Is dependent on path sep -- separate concern
 def mk_pattern_from_template_and_format_dict(template, format_dict=None, sep=path_sep):
     r"""Make a compiled regex to match template
+
     Args:
         template: A format string
         format_dict: A dict whose keys are template fields and values are regex strings to capture them
-    Returns: a compiled regex
+
+    Returns:
+        a compiled regex
 
     Assert on *behavior* (matching) rather than the exact pattern string, so the
     examples hold on every OS (the field separator -- and therefore the default
@@ -408,6 +413,7 @@ def _mk(self, *args, **kwargs):
     function.
     The required fields are in self.fields.
     Does NOT check for validity of the vals.
+
     :param kwargs: The name=val arguments needed to construct a valid name
     :return: an name
     """
@@ -453,6 +459,7 @@ class StrTupleDict:
             process_info_dict: A sort of converse of format_dict.
                 This is a {field_name: field_conversion_func, ...} dict that is used to convert info_dict values
                 before returning them.
+
             name_separator: Used
 
         >>> ln = StrTupleDict('/home/{user}/fav/{num}.txt',
@@ -538,6 +545,7 @@ class StrTupleDict:
             function.
             The required fields are in self.fields.
             Does NOT check for validity of the vals.
+
             :param kwargs: The name=val arguments needed to construct a valid name
             :return: an name
             """
@@ -562,6 +570,7 @@ class StrTupleDict:
     def is_valid(self, s: str):
         """Check if the name has the "upload format" (i.e. the kind of fields that are _ids of fv_mgc, and what
         name means in most of the iatis system.
+
         :param s: the string to check
         :return: True iff name has the upload format
         """
@@ -570,6 +579,7 @@ class StrTupleDict:
     def str_to_dict(self, s: str):
         """
         Get a dict with the arguments of an name (for example group, user, subuser, etc.)
+
         :param s:
         :return: a dict holding the argument fields and values
         """
@@ -634,6 +644,7 @@ class StrTupleDict:
 
     def extract(self, field, s):
         """Extract a single item from an name
+
         :param field: field of the item to extract
         :param s: the string from which to extract it
         :return: the value for name
@@ -645,6 +656,7 @@ class StrTupleDict:
 
     def replace_name_elements(self, s: str, **elements_kwargs):
         """Replace specific name argument values with others
+
         :param s: the string to replace
         :param elements_kwargs: the arguments to replace (and their values)
         :return: a new name
@@ -697,6 +709,7 @@ class StrTupleDictWithPrefix(StrTupleDict):
         process_info_dict: A sort of converse of format_dict.
             This is a {field_name: field_conversion_func, ...} dict that is used to convert info_dict values
             before returning them.
+
         name_separator: Used
 
     >>> ln = StrTupleDictWithPrefix('/home/{user}/fav/{num}.txt',
@@ -747,6 +760,7 @@ class StrTupleDictWithPrefix(StrTupleDict):
         def _mk_prefix(self, *args, **kwargs):
             """
             Make a prefix for an uploads name that has has the path up to the first None argument.
+
             :return: A string that is the prefix of a valid name
             """
             assert len(args) + len(kwargs) <= self.n_fields, (
@@ -785,6 +799,7 @@ class StrTupleDictWithPrefix(StrTupleDict):
 
     def is_valid_prefix(self, s):
         """Check if name is a valid prefix.
+
         :param s: a string (that might or might not be a valid prefix)
         :return: True iff name is a valid prefix
         """
@@ -940,10 +955,13 @@ class NamingInterface:
 
 
 class BigDocTest:
+    """Naming-scheme example holder whose (large) doctest is currently disabled.
+
+    The former doctest is kept as comments in the class body.
     """
 
     # TODO: Fix this test (maybe test assertions aren't correct)
-    #   This happened when we changed some re.compile to safe_compile
+    # This happened when we changed some re.compile to safe_compile
     # >>>
     # >>> e_name = BigDocTest.mk_e_naming()
     # >>> u_name = BigDocTest.mk_u_naming()
@@ -994,7 +1012,6 @@ class BigDocTest:
     # >>> u_name.extract('user', u_name_2)
     # 'ANOTHER_USER'
     # >>>
-
     #
     # >>> ####### mk_prefix(self, *args, **kwargs): ######
     # >>> e_name.mk_prefix()
@@ -1039,7 +1056,6 @@ class BigDocTest:
     # >>> name = 's3://bucket-redrum/example/files/oopsy@domain.com/ozeip/2008-11-04/1225779243969_1225779246969'
     # >>> e_name.replace_name_elements(name, user='NEW_USER', group='NEW_GROUP')
     # 's3://bucket-NEW_GROUP/example/files/NEW_USER/ozeip/2008-11-04/1225779243969_1225779246969'
-    """
 
     @staticmethod
     def process_info_dict_for_example(**info_dict):
@@ -1159,23 +1175,25 @@ def mk_store_from_path_format_store_cls(
         store: The instance or class to wrap
         subpath: The subpath (defining the subset of the data pointed at by the URI
         store_cls_kwargs:  # if store is a class, the kwargs that you would have given the store_cls to make itself
-        key_type: The key type you want to interface with:
-            dict, tuple, namedtuple, str or 'dict', 'tuple', 'namedtuple', 'str'
+        key_type: The key type you want to interface with: ``dict``, ``tuple``,
+            ``namedtuple``, ``str``, or one of those names as a string
         keymap:  # the keymap instance or class you want to use to map keys
         keymap_kwargs:  # if keymap is a cls, the kwargs to give it (besides the subpath)
         name: The name to give the class the function will make here
 
-    Returns: An instance of a wrapped class
+    Returns:
+        An instance of a wrapped class
 
 
-    Example:
-    ```
-    # Get a (session, bt) indexed LocalJsonStore
-    s = mk_store_from_path_format_store_cls(LocalJsonStore,
-                                                   os.path.join(root_dir, 'd'),
-                                                   subpath='{session}/d/{bt}',
-                                                   keymap_kwargs=dict(process_info_dict={'session': int, 'bt': int}))
-    ```
+    .. rubric:: Example
+
+    .. code-block:: python
+
+        # Get a (session, bt) indexed LocalJsonStore
+        s = mk_store_from_path_format_store_cls(LocalJsonStore,
+                                                       os.path.join(root_dir, 'd'),
+                                                       subpath='{session}/d/{bt}',
+                                                       keymap_kwargs=dict(process_info_dict={'session': int, 'bt': int}))
     """
     if isinstance(keymap, type):
         keymap = keymap(subpath, **(keymap_kwargs or {}))  # make the keymap instance
@@ -1218,11 +1236,14 @@ class PartialFormatter(Formatter):
     >>> partial_formatter.format(str_template, bar="BAR", b=34)
     'foo:{foo} bar=BAR a={a} b=34.00 c={c}'
 
-    Note: If you only need a formatting function (not the transformed formatting string), a simpler solution may be:
-    ```
-    import functools
-    format_str = functools.partial(str_template.format, bar="BAR", b=34)
-    ```
+    Note:
+        If you only need a formatting function (not the transformed formatting string), a simpler solution may be:
+
+    .. code-block:: python
+
+        import functools
+        format_str = functools.partial(str_template.format, bar="BAR", b=34)
+
     See https://stackoverflow.com/questions/11283961/partial-string-formatting for more options and discussions.
     """
 

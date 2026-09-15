@@ -85,17 +85,20 @@ def create_directories(dirpath, max_dirs_to_make: int | None = None):
     """
     Create directories up to a specified limit.
 
-    Parameters:
-    dirpath (str): The directory path to create.
-    max_dirs_to_make (int, optional): The maximum number of directories to create. If None, there's no limit.
+    Args:
+        dirpath: The directory path to create.
+        max_dirs_to_make: The maximum number of directories to create. If None,
+            there's no limit.
 
     Returns:
-    bool: True if the directory was created successfully, False otherwise.
+        True if the directory exists (already, or after creation); False if creating
+        it would need more than ``max_dirs_to_make`` new directories (none are made).
 
     Raises:
-    ValueError: If max_dirs_to_make is negative.
+        ValueError: If max_dirs_to_make is negative.
 
-    Examples:
+    .. rubric:: Examples
+
     >>> import tempfile, shutil
     >>> temp_dir = tempfile.mkdtemp()
     >>> target_dir = os.path.join(temp_dir, 'a', 'b', 'c')
@@ -183,7 +186,6 @@ def process_path(
     ... )
     >>> p == os.path.join('root_dir', 'a', 'b', 'c') + os.sep
     True
-
     """
     path = os.path.join(*path)
     if ensure_endswith_slash and ensure_does_not_end_with_slash:
@@ -232,14 +234,13 @@ def ensure_dir(
     - a ``bool``' a standard message will be printed
 
     - a ``callable``; will be called on dirpath before directory is created -- you
-    can use this to ask the user for confirmation for example
+      can use this to ask the user for confirmation for example
 
     - a ''string``; this string will be printed
 
 
     Usage note: If you want to string or the (argument-less) callable to be dependent
     on ``dirpath``, you need make them so when calling ensure_dir.
-
     """
     if not os.path.exists(dirpath):
         if verbose:
@@ -260,25 +261,17 @@ def temp_dir(dirname="", make_it_if_necessary=True, verbose=False):
     Create and return a path to a temporary directory that's guaranteed to be
     accessible to the user.
 
-    Parameters:
-    ----------
-    dirname : str
-        Optional subdirectory name to append to the temporary directory path
-    make_it_if_necessary : bool
-        Whether to create the directory if it doesn't exist
-    verbose : bool, str, or callable
-        Controls verbosity when creating directories
+    Args:
+        dirname: Optional subdirectory name to append to the temporary directory path
+        make_it_if_necessary: Whether to create the directory if it doesn't exist
+        verbose: Controls verbosity when creating directories
 
     Returns:
-    -------
-    str
         Path to a temporary directory that the user has access to
 
-    Notes:
-    -----
-    This function creates a user-specific temporary directory to avoid permission
-    issues with system-wide temporary directories. The directory is guaranteed to
-    be accessible to the current user.
+    Note:
+        This function creates a user-specific temporary directory to avoid permission
+        issues with system-wide temporary directories.
     """
     from tempfile import mkdtemp, gettempdir
     import uuid
@@ -560,6 +553,7 @@ class LocalFileDeleteMixin:
     to os.remove (with warning).
 
     See dol.trash module for available deletion strategies:
+
     - default_delete_func: Safe trash with warning on fallback
     - permanent_delete: Direct os.remove (no warnings)
     - trash_only: Error if trash unavailable
@@ -607,9 +601,11 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
             delete_func: Optional custom deletion function.
                 If None, uses class default (safe trash with fallback).
                 Common options from dol.trash:
+
                 - default_delete_func (safe trash, warning on fallback)
                 - permanent_delete (os.remove, no warnings)
                 - trash_only (error if trash unavailable)
+
             **kwargs: Passed to parent classes
         """
         super().__init__(*args, **kwargs)

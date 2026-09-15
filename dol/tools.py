@@ -47,7 +47,6 @@ def confirm_overwrite(
         If you want to overwrite it with alligator, confirm by typing alligator here:
 
     And we'll have to type `alligator` and press RETURN to make the write go through.
-
     """
     if (existing_v := mapping.get(k, NoSuchKey)) is not NoSuchKey and existing_v != v:
         user_input = input(user_input_msg.format(k=k, v=v, existing_v=existing_v))
@@ -137,22 +136,22 @@ def store_aggregate(
 
     Args:
         content_store (Union[Mapping[KT, VT], str]): Path to the folder or dol store to read from.
-        kv_to_item (Callable[[KT, VT], Item]):
-            Function to convert key-value pairs to an Item (usually a string).
-        aggregator (Callable[[Iterable[Item]], Aggregate]):
-            The function that will aggregate the items that `kv_to_item` produces.
+        kv_to_item (Callable[[KT, VT], Item]): Function to convert key-value pairs to an Item (usually a string).
+
+        aggregator (Callable[[Iterable[Item]], Aggregate]): The function that will aggregate the items that `kv_to_item` produces.
             Defaults to '\n\n'.join.
-        egress (Union[Callable[[Aggregate], Any], str]):
-            The function that will be called on the aggregate before returning it.
+
+        egress (Union[Callable[[Aggregate], Any], str]): The function that will be called on the aggregate before returning it.
             Defaults to identity.
             Note that if you provide a string, the function will save the aggregate
             text to a file, assuming it is indeed text.
-        key_filter (Optional[Callable[[KT], bool]]):
-            Optional filter for keys. Defaults to None (no filtering).
-        value_filter (Optional[Callable[[VT], bool]]):
-            Optional filter for values. Defaults to None (no filtering).
-        kv_filter (Optional[Callable[[Tuple[KT, VT]], bool]]):
-            Optional filter for key-value pairs. Defaults to None (no filtering).
+
+        key_filter (Optional[Callable[[KT], bool]]): Optional filter for keys. Defaults to None (no filtering).
+
+        value_filter (Optional[Callable[[VT], bool]]): Optional filter for values. Defaults to None (no filtering).
+
+        kv_filter (Optional[Callable[[Tuple[KT, VT]], bool]]): Optional filter for key-value pairs. Defaults to None (no filtering).
+
         local_store_factory (Callable[[str], Mapping[KT, VT]]): Factory function for the local store,
             used only if `content_store` is an existing folder path. Defaults to Latin1TextFiles.
 
@@ -500,7 +499,6 @@ class Forest(KvReader):
     True
     >>> list(fff)
     ['granny', 'fuji']
-
     """
 
     def __init__(

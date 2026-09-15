@@ -209,9 +209,10 @@ def _statically_defines_url_for(obj) -> bool:
     called per object. Anything this misses falls through to the plain-``getattr`` fallback
     in :func:`content_url`, so a miss costs correctness nothing.
 
-    NOTE: ``DelegatedAttribute`` is defined twice in dol -- ``dol.base`` (the one the wrap
-    machinery constructs) and an unused duplicate in ``dol.util``. If a wrap path ever
-    switches to the other copy this check silently stops working, so they must not diverge.
+    NOTE:
+        ``DelegatedAttribute`` is defined twice in dol -- ``dol.base`` (the one the wrap
+        machinery constructs) and an unused duplicate in ``dol.util``. If a wrap path ever
+        switches to the other copy this check silently stops working, so they must not diverge.
     """
     d = getattr(obj, "__dict__", None)
     if d is not None and "url_for" in d:

@@ -36,7 +36,7 @@ class KeysReader(Mapping):
         key_error_msg: A function that takes a source and a key, and returns an error message.
 
 
-    Example::
+    .. rubric:: Example
 
     >>> src = {'apple': 'pie', 'banana': 'split', 'carrot': 'cake'}
     >>> key_collection = ['carrot', 'apple']
@@ -76,7 +76,6 @@ class KeysReader(Mapping):
     Traceback (most recent call last):
     ...
     KeyError: "Key banana was not found"
-
     """
 
     def __init__(
@@ -176,7 +175,6 @@ class ExplicitKeysSource(ExplicitKeys, ObjReader, KvReader):
     [1, 2, 3]
     >>> list(s.values())
     ['1', '2', '3']
-
     """
 
     def __init__(self, key_collection: CollectionType, _obj_of_key: Callable):

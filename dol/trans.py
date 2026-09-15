@@ -46,9 +46,10 @@ def double_up_as_factory(decorator_func):
     That is, from a decorator that is defined do ``wrapped_func = decorator(func, **params)``,
     make it also be able to do ``wrapped_func = decorator(**params)(func)``.
 
-    Note: You'll only be able to do this if all but the first argument are keyword-only,
-    and the first argument (the function to decorate) has a default of ``None`` (this is for your own good).
-    This is validated before making the "double up as factory" decorator.
+    Note:
+        You'll only be able to do this if all but the first argument are keyword-only,
+        and the first argument (the function to decorate) has a default of ``None`` (this is for your own good).
+        This is validated before making the "double up as factory" decorator.
 
     >>> @double_up_as_factory
     ... def decorator(func=None, *, multiplier=2):
@@ -92,7 +93,6 @@ def double_up_as_factory(decorator_func):
     Traceback (most recent call last):
       ...
     AssertionError: All arguments (besides the first) need to be keyword-only
-
     """
 
     def validate_decorator_func(decorator_func):
@@ -143,6 +143,7 @@ def store_decorator(func):
 
     ``store_decorator`` takes that ``func`` and provides an enhanced class decorator specialized for stores.
     Namely it will:
+
     - Add ``__module__``, ``__qualname__``, ``__name__`` and ``__doc__`` arguments to it
     - Copy the aforementioned arguments to the decorated class, or copy the attributes of the original if not specified.
     - Output a decorator that can be used in four different ways: a class/instance decorator/factory.
@@ -150,6 +151,7 @@ def store_decorator(func):
     By class/instance decorator/factory we mean that if ``A`` is a class, ``a`` an instance of it,
     and ``deco`` a decorator obtained with ``store_decorator(func)``,
     we can use ``deco`` to
+
     - class decorator: decorate a class
     - class decorator factory: make a function that decorates classes
     - instance decorator: decorate an instance of a store
@@ -224,7 +226,8 @@ def store_decorator(func):
     >>> b = deco(a, x=42); assert b.x == 42  # b has an x and it's 42
     >>> b = deco(x=42)(a); assert b.x == 42; # b has an x and it's 42
 
-    WARNING: Note though that the type of ``b`` is not the same type as ``a``
+    WARNING:
+        Note though that the type of ``b`` is not the same type as ``a``
 
     >>> isinstance(b, a.__class__)
     False
@@ -314,7 +317,6 @@ def store_decorator(func):
     >>> wd = remove_deletion(d, msg='No way. I do not trust you!!')
     >>> assert wd == d  # same as far as dict comparison goes
     >>> assert wd.__delitem__('x') == 'No way. I do not trust you!!'
-
     """
 
     # wrapper_assignments = ('__module__', '__qualname__', '__name__', '__doc__', '__annotations__')
@@ -572,7 +574,8 @@ def mk_kv_reader_from_kv_collection(
             By default, getitem will be transparent_key_method, returning the key as is.
             This default is useful when you want to delegate the actual getting to a _obj_of_data wrapper.
 
-    Returns: A KvReader class that subclasses the input kv_collection
+    Returns:
+        A KvReader class that subclasses the input kv_collection
     """
 
     name = name or kv_collection.__qualname__ + "Reader"
@@ -609,8 +612,10 @@ def is_iterable(x):
 
 def add_ipython_key_completions(store):
     """Add tab completion that shows you the keys of the store.
-    Note: ipython already adds local path listing automatically,
-     so you'll still get those along with your valid store keys.
+
+    Note:
+        ipython already adds local path listing automatically,
+        so you'll still get those along with your valid store keys.
     """
 
     def _ipython_key_completions_(self):
@@ -648,7 +653,9 @@ def disallow_overwrites(store, *, error_msg=None, disable_deletes=True):
 
 class OverWritesNotAllowedMixin:
     """Mixin for only allowing a write to a key if they key doesn't already exist.
-    Note: Should be before the persister in the MRO.
+
+    Note:
+        Should be before the persister in the MRO.
 
     >>> class TestPersister(OverWritesNotAllowedMixin, dict):
     ...     pass
@@ -780,7 +787,6 @@ def insert_hash_method(
     ...     pass
     >>> hash(F({1: 2, 3: 4}))
     6
-
     """
     return _wrap_store(_insert_hash_method, locals())
 
@@ -834,17 +840,20 @@ def cached_keys(
     It is assumed, if you're using the cached_keys transformation, that you're dealing with static data
     (or data that can be considered static for the life of the store -- for example, when conducting analytics).
     If you ever need to refresh the cache during the life of the store, you can to delete _keys_cache like this:
-    ```
-    del your_store._keys_cache
-    ```
+
+    .. code-block:: python
+
+        del your_store._keys_cache
+
     Once you do that, the next time you try to ask something about the contents of the store, it will actually do
     a live query again, as for the first time.
 
-    Note: The default keys_cache is list though in many cases, you'd probably should use set, or an explicitly
-    computer set instead. The reason list is used as the default is because (1) we didn't want to assume that
-    order did not matter (maybe it does to you) and (2) we didn't want to assume that your keys were hashable.
-    That said, if you're keys are hashable, and order does not matter, use set. That'll give you two things:
-    (a) your `key in store` checks will be faster (O(1) instead of O(n)) and (b) you'll enforce unicity of keys.
+    Note:
+        The default keys_cache is list though in many cases, you'd probably should use set, or an explicitly
+        computer set instead. The reason list is used as the default is because (1) we didn't want to assume that
+        order did not matter (maybe it does to you) and (2) we didn't want to assume that your keys were hashable.
+        That said, if you're keys are hashable, and order does not matter, use set. That'll give you two things:
+        (a) your `key in store` checks will be faster (O(1) instead of O(n)) and (b) you'll enforce unicity of keys.
 
     Know also that if you precompute the keys you want to cache with a container that has an update
     method (by default `update`) your cache updates will be faster and if the container you use has
@@ -859,20 +868,23 @@ def cached_keys(
             Note that this cache_update_method will be used only
                 if keys_cache is an explicit iterable and has that attribute
                 if keys_cache is a callable and has that attribute.
+
             The default None
+
         name: The name of the new class
 
     Returns:
-        If store is:
-            None: Will return a decorator that can be applied to a store
-            a store class: Will return a wrapped class that caches it's keys
-            a store instance: Will return a wrapped instance that caches it's keys
+        If store is None, a decorator that can be applied to a store; if store is a
+        class, a wrapped class that caches its keys; if store is an instance, a
+        wrapped instance that caches its keys.
 
         The instances of such key-cached classes have some extra attributes:
-            _explicit_keys: The actual cache. An iterable container
-            update_keys_cache: Is called if a user uses the instance to mutate the store (i.e. write or delete).
+        ``_explicit_keys`` (the actual cache, an iterable container) and
+        ``update_keys_cache`` (called if a user uses the instance to mutate the
+        store, i.e. write or delete).
 
     You have two ways of caching keys:
+
     - By providing the explicit list of keys you want cache (and use)
     - By providing a callable that will iterate through your store and collect an explicit list of keys
 
@@ -1252,13 +1264,13 @@ def catch_and_cache_error_keys(
     You don't like it? Neither do I. But
 
     - It's not a completely outrageous behavior -- if you're talking to live data, it
-        often happens that you get more, or less, from one second to another.
+      often happens that you get more, or less, from one second to another.
 
     - This store isn't meant to be long living, but rather meant to solve the problem of
-        skiping items that are problematic (for example, malformatted files),
-        with a trace of what was skipped and what's valid (in case we need to iterate
-        again and don't want to bear the hit of requesting values for keys we already
-        know are problematic.
+      skiping items that are problematic (for example, malformatted files),
+      with a trace of what was skipped and what's valid (in case we need to iterate
+      again and don't want to bear the hit of requesting values for keys we already
+      know are problematic.
 
     Here's a little peep of what is happening under the hood.
     Meet ``_keys_cache`` and ``_error_keys`` sets (yes, unordered -- so know it) that are meant
@@ -1300,7 +1312,6 @@ def catch_and_cache_error_keys(
     >>> sorted(s.values())  # sorting to get consistent output
     Error with black key: "Nope, that's from the black list!"
     [13, 20]
-
     """
 
     assert isinstance(store, type), (
@@ -1439,12 +1450,13 @@ def filt_iter(
     """Make a wrapper that will transform a store (class or instance thereof) into a sub-store (i.e. subset of keys).
 
     Args:
-        filt: A callable or iterable:
-            callable: Boolean filter function. A func taking a key and and returns True iff the key should be included.
-            iterable: The collection of keys you want to filter "in"
+        filt: A callable or iterable. If a callable, a boolean filter function taking
+            a key and returning True iff the key should be included. If an iterable,
+            the collection of keys you want to filter "in".
         name: The name to give the wrapped class
 
-    Returns: A wrapper (that then needs to be applied to a store instance or class.
+    Returns:
+        A wrapper (that then needs to be applied to a store instance or class.
 
     >>> filtered_dict = filt_iter(filt=lambda k: (len(k) % 2) == 1)(dict)  # keep only odd length keys
     >>>
@@ -1602,7 +1614,6 @@ def filter_suffixes(suffixes):
     True
     >>> is_text("image.jpg")
     False
-
     """
     if isinstance(suffixes, str):
         suffixes = [suffixes]
@@ -1624,7 +1635,6 @@ def filter_prefixes(prefixes):
     True
     >>> is_test_or_report("image.jpg")
     False
-
     """
     if isinstance(prefixes, str):
         prefixes = [prefixes]
@@ -1707,7 +1717,8 @@ def kv_wrap_persister_cls(persister_cls, name=None):
     Args:
         persister_cls: The persister class to wrap
 
-    Returns: A Store wrapping the persister (see dol.base)
+    Returns:
+        A Store wrapping the persister (see dol.base)
 
     >>> A = kv_wrap_persister_cls(dict)
     >>> a = A()
@@ -1818,7 +1829,8 @@ def _wrap_outcoming(
         trans_func: The transformation function.
         wrap_arg_idx: The index of the
 
-    Returns: Nothing. It transforms the class in-place
+    Returns:
+        Nothing. It transforms the class in-place
 
     >>> from dol.trans import store_wrap
     >>> S = store_wrap(dict)
@@ -1921,7 +1933,8 @@ def wrap_kvs(
 ):
     r"""Make a Store that is wrapped with the given key/val transformers.
 
-    Naming convention:
+    Naming convention::
+
         Morphemes:
             key: outer key
             _id: inner key
@@ -1947,6 +1960,7 @@ def wrap_kvs(
             The intent use is to do ingoing value transformations conditioned on the key.
             For example, you may want to serialize an object depending on if you're writing to a
              '.csv', or '.json', or '.pickle' file.
+
             Forms are `preset(k, obj)` or `preset(self, k, obj)`
         postget: A function that is called after the value `v` for a key `k` is be `__getitem__`.
             The function is called with both `k` and `v` as inputs, and should output a transformed value.
@@ -1955,7 +1969,8 @@ def wrap_kvs(
             For example, you may want to deserialize the bytes of a '.csv', or '.json', or '.pickle' in different ways.
             Forms are `obj = postget(k, data)` or `obj = postget(self, k, data)`
 
-    Returns: A key and/or value transformed wrapped (or wrapper) class (or instance).
+    Returns:
+        A key and/or value transformed wrapped (or wrapper) class (or instance).
 
     >>> def key_of_id(_id):
     ...     return _id.upper()
@@ -2048,8 +2063,8 @@ def wrap_kvs(
     >>> d['foo.pkl']
     [['a', 'b', 'c'], ['d', 'e', 'f']]
 
-    # TODO: Add tests for outcoming_key_methods etc.
     """
+    # TODO: Add tests for outcoming_key_methods etc.
     # kwargs = dict(
     #     locals(), wrapper=wrapper or Store, name=store.__qualname__ + "Wrapped"
     # )
@@ -2067,7 +2082,8 @@ def _handle_codecs(kwargs: dict):
     """Handle the key_codec and data_codec kwargs, converting them to key_of_id
     and obj_of_data.
 
-    Warning: Mutates kwargs in place.
+    Warning:
+        Mutates kwargs in place.
 
     >>> kwargs = {'value_decoder': int, 'value_encoder': str}
     >>> _handle_codecs(kwargs)
@@ -2078,7 +2094,6 @@ def _handle_codecs(kwargs: dict):
     >>> _handle_codecs(kwargs)
     >>> assert kwargs['key_of_id'] == int
     >>> assert kwargs['id_of_key'] == str
-
     """
     if key_codec := kwargs.get("key_codec", None):
         if kwargs.get("key_of_id", None):
@@ -2168,7 +2183,8 @@ def _handle_codecs(kwargs: dict):
 def add_decoder(store_cls=None, *, decoder: Callable = None, name=None):
     """Add a decoder layer to a store.
 
-    Note: This is a convenience function for ``wrap_kvs(..., obj_of_data=decoder)``.
+    Note:
+        This is a convenience function for ``wrap_kvs(..., obj_of_data=decoder)``.
 
     >>> s = {'a': "42"}
     >>> ss = add_decoder(s, decoder=int)
@@ -2278,8 +2294,9 @@ def _kv_wrap_outcoming_keys(trans_func):
     Use this when you wouldn't use the keys in their original format,
     or when you want to extract information from it.
 
-    Warning: If you haven't also wrapped incoming keys with a corresponding inverse transformation,
-    you won't be able to use the outcoming keys to fetch data.
+    Warning:
+        If you haven't also wrapped incoming keys with a corresponding inverse transformation,
+        you won't be able to use the outcoming keys to fetch data.
 
     >>> from collections import UserDict
     >>> S = kv_wrap.outcoming_keys(lambda x: x[5:])(UserDict)
@@ -2289,10 +2306,10 @@ def _kv_wrap_outcoming_keys(trans_func):
     >>> list(s.keys())
     ['foo', 'bar']
 
+    """
     # TODO: Asymmetric key trans breaks getting items (therefore items()). Resolve (remove items() for asym keys?)
     # >>> list(s.items())
     # [('foo', 10), ('bar', 'xo')]
-    """
 
     def wrapper(o, name=None):
         name = (
@@ -2312,8 +2329,9 @@ def _kv_wrap_ingoing_keys(trans_func):
     (because you shouldn't) 'manually' extract that information and construct the key manually every time you need
     to write something or fetch some existing data.
 
-    Warning: If you haven't also wrapped outcoming keys with a corresponding inverse transformation,
-    you won't be able to use the incoming keys to fetch data.
+    Warning:
+        If you haven't also wrapped outcoming keys with a corresponding inverse transformation,
+        you won't be able to use the incoming keys to fetch data.
 
     >>> from collections import UserDict
     >>> S = kv_wrap.ingoing_keys(lambda x: 'root/' + x)(UserDict)
@@ -2325,10 +2343,10 @@ def _kv_wrap_ingoing_keys(trans_func):
     >>> list(s.keys())
     ['root/foo', 'root/bar']
 
+    """
     # TODO: Asymmetric key trans breaks getting items (therefore items()). Resolve (remove items() for asym keys?)
     # >>> list(s.items())
     # [('root/foo', 10), ('root/bar', 'xo')]
-    """
 
     def wrapper(o, name=None):
         name = (
@@ -2349,7 +2367,8 @@ def _kv_wrap_outcoming_vals(trans_func):
     but you want it to be interpreted as a JSON formatted text and get a dict instead. Both of these are
     de-serialization layers, or out-coming value transformations.
 
-    Warning: If it matters, make sure you also wrapped with a corresponding inverse serialization.
+    Warning:
+        If it matters, make sure you also wrapped with a corresponding inverse serialization.
 
     >>> from collections import UserDict
     >>> S = kv_wrap.outcoming_vals(lambda x: x * 2)(UserDict)
@@ -2377,7 +2396,8 @@ def _kv_wrap_ingoing_vals(trans_func):
 
     For example, say you have a list of audio samples, and you want to save these in a WAV format.
 
-    Warning: If it matters, make sure you also wrapped with a corresponding inverse de-serialization.
+    Warning:
+        If it matters, make sure you also wrapped with a corresponding inverse de-serialization.
 
     >>> from collections import UserDict
     >>> S = kv_wrap.ingoing_vals(lambda x: x * 2)(UserDict)
@@ -2522,7 +2542,6 @@ def add_aliases(obj, **aliases):
 
     See also, and not to be confused with ``insert_aliases``, which adds aliases to
     dunder mapping methods (like ``__iter__``, ``__getitem__``) etc.
-
     """
     if not aliases:
         return obj
@@ -2568,12 +2587,10 @@ def kv_wrap(trans_obj):
     >>> d['d', 'e']
     2
 
-    ``kv_wrap`` also has convenience attributes:
-        ``outcoming_keys``, ``ingoing_keys``, ``outcoming_vals``, ``ingoing_vals``,
-        and ``val_reads_wrt_to_keys``
+    ``kv_wrap`` also has convenience attributes (``outcoming_keys``, ``ingoing_keys``,
+    ``outcoming_vals``, ``ingoing_vals``, and ``val_reads_wrt_to_keys``)
     which will only add a single specific wrapper (specified as a function),
     when that's what you need.
-
     """
 
     key_of_id = getattr(trans_obj, "_key_of_id", None)
@@ -2616,13 +2633,17 @@ def mk_wrapper(wrap_cls):
 
     You have a wrapper class and you want to make a wrapper out of it,
     that is, a decorator factory with which you can make wrappers, like this:
-    ```
-    wrapper = mk_wrapper(wrap_cls)
-    ```
+
+    .. code-block:: python
+
+        wrapper = mk_wrapper(wrap_cls)
+
     that you can then use to transform stores like thiis:
-    ```
-    MyStore = wrapper(**wrapper_kwargs)(StoreYouWantToTransform)
-    ```
+
+    .. code-block:: python
+
+        MyStore = wrapper(**wrapper_kwargs)(StoreYouWantToTransform)
+
 
     :param wrap_cls:
     :return:
@@ -2727,7 +2748,7 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
     See issue: https://github.com/i2mint/dol/issues/10.)
 
     Say you have some nested stores.
-    You know... like a `ZipFileReader` store whose values are `ZipReader`s,
+    You know... like a `ZipFileReader` store whose values are `ZipReader` instances,
     whose values are bytes of the zipped files
     (and you can go on... whose (json) values are...).
 
@@ -2752,6 +2773,7 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
     Args:
         store: The store (class or instance) you're wrapping.
             If not specified, the function will return a decorator.
+
         name: The name to give the class (not applicable to instance wrapping)
         path_type: The type that paths are expressed as. Needs to be an Iterable type.
             By default, a tuple.
@@ -2765,7 +2787,7 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
 
     .. seealso::
 
-        ``KeyPath`` in :doc:`paths`
+        ``KeyPath`` in ``dol.paths``
 
     Wrapping an instance
 
@@ -2861,7 +2883,7 @@ def add_path_access(
     forms like ``'a.b.c'``, ``'a/b/c'``, etc.
 
     Say you have some nested stores.
-    You know... like a `ZipFileReader` store whose values are `ZipReader`s,
+    You know... like a `ZipFileReader` store whose values are `ZipReader` instances,
     whose values are bytes of the zipped files
     (and you can go on... whose (json) values are...).
 
@@ -2896,6 +2918,7 @@ def add_path_access(
     Args:
         store: The store (class or instance) you're wrapping.
             If not specified, the function will return a decorator.
+
         name: The name to give the class (not applicable to instance wrapping)
         path_type: The type that paths are expressed as. Needs to be an Iterable type.
             By default, a tuple.
@@ -2909,7 +2932,7 @@ def add_path_access(
 
     .. seealso::
 
-        ``KeyPath`` in :doc:`paths`
+        ``KeyPath`` in ``dol.paths``
 
     Wrapping a class
 
@@ -2959,7 +2982,8 @@ def add_path_access(
     >>> s
     {'a': {'b': {}}}
 
-    Note: The add_path_access doesn't carry on to values.
+    Note:
+        The add_path_access doesn't carry on to values.
 
     >>> s = add_path_access({'a': {'b': {'c': 42}}})
     >>> s['a', 'b', 'c']
@@ -2991,7 +3015,6 @@ def add_path_access(
     >>> # But now this works:
     >>> s['a']['b', 'c']
     42
-
     """
     store_cls = kv_wrap_persister_cls(store, name=name)
     store_cls = add_path_get(store_cls, name=name, path_type=path_type)
@@ -3127,8 +3150,9 @@ def flatten(store=None, *, levels=None, cache_keys=False):
     cases. The only reason it is not the default is because if you have millions of
     keys, but little memory, that's not what you might want.
 
-    Note: Flattening just provides a wrapper giving you a "flattened view". It doesn't
-    change the store itself, or it's contents.
+    Note:
+        Flattening just provides a wrapper giving you a "flattened view". It doesn't
+        change the store itself, or it's contents.
 
     :param store: The store instance or class to be wrapped
     :param levels: The number of nested levels to flatten
@@ -3253,8 +3277,9 @@ def insert_aliases(
     If store is a class, you'll get a copy of the class with those methods added.
     If store is an instance, the methods will be added in place (no copy will be made).
 
-    Note: If an operation (write, read, delete, list, count) is not specified, no alias will be created for
-    that operation.
+    Note:
+        If an operation (write, read, delete, list, count) is not specified, no alias will be created for
+        that operation.
 
     IMPORTANT NOTE: The signatures of the methods the aliases will point to will not change.
     We say this because, you can call the write method "dump", but you'll have to use it as
@@ -3272,7 +3297,8 @@ def insert_aliases(
         list: Desired method name for __iter__
         count: Desired method name for __len__
 
-    Returns: A store with the desired aliases.
+    Returns:
+        A store with the desired aliases.
 
     >>> # Example of extending a class
     >>> mydict = insert_aliases(dict, write='dump', read='load', delete='rm', list='peek', count='size')
@@ -3321,7 +3347,8 @@ def insert_load_dump_aliases(store=None, *, delete=None, list=None, count=None):
         list: Desired method name for __iter__
         count: Desired method name for __len__
 
-    Returns: A store with the desired aliases.
+    Returns:
+        A store with the desired aliases.
 
     >>> mydict = insert_load_dump_aliases(dict)
     >>> s = mydict()
@@ -3357,7 +3384,6 @@ def constant_output(return_val=None, *args, **kwargs):
     >>> always_true = partial(constant_output, True)
     >>> always_true('regardless', 'of', the='input', will='return True')
     True
-
     """
     return return_val
 
@@ -3514,7 +3540,8 @@ def add_missing_key_handling(
 ):
     """Overrides the ``__missing__`` method of a store with a custom callback.
 
-    Note: The callback must have two arguments: the store and the key.
+    Note:
+        The callback must have two arguments: the store and the key.
 
     Args:
         store: The store class to wrap.
@@ -3654,6 +3681,7 @@ class KeyValueCodec(*_CodecT):
 
 def _affix_encoder(string: str, prefix: str = "", suffix: str = ""):
     """Affix a prefix and suffix to a string
+
     >>> _affix_encoder('name', prefix='/folder/', suffix='.txt')
     '/folder/name.txt'
     """
@@ -3662,6 +3690,7 @@ def _affix_encoder(string: str, prefix: str = "", suffix: str = ""):
 
 def _affix_decoder(string: str, prefix: str = "", suffix: str = ""):
     """Remove prefix and suffix from string
+
     >>> _affix_decoder('/folder/name.txt', prefix='/folder/', suffix='.txt')
     'name'
     """
@@ -3688,7 +3717,8 @@ def affix_key_codec(prefix: str = "", suffix: str = ""):
 def redirect_getattr_to_getitem(cls=None, *, keys_have_priority_over_attributes=False):
     """A mapping decorator that redirects attribute access to __getitem__.
 
-    Warning: This decorator will make your class un-pickleable.
+    Warning:
+        This decorator will make your class un-pickleable.
 
     :param keys_have_priority_over_attributes: If True, keys will have priority over existing attributes.
 
@@ -3702,7 +3732,6 @@ def redirect_getattr_to_getitem(cls=None, *, keys_have_priority_over_attributes=
     2
     >>> list(d)
     ['a', 'b']
-
     """
 
     class RidirectGetattrToGetitem(cls):
