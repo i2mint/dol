@@ -1605,13 +1605,18 @@ def _filt_iter(store_cls: type, filt, name, __module__):
 
     store_cls.__iter__ = __iter__
 
-    def __len__(self):
-        c = 0
-        for _ in self.__iter__():
-            c += 1
-        return c
+    if hasattr(store_cls, "__len__"):
+        # Only add a (filtered, counting) __len__ if the wrapped class already had
+        # one. A class that deliberately omits __len__ (e.g. because counting means
+        # an unbounded paginated listing over a remote backend) should stay that
+        # way -- see i2mint/dol#82.
+        def __len__(self):
+            c = 0
+            for _ in self.__iter__():
+                c += 1
+            return c
 
-    store_cls.__len__ = __len__
+        store_cls.__len__ = __len__
 
     def __contains__(self, k):
         if filt(k):
@@ -1728,10 +1733,17 @@ def filter_prefixes(prefixes):
     True
     >>> is_test_or_report("image.jpg")
     False
+
+    The prefixes are grouped, so a multi-prefix filter doesn't accidentally match a
+    string that merely *contains* one of the later prefixes anywhere:
+
+    >>> is_logs_or_tmp = filter_prefixes(['logs/', 'tmp/'])
+    >>> is_logs_or_tmp("other/tmp/c")
+    False
     """
     if isinstance(prefixes, str):
         prefixes = [prefixes]
-    return filter_regex("^" + "|".join(map(re.escape, prefixes)))
+    return filter_regex("^(?:" + "|".join(map(re.escape, prefixes)) + ")")
 
 
 class FiltIter:
