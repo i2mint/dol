@@ -496,6 +496,12 @@ See dol.trash module for deletion strategies: permanent_delete, trash_only, etc.
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">FileStringPersister</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#FileStringPersister"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.FileStringPersister" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dol.filesys.FileBytesPersister" title="dol.filesys.FileBytesPersister"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBytesPersister</span></code></a></p>
 <p>Persister mapping file paths to the files’ text (files opened in text mode).</p>
+<p>Reads and writes as UTF-8 explicitly, rather than inheriting
+<code class="docutils literal notranslate"><span class="pre">locale.getpreferredencoding()</span></code> (see i2mint/dol#97): a store is a serialization
+boundary, and one whose format silently depends on an ambient environment
+variable isn’t really specified. Without this, a write can raise on a
+non-ASCII-locale machine, or a store synced between two machines with different
+locales can silently corrupt on round trip.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -503,6 +509,11 @@ See dol.trash module for deletion strategies: permanent_delete, trash_only, etc.
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">FileStringReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern_for_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assert_rootdir_existence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#FileStringReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.FileStringReader" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dol.filesys.FileBytesReader" title="dol.filesys.FileBytesReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBytesReader</span></code></a></p>
 <p>Reader mapping file paths to the files’ text (files opened in text mode).</p>
+<p>Reads as UTF-8 explicitly, rather than inheriting <code class="docutils literal notranslate"><span class="pre">locale.getpreferredencoding()</span></code>
+(see i2mint/dol#97): a store is a serialization boundary, and one whose format
+silently depends on an ambient environment variable isn’t really specified. This
+also matches how <code class="docutils literal notranslate"><span class="pre">FileStringPersister</span></code> writes (below), so a round trip is safe
+regardless of which locale reads or writes.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -1158,7 +1169,7 @@ issues with system-wide temporary directories.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=f15ab923"></script>
+</div><script src="../_static/documentation_options.js?v=b636f9ab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

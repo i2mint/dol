@@ -127,11 +127,24 @@ Bases: [`FileBytesPersister`](#dol.filesys.FileBytesPersister)
 
 Persister mapping file paths to the files’ text (files opened in text mode).
 
+Reads and writes as UTF-8 explicitly, rather than inheriting
+`locale.getpreferredencoding()` (see i2mint/dol#97): a store is a serialization
+boundary, and one whose format silently depends on an ambient environment
+variable isn’t really specified. Without this, a write can raise on a
+non-ASCII-locale machine, or a store synced between two machines with different
+locales can silently corrupt on round trip.
+
 ### *class* dol.filesys.FileStringReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
 
 Bases: [`FileBytesReader`](#dol.filesys.FileBytesReader)
 
 Reader mapping file paths to the files’ text (files opened in text mode).
+
+Reads as UTF-8 explicitly, rather than inheriting `locale.getpreferredencoding()`
+(see i2mint/dol#97): a store is a serialization boundary, and one whose format
+silently depends on an ambient environment variable isn’t really specified. This
+also matches how `FileStringPersister` writes (below), so a round trip is safe
+regardless of which locale reads or writes.
 
 ### *class* dol.filesys.FileSysCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
 

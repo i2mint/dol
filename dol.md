@@ -1,4 +1,4 @@
-> built 2026-09-22 13:52 UTC from a3bbf61 (master) · dol 0.3.69. Details: build_info.json
+> built 2026-09-22 13:56 UTC from 66e3056 (master) · dol 0.3.70. Details: build_info.json
 
 # index.html.md
 
@@ -3900,11 +3900,24 @@ Bases: [`FileBytesPersister`](_autosummary/dol.filesys.html.md#dol.filesys.FileB
 
 Persister mapping file paths to the files’ text (files opened in text mode).
 
+Reads and writes as UTF-8 explicitly, rather than inheriting
+`locale.getpreferredencoding()` (see i2mint/dol#97): a store is a serialization
+boundary, and one whose format silently depends on an ambient environment
+variable isn’t really specified. Without this, a write can raise on a
+non-ASCII-locale machine, or a store synced between two machines with different
+locales can silently corrupt on round trip.
+
 ### *class* dol.filesys.FileStringReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
 
 Bases: [`FileBytesReader`](_autosummary/dol.filesys.html.md#dol.filesys.FileBytesReader)
 
 Reader mapping file paths to the files’ text (files opened in text mode).
+
+Reads as UTF-8 explicitly, rather than inheriting `locale.getpreferredencoding()`
+(see i2mint/dol#97): a store is a serialization boundary, and one whose format
+silently depends on an ambient environment variable isn’t really specified. This
+also matches how `FileStringPersister` writes (below), so a round trip is safe
+regardless of which locale reads or writes.
 
 ### *class* dol.filesys.FileSysCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
 
@@ -16653,7 +16666,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-09-22 13:52 UTC** from commit <a href="https://github.com/i2mint/dol/commit/a3bbf61fd7c93e89516cefa708504df825ad5f6e"><code>a3bbf61</code></a> on branch <code>master</code>, for **dol 0.3.69** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-09-22 13:56 UTC** from commit <a href="https://github.com/i2mint/dol/commit/66e30561fbea869c2e55fe5ab258f665b286ac71"><code>66e3056</code></a> on branch <code>master</code>, for **dol 0.3.70** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -16662,9 +16675,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/a3bbf61fd7c93e89516cefa708504df825ad5f6e"><code>a3bbf61fd7c93e89516cefa708504df825ad5f6e</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/66e30561fbea869c2e55fe5ab258f665b286ac71"><code>66e30561fbea869c2e55fe5ab258f665b286ac71</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.69</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.70</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -16673,9 +16686,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/35736116662">35736116662</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/35736360865">35736360865</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>f4eeed6b963dc6e73f652ec2457ea58490fb2050</code> (in the history of the built commit) |
+| Event commit | <code>6e71c71a053dce9d34325ad7cade5f0509a7cee3</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -16700,13 +16713,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.69/">0.3.69</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.70/">0.3.70</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout a3bbf61fd7c93e89516cefa708504df825ad5f6e
+git checkout 66e30561fbea869c2e55fe5ab258f665b286ac71
 pip install "epythet==0.2.12"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
