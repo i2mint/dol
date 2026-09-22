@@ -990,20 +990,66 @@
 <div class="viewcode-block" id="disallow_overwrites">
 <a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.disallow_overwrites">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">disallow_overwrites</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">error_msg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">disable_deletes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Intended to make a store class's ``__setitem__`` raise ``OverWritesNotAllowedError`` on existing keys;</span>
-<span class="sd">    currently a no-op that returns ``None`` (the override is never attached). Use ``OverWritesNotAllowedMixin``."""</span>
+<span class="w">    </span><span class="sd">"""Return a subclass of ``store`` whose ``__setitem__`` raises</span>
+<span class="sd">    ``OverWritesNotAllowedError`` on existing keys (``store`` itself is left</span>
+<span class="sd">    untouched).</span>
+
+<span class="sd">    :param store: The store class to wrap (must be a type).</span>
+<span class="sd">    :param error_msg: Custom error message; ``{}`` (or ``{k}``) in it is filled</span>
+<span class="sd">        in with the offending key via ``.format``. Defaults to a generic message.</span>
+<span class="sd">    :param disable_deletes: If ``True`` (the default), also disable</span>
+<span class="sd">        ``__delitem__`` (raising the same error) -- since deleting a key and</span>
+<span class="sd">        rewriting it would otherwise be a way around the overwrite guard.</span>
+<span class="sd">    :return: A new subclass of ``store`` with the guard(s) attached.</span>
+
+<span class="sd">    &gt;&gt;&gt; class D(dict): ...</span>
+<span class="sd">    &gt;&gt;&gt; ND = disallow_overwrites(D)</span>
+<span class="sd">    &gt;&gt;&gt; d = ND(a=1)</span>
+<span class="sd">    &gt;&gt;&gt; d['b'] = 2</span>
+<span class="sd">    &gt;&gt;&gt; d['a'] = 1</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    dol.errors.OverWritesNotAllowedError: key a already exists and cannot be overwritten...</span>
+<span class="sd">    &gt;&gt;&gt; del d['a']</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    dol.errors.OverWritesNotAllowedError: delete of key a is not allowed</span>
+
+<span class="sd">    With ``disable_deletes=False``, deletes are left alone:</span>
+
+<span class="sd">    &gt;&gt;&gt; ND2 = disallow_overwrites(D, disable_deletes=False)</span>
+<span class="sd">    &gt;&gt;&gt; d2 = ND2(a=1)</span>
+<span class="sd">    &gt;&gt;&gt; del d2['a']  # no error</span>
+<span class="sd">    &gt;&gt;&gt; d2['a'] = 2  # no error either, since 'a' was deleted first</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="nb">type</span><span class="p">),</span> <span class="s2">"store needs to be a type"</span>
+    <span class="k">if</span> <span class="n">error_msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">"key </span><span class="si">{}</span><span class="s2"> already exists and cannot be overwritten. "</span>
+            <span class="s2">"If you really want to write to that key, delete it before writing"</span>
+        <span class="p">)</span>
+
+    <span class="n">namespace</span> <span class="o">=</span> <span class="p">{}</span>
+
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">"__setitem__"</span><span class="p">):</span>
 
         <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">OverWritesNotAllowedError</span><span class="p">(</span>
-                    <span class="s2">"key </span><span class="si">{}</span><span class="s2"> already exists and cannot be overwritten. "</span>
-                    <span class="s2">"If you really want to write to that key, delete it before writing"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">k</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
+                <span class="k">raise</span> <span class="n">OverWritesNotAllowedError</span><span class="p">(</span><span class="n">error_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">))</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">NoOverwritesStore</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+        <span class="n">namespace</span><span class="p">[</span><span class="s2">"__setitem__"</span><span class="p">]</span> <span class="o">=</span> <span class="fm">__setitem__</span>
+
+    <span class="k">if</span> <span class="n">disable_deletes</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">"__delitem__"</span><span class="p">):</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">OverWritesNotAllowedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"delete of key </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> is not allowed"</span><span class="p">)</span>
+
+        <span class="n">namespace</span><span class="p">[</span><span class="s2">"__delitem__"</span><span class="p">]</span> <span class="o">=</span> <span class="fm">__delitem__</span>
+
+    <span class="n">NoOverwritesStore</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">store</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="p">(</span><span class="n">store</span><span class="p">,),</span> <span class="n">namespace</span><span class="p">)</span>
+    <span class="n">copy_attrs</span><span class="p">(</span><span class="n">NoOverwritesStore</span><span class="p">,</span> <span class="n">store</span><span class="p">,</span> <span class="p">(</span><span class="s2">"__name__"</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">,</span> <span class="s2">"__module__"</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">NoOverwritesStore</span></div>
 
 
 
@@ -4311,7 +4357,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
+</div><script src="../../_static/documentation_options.js?v=581acd45"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -3010,14 +3010,43 @@
 <div class="viewcode-block" id="cache_func_outputs">
 <a class="viewcode-back" href="../../_autosummary/dol.caching.html#dol.caching.cache_func_outputs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">cache_func_outputs</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="n">HashableDict</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Decorator factory intended to cache a function's outputs in ``cache``, keyed by ``(func, args, kwargs)``;</span>
-<span class="sd">    only positional-argument calls with an explicitly given ``cache`` actually hit the cache."""</span>
+<span class="w">    </span><span class="sd">"""Decorator factory that caches a function's outputs in ``cache``, keyed by</span>
+<span class="sd">    ``(func, args, kwargs)``.</span>
+
+<span class="sd">    :param cache: A cache instance (with ``__contains__``/``__getitem__``/</span>
+<span class="sd">        ``__setitem__``), or a zero-arg factory/class (e.g. the default,</span>
+<span class="sd">        ``HashableDict``) used to make one.</span>
+
+<span class="sd">    Note: like ``args``, every ``kwargs`` value must be hashable (they're part of</span>
+<span class="sd">    the cache key). Passing an unhashable value (e.g. a ``list``) raises</span>
+<span class="sd">    ``TypeError`` rather than silently skipping the cache.</span>
+
+<span class="sd">    &gt;&gt;&gt; @cache_func_outputs()</span>
+<span class="sd">    ... def f(x, y=2):</span>
+<span class="sd">    ...     print(f"computing f({x}, {y})")</span>
+<span class="sd">    ...     return x + y</span>
+<span class="sd">    &gt;&gt;&gt; f(1)</span>
+<span class="sd">    computing f(1, 2)</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; f(1)  # cached: no "computing" print</span>
+<span class="sd">    3</span>
+<span class="sd">    &gt;&gt;&gt; f(1, y=3)  # different kwargs: not a cache hit</span>
+<span class="sd">    computing f(1, 3)</span>
+<span class="sd">    4</span>
+<span class="sd">    &gt;&gt;&gt; f(1, y=3)  # this one is now cached too</span>
+<span class="sd">    4</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+        <span class="n">cache</span> <span class="o">=</span> <span class="n">cache</span><span class="p">()</span>  <span class="c1"># instantiate a cache class/factory</span>
     <span class="n">cache</span> <span class="o">=</span> <span class="n">get_cache</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">cache_method_decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="n">k</span> <span class="o">=</span> <span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">HashableDict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="c1"># Use a hashable-by-value key for kwargs (a HashableDict instance is</span>
+            <span class="c1"># hashable by id, so a *fresh* one would never compare equal to another</span>
+            <span class="c1"># with the same contents -- see i2mint/dol#101).</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())))</span>
             <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cache</span><span class="p">:</span>
                 <span class="n">val</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="n">cache</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>  <span class="c1"># cache it</span>
@@ -3073,7 +3102,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=fa6d3c02"></script>
+</div><script src="../../_static/documentation_options.js?v=581acd45"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

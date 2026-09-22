@@ -5,7 +5,9 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <link rel="alternate" type="text/markdown" href="dol.trans.html.md">
-<link rel="describedby" href="../llms.txt" type="text/markdown"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="dol.trash" href="dol.trash.html"><link rel="prev" title="dol.tools" href="dol.tools.html">
+<link rel="describedby" href="../llms.txt" type="text/markdown">
+<link rel="alternate" type="text/markdown" href="dol.trans.html.md">
+<link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="dol.trash" href="dol.trash.html"><link rel="prev" title="dol.tools" href="dol.tools.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>dol.trans - dol</title>
@@ -366,7 +368,7 @@ or used as a factory (<code class="docutils literal notranslate"><span class="pr
 <td><p>Replace <code class="docutils literal notranslate"><span class="pre">o.__setitem__</span></code> (if any) with a function raising <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.disallow_overwrites" title="dol.trans.disallow_overwrites"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disallow_overwrites</span></code></a>(store, *[, error_msg, ...])</p></td>
-<td><p>Intended to make a store class's <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> raise <code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedError</span></code> on existing keys; currently a no-op that returns <code class="docutils literal notranslate"><span class="pre">None</span></code> (the override is never attached).</p></td>
+<td><p>Return a subclass of <code class="docutils literal notranslate"><span class="pre">store</span></code> whose <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> raises <code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedError</span></code> on existing keys (<code class="docutils literal notranslate"><span class="pre">store</span></code> itself is left untouched).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.double_up_as_factory" title="dol.trans.double_up_as_factory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">double_up_as_factory</span></code></a>(decorator_func)</p></td>
 <td><p>Repurpose a decorator both as it's original form, and as a decorator factory.</p></td>
@@ -1744,8 +1746,45 @@ Is meant to be used with functools.partial to create custom versions.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.disallow_overwrites">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">disallow_overwrites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_msg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_deletes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#disallow_overwrites"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.disallow_overwrites" title="Link to this definition">¶</a></dt>
-<dd><p>Intended to make a store class’s <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> raise <code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedError</span></code> on existing keys;
-currently a no-op that returns <code class="docutils literal notranslate"><span class="pre">None</span></code> (the override is never attached). Use <code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedMixin</span></code>.</p>
+<dd><p>Return a subclass of <code class="docutils literal notranslate"><span class="pre">store</span></code> whose <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> raises
+<code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedError</span></code> on existing keys (<code class="docutils literal notranslate"><span class="pre">store</span></code> itself is left
+untouched).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>store</strong> – The store class to wrap (must be a type).</p></li>
+<li><p><strong>error_msg</strong> – Custom error message; <code class="docutils literal notranslate"><span class="pre">{}</span></code> (or <code class="docutils literal notranslate"><span class="pre">{k}</span></code>) in it is filled
+in with the offending key via <code class="docutils literal notranslate"><span class="pre">.format</span></code>. Defaults to a generic message.</p></li>
+<li><p><strong>disable_deletes</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (the default), also disable
+<code class="docutils literal notranslate"><span class="pre">__delitem__</span></code> (raising the same error) – since deleting a key and
+rewriting it would otherwise be a way around the overwrite guard.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new subclass of <code class="docutils literal notranslate"><span class="pre">store</span></code> with the guard(s) attached.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">D</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ND</span> <span class="o">=</span> <span class="n">disallow_overwrites</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">ND</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">'b'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">dol.errors.OverWritesNotAllowedError</span>: <span class="n">key a already exists and cannot be overwritten...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">  </span><span class="c">...</span>
+<span class="gr">dol.errors.OverWritesNotAllowedError</span>: <span class="n">delete of key a is not allowed</span>
+</pre></div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">disable_deletes=False</span></code>, deletes are left alone:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ND2</span> <span class="o">=</span> <span class="n">disallow_overwrites</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">disable_deletes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d2</span> <span class="o">=</span> <span class="n">ND2</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">d2</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>  <span class="c1"># no error</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d2</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># no error either, since 'a' was deleted first</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -2982,7 +3021,7 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">obj<
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=fa6d3c02"></script>
+</div><script src="../_static/documentation_options.js?v=581acd45"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
