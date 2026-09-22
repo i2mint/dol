@@ -2623,14 +2623,43 @@ class HashableDict(HashableMixin, dict):
 
 # NOTE: cache uses (func, args, kwargs). Don't want to make more complex with a bind cast to (func, kwargs) only
 def cache_func_outputs(cache=HashableDict):
-    """Decorator factory intended to cache a function's outputs in ``cache``, keyed by ``(func, args, kwargs)``;
-    only positional-argument calls with an explicitly given ``cache`` actually hit the cache."""
+    """Decorator factory that caches a function's outputs in ``cache``, keyed by
+    ``(func, args, kwargs)``.
+
+    :param cache: A cache instance (with ``__contains__``/``__getitem__``/
+        ``__setitem__``), or a zero-arg factory/class (e.g. the default,
+        ``HashableDict``) used to make one.
+
+    Note: like ``args``, every ``kwargs`` value must be hashable (they're part of
+    the cache key). Passing an unhashable value (e.g. a ``list``) raises
+    ``TypeError`` rather than silently skipping the cache.
+
+    >>> @cache_func_outputs()
+    ... def f(x, y=2):
+    ...     print(f"computing f({x}, {y})")
+    ...     return x + y
+    >>> f(1)
+    computing f(1, 2)
+    3
+    >>> f(1)  # cached: no "computing" print
+    3
+    >>> f(1, y=3)  # different kwargs: not a cache hit
+    computing f(1, 3)
+    4
+    >>> f(1, y=3)  # this one is now cached too
+    4
+    """
+    if isinstance(cache, type):
+        cache = cache()  # instantiate a cache class/factory
     cache = get_cache(cache)
 
     def cache_method_decorator(func):
         @wraps(func)
         def _func(*args, **kwargs):
-            k = (func, args, HashableDict(kwargs))
+            # Use a hashable-by-value key for kwargs (a HashableDict instance is
+            # hashable by id, so a *fresh* one would never compare equal to another
+            # with the same contents -- see i2mint/dol#101).
+            k = (func, args, tuple(sorted(kwargs.items())))
             if k not in cache:
                 val = func(*args, **kwargs)
                 cache[k] = val  # cache it
