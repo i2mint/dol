@@ -644,6 +644,14 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
                 - permanent_delete (os.remove, no warnings)
                 - trash_only (error if trash unavailable)
 
+                Note: the default (trash) is a kind choice for a store of a user's
+                own files, but a surprising one for a store of derived/generated
+                data -- every deletion leaves a full copy outside the store
+                indefinitely, and the OS trash is keyed by basename, so same-named
+                keys from different prefixes/stores can collide there. Pass
+                ``delete_func=os.remove`` (or ``permanent_delete``) to opt out
+                (see i2mint/dol#97).
+
             **kwargs: Passed to parent classes
         """
         super().__init__(*args, **kwargs)
@@ -683,16 +691,37 @@ RelPathFileBytesPersister = Files  # back-compatibility alias
 
 
 class FileStringReader(FileBytesReader):
-    """Reader mapping file paths to the files' text (files opened in text mode)."""
+    """Reader mapping file paths to the files' text (files opened in text mode).
 
-    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
+    Reads as UTF-8 explicitly, rather than inheriting ``locale.getpreferredencoding()``
+    (see i2mint/dol#97): a store is a serialization boundary, and one whose format
+    silently depends on an ambient environment variable isn't really specified. This
+    also matches how ``FileStringPersister`` writes (below), so a round trip is safe
+    regardless of which locale reads or writes.
+    """
+
+    _read_open_kwargs = dict(
+        FileBytesReader._read_open_kwargs, mode="rt", encoding="utf-8"
+    )
 
 
 class FileStringPersister(FileBytesPersister):
-    """Persister mapping file paths to the files' text (files opened in text mode)."""
+    """Persister mapping file paths to the files' text (files opened in text mode).
 
-    _read_open_kwargs = dict(FileBytesReader._read_open_kwargs, mode="rt")
-    _write_open_kwargs = dict(FileBytesPersister._write_open_kwargs, mode="wt")
+    Reads and writes as UTF-8 explicitly, rather than inheriting
+    ``locale.getpreferredencoding()`` (see i2mint/dol#97): a store is a serialization
+    boundary, and one whose format silently depends on an ambient environment
+    variable isn't really specified. Without this, a write can raise on a
+    non-ASCII-locale machine, or a store synced between two machines with different
+    locales can silently corrupt on round trip.
+    """
+
+    _read_open_kwargs = dict(
+        FileBytesReader._read_open_kwargs, mode="rt", encoding="utf-8"
+    )
+    _write_open_kwargs = dict(
+        FileBytesPersister._write_open_kwargs, mode="wt", encoding="utf-8"
+    )
 
 
 @with_relative_paths(prefix_attr="rootdir")
