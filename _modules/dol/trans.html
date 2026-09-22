@@ -1933,13 +1933,18 @@
 
     <span class="n">store_cls</span><span class="o">.</span><span class="fm">__iter__</span> <span class="o">=</span> <span class="fm">__iter__</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">():</span>
-            <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="n">c</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="s2">"__len__"</span><span class="p">):</span>
+        <span class="c1"># Only add a (filtered, counting) __len__ if the wrapped class already had</span>
+        <span class="c1"># one. A class that deliberately omits __len__ (e.g. because counting means</span>
+        <span class="c1"># an unbounded paginated listing over a remote backend) should stay that</span>
+        <span class="c1"># way -- see i2mint/dol#82.</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">():</span>
+                <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">c</span>
 
-    <span class="n">store_cls</span><span class="o">.</span><span class="fm">__len__</span> <span class="o">=</span> <span class="fm">__len__</span>
+        <span class="n">store_cls</span><span class="o">.</span><span class="fm">__len__</span> <span class="o">=</span> <span class="fm">__len__</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">filt</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
@@ -2064,10 +2069,17 @@
 <span class="sd">    True</span>
 <span class="sd">    &gt;&gt;&gt; is_test_or_report("image.jpg")</span>
 <span class="sd">    False</span>
+
+<span class="sd">    The prefixes are grouped, so a multi-prefix filter doesn't accidentally match a</span>
+<span class="sd">    string that merely *contains* one of the later prefixes anywhere:</span>
+
+<span class="sd">    &gt;&gt;&gt; is_logs_or_tmp = filter_prefixes(['logs/', 'tmp/'])</span>
+<span class="sd">    &gt;&gt;&gt; is_logs_or_tmp("other/tmp/c")</span>
+<span class="sd">    False</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prefixes</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">prefixes</span> <span class="o">=</span> <span class="p">[</span><span class="n">prefixes</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">filter_regex</span><span class="p">(</span><span class="s2">"^"</span> <span class="o">+</span> <span class="s2">"|"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">,</span> <span class="n">prefixes</span><span class="p">)))</span></div>
+    <span class="k">return</span> <span class="n">filter_regex</span><span class="p">(</span><span class="s2">"^(?:"</span> <span class="o">+</span> <span class="s2">"|"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">,</span> <span class="n">prefixes</span><span class="p">))</span> <span class="o">+</span> <span class="s2">")"</span><span class="p">)</span></div>
 
 
 
@@ -4357,7 +4369,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=581acd45"></script>
+</div><script src="../../_static/documentation_options.js?v=f15ab923"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

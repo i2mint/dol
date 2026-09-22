@@ -1543,6 +1543,15 @@ True
 False
 ```
 
+The prefixes are grouped, so a multi-prefix filter doesn’t accidentally match a
+string that merely *contains* one of the later prefixes anywhere:
+
+```pycon
+>>> is_logs_or_tmp = filter_prefixes(['logs/', 'tmp/'])
+>>> is_logs_or_tmp("other/tmp/c")
+False
+```
+
 ### dol.trans.filter_regex(regex, , return_search_func=False)
 
 Make a filter that returns True if a string matches the given regex

@@ -1,4 +1,4 @@
-> built 2026-09-22 13:45 UTC from 67ceb93 (master) · dol 0.3.68. Details: build_info.json
+> built 2026-09-22 13:52 UTC from a3bbf61 (master) · dol 0.3.69. Details: build_info.json
 
 # index.html.md
 
@@ -13730,6 +13730,15 @@ True
 False
 ```
 
+The prefixes are grouped, so a multi-prefix filter doesn’t accidentally match a
+string that merely *contains* one of the later prefixes anywhere:
+
+```pycon
+>>> is_logs_or_tmp = filter_prefixes(['logs/', 'tmp/'])
+>>> is_logs_or_tmp("other/tmp/c")
+False
+```
+
 ### dol.trans.filter_regex(regex, , return_search_func=False)
 
 Make a filter that returns True if a string matches the given regex
@@ -16644,7 +16653,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-09-22 13:45 UTC** from commit <a href="https://github.com/i2mint/dol/commit/67ceb93c2cfc328785277d35bfe035e96ce0ac8b"><code>67ceb93</code></a> on branch <code>master</code>, for **dol 0.3.68** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-09-22 13:52 UTC** from commit <a href="https://github.com/i2mint/dol/commit/a3bbf61fd7c93e89516cefa708504df825ad5f6e"><code>a3bbf61</code></a> on branch <code>master</code>, for **dol 0.3.69** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -16653,9 +16662,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/67ceb93c2cfc328785277d35bfe035e96ce0ac8b"><code>67ceb93c2cfc328785277d35bfe035e96ce0ac8b</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/a3bbf61fd7c93e89516cefa708504df825ad5f6e"><code>a3bbf61fd7c93e89516cefa708504df825ad5f6e</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.68</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.69</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -16664,9 +16673,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/35735370863">35735370863</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/35736116662">35736116662</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>90ad00aa4ae0f28bc75e1b79ffe45a2c71a04e06</code> (in the history of the built commit) |
+| Event commit | <code>f4eeed6b963dc6e73f652ec2457ea58490fb2050</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -16691,13 +16700,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.68/">0.3.68</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.69/">0.3.69</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 67ceb93c2cfc328785277d35bfe035e96ce0ac8b
+git checkout a3bbf61fd7c93e89516cefa708504df825ad5f6e
 pip install "epythet==0.2.12"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
