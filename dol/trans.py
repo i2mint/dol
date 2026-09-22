@@ -684,20 +684,66 @@ from dol.errors import OverWritesNotAllowedError
 
 
 def disallow_overwrites(store, *, error_msg=None, disable_deletes=True):
-    """Intended to make a store class's ``__setitem__`` raise ``OverWritesNotAllowedError`` on existing keys;
-    currently a no-op that returns ``None`` (the override is never attached). Use ``OverWritesNotAllowedMixin``."""
+    """Return a subclass of ``store`` whose ``__setitem__`` raises
+    ``OverWritesNotAllowedError`` on existing keys (``store`` itself is left
+    untouched).
+
+    :param store: The store class to wrap (must be a type).
+    :param error_msg: Custom error message; ``{}`` (or ``{k}``) in it is filled
+        in with the offending key via ``.format``. Defaults to a generic message.
+    :param disable_deletes: If ``True`` (the default), also disable
+        ``__delitem__`` (raising the same error) -- since deleting a key and
+        rewriting it would otherwise be a way around the overwrite guard.
+    :return: A new subclass of ``store`` with the guard(s) attached.
+
+    >>> class D(dict): ...
+    >>> ND = disallow_overwrites(D)
+    >>> d = ND(a=1)
+    >>> d['b'] = 2
+    >>> d['a'] = 1
+    Traceback (most recent call last):
+      ...
+    dol.errors.OverWritesNotAllowedError: key a already exists and cannot be overwritten...
+    >>> del d['a']
+    Traceback (most recent call last):
+      ...
+    dol.errors.OverWritesNotAllowedError: delete of key a is not allowed
+
+    With ``disable_deletes=False``, deletes are left alone:
+
+    >>> ND2 = disallow_overwrites(D, disable_deletes=False)
+    >>> d2 = ND2(a=1)
+    >>> del d2['a']  # no error
+    >>> d2['a'] = 2  # no error either, since 'a' was deleted first
+    """
     assert isinstance(store, type), "store needs to be a type"
+    if error_msg is None:
+        error_msg = (
+            "key {} already exists and cannot be overwritten. "
+            "If you really want to write to that key, delete it before writing"
+        )
+
+    namespace = {}
+
     if hasattr(store, "__setitem__"):
 
         def __setitem__(self, k, v):
             if k in self:
-                raise OverWritesNotAllowedError(
-                    "key {} already exists and cannot be overwritten. "
-                    "If you really want to write to that key, delete it before writing".format(
-                        k
-                    )
-                )
-            return super(type(self), self).__setitem__(k, v)
+                raise OverWritesNotAllowedError(error_msg.format(k, k=k))
+            return super(NoOverwritesStore, self).__setitem__(k, v)
+
+        namespace["__setitem__"] = __setitem__
+
+    if disable_deletes and hasattr(store, "__delitem__"):
+
+        def __delitem__(self, k):
+            raise OverWritesNotAllowedError(f"delete of key {k} is not allowed")
+
+        namespace["__delitem__"] = __delitem__
+
+    NoOverwritesStore = type(store.__name__, (store,), namespace)
+    copy_attrs(NoOverwritesStore, store, ("__name__", "__qualname__", "__module__"))
+    return NoOverwritesStore
 
 
 class OverWritesNotAllowedMixin:
