@@ -4,6 +4,13 @@
 (``.json``, ``.csv``, ``.pkl``, ...); ``MiscReaderMixin``/``MiscStoreMixin`` add the same
 key-conditioned (de)serialization to any store.
 
+.. warning::
+
+    The default read codecs unpickle ``.pkl``/``.pickle`` keys with ``pickle.loads``,
+    which is arbitrary code execution. Never point these tools at untrusted content or
+    request-derived keys; for such sources use an ``incoming_val_trans_for_key`` without
+    the pickle extensions (i2mint/dol#113).
+
     >>> from dol.misc import MiscStoreMixin
     >>> class M(MiscStoreMixin, dict):
     ...     pass
@@ -49,6 +56,8 @@ dflt_dflt_incoming_val_trans = staticmethod(identity_method)
 
 # TODO: Get rid of lambdas. Use methodcaller and partial instead
 #  Requires solving https://github.com/i2mint/dol/issues/9 first
+# WARNING: ".pkl"/".pickle" unpickle on read, i.e. execute code from the data. Never
+#   use these defaults on untrusted content (i2mint/dol#113).
 dflt_incoming_val_trans_for_key = {
     ".bin": identity_method,
     ".csv": lambda v: list(csv.reader(StringIO(v.decode()))),
@@ -104,6 +113,12 @@ for _user_this, _for_these_extensions in synset_of_ext.items():
 class MiscReaderMixin:
     """Mixin to transform incoming vals according to the key their under.
     Warning: If used as a subclass, this mixin should (in general) be placed before the store
+
+    Security:
+        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
+        never use this over untrusted content or with request-derived keys. Give it an
+        ``incoming_val_trans_for_key`` without the pickle extensions to refuse them
+        (i2mint/dol#113).
 
 
     >>> # make a reader that will wrap a dict
@@ -232,7 +247,14 @@ def get_obj(
     dflt_incoming_val_trans=identity_method,
     func_key=lambda k: os.path.splitext(k)[1],
 ):
-    """A quick way to get an object, with default... everything (but the key, you know, a clue of what you want)"""
+    """A quick way to get an object, with default... everything (but the key, you know, a clue of what you want)
+
+    Security:
+        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
+        never use this over untrusted content or with request-derived keys. Give it an
+        ``incoming_val_trans_for_key`` without the pickle extensions to refuse them
+        (i2mint/dol#113).
+    """
     if k.startswith("http://") or k.startswith("https://"):
         v = url_to_bytes(k)
     else:
@@ -257,6 +279,12 @@ class MiscGetter:
     """
     An object to write (and only write) to a store (default local files) with automatic deserialization
     according to a property of the key (default: file extension).
+
+    Security:
+        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
+        never use this over untrusted content or with request-derived keys. Give it an
+        ``incoming_val_trans_for_key`` without the pickle extensions to refuse them
+        (i2mint/dol#113).
 
     >>> from dol.misc import get_obj, misc_objs_get
     >>> import os
@@ -321,6 +349,12 @@ class MiscStoreMixin(MiscReaderMixin):
 
     Warning:
         If used as a subclass, this mixin should (in general) be placed before the store
+
+    Security:
+        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
+        never use this over untrusted content or with request-derived keys. Give it an
+        ``incoming_val_trans_for_key`` without the pickle extensions to refuse them
+        (i2mint/dol#113).
 
     See also:
         preset and postget args from wrap_kvs decorator from dol.trans.

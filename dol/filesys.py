@@ -921,8 +921,7 @@ def mk_dirs_if_missing_preset(
         # TODO: Undesirable here: If the setitem still fails, we created dirs
         #  already, for nothing, and are not cleaning up (if clean up need to make
         #  sure to not delete dirs that already existed!)
-    finally:
-        return v
+    return v  # (a failing retry write propagates: it must not be swallowed, #112)
 
 
 # TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)

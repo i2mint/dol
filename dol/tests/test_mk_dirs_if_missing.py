@@ -75,3 +75,21 @@ def test_mk_dirs_with_value_transform(tmp_path):
     deep = os.path.join("sub", "deep", "b.json")
     s[deep] = {"y": 2}
     assert s[deep] == {"y": 2}
+
+
+def test_preset_does_not_swallow_a_failing_retry_write(tmp_path):
+    """#112: the preset used to end with ``finally: return v``, hiding write errors."""
+    from dol.filesys import mk_dirs_if_missing_preset
+
+    s = Files(str(tmp_path))
+    (tmp_path / "sub").mkdir()  # the target path is an existing directory:
+    with pytest.raises((KeyError, OSError)):  # the write fails before AND after mkdir
+        mk_dirs_if_missing_preset(s, "sub", b"data")
+
+
+def test_preset_returns_value_on_success(tmp_path):
+    from dol.filesys import mk_dirs_if_missing_preset
+
+    s = Files(str(tmp_path))
+    assert mk_dirs_if_missing_preset(s, "a/b/c", b"data") == b"data"
+    assert (tmp_path / "a" / "b" / "c").read_bytes() == b"data"
