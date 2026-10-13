@@ -474,3 +474,25 @@ def test_symlink_then_dotdot_is_refused_by_every_containment_user(tmp_path):
     assert Files(str(root), allow_escape=True)[
         os.path.join("lnk", "..", "secret.txt")
     ] == b"secret"
+
+
+def test_rootdir_with_dotdot_after_a_symlink_lists_and_reads(tmp_path):
+    # e.g. join(dirname(__file__), '..', 'data') in a symlink-installed package: the
+    # rootdir's own '..' is the OS's business, only the key's part beyond it is checked
+    from dol.filesys import Files
+
+    src = tmp_path / "src"
+    (src / "pkg").mkdir(parents=True)
+    (src / "data" / "sub").mkdir(parents=True)
+    (src / "data" / "a.txt").write_bytes(b"A")
+    site = tmp_path / "site"
+    site.mkdir()
+    try:
+        os.symlink(str(src / "pkg"), str(site / "pkg"), target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("cannot create symlinks here")
+    s = Files(os.path.join(str(site), "pkg", "..", "data"))
+    if os.name != "nt":  # Windows resolves '..' lexically: site/data doesn't exist
+        assert list(s) == ["a.txt"]
+        assert s["a.txt"] == b"A"
+        assert s[os.path.join("sub", "..", "a.txt")] == b"A"

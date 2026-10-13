@@ -295,3 +295,60 @@ def test_empty_affix_codec_keeps_the_inner_len():
     codec = KeyCodecs.affixed()
     assert not may_raise_out_of_scope(codec.decoder)
     assert len(codec({"a": 1})) == 1
+
+
+def test_scoped_len_keeps_the_inner_stores_refusal_and_empty_shortcut():
+    from collections.abc import Mapping
+    from dol import KeyCodecs
+
+    class NoLenListing(Mapping):
+        """A remote-like store refusing len, so list() lists it only once."""
+
+        def __init__(self, d):
+            self.d, self.listings = d, 0
+
+        def __getitem__(self, k):
+            return self.d[k]
+
+        def __iter__(self):
+            self.listings += 1
+            return iter(self.d)
+
+        def __len__(self):
+            raise TypeError("no len: it would take a full listing")
+
+    inner = NoLenListing({"p/a": 1, "q/b": 2})
+    s = KeyCodecs.prefixed("p/")(inner)
+    assert list(s) == ["a"] and inner.listings == 1
+    with pytest.raises(TypeError):
+        len(s)
+
+    class CountingDict(dict):
+        def __iter__(self):
+            raise AssertionError("an empty inner store needs no scan")
+
+    assert len(KeyCodecs.prefixed("p/")(CountingDict())) == 0
+
+
+def test_first_arg_is_mapping_keeps_the_scope_mark():
+    from dol import wrap_kvs, FirstArgIsMapping
+    from dol.errors import raises_out_of_scope, OutOfScopeKeyError
+
+    @raises_out_of_scope
+    def key_of_id(self, _id):
+        if not _id.startswith("p/"):
+            raise OutOfScopeKeyError(_id)
+        return _id[2:]
+
+    s = wrap_kvs({"p/a": 1, "q/b": 2}, key_of_id=FirstArgIsMapping(key_of_id))
+    assert list(s) == ["a"] and len(s) == 1
+
+
+def test_may_raise_out_of_scope_is_a_real_bool():
+    from dol.errors import may_raise_out_of_scope
+
+    class AnyAttr:
+        def __getattr__(self, name):
+            return "truthy"
+
+    assert may_raise_out_of_scope(AnyAttr()) is False

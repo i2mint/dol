@@ -1968,8 +1968,10 @@ def _wrap_outcoming(
     [7, 14]
     """
     if trans_func is not None:
-        is_scoped = may_raise_out_of_scope(trans_func)
+        marked = trans_func
         trans_func, wants_self = _resolve_self_convention(trans_func)
+        # read the mark off the transform itself, not a FirstArgIsMapping around it
+        is_scoped = may_raise_out_of_scope(marked) or may_raise_out_of_scope(trans_func)
         wrapped_func = getattr(store_cls, wrapped_method)
 
         if not wants_self:

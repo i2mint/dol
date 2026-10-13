@@ -156,6 +156,10 @@ def raises_out_of_scope(func):
     store, which would overcount (i2mint/dol#123). Unmarked key mappings keep the inner
     store's (often O(1)) ``len``. Returns ``func``, so it works as a decorator.
 
+    ``wrap_kvs`` (and so the codecs), ``Pipe`` and subclasses made by class wrapping
+    carry the mark over; a ``_key_of_id`` you override by hand (even one calling
+    ``super()``) does not, so mark it too if it can raise.
+
     >>> @raises_out_of_scope
     ... def key_of_id(_id):
     ...     return _id
@@ -169,7 +173,7 @@ def raises_out_of_scope(func):
 def may_raise_out_of_scope(func) -> bool:
     """Whether ``func`` was marked with :func:`raises_out_of_scope` (a bound method
     reads the mark off its function)."""
-    return getattr(func, _RAISES_OUT_OF_SCOPE, False)
+    return getattr(func, _RAISES_OUT_OF_SCOPE, False) is True
 
 
 def out_of_scope_prefix_error(_id, prefix):

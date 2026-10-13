@@ -828,10 +828,17 @@ class Store(KvPersister):
     def __len__(self) -> int:
         """The inner store's ``len``, or, when the key layer is scoped (its
         ``_key_of_id`` is marked with ``raises_out_of_scope``), the number of in-scope
-        ids, which takes a scan (i2mint/dol#123)."""
-        if may_raise_out_of_scope(self._key_of_id):
+        ids, which takes a scan (i2mint/dol#123).
+
+        The inner ``len`` is always asked first, so an inner store that refuses ``len``
+        (e.g. a remote listing, to spare ``list()`` a second scan) still refuses it
+        here, and an empty one costs no scan. Otherwise note that ``list(store)`` of a
+        scoped layer scans twice: once to size the list, once to fill it.
+        """
+        n = len(self.store)
+        if n and may_raise_out_of_scope(self._key_of_id):
             return sum(1 for _ in self)
-        return len(self.store)
+        return n
 
     def __bool__(self) -> bool:
         if may_raise_out_of_scope(self._key_of_id):

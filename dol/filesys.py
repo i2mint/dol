@@ -448,7 +448,7 @@ def path_is_under(path: str, rootdir: str) -> bool:
         return False
 
 
-def dotdot_resolves_lexically(path: str) -> bool:
+def dotdot_resolves_lexically(path: str, *, base: str = "") -> bool:
     """Whether every ``..`` in ``path`` undoes the segment before it, as
     ``os.path.normpath`` assumes.
 
@@ -458,11 +458,20 @@ def dotdot_resolves_lexically(path: str) -> bool:
     are not touched (no file-system access); otherwise the part up to the last ``..``
     is resolved both ways and compared.
 
+    With ``base`` (a string prefix of ``path``, e.g. a store's ``rootdir``), only the
+    ``..`` segments after it count: ``base`` itself is taken as the OS resolves it,
+    whatever ``..`` it holds. Conservative by design: a ``..`` after a symlink is
+    refused even when the link points back inside ``base``.
+
     >>> dotdot_resolves_lexically('/data/root/a/b.txt')
     True
     >>> dotdot_resolves_lexically('/no/such/dir/../file')  # nothing to follow: lexical
     True
     """
+    if base and path.startswith(base):
+        base, path = path[: len(base)], path[len(base) :]
+    else:
+        base = ""
     if os.pardir not in path:  # fast path: the common case, e.g. every listed key
         return True
     if os.altsep:
@@ -473,7 +482,8 @@ def dotdot_resolves_lexically(path: str) -> bool:
     last_pardir = len(segments) - 1 - segments[::-1].index(os.pardir)
     head = os.sep.join(segments[: last_pardir + 1])
     try:
-        return os.path.realpath(head) == os.path.realpath(os.path.normpath(head))
+        physical = os.path.realpath(base + head)
+        return physical == os.path.realpath(base + os.path.normpath(head))
     except (OSError, ValueError):  # unresolvable: don't vouch for it
         return False
 
@@ -542,7 +552,10 @@ class FileSysCollection(Collection):
         return (
             self.allow_escape
             or not self.rootdir
-            or (path_is_under(k, self.rootdir) and dotdot_resolves_lexically(k))
+            or (
+                path_is_under(k, self.rootdir)
+                and dotdot_resolves_lexically(k, base=self.rootdir)
+            )
         )
 
     def validate_in_root(self, k):
