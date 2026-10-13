@@ -36,7 +36,7 @@ from operator import getitem
 import os
 
 from dol.base import Store
-from dol.util import lazyprop, add_as_attribute_of, max_common_prefix
+from dol.util import add_as_attribute_of, max_common_prefix
 from dol.trans import (
     store_decorator,
     kv_wrap,
@@ -46,7 +46,7 @@ from dol.trans import (
     add_missing_key_handling,
 )
 from dol.dig import recursive_get_attr
-from dol.errors import out_of_scope_prefix_error
+from dol.errors import out_of_scope_prefix_error, raises_out_of_scope
 from dol._paths_core import (
     PathContext,
     PathCreationError,
@@ -1005,6 +1005,14 @@ class KeyPath:
 # ------------------------------------------------------------------------------
 
 
+def _strip_prefix(_id, prefix):
+    """``_id`` without ``prefix``; ``OutOfScopeKeyError`` if it doesn't start with it
+    (slicing anyway would yield a key addressing a different object, i2mint/dol#82)."""
+    if prefix and _id[: len(prefix)] != prefix:
+        raise out_of_scope_prefix_error(_id, prefix)
+    return _id[len(prefix) :]
+
+
 class PrefixRelativizationMixin:
     """
     Mixin that adds a intercepts the _id_of_key an _key_of_id methods, transforming absolute keys to relative ones.
@@ -1048,20 +1056,13 @@ class PrefixRelativizationMixin:
 
     _prefix_attr_name = "_prefix"
 
-    @lazyprop
-    def _prefix_length(self):
-        return len(getattr(self, self._prefix_attr_name))
-
     def _id_of_key(self, k):
         return getattr(self, self._prefix_attr_name) + k
 
+    @raises_out_of_scope
     def _key_of_id(self, _id):
-        prefix = getattr(self, self._prefix_attr_name)
-        if prefix and _id[: len(prefix)] != prefix:
-            raise out_of_scope_prefix_error(_id, prefix)
-        # slice by the live prefix's length: the cached ``_prefix_length`` goes stale
-        # if the prefix is reassigned after first use
-        return _id[len(prefix) :]
+        # the live prefix, not a cached length: it may be reassigned after first use
+        return _strip_prefix(_id, getattr(self, self._prefix_attr_name))
 
 
 class PrefixRelativization(PrefixRelativizationMixin):
@@ -1259,15 +1260,13 @@ class RelativePathKeyMapper:
 
     def __init__(self, prefix):
         self._prefix = prefix
-        self._prefix_length = len(self._prefix)
 
     def _id_of_key(self, k):
         return self._prefix + k
 
+    @raises_out_of_scope
     def _key_of_id(self, _id):
-        if self._prefix and _id[: self._prefix_length] != self._prefix:
-            raise out_of_scope_prefix_error(_id, self._prefix)
-        return _id[self._prefix_length :]
+        return _strip_prefix(_id, self._prefix)
 
 
 @store_decorator

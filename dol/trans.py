@@ -41,6 +41,8 @@ from dol.errors import (
     SetattrNotAllowed,
     out_of_scope_prefix_error,
     out_of_scope_suffix_error,
+    raises_out_of_scope,
+    may_raise_out_of_scope,
 )
 from dol.base import Store, KvReader, AttrNames, kv_walk
 from dol._paths_core import (
@@ -1966,6 +1968,7 @@ def _wrap_outcoming(
     [7, 14]
     """
     if trans_func is not None:
+        is_scoped = may_raise_out_of_scope(trans_func)
         trans_func, wants_self = _resolve_self_convention(trans_func)
         wrapped_func = getattr(store_cls, wrapped_method)
 
@@ -1993,6 +1996,8 @@ def _wrap_outcoming(
                     self, getattr(super(store_cls, self), wrapped_method)(x)
                 )
 
+        if is_scoped:  # (``wraps`` already carried over a scoped wrapped_func's mark)
+            raises_out_of_scope(new_method)
         setattr(store_cls, wrapped_method, new_method)
 
 
@@ -3862,9 +3867,11 @@ def affix_key_codec(prefix: str = "", suffix: str = ""):
     >>> codec.decoder('/folder/name.txt')
     'name'
     """
+    decoder = partial(_affix_decoder, prefix=prefix, suffix=suffix)
+    if prefix or suffix:
+        raises_out_of_scope(decoder)
     return KeyCodec(
-        encoder=partial(_affix_encoder, prefix=prefix, suffix=suffix),
-        decoder=partial(_affix_decoder, prefix=prefix, suffix=suffix),
+        encoder=partial(_affix_encoder, prefix=prefix, suffix=suffix), decoder=decoder
     )
 
 

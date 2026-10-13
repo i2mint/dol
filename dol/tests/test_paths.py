@@ -239,12 +239,10 @@ def test_head_skips_out_of_scope_ids():
 
 
 @pytest.mark.parametrize("name, store", list(_prefix_stores()))
-@pytest.mark.xfail(strict=True, reason="i2mint/dol#123: len counts out-of-scope ids")
 def test_len_counts_only_in_scope_ids(name, store):
     assert len(store) == len(list(store)) == 2
 
 
-@pytest.mark.xfail(strict=True, reason="i2mint/dol#123: bool counts out-of-scope ids")
 def test_store_of_only_out_of_scope_ids_is_falsy():
     from dol import KeyCodecs
 
@@ -268,3 +266,32 @@ def test_head_falls_back_to_inner_ids_when_getitem_fails():
     s = wrap_kvs({"p/stray": 0, "p/a": 1}, key_of_id=lambda _id: _id.upper())
     with pytest.warns(UserWarning, match="Couldn't get data for the key"):
         assert s.head() == ("P/STRAY", 0)
+
+
+def test_composed_and_stacked_scoped_layers_count_in_scope_ids():
+    from dol import KeyCodecs, wrap_kvs
+
+    base = {"a/x.txt": 1, "a/y.json": 2, "b/z.txt": 3}
+    composed = (KeyCodecs.prefixed("a/") + KeyCodecs.suffixed(".txt"))(dict(base))
+    assert list(composed) == ["x"] and len(composed) == 1
+    # an unscoped layer over a scoped one gets its len from the scoped inner layer
+    upper = wrap_kvs(KeyCodecs.prefixed("a/")(dict(base)), key_of_id=str.upper)
+    assert sorted(upper) == ["X.TXT", "Y.JSON"] and len(upper) == 2
+
+
+def test_subclass_of_scoped_class_stays_scoped():
+    from dol import KeyCodecs, wrap_kvs
+
+    Scoped = KeyCodecs.prefixed("p/")(dict)
+    Sub = wrap_kvs(Scoped, key_of_id=str.upper, id_of_key=str.lower)
+    s = Sub({"stray": 0, "p/a": 1})
+    assert list(s) == ["A"] and len(s) == 1 and s["A"] == 1
+
+
+def test_empty_affix_codec_keeps_the_inner_len():
+    from dol import KeyCodecs
+    from dol.errors import may_raise_out_of_scope
+
+    codec = KeyCodecs.affixed()
+    assert not may_raise_out_of_scope(codec.decoder)
+    assert len(codec({"a": 1})) == 1

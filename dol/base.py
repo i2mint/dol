@@ -51,7 +51,7 @@ from collections.abc import (
 from typing import Any, Tuple, Union, Optional
 from collections.abc import Iterable, Callable
 
-from dol.errors import OutOfScopeKeyError
+from dol.errors import OutOfScopeKeyError, may_raise_out_of_scope
 from dol.util import (
     wraps,
     _disabled_clear_method,
@@ -814,8 +814,8 @@ class Store(KvPersister):
         lacks the prefix/suffix the layer strips) has no outer key, so it is skipped:
         the store is a *view* of the in-scope ids. Reading or writing such an id through
         an outer key is still impossible, and calling ``_key_of_id`` directly still
-        raises (i2mint/dol#82, #114). Note that ``len`` counts inner ids, so it may
-        exceed the number of keys iterated.
+        raises (i2mint/dol#82, #114). ``len`` and ``bool`` agree with this iteration
+        (see ``__len__``).
         """
         key_of_id = self._key_of_id
         for _id in self.store:
@@ -826,7 +826,17 @@ class Store(KvPersister):
             yield k
 
     def __len__(self) -> int:
+        """The inner store's ``len``, or, when the key layer is scoped (its
+        ``_key_of_id`` is marked with ``raises_out_of_scope``), the number of in-scope
+        ids, which takes a scan (i2mint/dol#123)."""
+        if may_raise_out_of_scope(self._key_of_id):
+            return sum(1 for _ in self)
         return len(self.store)
+
+    def __bool__(self) -> bool:
+        if may_raise_out_of_scope(self._key_of_id):
+            return any(True for _ in self)  # stops at the first in-scope id
+        return len(self) > 0
 
     def __contains__(self, k) -> bool:
         return self._id_of_key(k) in self.store
