@@ -410,10 +410,42 @@ def _for_repr(obj, quote="'"):
     return obj
 
 
+def path_is_under(path: str, rootdir: str) -> bool:
+    """Whether ``path``, *lexically* normalized, is ``rootdir`` or lies under it.
+
+    A ``startswith`` check is not enough: ``'/data/root/../secret'`` starts with
+    ``'/data/root/'`` but addresses ``/data/secret`` (i2mint/dol#107). The check is
+    lexical (``os.path.normpath``, not ``realpath``), so a symlinked sub-directory of
+    the root still counts as inside it.
+
+    >>> path_is_under('/data/root/a/b.txt', '/data/root/')
+    True
+    >>> path_is_under('/data/root/a/../b.txt', '/data/root/')
+    True
+    >>> path_is_under('/data/root/../secret.txt', '/data/root/')
+    False
+    >>> path_is_under('/data/root/a/../../secret.txt', '/data/root')
+    False
+    >>> path_is_under('/data/rootsibling/x', '/data/root')
+    False
+    """
+    root = os.path.normpath(rootdir)
+    try:
+        return os.path.commonpath([os.path.normpath(path), root]) == root
+    except ValueError:  # mixed absolute/relative paths, or different drives
+        return False
+
+
 class FileSysCollection(Collection):
     # rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.
 
-    """Base collection of file-system paths under ``rootdir``, optionally restricted by ``subpath``, ``max_levels`` and hidden-file inclusion."""
+    """Base collection of file-system paths under ``rootdir``, optionally restricted by ``subpath``, ``max_levels`` and hidden-file inclusion.
+
+    Keys that would leave ``rootdir`` through ``..`` segments (e.g.
+    ``'<rootdir>/../secret'``) are not valid keys: reading, writing or deleting them
+    raises ``KeyError``, and ``in`` returns ``False`` (i2mint/dol#107). Pass the
+    keyword-only ``allow_escape=True`` to address paths outside the root on purpose.
+    """
 
     def __init__(
         self,
@@ -424,8 +456,12 @@ class FileSysCollection(Collection):
         *,
         include_hidden=False,
         assert_rootdir_existence=False,
+        allow_escape=False,
     ):
         self._init_kwargs = {k: v for k, v in locals().items() if k != "self"}
+        if not allow_escape:
+            # keep the repr unchanged for the default (see i2mint/dol#107)
+            del self._init_kwargs["allow_escape"]
         rootdir = resolve_dir(rootdir, assert_existence=assert_rootdir_existence)
         if max_levels is None:
             max_levels = inf
@@ -441,9 +477,21 @@ class FileSysCollection(Collection):
         )
         self._max_levels = max_levels
         self.include_hidden = include_hidden
+        self.allow_escape = allow_escape
 
     def is_valid_key(self, k):
-        return bool(self._key_pattern.match(k))
+        """Whether ``k`` is a key of this collection: it must match the key pattern
+        and, unless ``allow_escape=True``, stay under ``rootdir`` once ``..``
+        segments are resolved (see :func:`path_is_under`). An empty ``rootdir``
+        (as in ``Files('')``, used by ``dol.misc``) confines nothing: its keys are
+        arbitrary paths by design."""
+        if not self._key_pattern.match(k):
+            return False
+        return (
+            self.allow_escape
+            or not self.rootdir
+            or path_is_under(k, self.rootdir)
+        )
 
     def validate_key(
         self,
@@ -832,6 +880,8 @@ def mk_dirs_if_missing_preset(
     # TODO: I'm not thrilled in the way I'm doing this; find alternatives
     try:
         super(type(self), self).__setitem__(k, v)
+    except KeyValidationError:
+        pass  # invalid key (e.g. outside rootdir): never make dirs for it (#107)
     except Exception:  # general on purpose...
         # TODO: ... But perhaps a more precise (but sufficient) exception list better?
         from dol.dig import inner_most_key
@@ -891,6 +941,8 @@ class MakeMissingDirsStoreMixin:
         # TODO: I'm not thrilled in the way I'm doing this; find alternatives
         try:
             super().__setitem__(k, v)
+        except KeyValidationError:
+            raise  # invalid key (e.g. outside rootdir): never make dirs for it (#107)
         except Exception:  # general on purpose...
             # TODO: ... But perhaps a more precise (but sufficient) exception list better?
             from dol.dig import inner_most_key

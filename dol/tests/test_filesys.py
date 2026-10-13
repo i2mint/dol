@@ -274,3 +274,68 @@ def test_is_valid_key_sees_the_inner_key(tmpdir):
     s.validate_key("a.txt")  # must not raise
     assert TextFiles(rootdir).is_valid_key("a.txt")
     assert s["a.txt"] == b"x"  # reads unaffected
+
+
+# --- i2mint/dol#107: keys must not escape rootdir through '..' --------------------
+
+
+def _sandbox(tmp_path):
+    root = tmp_path / "root"
+    (root / "a").mkdir(parents=True)
+    (root / "a" / "in.txt").write_bytes(b"inside")
+    (tmp_path / "outside.txt").write_bytes(b"secret")
+    return root
+
+
+@pytest.mark.parametrize("key", ["../outside.txt", "a/../../outside.txt"])
+def test_files_reject_keys_escaping_rootdir(tmp_path, key):
+    from dol.filesys import Files, FilesReader, TextFiles
+
+    root = _sandbox(tmp_path)
+    for store_cls in (Files, FilesReader, TextFiles):
+        s = store_cls(str(root))
+        assert key not in s
+        with pytest.raises(KeyError):
+            s[key]
+        assert s.get(key) is None
+    s = Files(str(root))
+    with pytest.raises(KeyError):
+        s[key] = b"pwned"
+    with pytest.raises(KeyError):
+        del s[key]
+    assert (tmp_path / "outside.txt").read_bytes() == b"secret"
+    assert sorted(s) == ["a/in.txt"]
+
+
+def test_files_dotdot_staying_inside_rootdir_still_works(tmp_path):
+    from dol.filesys import Files
+
+    root = _sandbox(tmp_path)
+    s = Files(str(root))
+    assert s["a/../a/in.txt"] == b"inside"
+    s["a/../new.txt"] = b"new"
+    assert (root / "new.txt").read_bytes() == b"new"
+    del s["a/../new.txt"]
+    assert not (root / "new.txt").exists()
+
+
+def test_files_allow_escape_opt_in(tmp_path):
+    from dol.filesys import Files
+
+    root = _sandbox(tmp_path)
+    s = Files(str(root), allow_escape=True)
+    assert s["../outside.txt"] == b"secret"
+    assert "allow_escape=True" in repr(s)
+    assert "allow_escape=" not in repr(Files(str(root)))
+
+
+def test_mk_dirs_if_missing_makes_no_dirs_outside_rootdir(tmp_path):
+    from dol.filesys import Files, mk_dirs_if_missing
+
+    root = _sandbox(tmp_path)
+    s = mk_dirs_if_missing(Files(str(root)))
+    with pytest.raises(KeyError):
+        s["../escaped/dir/x.txt"] = b"pwned"
+    assert not (tmp_path / "escaped").exists()
+    s["made/here.txt"] = b"ok"  # valid keys still get their dirs made
+    assert (root / "made" / "here.txt").read_bytes() == b"ok"
