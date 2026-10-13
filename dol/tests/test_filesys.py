@@ -373,3 +373,74 @@ def test_rootdir_spellings_still_list_their_keys(tmp_path, monkeypatch):
         assert list(Files("/" + str(root))) == [key]  # '//...' rootdir
     monkeypatch.chdir(root)
     assert list(Files(os.path.join("a", ".."))) == [key]  # rootdir normalising to '.'
+
+
+# --- sprint review (i2mint/dol#123): coverage of the #107 containment surface --------
+
+
+def test_path_is_under_mixed_absolute_and_relative_is_false():
+    from dol.filesys import path_is_under
+
+    # commonpath raises ValueError on a mix of absolute and relative paths
+    assert path_is_under(os.path.abspath("x"), "rel/root") is False
+    assert path_is_under("rel/root/x", os.path.abspath("root")) is False
+
+
+def test_zip_readers_read_and_write_keys_inside_rootdir(tmp_path):
+    import zipfile
+    from dol.zipfiledol import ZipFilesReader, ZipFilesReaderAndBytesWriter
+
+    root = tmp_path / "root"
+    root.mkdir()
+    zip_path = str(root / "in.zip")
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        zf.writestr("member.txt", b"hello")
+    reader = ZipFilesReader(str(root))
+    assert reader[zip_path]["member.txt"] == b"hello"
+    with pytest.raises(KeyError):  # inside the root, but no such file
+        reader[str(root / "missing.zip")]
+    writer = ZipFilesReaderAndBytesWriter(str(root))
+    copy_path = str(root / "copy.zip")
+    writer[copy_path] = (root / "in.zip").read_bytes()
+    assert writer[copy_path]["member.txt"] == b"hello"
+
+
+def test_make_missing_dirs_mixin_reraises_out_of_root_keys(tmp_path):
+    from dol.filesys import FileBytesPersister, MakeMissingDirsStoreMixin
+
+    class S(MakeMissingDirsStoreMixin, FileBytesPersister):
+        pass
+
+    root = _sandbox(tmp_path)
+    s = S(str(root))
+    with pytest.raises(KeyError):
+        s[str(root) + "/../escaped/x.txt"] = b"pwned"
+    assert not (tmp_path / "escaped").exists()
+
+
+def _symlink_sandbox(tmp_path):
+    """``root/lnk`` -> ``outside/deep``; ``outside/secret.txt`` is outside the root."""
+    root = _sandbox(tmp_path)
+    deep = tmp_path / "outside" / "deep"
+    deep.mkdir(parents=True)
+    (tmp_path / "outside" / "secret.txt").write_bytes(b"secret")
+    try:
+        os.symlink(str(deep), str(root / "lnk"), target_is_directory=True)
+    except (OSError, NotImplementedError):  # e.g. Windows without the privilege
+        pytest.skip("cannot create symlinks here")
+    return root
+
+
+@pytest.mark.xfail(strict=True, reason="i2mint/dol#123: lexical check, symlink + '..'")
+def test_files_symlink_then_dotdot_does_not_escape_rootdir(tmp_path):
+    from dol.filesys import Files
+
+    root = _symlink_sandbox(tmp_path)
+    s = Files(str(root))
+    escaping_key = os.path.join("lnk", "..", "secret.txt")
+    assert escaping_key not in s
+    with pytest.raises(KeyError):
+        s[escaping_key]
+    with pytest.raises(KeyError):
+        s[os.path.join("lnk", "..", "pwned.txt")] = b"x"
+    assert not (tmp_path / "outside" / "pwned.txt").exists()

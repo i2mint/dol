@@ -233,3 +233,38 @@ def test_head_skips_out_of_scope_ids():
 
     s = KeyCodecs.prefixed("p/")({"stray": 0, "p/a": 1})
     assert s.head() == ("a", 1)
+
+
+# --- sprint review (i2mint/dol#123): len/bool vs the in-scope iteration of #119 -------
+
+
+@pytest.mark.parametrize("name, store", list(_prefix_stores()))
+@pytest.mark.xfail(strict=True, reason="i2mint/dol#123: len counts out-of-scope ids")
+def test_len_counts_only_in_scope_ids(name, store):
+    assert len(store) == len(list(store)) == 2
+
+
+@pytest.mark.xfail(strict=True, reason="i2mint/dol#123: bool counts out-of-scope ids")
+def test_store_of_only_out_of_scope_ids_is_falsy():
+    from dol import KeyCodecs
+
+    s = KeyCodecs.prefixed("p/")({"stray": 0})
+    assert list(s) == []
+    assert not s
+
+
+def test_len_of_unscoped_store_is_the_inner_len():
+    from dol import wrap_kvs
+
+    s = wrap_kvs({"a": 1, "b": 2}, key_of_id=str.upper, id_of_key=str.lower)
+    assert len(s) == 2 and bool(s)
+    assert len(wrap_kvs({}, key_of_id=str.upper)) == 0
+
+
+def test_head_falls_back_to_inner_ids_when_getitem_fails():
+    from dol import wrap_kvs
+
+    # an asymmetric key mapping: iterated keys can't be read back
+    s = wrap_kvs({"p/stray": 0, "p/a": 1}, key_of_id=lambda _id: _id.upper())
+    with pytest.warns(UserWarning, match="Couldn't get data for the key"):
+        assert s.head() == ("P/STRAY", 0)
