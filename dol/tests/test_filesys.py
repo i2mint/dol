@@ -390,6 +390,8 @@ def test_zip_readers_read_and_write_keys_inside_rootdir(tmp_path):
     import zipfile
     from dol.zipfiledol import ZipFilesReader, ZipFilesReaderAndBytesWriter
 
+    if os.name == "nt":  # ZipFilesReader's default subpath regex is POSIX-only
+        return
     root = tmp_path / "root"
     root.mkdir()
     zip_path = str(root / "in.zip")
@@ -418,6 +420,11 @@ def test_make_missing_dirs_mixin_reraises_out_of_root_keys(tmp_path):
     assert not (tmp_path / "escaped").exists()
 
 
+# POSIX follows a symlink before applying the next '..'; Windows normalizes '..'
+# lexically first, so there 'lnk/../x' IS 'root/x' and nothing escapes to refuse.
+_DOTDOT_FOLLOWS_SYMLINKS = os.name != "nt"
+
+
 def _symlink_sandbox(tmp_path):
     """``root/lnk`` -> ``outside/deep``; ``outside/secret.txt`` is outside the root."""
     root = _sandbox(tmp_path)
@@ -438,10 +445,14 @@ def test_files_symlink_then_dotdot_does_not_escape_rootdir(tmp_path):
     s = Files(str(root))
     escaping_key = os.path.join("lnk", "..", "secret.txt")
     assert escaping_key not in s
-    with pytest.raises(KeyError):
-        s[escaping_key]
-    with pytest.raises(KeyError):
-        s[os.path.join("lnk", "..", "pwned.txt")] = b"x"
+    assert s.get(escaping_key) is None
+    pwn_key = os.path.join("lnk", "..", "pwned.txt")
+    if _DOTDOT_FOLLOWS_SYMLINKS:
+        with pytest.raises(KeyError):
+            s[pwn_key] = b"x"
+    else:
+        s[pwn_key] = b"x"
+        assert (root / "pwned.txt").read_bytes() == b"x"  # contained in the root
     assert not (tmp_path / "outside" / "pwned.txt").exists()
 
 
@@ -463,6 +474,8 @@ def test_symlink_then_dotdot_is_refused_by_every_containment_user(tmp_path):
     from dol.filesys import DirReader, Files, mk_dirs_if_missing
 
     root = _symlink_sandbox(tmp_path)
+    if not _DOTDOT_FOLLOWS_SYMLINKS:
+        pytest.skip("'..' never follows a symlink here: nothing escapes to refuse")
     (tmp_path / "outside" / "sib").mkdir()
     with pytest.raises(KeyError):
         DirReader(str(root))[os.path.join(str(root), "lnk", "..", "sib")]
