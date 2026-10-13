@@ -180,3 +180,39 @@ def test_prefix_reassigned_after_use_relativizes_with_new_prefix():
     s.store.clear()
     s["b"] = 2
     assert list(s) == ["b"]
+
+
+# --- i2mint/dol#114: the suffix end of the out-of-scope guard ---
+
+
+@pytest.mark.parametrize(
+    "prefix, in_scope_id",
+    [("", "foo.txt"), ("a/", "a/foo.txt")],
+)
+def test_suffix_decoding_raises_on_out_of_scope_keys(prefix, in_scope_id):
+    from dol import KeyCodecs
+    from dol.errors import OutOfScopeKeyError
+
+    s = KeyCodecs.affixed(prefix, ".txt")({in_scope_id: 1, prefix + "foo.json": 2})
+    with pytest.raises(OutOfScopeKeyError, match="does not end with the suffix"):
+        list(s)
+    assert s["foo"] == 1  # in-scope access is unchanged
+
+
+def test_affix_overlapping_prefix_and_suffix_is_out_of_scope():
+    from dol import KeyCodecs
+    from dol.errors import OutOfScopeKeyError
+
+    s = KeyCodecs.affixed("ab", "bc")({"abc": 1})  # 'b' would count for both ends
+    with pytest.raises(OutOfScopeKeyError):
+        list(s)
+
+
+def test_filter_then_strip_suffix_is_unchanged():
+    from dol import KeyCodecs, Pipe, filt_iter
+
+    base = {"foo.txt": 1, "bar.txt": 2, ".DS_Store": 3, "README": 4}
+    s = Pipe(
+        filt_iter(filt=lambda k: k.endswith(".txt")), KeyCodecs.suffixed(".txt")
+    )(dict(base))
+    assert sorted(s) == ["bar", "foo"]
