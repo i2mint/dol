@@ -167,3 +167,16 @@ def test_out_of_scope_key_error_is_key_and_value_error():
     assert issubclass(OutOfScopeKeyError, KeyError)
     assert issubclass(OutOfScopeKeyError, ValueError)
     assert str(OutOfScopeKeyError("msg")) == "msg"
+
+
+def test_prefix_reassigned_after_use_relativizes_with_new_prefix():
+    from dol import mk_relative_path_store
+
+    s = mk_relative_path_store(dict)()
+    s._prefix = "/R/"
+    s["a"] = 1
+    assert list(s) == ["a"]
+    s._prefix = "/RR/"
+    s.store.clear()
+    s["b"] = 2
+    assert list(s) == ["b"]

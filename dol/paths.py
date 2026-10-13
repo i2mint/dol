@@ -1059,7 +1059,9 @@ class PrefixRelativizationMixin:
         prefix = getattr(self, self._prefix_attr_name)
         if prefix and _id[: len(prefix)] != prefix:
             raise out_of_scope_prefix_error(_id, prefix)
-        return _id[self._prefix_length :]
+        # slice by the live prefix's length: the cached ``_prefix_length`` goes stale
+        # if the prefix is reassigned after first use
+        return _id[len(prefix) :]
 
 
 class PrefixRelativization(PrefixRelativizationMixin):
