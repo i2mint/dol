@@ -17,7 +17,7 @@ from pathlib import Path
 
 from . import store
 
-_SURFACE_SCRIPT = r'''
+_SURFACE_SCRIPT = r"""
 import importlib, json, pkgutil, sys, types
 root, pkg_name, skip = sys.argv[1], sys.argv[2], set(sys.argv[3].split(','))
 sys.path.insert(0, root)
@@ -70,16 +70,16 @@ print(json.dumps({
     'defined': defined,
     'import_errors': errors,
 }))
-'''
+"""
 
 #: Submodule name parts never treated as part of the public surface.
-DFLT_SKIP_PARTS = ('tests', 'scrap')
+DFLT_SKIP_PARTS = ("tests", "scrap")
 
 
 def package_surface(
     source_root: str | Path,
     *,
-    package: str = 'dol',
+    package: str = "dol",
     python: str = sys.executable,
     skip_parts: tuple[str, ...] = DFLT_SKIP_PARTS,
 ) -> dict:
@@ -94,7 +94,15 @@ def package_surface(
     """
     source_root = Path(source_root).resolve()
     proc = subprocess.run(
-        [python, '-I', '-c', _SURFACE_SCRIPT, str(source_root), package, ','.join(skip_parts)],
+        [
+            python,
+            "-I",
+            "-c",
+            _SURFACE_SCRIPT,
+            str(source_root),
+            package,
+            ",".join(skip_parts),
+        ],
         capture_output=True,
         text=True,
         check=False,
@@ -102,19 +110,19 @@ def package_surface(
     )
     if proc.returncode:
         raise RuntimeError(
-            f'Could not import {package} from its source tree:\n{proc.stderr[-2000:]}'
+            f"Could not import {package} from its source tree:\n{proc.stderr[-2000:]}"
         )
     surface = json.loads(proc.stdout)
-    surface['version'] = surface['version'] or _pyproject_version(source_root)
-    surface['import_errors'] = {
-        k: store.redact(store.scrub(v)) for k, v in surface['import_errors'].items()
+    surface["version"] = surface["version"] or _pyproject_version(source_root)
+    surface["import_errors"] = {
+        k: store.redact(store.scrub(v)) for k, v in surface["import_errors"].items()
     }
-    resolved = Path(surface['resolved_file']).resolve()
+    resolved = Path(surface["resolved_file"]).resolve()
     try:
-        surface['resolved_file'] = resolved.relative_to(source_root).as_posix()
-        surface['imported_from_source'] = True
+        surface["resolved_file"] = resolved.relative_to(source_root).as_posix()
+        surface["imported_from_source"] = True
     except ValueError:
-        surface['imported_from_source'] = False
+        surface["imported_from_source"] = False
     return surface
 
 
@@ -124,33 +132,33 @@ def _pyproject_version(source_root: Path) -> str | None:
         import tomllib
     except ImportError:  # Python 3.10
         return None
-    p = Path(source_root) / 'pyproject.toml'
+    p = Path(source_root) / "pyproject.toml"
     if not p.exists():
         return None
-    with open(p, 'rb') as f:
-        return tomllib.load(f).get('project', {}).get('version')
+    with open(p, "rb") as f:
+        return tomllib.load(f).get("project", {}).get("version")
 
 
 def is_shallow(source_root: str | Path) -> bool:
     """Whether the git history is truncated (then first-seen dates are not real)."""
     proc = subprocess.run(
-        ['git', '-C', str(source_root), 'rev-parse', '--is-shallow-repository'],
+        ["git", "-C", str(source_root), "rev-parse", "--is-shallow-repository"],
         capture_output=True,
         text=True,
         check=False,
     )
-    return proc.stdout.strip() == 'true'
+    return proc.stdout.strip() == "true"
 
 
 def parse_iso(s: str):
     """``datetime.fromisoformat`` that also takes git's ``Z`` suffix on Python 3.10."""
     from datetime import datetime
 
-    return datetime.fromisoformat(s[:-1] + '+00:00' if s.endswith('Z') else s)
+    return datetime.fromisoformat(s[:-1] + "+00:00" if s.endswith("Z") else s)
 
 
 def export_first_seen(
-    source_root: str | Path, names, *, init_relpath: str = 'dol/__init__.py'
+    source_root: str | Path, names, *, init_relpath: str = "dol/__init__.py"
 ) -> dict[str, str]:
     """``{name: ISO date}`` of the first commit whose diff adds *name* to the init file.
 
@@ -160,15 +168,15 @@ def export_first_seen(
     wanted = set(names)
     proc = subprocess.run(
         [
-            'git',
-            '-C',
+            "git",
+            "-C",
             str(source_root),
-            'log',
-            '--reverse',
-            '--format=@@COMMIT@@ %cI',
-            '-p',
-            '--unified=0',
-            '--',
+            "log",
+            "--reverse",
+            "--format=@@COMMIT@@ %cI",
+            "-p",
+            "--unified=0",
+            "--",
             init_relpath,
         ],
         capture_output=True,
@@ -177,11 +185,11 @@ def export_first_seen(
     )
     seen: dict[str, str] = {}
     date = None
-    ident = re.compile(r'[A-Za-z_]\w*')
+    ident = re.compile(r"[A-Za-z_]\w*")
     for line in proc.stdout.splitlines():
-        if line.startswith('@@COMMIT@@ '):
-            date = line.split(' ', 1)[1]
-        elif line.startswith('+') and not line.startswith('+++'):
+        if line.startswith("@@COMMIT@@ "):
+            date = line.split(" ", 1)[1]
+        elif line.startswith("+") and not line.startswith("+++"):
             for tok in ident.findall(line):
                 if tok in wanted and tok not in seen:
                     seen[tok] = date

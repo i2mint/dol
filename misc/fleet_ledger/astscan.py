@@ -40,22 +40,22 @@ from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-DFLT_PACKAGE = 'dol'
+DFLT_PACKAGE = "dol"
 
 #: Directory names never descended into, at any depth (hidden dirs are skipped too).
-DFLT_SKIP_DIRS = frozenset({'node_modules', '__pycache__', 'site-packages'})
+DFLT_SKIP_DIRS = frozenset({"node_modules", "__pycache__", "site-packages"})
 #: Directory names skipped only at the top of a repo: there they are build output
 #: or a virtualenv, while deeper down they can be a real subpackage.
-DFLT_TOP_SKIP_DIRS = frozenset({'build', 'dist', 'env', 'venv'})
+DFLT_TOP_SKIP_DIRS = frozenset({"build", "dist", "env", "venv"})
 
 _VALUE_KINDS = {
-    ast.Lambda: 'lambda',
-    ast.Name: 'name',
-    ast.Attribute: 'attribute',
-    ast.Call: 'call',
-    ast.Constant: 'constant',
-    ast.Subscript: 'subscript',
-    ast.Starred: 'starred',
+    ast.Lambda: "lambda",
+    ast.Name: "name",
+    ast.Attribute: "attribute",
+    ast.Call: "call",
+    ast.Constant: "constant",
+    ast.Subscript: "subscript",
+    ast.Starred: "starred",
 }
 
 
@@ -65,7 +65,7 @@ class Binding:
 
     module: str
     symbol: str | None = None  # None: the binding is the module itself
-    via: str = 'import'  # 'import' | 'star'
+    via: str = "import"  # 'import' | 'star'
 
 
 def value_kind(node: ast.AST) -> str:
@@ -82,8 +82,7 @@ def value_kind(node: ast.AST) -> str:
 
 
 def _is_target(module: str | None, package: str) -> bool:
-    return bool(module) and (module == package or module.startswith(package + '.'))
-
+    return bool(module) and (module == package or module.startswith(package + "."))
 
 
 def _locally_bound_names(tree: ast.AST, package: str) -> set[str]:
@@ -105,8 +104,8 @@ def _locally_bound_names(tree: ast.AST, package: str) -> set[str]:
             if isinstance(node, ast.ImportFrom) and _is_target(node.module, package):
                 continue  # target imports are bindings, handled separately
             for alias in node.names:
-                if alias.name != '*':
-                    names.add(alias.asname or alias.name.split('.')[0])
+                if alias.name != "*":
+                    names.add(alias.asname or alias.name.split(".")[0])
     return names
 
 
@@ -163,24 +162,34 @@ def _import_bindings(
         if isinstance(node, ast.Import):
             for alias in node.names:
                 if not _is_target(alias.name, package):
-                    bind(alias.asname or alias.name.split('.')[0], pos, None)
+                    bind(alias.asname or alias.name.split(".")[0], pos, None)
                     continue
                 if alias.asname:
                     bind(alias.asname, pos, Binding(alias.name))
                 else:  # `import dol.trans` binds `dol`
-                    top = alias.name.split('.')[0]
+                    top = alias.name.split(".")[0]
                     bind(top, pos, Binding(top))
                 imports.append(
-                    dict(line=node.lineno, module=alias.name, name=None, asname=alias.asname)
+                    dict(
+                        line=node.lineno,
+                        module=alias.name,
+                        name=None,
+                        asname=alias.asname,
+                    )
                 )
         elif isinstance(node, ast.ImportFrom):
             target = not node.level and _is_target(node.module, package)
             for alias in node.names:
-                if alias.name == '*':
+                if alias.name == "*":
                     if target:
                         stars.append(node.module)
                         imports.append(
-                            dict(line=node.lineno, module=node.module, name='*', asname=None)
+                            dict(
+                                line=node.lineno,
+                                module=node.module,
+                                name="*",
+                                asname=None,
+                            )
                         )
                     continue
                 local = alias.asname or alias.name
@@ -195,7 +204,7 @@ def _import_bindings(
                         asname=alias.asname,
                     )
                 )
-                full = f'{node.module}.{alias.name}'
+                full = f"{node.module}.{alias.name}"
                 if full in submodules:
                     bind(local, pos, Binding(full))
                 else:
@@ -209,8 +218,8 @@ def _import_bindings(
 
 
 def _is_partial(node: ast.AST) -> bool:
-    return (isinstance(node, ast.Name) and node.id == 'partial') or (
-        isinstance(node, ast.Attribute) and node.attr == 'partial'
+    return (isinstance(node, ast.Name) and node.id == "partial") or (
+        isinstance(node, ast.Attribute) and node.attr == "partial"
     )
 
 
@@ -244,8 +253,8 @@ class _Resolver:
             if base is None:
                 return None
             if base.symbol is not None:  # an attribute of a target symbol: `Store.wrap`
-                return Binding(base.module, f'{base.symbol}.{node.attr}', via=base.via)
-            full = f'{base.module}.{node.attr}'
+                return Binding(base.module, f"{base.symbol}.{node.attr}", via=base.via)
+            full = f"{base.module}.{node.attr}"
             if full in self.submodules:
                 return Binding(full, via=base.via)
             return Binding(base.module, node.attr, via=base.via)
@@ -257,7 +266,7 @@ def _decorator_targets(tree: ast.AST) -> dict[int, str]:
     targets = {}
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            kind = 'class' if isinstance(node, ast.ClassDef) else 'function'
+            kind = "class" if isinstance(node, ast.ClassDef) else "function"
             for d in node.decorator_list:
                 targets[id(d)] = kind
     return targets
@@ -269,7 +278,7 @@ def scan_source(
     package: str = DFLT_PACKAGE,
     submodules: Iterable[str] = (),
     module_surfaces: Mapping[str, Iterable[str]] | None = None,
-    relpath: str = '<string>',
+    relpath: str = "<string>",
 ) -> dict:
     """Census of one module's source text.
 
@@ -298,11 +307,11 @@ def scan_source(
         for mod in stars:
             for name in module_surfaces.get(mod, ()):
                 if name not in local and name not in star_names:
-                    full = f'{mod}.{name}'
+                    full = f"{mod}.{name}"
                     if full in submodules:
-                        star_names[name] = Binding(full, via='star')
+                        star_names[name] = Binding(full, via="star")
                     else:
-                        star_names[name] = Binding(mod, name, via='star')
+                        star_names[name] = Binding(mod, name, via="star")
     resolve = _Resolver(events, star_names=star_names, submodules=submodules)
     decorates = _decorator_targets(tree)
 
@@ -313,7 +322,7 @@ def scan_source(
         ):
             b = resolve(node)
             if b is not None and b.symbol is not None:
-                if '.' not in b.symbol:
+                if "." not in b.symbol:
                     refs.append(
                         dict(
                             file=relpath,
@@ -356,14 +365,16 @@ def scan_source(
         if isinstance(node, ast.ClassDef):
             target_bases, local_bases = [], []
             for base in node.bases:
-                if isinstance(base, ast.Call):  # class A(Store.wrap(...)) / A(wrap_kvs(...))
+                if isinstance(
+                    base, ast.Call
+                ):  # class A(Store.wrap(...)) / A(wrap_kvs(...))
                     b = resolve(base.func)
                     if b is not None and b.symbol is not None:
-                        target_bases.append(b.symbol.split('.')[0])
+                        target_bases.append(b.symbol.split(".")[0])
                     continue
                 b = resolve(base)
                 if b is not None and b.symbol is not None:
-                    target_bases.append(b.symbol.split('.')[0])
+                    target_bases.append(b.symbol.split(".")[0])
                 elif isinstance(base, ast.Name):
                     local_bases.append(base.id)
                 elif isinstance(base, ast.Attribute):
@@ -378,7 +389,7 @@ def scan_source(
                 )
             )
     for rec in imports:
-        rec['file'] = relpath
+        rec["file"] = relpath
     return dict(imports=imports, refs=refs, calls=calls, classes=classes, stars=stars)
 
 
@@ -410,7 +421,6 @@ def _call_record(
     )
 
 
-
 def close_class_graph(classes: Iterable[dict]) -> list[dict]:
     """Classes that subclass a target symbol, directly or through local bases.
 
@@ -427,7 +437,7 @@ def close_class_graph(classes: Iterable[dict]) -> list[dict]:
     classes = list(classes)
     by_name: dict[str, list[dict]] = {}
     for c in classes:
-        by_name.setdefault(c['name'], []).append(c)
+        by_name.setdefault(c["name"], []).append(c)
     memo: dict[int, frozenset] = {}
 
     def roots(c, visiting=frozenset()) -> frozenset:
@@ -436,8 +446,8 @@ def close_class_graph(classes: Iterable[dict]) -> list[dict]:
             return memo[key]
         if key in visiting:
             return frozenset()
-        acc = set(c['target_bases'])
-        for base in c['local_bases']:
+        acc = set(c["target_bases"])
+        for base in c["local_bases"]:
             for parent in by_name.get(base, ()):
                 if parent is not c:
                     acc |= roots(parent, visiting | {key})
@@ -448,12 +458,12 @@ def close_class_graph(classes: Iterable[dict]) -> list[dict]:
     for c in classes:
         r = roots(c)
         if r:
-            direct = sorted(set(c['target_bases']))
+            direct = sorted(set(c["target_bases"]))
             out.append(
                 dict(
-                    file=c['file'],
-                    line=c['line'],
-                    name=c['name'],
+                    file=c["file"],
+                    line=c["line"],
+                    name=c["name"],
                     direct=direct,
                     indirect=sorted(r - set(direct)),
                 )
@@ -469,9 +479,9 @@ def iter_py_files(
 ) -> Iterator[Path]:
     """Python files under *root*, skipping hidden dirs and the skip sets, sorted."""
     root = Path(root)
-    for path in sorted(root.rglob('*.py')):
+    for path in sorted(root.rglob("*.py")):
         parts = path.relative_to(root).parts[:-1]
-        if any(p.startswith('.') or p in skip_dirs for p in parts):
+        if any(p.startswith(".") or p in skip_dirs for p in parts):
             continue
         if parts and parts[0] in top_skip_dirs:
             continue
@@ -498,7 +508,7 @@ def scan_repo(
     for path in iter_py_files(root, skip_dirs=skip_dirs):
         relpath = path.relative_to(root).as_posix()
         try:
-            source = path.read_text(encoding='utf-8', errors='replace')
+            source = path.read_text(encoding="utf-8", errors="replace")
             rec = scan_source(
                 source,
                 package=package,
@@ -510,16 +520,16 @@ def scan_repo(
             parse_errors.append(relpath)
             continue
         n_files += 1
-        for k in ('imports', 'refs', 'calls', 'classes'):
+        for k in ("imports", "refs", "calls", "classes"):
             acc[k].extend(rec[k])
-        acc['stars'].extend(dict(file=relpath, module=m) for m in rec['stars'])
-    subclasses = close_class_graph(acc.pop('classes'))
+        acc["stars"].extend(dict(file=relpath, module=m) for m in rec["stars"])
+    subclasses = close_class_graph(acc.pop("classes"))
     return dict(
         n_files=n_files,
         parse_errors=parse_errors,
-        imports=acc['imports'],
-        refs=acc['refs'],
-        calls=acc['calls'],
-        stars=acc['stars'],
+        imports=acc["imports"],
+        refs=acc["refs"],
+        calls=acc["calls"],
+        stars=acc["stars"],
         subclasses=subclasses,
     )

@@ -36,18 +36,18 @@ from pathlib import Path
 #: Bumped whenever a record's shape changes incompatibly.
 SCHEMA_VERSION = 1
 
-LEDGER_DIR_ENVVAR = 'DOL_FLEET_LEDGER_DIR'
-DFLT_LEDGER_BASE = Path('~/.local/share/dol/fleet_ledger')
+LEDGER_DIR_ENVVAR = "DOL_FLEET_LEDGER_DIR"
+DFLT_LEDGER_BASE = Path("~/.local/share/dol/fleet_ledger")
 
 #: Patterns of strings that identify a local machine or user.
 LOCAL_PATH_PATTERNS = (
-    re.compile(r'/tmp/pytest-of-[^/\s]+'),
+    re.compile(r"/tmp/pytest-of-[^/\s]+"),
     re.compile(
-        r'(?<![\w.<>~-])/(?:root|home/[^/\s]+|Users/[^/\s]+|opt|srv|mnt|media|'
-        r'Volumes|private/var|var/folders|tmp)(?=/|\b)'
+        r"(?<![\w.<>~-])/(?:root|home/[^/\s]+|Users/[^/\s]+|opt|srv|mnt|media|"
+        r"Volumes|private/var|var/folders|tmp)(?=/|\b)"
     ),
-    re.compile(r'(?<![\w])[A-Za-z]:[\\/]'),
-    re.compile(r'\\\\[\w.$-]+\\'),  # UNC: \\host\share
+    re.compile(r"(?<![\w])[A-Za-z]:[\\/]"),
+    re.compile(r"\\\\[\w.$-]+\\"),  # UNC: \\host\share
 )
 _TMP_PATTERN = LOCAL_PATH_PATTERNS[0]
 
@@ -56,7 +56,7 @@ class LocalPathLeak(ValueError):
     """Raised instead of writing a record that still contains a local path."""
 
 
-def ledger_root(package: str = 'dol', *, base: str | Path | None = None) -> Path:
+def ledger_root(package: str = "dol", *, base: str | Path | None = None) -> Path:
     """The directory holding *package*'s ledger (not created here)."""
     base = base or os.environ.get(LEDGER_DIR_ENVVAR) or DFLT_LEDGER_BASE
     return Path(base).expanduser() / package
@@ -67,27 +67,27 @@ def utc_now() -> datetime:
 
 
 def new_record_id(
-    parent: Path, *, now: datetime | None = None, name_format: str = '{}'
+    parent: Path, *, now: datetime | None = None, name_format: str = "{}"
 ) -> str:
     """A fresh, sortable UTC id (``20261013T101500Z``) not yet used under *parent*.
 
     *name_format* maps an id to the entry it names (``'undo-{}.json'``).
     """
-    stem = (now or utc_now()).strftime('%Y%m%dT%H%M%SZ')
+    stem = (now or utc_now()).strftime("%Y%m%dT%H%M%SZ")
     rid, n = stem, 1
     while (parent / name_format.format(rid)).exists():
         n += 1
-        rid = f'{stem}-{n}'
+        rid = f"{stem}-{n}"
     return rid
 
 
 def default_replacements() -> dict[str, str]:
     """Local prefixes to rewrite before writing, most specific first."""
     reps = {}
-    pp = os.environ.get('PP')
+    pp = os.environ.get("PP")
     if pp:
-        reps[str(Path(pp).expanduser())] = '<PP>'
-    reps[str(Path.home())] = '~'
+        reps[str(Path(pp).expanduser())] = "<PP>"
+    reps[str(Path.home())] = "~"
     return reps
 
 
@@ -95,9 +95,9 @@ def scrub(text: str, *, replacements: Mapping[str, str] | None = None) -> str:
     """Rewrite known local prefixes (longest first) in *text*."""
     reps = default_replacements() if replacements is None else replacements
     for prefix in sorted(reps, key=len, reverse=True):
-        pat = re.escape(prefix) + r'(?=[/\\]|$|[^\w.-])'
+        pat = re.escape(prefix) + r"(?=[/\\]|$|[^\w.-])"
         text = re.sub(pat, lambda m: reps[prefix], text)
-    return _TMP_PATTERN.sub('<tmp>', text)
+    return _TMP_PATTERN.sub("<tmp>", text)
 
 
 def redact(text: str) -> str:
@@ -110,7 +110,7 @@ def redact(text: str) -> str:
     'open("<abs>/data.csv") failed'
     """
     for pat in LOCAL_PATH_PATTERNS:
-        text = pat.sub('<abs>', text)
+        text = pat.sub("<abs>", text)
     return text
 
 
@@ -155,27 +155,27 @@ def write_json(path: Path, obj, *, overwrite: bool = False) -> Path:
     leaks = find_local_paths(obj)
     if leaks:
         raise LocalPathLeak(
-            f'Refusing to write {path.name}: {len(leaks)} string(s) still look like '
-            f'local paths, e.g. {leaks[0][:120]!r}'
+            f"Refusing to write {path.name}: {len(leaks)} string(s) still look like "
+            f"local paths, e.g. {leaks[0][:120]!r}"
         )
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    mode = 'w' if overwrite else 'x'
-    with open(path, mode, encoding='utf-8') as f:
+    mode = "w" if overwrite else "x"
+    with open(path, mode, encoding="utf-8") as f:
         json.dump(obj, f, indent=1, sort_keys=True)
-        f.write('\n')
+        f.write("\n")
     return path
 
 
 def read_json(path: Path):
-    return json.loads(Path(path).read_text(encoding='utf-8'))
+    return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
 # --------------------------------------------------------------------------- index
 
 
 def _index_path(root: Path) -> Path:
-    return Path(root) / 'index.json'
+    return Path(root) / "index.json"
 
 
 def read_index(root: Path) -> dict:
@@ -197,24 +197,24 @@ def mark_superseded(
 ) -> dict:
     """Flag a scan or baseline as untrustworthy, keeping it (history is not deleted)."""
     index = read_index(root)
-    for kind in ('scans', 'baselines'):
+    for kind in ("scans", "baselines"):
         for entry in index.get(kind, []):
-            if entry['id'] == record_id:
-                entry['superseded'] = dict(
+            if entry["id"] == record_id:
+                entry["superseded"] = dict(
                     reason=reason, by=by, at=utc_now().isoformat()
                 )
                 write_json(_index_path(root), index, overwrite=True)
                 return entry
-    raise KeyError(f'No scan or baseline with id {record_id!r} in {root}')
+    raise KeyError(f"No scan or baseline with id {record_id!r} in {root}")
 
 
-def latest_id(root: Path, kind: str = 'scans', *, include_superseded=False) -> str:
+def latest_id(root: Path, kind: str = "scans", *, include_superseded=False) -> str:
     """The newest record id of *kind*, skipping superseded ones by default."""
     entries = [
         e
         for e in read_index(root).get(kind, [])
-        if include_superseded or not e.get('superseded')
+        if include_superseded or not e.get("superseded")
     ]
     if not entries:
-        raise LookupError(f'No {kind} recorded under {root}; run `scan` first.')
-    return max(e['id'] for e in entries)
+        raise LookupError(f"No {kind} recorded under {root}; run `scan` first.")
+    return max(e["id"] for e in entries)

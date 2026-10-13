@@ -14,7 +14,7 @@ from pathlib import Path
 
 from . import astscan, fleet, store, surface as surface_mod
 
-TOOL_NAME = 'fleet_ledger'
+TOOL_NAME = "fleet_ledger"
 
 
 def _submodules(surface: dict) -> list[str]:
@@ -23,13 +23,16 @@ def _submodules(surface: dict) -> list[str]:
     ``dol.appendable`` is a module, but ``dol``'s ``appendable`` attribute is a
     function: ``from dol import appendable`` binds the function.
     """
-    package, exports = surface['package'], surface['exports']
+    package, exports = surface["package"], surface["exports"]
     out = []
-    for m in surface['submodules']:
+    for m in surface["submodules"]:
         if m == package:
             continue
-        parent, _, leaf = m.rpartition('.')
-        if parent == package and exports.get(leaf, {}).get('kind', 'module') != 'module':
+        parent, _, leaf = m.rpartition(".")
+        if (
+            parent == package
+            and exports.get(leaf, {}).get("kind", "module") != "module"
+        ):
             continue
         out.append(m)
     return out
@@ -41,7 +44,7 @@ def _repo_census(path: Path, *, package: str, surface: dict) -> dict:
         path,
         package=package,
         submodules=submodules,
-        module_surfaces=surface['submodules'],
+        module_surfaces=surface["submodules"],
     )
 
 
@@ -56,10 +59,10 @@ def aggregate(census: Mapping[str, dict], *, surface: dict) -> dict:
     - ``compat_names``: names used from a submodule that ``__init__`` does not export.
     - ``unknown_names``: names imported from the target that no longer exist in it.
     """
-    package = surface['package']
-    exports = set(surface['exports'])
-    module_names = {m: set(ns) for m, ns in surface['submodules'].items()}
-    defined = {m: set(ns) for m, ns in surface.get('defined', {}).items()}
+    package = surface["package"]
+    exports = set(surface["exports"])
+    module_names = {m: set(ns) for m, ns in surface["submodules"].items()}
+    defined = {m: set(ns) for m, ns in surface.get("defined", {}).items()}
     symbols = defaultdict(lambda: dict(packages=set(), import_sites=0, ref_sites=0))
     calls = defaultdict(
         lambda: dict(
@@ -89,49 +92,49 @@ def aggregate(census: Mapping[str, dict], *, surface: dict) -> dict:
             return  # a submodule the surface could not import: unknowable here
         else:
             bucket = unknown
-        bucket[name]['modules'].add(mod)
-        bucket[name]['packages'].add(pkg)
+        bucket[name]["modules"].add(mod)
+        bucket[name]["packages"].add(pkg)
 
     for pkg, rec in census.items():
-        if not rec.get('scanned'):
+        if not rec.get("scanned"):
             continue
-        for imp in rec['imports']:
-            name, mod = imp['name'], imp['module']
-            if name in (None, '*'):
+        for imp in rec["imports"]:
+            name, mod = imp["name"], imp["module"]
+            if name in (None, "*"):
                 continue
-            if f'{mod}.{name}' in module_names:
+            if f"{mod}.{name}" in module_names:
                 continue  # a submodule import, not a symbol
-            symbols[name]['packages'].add(pkg)
-            symbols[name]['import_sites'] += 1
+            symbols[name]["packages"].add(pkg)
+            symbols[name]["import_sites"] += 1
             classify(pkg, mod, name)
-        for ref in rec['refs']:
-            symbols[ref['symbol']]['packages'].add(pkg)
-            symbols[ref['symbol']]['ref_sites'] += 1
-            classify(pkg, ref['module'], ref['symbol'])
-        for c in rec['calls']:
-            agg = calls[c['symbol']]
-            agg['packages'].add(pkg)
-            agg['sites'] += 1
-            agg['decorator_sites'] += bool(c['decorates'])
-            agg['class_decorator_sites'] += c['decorates'] == 'class'
-            for kw in c['kwargs']:
-                k = agg['kwargs'][kw['name']]
-                k['packages'].add(pkg)
-                k['sites'] += 1
-                k['kinds'][kw['kind']] += 1
-        for cls in rec['subclasses']:
-            for root in cls['direct']:
+        for ref in rec["refs"]:
+            symbols[ref["symbol"]]["packages"].add(pkg)
+            symbols[ref["symbol"]]["ref_sites"] += 1
+            classify(pkg, ref["module"], ref["symbol"])
+        for c in rec["calls"]:
+            agg = calls[c["symbol"]]
+            agg["packages"].add(pkg)
+            agg["sites"] += 1
+            agg["decorator_sites"] += bool(c["decorates"])
+            agg["class_decorator_sites"] += c["decorates"] == "class"
+            for kw in c["kwargs"]:
+                k = agg["kwargs"][kw["name"]]
+                k["packages"].add(pkg)
+                k["sites"] += 1
+                k["kinds"][kw["kind"]] += 1
+        for cls in rec["subclasses"]:
+            for root in cls["direct"]:
                 s = subclasses[root]
-                s['packages'].add(pkg)
-                s['classes'] += 1
-                s['direct'] += 1
-            for root in cls['indirect']:
+                s["packages"].add(pkg)
+                s["classes"] += 1
+                s["direct"] += 1
+            for root in cls["indirect"]:
                 s = subclasses[root]
-                s['packages'].add(pkg)
-                s['classes'] += 1
-                s['indirect'] += 1
-        for st in rec['stars']:
-            star_packages[st['module']].add(pkg)
+                s["packages"].add(pkg)
+                s["classes"] += 1
+                s["indirect"] += 1
+        for st in rec["stars"]:
+            star_packages[st["module"]].add(pkg)
 
     def finish(d):
         if isinstance(d, (dict, defaultdict)):
@@ -152,12 +155,12 @@ def aggregate(census: Mapping[str, dict], *, surface: dict) -> dict:
             star_imports=star_packages,
         )
     )
-    for d in (out['symbols'], out['calls'], out['subclasses']):
+    for d in (out["symbols"], out["calls"], out["subclasses"]):
         for v in d.values():
-            v['n_packages'] = len(v['packages'])
-    for v in out['calls'].values():
-        for k in v['kwargs'].values():
-            k['n_packages'] = len(k['packages'])
+            v["n_packages"] = len(v["packages"])
+    for v in out["calls"].values():
+        for k in v["kwargs"].values():
+            k["n_packages"] = len(k["packages"])
     return out
 
 
@@ -170,7 +173,7 @@ def _is_within(path: Path, parent: Path) -> bool:
 
 
 def run_scan(
-    package: str = 'dol',
+    package: str = "dol",
     *,
     source_root: str | Path | None = None,
     repos: Mapping[str, str | Path] | None = None,
@@ -189,13 +192,13 @@ def run_scan(
     surf = surface_mod.package_surface(source_root, package=package)
     if _is_within(root, source_root):
         raise ValueError(
-            f'The ledger root must be outside the {package} source tree: its records '
-            'are derived from the fleet (some of it private) and must never be committed.'
+            f"The ledger root must be outside the {package} source tree: its records "
+            "are derived from the fleet (some of it private) and must never be committed."
         )
-    surf['export_first_seen'] = surface_mod.export_first_seen(
-        source_root, surf['exports'], init_relpath=f'{package}/__init__.py'
+    surf["export_first_seen"] = surface_mod.export_first_seen(
+        source_root, surf["exports"], init_relpath=f"{package}/__init__.py"
     )
-    surf['history_shallow'] = surface_mod.is_shallow(source_root)
+    surf["history_shallow"] = surface_mod.is_shallow(source_root)
     targets = fleet.dependents_and_paths(package, repos=repos)
     transitive = None
     if repos is None:
@@ -205,38 +208,42 @@ def run_scan(
     for name, path in sorted(targets.items()):
         if path is None:
             pins[name] = dict(found=False)
-            census[name] = dict(scanned=False, reason='not found locally')
+            census[name] = dict(scanned=False, reason="not found locally")
             continue
         pins[name] = dict(found=True, **fleet.git_pin(path))
-        census[name] = dict(scanned=True, **_repo_census(path, package=package, surface=surf))
+        census[name] = dict(
+            scanned=True, **_repo_census(path, package=package, surface=surf)
+        )
 
-    scans_dir = root / 'scans'
+    scans_dir = root / "scans"
     scan_id = store.new_record_id(scans_dir)
     created = store.utc_now().isoformat()
     target_pin = fleet.git_pin(source_root)
     meta = dict(
         schema_version=store.SCHEMA_VERSION,
-        kind='scan',
+        kind="scan",
         id=scan_id,
         created=created,
         tool=TOOL_NAME,
         package=package,
-        package_version=surf['version'],
+        package_version=surf["version"],
         package_pin=target_pin,
         import_resolved=dict(
-            file=surf['resolved_file'], from_source=surf['imported_from_source']
+            file=surf["resolved_file"], from_source=surf["imported_from_source"]
         ),
         python=platform.python_version(),
-        dependents_source='explicit' if repos is not None else 'priv.dep_graph',
+        dependents_source="explicit" if repos is not None else "priv.dep_graph",
         n_dependents=len(targets),
         n_found=sum(p is not None for p in targets.values()),
         transitive_dependents=transitive,
         note=note,
     )
     d = scans_dir / scan_id
-    store.write_json(d / 'surface.json', dict(schema_version=store.SCHEMA_VERSION, **surf))
     store.write_json(
-        d / 'pins.json',
+        d / "surface.json", dict(schema_version=store.SCHEMA_VERSION, **surf)
+    )
+    store.write_json(
+        d / "pins.json",
         dict(
             schema_version=store.SCHEMA_VERSION,
             scan_id=scan_id,
@@ -245,7 +252,7 @@ def run_scan(
         ),
     )
     store.write_json(
-        d / 'census.json',
+        d / "census.json",
         dict(
             schema_version=store.SCHEMA_VERSION,
             scan_id=scan_id,
@@ -253,14 +260,14 @@ def run_scan(
             aggregates=aggregate(census, surface=surf),
         ),
     )
-    store.write_json(d / 'meta.json', meta)
+    store.write_json(d / "meta.json", meta)
     store.add_to_index(
         root,
-        'scans',
+        "scans",
         dict(
             id=scan_id,
             created=created,
-            package_sha=target_pin.get('sha'),
+            package_sha=target_pin.get("sha"),
             n_dependents=len(targets),
             note=note,
         ),
@@ -271,8 +278,9 @@ def run_scan(
 def load_scan(root: Path, scan_id: str | None = None) -> dict:
     """``{'meta', 'surface', 'pins', 'census'}`` of a scan (latest by default)."""
     root = Path(root)
-    scan_id = scan_id or store.latest_id(root, 'scans')
-    d = root / 'scans' / scan_id
+    scan_id = scan_id or store.latest_id(root, "scans")
+    d = root / "scans" / scan_id
     return {
-        k: store.read_json(d / f'{k}.json') for k in ('meta', 'surface', 'pins', 'census')
+        k: store.read_json(d / f"{k}.json")
+        for k in ("meta", "surface", "pins", "census")
     }

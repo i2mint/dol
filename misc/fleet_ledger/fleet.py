@@ -22,14 +22,14 @@ def _priv_dep_graph():
         from priv import dep_graph
     except ImportError as e:  # pragma: no cover - depends on the machine
         raise ImportError(
-            'Finding dependents needs `priv` (its dep_graph module), which is not '
-            'importable here. Pass the dependents explicitly instead: '
-            'repos={name: path, ...} (CLI: --repo NAME=PATH, repeatable).'
+            "Finding dependents needs `priv` (its dep_graph module), which is not "
+            "importable here. Pass the dependents explicitly instead: "
+            "repos={name: path, ...} (CLI: --repo NAME=PATH, repeatable)."
         ) from e
     return dep_graph
 
 
-def fleet_dependents(package: str = 'dol', *, transitive: bool = False) -> list[str]:
+def fleet_dependents(package: str = "dol", *, transitive: bool = False) -> list[str]:
     """Names of the local packages depending on *package*, from priv's dep_graph."""
     dg = _priv_dep_graph()
     graph = dg.build_dep_graph(local_only=True)
@@ -49,7 +49,7 @@ def resolve_repos(names, *, repos: Mapping[str, str | Path] | None = None) -> di
 
 
 def dependents_and_paths(
-    package: str = 'dol', *, repos: Mapping[str, str | Path] | None = None
+    package: str = "dol", *, repos: Mapping[str, str | Path] | None = None
 ) -> dict:
     """The census targets: explicit *repos*, or priv's direct dependents resolved."""
     if repos is not None:
@@ -62,35 +62,35 @@ def dependents_and_paths(
 
 def git(repo: Path, *args: str, check: bool = True) -> str:
     proc = subprocess.run(
-        ['git', '-C', str(repo), *args], capture_output=True, text=True, check=False
+        ["git", "-C", str(repo), *args], capture_output=True, text=True, check=False
     )
     if check and proc.returncode:
-        raise RuntimeError(f'git {" ".join(args)} failed: {proc.stderr.strip()}')
-    return proc.stdout.strip() if proc.returncode == 0 else ''
+        raise RuntimeError(f"git {' '.join(args)} failed: {proc.stderr.strip()}")
+    return proc.stdout.strip() if proc.returncode == 0 else ""
 
 
 def git_pin(repo: Path) -> dict:
     """Full commit, branch, upstream, ahead/behind, dirtiness and commit date."""
     repo = Path(repo)
-    if not git(repo, 'rev-parse', '--is-inside-work-tree', check=False):
+    if not git(repo, "rev-parse", "--is-inside-work-tree", check=False):
         return dict(git=False)
-    toplevel = Path(git(repo, 'rev-parse', '--show-toplevel')).resolve()
-    sha = git(repo, 'rev-parse', 'HEAD', check=False)
-    branch = git(repo, 'symbolic-ref', '--short', '-q', 'HEAD', check=False) or None
+    toplevel = Path(git(repo, "rev-parse", "--show-toplevel")).resolve()
+    sha = git(repo, "rev-parse", "HEAD", check=False)
+    branch = git(repo, "symbolic-ref", "--short", "-q", "HEAD", check=False) or None
     upstream = (
-        git(repo, 'rev-parse', '--abbrev-ref', '@{u}', check=False) or None
+        git(repo, "rev-parse", "--abbrev-ref", "@{u}", check=False) or None
         if branch
         else None
     )
     ahead = behind = None
     if upstream:
-        counts = git(repo, 'rev-list', '--left-right', '--count', 'HEAD...@{u}', check=False)
+        counts = git(
+            repo, "rev-list", "--left-right", "--count", "HEAD...@{u}", check=False
+        )
         if counts:
             ahead, behind = (int(x) for x in counts.split())
-    tracked = git(repo, 'status', '--porcelain', '--untracked-files=no', check=False)
-    untracked = git(
-        repo, 'ls-files', '--others', '--exclude-standard', check=False
-    )
+    tracked = git(repo, "status", "--porcelain", "--untracked-files=no", check=False)
+    untracked = git(repo, "ls-files", "--others", "--exclude-standard", check=False)
     return dict(
         git=True,
         sha=sha or None,
@@ -100,6 +100,7 @@ def git_pin(repo: Path) -> dict:
         behind=behind,
         dirty=len(tracked.splitlines()) if tracked else 0,
         untracked=len(untracked.splitlines()) if untracked else 0,
-        commit_date=git(repo, 'show', '-s', '--format=%cI', 'HEAD', check=False) or None,
+        commit_date=git(repo, "show", "-s", "--format=%cI", "HEAD", check=False)
+        or None,
         subdir=Path(repo).resolve().relative_to(toplevel).as_posix(),
     )
