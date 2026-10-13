@@ -1,4 +1,4 @@
-> built 2026-10-13 04:29 UTC from 315cd4b (master) · dol 0.3.75. Details: build_info.json
+> built 2026-10-13 07:38 UTC from e33f404 (master) · dol 0.3.76. Details: build_info.json
 
 # index.html.md
 
@@ -4238,6 +4238,13 @@ ensured to exist separatedly.
 ### dol.filesys.mk_dirs_if_missing_preset(self, k, v, , max_dirs_to_make=None, verbose=False)
 
 Preset function that will make the store create directories on write as needed.
+
+It only makes the directory: the write itself is left to the wrapper that calls
+this preset, so it happens exactly once and its errors propagate (#112). The
+directory is made only when the innermost layer is a file-system store, the key
+resolves (through every layer’s `_id_of_key`) to a path whose directory is
+missing, and that layer’s `validate_key` accepts it – so an invalid key (e.g.
+one leaving `rootdir`, #107) never gets a directory, and the write raises for it.
 
 ### dol.filesys.mk_json_bytes_wrap(, loads_kwargs=None, dumps_kwargs=None)
 
@@ -16782,20 +16789,18 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-13 04:29 UTC** from commit <a href="https://github.com/i2mint/dol/commit/315cd4b59cbd2795d7342fef348bf02d88dc0e49"><code>315cd4b</code></a> on branch <code>master</code>, for **dol 0.3.75** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 07:38 UTC** from commit <a href="https://github.com/i2mint/dol/commit/e33f404804ab6eaac8d1679e35c8b8d840976884"><code>e33f404</code></a> on branch <code>master</code>, for **dol 0.3.76** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.3.75) is ahead of the latest release on PyPI (0.3.74): these docs describe unreleased code.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/315cd4b59cbd2795d7342fef348bf02d88dc0e49"><code>315cd4b59cbd2795d7342fef348bf02d88dc0e49</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/e33f404804ab6eaac8d1679e35c8b8d840976884"><code>e33f404804ab6eaac8d1679e35c8b8d840976884</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.75</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.76</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -16804,15 +16809,15 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38346484640">38346484640</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38363705500">38363705500</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>2dab26ed7dc567f7aadbf24e05ed35b4d4609275</code> (in the history of the built commit) |
+| Event commit | <code>17677ccdc857f431e0805d4c8fe25e8ad867290b</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.13  |
+| epythet  | 0.2.15  |
 | Sphinx   | 9.1.0   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
@@ -16831,14 +16836,14 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.74/">0.3.74</a>, older than the documented version (0.3.75).
+Latest release: <a href="https://pypi.org/project/dol/0.3.76/">0.3.76</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 315cd4b59cbd2795d7342fef348bf02d88dc0e49
-pip install "epythet==0.2.13"
+git checkout e33f404804ab6eaac8d1679e35c8b8d840976884
+pip install "epythet==0.2.15"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

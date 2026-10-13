@@ -447,6 +447,13 @@ ensured to exist separatedly.
 
 Preset function that will make the store create directories on write as needed.
 
+It only makes the directory: the write itself is left to the wrapper that calls
+this preset, so it happens exactly once and its errors propagate (#112). The
+directory is made only when the innermost layer is a file-system store, the key
+resolves (through every layer’s `_id_of_key`) to a path whose directory is
+missing, and that layer’s `validate_key` accepts it – so an invalid key (e.g.
+one leaving `rootdir`, #107) never gets a directory, and the write raises for it.
+
 ### dol.filesys.mk_json_bytes_wrap(, loads_kwargs=None, dumps_kwargs=None)
 
 Make a `wrap_kvs` value-codec wrapper for JSON, with kwargs for `json.loads`/`json.dumps`.

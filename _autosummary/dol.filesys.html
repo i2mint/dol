@@ -901,6 +901,12 @@ ensured to exist separatedly.</p>
 <dt class="sig sig-object py" id="dol.filesys.mk_dirs_if_missing_preset">
 <span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">mk_dirs_if_missing_preset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dirs_to_make</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#mk_dirs_if_missing_preset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.mk_dirs_if_missing_preset" title="Link to this definition">¶</a></dt>
 <dd><p>Preset function that will make the store create directories on write as needed.</p>
+<p>It only makes the directory: the write itself is left to the wrapper that calls
+this preset, so it happens exactly once and its errors propagate (#112). The
+directory is made only when the innermost layer is a file-system store, the key
+resolves (through every layer’s <code class="docutils literal notranslate"><span class="pre">_id_of_key</span></code>) to a path whose directory is
+missing, and that layer’s <code class="docutils literal notranslate"><span class="pre">validate_key</span></code> accepts it – so an invalid key (e.g.
+one leaving <code class="docutils literal notranslate"><span class="pre">rootdir</span></code>, #107) never gets a directory, and the write raises for it.</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -1235,7 +1241,7 @@ issues with system-wide temporary directories.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d7e45696"></script>
+</div><script src="../_static/documentation_options.js?v=f755cc7d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
