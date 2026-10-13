@@ -474,6 +474,13 @@ needed.
 Note that it’ll only effect paths relative to the rootdir, which needs to be
 ensured to exist separatedly.
 
+The directories are made just before the write. If the write then fails (a layer
+below refuses the key, e.g. a `filt_iter` scope, or the write itself errors), the
+directories this call made are removed again (those still empty), so a rejected
+key leaves no stray folder behind (i2mint/dol#122). (A concurrent writer that had
+just seen such a directory exist can still lose it to this cleanup: its write then
+fails like any write to a missing directory.)
+
 ### dol.filesys.mk_dirs_if_missing_preset(self, k, v, , max_dirs_to_make=None, verbose=False)
 
 Preset function that will make the store create directories on write as needed.
@@ -484,6 +491,10 @@ directory is made only when the innermost layer is a file-system store, the key
 resolves (through every layer’s `_id_of_key`) to a path whose directory is
 missing, and that layer’s `validate_key` accepts it – so an invalid key (e.g.
 one leaving `rootdir`, #107) never gets a directory, and the write raises for it.
+
+(`mk_dirs_if_missing` itself no longer goes through this preset: it also has to see
+the write fail, to remove the directories it made for a key a layer below rejects,
+i2mint/dol#122.)
 
 ### dol.filesys.mk_json_bytes_wrap(, loads_kwargs=None, dumps_kwargs=None)
 

@@ -291,7 +291,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">,</span> <span class="n">KvPersister</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span><span class="p">,</span> <span class="n">store_decorator</span><span class="p">,</span> <span class="n">filt_iter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span><span class="p">,</span> <span class="n">store_decorator</span><span class="p">,</span> <span class="n">filt_iter</span><span class="p">,</span> <span class="n">_wrap_store</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.naming</span><span class="w"> </span><span class="kn">import</span> <span class="n">mk_pattern_from_template_and_format_dict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.paths</span><span class="w"> </span><span class="kn">import</span> <span class="n">mk_relative_path_store</span>
 
@@ -518,6 +518,19 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_announce_dir_to_make</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">verbose</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The ``verbose`` behaviour of :func:`ensure_dir`, before a directory is made."""</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">verbose</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Making the directory: </span><span class="si">{</span><span class="n">dirpath</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">verbose</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
+            <span class="n">callaback</span> <span class="o">=</span> <span class="n">verbose</span>
+            <span class="n">callaback</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">string_to_print</span> <span class="o">=</span> <span class="n">verbose</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">string_to_print</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="ensure_dir">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.ensure_dir">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ensure_dir</span><span class="p">(</span>
@@ -548,15 +561,7 @@
 <span class="sd">    on ``dirpath``, you need make them so when calling ensure_dir.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dirpath</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">verbose</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Making the directory: </span><span class="si">{</span><span class="n">dirpath</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">verbose</span><span class="p">,</span> <span class="n">Callable</span><span class="p">):</span>
-                <span class="n">callaback</span> <span class="o">=</span> <span class="n">verbose</span>
-                <span class="n">callaback</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">string_to_print</span> <span class="o">=</span> <span class="n">verbose</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">string_to_print</span><span class="p">)</span>
+        <span class="n">_announce_dir_to_make</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="n">create_directories</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">max_dirs_to_make</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dirpath</span></div>
 
@@ -1342,6 +1347,10 @@
 <span class="sd">    resolves (through every layer's ``_id_of_key``) to a path whose directory is</span>
 <span class="sd">    missing, and that layer's ``validate_key`` accepts it -- so an invalid key (e.g.</span>
 <span class="sd">    one leaving ``rootdir``, #107) never gets a directory, and the write raises for it.</span>
+
+<span class="sd">    (``mk_dirs_if_missing`` itself no longer goes through this preset: it also has to see</span>
+<span class="sd">    the write fail, to remove the directories it made for a key a layer below rejects,</span>
+<span class="sd">    i2mint/dol#122.)</span>
 <span class="sd">    """</span>
     <span class="n">dirname</span> <span class="o">=</span> <span class="n">_missing_dir_of_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">dirname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1387,6 +1396,82 @@
     <span class="k">return</span> <span class="n">store</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_missing_ancestors</span><span class="p">(</span><span class="n">dirname</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The directories from the topmost missing one down to ``dirname`` (those to be made)."""</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">dirname</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">):</span>
+        <span class="n">missing</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parent</span> <span class="o">==</span> <span class="n">dirname</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">dirname</span> <span class="o">=</span> <span class="n">parent</span>
+    <span class="k">return</span> <span class="n">missing</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_dirs_tracking</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Like :func:`ensure_dir`; returns the directories *this call* made, top-down.</span>
+
+<span class="sd">    A directory another process makes meanwhile is not counted as made here, so a later</span>
+<span class="sd">    cleanup never removes it. Exceeding ``max_dirs_to_make`` makes none, as there.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dirname</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">_announce_dir_to_make</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+    <span class="n">to_make</span> <span class="o">=</span> <span class="n">_missing_ancestors</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">max_dirs_to_make</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_make</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_dirs_to_make</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">made</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">dir_to_make</span> <span class="ow">in</span> <span class="n">to_make</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dir_to_make</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">FileExistsError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">made</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dir_to_make</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+        <span class="n">_remove_dirs_made</span><span class="p">(</span><span class="n">made</span><span class="p">)</span>
+        <span class="k">raise</span>
+    <span class="k">return</span> <span class="n">made</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_remove_dirs_made</span><span class="p">(</span><span class="n">made</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Remove (deepest first) directories that were made for a write that then failed.</span>
+
+<span class="sd">    Only directories that are still empty go, so nothing another writer put there is lost.</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">dirname</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">made</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mk_dirs_if_missing_class_trans</span><span class="p">(</span>
+    <span class="n">store_cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="vm">__module__</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="n">dirname</span> <span class="o">=</span> <span class="n">_missing_dir_of_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="n">made</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">_make_dirs_tracking</span><span class="p">(</span>
+                <span class="n">dirname</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">max_dirs_to_make</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">dirname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="p">[]</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+            <span class="c1"># A layer below refused the write (e.g. a ``filt_iter`` that rejects ``k``,</span>
+            <span class="c1"># i2mint/dol#122): do not leave the directories made for it behind.</span>
+            <span class="n">_remove_dirs_made</span><span class="p">(</span><span class="n">made</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+    <span class="n">store_cls</span><span class="o">.</span><span class="fm">__setitem__</span> <span class="o">=</span> <span class="fm">__setitem__</span>
+    <span class="k">if</span> <span class="vm">__module__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">store_cls</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">=</span> <span class="vm">__module__</span>
+    <span class="k">return</span> <span class="n">store_cls</span>
+
+
 <span class="c1"># TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)</span>
 <span class="c1">#   Also, add a verbose option to print the dirs that are being made</span>
 <span class="c1">#   (see dol.filesys.ensure_dir)</span>
@@ -1405,11 +1490,22 @@
 
 <span class="sd">    Note that it'll only effect paths relative to the rootdir, which needs to be</span>
 <span class="sd">    ensured to exist separatedly.</span>
+
+<span class="sd">    The directories are made just before the write. If the write then fails (a layer</span>
+<span class="sd">    below refuses the key, e.g. a ``filt_iter`` scope, or the write itself errors), the</span>
+<span class="sd">    directories this call made are removed again (those still empty), so a rejected</span>
+<span class="sd">    key leaves no stray folder behind (i2mint/dol#122). (A concurrent writer that had</span>
+<span class="sd">    just seen such a directory exist can still lose it to this cleanup: its write then</span>
+<span class="sd">    fails like any write to a missing directory.)</span>
 <span class="sd">    """</span>
-    <span class="n">_mk_dirs_if_missing_preset</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
-        <span class="n">mk_dirs_if_missing_preset</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">max_dirs_to_make</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="n">_mk_dirs_if_missing_preset</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_wrap_store</span><span class="p">(</span>
+        <span class="n">_mk_dirs_if_missing_class_trans</span><span class="p">,</span>
+        <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">store</span><span class="o">=</span><span class="n">store_cls</span><span class="p">,</span>
+            <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">max_dirs_to_make</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
 
 
 
@@ -1528,7 +1624,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=55223d3a"></script>
+</div><script src="../../_static/documentation_options.js?v=5e2c5a69"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

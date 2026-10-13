@@ -1,4 +1,4 @@
-> built 2026-10-13 11:37 UTC from cb4692b (master) · dol 0.3.79. Details: build_info.json
+> built 2026-10-13 11:57 UTC from 36b5b80 (master) · dol 0.3.80. Details: build_info.json
 
 # index.html.md
 
@@ -4297,6 +4297,13 @@ needed.
 Note that it’ll only effect paths relative to the rootdir, which needs to be
 ensured to exist separatedly.
 
+The directories are made just before the write. If the write then fails (a layer
+below refuses the key, e.g. a `filt_iter` scope, or the write itself errors), the
+directories this call made are removed again (those still empty), so a rejected
+key leaves no stray folder behind (i2mint/dol#122). (A concurrent writer that had
+just seen such a directory exist can still lose it to this cleanup: its write then
+fails like any write to a missing directory.)
+
 ### dol.filesys.mk_dirs_if_missing_preset(self, k, v, , max_dirs_to_make=None, verbose=False)
 
 Preset function that will make the store create directories on write as needed.
@@ -4307,6 +4314,10 @@ directory is made only when the innermost layer is a file-system store, the key
 resolves (through every layer’s `_id_of_key`) to a path whose directory is
 missing, and that layer’s `validate_key` accepts it – so an invalid key (e.g.
 one leaving `rootdir`, #107) never gets a directory, and the write raises for it.
+
+(`mk_dirs_if_missing` itself no longer goes through this preset: it also has to see
+the write fail, to remove the directories it made for a key a layer below rejects,
+i2mint/dol#122.)
 
 ### dol.filesys.mk_json_bytes_wrap(, loads_kwargs=None, dumps_kwargs=None)
 
@@ -16845,7 +16856,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-13 11:37 UTC** from commit <a href="https://github.com/i2mint/dol/commit/cb4692b917f7a934a8ec11c518da2f0485e8123a"><code>cb4692b</code></a> on branch <code>master</code>, for **dol 0.3.79** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 11:57 UTC** from commit <a href="https://github.com/i2mint/dol/commit/36b5b8006544f85898f28107c932f706482484a2"><code>36b5b80</code></a> on branch <code>master</code>, for **dol 0.3.80** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -16854,9 +16865,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/cb4692b917f7a934a8ec11c518da2f0485e8123a"><code>cb4692b917f7a934a8ec11c518da2f0485e8123a</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/36b5b8006544f85898f28107c932f706482484a2"><code>36b5b8006544f85898f28107c932f706482484a2</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.79</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.80</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -16865,9 +16876,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38391270714">38391270714</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38393617996">38393617996</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>b2733ef2822f08eb79f47e430d40b0b2d6b89ae4</code> (in the history of the built commit) |
+| Event commit | <code>8f3871192472cf51ee324e98730c3d6554840a7c</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -16892,13 +16903,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.79/">0.3.79</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.80/">0.3.80</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout cb4692b917f7a934a8ec11c518da2f0485e8123a
+git checkout 36b5b8006544f85898f28107c932f706482484a2
 pip install "epythet==0.2.15"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

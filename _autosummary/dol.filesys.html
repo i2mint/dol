@@ -926,6 +926,12 @@ absolute keys, as in <code class="docutils literal notranslate"><span class="pre
 needed.</p>
 <p>Note that it’ll only effect paths relative to the rootdir, which needs to be
 ensured to exist separatedly.</p>
+<p>The directories are made just before the write. If the write then fails (a layer
+below refuses the key, e.g. a <code class="docutils literal notranslate"><span class="pre">filt_iter</span></code> scope, or the write itself errors), the
+directories this call made are removed again (those still empty), so a rejected
+key leaves no stray folder behind (i2mint/dol#122). (A concurrent writer that had
+just seen such a directory exist can still lose it to this cleanup: its write then
+fails like any write to a missing directory.)</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -940,6 +946,9 @@ directory is made only when the innermost layer is a file-system store, the key
 resolves (through every layer’s <code class="docutils literal notranslate"><span class="pre">_id_of_key</span></code>) to a path whose directory is
 missing, and that layer’s <code class="docutils literal notranslate"><span class="pre">validate_key</span></code> accepts it – so an invalid key (e.g.
 one leaving <code class="docutils literal notranslate"><span class="pre">rootdir</span></code>, #107) never gets a directory, and the write raises for it.</p>
+<p>(<code class="docutils literal notranslate"><span class="pre">mk_dirs_if_missing</span></code> itself no longer goes through this preset: it also has to see
+the write fail, to remove the directories it made for a key a layer below rejects,
+i2mint/dol#122.)</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -1275,7 +1284,7 @@ issues with system-wide temporary directories.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=55223d3a"></script>
+</div><script src="../_static/documentation_options.js?v=5e2c5a69"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
