@@ -61,9 +61,10 @@ convention = "google"
 [tool.pytest.ini_options]
 minversion = "6.0"
 # The package dir IS the test root: unit tests live in dol/tests and doctests
-# live in the modules themselves. (There is no top-level `tests` dir; naming one
+# live in the modules themselves. misc/fleet_ledger is the maintainer-side fleet
+# usage ledger (#91): not shipped, but tested here so it cannot rot. (There is no top-level `tests` dir; naming one
 # made pytest silently fall back to recursive discovery and skip all doctests.)
-testpaths = ["dol"]
+testpaths = ["dol", "misc/fleet_ledger"]
 # addopts is the single source of truth for what gets collected, so a bare local
 # `pytest` collects exactly what CI collects. Hence `exclude_paths = []` below.
 addopts = "--doctest-modules --ignore=dol/scrap"

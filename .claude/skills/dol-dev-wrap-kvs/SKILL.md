@@ -136,12 +136,13 @@ wrappers, and test all four forms (see `tests/test_trans.py::test_redirect_getat
 dol is editably installed across the local ecosystem, so **dependents already import your
 working-tree dol** — no reinstall needed. Before landing a wrap_kvs/Store.wrap change:
 1. Measure blast radius statically: AST-scan dependents for transforms passed to
-   wrap_kvs-family whose first param ∈ self_names (see `misc/data/` scan scripts;
+   wrap_kvs-family whose first param ∈ self_names (the `misc/fleet_ledger` census lists every call site with its kwargs and their kinds;
    the reusable pattern found 0 breaking + 12 safe self-convention sites).
 2. Run the dependents test-gate **baseline vs modified**: run each key dependent's suite
    with your change, then `git stash` your dol edits, run again (baseline), `git stash pop`;
-   a `PASS→FAIL` delta is a real regression (env `FAIL→FAIL` is not). Helpers and the
-   gate order live in `misc/data/` (gitignored). Prioritize `config2py → graze → ju →
+   a `PASS→FAIL` delta is a real regression (env `FAIL→FAIL` is not). The ledger does this
+   per test id: `python -m misc.fleet_ledger baseline` before and after, then `diff`
+   (see `misc/fleet_ledger/README.md`); `priv test-dependents dol` is the quick gate. Prioritize `config2py → graze → ju →
    tabled → oa` (highest transitive fan-out) plus the self-convention users
    (`py2store, sqldol, tec, unbox, mongodol`).
 

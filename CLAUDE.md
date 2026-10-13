@@ -227,15 +227,7 @@ and the full doc index with status labels. The table below is the quick version.
 | [dol_content_metadata_bifurcation.md](misc/docs/dol_content_metadata_bifurcation.md) | The content/metadata split-store problem (feeds issue #80) |
 | [code-quality-improvements.md](misc/docs/code-quality-improvements.md) | Tech-debt tracker: dead code, coverage gaps (feeds issue #94) |
 
-> The **fleet usage ledger** ([#91](https://github.com/i2mint/dol/issues/91)) lives
-> in gitignored `misc/data/` — start at its [README](misc/data/README.md).
-> `python -m fleet_ledger scan` records one immutable, timestamped scan: dol's **89
-> direct dependents** pinned at full 40-char commits, their imports, AST-verified
-> subclasses and call-site kwargs (all `file:line`), a generated zero-usage report,
-> and the pre-PR test-gate order. `baseline` captures every dependent's suite result
-> so a candidate's damage can be told apart from pre-existing red; `pin restore`
-> freezes the fleet at a scan and `pin undo` releases it. Scans accumulate — nothing
-> is overwritten. Figures quoted in these docs are from the 2026-08-21 scan.
+> The **fleet usage ledger** ([#91](https://github.com/i2mint/dol/issues/91)) is committed code in `misc/fleet_ledger/` — start at its [README](misc/fleet_ledger/README.md). Its *output* is never committed (it is derived from the fleet, some of it private): it lives in `~/.local/share/dol/fleet_ledger/dol/`. `python -m misc.fleet_ledger scan` records one immutable, timestamped scan: every direct dependent (from priv's `dep_graph`) pinned at its full commit, its imports, AST-verified subclasses and call-site kwargs (all `file:line`), and a generated zero-usage report (`zero-usage`). `baseline` captures every dependent's suite result with its failing test ids, so `diff` tells a candidate's damage apart from pre-existing red; `pin restore` freezes the fleet at a scan and `pin undo` releases it. Scans accumulate — nothing is overwritten. Figures quoted in these docs are from the 2026-08-21 scan; rescan for current ones.
 
 ---
 

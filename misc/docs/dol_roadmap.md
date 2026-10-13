@@ -57,8 +57,8 @@ P2/P3 design work. Open issues folded in here: [#18](https://github.com/i2mint/d
 Sequencing is **ledger first** — both other legs consume it.
 
 1. **[#91 — fleet usage ledger](https://github.com/i2mint/dol/issues/91) — built
-   (2026-08-21)**. The v1 import census is now an append-only ledger under
-   gitignored `misc/data/` (`fleet_ledger`, see `misc/data/README.md`): full 40-char
+   (2026-08-21; committed as code in `misc/fleet_ledger/` 2026-10-13, output kept local in `~/.local/share/dol/fleet_ledger/`)**. The v1 import census is now an append-only ledger
+   (`fleet_ledger`, see `misc/fleet_ledger/README.md`): full 40-char
    commit pins with a restore/undo helper, per-dependent baseline suite results,
    an AST census (subclassing and call-site kwargs, not just imports), a generated
    zero-usage report, and one immutable record per scan. Headline figures from the
