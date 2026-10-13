@@ -1,26 +1,78 @@
 metric,value
 schema_version,1.0
-timestamp,2026-10-13T08:36:44.267125Z
-commit_sha,cff3cf1d06add27cd7028e0777ef1bd533051186
-commit_message,Merge f273183fc0284550e677fd6ef89532c62a01bf1a into e33f404804ab6eaac8d1679e35c8b8d840976884
+timestamp,2026-10-13T08:38:26.810865Z
+commit_sha,ed3d22de40a50c8744007f6f509772cfcc6b715a
+commit_message,"Fleet usage ledger (#91): commit the tool, keep its output local (#124)
+
+* fleet_ledger: commit the #91 fleet usage ledger as code; output stays local
+
+The 2026-08-21 ledger lived only in gitignored misc/data/ and was lost to any
+machine but the one that built it. This commits the tool (misc/fleet_ledger/,
+stdlib only, not shipped in the dol distribution) and keeps everything it
+produces out of the repo, in ~/.local/share/dol/fleet_ledger/<package>/,
+because the output is derived from the fleet and some dependents are private.
+
+- scan: per-dependent pins (40-char SHA, branch, upstream, ahead/behind,
+  dirty/untracked, commit date) + AST census (imports through every binding
+  form, star imports scored against the star'd module, subclassing closed over
+  each repo's class graph, call-site kwargs with value kinds, decorators)
+- baseline: every dependent's suite with the priv gate command, failing test
+  ids from JUnit, timeouts recorded; diff refuses mismatched commands
+- pin check/restore/undo: dry run by default, refuses dirty repos, never
+  fetches or forces, writes its undo record before the first checkout
+- zero-usage report with its three generated caveats; summary; history
+- immutable records, schema_version, index.json, mark-superseded; a writer that
+  refuses to persist local paths
+
+Dependents and the gate command come from priv's dep_graph (reused, not
+re-derived); repos= / --repo is the seam. misc/fleet_ledger joins testpaths.
+
+Refs #91
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+* fleet_ledger: fix the adversarial review's findings
+
+- Python 3.10: parse git's Z dates (CI blocker)
+- baseline: redact local paths in suite output instead of losing the run;
+  per-dependent errors recorded; whole process group killed on timeout;
+  one outcome per test case
+- diff: a run that did not complete is incomparable, never 'fixed'
+- pin undo: skip a repo no longer detached at the restored pin; explicit-repos
+  scans refuse fleet resolution; undo ids cannot collide
+- census: position-aware bindings (later non-dol imports unbind), calls on
+  attributes of dol symbols (Store.wrap), partial(wrap_kvs, ...), call bases,
+  submodules shadowed by an export
+- compat vs unknown judged against every defined name, via attribute access too
+- writer: anchored prefix scrub, wider local-path patterns; ledger root and
+  report output refused inside the repo; report pages warn they name dependents
+- build/dist/env/venv skipped only at a repo's top; shallow-history caveat
+
+Refs #91
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>"
 python_version,3.10
-metrics.umpyre_stats.num_functions,5924
-metrics.umpyre_stats.num_classes,1525
-metrics.umpyre_stats.total_lines,236457
-metrics.umpyre_stats.empty_lines,28995
-metrics.umpyre_stats.comment_lines,12865
-metrics.umpyre_stats.docs_lines,26788
-metrics.umpyre_stats.function_lines,97427
-metrics.umpyre_stats.empty_lines_ratio,0.12262271787259417
-metrics.umpyre_stats.comment_lines_ratio,0.054407355248522984
-metrics.umpyre_stats.function_lines_ratio,0.41202840262711615
-metrics.umpyre_stats.mean_lines_per_function,16.446151249155974
-metrics.umpyre_stats.files_analyzed,551
+metrics.umpyre_stats.num_functions,5613
+metrics.umpyre_stats.num_classes,1465
+metrics.umpyre_stats.total_lines,229875
+metrics.umpyre_stats.empty_lines,27913
+metrics.umpyre_stats.comment_lines,12369
+metrics.umpyre_stats.docs_lines,25846
+metrics.umpyre_stats.function_lines,92805
+metrics.umpyre_stats.empty_lines_ratio,0.12142686242523111
+metrics.umpyre_stats.comment_lines_ratio,0.053807504078303425
+metrics.umpyre_stats.function_lines_ratio,0.40371941272430667
+metrics.umpyre_stats.mean_lines_per_function,16.533939070016036
+metrics.umpyre_stats.files_analyzed,540
 metrics.umpyre_stats.pypi_version,0.3.76
 metrics.workflow_status.last_run_status,success
-metrics.workflow_status.last_success_timestamp,2026-10-13T08:36:29Z
+metrics.workflow_status.last_success_timestamp,2026-10-13T08:36:52Z
 metrics.workflow_status.recent_failure_count,0
-metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/38370276936
+metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/38370312864
 metrics.workflow_status.total_runs_analyzed,10
 metrics.wily.cyclomatic_avg,0.0
 metrics.wily.maintainability_index,0.0
@@ -33,4 +85,4 @@ metrics.coverage.branch_coverage,0.0
 metrics.coverage.statements_covered,0
 metrics.coverage.statements_total,0
 metrics.coverage.error,No coverage file found
-collection_duration_seconds,2.5389139652252197
+collection_duration_seconds,3.0193047523498535

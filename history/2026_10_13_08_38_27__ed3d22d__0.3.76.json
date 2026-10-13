@@ -1,0 +1,47 @@
+{
+  "collection_duration_seconds": 3.0193047523498535,
+  "commit_message": "Fleet usage ledger (#91): commit the tool, keep its output local (#124)\n\n* fleet_ledger: commit the #91 fleet usage ledger as code; output stays local\n\nThe 2026-08-21 ledger lived only in gitignored misc/data/ and was lost to any\nmachine but the one that built it. This commits the tool (misc/fleet_ledger/,\nstdlib only, not shipped in the dol distribution) and keeps everything it\nproduces out of the repo, in ~/.local/share/dol/fleet_ledger/<package>/,\nbecause the output is derived from the fleet and some dependents are private.\n\n- scan: per-dependent pins (40-char SHA, branch, upstream, ahead/behind,\n  dirty/untracked, commit date) + AST census (imports through every binding\n  form, star imports scored against the star'd module, subclassing closed over\n  each repo's class graph, call-site kwargs with value kinds, decorators)\n- baseline: every dependent's suite with the priv gate command, failing test\n  ids from JUnit, timeouts recorded; diff refuses mismatched commands\n- pin check/restore/undo: dry run by default, refuses dirty repos, never\n  fetches or forces, writes its undo record before the first checkout\n- zero-usage report with its three generated caveats; summary; history\n- immutable records, schema_version, index.json, mark-superseded; a writer that\n  refuses to persist local paths\n\nDependents and the gate command come from priv's dep_graph (reused, not\nre-derived); repos= / --repo is the seam. misc/fleet_ledger joins testpaths.\n\nRefs #91\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* fleet_ledger: fix the adversarial review's findings\n\n- Python 3.10: parse git's Z dates (CI blocker)\n- baseline: redact local paths in suite output instead of losing the run;\n  per-dependent errors recorded; whole process group killed on timeout;\n  one outcome per test case\n- diff: a run that did not complete is incomparable, never 'fixed'\n- pin undo: skip a repo no longer detached at the restored pin; explicit-repos\n  scans refuse fleet resolution; undo ids cannot collide\n- census: position-aware bindings (later non-dol imports unbind), calls on\n  attributes of dol symbols (Store.wrap), partial(wrap_kvs, ...), call bases,\n  submodules shadowed by an export\n- compat vs unknown judged against every defined name, via attribute access too\n- writer: anchored prefix scrub, wider local-path patterns; ledger root and\n  report output refused inside the repo; report pages warn they name dependents\n- build/dist/env/venv skipped only at a repo's top; shallow-history caveat\n\nRefs #91\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+  "commit_sha": "ed3d22de40a50c8744007f6f509772cfcc6b715a",
+  "metrics": {
+    "coverage": {
+      "branch_coverage": 0.0,
+      "error": "No coverage file found",
+      "line_coverage": 0.0,
+      "statements_covered": 0,
+      "statements_total": 0
+    },
+    "umpyre_stats": {
+      "comment_lines": 12369,
+      "comment_lines_ratio": 0.053807504078303425,
+      "docs_lines": 25846,
+      "empty_lines": 27913,
+      "empty_lines_ratio": 0.12142686242523111,
+      "files_analyzed": 540,
+      "function_lines": 92805,
+      "function_lines_ratio": 0.40371941272430667,
+      "mean_lines_per_function": 16.533939070016036,
+      "num_classes": 1465,
+      "num_functions": 5613,
+      "pypi_version": "0.3.76",
+      "total_lines": 229875
+    },
+    "wily": {
+      "cyclomatic_avg": 0.0,
+      "error": "wily build failed: \u001b[31mFailed to setup archiver: 'Dirty repository, make sure you commit/stash files first'\u001b[0m\n",
+      "files_analyzed": 0,
+      "maintainability_index": 0.0,
+      "total_loc": 0
+    },
+    "workflow_status": {
+      "last_run_status": "success",
+      "last_success_timestamp": "2026-10-13T08:36:52Z",
+      "recent_failure_count": 0,
+      "run_url": "https://github.com/i2mint/dol/actions/runs/38370312864",
+      "total_runs_analyzed": 10
+    }
+  },
+  "python_version": "3.10",
+  "schema_version": "1.0",
+  "timestamp": "2026-10-13T08:38:26.810865Z",
+  "workflow_status": {}
+}
