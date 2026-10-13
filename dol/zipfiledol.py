@@ -521,6 +521,7 @@ class ZipFilesReader(FileCollection, KvReader):
             )
 
     def __getitem__(self, k):
+        self.validate_in_root(k)
         try:
             return self.zip_reader(k, **self.zip_reader_kwargs)
         except FileNotFoundError as e:
@@ -533,6 +534,7 @@ class ZipFilesReaderAndBytesWriter(ZipFilesReader):
     """
 
     def __setitem__(self, k, v):
+        self.validate_in_root(k)
         with open(k, "wb") as fp:
             fp.write(v)
 

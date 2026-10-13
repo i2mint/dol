@@ -339,3 +339,33 @@ def test_mk_dirs_if_missing_makes_no_dirs_outside_rootdir(tmp_path):
     assert not (tmp_path / "escaped").exists()
     s["made/here.txt"] = b"ok"  # valid keys still get their dirs made
     assert (root / "made" / "here.txt").read_bytes() == b"ok"
+
+
+def test_dir_and_zip_readers_reject_keys_escaping_rootdir(tmp_path):
+    from dol.filesys import DirReader, PickleStores
+    from dol.zipfiledol import ZipFilesReader, ZipFilesReaderAndBytesWriter
+
+    root = _sandbox(tmp_path)
+    (tmp_path / "outdir").mkdir()
+    d = DirReader(str(root))  # absolute keys
+    with pytest.raises(KeyError):
+        d[str(root) + "/../outdir"]
+    d[str(root) + "/a"]  # inside the root: still fine
+    p = PickleStores(str(root))  # relative keys
+    with pytest.raises(KeyError):
+        p["../outdir"]
+    p["a"]
+    with pytest.raises(KeyError):
+        ZipFilesReader(str(root))[str(root) + "/../out.zip"]
+    with pytest.raises(KeyError):
+        ZipFilesReaderAndBytesWriter(str(root))[str(root) + "/../out.zip"] = b""
+    assert not (tmp_path / "out.zip").exists()
+
+
+def test_rootdir_spellings_still_list_their_keys(tmp_path, monkeypatch):
+    from dol.filesys import Files
+
+    root = _sandbox(tmp_path)
+    assert list(Files("/" + str(root))) == ["a/in.txt"]  # '//...' rootdir
+    monkeypatch.chdir(root)
+    assert list(Files("a/..")) == ["a/in.txt"]  # rootdir normalising to '.'

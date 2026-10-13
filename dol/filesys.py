@@ -428,10 +428,22 @@ def path_is_under(path: str, rootdir: str) -> bool:
     False
     >>> path_is_under('/data/rootsibling/x', '/data/root')
     False
+    >>> path_is_under('//data/root/a', '//data/root/')
+    True
+    >>> path_is_under('root/../a', 'root/..'), path_is_under('root/../../a', 'root/..')
+    (True, False)
     """
-    root = os.path.normpath(rootdir)
+    root, path = os.path.normpath(rootdir), os.path.normpath(path)
+    if root == os.curdir:  # commonpath(['x', '.']) is '', so handle '.' apart
+        return not (
+            os.path.isabs(path)
+            or path == os.pardir
+            or path.startswith(os.pardir + os.sep)
+        )
     try:
-        return os.path.commonpath([os.path.normpath(path), root]) == root
+        # compare against commonpath([root]), not root: commonpath collapses a
+        # leading '//' that normpath keeps
+        return os.path.commonpath([path, root]) == os.path.commonpath([root])
     except ValueError:  # mixed absolute/relative paths, or different drives
         return False
 
@@ -479,19 +491,28 @@ class FileSysCollection(Collection):
         self.include_hidden = include_hidden
         self.allow_escape = allow_escape
 
+    allow_escape = False  # for subclasses whose __init__ skips super().__init__
+
     def is_valid_key(self, k):
         """Whether ``k`` is a key of this collection: it must match the key pattern
         and, unless ``allow_escape=True``, stay under ``rootdir`` once ``..``
         segments are resolved (see :func:`path_is_under`). An empty ``rootdir``
         (as in ``Files('')``, used by ``dol.misc``) confines nothing: its keys are
         arbitrary paths by design."""
-        if not self._key_pattern.match(k):
-            return False
-        return (
-            self.allow_escape
-            or not self.rootdir
-            or path_is_under(k, self.rootdir)
-        )
+        return bool(self._key_pattern.match(k)) and self.is_in_root(k)
+
+    def is_in_root(self, k):
+        """Whether ``k`` stays under ``rootdir`` (always true with
+        ``allow_escape=True`` or an empty ``rootdir``)."""
+        return self.allow_escape or not self.rootdir or path_is_under(k, self.rootdir)
+
+    def validate_in_root(self, k):
+        """Raise ``KeyValidationError`` if ``k`` leaves ``rootdir`` (i2mint/dol#107).
+
+        For methods that build a value from ``k`` without a full ``validate_key``.
+        """
+        if not self.is_in_root(k):
+            raise KeyValidationError(_dflt_not_valid_error_msg.format(k))
 
     def validate_key(
         self,
@@ -857,6 +878,7 @@ class PickleStores(DirCollection):
     """Reader mapping each sub-directory of ``rootdir`` to a ``PickleFiles`` store of it."""
 
     def __getitem__(self, k):
+        self.validate_in_root(k)
         return PickleFiles(k)
 
     def __repr__(self):
@@ -867,6 +889,7 @@ class DirReader(DirCollection, KvReader):
     """Reader mapping each sub-directory of ``rootdir`` to a ``DirReader`` of it."""
 
     def __getitem__(self, k):
+        self.validate_in_root(k)
         return DirReader(k)
 
 
