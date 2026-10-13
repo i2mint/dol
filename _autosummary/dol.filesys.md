@@ -38,6 +38,7 @@ Main entry points:
 | [`mk_json_bytes_wrap`](#dol.filesys.mk_json_bytes_wrap)(\*[, loads_kwargs, ...])         | Make a `wrap_kvs` value-codec wrapper for JSON, with kwargs for `json.loads`/`json.dumps`.                                                                                  |
 | [`mk_pickle_bytes_wrap`](#dol.filesys.mk_pickle_bytes_wrap)(\*[, loads_kwargs, ...])       | Make a `wrap_kvs` value-codec wrapper for pickle, with kwargs for `pickle.loads`/`pickle.dumps`.                                                                            |
 | [`mk_tmp_dol_dir`](#dol.filesys.mk_tmp_dol_dir)([dirname, ...])                      | Create and return a path to a temporary directory that's guaranteed to be accessible to the user.                                                                           |
+| [`path_is_under`](#dol.filesys.path_is_under)(path, rootdir)                        | Whether `path`, *lexically* normalized, is `rootdir` or lies under it.                                                                                                      |
 | [`paths_in_dir`](#dol.filesys.paths_in_dir)(rootdir[, include_hidden])             | Yield the paths of the entries of `rootdir` (directories with a trailing separator), skipping hidden ones unless `include_hidden`.                                          |
 | [`process_path`](#dol.filesys.process_path)(\*path[, ensure_dir_exists, ...])      | Process a path string, ensuring it exists, and optionally expanding user.                                                                                                   |
 | [`resolve_dir`](#dol.filesys.resolve_dir)(dirpath[, assert_existence, ...])       | Resolve a path to a full, real, path to a directory                                                                                                                         |
@@ -80,13 +81,13 @@ Main entry points:
 | [`KeyValidationError`](#dol.filesys.KeyValidationError)   | A `KeyError` for keys that fail a file-system store's validation.   |
 |-----------------------------------------------------------------------|---------------------------------------------------------------------|
 
-### *class* dol.filesys.DirCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.DirCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`FileSysCollection`](#dol.filesys.FileSysCollection)
 
 Collection of the directory paths under `rootdir`.
 
-### *class* dol.filesys.DirReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.DirReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`DirCollection`](#dol.filesys.DirCollection), [`KvReader`](dol.base.md#dol.base.KvReader)
 
@@ -103,19 +104,19 @@ Supports custom deletion functions via delete_func parameter in \_\_init_\_.
 By default, tries to move files to trash with fallback to os.remove.
 See dol.trash module for deletion strategies: permanent_delete, trash_only, etc.
 
-### *class* dol.filesys.FileBytesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FileBytesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`FileCollection`](#dol.filesys.FileCollection), [`KvReader`](dol.base.md#dol.base.KvReader)
 
 Reader mapping file paths under `rootdir` to the files’ bytes.
 
-### *class* dol.filesys.FileCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FileCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`FileSysCollection`](#dol.filesys.FileSysCollection)
 
 Collection of the file paths under `rootdir`.
 
-### *class* dol.filesys.FileInfoReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FileInfoReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`FileCollection`](#dol.filesys.FileCollection), [`KvReader`](dol.base.md#dol.base.KvReader)
 
@@ -134,7 +135,7 @@ variable isn’t really specified. Without this, a write can raise on a
 non-ASCII-locale machine, or a store synced between two machines with different
 locales can silently corrupt on round trip.
 
-### *class* dol.filesys.FileStringReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FileStringReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`FileBytesReader`](#dol.filesys.FileBytesReader)
 
@@ -146,11 +147,35 @@ silently depends on an ambient environment variable isn’t really specified. Th
 also matches how `FileStringPersister` writes (below), so a round trip is safe
 regardless of which locale reads or writes.
 
-### *class* dol.filesys.FileSysCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FileSysCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`Collection`](dol.base.md#dol.base.Collection)
 
 Base collection of file-system paths under `rootdir`, optionally restricted by `subpath`, `max_levels` and hidden-file inclusion.
+
+Keys that would leave `rootdir` through `..` segments (e.g.
+`'<rootdir>/../secret'`) are not valid keys: reading, writing or deleting them
+raises `KeyError`, and `in` returns `False` (i2mint/dol#107). Pass the
+keyword-only `allow_escape=True` to address paths outside the root on purpose.
+
+#### is_in_root(k)
+
+Whether `k` stays under `rootdir` (always true with
+`allow_escape=True` or an empty `rootdir`).
+
+#### is_valid_key(k)
+
+Whether `k` is a key of this collection: it must match the key pattern
+and, unless `allow_escape=True`, stay under `rootdir` once `..`
+segments are resolved (see [`path_is_under()`](#dol.filesys.path_is_under)). An empty `rootdir`
+(as in `Files('')`, used by `dol.misc`) confines nothing: its keys are
+arbitrary paths by design.
+
+#### validate_in_root(k)
+
+Raise `KeyValidationError` if `k` leaves `rootdir` (i2mint/dol#107).
+
+For methods that build a value from `k` without a full `validate_key`.
 
 #### with_relative_paths()
 
@@ -170,7 +195,7 @@ FileBytesPersister with relative paths
 
 `validate_key` on the inner key – see `mk_relative_path_store`.
 
-### *class* dol.filesys.FilesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FilesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`PrefixRelativizationMixin`](dol.paths.md#dol.paths.PrefixRelativizationMixin), [`Store`](dol.base.md#dol.base.Store)
 
@@ -263,7 +288,7 @@ A store of pickles
 
 alias of [`PickleFiles`](#dol.filesys.PickleFiles)
 
-### *class* dol.filesys.PickleStores(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.PickleStores(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`PrefixRelativizationMixin`](dol.paths.md#dol.paths.PrefixRelativizationMixin), [`Store`](dol.base.md#dol.base.Store)
 
@@ -313,7 +338,7 @@ FileStringPersister with relative paths
 
 `validate_key` on the inner key – see `mk_relative_path_store`.
 
-### *class* dol.filesys.TextFilesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.TextFilesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`PrefixRelativizationMixin`](dol.paths.md#dol.paths.PrefixRelativizationMixin), [`Store`](dol.base.md#dol.base.Store)
 
@@ -451,6 +476,35 @@ accessible to the user.
 #### NOTE
 This function creates a user-specific temporary directory to avoid permission
 issues with system-wide temporary directories.
+
+### dol.filesys.path_is_under(path, rootdir)
+
+Whether `path`, *lexically* normalized, is `rootdir` or lies under it.
+
+A `startswith` check is not enough: `'/data/root/../secret'` starts with
+`'/data/root/'` but addresses `/data/secret` (i2mint/dol#107). The check is
+lexical (`os.path.normpath`, not `realpath`), so a symlinked sub-directory of
+the root still counts as inside it.
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+```pycon
+>>> path_is_under('/data/root/a/b.txt', '/data/root/')
+True
+>>> path_is_under('/data/root/a/../b.txt', '/data/root/')
+True
+>>> path_is_under('/data/root/../secret.txt', '/data/root/')
+False
+>>> path_is_under('/data/root/a/../../secret.txt', '/data/root')
+False
+>>> path_is_under('/data/rootsibling/x', '/data/root')
+False
+>>> path_is_under('//data/root/a', '//data/root/')
+True
+>>> path_is_under('root/../a', 'root/..'), path_is_under('root/../../a', 'root/..')
+(True, False)
+```
 
 ### dol.filesys.paths_in_dir(rootdir, include_hidden=False)
 

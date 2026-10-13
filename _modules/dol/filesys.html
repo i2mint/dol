@@ -711,12 +711,59 @@
     <span class="k">return</span> <span class="n">obj</span>
 
 
+<div class="viewcode-block" id="path_is_under">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.path_is_under">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">path_is_under</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">rootdir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether ``path``, *lexically* normalized, is ``rootdir`` or lies under it.</span>
+
+<span class="sd">    A ``startswith`` check is not enough: ``'/data/root/../secret'`` starts with</span>
+<span class="sd">    ``'/data/root/'`` but addresses ``/data/secret`` (i2mint/dol#107). The check is</span>
+<span class="sd">    lexical (``os.path.normpath``, not ``realpath``), so a symlinked sub-directory of</span>
+<span class="sd">    the root still counts as inside it.</span>
+
+<span class="sd">    &gt;&gt;&gt; path_is_under('/data/root/a/b.txt', '/data/root/')</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; path_is_under('/data/root/a/../b.txt', '/data/root/')</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; path_is_under('/data/root/../secret.txt', '/data/root/')</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; path_is_under('/data/root/a/../../secret.txt', '/data/root')</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; path_is_under('/data/rootsibling/x', '/data/root')</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; path_is_under('//data/root/a', '//data/root/')</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; path_is_under('root/../a', 'root/..'), path_is_under('root/../../a', 'root/..')</span>
+<span class="sd">    (True, False)</span>
+<span class="sd">    """</span>
+    <span class="n">root</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">rootdir</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">root</span> <span class="o">==</span> <span class="n">os</span><span class="o">.</span><span class="n">curdir</span><span class="p">:</span>  <span class="c1"># commonpath(['x', '.']) is '', so handle '.' apart</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">path</span> <span class="o">==</span> <span class="n">os</span><span class="o">.</span><span class="n">pardir</span>
+            <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pardir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># compare against commonpath([root]), not root: commonpath collapses a</span>
+        <span class="c1"># leading '//' that normpath keeps</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">commonpath</span><span class="p">([</span><span class="n">path</span><span class="p">,</span> <span class="n">root</span><span class="p">])</span> <span class="o">==</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">commonpath</span><span class="p">([</span><span class="n">root</span><span class="p">])</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># mixed absolute/relative paths, or different drives</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
 <div class="viewcode-block" id="FileSysCollection">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileSysCollection">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FileSysCollection</span><span class="p">(</span><span class="n">Collection</span><span class="p">):</span>
     <span class="c1"># rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.</span>
 
-<span class="w">    </span><span class="sd">"""Base collection of file-system paths under ``rootdir``, optionally restricted by ``subpath``, ``max_levels`` and hidden-file inclusion."""</span>
+<span class="w">    </span><span class="sd">"""Base collection of file-system paths under ``rootdir``, optionally restricted by ``subpath``, ``max_levels`` and hidden-file inclusion.</span>
+
+<span class="sd">    Keys that would leave ``rootdir`` through ``..`` segments (e.g.</span>
+<span class="sd">    ``'&lt;rootdir&gt;/../secret'``) are not valid keys: reading, writing or deleting them</span>
+<span class="sd">    raises ``KeyError``, and ``in`` returns ``False`` (i2mint/dol#107). Pass the</span>
+<span class="sd">    keyword-only ``allow_escape=True`` to address paths outside the root on purpose.</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -727,8 +774,12 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">include_hidden</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">assert_rootdir_existence</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">allow_escape</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">"self"</span><span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_escape</span><span class="p">:</span>
+            <span class="c1"># keep the repr unchanged for the default (see i2mint/dol#107)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_kwargs</span><span class="p">[</span><span class="s2">"allow_escape"</span><span class="p">]</span>
         <span class="n">rootdir</span> <span class="o">=</span> <span class="n">resolve_dir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">assert_existence</span><span class="o">=</span><span class="n">assert_rootdir_existence</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">max_levels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">max_levels</span> <span class="o">=</span> <span class="n">inf</span>
@@ -744,9 +795,39 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_levels</span> <span class="o">=</span> <span class="n">max_levels</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">include_hidden</span> <span class="o">=</span> <span class="n">include_hidden</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allow_escape</span> <span class="o">=</span> <span class="n">allow_escape</span>
 
+    <span class="n">allow_escape</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># for subclasses whose __init__ skips super().__init__</span>
+
+<div class="viewcode-block" id="FileSysCollection.is_valid_key">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileSysCollection.is_valid_key">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_valid_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+<span class="w">        </span><span class="sd">"""Whether ``k`` is a key of this collection: it must match the key pattern</span>
+<span class="sd">        and, unless ``allow_escape=True``, stay under ``rootdir`` once ``..``</span>
+<span class="sd">        segments are resolved (see :func:`path_is_under`). An empty ``rootdir``</span>
+<span class="sd">        (as in ``Files('')``, used by ``dol.misc``) confines nothing: its keys are</span>
+<span class="sd">        arbitrary paths by design."""</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_in_root</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FileSysCollection.is_in_root">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileSysCollection.is_in_root">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_in_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Whether ``k`` stays under ``rootdir`` (always true with</span>
+<span class="sd">        ``allow_escape=True`` or an empty ``rootdir``)."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_escape</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span> <span class="ow">or</span> <span class="n">path_is_under</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FileSysCollection.validate_in_root">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileSysCollection.validate_in_root">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_in_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Raise ``KeyValidationError`` if ``k`` leaves ``rootdir`` (i2mint/dol#107).</span>
+
+<span class="sd">        For methods that build a value from ``k`` without a full ``validate_key``.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_in_root</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">KeyValidationError</span><span class="p">(</span><span class="n">_dflt_not_valid_error_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">))</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">validate_key</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1172,6 +1253,7 @@
 <span class="w">    </span><span class="sd">"""Reader mapping each sub-directory of ``rootdir`` to a ``PickleFiles`` store of it."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_in_root</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">PickleFiles</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1185,6 +1267,7 @@
 <span class="w">    </span><span class="sd">"""Reader mapping each sub-directory of ``rootdir`` to a ``DirReader`` of it."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_in_root</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">DirReader</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></div>
 
 
@@ -1201,6 +1284,8 @@
     <span class="c1"># TODO: I'm not thrilled in the way I'm doing this; find alternatives</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">KeyValidationError</span><span class="p">:</span>
+        <span class="k">pass</span>  <span class="c1"># invalid key (e.g. outside rootdir): never make dirs for it (#107)</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># general on purpose...</span>
         <span class="c1"># TODO: ... But perhaps a more precise (but sufficient) exception list better?</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">dol.dig</span><span class="w"> </span><span class="kn">import</span> <span class="n">inner_most_key</span>
@@ -1266,6 +1351,8 @@
         <span class="c1"># TODO: I'm not thrilled in the way I'm doing this; find alternatives</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">KeyValidationError</span><span class="p">:</span>
+            <span class="k">raise</span>  <span class="c1"># invalid key (e.g. outside rootdir): never make dirs for it (#107)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># general on purpose...</span>
             <span class="c1"># TODO: ... But perhaps a more precise (but sufficient) exception list better?</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">dol.dig</span><span class="w"> </span><span class="kn">import</span> <span class="n">inner_most_key</span>
@@ -1361,7 +1448,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=b636f9ab"></script>
+</div><script src="../../_static/documentation_options.js?v=1f768dcd"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

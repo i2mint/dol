@@ -157,7 +157,7 @@ For example, to make a json codec that indents the json, you can do:
 }
 ```
 
-#### b64 *= <module 'base64' from '/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/base64.py'>*
+#### b64 *= <module 'base64' from '/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/base64.py'>*
 
 #### *class* default
 

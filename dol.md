@@ -1,4 +1,4 @@
-> built 2026-09-22 13:56 UTC from 66e3056 (master) · dol 0.3.70. Details: build_info.json
+> built 2026-10-13 02:30 UTC from 13a8f13 (master) · dol 0.3.71. Details: build_info.json
 
 # index.html.md
 
@@ -3811,6 +3811,7 @@ Main entry points:
 | [`mk_json_bytes_wrap`](_autosummary/dol.filesys.html.md#dol.filesys.mk_json_bytes_wrap)(\*[, loads_kwargs, ...])         | Make a `wrap_kvs` value-codec wrapper for JSON, with kwargs for `json.loads`/`json.dumps`.                                                                                  |
 | [`mk_pickle_bytes_wrap`](_autosummary/dol.filesys.html.md#dol.filesys.mk_pickle_bytes_wrap)(\*[, loads_kwargs, ...])       | Make a `wrap_kvs` value-codec wrapper for pickle, with kwargs for `pickle.loads`/`pickle.dumps`.                                                                            |
 | [`mk_tmp_dol_dir`](_autosummary/dol.filesys.html.md#dol.filesys.mk_tmp_dol_dir)([dirname, ...])                      | Create and return a path to a temporary directory that's guaranteed to be accessible to the user.                                                                           |
+| [`path_is_under`](_autosummary/dol.filesys.html.md#dol.filesys.path_is_under)(path, rootdir)                        | Whether `path`, *lexically* normalized, is `rootdir` or lies under it.                                                                                                      |
 | [`paths_in_dir`](_autosummary/dol.filesys.html.md#dol.filesys.paths_in_dir)(rootdir[, include_hidden])             | Yield the paths of the entries of `rootdir` (directories with a trailing separator), skipping hidden ones unless `include_hidden`.                                          |
 | [`process_path`](_autosummary/dol.filesys.html.md#dol.filesys.process_path)(\*path[, ensure_dir_exists, ...])      | Process a path string, ensuring it exists, and optionally expanding user.                                                                                                   |
 | [`resolve_dir`](_autosummary/dol.filesys.html.md#dol.filesys.resolve_dir)(dirpath[, assert_existence, ...])       | Resolve a path to a full, real, path to a directory                                                                                                                         |
@@ -3853,13 +3854,13 @@ Main entry points:
 | [`KeyValidationError`](_autosummary/dol.filesys.html.md#dol.filesys.KeyValidationError)   | A `KeyError` for keys that fail a file-system store's validation.   |
 |-----------------------------------------------------------------------|---------------------------------------------------------------------|
 
-### *class* dol.filesys.DirCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.DirCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`FileSysCollection`](_autosummary/dol.filesys.html.md#dol.filesys.FileSysCollection)
 
 Collection of the directory paths under `rootdir`.
 
-### *class* dol.filesys.DirReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.DirReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`DirCollection`](_autosummary/dol.filesys.html.md#dol.filesys.DirCollection), [`KvReader`](_autosummary/dol.base.html.md#dol.base.KvReader)
 
@@ -3876,19 +3877,19 @@ Supports custom deletion functions via delete_func parameter in \_\_init_\_.
 By default, tries to move files to trash with fallback to os.remove.
 See dol.trash module for deletion strategies: permanent_delete, trash_only, etc.
 
-### *class* dol.filesys.FileBytesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FileBytesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`FileCollection`](_autosummary/dol.filesys.html.md#dol.filesys.FileCollection), [`KvReader`](_autosummary/dol.base.html.md#dol.base.KvReader)
 
 Reader mapping file paths under `rootdir` to the files’ bytes.
 
-### *class* dol.filesys.FileCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FileCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`FileSysCollection`](_autosummary/dol.filesys.html.md#dol.filesys.FileSysCollection)
 
 Collection of the file paths under `rootdir`.
 
-### *class* dol.filesys.FileInfoReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FileInfoReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`FileCollection`](_autosummary/dol.filesys.html.md#dol.filesys.FileCollection), [`KvReader`](_autosummary/dol.base.html.md#dol.base.KvReader)
 
@@ -3907,7 +3908,7 @@ variable isn’t really specified. Without this, a write can raise on a
 non-ASCII-locale machine, or a store synced between two machines with different
 locales can silently corrupt on round trip.
 
-### *class* dol.filesys.FileStringReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FileStringReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`FileBytesReader`](_autosummary/dol.filesys.html.md#dol.filesys.FileBytesReader)
 
@@ -3919,11 +3920,35 @@ silently depends on an ambient environment variable isn’t really specified. Th
 also matches how `FileStringPersister` writes (below), so a round trip is safe
 regardless of which locale reads or writes.
 
-### *class* dol.filesys.FileSysCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FileSysCollection(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`Collection`](_autosummary/dol.base.html.md#dol.base.Collection)
 
 Base collection of file-system paths under `rootdir`, optionally restricted by `subpath`, `max_levels` and hidden-file inclusion.
+
+Keys that would leave `rootdir` through `..` segments (e.g.
+`'<rootdir>/../secret'`) are not valid keys: reading, writing or deleting them
+raises `KeyError`, and `in` returns `False` (i2mint/dol#107). Pass the
+keyword-only `allow_escape=True` to address paths outside the root on purpose.
+
+#### is_in_root(k)
+
+Whether `k` stays under `rootdir` (always true with
+`allow_escape=True` or an empty `rootdir`).
+
+#### is_valid_key(k)
+
+Whether `k` is a key of this collection: it must match the key pattern
+and, unless `allow_escape=True`, stay under `rootdir` once `..`
+segments are resolved (see [`path_is_under()`](_autosummary/dol.filesys.html.md#dol.filesys.path_is_under)). An empty `rootdir`
+(as in `Files('')`, used by `dol.misc`) confines nothing: its keys are
+arbitrary paths by design.
+
+#### validate_in_root(k)
+
+Raise `KeyValidationError` if `k` leaves `rootdir` (i2mint/dol#107).
+
+For methods that build a value from `k` without a full `validate_key`.
 
 #### with_relative_paths()
 
@@ -3943,7 +3968,7 @@ FileBytesPersister with relative paths
 
 `validate_key` on the inner key – see `mk_relative_path_store`.
 
-### *class* dol.filesys.FilesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.FilesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`PrefixRelativizationMixin`](_autosummary/dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](_autosummary/dol.base.html.md#dol.base.Store)
 
@@ -4036,7 +4061,7 @@ A store of pickles
 
 alias of [`PickleFiles`](_autosummary/dol.filesys.html.md#dol.filesys.PickleFiles)
 
-### *class* dol.filesys.PickleStores(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.PickleStores(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`PrefixRelativizationMixin`](_autosummary/dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](_autosummary/dol.base.html.md#dol.base.Store)
 
@@ -4086,7 +4111,7 @@ FileStringPersister with relative paths
 
 `validate_key` on the inner key – see `mk_relative_path_store`.
 
-### *class* dol.filesys.TextFilesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False)
+### *class* dol.filesys.TextFilesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
 
 Bases: [`PrefixRelativizationMixin`](_autosummary/dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](_autosummary/dol.base.html.md#dol.base.Store)
 
@@ -4224,6 +4249,35 @@ accessible to the user.
 #### NOTE
 This function creates a user-specific temporary directory to avoid permission
 issues with system-wide temporary directories.
+
+### dol.filesys.path_is_under(path, rootdir)
+
+Whether `path`, *lexically* normalized, is `rootdir` or lies under it.
+
+A `startswith` check is not enough: `'/data/root/../secret'` starts with
+`'/data/root/'` but addresses `/data/secret` (i2mint/dol#107). The check is
+lexical (`os.path.normpath`, not `realpath`), so a symlinked sub-directory of
+the root still counts as inside it.
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+```pycon
+>>> path_is_under('/data/root/a/b.txt', '/data/root/')
+True
+>>> path_is_under('/data/root/a/../b.txt', '/data/root/')
+True
+>>> path_is_under('/data/root/../secret.txt', '/data/root/')
+False
+>>> path_is_under('/data/root/a/../../secret.txt', '/data/root')
+False
+>>> path_is_under('/data/rootsibling/x', '/data/root')
+False
+>>> path_is_under('//data/root/a', '//data/root/')
+True
+>>> path_is_under('root/../a', 'root/..'), path_is_under('root/../../a', 'root/..')
+(True, False)
+```
 
 ### dol.filesys.paths_in_dir(rootdir, include_hidden=False)
 
@@ -4524,7 +4578,7 @@ For example, to make a json codec that indents the json, you can do:
 }
 ```
 
-#### b64 *= <module 'base64' from '/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/base64.py'>*
+#### b64 *= <module 'base64' from '/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/base64.py'>*
 
 #### *class* default
 
@@ -16666,7 +16720,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-09-22 13:56 UTC** from commit <a href="https://github.com/i2mint/dol/commit/66e30561fbea869c2e55fe5ab258f665b286ac71"><code>66e3056</code></a> on branch <code>master</code>, for **dol 0.3.70** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 02:30 UTC** from commit <a href="https://github.com/i2mint/dol/commit/13a8f13be8761cd377cbe71c7ea2c4dd400f0efa"><code>13a8f13</code></a> on branch <code>master</code>, for **dol 0.3.71** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -16675,9 +16729,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/66e30561fbea869c2e55fe5ab258f665b286ac71"><code>66e30561fbea869c2e55fe5ab258f665b286ac71</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/13a8f13be8761cd377cbe71c7ea2c4dd400f0efa"><code>13a8f13be8761cd377cbe71c7ea2c4dd400f0efa</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.70</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.71</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -16686,9 +16740,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/35736360865">35736360865</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38337085626">38337085626</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>6e71c71a053dce9d34325ad7cade5f0509a7cee3</code> (in the history of the built commit) |
+| Event commit | <code>ea3d271e6fa17d181ba610ae7e4ae7f2c50a2ff1</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -16697,7 +16751,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 | epythet  | 0.2.12  |
 | Sphinx   | 9.1.0   |
 | docutils | 0.22.4  |
-| Python   | 3.12.14 |
+| Python   | 3.12.15 |
 
 ## Configuration as resolved
 
@@ -16713,13 +16767,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.70/">0.3.70</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.71/">0.3.71</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 66e30561fbea869c2e55fe5ab258f665b286ac71
+git checkout 13a8f13be8761cd377cbe71c7ea2c4dd400f0efa
 pip install "epythet==0.2.12"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
