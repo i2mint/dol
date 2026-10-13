@@ -8,7 +8,9 @@ need for setting (and deleting) values through key-paths, including optional
 without recreating the ``trans -> paths`` import cycle. It also pre-stages the
 ``paths.py`` module split (issue #70).
 
-Two layers live here:
+Two layers live here (plus the one read engine, :func:`path_get_core`, which is the
+single "walk a path of keys" loop that ``dol.paths.path_get`` and
+``dol.trans.add_path_get`` both delegate to; issue #69):
 
 - :func:`_inplace_build` — the single in-memory splicer that walks/creates nested
   levels of a plain ``MutableMapping``. It is also the body of the public
@@ -33,12 +35,15 @@ import contextlib
 import warnings
 from collections import namedtuple
 from collections.abc import MutableMapping
-from typing import Any, Callable, Optional
+from operator import getitem
+from typing import Any, Callable, Iterable, Optional
 
 __all__ = [
     "PathContext",
     "PathCreationError",
     "PathWritebackError",
+    "path_get_core",
+    "raise_on_error",
     "path_set",
     "path_set_writeback",
     "path_del_writeback",
@@ -52,6 +57,66 @@ _MISSING = object()
 #   key:       the missing key about to be created
 #   depth:     len(prev_path) — handed directly so "container per level" is a one-liner
 PathContext = namedtuple("PathContext", ["prev_path", "key", "depth"])
+
+
+def raise_on_error(d: dict):
+    """``on_error`` policy for ``path_get``: re-raise the caught error."""
+    raise
+
+
+def path_get_core(
+    obj: Any,
+    path,
+    on_error=raise_on_error,
+    *,
+    path_to_keys: Callable[[Any], Iterable] = None,
+    get_value: Callable = getitem,
+    caught_errors=(KeyError, IndexError),
+):
+    """The one read engine: get ``obj`` elements through a path of keys.
+
+    Every key-path *read* in ``dol`` (``dol.paths.path_get``, the ``s[a, b, c]``
+    access of ``add_path_get``) goes through this loop. Prefer ``dol.path_get`` in
+    user code; it adds string-path splitting and friendlier defaults.
+
+    >>> path_get_core({'a': {'b': 2}}, 'a')
+    {'b': 2}
+    >>> path_get_core({'a': {'b': 2}}, ['a', 'b'])
+    2
+    >>> path_get_core({'a': {'b': 2}}, ['a', 'c'])
+    Traceback (most recent call last):
+        ...
+    KeyError: 'c'
+    >>> path_get_core({'a': {'b': 2}}, ['a', 'c'], lambda x: x)
+    {'obj': {'a': {'b': 2}}, 'path': ['a', 'c'], 'result': {'b': 2}, 'k': 'c', 'error': KeyError('c')}
+    """
+    keys = path if path_to_keys is None else path_to_keys(path)
+
+    result = obj
+
+    for k in keys:
+        try:
+            result = get_value(result, k)
+        except caught_errors as error:
+            if callable(on_error):
+                return on_error(
+                    dict(
+                        obj=obj,
+                        path=path,
+                        result=result,
+                        k=k,
+                        error=error,
+                    )
+                )
+            elif isinstance(on_error, str):
+                # use on_error as a message, raising the same error class
+                raise type(error)(on_error)
+            else:
+                raise ValueError(
+                    f"on_error should be a callable (input is a dict) or a string. "
+                    f"Was: {on_error}"
+                )
+    return result
 
 
 class PathCreationError(KeyError):

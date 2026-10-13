@@ -51,6 +51,8 @@ from dol._paths_core import (
     PathContext,
     PathCreationError,
     PathWritebackError,
+    path_get_core,
+    raise_on_error,
     path_set,
     path_set_writeback,
     path_del_writeback,
@@ -116,6 +118,8 @@ def flatten_dict(
     Flatten a nested dictionary into a flat one, using key-paths as keys.
 
     See also `leaf_paths` for a related function that returns paths to leaf values.
+    (Not to be confused with ``dol.flatten_store`` -- a.k.a. ``dol.flatten`` -- which
+    gives a lazy flat *view* of a store of stores.)
 
     Args:
         d: The dictionary to flatten
@@ -205,11 +209,6 @@ def _leaf_paths_recursive(
 path_sep = os.path.sep
 
 
-def raise_on_error(d: dict):
-    """``on_error`` policy for ``path_get``: re-raise the caught error."""
-    raise
-
-
 def return_none_on_error(d: dict):
     """``on_error`` policy for ``path_get``: return ``None``."""
     return None
@@ -226,67 +225,10 @@ OnErrorType = Union[Callable[[dict], Any], str]
 # TODO: Could extend OnErrorType to be a dict with error class keys and callables or
 #  strings as values. Then, the error class could be used to determine the error
 #  handling strategy.
-def _path_get(
-    obj: Any,
-    path,
-    on_error: OnErrorType = raise_on_error,
-    *,
-    path_to_keys: Callable[[Any], Iterable] = None,
-    get_value: Callable = getitem,
-    caught_errors=(KeyError, IndexError),
-):
-    """Get elements of a mapping through a path to be called recursively.
-
-    >>> _path_get({'a': {'b': 2}}, 'a')
-    {'b': 2}
-    >>> _path_get({'a': {'b': 2}}, ['a', 'b'])
-    2
-    >>> _path_get({'a': {'b': 2}}, ['a', 'c'])
-    Traceback (most recent call last):
-        ...
-    KeyError: 'c'
-    >>> _path_get({'a': {'b': 2}}, ['a', 'c'], lambda x: x)
-    {'obj': {'a': {'b': 2}}, 'path': ['a', 'c'], 'result': {'b': 2}, 'k': 'c', 'error': KeyError('c')}
-
-    # >>> assert _path_get({'a': {'b': 2}}, ['a', 'c'], lambda x: x) == {
-    # ...     'mapping': {'a': {'b': 2}},
-    # ...     'path': ['a', 'c'],
-    # ...     'result': {'b': 2},
-    # ...     'k': 'c',
-    # ...     'error': KeyError('c')
-    # ... }
-    """
-
-    if path_to_keys is not None:
-        keys = path_to_keys(path)
-    else:
-        keys = path
-
-    result = obj
-
-    for k in keys:
-        try:
-            result = get_value(result, k)
-        except caught_errors as error:
-            if callable(on_error):
-                return on_error(
-                    dict(
-                        obj=obj,
-                        path=path,
-                        result=result,
-                        k=k,
-                        error=error,
-                    )
-                )
-            elif isinstance(on_error, str):
-                # use on_error as a message, raising the same error class
-                raise type(error)(on_error)
-            else:
-                raise ValueError(
-                    f"on_error should be a callable (input is a dict) or a string. "
-                    f"Was: {on_error}"
-                )
-    return result
+# ``_path_get`` is the historical private name of the read engine, now
+# ``dol._paths_core.path_get_core`` (issue #69). Kept as an alias so nothing that
+# reached for it breaks; ``path_get`` is the one public entry point.
+_path_get = path_get_core
 
 
 def split_if_str(obj, sep="."):
@@ -465,8 +407,10 @@ def path_get(
     42
 
     Note:
-        The underlying function is ``_path_get``, but `path_get` has defaults and
-        flexible input processing for more convenience.
+        The underlying engine is ``dol._paths_core.path_get_core`` (shared with
+        ``add_path_get``), but `path_get` has defaults and flexible input processing
+        for more convenience. For "first of several keys that exists" (not a path),
+        see ``dol.util.chain_get``.
 
     Note:
         ``path_get`` contains some ready-made ``OnErrorType`` functions in its
@@ -499,7 +443,7 @@ def path_get(
         _sep = sep
         sep = lambda path: map(key_transformer, _sep(path))
 
-    return _path_get(
+    return path_get_core(
         obj,
         path,
         on_error=on_error,
