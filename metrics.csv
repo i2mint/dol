@@ -1,8 +1,15 @@
 metric,value
 schema_version,1.0
-timestamp,2026-10-13T11:10:47.327150Z
-commit_sha,757fd4dba3a5aa7cb8faf2588f62ef105c014856
-commit_message,Merge 33d07b84ffd405082a0e5db3ce721aaa1202a423 into f7c172cd01247973fac824ef54591522710768bd
+timestamp,2026-10-13T11:10:53.022760Z
+commit_sha,33d07b84ffd405082a0e5db3ce721aaa1202a423
+commit_message,"test: Windows semantics for the symlink and zip tests
+
+Windows normalizes '..' lexically before following links, so 'lnk/../x'
+is 'root/x' there: nothing escapes, and the tests now assert containment
+instead of refusal on Windows. ZipFilesReader's default subpath is
+POSIX-only (as the #111 test already notes), so its test skips there.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 python_version,3.10
 metrics.umpyre_stats.num_functions,5928
 metrics.umpyre_stats.num_classes,1525
@@ -36,4 +43,4 @@ metrics.coverage.branch_coverage,0.0
 metrics.coverage.statements_covered,0
 metrics.coverage.statements_total,0
 metrics.coverage.error,No coverage file found
-collection_duration_seconds,5.376935005187988
+collection_duration_seconds,4.738095045089722
