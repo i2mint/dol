@@ -448,6 +448,46 @@ def path_is_under(path: str, rootdir: str) -> bool:
         return False
 
 
+def dotdot_resolves_lexically(path: str, *, base: str = "") -> bool:
+    """Whether every ``..`` in ``path`` undoes the segment before it, as
+    ``os.path.normpath`` assumes.
+
+    It doesn't when a symlink comes before a ``..``: the OS then climbs out of the
+    link's target, so ``root/lnk/../x`` with ``root/lnk -> /elsewhere/deep`` addresses
+    ``/elsewhere/x``, not ``root/x`` (i2mint/dol#123). Paths without a ``..`` segment
+    are not touched (no file-system access); otherwise the part up to the last ``..``
+    is resolved both ways and compared.
+
+    With ``base`` (a string prefix of ``path``, e.g. a store's ``rootdir``), only the
+    ``..`` segments after it count: ``base`` itself is taken as the OS resolves it,
+    whatever ``..`` it holds. Conservative by design: a ``..`` after a symlink is
+    refused even when the link points back inside ``base``.
+
+    >>> dotdot_resolves_lexically('/data/root/a/b.txt')
+    True
+    >>> dotdot_resolves_lexically('/no/such/dir/../file')  # nothing to follow: lexical
+    True
+    """
+    if base and path.startswith(base):
+        base, path = path[: len(base)], path[len(base) :]
+    else:
+        base = ""
+    if os.pardir not in path:  # fast path: the common case, e.g. every listed key
+        return True
+    if os.altsep:
+        path = path.replace(os.altsep, os.sep)
+    segments = path.split(os.sep)
+    if os.pardir not in segments:
+        return True
+    last_pardir = len(segments) - 1 - segments[::-1].index(os.pardir)
+    head = os.sep.join(segments[: last_pardir + 1])
+    try:
+        physical = os.path.realpath(base + head)
+        return physical == os.path.realpath(base + os.path.normpath(head))
+    except (OSError, ValueError):  # unresolvable: don't vouch for it
+        return False
+
+
 class FileSysCollection(Collection):
     # rootdir = None  # mentioning here so that the attribute is seen as an attribute before instantiation.
 
@@ -503,8 +543,20 @@ class FileSysCollection(Collection):
 
     def is_in_root(self, k):
         """Whether ``k`` stays under ``rootdir`` (always true with
-        ``allow_escape=True`` or an empty ``rootdir``)."""
-        return self.allow_escape or not self.rootdir or path_is_under(k, self.rootdir)
+        ``allow_escape=True`` or an empty ``rootdir``).
+
+        The containment test is lexical (:func:`path_is_under`), so a key whose ``..``
+        follows a symlink -- where the OS climbs out of the link's *target*, not back
+        to the link's directory -- is refused too (i2mint/dol#123).
+        """
+        return (
+            self.allow_escape
+            or not self.rootdir
+            or (
+                path_is_under(k, self.rootdir)
+                and dotdot_resolves_lexically(k, base=self.rootdir)
+            )
+        )
 
     def validate_in_root(self, k):
         """Raise ``KeyValidationError`` if ``k`` leaves ``rootdir`` (i2mint/dol#107).

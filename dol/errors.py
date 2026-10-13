@@ -145,11 +145,42 @@ class OutOfScopeKeyError(KeyError, ValueError):
     __str__ = Exception.__str__  # plain message, not KeyError's repr of it
 
 
+_RAISES_OUT_OF_SCOPE = "_dol_raises_out_of_scope"
+
+
+def raises_out_of_scope(func):
+    """Mark ``func``, a ``key_of_id``, as one that may raise ``OutOfScopeKeyError``.
+
+    A ``Store`` layer whose ``_key_of_id`` is so marked is a *view* of the in-scope
+    ids, so its ``len`` counts them (a scan) instead of returning ``len`` of the inner
+    store, which would overcount (i2mint/dol#123). Unmarked key mappings keep the inner
+    store's (often O(1)) ``len``. Returns ``func``, so it works as a decorator.
+
+    ``wrap_kvs`` (and so the codecs), ``Pipe`` and subclasses made by class wrapping
+    carry the mark over; a ``_key_of_id`` you override by hand (even one calling
+    ``super()``) does not, so mark it too if it can raise.
+
+    >>> @raises_out_of_scope
+    ... def key_of_id(_id):
+    ...     return _id
+    >>> may_raise_out_of_scope(key_of_id), may_raise_out_of_scope(str.upper)
+    (True, False)
+    """
+    setattr(func, _RAISES_OUT_OF_SCOPE, True)
+    return func
+
+
+def may_raise_out_of_scope(func) -> bool:
+    """Whether ``func`` was marked with :func:`raises_out_of_scope` (a bound method
+    reads the mark off its function)."""
+    return getattr(func, _RAISES_OUT_OF_SCOPE, False) is True
+
+
 def out_of_scope_prefix_error(_id, prefix):
     """The ``OutOfScopeKeyError`` for an ``_id`` that doesn't start with ``prefix``."""
     return OutOfScopeKeyError(
         f"{_id!r} does not start with the prefix {prefix!r}, so it is outside this "
-        "store's scope, so iterating the store skips it and it can't be read or "
+        "store's scope: iterating the store skips it, and it can't be read or "
         "written through an outer key (see i2mint/dol#82)."
     )
 
@@ -158,7 +189,7 @@ def out_of_scope_suffix_error(_id, suffix):
     """The ``OutOfScopeKeyError`` for an ``_id`` that doesn't end with ``suffix``."""
     return OutOfScopeKeyError(
         f"{_id!r} does not end with the suffix {suffix!r}, so it is outside this "
-        "store's scope, so iterating the store skips it and it can't be read or "
+        "store's scope: iterating the store skips it, and it can't be read or "
         "written through an outer key (see i2mint/dol#114)."
     )
 

@@ -32,6 +32,7 @@ from typing import (
 )
 from collections.abc import Hashable, Callable, Iterable, Mapping, Sequence, Container
 from functools import update_wrapper as _update_wrapper
+from dol.errors import raises_out_of_scope, may_raise_out_of_scope
 from functools import wraps as _wraps
 from functools import partialmethod, partial, WRAPPER_ASSIGNMENTS
 from types import MethodType, FunctionType
@@ -720,6 +721,8 @@ class Pipe:
             first_func, last_func
         )
         self.first_func, self.other_funcs = first_func, other_funcs
+        if any(map(may_raise_out_of_scope, funcs)):
+            raises_out_of_scope(self)  # it raises whatever its steps raise
 
     _reserved_names = ("__name__", "__doc__")
 

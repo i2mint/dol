@@ -117,11 +117,8 @@ class MiscReaderMixin:
     Warning: If used as a subclass, this mixin should (in general) be placed before the store
 
     Security:
-        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
-        never use this over untrusted content or with request-derived keys. For
-        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``
-        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the
-        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
+        ``.pkl``/``.pickle`` keys are unpickled by default, which runs code from the
+        data: see the warning in the ``dol.misc`` module docstring (i2mint/dol#113).
 
 
     >>> # make a reader that will wrap a dict
@@ -253,11 +250,8 @@ def get_obj(
     """A quick way to get an object, with default... everything (but the key, you know, a clue of what you want)
 
     Security:
-        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
-        never use this over untrusted content or with request-derived keys. For
-        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``
-        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the
-        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
+        ``.pkl``/``.pickle`` keys are unpickled by default, which runs code from the
+        data: see the warning in the ``dol.misc`` module docstring (i2mint/dol#113).
     """
     if k.startswith("http://") or k.startswith("https://"):
         v = url_to_bytes(k)
@@ -285,11 +279,8 @@ class MiscGetter:
     according to a property of the key (default: file extension).
 
     Security:
-        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
-        never use this over untrusted content or with request-derived keys. For
-        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``
-        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the
-        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
+        ``.pkl``/``.pickle`` keys are unpickled by default, which runs code from the
+        data: see the warning in the ``dol.misc`` module docstring (i2mint/dol#113).
 
     >>> from dol.misc import get_obj, misc_objs_get
     >>> import os
@@ -356,11 +347,8 @@ class MiscStoreMixin(MiscReaderMixin):
         If used as a subclass, this mixin should (in general) be placed before the store
 
     Security:
-        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
-        never use this over untrusted content or with request-derived keys. For
-        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``
-        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the
-        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
+        ``.pkl``/``.pickle`` keys are unpickled by default, which runs code from the
+        data: see the warning in the ``dol.misc`` module docstring (i2mint/dol#113).
 
     See also:
         preset and postget args from wrap_kvs decorator from dol.trans.
@@ -465,11 +453,8 @@ class MiscGetterAndSetter(MiscGetter):
     according to a property of the key (default: file extension).
 
     Security:
-        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
-        never use this over untrusted content or with request-derived keys. For
-        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``
-        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the
-        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
+        ``.pkl``/``.pickle`` keys are unpickled by default, which runs code from the
+        data: see the warning in the ``dol.misc`` module docstring (i2mint/dol#113).
 
     >>> from dol.misc import set_obj, misc_objs  # the function and the object
     >>> import json

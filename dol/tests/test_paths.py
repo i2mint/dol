@@ -233,3 +233,122 @@ def test_head_skips_out_of_scope_ids():
 
     s = KeyCodecs.prefixed("p/")({"stray": 0, "p/a": 1})
     assert s.head() == ("a", 1)
+
+
+# --- sprint review (i2mint/dol#123): len/bool vs the in-scope iteration of #119 -------
+
+
+@pytest.mark.parametrize("name, store", list(_prefix_stores()))
+def test_len_counts_only_in_scope_ids(name, store):
+    assert len(store) == len(list(store)) == 2
+
+
+def test_store_of_only_out_of_scope_ids_is_falsy():
+    from dol import KeyCodecs
+
+    s = KeyCodecs.prefixed("p/")({"stray": 0})
+    assert list(s) == []
+    assert not s
+
+
+def test_len_of_unscoped_store_is_the_inner_len():
+    from dol import wrap_kvs
+
+    s = wrap_kvs({"a": 1, "b": 2}, key_of_id=str.upper, id_of_key=str.lower)
+    assert len(s) == 2 and bool(s)
+    assert len(wrap_kvs({}, key_of_id=str.upper)) == 0
+
+
+def test_head_falls_back_to_inner_ids_when_getitem_fails():
+    from dol import wrap_kvs
+
+    # an asymmetric key mapping: iterated keys can't be read back
+    s = wrap_kvs({"p/stray": 0, "p/a": 1}, key_of_id=lambda _id: _id.upper())
+    with pytest.warns(UserWarning, match="Couldn't get data for the key"):
+        assert s.head() == ("P/STRAY", 0)
+
+
+def test_composed_and_stacked_scoped_layers_count_in_scope_ids():
+    from dol import KeyCodecs, wrap_kvs
+
+    base = {"a/x.txt": 1, "a/y.json": 2, "b/z.txt": 3}
+    composed = (KeyCodecs.prefixed("a/") + KeyCodecs.suffixed(".txt"))(dict(base))
+    assert list(composed) == ["x"] and len(composed) == 1
+    # an unscoped layer over a scoped one gets its len from the scoped inner layer
+    upper = wrap_kvs(KeyCodecs.prefixed("a/")(dict(base)), key_of_id=str.upper)
+    assert sorted(upper) == ["X.TXT", "Y.JSON"] and len(upper) == 2
+
+
+def test_subclass_of_scoped_class_stays_scoped():
+    from dol import KeyCodecs, wrap_kvs
+
+    Scoped = KeyCodecs.prefixed("p/")(dict)
+    Sub = wrap_kvs(Scoped, key_of_id=str.upper, id_of_key=str.lower)
+    s = Sub({"stray": 0, "p/a": 1})
+    assert list(s) == ["A"] and len(s) == 1 and s["A"] == 1
+
+
+def test_empty_affix_codec_keeps_the_inner_len():
+    from dol import KeyCodecs
+    from dol.errors import may_raise_out_of_scope
+
+    codec = KeyCodecs.affixed()
+    assert not may_raise_out_of_scope(codec.decoder)
+    assert len(codec({"a": 1})) == 1
+
+
+def test_scoped_len_keeps_the_inner_stores_refusal_and_empty_shortcut():
+    from collections.abc import Mapping
+    from dol import KeyCodecs
+
+    class NoLenListing(Mapping):
+        """A remote-like store refusing len, so list() lists it only once."""
+
+        def __init__(self, d):
+            self.d, self.listings = d, 0
+
+        def __getitem__(self, k):
+            return self.d[k]
+
+        def __iter__(self):
+            self.listings += 1
+            return iter(self.d)
+
+        def __len__(self):
+            raise TypeError("no len: it would take a full listing")
+
+    inner = NoLenListing({"p/a": 1, "q/b": 2})
+    s = KeyCodecs.prefixed("p/")(inner)
+    assert list(s) == ["a"] and inner.listings == 1
+    with pytest.raises(TypeError):
+        len(s)
+
+    class CountingDict(dict):
+        def __iter__(self):
+            raise AssertionError("an empty inner store needs no scan")
+
+    assert len(KeyCodecs.prefixed("p/")(CountingDict())) == 0
+
+
+def test_first_arg_is_mapping_keeps_the_scope_mark():
+    from dol import wrap_kvs, FirstArgIsMapping
+    from dol.errors import raises_out_of_scope, OutOfScopeKeyError
+
+    @raises_out_of_scope
+    def key_of_id(self, _id):
+        if not _id.startswith("p/"):
+            raise OutOfScopeKeyError(_id)
+        return _id[2:]
+
+    s = wrap_kvs({"p/a": 1, "q/b": 2}, key_of_id=FirstArgIsMapping(key_of_id))
+    assert list(s) == ["a"] and len(s) == 1
+
+
+def test_may_raise_out_of_scope_is_a_real_bool():
+    from dol.errors import may_raise_out_of_scope
+
+    class AnyAttr:
+        def __getattr__(self, name):
+            return "truthy"
+
+    assert may_raise_out_of_scope(AnyAttr()) is False
