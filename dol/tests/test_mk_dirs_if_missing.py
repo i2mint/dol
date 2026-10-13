@@ -15,7 +15,7 @@ import os
 
 import pytest
 
-from dol import Files, JsonFiles, mk_dirs_if_missing, wrap_kvs
+from dol import Files, JsonFiles, filt_iter, mk_dirs_if_missing, wrap_kvs
 
 
 def _nonexistent_rootdir(tmp_path):
@@ -135,3 +135,54 @@ def test_dirs_made_for_relative_paths(tmp_path, monkeypatch, factory, rootdir, k
     s[key] = b"hi"
     assert s[key] == b"hi"
     assert (tmp_path / "rel" / "root").is_dir()
+
+
+# ---- a key a layer below refuses leaves no stray directory (i2mint/dol#122) -------------
+
+
+def _txt_only(k):
+    return k.endswith(".txt")
+
+
+@pytest.mark.parametrize(
+    "factory",
+    [
+        lambda root: mk_dirs_if_missing(filt_iter(Files, filt=_txt_only))(root),
+        lambda root: filt_iter(mk_dirs_if_missing(Files), filt=_txt_only)(root),
+        lambda root: mk_dirs_if_missing(filt_iter(Files(root), filt=_txt_only)),
+        lambda root: mk_dirs_if_missing(
+            mk_dirs_if_missing(filt_iter(Files, filt=_txt_only))
+        )(root),
+    ],
+    ids=["mk(filt(cls))", "filt(mk(cls))", "mk(filt(inst))", "mk(mk(filt))"],
+)
+def test_rejected_key_makes_no_directory(tmp_path, factory):
+    root = str(tmp_path) + os.sep
+    s = factory(root)
+    s["ok/a.txt"] = b"x"
+    with pytest.raises(KeyError):
+        s["stray/deep/b.bin"] = b"x"
+    assert sorted(os.listdir(root)) == ["ok"]
+
+
+def test_failed_write_removes_only_the_directories_it_made(tmp_path):
+    root = str(tmp_path) + os.sep
+    os.makedirs(root + "keep/sub")
+    s = mk_dirs_if_missing(filt_iter(Files, filt=_txt_only))(root)
+    with pytest.raises(KeyError):
+        s["keep/sub/new1/new2/b.bin"] = b"x"
+    assert os.path.isdir(root + "keep/sub") and not os.path.exists(root + "keep/sub/new1")
+
+
+def test_failed_write_keeps_a_directory_that_got_content_meanwhile(tmp_path):
+    root = str(tmp_path) + os.sep
+
+    class Racy(Files):
+        def __setitem__(self, k, v):
+            open(os.path.join(root, "d", "other.txt"), "wb").close()  # someone else writes
+            raise KeyError(k)
+
+    s = mk_dirs_if_missing(Racy)(root)
+    with pytest.raises(KeyError):
+        s["d/x.txt"] = b"x"
+    assert os.listdir(root + "d") == ["other.txt"]  # not empty: not removed

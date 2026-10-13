@@ -29,7 +29,7 @@ from typing import Union, Optional
 from collections.abc import Callable, Iterable
 
 from dol.base import Collection, KvReader, KvPersister
-from dol.trans import wrap_kvs, store_decorator, filt_iter
+from dol.trans import wrap_kvs, store_decorator, filt_iter, _wrap_store
 from dol.naming import mk_pattern_from_template_and_format_dict
 from dol.paths import mk_relative_path_store
 
@@ -958,6 +958,10 @@ def mk_dirs_if_missing_preset(
     resolves (through every layer's ``_id_of_key``) to a path whose directory is
     missing, and that layer's ``validate_key`` accepts it -- so an invalid key (e.g.
     one leaving ``rootdir``, #107) never gets a directory, and the write raises for it.
+
+    (``mk_dirs_if_missing`` itself no longer goes through this preset: it also has to see
+    the write fail, to remove the directories it made for a key a layer below rejects,
+    i2mint/dol#122.)
     """
     dirname = _missing_dir_of_key(self, k)
     if dirname is not None:
@@ -1005,6 +1009,55 @@ def _innermost_layer(store):
 # TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)
 #   Also, add a verbose option to print the dirs that are being made
 #   (see dol.filesys.ensure_dir)
+def _missing_ancestors(dirname):
+    """The directories from the topmost missing one down to ``dirname`` (those to be made)."""
+    missing = []
+    while dirname and not os.path.isdir(dirname):
+        missing.append(dirname)
+        parent = os.path.dirname(dirname)
+        if parent == dirname:
+            break
+        dirname = parent
+    return missing[::-1]
+
+
+def _remove_dirs_made(made):
+    """Remove (deepest first) directories that were made for a write that then failed.
+
+    Only directories that are still empty go, so nothing another writer put there is lost.
+    """
+    for dirname in reversed(made):
+        try:
+            os.rmdir(dirname)
+        except OSError:
+            pass
+
+
+def _mk_dirs_if_missing_class_trans(
+    store_cls, *, max_dirs_to_make=None, verbose=False, name=None, __module__=None
+):
+    def __setitem__(self, k, v):
+        dirname = _missing_dir_of_key(self, k)
+        made = _missing_ancestors(dirname) if dirname is not None else []
+        if dirname is not None:
+            ensure_dir(dirname, max_dirs_to_make=max_dirs_to_make, verbose=verbose)
+        try:
+            return super(store_cls, self).__setitem__(k, v)
+        except BaseException:
+            # A layer below refused the write (e.g. a ``filt_iter`` that rejects ``k``,
+            # i2mint/dol#122): do not leave the directories made for it behind.
+            _remove_dirs_made(made)
+            raise
+
+    store_cls.__setitem__ = __setitem__
+    if __module__ is not None:
+        store_cls.__module__ = __module__
+    return store_cls
+
+
+# TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)
+#   Also, add a verbose option to print the dirs that are being made
+#   (see dol.filesys.ensure_dir)
 @store_decorator
 def mk_dirs_if_missing(
     store_cls=None,
@@ -1018,11 +1071,21 @@ def mk_dirs_if_missing(
 
     Note that it'll only effect paths relative to the rootdir, which needs to be
     ensured to exist separatedly.
+
+    The directories are made just before the write. If the write then fails (a layer
+    below refuses the key, e.g. a ``filt_iter`` scope, or the write itself errors), the
+    directories this call made are removed again (those still empty), so a rejected
+    key leaves no stray folder behind (i2mint/dol#122).
     """
-    _mk_dirs_if_missing_preset = partial(
-        mk_dirs_if_missing_preset, max_dirs_to_make=max_dirs_to_make, verbose=verbose
+    return _wrap_store(
+        _mk_dirs_if_missing_class_trans,
+        dict(
+            store=store_cls,
+            max_dirs_to_make=max_dirs_to_make,
+            verbose=verbose,
+            name=store_cls.__qualname__ + "Wrapped",
+        ),
     )
-    return wrap_kvs(store_cls, preset=_mk_dirs_if_missing_preset)
 
 
 # DEPRECATED!!
