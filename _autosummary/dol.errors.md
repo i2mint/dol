@@ -17,6 +17,7 @@ that skips (or reports) the keys whose value cannot be fetched.
 | [`items_with_caught_exceptions`](#dol.errors.items_with_caught_exceptions)(d[, callback, ...])   | Do what Mapping.items() does, but catching exceptions when getting the values for a key.   |
 |-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
 | [`out_of_scope_prefix_error`](#dol.errors.out_of_scope_prefix_error)(_id, prefix)             | The `OutOfScopeKeyError` for an `_id` that doesn't start with `prefix`.                    |
+| [`out_of_scope_suffix_error`](#dol.errors.out_of_scope_suffix_error)(_id, suffix)             | The `OutOfScopeKeyError` for an `_id` that doesn't end with `suffix`.                      |
 
 ### Exceptions
 
@@ -202,3 +203,7 @@ Or, in many cases, you can just use `items_with_caught_exceptions`.
 ### dol.errors.out_of_scope_prefix_error(\_id, prefix)
 
 The `OutOfScopeKeyError` for an `_id` that doesn’t start with `prefix`.
+
+### dol.errors.out_of_scope_suffix_error(\_id, suffix)
+
+The `OutOfScopeKeyError` for an `_id` that doesn’t end with `suffix`.

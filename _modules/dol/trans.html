@@ -299,7 +299,11 @@
     <span class="n">ItemsView</span> <span class="k">as</span> <span class="n">BaseItemsView</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dol.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SetattrNotAllowed</span><span class="p">,</span> <span class="n">out_of_scope_prefix_error</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.errors</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SetattrNotAllowed</span><span class="p">,</span>
+    <span class="n">out_of_scope_prefix_error</span><span class="p">,</span>
+    <span class="n">out_of_scope_suffix_error</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Store</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">,</span> <span class="n">AttrNames</span><span class="p">,</span> <span class="n">kv_walk</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol._paths_core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">PathContext</span><span class="p">,</span>
@@ -4284,9 +4288,21 @@
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">      ...</span>
 <span class="sd">    dol.errors.OutOfScopeKeyError: '/other/name.txt' does not start with the prefix '/folder/'...</span>
+
+<span class="sd">    The same goes for the suffix end (i2mint/dol#114): ``foo.json`` isn't a ``.txt``</span>
+<span class="sd">    key, and stripping 4 characters off it would yield ``foo.``, a different object.</span>
+
+<span class="sd">    &gt;&gt;&gt; _affix_decoder('foo.json', suffix='.txt')  # doctest: +ELLIPSIS</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    dol.errors.OutOfScopeKeyError: 'foo.json' does not end with the suffix '.txt'...</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">prefix</span> <span class="ow">and</span> <span class="n">string</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)]</span> <span class="o">!=</span> <span class="n">prefix</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">out_of_scope_prefix_error</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">suffix</span><span class="p">:</span>
+        <span class="c1"># the length check rejects a string where prefix and suffix would overlap</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">string</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">out_of_scope_suffix_error</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
     <span class="n">end_idx</span> <span class="o">=</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>  <span class="c1"># if suffix is empty, end_idx should be None</span>
     <span class="k">return</span> <span class="n">string</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="p">:</span> <span class="n">end_idx</span><span class="p">]</span>
 
@@ -4379,7 +4395,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=3fc71726"></script>
+</div><script src="../../_static/documentation_options.js?v=96876340"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
