@@ -431,7 +431,6 @@ def _symlink_sandbox(tmp_path):
     return root
 
 
-@pytest.mark.xfail(strict=True, reason="i2mint/dol#123: lexical check, symlink + '..'")
 def test_files_symlink_then_dotdot_does_not_escape_rootdir(tmp_path):
     from dol.filesys import Files
 
@@ -444,3 +443,34 @@ def test_files_symlink_then_dotdot_does_not_escape_rootdir(tmp_path):
     with pytest.raises(KeyError):
         s[os.path.join("lnk", "..", "pwned.txt")] = b"x"
     assert not (tmp_path / "outside" / "pwned.txt").exists()
+
+
+def test_symlinked_subdir_of_rootdir_stays_addressable(tmp_path):
+    # the design #107 kept: a symlink inside the root is followed, and a '..' that
+    # does not come after a symlink still resolves lexically
+    from dol.filesys import Files
+
+    root = _symlink_sandbox(tmp_path)
+    s = Files(str(root))
+    s[os.path.join("lnk", "f.txt")] = b"via link"
+    assert (tmp_path / "outside" / "deep" / "f.txt").read_bytes() == b"via link"
+    assert s[os.path.join("lnk", "f.txt")] == b"via link"
+    assert s[os.path.join("a", "..", "lnk", "f.txt")] == b"via link"
+    assert s[os.path.join("a", "..", "a", "in.txt")] == b"inside"
+
+
+def test_symlink_then_dotdot_is_refused_by_every_containment_user(tmp_path):
+    from dol.filesys import DirReader, Files, mk_dirs_if_missing
+
+    root = _symlink_sandbox(tmp_path)
+    (tmp_path / "outside" / "sib").mkdir()
+    with pytest.raises(KeyError):
+        DirReader(str(root))[os.path.join(str(root), "lnk", "..", "sib")]
+    s = mk_dirs_if_missing(Files(str(root)))
+    with pytest.raises(KeyError):
+        s[os.path.join("lnk", "..", "made", "x.txt")] = b"pwned"
+    assert not (tmp_path / "outside" / "made").exists()
+    # allow_escape=True is the explicit opt-out
+    assert Files(str(root), allow_escape=True)[
+        os.path.join("lnk", "..", "secret.txt")
+    ] == b"secret"
