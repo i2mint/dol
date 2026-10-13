@@ -51,6 +51,7 @@ from collections.abc import (
 from typing import Any, Tuple, Union, Optional
 from collections.abc import Iterable, Callable
 
+from dol.errors import OutOfScopeKeyError
 from dol.util import (
     wraps,
     _disabled_clear_method,
@@ -807,8 +808,22 @@ class Store(KvPersister):
 
     # Explore ####################################################################
     def __iter__(self) -> KeyIter:
-        yield from (self._key_of_id(k) for k in self.store)
-        # return map(self._key_of_id, self.store.__iter__())
+        """Iterate over the outer keys of the inner store's ids.
+
+        An id that lies outside the key layer's scope (``OutOfScopeKeyError``: e.g. it
+        lacks the prefix/suffix the layer strips) has no outer key, so it is skipped:
+        the store is a *view* of the in-scope ids. Reading or writing such an id through
+        an outer key is still impossible, and calling ``_key_of_id`` directly still
+        raises (i2mint/dol#82, #114). Note that ``len`` counts inner ids, so it may
+        exceed the number of keys iterated.
+        """
+        key_of_id = self._key_of_id
+        for _id in self.store:
+            try:
+                k = key_of_id(_id)
+            except OutOfScopeKeyError:
+                continue
+            yield k
 
     def __len__(self) -> int:
         return len(self.store)
