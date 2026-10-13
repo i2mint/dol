@@ -16,8 +16,10 @@ private repos, so it never goes in the (public) dol repo. It lives under
 Records are immutable: :func:`write_json` refuses to overwrite, and refuses to
 persist anything that still looks like an absolute local path after scrubbing.
 
->>> scrub('see /root/py/proj/i/dol/x.py', replacements={'/root/py/proj': '<PP>'})
-'see <PP>/i/dol/x.py'
+>>> scrub('see /home/me/proj/i/x.py', replacements={'/home/me/proj': '<PP>'})
+'see <PP>/i/x.py'
+>>> scrub('/home/me/projects', replacements={'/home/me/proj': '<PP>'})  # prefixes are anchored
+'/home/me/projects'
 >>> find_local_paths({'a': ['/home/alice/x']})
 ['/home/alice/x']
 """
@@ -39,10 +41,15 @@ DFLT_LEDGER_BASE = Path('~/.local/share/dol/fleet_ledger')
 
 #: Patterns of strings that identify a local machine or user.
 LOCAL_PATH_PATTERNS = (
-    re.compile(r'(?<![\w.])/(?:root|home/[^/\s]+|Users/[^/\s]+)(?=/|\b)'),
-    re.compile(r'\b[A-Za-z]:\\(?:Users|Documents and Settings)\\'),
     re.compile(r'/tmp/pytest-of-[^/\s]+'),
+    re.compile(
+        r'(?<![\w.<>~-])/(?:root|home/[^/\s]+|Users/[^/\s]+|opt|srv|mnt|media|'
+        r'Volumes|private/var|var/folders|tmp)(?=/|\b)'
+    ),
+    re.compile(r'(?<![\w])[A-Za-z]:[\\/]'),
+    re.compile(r'\\\\[\w.$-]+\\'),  # UNC: \\host\share
 )
+_TMP_PATTERN = LOCAL_PATH_PATTERNS[0]
 
 
 class LocalPathLeak(ValueError):
@@ -59,11 +66,16 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc).replace(microsecond=0)
 
 
-def new_record_id(parent: Path, *, now: datetime | None = None) -> str:
-    """A fresh, sortable UTC id (``20261013T101500Z``) not yet used under *parent*."""
+def new_record_id(
+    parent: Path, *, now: datetime | None = None, name_format: str = '{}'
+) -> str:
+    """A fresh, sortable UTC id (``20261013T101500Z``) not yet used under *parent*.
+
+    *name_format* maps an id to the entry it names (``'undo-{}.json'``).
+    """
     stem = (now or utc_now()).strftime('%Y%m%dT%H%M%SZ')
     rid, n = stem, 1
-    while (parent / rid).exists():
+    while (parent / name_format.format(rid)).exists():
         n += 1
         rid = f'{stem}-{n}'
     return rid
@@ -83,9 +95,22 @@ def scrub(text: str, *, replacements: Mapping[str, str] | None = None) -> str:
     """Rewrite known local prefixes (longest first) in *text*."""
     reps = default_replacements() if replacements is None else replacements
     for prefix in sorted(reps, key=len, reverse=True):
-        text = text.replace(prefix, reps[prefix])
-    for pat in LOCAL_PATH_PATTERNS[2:]:
-        text = pat.sub('<tmp>', text)
+        pat = re.escape(prefix) + r'(?=[/\\]|$|[^\w.-])'
+        text = re.sub(pat, lambda m: reps[prefix], text)
+    return _TMP_PATTERN.sub('<tmp>', text)
+
+
+def redact(text: str) -> str:
+    """Replace whatever still looks like a local path with ``<abs>``.
+
+    For free text a record merely quotes (a failing suite's output tail), where a
+    path outside ``$HOME``/``$PP`` is expected and must not cost the record.
+
+    >>> redact('open("/Users/bob/data.csv") failed')
+    'open("<abs>/data.csv") failed'
+    """
+    for pat in LOCAL_PATH_PATTERNS:
+        text = pat.sub('<abs>', text)
     return text
 
 

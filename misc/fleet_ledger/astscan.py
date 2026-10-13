@@ -35,24 +35,18 @@ What it detects, per file:
 from __future__ import annotations
 
 import ast
+from bisect import bisect_right
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
 DFLT_PACKAGE = 'dol'
 
-#: Directory names never descended into when scanning a repo.
-DFLT_SKIP_DIRS = frozenset(
-    {
-        'build',
-        'dist',
-        'node_modules',
-        '__pycache__',
-        'site-packages',
-        'venv',
-        'env',
-    }
-)
+#: Directory names never descended into, at any depth (hidden dirs are skipped too).
+DFLT_SKIP_DIRS = frozenset({'node_modules', '__pycache__', 'site-packages'})
+#: Directory names skipped only at the top of a repo: there they are build output
+#: or a virtualenv, while deeper down they can be a real subpackage.
+DFLT_TOP_SKIP_DIRS = frozenset({'build', 'dist', 'env', 'venv'})
 
 _VALUE_KINDS = {
     ast.Lambda: 'lambda',
@@ -91,6 +85,7 @@ def _is_target(module: str | None, package: str) -> bool:
     return bool(module) and (module == package or module.startswith(package + '.'))
 
 
+
 def _locally_bound_names(tree: ast.AST, package: str) -> set[str]:
     """Every name the module binds itself, anywhere (scope-insensitive, conservative).
 
@@ -115,36 +110,83 @@ def _locally_bound_names(tree: ast.AST, package: str) -> set[str]:
     return names
 
 
+def _target_names(node: ast.AST) -> Iterator[str]:
+    """Names bound by an assignment target (``a``, ``a, b``, ``[a, *b]``)."""
+    if isinstance(node, ast.Name):
+        yield node.id
+    elif isinstance(node, (ast.Tuple, ast.List)):
+        for elt in node.elts:
+            yield from _target_names(elt)
+    elif isinstance(node, ast.Starred):
+        yield from _target_names(node.value)
+
+
+def _stmt_binds(node: ast.stmt) -> Iterator[str]:
+    """Names a statement itself binds, other than target imports."""
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+        yield node.name
+    elif isinstance(node, ast.Assign):
+        for t in node.targets:
+            yield from _target_names(t)
+    elif isinstance(node, (ast.AnnAssign, ast.AugAssign)) and node.value is not None:
+        yield from _target_names(node.target)
+    elif isinstance(node, (ast.For, ast.AsyncFor)):
+        yield from _target_names(node.target)
+    elif isinstance(node, (ast.With, ast.AsyncWith)):
+        for item in node.items:
+            if item.optional_vars is not None:
+                yield from _target_names(item.optional_vars)
+
+
 def _import_bindings(
     tree: ast.AST, *, package: str, submodules: Iterable[str]
-) -> tuple[dict[str, Binding], list[dict], list[str]]:
-    """Explicit bindings, import records, and star-imported module names."""
+) -> tuple[dict[str, list], list[dict], list[str]]:
+    """Binding events, import records, and star-imported module names.
+
+    Events are ``{name: [(position, Binding | None), ...]}`` sorted by position,
+    where a position is where the binding takes effect (the end of its
+    statement) and ``None`` means the name was rebound to something else (a
+    non-target import, a def, an assignment).
+    """
     submodules = set(submodules)
-    bindings: dict[str, Binding] = {}
+    events: dict[str, list] = {}
     imports: list[dict] = []
     stars: list[str] = []
+
+    def bind(name, pos, binding):
+        events.setdefault(name, []).append((pos, binding))
+
     for node in ast.walk(tree):
+        if not isinstance(node, ast.stmt):
+            continue
+        pos = (node.end_lineno, node.end_col_offset)
         if isinstance(node, ast.Import):
             for alias in node.names:
                 if not _is_target(alias.name, package):
+                    bind(alias.asname or alias.name.split('.')[0], pos, None)
                     continue
                 if alias.asname:
-                    bindings[alias.asname] = Binding(alias.name)
+                    bind(alias.asname, pos, Binding(alias.name))
                 else:  # `import dol.trans` binds `dol`
                     top = alias.name.split('.')[0]
-                    bindings[top] = Binding(top)
+                    bind(top, pos, Binding(top))
                 imports.append(
-                    dict(
-                        line=node.lineno,
-                        module=alias.name,
-                        name=None,
-                        asname=alias.asname,
-                    )
+                    dict(line=node.lineno, module=alias.name, name=None, asname=alias.asname)
                 )
         elif isinstance(node, ast.ImportFrom):
-            if node.level or not _is_target(node.module, package):
-                continue
+            target = not node.level and _is_target(node.module, package)
             for alias in node.names:
+                if alias.name == '*':
+                    if target:
+                        stars.append(node.module)
+                        imports.append(
+                            dict(line=node.lineno, module=node.module, name='*', asname=None)
+                        )
+                    continue
+                local = alias.asname or alias.name
+                if not target:
+                    bind(local, pos, None)
+                    continue
                 imports.append(
                     dict(
                         line=node.lineno,
@@ -153,31 +195,56 @@ def _import_bindings(
                         asname=alias.asname,
                     )
                 )
-                if alias.name == '*':
-                    stars.append(node.module)
-                    continue
                 full = f'{node.module}.{alias.name}'
-                local = alias.asname or alias.name
                 if full in submodules:
-                    bindings[local] = Binding(full)
+                    bind(local, pos, Binding(full))
                 else:
-                    bindings[local] = Binding(node.module, alias.name)
-    return bindings, imports, stars
+                    bind(local, pos, Binding(node.module, alias.name))
+        else:
+            for name in _stmt_binds(node):
+                bind(name, pos, None)
+    for evs in events.values():
+        evs.sort(key=lambda e: e[0])
+    return events, imports, stars
+
+
+def _is_partial(node: ast.AST) -> bool:
+    return (isinstance(node, ast.Name) and node.id == 'partial') or (
+        isinstance(node, ast.Attribute) and node.attr == 'partial'
+    )
 
 
 class _Resolver:
-    def __init__(self, bindings, *, star_names, submodules):
-        self.bindings = bindings
+    """Resolve an expression to a target :class:`Binding`, at its source position.
+
+    A name resolves to the binding in effect at that point of the file (the latest
+    event before it; the first event if it is used before any, as in a function
+    body referring to a later import). Scope is ignored: an import inside one
+    function binds the name for the whole file.
+    """
+
+    def __init__(self, events, *, star_names, submodules):
+        self.events = events
         self.star_names = star_names  # {name: Binding(via='star')}
         self.submodules = set(submodules)
 
+    def _name(self, node: ast.Name) -> Binding | None:
+        evs = self.events.get(node.id)
+        if not evs:
+            return self.star_names.get(node.id)
+        here = (node.lineno, node.col_offset)
+        i = bisect_right([pos for pos, _ in evs], here)
+        return evs[i - 1][1] if i else evs[0][1]
+
     def __call__(self, node: ast.AST) -> Binding | None:
         if isinstance(node, ast.Name):
-            return self.bindings.get(node.id) or self.star_names.get(node.id)
+            return self._name(node)
         if isinstance(node, ast.Attribute):
             base = self(node.value)
-            if base is None or base.symbol is not None:
+            if base is None:
                 return None
+            if base.symbol is not None:  # an attribute of a target symbol: `Store.wrap`
+                return Binding(base.module, f'{base.symbol}.{node.attr}', via=base.via)
             full = f'{base.module}.{node.attr}'
             if full in self.submodules:
                 return Binding(full, via=base.via)
@@ -208,23 +275,26 @@ def scan_source(
 
     :param package: the target package (``'dol'``).
     :param submodules: dotted names of the target's submodules (``'dol.trans'``...),
-        so ``from dol import trans`` is known to bind a module, not a symbol.
+        so ``from dol import trans`` is known to bind a module, not a symbol. Leave
+        out a submodule whose name the package rebinds to a non-module export.
     :param module_surfaces: ``{module: public names}`` used to resolve star
         imports (the names ``from <module> import *`` would bind).
     :param relpath: the file's repo-relative path, copied into every record.
 
     Returns ``{'imports', 'refs', 'calls', 'classes', 'stars'}``; each record has
-    ``file`` and ``line``.
+    ``file`` and ``line``. Refs are to plain target names; calls also cover
+    attributes of target symbols (``Store.wrap(...)``, symbol ``'Store.wrap'``) and
+    ``partial(<target callable>, ...)`` (``via_partial=True``).
     """
     tree = ast.parse(source)
     submodules = set(submodules)
     module_surfaces = module_surfaces or {}
-    bindings, imports, stars = _import_bindings(
+    events, imports, stars = _import_bindings(
         tree, package=package, submodules=submodules
     )
     star_names: dict[str, Binding] = {}
     if stars:
-        local = _locally_bound_names(tree, package) | set(bindings)
+        local = _locally_bound_names(tree, package) | set(events)
         for mod in stars:
             for name in module_surfaces.get(mod, ()):
                 if name not in local and name not in star_names:
@@ -233,7 +303,7 @@ def scan_source(
                         star_names[name] = Binding(full, via='star')
                     else:
                         star_names[name] = Binding(mod, name, via='star')
-    resolve = _Resolver(bindings, star_names=star_names, submodules=submodules)
+    resolve = _Resolver(events, star_names=star_names, submodules=submodules)
     decorates = _decorator_targets(tree)
 
     refs, calls, classes = [], [], []
@@ -243,15 +313,16 @@ def scan_source(
         ):
             b = resolve(node)
             if b is not None and b.symbol is not None:
-                refs.append(
-                    dict(
-                        file=relpath,
-                        line=node.lineno,
-                        symbol=b.symbol,
-                        module=b.module,
-                        via=b.via,
+                if '.' not in b.symbol:
+                    refs.append(
+                        dict(
+                            file=relpath,
+                            line=node.lineno,
+                            symbol=b.symbol,
+                            module=b.module,
+                            via=b.via,
+                        )
                     )
-                )
                 if id(node) in decorates:  # bare decorator: `@cache_this`
                     calls.append(
                         _call_record(
@@ -270,12 +341,29 @@ def scan_source(
                         node, b, relpath=relpath, decorates=decorates.get(id(node))
                     )
                 )
+            elif _is_partial(node.func) and node.args:
+                b = resolve(node.args[0])
+                if b is not None and b.symbol is not None:
+                    calls.append(
+                        _call_record(
+                            node,
+                            b,
+                            relpath=relpath,
+                            decorates=decorates.get(id(node)),
+                            partial=True,
+                        )
+                    )
         if isinstance(node, ast.ClassDef):
             target_bases, local_bases = [], []
             for base in node.bases:
+                if isinstance(base, ast.Call):  # class A(Store.wrap(...)) / A(wrap_kvs(...))
+                    b = resolve(base.func)
+                    if b is not None and b.symbol is not None:
+                        target_bases.append(b.symbol.split('.')[0])
+                    continue
                 b = resolve(base)
                 if b is not None and b.symbol is not None:
-                    target_bases.append(b.symbol)
+                    target_bases.append(b.symbol.split('.')[0])
                 elif isinstance(base, ast.Name):
                     local_bases.append(base.id)
                 elif isinstance(base, ast.Attribute):
@@ -294,7 +382,9 @@ def scan_source(
     return dict(imports=imports, refs=refs, calls=calls, classes=classes, stars=stars)
 
 
-def _call_record(node, binding, *, relpath, decorates=None, bare=False) -> dict:
+def _call_record(
+    node, binding, *, relpath, decorates=None, bare=False, partial=False
+) -> dict:
     if bare:
         kwargs, n_args, double_star = [], 0, False
     else:
@@ -303,7 +393,7 @@ def _call_record(node, binding, *, relpath, decorates=None, bare=False) -> dict:
             for kw in node.keywords
             if kw.arg is not None
         ]
-        n_args = len(node.args)
+        n_args = len(node.args) - partial
         double_star = any(kw.arg is None for kw in node.keywords)
     return dict(
         file=relpath,
@@ -316,7 +406,9 @@ def _call_record(node, binding, *, relpath, decorates=None, bare=False) -> dict:
         double_star=double_star,
         decorates=decorates,
         bare_decorator=bare,
+        via_partial=partial,
     )
+
 
 
 def close_class_graph(classes: Iterable[dict]) -> list[dict]:
@@ -370,13 +462,18 @@ def close_class_graph(classes: Iterable[dict]) -> list[dict]:
 
 
 def iter_py_files(
-    root: Path, *, skip_dirs: frozenset[str] = DFLT_SKIP_DIRS
+    root: Path,
+    *,
+    skip_dirs: frozenset[str] = DFLT_SKIP_DIRS,
+    top_skip_dirs: frozenset[str] = DFLT_TOP_SKIP_DIRS,
 ) -> Iterator[Path]:
-    """Python files under *root*, skipping hidden dirs and *skip_dirs*, sorted."""
+    """Python files under *root*, skipping hidden dirs and the skip sets, sorted."""
     root = Path(root)
     for path in sorted(root.rglob('*.py')):
         parts = path.relative_to(root).parts[:-1]
         if any(p.startswith('.') or p in skip_dirs for p in parts):
+            continue
+        if parts and parts[0] in top_skip_dirs:
             continue
         yield path
 

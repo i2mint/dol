@@ -27,7 +27,7 @@ Everything the tool *produces* is derived from the fleet's source code, and some
 |---|---|---|
 | 1. Pin manifest + baselines + restore | `scan.py`, `baseline.py`, `pins.py` | 40-char SHA, branch, upstream, ahead/behind, dirty and untracked counts, commit date; per-suite status, exact command, duration, counts and **failing test ids**; restore/undo |
 | 2. AST, not regex | `astscan.py` | imports through every binding form, references (incl. star-imported names), subclassing closed over each repo's class graph, call-site keywords with the kind of each value |
-| 3. Zero-usage report | `report.py` | exports split into used / candidates / recent / incidental, the submodule compat surface, names imported that no longer exist, with three generated caveats |
+| 3. Zero-usage report | `report.py` | exports split into used / candidates / recent / incidental, the submodule compat surface (imports *and* attribute access, underscored names included), names used that no longer exist, with three generated caveats; it names dependents, so it is kept local like the rest |
 | 4. Successive scans | `store.py` | `scans/<utc-id>/`, `schema_version` everywhere, `index.json`, `mark-superseded` (never delete) |
 
 ## Layout and schema (`schema_version: 1`)
@@ -61,8 +61,12 @@ Bump `SCHEMA_VERSION` in `store.py` when a record's shape changes incompatibly.
 - **`pin restore` is conservative.** Dry run by default; refuses repos with tracked modifications; never fetches, never forces; writes its undo record before the first checkout; checks out detached, leaving branches alone.
 - **`--jobs 1` by default**, like `priv test-dependents`: some suites share on-disk state.
 
-Known approximations: name bindings are collected per file regardless of scope (a function-local `from dol import X` binds `X` file-wide); local base classes are matched across a repo by class *name*; usage is counted per dol short name, so a submodule name equal to an `__init__` export counts as one; failing ids are JUnit `classname::name`, stable between runs but not always pytest node ids.
+- **`diff` never reports a test as fixed when it simply did not run.** A dependent whose run did not complete on either side (`INTERRUPTED` by a collection error, `TIMEOUT`, `ERROR`) is reported as `incomparable` when its status changed.
+- **One dependent cannot cost the baseline.** A suite whose output quotes a local path has that path redacted (`<abs>`) in its `tail`; an exception while running one dependent is recorded as its `ERROR`.
+- **`pin undo` only undoes what `restore` did.** A repo that is no longer detached at the restored pin (a commit made there, a branch switched to) is left alone and reported. A scan taken with `--repo` refuses to be restored or baselined through the real fleet's name resolution.
+
+Known approximations: a name's binding is the latest one before its use in the file, regardless of scope (a function-local `from dol import X` binds `X` file-wide, a later `from other import X` unbinds it); local base classes are matched across a repo by class *name*; usage is counted per dol short name, so a submodule name equal to an `__init__` export counts as one; calls also cover attributes of dol symbols (`Store.wrap(...)`, symbol `Store.wrap`) and `partial(<dol callable>, ...)` (`via_partial`), and a class whose base is such a call is rooted at that callee (`class A(wrap_kvs(dict, ...))` has root `wrap_kvs`); failing ids are JUnit `classname::name`, stable between runs but not always pytest node ids; a dependent's own pytest `addopts` apply, as in its CI. Notebooks are not scanned. On a shallow clone of dol the export dates are meaningless, and the zero-usage report says so.
 
 ## Relation to priv
 
-priv's `dep_graph` is the fleet's single source for who depends on dol (`dependents_of`, rebuilt live at scan time) and for the gate's pytest command (`CI_DOCTEST_ARGS`, `GATE_EXTRA_IGNORES`, each repo's `[tool.wads.ci.testing]`), and the ledger reuses both rather than re-deriving them. What priv does not have, and this adds, is the symbol-level census and per-test baselines; the census is generic in the target package, so it is a candidate to move into priv (see the issue linked from #91).
+priv's `dep_graph` is the fleet's single source for who depends on dol (rebuilt live at scan time) and for the gate's pytest command (CI's doctest flags plus each repo's `[tool.wads.ci.testing]` exclusions), and the ledger reuses both rather than re-deriving them. What priv does not have, and this adds, is the symbol-level census and per-test baselines; the census is generic in the target package, so it is a candidate to move into priv (see the issue linked from #91).

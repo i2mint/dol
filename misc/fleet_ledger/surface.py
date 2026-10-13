@@ -15,6 +15,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from . import store
+
 _SURFACE_SCRIPT = r'''
 import importlib, json, pkgutil, sys, types
 root, pkg_name, skip = sys.argv[1], sys.argv[2], set(sys.argv[3].split(','))
@@ -46,21 +48,26 @@ for name in public(pkg):
         rec['incidental'] = not obj.__name__.startswith(pkg_name + '.')
     exports[name] = rec
 
-submodules, errors = {}, {}
+submodules, defined, errors = {}, {}, {}
 for info in pkgutil.walk_packages(pkg.__path__, pkg_name + '.'):
     if set(info.name.split('.')) & skip:
         continue
     try:
-        submodules[info.name] = public(importlib.import_module(info.name))
+        mod = importlib.import_module(info.name)
     except Exception as e:  # an optional dependency missing, typically
         errors[info.name] = f'{type(e).__name__}: {e}'[:200]
+        continue
+    submodules[info.name] = public(mod)
+    defined[info.name] = sorted(dir(mod))
 submodules[pkg_name] = sorted(exports)
+defined[pkg_name] = sorted(dir(pkg))
 print(json.dumps({
     'package': pkg_name,
     'version': getattr(pkg, '__version__', None),
     'resolved_file': pkg.__file__,
     'exports': exports,
     'submodules': submodules,
+    'defined': defined,
     'import_errors': errors,
 }))
 '''
@@ -77,6 +84,10 @@ def package_surface(
     skip_parts: tuple[str, ...] = DFLT_SKIP_PARTS,
 ) -> dict:
     """Exports of *package*'s ``__init__`` and every submodule's public names.
+
+    ``submodules`` holds what ``from <module> import *`` would bind; ``defined``
+    holds every attribute (underscored included), to tell a compat name that
+    exists from one that no longer does.
 
     ``resolved_file`` is relative to *source_root* when the import came from it,
     and ``imported_from_source`` says whether it did.
@@ -95,6 +106,9 @@ def package_surface(
         )
     surface = json.loads(proc.stdout)
     surface['version'] = surface['version'] or _pyproject_version(source_root)
+    surface['import_errors'] = {
+        k: store.redact(store.scrub(v)) for k, v in surface['import_errors'].items()
+    }
     resolved = Path(surface['resolved_file']).resolve()
     try:
         surface['resolved_file'] = resolved.relative_to(source_root).as_posix()
@@ -115,6 +129,24 @@ def _pyproject_version(source_root: Path) -> str | None:
         return None
     with open(p, 'rb') as f:
         return tomllib.load(f).get('project', {}).get('version')
+
+
+def is_shallow(source_root: str | Path) -> bool:
+    """Whether the git history is truncated (then first-seen dates are not real)."""
+    proc = subprocess.run(
+        ['git', '-C', str(source_root), 'rev-parse', '--is-shallow-repository'],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return proc.stdout.strip() == 'true'
+
+
+def parse_iso(s: str):
+    """``datetime.fromisoformat`` that also takes git's ``Z`` suffix on Python 3.10."""
+    from datetime import datetime
+
+    return datetime.fromisoformat(s[:-1] + '+00:00' if s.endswith('Z') else s)
 
 
 def export_first_seen(

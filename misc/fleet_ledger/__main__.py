@@ -94,9 +94,14 @@ def main(argv=None):
             _print(pins.undo(root, repos=repos, apply=a.apply))
     elif a.cmd in ('report', 'zero-usage'):
         data = scan.load_scan(root, a.scan)
-        md = (report.summary_md if a.cmd == 'report' else report.zero_usage_md)(data)
+        md = store.scrub((report.summary_md if a.cmd == 'report' else report.zero_usage_md)(data))
+        if store.find_local_paths(md):
+            raise SystemExit('Refusing to print a report that still contains local paths.')
         if a.out:
-            Path(a.out).expanduser().write_text(md, encoding='utf-8')
+            out = Path(a.out).expanduser()
+            if scan._is_within(out, Path(__file__).resolve().parents[2]):
+                raise SystemExit('Write reports outside the repo: they name private packages.')
+            out.write_text(md, encoding='utf-8')
             _print(f'wrote {a.out}')
         else:
             _print(md)

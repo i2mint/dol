@@ -141,3 +141,52 @@ def test_scan_repo_closes_classes_across_files_and_keeps_relative_paths(tmp_path
     assert rec['parse_errors'] == ['pkg/bad.py']
     assert {c['name']: c['indirect'] for c in rec['subclasses']} == {'A': [], 'B': ['Store']}
     assert {r['file'] for r in rec['imports']} == {'pkg/a.py'}
+
+
+def test_attribute_of_a_symbol_is_a_call_and_a_call_base_roots_the_class():
+    rec = scan(
+        """
+        from dol import Store, wrap_kvs
+        from functools import partial
+        s = Store.wrap(dict, obj_of_data=str)
+        class W(Store.wrap(dict)): ...
+        class V(wrap_kvs(dict, key_of_id=str)): ...
+        mk = partial(wrap_kvs, postget=f, preset=g)
+        """
+    )
+    calls = {(c['symbol'], c['via_partial']): c for c in rec['calls'] if c['kwargs']}
+    assert [k['name'] for k in calls[('Store.wrap', False)]['kwargs']] == ['obj_of_data']
+    assert sum(c['symbol'] == 'Store.wrap' for c in rec['calls']) == 2
+    assert [k['name'] for k in calls[('wrap_kvs', True)]['kwargs']] == ['postget', 'preset']
+    assert calls[('wrap_kvs', True)]['n_args'] == 0
+    got = {c['name']: c['direct'] for c in close_class_graph(rec['classes'])}
+    assert got == {'W': ['Store'], 'V': ['wrap_kvs']}
+    assert 'Store.wrap' not in symbols(rec)  # refs stay plain names
+
+
+def test_a_later_non_target_binding_overrides_the_target_one():
+    rec = scan(
+        """
+        from dol import Files
+        class A(Files): ...
+        from mylib import Files
+        class B(Files): ...
+        Files()
+        """
+    )
+    assert [c['name'] for c in close_class_graph(rec['classes'])] == ['A']
+    assert rec['calls'] == []
+
+
+def test_a_binding_takes_effect_after_its_statement():
+    rec = scan('from dol import Store\nclass Store(Store): ...\nStore()\n')
+    assert close_class_graph(rec['classes'])[0]['direct'] == ['Store']
+    assert rec['calls'] == []  # by then `Store` is the local class
+
+
+def test_top_level_build_dirs_skipped_but_nested_ones_scanned(tmp_path):
+    for d in ('build', 'pkg/build'):
+        (tmp_path / d).mkdir(parents=True)
+        (tmp_path / d / 'm.py').write_text('from dol import Files\n')
+    rec = scan_repo(tmp_path)
+    assert [r['file'] for r in rec['imports']] == ['pkg/build/m.py']

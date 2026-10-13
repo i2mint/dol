@@ -18,10 +18,11 @@ be adopted, so their non-use is not evidence) and sets aside incidental exports
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 from . import store
+from .surface import parse_iso
 
 DFLT_RECENT_DAYS = 365
 
@@ -37,12 +38,27 @@ CAVEATS = (
     'does not license a silent removal.',
 )
 
+#: Generated limits of the scan itself, appended after the three caveats.
+SCAN_LIMITS = (
+    'Not scanned: notebooks (`.ipynb`), hidden directories, and top-level '
+    '`build`/`dist`/`env`/`venv` directories of each dependent.',
+)
+SHALLOW_NOTE = (
+    'The {package} history is a shallow clone: "first seen" dates are the '
+    'truncation point, not when a name was exported, so the recent/candidate '
+    'split below is unreliable.'
+)
+PRIVATE_NAMES_NOTE = (
+    '> Generated from the local fleet, some of it private: this page names '
+    'dependent packages. Review it before pasting any of it into a public issue.'
+)
+
 
 def zero_usage(scan: dict, *, recent_days: int = DFLT_RECENT_DAYS) -> dict:
     """Split the target's exports into used / candidates / recent / incidental."""
     surf, agg = scan['surface'], scan['census']['aggregates']
     used = agg['symbols']
-    created = datetime.fromisoformat(scan['meta']['created'])
+    created = parse_iso(scan['meta']['created'])
     cutoff = created - timedelta(days=recent_days)
     first_seen = surf.get('export_first_seen', {})
     out = dict(used={}, candidates=[], recent=[], incidental=[], submodules=[])
@@ -55,7 +71,7 @@ def zero_usage(scan: dict, *, recent_days: int = DFLT_RECENT_DAYS) -> dict:
             out['used'][name] = used[name]['n_packages']
             continue
         seen = first_seen.get(name)
-        if seen and datetime.fromisoformat(seen) > cutoff:
+        if seen and parse_iso(seen) > cutoff:
             out['recent'].append(dict(name=name, first_seen=seen[:10]))
         else:
             out['candidates'].append(dict(name=name, first_seen=(seen or '')[:10]))
@@ -89,6 +105,8 @@ def zero_usage_md(scan: dict, *, recent_days: int = DFLT_RECENT_DAYS) -> str:
     lines = [
         f'# {package} zero-usage report — scan {meta["id"]}',
         '',
+        PRIVATE_NAMES_NOTE,
+        '',
         f'{package} {meta["package_version"]} at '
         f'`{(meta["package_pin"].get("sha") or "?")[:12]}`; '
         f'{meta["n_found"]} of {meta["n_dependents"]} dependents scanned.',
@@ -96,6 +114,9 @@ def zero_usage_md(scan: dict, *, recent_days: int = DFLT_RECENT_DAYS) -> str:
         '## Caveats',
         '',
         *[f'{i}. {c.format(**fmt)}' for i, c in enumerate(CAVEATS, 1)],
+        *[f'- {c}' for c in SCAN_LIMITS],
+        *([f'- **{SHALLOW_NOTE.format(**fmt)}**']
+          if scan['surface'].get('history_shallow') else []),
         '',
         '## Summary',
         '',
@@ -147,6 +168,8 @@ def summary_md(scan: dict, *, top: int = 25) -> str:
     imp = meta['import_resolved']
     lines = [
         f'# {package} fleet ledger — scan {meta["id"]}',
+        '',
+        PRIVATE_NAMES_NOTE,
         '',
         f'- {package} {meta["package_version"]} at '
         f'`{(meta["package_pin"].get("sha") or "?")[:12]}`, created {meta["created"]}',

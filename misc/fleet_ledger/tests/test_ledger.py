@@ -161,3 +161,82 @@ def test_suite_timeout_is_recorded_not_raised(tmp_path):
     (tmp_path / 'test_slow.py').write_text('import time\ndef test_x(): time.sleep(30)\n')
     r = baseline.run_suite(tmp_path, gate_args=no_priv, timeout=3)
     assert r['status'] == 'TIMEOUT'
+
+
+def test_git_dates_with_z_parse_on_every_python():
+    from fleet_ledger.surface import parse_iso
+
+    assert parse_iso('2026-10-13T08:28:25Z').utcoffset().total_seconds() == 0
+
+
+def test_compat_vs_unknown_uses_every_defined_name(fleet):
+    a = fleet['repos']['dep_a']
+    (a / 'more.py').write_text(
+        'import tgt.base as b\nb._private_helper\nb.gone\nfrom tgt.base import _also\n'
+    )
+    (fleet['src'] / 'tgt' / 'base.py').write_text(
+        'class Store: ...\ndef unused(): ...\ndef hidden(): ...\n'
+        'def _private_helper(): ...\ndef _also(): ...\n'
+    )
+    sid = scan.run_scan('tgt', source_root=fleet['src'], repos=fleet['repos'], root=fleet['root'])
+    agg = scan.load_scan(fleet['root'], sid)['census']['aggregates']
+    assert sorted(agg['compat_names']) == ['_also', '_private_helper', 'hidden']
+    assert list(agg['unknown_names']) == ['gone']
+
+
+def test_ledger_root_inside_the_source_tree_is_refused(fleet):
+    with pytest.raises(ValueError, match='outside'):
+        scan.run_scan('tgt', source_root=fleet['src'], repos=fleet['repos'],
+                      root=fleet['src'] / 'ledger')
+
+
+def test_an_explicit_repos_scan_is_never_resolved_through_the_fleet(fleet):
+    scan.run_scan('tgt', source_root=fleet['src'], repos=fleet['repos'], root=fleet['root'])
+    with pytest.raises(ValueError, match='explicit repos'):
+        pins.restore(fleet['root'], apply=True)
+    with pytest.raises(ValueError, match='explicit repos'):
+        baseline.run_baseline(fleet['root'], package='tgt', gate_args=no_priv)
+
+
+def test_undo_leaves_a_repo_that_moved_after_the_restore(fleet):
+    root, repos = fleet['root'], fleet['repos']
+    a = repos['dep_a']
+    scan.run_scan('tgt', source_root=fleet['src'], repos=repos, root=root)
+    (a / 'x.txt').write_text('x')
+    git(a, 'add', '-A')
+    git(a, 'commit', '-q', '-m', 'later')
+    pins.restore(root, repos=repos, apply=True)
+    (a / 'fix.txt').write_text('fix')  # work done while detached at the pin
+    git(a, 'add', '-A')
+    git(a, 'commit', '-q', '-m', 'fix while detached')
+    fix = git(a, 'rev-parse', 'HEAD')
+    res = pins.undo(root, repos=repos, apply=True)
+    assert res['plan']['dep_a']['action'] == 'skip'
+    assert git(a, 'rev-parse', 'HEAD') == fix
+
+
+def test_two_restores_in_one_second_do_not_collide(tmp_path):
+    (tmp_path / 'undo-20261013T000000Z.json').write_text('{}')
+    from datetime import datetime, timezone
+
+    now = datetime(2026, 10, 13, tzinfo=timezone.utc)
+    assert store.new_record_id(tmp_path, now=now, name_format='undo-{}.json') == '20261013T000000Z-2'
+
+
+def test_a_local_path_in_suite_output_is_redacted_not_fatal(fleet):
+    root, repos = fleet['root'], fleet['repos']
+    (repos['dep_a'] / 'test_p.py').write_text(
+        'def test_p():\n    assert 0, "/Users/bob/data.csv"\n'
+    )
+    scan.run_scan('tgt', source_root=fleet['src'], repos=repos, root=root)
+    b = baseline.load_baseline(root, baseline.run_baseline(
+        root, package='tgt', repos=repos, gate_args=no_priv))
+    r = b['results']['dep_a']
+    assert r['status'] == 'FAIL' and '/Users/bob' not in json.dumps(r)
+
+
+def test_an_interrupted_run_is_incomparable_not_fixed():
+    a = dict(id='a', results={'x': dict(status='FAIL', command=['c'], failing=['t::1', 't::2'])})
+    b = dict(id='b', results={'x': dict(status='INTERRUPTED', command=['c'], failing=['t'])})
+    d = baseline.diff(a, b)['changed']['x']
+    assert d['incomparable'] and d['fixed'] == [] and d['new_failures'] == []

@@ -17,8 +17,26 @@ from . import astscan, fleet, store, surface as surface_mod
 TOOL_NAME = 'fleet_ledger'
 
 
+def _submodules(surface: dict) -> list[str]:
+    """Submodule names, minus those the package rebinds to a non-module export.
+
+    ``dol.appendable`` is a module, but ``dol``'s ``appendable`` attribute is a
+    function: ``from dol import appendable`` binds the function.
+    """
+    package, exports = surface['package'], surface['exports']
+    out = []
+    for m in surface['submodules']:
+        if m == package:
+            continue
+        parent, _, leaf = m.rpartition('.')
+        if parent == package and exports.get(leaf, {}).get('kind', 'module') != 'module':
+            continue
+        out.append(m)
+    return out
+
+
 def _repo_census(path: Path, *, package: str, surface: dict) -> dict:
-    submodules = [m for m in surface['submodules'] if m != package]
+    submodules = _submodules(surface)
     return astscan.scan_repo(
         path,
         package=package,
@@ -41,6 +59,7 @@ def aggregate(census: Mapping[str, dict], *, surface: dict) -> dict:
     package = surface['package']
     exports = set(surface['exports'])
     module_names = {m: set(ns) for m, ns in surface['submodules'].items()}
+    defined = {m: set(ns) for m, ns in surface.get('defined', {}).items()}
     symbols = defaultdict(lambda: dict(packages=set(), import_sites=0, ref_sites=0))
     calls = defaultdict(
         lambda: dict(
@@ -58,6 +77,21 @@ def aggregate(census: Mapping[str, dict], *, surface: dict) -> dict:
     unknown = defaultdict(lambda: dict(modules=set(), packages=set()))
     star_packages = defaultdict(set)
 
+    def classify(pkg, mod, name):
+        """A name used from *mod* that ``__init__`` does not export: compat or gone."""
+        if mod == package and name in exports:
+            return
+        if mod != package and name in exports:
+            return  # e.g. dol.trans.wrap_kvs: also exported, not a compat-only name
+        if name in defined.get(mod, module_names.get(mod, ())):
+            bucket = compat
+        elif mod not in defined and mod not in module_names:
+            return  # a submodule the surface could not import: unknowable here
+        else:
+            bucket = unknown
+        bucket[name]['modules'].add(mod)
+        bucket[name]['packages'].add(pkg)
+
     for pkg, rec in census.items():
         if not rec.get('scanned'):
             continue
@@ -69,17 +103,11 @@ def aggregate(census: Mapping[str, dict], *, surface: dict) -> dict:
                 continue  # a submodule import, not a symbol
             symbols[name]['packages'].add(pkg)
             symbols[name]['import_sites'] += 1
-            if mod == package:
-                if name not in exports:
-                    unknown[name]['modules'].add(mod)
-                    unknown[name]['packages'].add(pkg)
-            elif name not in exports:
-                target = compat if name in module_names.get(mod, ()) else unknown
-                target[name]['modules'].add(mod)
-                target[name]['packages'].add(pkg)
+            classify(pkg, mod, name)
         for ref in rec['refs']:
             symbols[ref['symbol']]['packages'].add(pkg)
             symbols[ref['symbol']]['ref_sites'] += 1
+            classify(pkg, ref['module'], ref['symbol'])
         for c in rec['calls']:
             agg = calls[c['symbol']]
             agg['packages'].add(pkg)
@@ -133,6 +161,14 @@ def aggregate(census: Mapping[str, dict], *, surface: dict) -> dict:
     return out
 
 
+def _is_within(path: Path, parent: Path) -> bool:
+    try:
+        Path(path).expanduser().resolve().relative_to(Path(parent).resolve())
+        return True
+    except ValueError:
+        return False
+
+
 def run_scan(
     package: str = 'dol',
     *,
@@ -151,9 +187,15 @@ def run_scan(
     source_root = Path(source_root or Path(__file__).resolve().parents[2])
     root = Path(root) if root else store.ledger_root(package)
     surf = surface_mod.package_surface(source_root, package=package)
+    if _is_within(root, source_root):
+        raise ValueError(
+            f'The ledger root must be outside the {package} source tree: its records '
+            'are derived from the fleet (some of it private) and must never be committed.'
+        )
     surf['export_first_seen'] = surface_mod.export_first_seen(
         source_root, surf['exports'], init_relpath=f'{package}/__init__.py'
     )
+    surf['history_shallow'] = surface_mod.is_shallow(source_root)
     targets = fleet.dependents_and_paths(package, repos=repos)
     transitive = None
     if repos is None:

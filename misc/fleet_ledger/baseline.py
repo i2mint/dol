@@ -16,6 +16,8 @@ flags plus each repo's ``[tool.wads.ci.testing]`` exclusions), so a baseline and
 from __future__ import annotations
 
 import json
+import os
+import signal
 import subprocess
 import sys
 import tempfile
@@ -56,12 +58,13 @@ def failing_ids(junit_path: Path) -> tuple[dict, list[str]]:
     for case in tree.iter('testcase'):
         counts['tests'] += 1
         tags = {child.tag for child in case}
-        if 'skipped' in tags:
-            counts['skipped'] += 1
+        # one outcome per case: a failure with a teardown error is one failure
         if 'failure' in tags:
             counts['failures'] += 1
-        if 'error' in tags:
+        elif 'error' in tags:
             counts['errors'] += 1
+        elif 'skipped' in tags:
+            counts['skipped'] += 1
         if tags & {'failure', 'error'}:
             failing.add(f"{case.get('classname', '')}::{case.get('name', '')}")
     counts['passed'] = (
@@ -89,17 +92,13 @@ def run_suite(
         cmd = [python if a == PYTHON_PLACEHOLDER else a.replace(JUNIT_PLACEHOLDER, str(junit))
                for a in template]
         t0 = time.monotonic()
-        try:
-            proc = subprocess.run(
-                cmd, cwd=repo, capture_output=True, text=True, timeout=timeout, check=False
-            )
-        except subprocess.TimeoutExpired:
-            return dict(status='TIMEOUT', command=template,
-                        seconds=round(time.monotonic() - t0, 1), timeout=timeout)
+        rc, out = _run_killable(cmd, cwd=repo, timeout=timeout)
         seconds = round(time.monotonic() - t0, 1)
+        if rc is None:
+            return dict(status='TIMEOUT', command=template, seconds=seconds, timeout=timeout)
         entry = dict(
-            status=_STATUS_OF_RC.get(proc.returncode, 'ERROR'),
-            returncode=proc.returncode,
+            status=_STATUS_OF_RC.get(rc, 'ERROR'),
+            returncode=rc,
             command=template,
             seconds=seconds,
         )
@@ -110,9 +109,40 @@ def run_suite(
             except ET.ParseError:
                 entry['junit'] = 'unparseable'
         if entry['status'] not in ('PASS', 'NO_TESTS'):
-            lines = (proc.stdout + proc.stderr).strip().splitlines()
-            entry['tail'] = lines[-15:]
+            entry['tail'] = [store.redact(store.scrub(l)) for l in out.strip().splitlines()[-15:]]
+    entry['failing'] = [store.redact(store.scrub(f)) for f in entry.get('failing', [])]
     return entry
+
+
+def _run_killable(cmd, *, cwd, timeout) -> tuple[int | None, str]:
+    """Run *cmd*; on timeout kill its whole process group. ``(None, '')`` on timeout."""
+    posix = os.name == 'posix'
+    proc = subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
+        text=True,
+        errors='replace',
+        start_new_session=posix,
+    )
+    try:
+        out, _ = proc.communicate(timeout=timeout)
+        return proc.returncode, out
+    except subprocess.TimeoutExpired:
+        if posix:
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        else:
+            proc.kill()
+        try:
+            proc.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            pass
+        return None, ''
 
 
 def _imported(python: str, package: str) -> dict:
@@ -152,8 +182,11 @@ def run_baseline(
     ``jobs`` runs suites concurrently (1 by default, like the gate: some suites
     share on-disk state). ``only`` restricts to the given dependent names.
     """
+    from .pins import require_same_source
+
     root = Path(root)
     scan_id = scan_id or store.latest_id(root, 'scans')
+    require_same_source(root, scan_id, repos)
     pins = store.read_json(root / 'scans' / scan_id / 'pins.json')['pins']
     names = sorted(n for n in pins if only is None or n in set(only))
     paths = fleet.resolve_repos(names, repos=repos)
@@ -163,11 +196,15 @@ def run_baseline(
         if path is None:
             entry = dict(status='NOT_FOUND')
         else:
-            entry = run_suite(path, python=python, gate_args=gate_args, timeout=timeout)
-            now = fleet.git_pin(path)
-            entry['sha'] = now.get('sha')
-            entry['at_pin'] = now.get('sha') == pins[name].get('sha')
-            entry['dirty'] = now.get('dirty')
+            try:  # one dependent's trouble must not cost the whole baseline
+                entry = run_suite(path, python=python, gate_args=gate_args, timeout=timeout)
+                now = fleet.git_pin(path)
+                entry['sha'] = now.get('sha')
+                entry['at_pin'] = now.get('sha') == pins[name].get('sha')
+                entry['dirty'] = now.get('dirty')
+            except Exception as e:
+                entry = dict(status='ERROR', error=store.redact(store.scrub(
+                    f'{type(e).__name__}: {e}'))[:300])
         if progress:
             progress(name, entry)
         return name, entry
@@ -185,7 +222,7 @@ def run_baseline(
         scan_id=scan_id,
         created=created,
         package=package,
-        package_imported=_imported(python, package),
+        package_imported=store.scrub_obj(_imported(python, package)),
         jobs=jobs,
         timeout=timeout,
         wall_seconds=round(time.monotonic() - t0, 1),
@@ -210,6 +247,10 @@ def summarize(results: Mapping[str, dict]) -> dict:
     return dict(sorted(out.items()))
 
 
+#: Statuses whose failing-id set covers the whole suite, so ids can be compared.
+COMPLETE_RUNS = frozenset({'PASS', 'FAIL', 'NO_TESTS'})
+
+
 class IncomparableBaselines(ValueError):
     """Two baselines ran a dependent with different commands."""
 
@@ -219,7 +260,9 @@ def diff(a: dict, b: dict) -> dict:
 
     Refuses (``IncomparableBaselines``) when a dependent present in both ran with
     a different command: changing the flags changes what gets reported, which
-    would read exactly like a regression.
+    would read exactly like a regression. A dependent where either side did not
+    run to completion (``INTERRUPTED``, ``TIMEOUT``, ``ERROR``...) is reported as
+    ``incomparable`` when its status changed, never as tests fixed.
     """
     ra, rb = a['results'], b['results']
     mismatched = [
@@ -235,13 +278,22 @@ def diff(a: dict, b: dict) -> dict:
     out = {}
     for name in sorted(set(ra) | set(rb)):
         ea, eb = ra.get(name, {}), rb.get(name, {})
+        status = (ea.get('status'), eb.get('status'))
+        if not (set(status) <= COMPLETE_RUNS):
+            # one side did not run its whole suite (collection error, timeout...):
+            # failures absent from it are not fixed, just not run
+            if status[0] != status[1]:
+                out[name] = dict(status=status, incomparable=True,
+                                 new_failures=[], fixed=[])
+            continue
         fa, fb = set(ea.get('failing', ())), set(eb.get('failing', ()))
         change = dict(
-            status=(ea.get('status'), eb.get('status')),
+            status=status,
+            incomparable=False,
             new_failures=sorted(fb - fa),
             fixed=sorted(fa - fb),
         )
-        if change['status'][0] != change['status'][1] or fb != fa:
+        if status[0] != status[1] or fb != fa:
             out[name] = change
     return dict(a=a['id'], b=b['id'], changed=out)
 

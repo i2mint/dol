@@ -37,9 +37,24 @@ def _state(pin: dict, path: Path | None) -> dict:
     )
 
 
+def require_same_source(root: Path, scan_id: str, repos) -> None:
+    """Refuse to resolve an explicit-repos scan's names through the real fleet.
+
+    A scan taken with ``repos=`` pins *those* checkouts; resolving its names via
+    priv instead could check out the real fleet at foreign commits.
+    """
+    meta = store.read_json(Path(root) / 'scans' / scan_id / 'meta.json')
+    if repos is None and meta.get('dependents_source') == 'explicit':
+        raise ValueError(
+            f'Scan {scan_id} was taken with explicit repos; pass them again '
+            '(repos= / --repo NAME=PATH) rather than resolving names via the fleet.'
+        )
+
+
 def _pins_and_paths(root, scan_id, repos):
     root = Path(root)
     scan_id = scan_id or store.latest_id(root, 'scans')
+    require_same_source(root, scan_id, repos)
     pins = store.read_json(root / 'scans' / scan_id / 'pins.json')['pins']
     return scan_id, pins, fleet.resolve_repos(pins, repos=repos)
 
@@ -99,7 +114,7 @@ def restore(root, *, scan_id=None, repos: Mapping | None = None, apply: bool = F
     if not apply or not todo:
         return result
     undo_dir = root / 'pins'
-    undo_id = store.new_record_id(undo_dir)
+    undo_id = store.new_record_id(undo_dir, name_format='undo-{}.json')
     undo_path = undo_dir / f'undo-{undo_id}.json'
     store.write_json(  # BEFORE the first checkout
         undo_path,
@@ -108,7 +123,8 @@ def restore(root, *, scan_id=None, repos: Mapping | None = None, apply: bool = F
             scan_id=result['scan_id'],
             created=store.utc_now().isoformat(),
             repos={
-                n: dict(sha=p['from_sha'], branch=p['from_branch']) for n, p in todo.items()
+                n: dict(sha=p['from_sha'], branch=p['from_branch'], to=p['to'])
+                for n, p in todo.items()
             },
         ),
     )
@@ -144,10 +160,17 @@ def undo(root, *, repos: Mapping | None = None, apply: bool = False) -> dict:
             continue
         now = fleet.git_pin(path)
         target = prev['branch'] or prev['sha']
-        if now['dirty']:
-            plan[name] = dict(action='skip', reason=f"{now['dirty']} modified tracked file(s)")
-        elif now['branch'] == prev['branch'] and now['sha'] == prev['sha']:
+        if now['branch'] == prev['branch'] and now['sha'] == prev['sha']:
             plan[name] = dict(action='noop')
+        elif now['dirty']:
+            plan[name] = dict(action='skip', reason=f"{now['dirty']} modified tracked file(s)")
+        elif now['branch'] is not None or now['sha'] != prev.get('to'):
+            # moved since the restore (a commit made while detached, a branch
+            # switched to): leaving would orphan or override that work
+            plan[name] = dict(
+                action='skip',
+                reason='no longer detached at the restored pin; left as is',
+            )
         else:
             plan[name] = dict(action='checkout', to=target)
     result = dict(undo_record=rec_path.name, plan=plan, applied=False)
