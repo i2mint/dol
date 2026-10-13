@@ -186,3 +186,24 @@ def test_failed_write_keeps_a_directory_that_got_content_meanwhile(tmp_path):
     with pytest.raises(KeyError):
         s["d/x.txt"] = b"x"
     assert os.listdir(root + "d") == ["other.txt"]  # not empty: not removed
+
+
+def test_a_directory_made_meanwhile_by_someone_else_is_not_removed(tmp_path, monkeypatch):
+    """Only directories this call made are cleaned up, not ones that appeared in between."""
+    import dol.filesys as fs
+
+    root = str(tmp_path) + os.sep
+    real_mkdir = os.mkdir
+    calls = []
+
+    def mkdir_after_a_rival(path, *a, **k):
+        if not calls:  # a rival creates the first directory just before we do
+            calls.append(path)
+            real_mkdir(path)
+        return real_mkdir(path, *a, **k)
+
+    monkeypatch.setattr(fs.os, "mkdir", mkdir_after_a_rival)
+    s = mk_dirs_if_missing(filt_iter(Files, filt=_txt_only))(root)
+    with pytest.raises(KeyError):
+        s["rival/mine/b.bin"] = b"x"
+    assert os.path.isdir(root + "rival") and not os.path.exists(root + "rival/mine")

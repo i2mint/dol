@@ -238,6 +238,19 @@ def process_path(
     return path
 
 
+def _announce_dir_to_make(dirpath, verbose):
+    """The ``verbose`` behaviour of :func:`ensure_dir`, before a directory is made."""
+    if verbose:
+        if isinstance(verbose, bool):
+            print(f"Making the directory: {dirpath}")
+        elif isinstance(verbose, Callable):
+            callaback = verbose
+            callaback(dirpath)
+        else:
+            string_to_print = verbose
+            print(string_to_print)
+
+
 def ensure_dir(
     dirpath,
     *,
@@ -266,15 +279,7 @@ def ensure_dir(
     on ``dirpath``, you need make them so when calling ensure_dir.
     """
     if not os.path.exists(dirpath):
-        if verbose:
-            if isinstance(verbose, bool):
-                print(f"Making the directory: {dirpath}")
-            elif isinstance(verbose, Callable):
-                callaback = verbose
-                callaback(dirpath)
-            else:
-                string_to_print = verbose
-                print(string_to_print)
+        _announce_dir_to_make(dirpath, verbose)
         create_directories(dirpath, max_dirs_to_make=max_dirs_to_make)
     return dirpath
 
@@ -1006,9 +1011,6 @@ def _innermost_layer(store):
     return store
 
 
-# TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)
-#   Also, add a verbose option to print the dirs that are being made
-#   (see dol.filesys.ensure_dir)
 def _missing_ancestors(dirname):
     """The directories from the topmost missing one down to ``dirname`` (those to be made)."""
     missing = []
@@ -1019,6 +1021,32 @@ def _missing_ancestors(dirname):
             break
         dirname = parent
     return missing[::-1]
+
+
+def _make_dirs_tracking(dirname, *, max_dirs_to_make=None, verbose=False):
+    """Like :func:`ensure_dir`; returns the directories *this call* made, top-down.
+
+    A directory another process makes meanwhile is not counted as made here, so a later
+    cleanup never removes it. Exceeding ``max_dirs_to_make`` makes none, as there.
+    """
+    if os.path.exists(dirname):
+        return []
+    _announce_dir_to_make(dirname, verbose)
+    to_make = _missing_ancestors(dirname)
+    if max_dirs_to_make is not None and len(to_make) > max_dirs_to_make:
+        return []
+    made = []
+    try:
+        for dir_to_make in to_make:
+            try:
+                os.mkdir(dir_to_make)
+            except FileExistsError:
+                continue
+            made.append(dir_to_make)
+    except BaseException:
+        _remove_dirs_made(made)
+        raise
+    return made
 
 
 def _remove_dirs_made(made):
@@ -1034,13 +1062,17 @@ def _remove_dirs_made(made):
 
 
 def _mk_dirs_if_missing_class_trans(
-    store_cls, *, max_dirs_to_make=None, verbose=False, name=None, __module__=None
+    store_cls, *, max_dirs_to_make=None, verbose=False, __module__=None
 ):
     def __setitem__(self, k, v):
         dirname = _missing_dir_of_key(self, k)
-        made = _missing_ancestors(dirname) if dirname is not None else []
-        if dirname is not None:
-            ensure_dir(dirname, max_dirs_to_make=max_dirs_to_make, verbose=verbose)
+        made = (
+            _make_dirs_tracking(
+                dirname, max_dirs_to_make=max_dirs_to_make, verbose=verbose
+            )
+            if dirname is not None
+            else []
+        )
         try:
             return super(store_cls, self).__setitem__(k, v)
         except BaseException:
@@ -1075,7 +1107,9 @@ def mk_dirs_if_missing(
     The directories are made just before the write. If the write then fails (a layer
     below refuses the key, e.g. a ``filt_iter`` scope, or the write itself errors), the
     directories this call made are removed again (those still empty), so a rejected
-    key leaves no stray folder behind (i2mint/dol#122).
+    key leaves no stray folder behind (i2mint/dol#122). (A concurrent writer that had
+    just seen such a directory exist can still lose it to this cleanup: its write then
+    fails like any write to a missing directory.)
     """
     return _wrap_store(
         _mk_dirs_if_missing_class_trans,
@@ -1083,7 +1117,6 @@ def mk_dirs_if_missing(
             store=store_cls,
             max_dirs_to_make=max_dirs_to_make,
             verbose=verbose,
-            name=store_cls.__qualname__ + "Wrapped",
         ),
     )
 
