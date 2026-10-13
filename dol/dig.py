@@ -158,8 +158,16 @@ def key_in_scope(store, k) -> bool:
     (True, False)
 
     The predicate is the layer's own, so a predicate that raises on a key raises here too
-    (as ``s[k]`` would). A layer that maps keys but has no ``_id_of_key`` cannot be followed:
-    ``TypeError``.
+    (as ``s[k]`` would), and so does a layer whose ``_id_of_key`` raises for the key (e.g. a
+    key mapping that does not know it): the answer is a ``bool`` only where a write would be
+    accepted or refused, not failed. "Side-effect-free" holds as far as the layers'
+    ``_id_of_key`` and the leaf's ``is_valid_key`` are.
+
+    Limits (the probe reads what the layers *declare*): a layer that maps keys but has no
+    ``_id_of_key`` cannot be followed (``TypeError``); a layer that looks keys up by its own
+    means while keeping the do-nothing ``_id_of_key`` (``add_path_access``, ``flatten``, whose
+    keys are tuples walked through the inner store) gets a silently wrong answer; so does a
+    subclass that changes the key inside ``__setitem__`` before calling ``super()``.
     """
     layer, seen = store, set()
     while True:
