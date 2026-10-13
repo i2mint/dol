@@ -1,15 +1,92 @@
 metric,value
 schema_version,1.0
-timestamp,2026-10-13T11:10:53.022760Z
-commit_sha,33d07b84ffd405082a0e5db3ce721aaa1202a423
-commit_message,"test: Windows semantics for the symlink and zip tests
+timestamp,2026-10-13T11:12:07.119362Z
+commit_sha,475a003cb15a47ed438e54f8c141733718a899cf
+commit_message,"Sprint review: fix #123 (symlink + '..' escape, scoped len/bool), tests first (#127)
+
+* test: cover the #107/#119 surface; strict-xfail repros of #123
+
+Adds tests on the unchanged code for the sprint's containment and scoping
+changes: path_is_under on mixed absolute/relative paths, the zip readers'
+in-root read/write paths, the deprecated MakeMissingDirsStoreMixin refusing
+out-of-root keys, Store.head's fallback, and len/bool of unscoped stores.
+
+The two #123 defects (symlink + '..' escaping rootdir; len/bool counting
+out-of-scope ids) are pinned as strict xfails, flipped by the fix.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+* fix: a '..' after a symlink no longer escapes rootdir (#123)
+
+path_is_under is lexical, so root/lnk/../x passed it while the OS resolved
+it to the parent of lnk's target. FileSysCollection.is_in_root now also
+requires dotdot_resolves_lexically(k): the part of the key up to its last
+'..' must resolve the same way physically (realpath) and lexically. Keys
+without a '..' segment take a string-only fast path, so listing and the
+design #107 kept (a symlinked sub-directory of the root is addressable) are
+unchanged. Every containment user (Files*, DirReader, PickleStores, the zip
+readers, mk_dirs_if_missing) goes through is_in_root, so all are covered.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+* fix: len and bool of a scoped store agree with its iteration (#123)
+
+Since #119, iterating a prefix/suffix-scoped store skips out-of-scope ids,
+but Store.__len__ still returned len(self.store): KeyCodecs.prefixed('p/')
+over {'stray': 0} iterated nothing yet had len 1 and was truthy.
+
+A key mapping that can raise OutOfScopeKeyError is now marked with
+dol.errors.raises_out_of_scope. Store.__len__ counts in-scope ids for a
+marked layer (a scan) and keeps the inner len otherwise, so unscoped
+layers over DB-backed stores keep their cheap count; Store.__bool__ stops
+at the first in-scope id. The mark is set on the affix decoder (when it
+has a prefix or suffix), PrefixRelativizationMixin and
+RelativePathKeyMapper, and carried by wrap_kvs (_wrap_outcoming, including
+to subclasses of a scoped class) and by Pipe (so composed codecs keep it).
+
+Also: one _strip_prefix helper for the two prefix mappers in paths.py,
+the dead _prefix_length cache removed (it went stale on prefix
+reassignment, which is why #115 stopped using it), and the doubled 'so'
+in the out-of-scope error messages.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+* docs: one pickle-security warning in dol.misc, pointed to from each class
+
+#117 pasted the same five-line Security note into five docstrings, with
+URL advice that only applies to get_obj. The module docstring holds the
+full warning; each docstring now points to it in two lines.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+* fix: review findings on the #123 fixes
+
+- A rootdir holding a '..' after a symlink (join(dirname(__file__), '..',
+  'data') in a symlink-installed package) made every key fail the new
+  check, so the store looked empty. dotdot_resolves_lexically now takes a
+  keyword-only base: is_in_root passes rootdir, whose own '..' is resolved
+  as the OS does, and only the key's part beyond it is checked.
+- Store.__len__ asks the inner len first, so an inner store that refuses
+  len (to spare list() a second listing, as s3dol does) still refuses it,
+  and an empty inner store costs no scan.
+- The scope mark survives FirstArgIsMapping; may_raise_out_of_scope
+  returns a real bool; the docs say a hand-overridden _key_of_id must be
+  marked itself.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+* test: Windows semantics for the symlink and zip tests
 
 Windows normalizes '..' lexically before following links, so 'lnk/../x'
 is 'root/x' there: nothing escapes, and the tests now assert containment
 instead of refusal on Windows. ZipFilesReader's default subpath is
 POSIX-only (as the #111 test already notes), so its test skips there.
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>"
 python_version,3.10
 metrics.umpyre_stats.num_functions,5928
 metrics.umpyre_stats.num_classes,1525
@@ -25,9 +102,9 @@ metrics.umpyre_stats.mean_lines_per_function,16.450742240215924
 metrics.umpyre_stats.files_analyzed,551
 metrics.umpyre_stats.pypi_version,0.3.77
 metrics.workflow_status.last_run_status,success
-metrics.workflow_status.last_success_timestamp,2026-10-13T11:08:43Z
+metrics.workflow_status.last_success_timestamp,2026-10-13T11:10:55Z
 metrics.workflow_status.recent_failure_count,0
-metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/38388040427
+metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/38388307053
 metrics.workflow_status.total_runs_analyzed,10
 metrics.wily.cyclomatic_avg,0.0
 metrics.wily.maintainability_index,0.0
@@ -43,4 +120,4 @@ metrics.coverage.branch_coverage,0.0
 metrics.coverage.statements_covered,0
 metrics.coverage.statements_total,0
 metrics.coverage.error,No coverage file found
-collection_duration_seconds,4.738095045089722
+collection_duration_seconds,3.8133201599121094
