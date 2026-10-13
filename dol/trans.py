@@ -37,7 +37,11 @@ from collections.abc import (
     ItemsView as BaseItemsView,
 )
 
-from dol.errors import SetattrNotAllowed, out_of_scope_prefix_error
+from dol.errors import (
+    SetattrNotAllowed,
+    out_of_scope_prefix_error,
+    out_of_scope_suffix_error,
+)
 from dol.base import Store, KvReader, AttrNames, kv_walk
 from dol._paths_core import (
     PathContext,
@@ -3830,9 +3834,21 @@ def _affix_decoder(string: str, prefix: str = "", suffix: str = ""):
     Traceback (most recent call last):
       ...
     dol.errors.OutOfScopeKeyError: '/other/name.txt' does not start with the prefix '/folder/'...
+
+    The same goes for the suffix end (i2mint/dol#114): ``foo.json`` isn't a ``.txt``
+    key, and stripping 4 characters off it would yield ``foo.``, a different object.
+
+    >>> _affix_decoder('foo.json', suffix='.txt')  # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+      ...
+    dol.errors.OutOfScopeKeyError: 'foo.json' does not end with the suffix '.txt'...
     """
     if prefix and string[: len(prefix)] != prefix:
         raise out_of_scope_prefix_error(string, prefix)
+    if suffix:
+        # the length check rejects a string where prefix and suffix would overlap
+        if not string.endswith(suffix) or len(string) < len(prefix) + len(suffix):
+            raise out_of_scope_suffix_error(string, suffix)
     end_idx = -len(suffix) or None  # if suffix is empty, end_idx should be None
     return string[len(prefix) : end_idx]
 

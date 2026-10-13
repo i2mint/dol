@@ -155,6 +155,16 @@ def out_of_scope_prefix_error(_id, prefix):
     )
 
 
+def out_of_scope_suffix_error(_id, suffix):
+    """The ``OutOfScopeKeyError`` for an ``_id`` that doesn't end with ``suffix``."""
+    return OutOfScopeKeyError(
+        f"{_id!r} does not end with the suffix {suffix!r}, so it is outside this "
+        "store's scope. To view only the in-scope keys, filter before decoding, "
+        "e.g. filt_iter(filt=lambda k: k.endswith(suffix)) "
+        "(see i2mint/dol#114)."
+    )
+
+
 class NotAllowed(Exception):
     """To use to indicate that something is not allowed"""
 
