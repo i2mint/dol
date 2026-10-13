@@ -46,6 +46,7 @@ from dol.trans import (
     add_missing_key_handling,
 )
 from dol.dig import recursive_get_attr
+from dol.errors import out_of_scope_prefix_error
 from dol._paths_core import (
     PathContext,
     PathCreationError,
@@ -1055,7 +1056,12 @@ class PrefixRelativizationMixin:
         return getattr(self, self._prefix_attr_name) + k
 
     def _key_of_id(self, _id):
-        return _id[self._prefix_length :]
+        prefix = getattr(self, self._prefix_attr_name)
+        if prefix and _id[: len(prefix)] != prefix:
+            raise out_of_scope_prefix_error(_id, prefix)
+        # slice by the live prefix's length: the cached ``_prefix_length`` goes stale
+        # if the prefix is reassigned after first use
+        return _id[len(prefix) :]
 
 
 class PrefixRelativization(PrefixRelativizationMixin):
@@ -1259,6 +1265,8 @@ class RelativePathKeyMapper:
         return self._prefix + k
 
     def _key_of_id(self, _id):
+        if self._prefix and _id[: self._prefix_length] != self._prefix:
+            raise out_of_scope_prefix_error(_id, self._prefix)
         return _id[self._prefix_length :]
 
 

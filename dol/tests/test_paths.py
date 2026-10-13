@@ -119,3 +119,64 @@ def test_key_validation_wrappers_coexist_with_with_key_validation():
         pass  # the LEAF's exception type, not KeyError from the validating _id_of_key
     else:
         raise AssertionError("validate_key should have raised ValueError")
+
+
+# --- i2mint/dol#82: prefix relativization must not corrupt out-of-scope keys ---------
+
+
+def _prefix_stores():
+    from dol import KeyCodecs, mk_relative_path_store
+    from dol.paths import prefixless_view
+
+    base = {"a/b": 1, "a/c": 2, "z": 3, "ab/x": 4}
+
+    def via_mixin():
+        s = mk_relative_path_store(dict)(base)
+        s._prefix = "a/"
+        return s
+
+    yield "KeyCodecs.prefixed", KeyCodecs.prefixed("a/")(dict(base))
+    yield "mk_relative_path_store", via_mixin()
+    yield "prefixless_view", prefixless_view(dict(base), prefix="a/")
+
+
+@pytest.mark.parametrize("name, store", list(_prefix_stores()))
+def test_prefix_relativization_raises_on_out_of_scope_keys(name, store):
+    from dol.errors import OutOfScopeKeyError
+
+    with pytest.raises(OutOfScopeKeyError, match="does not start with the prefix"):
+        list(store)
+    # in-scope keys behave exactly as before
+    assert store["b"] == 1
+    store["new"] = 5
+    assert store["new"] == 5
+    assert "z" not in store and "/x" not in store
+
+
+def test_filter_then_relativize_is_unchanged():
+    from dol import KeyCodecs, Pipe, filt_iter
+
+    base = {"a/b": 1, "a/c": 2, "z": 3, "ab/x": 4}
+    s = Pipe(filt_iter.prefixes("a/"), KeyCodecs.prefixed("a/"))(dict(base))
+    assert sorted(s) == ["b", "c"]
+
+
+def test_out_of_scope_key_error_is_key_and_value_error():
+    from dol.errors import OutOfScopeKeyError
+
+    assert issubclass(OutOfScopeKeyError, KeyError)
+    assert issubclass(OutOfScopeKeyError, ValueError)
+    assert str(OutOfScopeKeyError("msg")) == "msg"
+
+
+def test_prefix_reassigned_after_use_relativizes_with_new_prefix():
+    from dol import mk_relative_path_store
+
+    s = mk_relative_path_store(dict)()
+    s._prefix = "/R/"
+    s["a"] = 1
+    assert list(s) == ["a"]
+    s._prefix = "/RR/"
+    s.store.clear()
+    s["b"] = 2
+    assert list(s) == ["b"]

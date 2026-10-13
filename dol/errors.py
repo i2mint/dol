@@ -137,6 +137,24 @@ class NoSuchKeyError(KeyError):
     """When a requested key doesn't exist"""
 
 
+class OutOfScopeKeyError(KeyError, ValueError):
+    """An inner key (id) lies outside a key-mapping layer's scope (e.g. it does not
+    start with the layer's prefix), so it has no outer key: mapping it anyway would
+    silently produce a key that addresses a *different* object (i2mint/dol#82)."""
+
+    __str__ = Exception.__str__  # plain message, not KeyError's repr of it
+
+
+def out_of_scope_prefix_error(_id, prefix):
+    """The ``OutOfScopeKeyError`` for an ``_id`` that doesn't start with ``prefix``."""
+    return OutOfScopeKeyError(
+        f"{_id!r} does not start with the prefix {prefix!r}, so it is outside this "
+        "store's scope. To view only the in-scope keys, filter before relativizing, "
+        "e.g. Pipe(filt_iter.prefixes(prefix), KeyCodecs.prefixed(prefix)) "
+        "(see i2mint/dol#82)."
+    )
+
+
 class NotAllowed(Exception):
     """To use to indicate that something is not allowed"""
 
