@@ -389,6 +389,78 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_layer_filters</span><span class="p">(</span><span class="n">layer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The ``filt_iter`` predicates of one layer (all classes of its MRO that recorded some).</span>
+
+<span class="sd">    Only a class's *own* record counts: a ``Store`` wrapper also delegates the attributes of</span>
+<span class="sd">    the store it wraps (a ``DelegatedAttribute``), which would attribute an inner layer's</span>
+<span class="sd">    predicates to the outer one, in the wrong key coordinates.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">f</span>
+        <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span><span class="o">.</span><span class="vm">__mro__</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">own</span> <span class="o">:=</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"_filt_iter_filts"</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">own</span>
+    <span class="p">]</span>
+
+
+<div class="viewcode-block" id="key_in_scope">
+<a class="viewcode-back" href="../../_autosummary/dol.dig.html#dol.dig.key_in_scope">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">key_in_scope</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether the key ``k`` of ``store`` is inside every ``filt_iter`` scope of its layers.</span>
+
+<span class="sd">    A side-effect-free probe: nothing is read or written. ``k`` is followed through the layers</span>
+<span class="sd">    outermost first; each layer's ``filt_iter`` predicates are applied to the key *as it</span>
+<span class="sd">    enters that layer*, which is what ``store[k] = v`` would do, then ``_id_of_key`` maps it</span>
+<span class="sd">    for the layer below. A leaf that has an ``is_valid_key`` method (e.g. ``Files``) is asked</span>
+<span class="sd">    about the innermost key last.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol import filt_iter, KeyCodecs</span>
+<span class="sd">    &gt;&gt;&gt; s = KeyCodecs.prefixed('data/')(filt_iter(dict, filt=lambda k: k.endswith('.txt')))()</span>
+<span class="sd">    &gt;&gt;&gt; key_in_scope(s, 'a.txt'), key_in_scope(s, 'a.bin')</span>
+<span class="sd">    (True, False)</span>
+
+<span class="sd">    Here the ``filt_iter`` sits *below* the prefix, so it sees ``'data/a.txt'``, not</span>
+<span class="sd">    ``'a.txt'``:</span>
+
+<span class="sd">    &gt;&gt;&gt; s = KeyCodecs.prefixed('data/')(filt_iter(dict, filt=lambda k: k.startswith('data/a')))()</span>
+<span class="sd">    &gt;&gt;&gt; key_in_scope(s, 'a.txt'), key_in_scope(s, 'b.txt')</span>
+<span class="sd">    (True, False)</span>
+
+<span class="sd">    The predicate is the layer's own, so a predicate that raises on a key raises here too</span>
+<span class="sd">    (as ``s[k]`` would), and so does a layer whose ``_id_of_key`` raises for the key (e.g. a</span>
+<span class="sd">    key mapping that does not know it): the answer is a ``bool`` only where a write would be</span>
+<span class="sd">    accepted or refused, not failed. "Side-effect-free" holds as far as the layers'</span>
+<span class="sd">    ``_id_of_key`` and the leaf's ``is_valid_key`` are.</span>
+
+<span class="sd">    Limits (the probe reads what the layers *declare*): a layer that maps keys but has no</span>
+<span class="sd">    ``_id_of_key`` cannot be followed (``TypeError``); a layer that looks keys up by its own</span>
+<span class="sd">    means while keeping the do-nothing ``_id_of_key`` (``add_path_access``, ``flatten``, whose</span>
+<span class="sd">    keys are tuples walked through the inner store) gets a silently wrong answer; so does a</span>
+<span class="sd">    subclass that changes the key inside ``__setitem__`` before calling ``super()``.</span>
+<span class="sd">    """</span>
+    <span class="n">layer</span><span class="p">,</span> <span class="n">seen</span> <span class="o">=</span> <span class="n">store</span><span class="p">,</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">filt</span> <span class="ow">in</span> <span class="n">_layer_filters</span><span class="p">(</span><span class="n">layer</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">filt</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">inner</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">"store"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">inner</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">id</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
+        <span class="n">id_of_key</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">"_id_of_key"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">id_of_key</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> wraps a store but defines no _id_of_key, so a key "</span>
+                <span class="s2">"cannot be followed through it"</span>
+            <span class="p">)</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">id_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">inner</span>
+    <span class="n">is_valid_key</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">"is_valid_key"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">is_valid_key</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">is_valid_key</span><span class="p">)</span> <span class="k">else</span> <span class="kc">True</span></div>
+
+
+
 <span class="c1"># TODO: Better change the signature to reflect context (k (key) or v (val) instead of arg)</span>
 <span class="n">unravel_key</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">store_trans_path</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"_id_of_key"</span><span class="p">)</span>
 <span class="n">print_key_trans_path</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">print_trans_path</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"_id_of_key"</span><span class="p">)</span>
@@ -561,7 +633,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=5e2c5a69"></script>
+</div><script src="../../_static/documentation_options.js?v=f76c2e0f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
