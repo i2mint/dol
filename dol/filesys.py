@@ -899,37 +899,50 @@ def mk_dirs_if_missing_preset(
 ):
     """
     Preset function that will make the store create directories on write as needed.
-    """
-    # TODO: I'm not thrilled in the way I'm doing this; find alternatives
-    try:
-        super(type(self), self).__setitem__(k, v)
-    except KeyValidationError:
-        pass  # invalid key (e.g. outside rootdir): never make dirs for it (#107)
-    except Exception:  # general on purpose...
-        # TODO: ... But perhaps a more precise (but sufficient) exception list better?
-        from dol.dig import inner_most_key
 
-        # get the inner most key, which should be a full path
-        _id = inner_most_key(self, k)
-        # get the full path of directory needed for this file
-        dirname = os.path.dirname(_id)
-        # make all the directories needed
+    It only makes the directory: the write itself is left to the wrapper that calls
+    this preset, so it happens exactly once and its errors propagate (#112). The
+    directory is made only when the key resolves (through every layer's ``_id_of_key``)
+    to an absolute filesystem path whose directory is missing, and only if the
+    innermost layer's ``validate_key`` (if any) accepts it -- so an invalid key (e.g.
+    one leaving ``rootdir``, #107) never gets a directory, and the write raises for it.
+    """
+    dirname = _missing_dir_of_key(self, k)
+    if dirname is not None:
         ensure_dir(dirname, max_dirs_to_make=max_dirs_to_make, verbose=verbose)
-        # os.makedirs(dirname, exist_ok=True)  # TODO: ensure_dir does this already, no?
-        # try writing again
-        super(type(self), self).__setitem__(k, v)
-        # TODO: Undesirable here: If the setitem still fails, we created dirs
-        #  already, for nothing, and are not cleaning up (if clean up need to make
-        #  sure to not delete dirs that already existed!)
-    finally:
-        # NOTE (#112): this ``return`` swallows ANY error from the retry write above, but
-        #  removing it is NOT safe on its own: for a subclass of a class decorated with
-        #  ``mk_dirs_if_missing``, ``super(type(self), self).__setitem__`` re-enters this
-        #  preset until ``RecursionError``, which this ``return`` is what absorbs (without
-        #  it the retries multiply exponentially and writes hang, e.g. graze's
-        #  ``LocalGrazed``). The fix is a redesign: the preset should only make the
-        #  directory and leave the single real write to the wrapper.
-        return v
+    return v
+
+
+def _missing_dir_of_key(store, k):
+    """The directory ``store`` needs, but lacks, to write ``k``; ``None`` if none.
+
+    ``None`` when the key does not resolve to an absolute path (a dict-backed or
+    non-path inner store: never mkdir, in particular not under the process CWD), when
+    the directory already exists, or when the innermost layer rejects the key.
+    """
+    from dol.dig import inner_most_key
+
+    _id = inner_most_key(store, k, default=None)
+    if not isinstance(_id, str) or not os.path.isabs(_id):
+        return None
+    dirname = os.path.dirname(_id)
+    if os.path.isdir(dirname):
+        return None
+    validate_key = getattr(_innermost_layer(store), "validate_key", None)
+    if validate_key is not None:
+        try:
+            validate_key(_id)
+        except KeyValidationError:
+            return None  # the write will raise for this key; make no dirs for it (#107)
+    return dirname
+
+
+def _innermost_layer(store):
+    """The deepest layer of ``store``'s ``.store`` chain, walked the way
+    ``inner_most_key`` walks it (only through layers that define ``_id_of_key``)."""
+    while hasattr(store, "_id_of_key") and hasattr(store, "store"):
+        store = store.store
+    return store
 
 
 # TODO: Add more control over mk dir condition (e.g. number of levels, or any key cond)
