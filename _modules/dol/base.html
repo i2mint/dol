@@ -756,8 +756,6 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">delegation_decorator</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">):</span>
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">,</span> <span class="n">updated</span><span class="o">=</span><span class="p">())</span>
         <span class="k">class</span><span class="w"> </span><span class="nc">Wrap</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="p">):</span>
-            <span class="c1"># _type_of_wrapped = wrapped</span>
-            <span class="c1"># _delegation_attr = delegation_attr</span>
             <span class="n">_class_trans</span> <span class="o">=</span> <span class="n">class_trans</span>
 
             <span class="nd">@wraps</span><span class="p">(</span><span class="n">wrapper_cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
@@ -794,6 +792,16 @@
                 <span class="n">wrapped</span><span class="o">=</span><span class="n">wrapped_attr</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">Wrap</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">delegated_attribute</span><span class="p">)</span>
+
+        <span class="c1"># Introspection attributes of the generated class (read them from the class,</span>
+        <span class="c1"># not from an instance: a wrapping ``Store`` instance would forward the inner</span>
+        <span class="c1"># layer's). Set AFTER the delegation loop, so that when ``wrapped`` is itself a</span>
+        <span class="c1"># class wrapper its own copies (which ``dir`` lists) are not delegated over</span>
+        <span class="c1"># these. A wrapped class's own attributes of these names are no longer</span>
+        <span class="c1"># forwarded to the outer instance.</span>
+        <span class="n">Wrap</span><span class="o">.</span><span class="n">_wrapped_class</span> <span class="o">=</span> <span class="n">wrapped</span>
+        <span class="n">Wrap</span><span class="o">.</span><span class="n">_wrapper_class</span> <span class="o">=</span> <span class="n">wrapper_cls</span>
+        <span class="n">Wrap</span><span class="o">.</span><span class="n">_delegation_attr</span> <span class="o">=</span> <span class="n">delegation_attr</span>
 
         <span class="k">if</span> <span class="n">class_trans</span><span class="p">:</span>
             <span class="n">Wrap</span> <span class="o">=</span> <span class="n">class_trans</span><span class="p">(</span><span class="n">Wrap</span><span class="p">)</span>
@@ -1701,7 +1709,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=f76c2e0f"></script>
+</div><script src="../../_static/documentation_options.js?v=d7ddb4e4"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
