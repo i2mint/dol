@@ -1,66 +1,55 @@
 metric,value
 schema_version,1.0
-timestamp,2026-10-13T07:37:09.940340Z
-commit_sha,17677ccdc857f431e0805d4c8fe25e8ad867290b
-commit_message,"mk_dirs_if_missing: the preset only makes the dir; write errors propagate (#112) (#121)
+timestamp,2026-10-13T08:36:20.418597Z
+commit_sha,f273183fc0284550e677fd6ef89532c62a01bf1a
+commit_message,"fleet_ledger: fix the adversarial review's findings
 
-* fix: mk_dirs_if_missing preset only makes the dir; the wrapper does the one write (#112)
+- Python 3.10: parse git's Z dates (CI blocker)
+- baseline: redact local paths in suite output instead of losing the run;
+  per-dependent errors recorded; whole process group killed on timeout;
+  one outcome per test case
+- diff: a run that did not complete is incomparable, never 'fixed'
+- pin undo: skip a repo no longer detached at the restored pin; explicit-repos
+  scans refuse fleet resolution; undo ids cannot collide
+- census: position-aware bindings (later non-dol imports unbind), calls on
+  attributes of dol symbols (Store.wrap), partial(wrap_kvs, ...), call bases,
+  submodules shadowed by an export
+- compat vs unknown judged against every defined name, via attribute access too
+- writer: anchored prefix scrub, wider local-path patterns; ledger root and
+  report output refused inside the repo; report pages warn they name dependents
+- build/dist/env/venv skipped only at a repo's top; shallow-history caveat
 
-The preset wrote via super(type(self), self).__setitem__ and swallowed every
-error with 'finally: return v'. For a subclass of a decorated class that
-recursed until RecursionError (absorbed by the finally), and every successful
-set wrote twice. Now the preset resolves the innermost key and, only for an
-absolute path whose directory is missing and that the innermost layer's
-validate_key accepts (#107), makes the directory; the wrapper performs the
-single write and its errors propagate.
+Refs #91
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-
-* fix: make dirs for relative rootdirs too; gate on a file-system innermost layer (#112)
-
-Adversarial review: requiring an absolute inner key stopped mk_dirs_if_missing
-from making directories for a relative rootdir (Files('data'), Files('') with
-relative keys, graze LocalGrazed('relg')), which master did. The gate is now
-""the innermost layer is a FileSysCollection"" (a dict or other non-path store
-still never gets a directory); a relative path is made relative to the CWD,
-where the write puts it.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-
----------
-
-Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 python_version,3.10
-metrics.umpyre_stats.num_functions,5842
-metrics.umpyre_stats.num_classes,1521
-metrics.umpyre_stats.total_lines,234125
-metrics.umpyre_stats.empty_lines,28706
-metrics.umpyre_stats.comment_lines,12849
-metrics.umpyre_stats.docs_lines,26642
-metrics.umpyre_stats.function_lines,95585
-metrics.umpyre_stats.empty_lines_ratio,0.12260971703150027
-metrics.umpyre_stats.comment_lines_ratio,0.05488093966898024
-metrics.umpyre_stats.function_lines_ratio,0.40826481580352375
-metrics.umpyre_stats.mean_lines_per_function,16.36169120164327
-metrics.umpyre_stats.files_analyzed,541
-metrics.umpyre_stats.pypi_version,0.3.75
+metrics.umpyre_stats.num_functions,5613
+metrics.umpyre_stats.num_classes,1465
+metrics.umpyre_stats.total_lines,229875
+metrics.umpyre_stats.empty_lines,27913
+metrics.umpyre_stats.comment_lines,12369
+metrics.umpyre_stats.docs_lines,25846
+metrics.umpyre_stats.function_lines,92805
+metrics.umpyre_stats.empty_lines_ratio,0.12142686242523111
+metrics.umpyre_stats.comment_lines_ratio,0.053807504078303425
+metrics.umpyre_stats.function_lines_ratio,0.40371941272430667
+metrics.umpyre_stats.mean_lines_per_function,16.533939070016036
+metrics.umpyre_stats.files_analyzed,540
+metrics.umpyre_stats.pypi_version,0.3.76
 metrics.workflow_status.last_run_status,success
-metrics.workflow_status.last_success_timestamp,2026-10-13T07:00:34Z
+metrics.workflow_status.last_success_timestamp,2026-10-13T07:39:04Z
 metrics.workflow_status.recent_failure_count,0
-metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/38359886233
+metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/38363959939
 metrics.workflow_status.total_runs_analyzed,10
 metrics.wily.cyclomatic_avg,0.0
 metrics.wily.maintainability_index,0.0
 metrics.wily.total_loc,0
 metrics.wily.files_analyzed,0
-metrics.wily.error,"wily report failed: Usage: wily report [OPTIONS] FILE [METRICS]...
-Try 'wily report --help' for help.
-
-Error: Invalid value for '-f' / '--format': 'json' is not one of 'CONSOLE', 'HTML'.
+metrics.wily.error,"wily build failed: [31mFailed to setup archiver: 'Dirty repository, make sure you commit/stash files first'[0m
 "
 metrics.coverage.line_coverage,0.0
 metrics.coverage.branch_coverage,0.0
 metrics.coverage.statements_covered,0
 metrics.coverage.statements_total,0
 metrics.coverage.error,No coverage file found
-collection_duration_seconds,3.242861270904541
+collection_duration_seconds,2.907072067260742

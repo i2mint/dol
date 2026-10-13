@@ -1,7 +1,7 @@
 {
-  "collection_duration_seconds": 3.242861270904541,
-  "commit_message": "mk_dirs_if_missing: the preset only makes the dir; write errors propagate (#112) (#121)\n\n* fix: mk_dirs_if_missing preset only makes the dir; the wrapper does the one write (#112)\n\nThe preset wrote via super(type(self), self).__setitem__ and swallowed every\nerror with 'finally: return v'. For a subclass of a decorated class that\nrecursed until RecursionError (absorbed by the finally), and every successful\nset wrote twice. Now the preset resolves the innermost key and, only for an\nabsolute path whose directory is missing and that the innermost layer's\nvalidate_key accepts (#107), makes the directory; the wrapper performs the\nsingle write and its errors propagate.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* fix: make dirs for relative rootdirs too; gate on a file-system innermost layer (#112)\n\nAdversarial review: requiring an absolute inner key stopped mk_dirs_if_missing\nfrom making directories for a relative rootdir (Files('data'), Files('') with\nrelative keys, graze LocalGrazed('relg')), which master did. The gate is now\n\"the innermost layer is a FileSysCollection\" (a dict or other non-path store\nstill never gets a directory); a relative path is made relative to the CWD,\nwhere the write puts it.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
-  "commit_sha": "17677ccdc857f431e0805d4c8fe25e8ad867290b",
+  "collection_duration_seconds": 2.907072067260742,
+  "commit_message": "fleet_ledger: fix the adversarial review's findings\n\n- Python 3.10: parse git's Z dates (CI blocker)\n- baseline: redact local paths in suite output instead of losing the run;\n  per-dependent errors recorded; whole process group killed on timeout;\n  one outcome per test case\n- diff: a run that did not complete is incomparable, never 'fixed'\n- pin undo: skip a repo no longer detached at the restored pin; explicit-repos\n  scans refuse fleet resolution; undo ids cannot collide\n- census: position-aware bindings (later non-dol imports unbind), calls on\n  attributes of dol symbols (Store.wrap), partial(wrap_kvs, ...), call bases,\n  submodules shadowed by an export\n- compat vs unknown judged against every defined name, via attribute access too\n- writer: anchored prefix scrub, wider local-path patterns; ledger root and\n  report output refused inside the repo; report pages warn they name dependents\n- build/dist/env/venv skipped only at a repo's top; shallow-history caveat\n\nRefs #91\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+  "commit_sha": "f273183fc0284550e677fd6ef89532c62a01bf1a",
   "metrics": {
     "coverage": {
       "branch_coverage": 0.0,
@@ -11,37 +11,37 @@
       "statements_total": 0
     },
     "umpyre_stats": {
-      "comment_lines": 12849,
-      "comment_lines_ratio": 0.05488093966898024,
-      "docs_lines": 26642,
-      "empty_lines": 28706,
-      "empty_lines_ratio": 0.12260971703150027,
-      "files_analyzed": 541,
-      "function_lines": 95585,
-      "function_lines_ratio": 0.40826481580352375,
-      "mean_lines_per_function": 16.36169120164327,
-      "num_classes": 1521,
-      "num_functions": 5842,
-      "pypi_version": "0.3.75",
-      "total_lines": 234125
+      "comment_lines": 12369,
+      "comment_lines_ratio": 0.053807504078303425,
+      "docs_lines": 25846,
+      "empty_lines": 27913,
+      "empty_lines_ratio": 0.12142686242523111,
+      "files_analyzed": 540,
+      "function_lines": 92805,
+      "function_lines_ratio": 0.40371941272430667,
+      "mean_lines_per_function": 16.533939070016036,
+      "num_classes": 1465,
+      "num_functions": 5613,
+      "pypi_version": "0.3.76",
+      "total_lines": 229875
     },
     "wily": {
       "cyclomatic_avg": 0.0,
-      "error": "wily report failed: Usage: wily report [OPTIONS] FILE [METRICS]...\nTry 'wily report --help' for help.\n\nError: Invalid value for '-f' / '--format': 'json' is not one of 'CONSOLE', 'HTML'.\n",
+      "error": "wily build failed: \u001b[31mFailed to setup archiver: 'Dirty repository, make sure you commit/stash files first'\u001b[0m\n",
       "files_analyzed": 0,
       "maintainability_index": 0.0,
       "total_loc": 0
     },
     "workflow_status": {
       "last_run_status": "success",
-      "last_success_timestamp": "2026-10-13T07:00:34Z",
+      "last_success_timestamp": "2026-10-13T07:39:04Z",
       "recent_failure_count": 0,
-      "run_url": "https://github.com/i2mint/dol/actions/runs/38359886233",
+      "run_url": "https://github.com/i2mint/dol/actions/runs/38363959939",
       "total_runs_analyzed": 10
     }
   },
   "python_version": "3.10",
   "schema_version": "1.0",
-  "timestamp": "2026-10-13T07:37:09.940340Z",
+  "timestamp": "2026-10-13T08:36:20.418597Z",
   "workflow_status": {}
 }
