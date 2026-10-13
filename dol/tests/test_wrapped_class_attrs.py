@@ -28,7 +28,7 @@ def test_nested_wraps_are_not_shadowed():
     """The inner wrapper's copies must not be delegated over the outer's."""
     inner = wrap_kvs(dict, key_of_id=str.lower, id_of_key=str.upper)
     outer = filt_iter(inner, filt=lambda k: True)
-    assert outer._wrapped_class is inner or outer._wrapped_class is dict
+    assert outer._wrapped_class is inner
     assert outer._delegation_attr == "store"
     deeper = wrap_kvs(inner, obj_of_data=int, data_of_obj=str)
     assert deeper._wrapped_class is inner

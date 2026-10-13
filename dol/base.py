@@ -502,9 +502,12 @@ def delegate_to(
             )
             setattr(Wrap, attr, delegated_attribute)
 
-        # Introspection attributes. Set AFTER the delegation loop, so that when
-        # ``wrapped`` is itself a class wrapper its own copies (which ``dir`` lists)
-        # are not delegated over these.
+        # Introspection attributes of the generated class (read them from the class,
+        # not from an instance: a wrapping ``Store`` instance would forward the inner
+        # layer's). Set AFTER the delegation loop, so that when ``wrapped`` is itself a
+        # class wrapper its own copies (which ``dir`` lists) are not delegated over
+        # these. A wrapped class's own attributes of these names are no longer
+        # forwarded to the outer instance.
         Wrap._wrapped_class = wrapped
         Wrap._wrapper_class = wrapper_cls
         Wrap._delegation_attr = delegation_attr
