@@ -1,7 +1,7 @@
 {
-  "collection_duration_seconds": 5.737305402755737,
-  "commit_message": "fix: review findings on the #123 fixes\n\n- A rootdir holding a '..' after a symlink (join(dirname(__file__), '..',\n  'data') in a symlink-installed package) made every key fail the new\n  check, so the store looked empty. dotdot_resolves_lexically now takes a\n  keyword-only base: is_in_root passes rootdir, whose own '..' is resolved\n  as the OS does, and only the key's part beyond it is checked.\n- Store.__len__ asks the inner len first, so an inner store that refuses\n  len (to spare list() a second listing, as s3dol does) still refuses it,\n  and an empty inner store costs no scan.\n- The scope mark survives FirstArgIsMapping; may_raise_out_of_scope\n  returns a real bool; the docs say a hand-overridden _key_of_id must be\n  marked itself.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
-  "commit_sha": "25a8dfa68b56a973b0d03225fd3cc870167cd013",
+  "collection_duration_seconds": 5.599752187728882,
+  "commit_message": "Merge 25a8dfa68b56a973b0d03225fd3cc870167cd013 into f7c172cd01247973fac824ef54591522710768bd",
+  "commit_sha": "5091160adbc3f9895992cf7645fb0c7446abfa38",
   "metrics": {
     "coverage": {
       "branch_coverage": 0.0,
@@ -42,6 +42,6 @@
   },
   "python_version": "3.10",
   "schema_version": "1.0",
-  "timestamp": "2026-10-13T11:08:32.320519Z",
+  "timestamp": "2026-10-13T11:08:33.746485Z",
   "workflow_status": {}
 }
