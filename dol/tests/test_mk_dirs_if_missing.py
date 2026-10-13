@@ -75,3 +75,63 @@ def test_mk_dirs_with_value_transform(tmp_path):
     deep = os.path.join("sub", "deep", "b.json")
     s[deep] = {"y": 2}
     assert s[deep] == {"y": 2}
+
+
+# --- Issue #112: the preset only makes dirs; the wrapper does the one real write ---
+
+
+class _SubOfDecorated(mk_dirs_if_missing(Files)):
+    """A subclass of a decorated class (the graze ``LocalGrazed`` shape). The old preset
+    wrote via ``super(type(self), self)``, which re-entered itself for such subclasses."""
+
+
+def test_subclass_of_decorated_class_writes_once(tmp_path, monkeypatch):
+    from dol.filesys import FileBytesPersister
+
+    calls = []
+    orig = FileBytesPersister.__setitem__
+    monkeypatch.setattr(
+        FileBytesPersister,
+        "__setitem__",
+        lambda self, k, v: (calls.append(k), orig(self, k, v))[1],
+    )
+    s = _SubOfDecorated(_nonexistent_rootdir(tmp_path))
+    s["x/y/z"] = b"1"
+    assert s["x/y/z"] == b"1"
+    assert len(calls) == 1  # one write, not one per recursion level (or two per set)
+
+
+@pytest.mark.parametrize("store_cls", [mk_dirs_if_missing(Files), _SubOfDecorated])
+def test_write_errors_propagate(tmp_path, store_cls):
+    s = store_cls(str(tmp_path))
+    os.makedirs(os.path.join(str(tmp_path), "a_dir"))
+    with pytest.raises(KeyError):  # writing to a path that is a directory
+        s["a_dir"] = b"nope"
+    with pytest.raises(KeyError):  # bytes store given a str: used to be swallowed
+        s["sub/file"] = "not bytes"
+
+
+def test_no_dirs_for_non_path_inner_store(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    s = mk_dirs_if_missing(wrap_kvs(dict, id_of_key=lambda k: k))()
+    s["rel/dir/key"] = 1
+    assert s["rel/dir/key"] == 1
+    assert not (tmp_path / "rel").exists()  # never mkdir under the CWD
+
+
+@pytest.mark.parametrize(
+    "factory, rootdir, key",
+    [
+        (mk_dirs_if_missing(Files), "rel/root", "sub/deep/x"),
+        (_SubOfDecorated, "rel/root", "sub/deep/x"),
+        (mk_dirs_if_missing(Files), "", "rel/root/e/f/x"),
+    ],
+    ids=["relative-rootdir", "relative-rootdir-subclass", "empty-rootdir"],
+)
+def test_dirs_made_for_relative_paths(tmp_path, monkeypatch, factory, rootdir, key):
+    monkeypatch.chdir(tmp_path)
+    os.makedirs("rel/root")
+    s = factory(rootdir)
+    s[key] = b"hi"
+    assert s[key] == b"hi"
+    assert (tmp_path / "rel" / "root").is_dir()
