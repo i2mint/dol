@@ -1303,6 +1303,13 @@
         <span class="c1">#  already, for nothing, and are not cleaning up (if clean up need to make</span>
         <span class="c1">#  sure to not delete dirs that already existed!)</span>
     <span class="k">finally</span><span class="p">:</span>
+        <span class="c1"># NOTE (#112): this ``return`` swallows ANY error from the retry write above, but</span>
+        <span class="c1">#  removing it is NOT safe on its own: for a subclass of a class decorated with</span>
+        <span class="c1">#  ``mk_dirs_if_missing``, ``super(type(self), self).__setitem__`` re-enters this</span>
+        <span class="c1">#  preset until ``RecursionError``, which this ``return`` is what absorbs (without</span>
+        <span class="c1">#  it the retries multiply exponentially and writes hang, e.g. graze's</span>
+        <span class="c1">#  ``LocalGrazed``). The fix is a redesign: the preset should only make the</span>
+        <span class="c1">#  directory and leave the single real write to the wrapper.</span>
         <span class="k">return</span> <span class="n">v</span></div>
 
 
@@ -1448,7 +1455,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=96876340"></script>
+</div><script src="../../_static/documentation_options.js?v=7ea422f0"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

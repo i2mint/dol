@@ -273,6 +273,15 @@
 <span class="sd">    &gt;&gt;&gt; m['a.json'] = {'x': 1}</span>
 <span class="sd">    &gt;&gt;&gt; dict.__getitem__(m, 'a.json'), m['a.json']</span>
 <span class="sd">    (b'{"x": 1}', {'x': 1})</span>
+
+<span class="sd">.. warning::</span>
+
+<span class="sd">    The default read codecs unpickle ``.pkl``/``.pickle`` keys with ``pickle.loads``,</span>
+<span class="sd">    which is arbitrary code execution. Never point these tools at untrusted content or</span>
+<span class="sd">    request-derived keys, and remember that ``get_obj`` also accepts URLs</span>
+<span class="sd">    (i2mint/dol#113). For such sources pass an ``incoming_val_trans_for_key`` without</span>
+<span class="sd">    the pickle extensions: those keys then come back as raw bytes (the default</span>
+<span class="sd">    transform is the identity), never unpickled.</span>
 <span class="sd">"""</span>
 
 <span class="c1"># TODO: Completely redo this, using preset and postget and making it into a plugin</span>
@@ -311,6 +320,8 @@
 
 <span class="c1"># TODO: Get rid of lambdas. Use methodcaller and partial instead</span>
 <span class="c1">#  Requires solving https://github.com/i2mint/dol/issues/9 first</span>
+<span class="c1"># WARNING: ".pkl"/".pickle" unpickle on read, i.e. execute code from the data. Never</span>
+<span class="c1">#   use these defaults on untrusted content (i2mint/dol#113).</span>
 <span class="n">dflt_incoming_val_trans_for_key</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">".bin"</span><span class="p">:</span> <span class="n">identity_method</span><span class="p">,</span>
     <span class="s2">".csv"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">decode</span><span class="p">()))),</span>
@@ -368,6 +379,13 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">MiscReaderMixin</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Mixin to transform incoming vals according to the key their under.</span>
 <span class="sd">    Warning: If used as a subclass, this mixin should (in general) be placed before the store</span>
+
+<span class="sd">    Security:</span>
+<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):</span>
+<span class="sd">        never use this over untrusted content or with request-derived keys. For</span>
+<span class="sd">        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``</span>
+<span class="sd">        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the</span>
+<span class="sd">        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).</span>
 
 
 <span class="sd">    &gt;&gt;&gt; # make a reader that will wrap a dict</span>
@@ -499,7 +517,15 @@
     <span class="n">dflt_incoming_val_trans</span><span class="o">=</span><span class="n">identity_method</span><span class="p">,</span>
     <span class="n">func_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">"""A quick way to get an object, with default... everything (but the key, you know, a clue of what you want)"""</span>
+<span class="w">    </span><span class="sd">"""A quick way to get an object, with default... everything (but the key, you know, a clue of what you want)</span>
+
+<span class="sd">    Security:</span>
+<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):</span>
+<span class="sd">        never use this over untrusted content or with request-derived keys. For</span>
+<span class="sd">        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``</span>
+<span class="sd">        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the</span>
+<span class="sd">        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"http://"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"https://"</span><span class="p">):</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">url_to_bytes</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -527,6 +553,13 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    An object to write (and only write) to a store (default local files) with automatic deserialization</span>
 <span class="sd">    according to a property of the key (default: file extension).</span>
+
+<span class="sd">    Security:</span>
+<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):</span>
+<span class="sd">        never use this over untrusted content or with request-derived keys. For</span>
+<span class="sd">        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``</span>
+<span class="sd">        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the</span>
+<span class="sd">        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).</span>
 
 <span class="sd">    &gt;&gt;&gt; from dol.misc import get_obj, misc_objs_get</span>
 <span class="sd">    &gt;&gt;&gt; import os</span>
@@ -594,6 +627,13 @@
 
 <span class="sd">    Warning:</span>
 <span class="sd">        If used as a subclass, this mixin should (in general) be placed before the store</span>
+
+<span class="sd">    Security:</span>
+<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):</span>
+<span class="sd">        never use this over untrusted content or with request-derived keys. For</span>
+<span class="sd">        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``</span>
+<span class="sd">        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the</span>
+<span class="sd">        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).</span>
 
 <span class="sd">    See also:</span>
 <span class="sd">        preset and postget args from wrap_kvs decorator from dol.trans.</span>
@@ -703,6 +743,13 @@
 <span class="sd">    An object to read and write (and nothing else) to a store (default local) with automatic (de)serialization</span>
 <span class="sd">    according to a property of the key (default: file extension).</span>
 
+<span class="sd">    Security:</span>
+<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):</span>
+<span class="sd">        never use this over untrusted content or with request-derived keys. For</span>
+<span class="sd">        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``</span>
+<span class="sd">        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the</span>
+<span class="sd">        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).</span>
+
 <span class="sd">    &gt;&gt;&gt; from dol.misc import set_obj, misc_objs  # the function and the object</span>
 <span class="sd">    &gt;&gt;&gt; import json</span>
 <span class="sd">    &gt;&gt;&gt; import os</span>
@@ -780,7 +827,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=96876340"></script>
+</div><script src="../../_static/documentation_options.js?v=7ea422f0"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

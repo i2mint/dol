@@ -16,6 +16,14 @@ key-conditioned (de)serialization to any store.
 (b'{"x": 1}', {'x': 1})
 ```
 
+#### WARNING
+The default read codecs unpickle `.pkl`/`.pickle` keys with `pickle.loads`,
+which is arbitrary code execution. Never point these tools at untrusted content or
+request-derived keys, and remember that `get_obj` also accepts URLs
+(i2mint/dol#113). For such sources pass an `incoming_val_trans_for_key` without
+the pickle extensions: those keys then come back as raw bytes (the default
+transform is the identity), never unpickled.
+
 ### Functions
 
 | `csv_fileobj`(csv_data, \*args, \*\*kwargs)                                  |                                                                                                                                 |
@@ -42,6 +50,13 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 An object to write (and only write) to a store (default local files) with automatic deserialization
 according to a property of the key (default: file extension).
 
+Security:
+: `.pkl`/`.pickle` keys are unpickled by default (arbitrary code execution):
+  never use this over untrusted content or with request-derived keys. For
+  `get_obj` and the getters this includes URLs: `get_obj('https://.../x.pkl')`
+  downloads and unpickles. Give it an `incoming_val_trans_for_key` without the
+  pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
+
 ```pycon
 >>> from dol.misc import get_obj, misc_objs_get
 >>> import os
@@ -67,6 +82,13 @@ Bases: [`MiscGetter`](#dol.misc.MiscGetter)
 
 An object to read and write (and nothing else) to a store (default local) with automatic (de)serialization
 according to a property of the key (default: file extension).
+
+Security:
+: `.pkl`/`.pickle` keys are unpickled by default (arbitrary code execution):
+  never use this over untrusted content or with request-derived keys. For
+  `get_obj` and the getters this includes URLs: `get_obj('https://.../x.pkl')`
+  downloads and unpickles. Give it an `incoming_val_trans_for_key` without the
+  pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
 
 ```pycon
 >>> from dol.misc import set_obj, misc_objs  # the function and the object
@@ -106,6 +128,13 @@ Mixin to transform incoming vals according to the key their under.
 
 #### WARNING
 If used as a subclass, this mixin should (in general) be placed before the store
+
+Security:
+: `.pkl`/`.pickle` keys are unpickled by default (arbitrary code execution):
+  never use this over untrusted content or with request-derived keys. For
+  `get_obj` and the getters this includes URLs: `get_obj('https://.../x.pkl')`
+  downloads and unpickles. Give it an `incoming_val_trans_for_key` without the
+  pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
 
 ```pycon
 >>> # make a reader that will wrap a dict
@@ -157,6 +186,13 @@ Mixin to transform incoming and outgoing vals according to the key their under.
 
 #### WARNING
 If used as a subclass, this mixin should (in general) be placed before the store
+
+Security:
+: `.pkl`/`.pickle` keys are unpickled by default (arbitrary code execution):
+  never use this over untrusted content or with request-derived keys. For
+  `get_obj` and the getters this includes URLs: `get_obj('https://.../x.pkl')`
+  downloads and unpickles. Give it an `incoming_val_trans_for_key` without the
+  pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
 
 #### SEE ALSO
 preset and postget args from wrap_kvs decorator from dol.trans.
@@ -211,6 +247,13 @@ a.json: b'{"str": "field", "int": 42, "float": 3.14, "array": [1, 2], "nested": 
 ### dol.misc.get_obj(k, store=Files(rootdir='', subpath='', pattern_for_field=None, max_levels=None, include_hidden=False, assert_rootdir_existence=False), incoming_val_trans_for_key={'.bin': <function identity_method>, '.csv': <function <lambda>>, '.gz': <function decompress>, '.gzip': <function decompress>, '.json': <function <lambda>>, '.pickle': <function <lambda>>, '.pkl': <function <lambda>>, '.txt': <function <lambda>>, '.zip': <class 'dol.zipfiledol.FilesOfZip'>}, dflt_incoming_val_trans=<function identity_method>, func_key=<function <lambda>>)
 
 A quick way to get an object, with default… everything (but the key, you know, a clue of what you want)
+
+Security:
+: `.pkl`/`.pickle` keys are unpickled by default (arbitrary code execution):
+  never use this over untrusted content or with request-derived keys. For
+  `get_obj` and the getters this includes URLs: `get_obj('https://.../x.pkl')`
+  downloads and unpickles. Give it an `incoming_val_trans_for_key` without the
+  pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
 
 ### dol.misc.set_obj(k, v, store=Files(rootdir='', subpath='', pattern_for_field=None, max_levels=None, include_hidden=False, assert_rootdir_existence=False), outgoing_val_trans_for_key={'.bin': <function identity_method>, '.cnf': <function <lambda>>, '.conf': <function <lambda>>, '.config': <function <lambda>>, '.csv': <function csv_fileobj>, '.gz': <function compress>, '.gzip': <function compress>, '.ini': <function <lambda>>, '.json': <function <lambda>>, '.pickle': <function <lambda>>, '.pkl': <function <lambda>>, '.txt': <function <lambda>>}, func_key=<function <lambda>>)
 
