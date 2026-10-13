@@ -422,13 +422,50 @@
 
 
 
+<span class="n">_RAISES_OUT_OF_SCOPE</span> <span class="o">=</span> <span class="s2">"_dol_raises_out_of_scope"</span>
+
+
+<div class="viewcode-block" id="raises_out_of_scope">
+<a class="viewcode-back" href="../../_autosummary/dol.errors.html#dol.errors.raises_out_of_scope">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">raises_out_of_scope</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Mark ``func``, a ``key_of_id``, as one that may raise ``OutOfScopeKeyError``.</span>
+
+<span class="sd">    A ``Store`` layer whose ``_key_of_id`` is so marked is a *view* of the in-scope</span>
+<span class="sd">    ids, so its ``len`` counts them (a scan) instead of returning ``len`` of the inner</span>
+<span class="sd">    store, which would overcount (i2mint/dol#123). Unmarked key mappings keep the inner</span>
+<span class="sd">    store's (often O(1)) ``len``. Returns ``func``, so it works as a decorator.</span>
+
+<span class="sd">    ``wrap_kvs`` (and so the codecs), ``Pipe`` and subclasses made by class wrapping</span>
+<span class="sd">    carry the mark over; a ``_key_of_id`` you override by hand (even one calling</span>
+<span class="sd">    ``super()``) does not, so mark it too if it can raise.</span>
+
+<span class="sd">    &gt;&gt;&gt; @raises_out_of_scope</span>
+<span class="sd">    ... def key_of_id(_id):</span>
+<span class="sd">    ...     return _id</span>
+<span class="sd">    &gt;&gt;&gt; may_raise_out_of_scope(key_of_id), may_raise_out_of_scope(str.upper)</span>
+<span class="sd">    (True, False)</span>
+<span class="sd">    """</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">_RAISES_OUT_OF_SCOPE</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">func</span></div>
+
+
+
+<div class="viewcode-block" id="may_raise_out_of_scope">
+<a class="viewcode-back" href="../../_autosummary/dol.errors.html#dol.errors.may_raise_out_of_scope">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">may_raise_out_of_scope</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether ``func`` was marked with :func:`raises_out_of_scope` (a bound method</span>
+<span class="sd">    reads the mark off its function)."""</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">_RAISES_OUT_OF_SCOPE</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span></div>
+
+
+
 <div class="viewcode-block" id="out_of_scope_prefix_error">
 <a class="viewcode-back" href="../../_autosummary/dol.errors.html#dol.errors.out_of_scope_prefix_error">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">out_of_scope_prefix_error</span><span class="p">(</span><span class="n">_id</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The ``OutOfScopeKeyError`` for an ``_id`` that doesn't start with ``prefix``."""</span>
     <span class="k">return</span> <span class="n">OutOfScopeKeyError</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_id</span><span class="si">!r}</span><span class="s2"> does not start with the prefix </span><span class="si">{</span><span class="n">prefix</span><span class="si">!r}</span><span class="s2">, so it is outside this "</span>
-        <span class="s2">"store's scope, so iterating the store skips it and it can't be read or "</span>
+        <span class="s2">"store's scope: iterating the store skips it, and it can't be read or "</span>
         <span class="s2">"written through an outer key (see i2mint/dol#82)."</span>
     <span class="p">)</span></div>
 
@@ -440,7 +477,7 @@
 <span class="w">    </span><span class="sd">"""The ``OutOfScopeKeyError`` for an ``_id`` that doesn't end with ``suffix``."""</span>
     <span class="k">return</span> <span class="n">OutOfScopeKeyError</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_id</span><span class="si">!r}</span><span class="s2"> does not end with the suffix </span><span class="si">{</span><span class="n">suffix</span><span class="si">!r}</span><span class="s2">, so it is outside this "</span>
-        <span class="s2">"store's scope, so iterating the store skips it and it can't be read or "</span>
+        <span class="s2">"store's scope: iterating the store skips it, and it can't be read or "</span>
         <span class="s2">"written through an outer key (see i2mint/dol#114)."</span>
     <span class="p">)</span></div>
 
@@ -549,7 +586,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=5e15b81b"></script>
+</div><script src="../../_static/documentation_options.js?v=fc62495c"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -752,6 +752,49 @@
 
 
 
+<div class="viewcode-block" id="dotdot_resolves_lexically">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.dotdot_resolves_lexically">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dotdot_resolves_lexically</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">base</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether every ``..`` in ``path`` undoes the segment before it, as</span>
+<span class="sd">    ``os.path.normpath`` assumes.</span>
+
+<span class="sd">    It doesn't when a symlink comes before a ``..``: the OS then climbs out of the</span>
+<span class="sd">    link's target, so ``root/lnk/../x`` with ``root/lnk -&gt; /elsewhere/deep`` addresses</span>
+<span class="sd">    ``/elsewhere/x``, not ``root/x`` (i2mint/dol#123). Paths without a ``..`` segment</span>
+<span class="sd">    are not touched (no file-system access); otherwise the part up to the last ``..``</span>
+<span class="sd">    is resolved both ways and compared.</span>
+
+<span class="sd">    With ``base`` (a string prefix of ``path``, e.g. a store's ``rootdir``), only the</span>
+<span class="sd">    ``..`` segments after it count: ``base`` itself is taken as the OS resolves it,</span>
+<span class="sd">    whatever ``..`` it holds. Conservative by design: a ``..`` after a symlink is</span>
+<span class="sd">    refused even when the link points back inside ``base``.</span>
+
+<span class="sd">    &gt;&gt;&gt; dotdot_resolves_lexically('/data/root/a/b.txt')</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; dotdot_resolves_lexically('/no/such/dir/../file')  # nothing to follow: lexical</span>
+<span class="sd">    True</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">base</span> <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">base</span><span class="p">):</span>
+        <span class="n">base</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">base</span><span class="p">)],</span> <span class="n">path</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">base</span><span class="p">)</span> <span class="p">:]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">pardir</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>  <span class="c1"># fast path: the common case, e.g. every listed key</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">altsep</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">altsep</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+    <span class="n">segments</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">pardir</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="n">last_pardir</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">segments</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pardir</span><span class="p">)</span>
+    <span class="n">head</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">segments</span><span class="p">[:</span> <span class="n">last_pardir</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">physical</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">base</span> <span class="o">+</span> <span class="n">head</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">physical</span> <span class="o">==</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">base</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">head</span><span class="p">))</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>  <span class="c1"># unresolvable: don't vouch for it</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
 <div class="viewcode-block" id="FileSysCollection">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileSysCollection">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FileSysCollection</span><span class="p">(</span><span class="n">Collection</span><span class="p">):</span>
@@ -814,8 +857,20 @@
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileSysCollection.is_in_root">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_in_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Whether ``k`` stays under ``rootdir`` (always true with</span>
-<span class="sd">        ``allow_escape=True`` or an empty ``rootdir``)."""</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_escape</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span> <span class="ow">or</span> <span class="n">path_is_under</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span><span class="p">)</span></div>
+<span class="sd">        ``allow_escape=True`` or an empty ``rootdir``).</span>
+
+<span class="sd">        The containment test is lexical (:func:`path_is_under`), so a key whose ``..``</span>
+<span class="sd">        follows a symlink -- where the OS climbs out of the link's *target*, not back</span>
+<span class="sd">        to the link's directory -- is refused too (i2mint/dol#123).</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allow_escape</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span>
+            <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">path_is_under</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">dotdot_resolves_lexically</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="FileSysCollection.validate_in_root">
@@ -1473,7 +1528,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=5e15b81b"></script>
+</div><script src="../../_static/documentation_options.js?v=fc62495c"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

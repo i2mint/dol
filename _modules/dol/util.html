@@ -294,6 +294,7 @@
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Hashable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Container</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">update_wrapper</span> <span class="k">as</span> <span class="n">_update_wrapper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">raises_out_of_scope</span><span class="p">,</span> <span class="n">may_raise_out_of_scope</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span> <span class="k">as</span> <span class="n">_wraps</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partialmethod</span><span class="p">,</span> <span class="n">partial</span><span class="p">,</span> <span class="n">WRAPPER_ASSIGNMENTS</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MethodType</span><span class="p">,</span> <span class="n">FunctionType</span>
@@ -1032,6 +1033,8 @@
             <span class="n">first_func</span><span class="p">,</span> <span class="n">last_func</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">first_func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">other_funcs</span> <span class="o">=</span> <span class="n">first_func</span><span class="p">,</span> <span class="n">other_funcs</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">may_raise_out_of_scope</span><span class="p">,</span> <span class="n">funcs</span><span class="p">)):</span>
+            <span class="n">raises_out_of_scope</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># it raises whatever its steps raise</span>
 
     <span class="n">_reserved_names</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"__name__"</span><span class="p">,</span> <span class="s2">"__doc__"</span><span class="p">)</span>
 
@@ -2781,7 +2784,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=5e15b81b"></script>
+</div><script src="../../_static/documentation_options.js?v=fc62495c"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

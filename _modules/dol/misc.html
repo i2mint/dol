@@ -381,11 +381,8 @@
 <span class="sd">    Warning: If used as a subclass, this mixin should (in general) be placed before the store</span>
 
 <span class="sd">    Security:</span>
-<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):</span>
-<span class="sd">        never use this over untrusted content or with request-derived keys. For</span>
-<span class="sd">        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``</span>
-<span class="sd">        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the</span>
-<span class="sd">        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).</span>
+<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default, which runs code from the</span>
+<span class="sd">        data: see the warning in the ``dol.misc`` module docstring (i2mint/dol#113).</span>
 
 
 <span class="sd">    &gt;&gt;&gt; # make a reader that will wrap a dict</span>
@@ -520,11 +517,8 @@
 <span class="w">    </span><span class="sd">"""A quick way to get an object, with default... everything (but the key, you know, a clue of what you want)</span>
 
 <span class="sd">    Security:</span>
-<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):</span>
-<span class="sd">        never use this over untrusted content or with request-derived keys. For</span>
-<span class="sd">        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``</span>
-<span class="sd">        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the</span>
-<span class="sd">        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).</span>
+<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default, which runs code from the</span>
+<span class="sd">        data: see the warning in the ``dol.misc`` module docstring (i2mint/dol#113).</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"http://"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"https://"</span><span class="p">):</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">url_to_bytes</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
@@ -555,11 +549,8 @@
 <span class="sd">    according to a property of the key (default: file extension).</span>
 
 <span class="sd">    Security:</span>
-<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):</span>
-<span class="sd">        never use this over untrusted content or with request-derived keys. For</span>
-<span class="sd">        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``</span>
-<span class="sd">        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the</span>
-<span class="sd">        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).</span>
+<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default, which runs code from the</span>
+<span class="sd">        data: see the warning in the ``dol.misc`` module docstring (i2mint/dol#113).</span>
 
 <span class="sd">    &gt;&gt;&gt; from dol.misc import get_obj, misc_objs_get</span>
 <span class="sd">    &gt;&gt;&gt; import os</span>
@@ -629,11 +620,8 @@
 <span class="sd">        If used as a subclass, this mixin should (in general) be placed before the store</span>
 
 <span class="sd">    Security:</span>
-<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):</span>
-<span class="sd">        never use this over untrusted content or with request-derived keys. For</span>
-<span class="sd">        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``</span>
-<span class="sd">        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the</span>
-<span class="sd">        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).</span>
+<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default, which runs code from the</span>
+<span class="sd">        data: see the warning in the ``dol.misc`` module docstring (i2mint/dol#113).</span>
 
 <span class="sd">    See also:</span>
 <span class="sd">        preset and postget args from wrap_kvs decorator from dol.trans.</span>
@@ -744,11 +732,8 @@
 <span class="sd">    according to a property of the key (default: file extension).</span>
 
 <span class="sd">    Security:</span>
-<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):</span>
-<span class="sd">        never use this over untrusted content or with request-derived keys. For</span>
-<span class="sd">        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``</span>
-<span class="sd">        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the</span>
-<span class="sd">        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).</span>
+<span class="sd">        ``.pkl``/``.pickle`` keys are unpickled by default, which runs code from the</span>
+<span class="sd">        data: see the warning in the ``dol.misc`` module docstring (i2mint/dol#113).</span>
 
 <span class="sd">    &gt;&gt;&gt; from dol.misc import set_obj, misc_objs  # the function and the object</span>
 <span class="sd">    &gt;&gt;&gt; import json</span>
@@ -827,7 +812,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=5e15b81b"></script>
+</div><script src="../../_static/documentation_options.js?v=fc62495c"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

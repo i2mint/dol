@@ -1,4 +1,4 @@
-> built 2026-10-13 08:39 UTC from f7c172c (master) · dol 0.3.77. Details: build_info.json
+> built 2026-10-13 11:13 UTC from 89e41ff (master) · dol 0.3.78. Details: build_info.json
 
 # index.html.md
 
@@ -3399,10 +3399,12 @@ that skips (or reports) the keys whose value cannot be fetched.
 
 ### Functions
 
-| [`items_with_caught_exceptions`](_autosummary/dol.errors.html.md#dol.errors.items_with_caught_exceptions)(d[, callback, ...])   | Do what Mapping.items() does, but catching exceptions when getting the values for a key.   |
-|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| [`out_of_scope_prefix_error`](_autosummary/dol.errors.html.md#dol.errors.out_of_scope_prefix_error)(_id, prefix)             | The `OutOfScopeKeyError` for an `_id` that doesn't start with `prefix`.                    |
-| [`out_of_scope_suffix_error`](_autosummary/dol.errors.html.md#dol.errors.out_of_scope_suffix_error)(_id, suffix)             | The `OutOfScopeKeyError` for an `_id` that doesn't end with `suffix`.                      |
+| [`items_with_caught_exceptions`](_autosummary/dol.errors.html.md#dol.errors.items_with_caught_exceptions)(d[, callback, ...])   | Do what Mapping.items() does, but catching exceptions when getting the values for a key.                                                                |
+|-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`may_raise_out_of_scope`](_autosummary/dol.errors.html.md#dol.errors.may_raise_out_of_scope)(func)                       | Whether `func` was marked with [`raises_out_of_scope()`](_autosummary/dol.errors.html.md#dol.errors.raises_out_of_scope) (a bound method reads the mark off its function). |
+| [`out_of_scope_prefix_error`](_autosummary/dol.errors.html.md#dol.errors.out_of_scope_prefix_error)(_id, prefix)             | The `OutOfScopeKeyError` for an `_id` that doesn't start with `prefix`.                                                                                 |
+| [`out_of_scope_suffix_error`](_autosummary/dol.errors.html.md#dol.errors.out_of_scope_suffix_error)(_id, suffix)             | The `OutOfScopeKeyError` for an `_id` that doesn't end with `suffix`.                                                                                   |
+| [`raises_out_of_scope`](_autosummary/dol.errors.html.md#dol.errors.raises_out_of_scope)(func)                          | Mark `func`, a `key_of_id`, as one that may raise `OutOfScopeKeyError`.                                                                                 |
 
 ### Exceptions
 
@@ -3585,6 +3587,14 @@ Or, in many cases, you can just use `items_with_caught_exceptions`.
 [(2, 2), (4, 4), (6, 6), (8, 8)]
 ```
 
+### dol.errors.may_raise_out_of_scope(func)
+
+Whether `func` was marked with [`raises_out_of_scope()`](_autosummary/dol.errors.html.md#dol.errors.raises_out_of_scope) (a bound method
+reads the mark off its function).
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
 ### dol.errors.out_of_scope_prefix_error(\_id, prefix)
 
 The `OutOfScopeKeyError` for an `_id` that doesn’t start with `prefix`.
@@ -3592,6 +3602,27 @@ The `OutOfScopeKeyError` for an `_id` that doesn’t start with `prefix`.
 ### dol.errors.out_of_scope_suffix_error(\_id, suffix)
 
 The `OutOfScopeKeyError` for an `_id` that doesn’t end with `suffix`.
+
+### dol.errors.raises_out_of_scope(func)
+
+Mark `func`, a `key_of_id`, as one that may raise `OutOfScopeKeyError`.
+
+A `Store` layer whose `_key_of_id` is so marked is a *view* of the in-scope
+ids, so its `len` counts them (a scan) instead of returning `len` of the inner
+store, which would overcount (i2mint/dol#123). Unmarked key mappings keep the inner
+store’s (often O(1)) `len`. Returns `func`, so it works as a decorator.
+
+`wrap_kvs` (and so the codecs), `Pipe` and subclasses made by class wrapping
+carry the mark over; a `_key_of_id` you override by hand (even one calling
+`super()`) does not, so mark it too if it can raise.
+
+```pycon
+>>> @raises_out_of_scope
+... def key_of_id(_id):
+...     return _id
+>>> may_raise_out_of_scope(key_of_id), may_raise_out_of_scope(str.upper)
+(True, False)
+```
 
 
 # _autosummary/dol.explicit.html.md
@@ -3820,6 +3851,7 @@ Main entry points:
 
 | [`create_directories`](_autosummary/dol.filesys.html.md#dol.filesys.create_directories)(dirpath[, max_dirs_to_make])     | Create directories up to a specified limit.                                                                                                                                 |
 |------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`dotdot_resolves_lexically`](_autosummary/dol.filesys.html.md#dol.filesys.dotdot_resolves_lexically)(path, \*[, base])         | Whether every `..` in `path` undoes the segment before it, as `os.path.normpath` assumes.                                                                                   |
 | [`ensure_dir`](_autosummary/dol.filesys.html.md#dol.filesys.ensure_dir)(dirpath, \*[, max_dirs_to_make, ...])    | Ensure that a directory exists, creating it if necessary.                                                                                                                   |
 | [`ensure_slash_suffix`](_autosummary/dol.filesys.html.md#dol.filesys.ensure_slash_suffix)(path)                           | Add a file separation (/ or ) at the end of path str, if not already present.                                                                                               |
 | [`iter_dirpaths_in_folder_recursively`](_autosummary/dol.filesys.html.md#dol.filesys.iter_dirpaths_in_folder_recursively)(root_folder)    | Recursively generates dirpaths of folder (and subfolders, etc.) up to a given level                                                                                         |
@@ -3954,6 +3986,10 @@ keyword-only `allow_escape=True` to address paths outside the root on purpose.
 
 Whether `k` stays under `rootdir` (always true with
 `allow_escape=True` or an empty `rootdir`).
+
+The containment test is lexical ([`path_is_under()`](_autosummary/dol.filesys.html.md#dol.filesys.path_is_under)), so a key whose `..`
+follows a symlink – where the OS climbs out of the link’s *target*, not back
+to the link’s directory – is refused too (i2mint/dol#123).
 
 #### is_valid_key(k)
 
@@ -4181,6 +4217,32 @@ True
 >>> os.path.isdir(target_dir)
 True
 >>> shutil.rmtree(temp_dir)  # Cleanup
+```
+
+### dol.filesys.dotdot_resolves_lexically(path, , base='')
+
+Whether every `..` in `path` undoes the segment before it, as
+`os.path.normpath` assumes.
+
+It doesn’t when a symlink comes before a `..`: the OS then climbs out of the
+link’s target, so `root/lnk/../x` with `root/lnk -> /elsewhere/deep` addresses
+`/elsewhere/x`, not `root/x` (i2mint/dol#123). Paths without a `..` segment
+are not touched (no file-system access); otherwise the part up to the last `..`
+is resolved both ways and compared.
+
+With `base` (a string prefix of `path`, e.g. a store’s `rootdir`), only the
+`..` segments after it count: `base` itself is taken as the OS resolves it,
+whatever `..` it holds. Conservative by design: a `..` after a symlink is
+refused even when the link points back inside `base`.
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+```pycon
+>>> dotdot_resolves_lexically('/data/root/a/b.txt')
+True
+>>> dotdot_resolves_lexically('/no/such/dir/../file')  # nothing to follow: lexical
+True
 ```
 
 ### dol.filesys.ensure_dir(dirpath, , max_dirs_to_make=None, verbose=False)
@@ -4886,11 +4948,8 @@ An object to write (and only write) to a store (default local files) with automa
 according to a property of the key (default: file extension).
 
 Security:
-: `.pkl`/`.pickle` keys are unpickled by default (arbitrary code execution):
-  never use this over untrusted content or with request-derived keys. For
-  `get_obj` and the getters this includes URLs: `get_obj('https://.../x.pkl')`
-  downloads and unpickles. Give it an `incoming_val_trans_for_key` without the
-  pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
+: `.pkl`/`.pickle` keys are unpickled by default, which runs code from the
+  data: see the warning in the `dol.misc` module docstring (i2mint/dol#113).
 
 ```pycon
 >>> from dol.misc import get_obj, misc_objs_get
@@ -4919,11 +4978,8 @@ An object to read and write (and nothing else) to a store (default local) with a
 according to a property of the key (default: file extension).
 
 Security:
-: `.pkl`/`.pickle` keys are unpickled by default (arbitrary code execution):
-  never use this over untrusted content or with request-derived keys. For
-  `get_obj` and the getters this includes URLs: `get_obj('https://.../x.pkl')`
-  downloads and unpickles. Give it an `incoming_val_trans_for_key` without the
-  pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
+: `.pkl`/`.pickle` keys are unpickled by default, which runs code from the
+  data: see the warning in the `dol.misc` module docstring (i2mint/dol#113).
 
 ```pycon
 >>> from dol.misc import set_obj, misc_objs  # the function and the object
@@ -4965,11 +5021,8 @@ Mixin to transform incoming vals according to the key their under.
 If used as a subclass, this mixin should (in general) be placed before the store
 
 Security:
-: `.pkl`/`.pickle` keys are unpickled by default (arbitrary code execution):
-  never use this over untrusted content or with request-derived keys. For
-  `get_obj` and the getters this includes URLs: `get_obj('https://.../x.pkl')`
-  downloads and unpickles. Give it an `incoming_val_trans_for_key` without the
-  pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
+: `.pkl`/`.pickle` keys are unpickled by default, which runs code from the
+  data: see the warning in the `dol.misc` module docstring (i2mint/dol#113).
 
 ```pycon
 >>> # make a reader that will wrap a dict
@@ -5023,11 +5076,8 @@ Mixin to transform incoming and outgoing vals according to the key their under.
 If used as a subclass, this mixin should (in general) be placed before the store
 
 Security:
-: `.pkl`/`.pickle` keys are unpickled by default (arbitrary code execution):
-  never use this over untrusted content or with request-derived keys. For
-  `get_obj` and the getters this includes URLs: `get_obj('https://.../x.pkl')`
-  downloads and unpickles. Give it an `incoming_val_trans_for_key` without the
-  pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
+: `.pkl`/`.pickle` keys are unpickled by default, which runs code from the
+  data: see the warning in the `dol.misc` module docstring (i2mint/dol#113).
 
 #### SEE ALSO
 preset and postget args from wrap_kvs decorator from dol.trans.
@@ -5084,11 +5134,8 @@ a.json: b'{"str": "field", "int": 42, "float": 3.14, "array": [1, 2], "nested": 
 A quick way to get an object, with default… everything (but the key, you know, a clue of what you want)
 
 Security:
-: `.pkl`/`.pickle` keys are unpickled by default (arbitrary code execution):
-  never use this over untrusted content or with request-derived keys. For
-  `get_obj` and the getters this includes URLs: `get_obj('https://.../x.pkl')`
-  downloads and unpickles. Give it an `incoming_val_trans_for_key` without the
-  pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
+: `.pkl`/`.pickle` keys are unpickled by default, which runs code from the
+  data: see the warning in the `dol.misc` module docstring (i2mint/dol#113).
 
 ### dol.misc.set_obj(k, v, store=Files(rootdir='', subpath='', pattern_for_field=None, max_levels=None, include_hidden=False, assert_rootdir_existence=False), outgoing_val_trans_for_key={'.bin': <function identity_method>, '.cnf': <function <lambda>>, '.conf': <function <lambda>>, '.config': <function <lambda>>, '.csv': <function csv_fileobj>, '.gz': <function compress>, '.gzip': <function compress>, '.ini': <function <lambda>>, '.json': <function <lambda>>, '.pickle': <function <lambda>>, '.pkl': <function <lambda>>, '.txt': <function <lambda>>}, func_key=<function <lambda>>)
 
@@ -16789,7 +16836,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-13 08:39 UTC** from commit <a href="https://github.com/i2mint/dol/commit/f7c172cd01247973fac824ef54591522710768bd"><code>f7c172c</code></a> on branch <code>master</code>, for **dol 0.3.77** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 11:13 UTC** from commit <a href="https://github.com/i2mint/dol/commit/89e41ffd1242f68d48a438b12b5591c356cd5d7b"><code>89e41ff</code></a> on branch <code>master</code>, for **dol 0.3.78** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -16798,9 +16845,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/f7c172cd01247973fac824ef54591522710768bd"><code>f7c172cd01247973fac824ef54591522710768bd</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/89e41ffd1242f68d48a438b12b5591c356cd5d7b"><code>89e41ffd1242f68d48a438b12b5591c356cd5d7b</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.77</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.78</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -16809,9 +16856,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38370501850">38370501850</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38388474400">38388474400</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>ed3d22de40a50c8744007f6f509772cfcc6b715a</code> (in the history of the built commit) |
+| Event commit | <code>475a003cb15a47ed438e54f8c141733718a899cf</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -16836,13 +16883,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.77/">0.3.77</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.78/">0.3.78</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout f7c172cd01247973fac824ef54591522710768bd
+git checkout 89e41ffd1242f68d48a438b12b5591c356cd5d7b
 pip install "epythet==0.2.15"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

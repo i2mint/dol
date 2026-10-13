@@ -14,10 +14,12 @@ that skips (or reports) the keys whose value cannot be fetched.
 
 ### Functions
 
-| [`items_with_caught_exceptions`](#dol.errors.items_with_caught_exceptions)(d[, callback, ...])   | Do what Mapping.items() does, but catching exceptions when getting the values for a key.   |
-|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| [`out_of_scope_prefix_error`](#dol.errors.out_of_scope_prefix_error)(_id, prefix)             | The `OutOfScopeKeyError` for an `_id` that doesn't start with `prefix`.                    |
-| [`out_of_scope_suffix_error`](#dol.errors.out_of_scope_suffix_error)(_id, suffix)             | The `OutOfScopeKeyError` for an `_id` that doesn't end with `suffix`.                      |
+| [`items_with_caught_exceptions`](#dol.errors.items_with_caught_exceptions)(d[, callback, ...])   | Do what Mapping.items() does, but catching exceptions when getting the values for a key.                                                                |
+|-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`may_raise_out_of_scope`](#dol.errors.may_raise_out_of_scope)(func)                       | Whether `func` was marked with [`raises_out_of_scope()`](#dol.errors.raises_out_of_scope) (a bound method reads the mark off its function). |
+| [`out_of_scope_prefix_error`](#dol.errors.out_of_scope_prefix_error)(_id, prefix)             | The `OutOfScopeKeyError` for an `_id` that doesn't start with `prefix`.                                                                                 |
+| [`out_of_scope_suffix_error`](#dol.errors.out_of_scope_suffix_error)(_id, suffix)             | The `OutOfScopeKeyError` for an `_id` that doesn't end with `suffix`.                                                                                   |
+| [`raises_out_of_scope`](#dol.errors.raises_out_of_scope)(func)                          | Mark `func`, a `key_of_id`, as one that may raise `OutOfScopeKeyError`.                                                                                 |
 
 ### Exceptions
 
@@ -200,6 +202,14 @@ Or, in many cases, you can just use `items_with_caught_exceptions`.
 [(2, 2), (4, 4), (6, 6), (8, 8)]
 ```
 
+### dol.errors.may_raise_out_of_scope(func)
+
+Whether `func` was marked with [`raises_out_of_scope()`](#dol.errors.raises_out_of_scope) (a bound method
+reads the mark off its function).
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
 ### dol.errors.out_of_scope_prefix_error(\_id, prefix)
 
 The `OutOfScopeKeyError` for an `_id` that doesn’t start with `prefix`.
@@ -207,3 +217,24 @@ The `OutOfScopeKeyError` for an `_id` that doesn’t start with `prefix`.
 ### dol.errors.out_of_scope_suffix_error(\_id, suffix)
 
 The `OutOfScopeKeyError` for an `_id` that doesn’t end with `suffix`.
+
+### dol.errors.raises_out_of_scope(func)
+
+Mark `func`, a `key_of_id`, as one that may raise `OutOfScopeKeyError`.
+
+A `Store` layer whose `_key_of_id` is so marked is a *view* of the in-scope
+ids, so its `len` counts them (a scan) instead of returning `len` of the inner
+store, which would overcount (i2mint/dol#123). Unmarked key mappings keep the inner
+store’s (often O(1)) `len`. Returns `func`, so it works as a decorator.
+
+`wrap_kvs` (and so the codecs), `Pipe` and subclasses made by class wrapping
+carry the mark over; a `_key_of_id` you override by hand (even one calling
+`super()`) does not, so mark it too if it can raise.
+
+```pycon
+>>> @raises_out_of_scope
+... def key_of_id(_id):
+...     return _id
+>>> may_raise_out_of_scope(key_of_id), may_raise_out_of_scope(str.upper)
+(True, False)
+```

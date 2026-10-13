@@ -303,6 +303,8 @@
     <span class="n">SetattrNotAllowed</span><span class="p">,</span>
     <span class="n">out_of_scope_prefix_error</span><span class="p">,</span>
     <span class="n">out_of_scope_suffix_error</span><span class="p">,</span>
+    <span class="n">raises_out_of_scope</span><span class="p">,</span>
+    <span class="n">may_raise_out_of_scope</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Store</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">,</span> <span class="n">AttrNames</span><span class="p">,</span> <span class="n">kv_walk</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol._paths_core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -2318,7 +2320,10 @@
 <span class="sd">    [7, 14]</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">trans_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">marked</span> <span class="o">=</span> <span class="n">trans_func</span>
         <span class="n">trans_func</span><span class="p">,</span> <span class="n">wants_self</span> <span class="o">=</span> <span class="n">_resolve_self_convention</span><span class="p">(</span><span class="n">trans_func</span><span class="p">)</span>
+        <span class="c1"># read the mark off the transform itself, not a FirstArgIsMapping around it</span>
+        <span class="n">is_scoped</span> <span class="o">=</span> <span class="n">may_raise_out_of_scope</span><span class="p">(</span><span class="n">marked</span><span class="p">)</span> <span class="ow">or</span> <span class="n">may_raise_out_of_scope</span><span class="p">(</span><span class="n">trans_func</span><span class="p">)</span>
         <span class="n">wrapped_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">wrapped_method</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">wants_self</span><span class="p">:</span>
@@ -2345,6 +2350,8 @@
                     <span class="bp">self</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">),</span> <span class="n">wrapped_method</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
                 <span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">is_scoped</span><span class="p">:</span>  <span class="c1"># (``wraps`` already carried over a scoped wrapped_func's mark)</span>
+            <span class="n">raises_out_of_scope</span><span class="p">(</span><span class="n">new_method</span><span class="p">)</span>
         <span class="nb">setattr</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">wrapped_method</span><span class="p">,</span> <span class="n">new_method</span><span class="p">)</span>
 
 
@@ -4318,9 +4325,11 @@
 <span class="sd">    &gt;&gt;&gt; codec.decoder('/folder/name.txt')</span>
 <span class="sd">    'name'</span>
 <span class="sd">    """</span>
+    <span class="n">decoder</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_affix_decoder</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">prefix</span> <span class="ow">or</span> <span class="n">suffix</span><span class="p">:</span>
+        <span class="n">raises_out_of_scope</span><span class="p">(</span><span class="n">decoder</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">KeyCodec</span><span class="p">(</span>
-        <span class="n">encoder</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">_affix_encoder</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">),</span>
-        <span class="n">decoder</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">_affix_decoder</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">),</span>
+        <span class="n">encoder</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">_affix_encoder</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">),</span> <span class="n">decoder</span><span class="o">=</span><span class="n">decoder</span>
     <span class="p">)</span></div>
 
 
@@ -4395,7 +4404,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=5e15b81b"></script>
+</div><script src="../../_static/documentation_options.js?v=fc62495c"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

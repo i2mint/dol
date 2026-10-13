@@ -313,7 +313,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Callable</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dol.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">OutOfScopeKeyError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">OutOfScopeKeyError</span><span class="p">,</span> <span class="n">may_raise_out_of_scope</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.util</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">wraps</span><span class="p">,</span>
     <span class="n">_disabled_clear_method</span><span class="p">,</span>
@@ -1114,8 +1114,8 @@
 <span class="sd">        lacks the prefix/suffix the layer strips) has no outer key, so it is skipped:</span>
 <span class="sd">        the store is a *view* of the in-scope ids. Reading or writing such an id through</span>
 <span class="sd">        an outer key is still impossible, and calling ``_key_of_id`` directly still</span>
-<span class="sd">        raises (i2mint/dol#82, #114). Note that ``len`` counts inner ids, so it may</span>
-<span class="sd">        exceed the number of keys iterated.</span>
+<span class="sd">        raises (i2mint/dol#82, #114). ``len`` and ``bool`` agree with this iteration</span>
+<span class="sd">        (see ``__len__``).</span>
 <span class="sd">        """</span>
         <span class="n">key_of_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_of_id</span>
         <span class="k">for</span> <span class="n">_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">:</span>
@@ -1126,7 +1126,24 @@
             <span class="k">yield</span> <span class="n">k</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""The inner store's ``len``, or, when the key layer is scoped (its</span>
+<span class="sd">        ``_key_of_id`` is marked with ``raises_out_of_scope``), the number of in-scope</span>
+<span class="sd">        ids, which takes a scan (i2mint/dol#123).</span>
+
+<span class="sd">        The inner ``len`` is always asked first, so an inner store that refuses ``len``</span>
+<span class="sd">        (e.g. a remote listing, to spare ``list()`` a second scan) still refuses it</span>
+<span class="sd">        here, and an empty one costs no scan. Otherwise note that ``list(store)`` of a</span>
+<span class="sd">        scoped layer scans twice: once to size the list, once to fill it.</span>
+<span class="sd">        """</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">may_raise_out_of_scope</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_of_id</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">n</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">may_raise_out_of_scope</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_of_id</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="kc">True</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">)</span>  <span class="c1"># stops at the first in-scope id</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_of_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span>
@@ -1684,7 +1701,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=5e15b81b"></script>
+</div><script src="../../_static/documentation_options.js?v=fc62495c"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

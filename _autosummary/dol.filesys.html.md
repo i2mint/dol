@@ -28,6 +28,7 @@ Main entry points:
 
 | [`create_directories`](#dol.filesys.create_directories)(dirpath[, max_dirs_to_make])     | Create directories up to a specified limit.                                                                                                                                 |
 |------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`dotdot_resolves_lexically`](#dol.filesys.dotdot_resolves_lexically)(path, \*[, base])         | Whether every `..` in `path` undoes the segment before it, as `os.path.normpath` assumes.                                                                                   |
 | [`ensure_dir`](#dol.filesys.ensure_dir)(dirpath, \*[, max_dirs_to_make, ...])    | Ensure that a directory exists, creating it if necessary.                                                                                                                   |
 | [`ensure_slash_suffix`](#dol.filesys.ensure_slash_suffix)(path)                           | Add a file separation (/ or ) at the end of path str, if not already present.                                                                                               |
 | [`iter_dirpaths_in_folder_recursively`](#dol.filesys.iter_dirpaths_in_folder_recursively)(root_folder)    | Recursively generates dirpaths of folder (and subfolders, etc.) up to a given level                                                                                         |
@@ -162,6 +163,10 @@ keyword-only `allow_escape=True` to address paths outside the root on purpose.
 
 Whether `k` stays under `rootdir` (always true with
 `allow_escape=True` or an empty `rootdir`).
+
+The containment test is lexical ([`path_is_under()`](#dol.filesys.path_is_under)), so a key whose `..`
+follows a symlink – where the OS climbs out of the link’s *target*, not back
+to the link’s directory – is refused too (i2mint/dol#123).
 
 #### is_valid_key(k)
 
@@ -389,6 +394,32 @@ True
 >>> os.path.isdir(target_dir)
 True
 >>> shutil.rmtree(temp_dir)  # Cleanup
+```
+
+### dol.filesys.dotdot_resolves_lexically(path, , base='')
+
+Whether every `..` in `path` undoes the segment before it, as
+`os.path.normpath` assumes.
+
+It doesn’t when a symlink comes before a `..`: the OS then climbs out of the
+link’s target, so `root/lnk/../x` with `root/lnk -> /elsewhere/deep` addresses
+`/elsewhere/x`, not `root/x` (i2mint/dol#123). Paths without a `..` segment
+are not touched (no file-system access); otherwise the part up to the last `..`
+is resolved both ways and compared.
+
+With `base` (a string prefix of `path`, e.g. a store’s `rootdir`), only the
+`..` segments after it count: `base` itself is taken as the OS resolves it,
+whatever `..` it holds. Conservative by design: a `..` after a symlink is
+refused even when the link points back inside `base`.
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+```pycon
+>>> dotdot_resolves_lexically('/data/root/a/b.txt')
+True
+>>> dotdot_resolves_lexically('/no/such/dir/../file')  # nothing to follow: lexical
+True
 ```
 
 ### dol.filesys.ensure_dir(dirpath, , max_dirs_to_make=None, verbose=False)
