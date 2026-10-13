@@ -902,9 +902,9 @@ def mk_dirs_if_missing_preset(
 
     It only makes the directory: the write itself is left to the wrapper that calls
     this preset, so it happens exactly once and its errors propagate (#112). The
-    directory is made only when the key resolves (through every layer's ``_id_of_key``)
-    to an absolute filesystem path whose directory is missing, and only if the
-    innermost layer's ``validate_key`` (if any) accepts it -- so an invalid key (e.g.
+    directory is made only when the innermost layer is a file-system store, the key
+    resolves (through every layer's ``_id_of_key``) to a path whose directory is
+    missing, and that layer's ``validate_key`` accepts it -- so an invalid key (e.g.
     one leaving ``rootdir``, #107) never gets a directory, and the write raises for it.
     """
     dirname = _missing_dir_of_key(self, k)
@@ -916,24 +916,29 @@ def mk_dirs_if_missing_preset(
 def _missing_dir_of_key(store, k):
     """The directory ``store`` needs, but lacks, to write ``k``; ``None`` if none.
 
-    ``None`` when the key does not resolve to an absolute path (a dict-backed or
-    non-path inner store: never mkdir, in particular not under the process CWD), when
-    the directory already exists, or when the innermost layer rejects the key.
+    ``None`` when the innermost layer is not a file-system store (a dict-backed or
+    other non-path store never gets a directory, in particular not under the process
+    CWD), when the directory already exists, or when that layer rejects the key. A
+    relative path (a relative ``rootdir``) is made relative to the CWD, which is where
+    the write will put it.
     """
     from dol.dig import inner_most_key
 
+    innermost = _innermost_layer(store)
+    if not isinstance(innermost, FileSysCollection):
+        return None
     _id = inner_most_key(store, k, default=None)
-    if not isinstance(_id, str) or not os.path.isabs(_id):
+    if isinstance(_id, os.PathLike):
+        _id = os.fspath(_id)
+    if not isinstance(_id, str):
         return None
     dirname = os.path.dirname(_id)
-    if os.path.isdir(dirname):
+    if not dirname or os.path.isdir(dirname):
         return None
-    validate_key = getattr(_innermost_layer(store), "validate_key", None)
-    if validate_key is not None:
-        try:
-            validate_key(_id)
-        except KeyValidationError:
-            return None  # the write will raise for this key; make no dirs for it (#107)
+    try:
+        innermost.validate_key(_id)
+    except KeyValidationError:
+        return None  # the write will raise for this key; make no dirs for it (#107)
     return dirname
 
 

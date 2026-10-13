@@ -117,3 +117,21 @@ def test_no_dirs_for_non_path_inner_store(tmp_path, monkeypatch):
     s["rel/dir/key"] = 1
     assert s["rel/dir/key"] == 1
     assert not (tmp_path / "rel").exists()  # never mkdir under the CWD
+
+
+@pytest.mark.parametrize(
+    "factory, rootdir, key",
+    [
+        (mk_dirs_if_missing(Files), "rel/root", "sub/deep/x"),
+        (_SubOfDecorated, "rel/root", "sub/deep/x"),
+        (mk_dirs_if_missing(Files), "", "rel/root/e/f/x"),
+    ],
+    ids=["relative-rootdir", "relative-rootdir-subclass", "empty-rootdir"],
+)
+def test_dirs_made_for_relative_paths(tmp_path, monkeypatch, factory, rootdir, key):
+    monkeypatch.chdir(tmp_path)
+    os.makedirs("rel/root")
+    s = factory(rootdir)
+    s[key] = b"hi"
+    assert s[key] == b"hi"
+    assert (tmp_path / "rel" / "root").is_dir()
