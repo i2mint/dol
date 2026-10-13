@@ -1,0 +1,47 @@
+{
+  "collection_duration_seconds": 3.53073787689209,
+  "commit_message": "Sprint review: fix #123 (symlink + '..' escape, scoped len/bool), tests first (#127)\n\n* test: cover the #107/#119 surface; strict-xfail repros of #123\n\nAdds tests on the unchanged code for the sprint's containment and scoping\nchanges: path_is_under on mixed absolute/relative paths, the zip readers'\nin-root read/write paths, the deprecated MakeMissingDirsStoreMixin refusing\nout-of-root keys, Store.head's fallback, and len/bool of unscoped stores.\n\nThe two #123 defects (symlink + '..' escaping rootdir; len/bool counting\nout-of-scope ids) are pinned as strict xfails, flipped by the fix.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* fix: a '..' after a symlink no longer escapes rootdir (#123)\n\npath_is_under is lexical, so root/lnk/../x passed it while the OS resolved\nit to the parent of lnk's target. FileSysCollection.is_in_root now also\nrequires dotdot_resolves_lexically(k): the part of the key up to its last\n'..' must resolve the same way physically (realpath) and lexically. Keys\nwithout a '..' segment take a string-only fast path, so listing and the\ndesign #107 kept (a symlinked sub-directory of the root is addressable) are\nunchanged. Every containment user (Files*, DirReader, PickleStores, the zip\nreaders, mk_dirs_if_missing) goes through is_in_root, so all are covered.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* fix: len and bool of a scoped store agree with its iteration (#123)\n\nSince #119, iterating a prefix/suffix-scoped store skips out-of-scope ids,\nbut Store.__len__ still returned len(self.store): KeyCodecs.prefixed('p/')\nover {'stray': 0} iterated nothing yet had len 1 and was truthy.\n\nA key mapping that can raise OutOfScopeKeyError is now marked with\ndol.errors.raises_out_of_scope. Store.__len__ counts in-scope ids for a\nmarked layer (a scan) and keeps the inner len otherwise, so unscoped\nlayers over DB-backed stores keep their cheap count; Store.__bool__ stops\nat the first in-scope id. The mark is set on the affix decoder (when it\nhas a prefix or suffix), PrefixRelativizationMixin and\nRelativePathKeyMapper, and carried by wrap_kvs (_wrap_outcoming, including\nto subclasses of a scoped class) and by Pipe (so composed codecs keep it).\n\nAlso: one _strip_prefix helper for the two prefix mappers in paths.py,\nthe dead _prefix_length cache removed (it went stale on prefix\nreassignment, which is why #115 stopped using it), and the doubled 'so'\nin the out-of-scope error messages.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* docs: one pickle-security warning in dol.misc, pointed to from each class\n\n#117 pasted the same five-line Security note into five docstrings, with\nURL advice that only applies to get_obj. The module docstring holds the\nfull warning; each docstring now points to it in two lines.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* fix: review findings on the #123 fixes\n\n- A rootdir holding a '..' after a symlink (join(dirname(__file__), '..',\n  'data') in a symlink-installed package) made every key fail the new\n  check, so the store looked empty. dotdot_resolves_lexically now takes a\n  keyword-only base: is_in_root passes rootdir, whose own '..' is resolved\n  as the OS does, and only the key's part beyond it is checked.\n- Store.__len__ asks the inner len first, so an inner store that refuses\n  len (to spare list() a second listing, as s3dol does) still refuses it,\n  and an empty inner store costs no scan.\n- The scope mark survives FirstArgIsMapping; may_raise_out_of_scope\n  returns a real bool; the docs say a hand-overridden _key_of_id must be\n  marked itself.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* test: Windows semantics for the symlink and zip tests\n\nWindows normalizes '..' lexically before following links, so 'lnk/../x'\nis 'root/x' there: nothing escapes, and the tests now assert containment\ninstead of refusal on Windows. ZipFilesReader's default subpath is\nPOSIX-only (as the #111 test already notes), so its test skips there.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+  "commit_sha": "475a003cb15a47ed438e54f8c141733718a899cf",
+  "metrics": {
+    "coverage": {
+      "branch_coverage": 0.0,
+      "error": "No coverage file found",
+      "line_coverage": 0.0,
+      "statements_covered": 0,
+      "statements_total": 0
+    },
+    "umpyre_stats": {
+      "comment_lines": 12369,
+      "comment_lines_ratio": 0.053785042461875626,
+      "docs_lines": 25881,
+      "empty_lines": 27931,
+      "empty_lines_ratio": 0.12145444425601488,
+      "files_analyzed": 540,
+      "function_lines": 92898,
+      "function_lines_ratio": 0.40395528131807923,
+      "mean_lines_per_function": 16.53872173758234,
+      "num_classes": 1465,
+      "num_functions": 5617,
+      "pypi_version": "0.3.77",
+      "total_lines": 229971
+    },
+    "wily": {
+      "cyclomatic_avg": 0.0,
+      "error": "wily report failed: Usage: wily report [OPTIONS] FILE [METRICS]...\nTry 'wily report --help' for help.\n\nError: Invalid value for '-f' / '--format': 'json' is not one of 'CONSOLE', 'HTML'.\n",
+      "files_analyzed": 0,
+      "maintainability_index": 0.0,
+      "total_loc": 0
+    },
+    "workflow_status": {
+      "last_run_status": "success",
+      "last_success_timestamp": "2026-10-13T11:10:55Z",
+      "recent_failure_count": 0,
+      "run_url": "https://github.com/i2mint/dol/actions/runs/38388307053",
+      "total_runs_analyzed": 10
+    }
+  },
+  "python_version": "3.10",
+  "schema_version": "1.0",
+  "timestamp": "2026-10-13T11:12:08.997070Z",
+  "workflow_status": {}
+}
