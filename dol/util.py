@@ -2355,12 +2355,21 @@ def get_app_folder(folder_kind: AppFolderKind = DFLT_APP_FOLDER_KIND):
             **TL;DR**: config = settings, data = user files, cache = disposable, state = logs/history, runtime = process files.
 
     Returns:
-        str: The full path of the app data folder.
+        str: The full path of the app data folder. The platform's environment variable
+        (e.g. ``XDG_CONFIG_HOME``) is used if set to a non-empty absolute path (after
+        ``~`` expansion); otherwise (unset, empty or relative, per the XDG spec) the
+        default is used.
 
     See https://github.com/i2mint/i2mint/issues/1.
     """
     env_var, default = APP_FOLDER_STANDARDS[folder_kind]
-    return os.path.expanduser(os.getenv(env_var, default))
+    # Per the XDG spec, an empty or relative value must be ignored (``os.getenv(env_var,
+    # default)`` would return "" for an empty variable and root the folder at the cwd).
+    # ``~`` is still expanded, as it always was.
+    env_value = os.path.expanduser(os.getenv(env_var) or "")
+    if env_value and os.path.isabs(env_value):
+        return env_value
+    return os.path.expanduser(default)
 
 
 get_app_config_folder = partial(get_app_folder, folder_kind="config")
