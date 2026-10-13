@@ -37,7 +37,7 @@ from collections.abc import (
     ItemsView as BaseItemsView,
 )
 
-from dol.errors import SetattrNotAllowed
+from dol.errors import SetattrNotAllowed, out_of_scope_prefix_error
 from dol.base import Store, KvReader, AttrNames, kv_walk
 from dol._paths_core import (
     PathContext,
@@ -3822,7 +3822,17 @@ def _affix_decoder(string: str, prefix: str = "", suffix: str = ""):
 
     >>> _affix_decoder('/folder/name.txt', prefix='/folder/', suffix='.txt')
     'name'
+
+    A string that doesn't start with ``prefix`` is outside the codec's scope: slicing
+    it would silently yield a key addressing a different object (i2mint/dol#82).
+
+    >>> _affix_decoder('/other/name.txt', prefix='/folder/')  # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+      ...
+    dol.errors.OutOfScopeKeyError: '/other/name.txt' does not start with the prefix '/folder/'...
     """
+    if prefix and string[: len(prefix)] != prefix:
+        raise out_of_scope_prefix_error(string, prefix)
     end_idx = -len(suffix) or None  # if suffix is empty, end_idx should be None
     return string[len(prefix) : end_idx]
 
