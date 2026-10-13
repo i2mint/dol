@@ -478,7 +478,10 @@ On Linux, this is typically ~/.config.
   **runtime**: Temporary runtime files that only exist while the app runs (e.g., PID files, Unix sockets, lock files, named pipes). Typically cleared on logout/reboot.
   **TL;DR**: config = settings, data = user files, cache = disposable, state = logs/history, runtime = process files.
 * **Returns:**
-  The full path of the app data folder.
+  The full path of the app data folder. The platform’s environment variable
+  (e.g. `XDG_CONFIG_HOME`) is used if set to a non-empty absolute path (after
+  `~` expansion); otherwise (unset, empty or relative, per the XDG spec) the
+  default is used.
 * **Return type:**
   [*str*](https://docs.python.org/3/builtins/stdtypes.html#str)
 
@@ -504,7 +507,10 @@ On Linux, this is typically ~/.config.
   **runtime**: Temporary runtime files that only exist while the app runs (e.g., PID files, Unix sockets, lock files, named pipes). Typically cleared on logout/reboot.
   **TL;DR**: config = settings, data = user files, cache = disposable, state = logs/history, runtime = process files.
 * **Returns:**
-  The full path of the app data folder.
+  The full path of the app data folder. The platform’s environment variable
+  (e.g. `XDG_CONFIG_HOME`) is used if set to a non-empty absolute path (after
+  `~` expansion); otherwise (unset, empty or relative, per the XDG spec) the
+  default is used.
 * **Return type:**
   [*str*](https://docs.python.org/3/builtins/stdtypes.html#str)
 
@@ -530,7 +536,10 @@ On Linux, this is typically ~/.config.
   **runtime**: Temporary runtime files that only exist while the app runs (e.g., PID files, Unix sockets, lock files, named pipes). Typically cleared on logout/reboot.
   **TL;DR**: config = settings, data = user files, cache = disposable, state = logs/history, runtime = process files.
 * **Returns:**
-  The full path of the app data folder.
+  The full path of the app data folder. The platform’s environment variable
+  (e.g. `XDG_CONFIG_HOME`) is used if set to a non-empty absolute path (after
+  `~` expansion); otherwise (unset, empty or relative, per the XDG spec) the
+  default is used.
 * **Return type:**
   [*str*](https://docs.python.org/3/builtins/stdtypes.html#str)
 

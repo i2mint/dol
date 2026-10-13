@@ -1,4 +1,4 @@
-> built 2026-10-13 11:13 UTC from 89e41ff (master) · dol 0.3.78. Details: build_info.json
+> built 2026-10-13 11:37 UTC from cb4692b (master) · dol 0.3.79. Details: build_info.json
 
 # index.html.md
 
@@ -15446,7 +15446,10 @@ On Linux, this is typically ~/.config.
   **runtime**: Temporary runtime files that only exist while the app runs (e.g., PID files, Unix sockets, lock files, named pipes). Typically cleared on logout/reboot.
   **TL;DR**: config = settings, data = user files, cache = disposable, state = logs/history, runtime = process files.
 * **Returns:**
-  The full path of the app data folder.
+  The full path of the app data folder. The platform’s environment variable
+  (e.g. `XDG_CONFIG_HOME`) is used if set to a non-empty absolute path (after
+  `~` expansion); otherwise (unset, empty or relative, per the XDG spec) the
+  default is used.
 * **Return type:**
   [*str*](https://docs.python.org/3/builtins/stdtypes.html#str)
 
@@ -15472,7 +15475,10 @@ On Linux, this is typically ~/.config.
   **runtime**: Temporary runtime files that only exist while the app runs (e.g., PID files, Unix sockets, lock files, named pipes). Typically cleared on logout/reboot.
   **TL;DR**: config = settings, data = user files, cache = disposable, state = logs/history, runtime = process files.
 * **Returns:**
-  The full path of the app data folder.
+  The full path of the app data folder. The platform’s environment variable
+  (e.g. `XDG_CONFIG_HOME`) is used if set to a non-empty absolute path (after
+  `~` expansion); otherwise (unset, empty or relative, per the XDG spec) the
+  default is used.
 * **Return type:**
   [*str*](https://docs.python.org/3/builtins/stdtypes.html#str)
 
@@ -15498,7 +15504,10 @@ On Linux, this is typically ~/.config.
   **runtime**: Temporary runtime files that only exist while the app runs (e.g., PID files, Unix sockets, lock files, named pipes). Typically cleared on logout/reboot.
   **TL;DR**: config = settings, data = user files, cache = disposable, state = logs/history, runtime = process files.
 * **Returns:**
-  The full path of the app data folder.
+  The full path of the app data folder. The platform’s environment variable
+  (e.g. `XDG_CONFIG_HOME`) is used if set to a non-empty absolute path (after
+  `~` expansion); otherwise (unset, empty or relative, per the XDG spec) the
+  default is used.
 * **Return type:**
   [*str*](https://docs.python.org/3/builtins/stdtypes.html#str)
 
@@ -16836,7 +16845,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-13 11:13 UTC** from commit <a href="https://github.com/i2mint/dol/commit/89e41ffd1242f68d48a438b12b5591c356cd5d7b"><code>89e41ff</code></a> on branch <code>master</code>, for **dol 0.3.78** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 11:37 UTC** from commit <a href="https://github.com/i2mint/dol/commit/cb4692b917f7a934a8ec11c518da2f0485e8123a"><code>cb4692b</code></a> on branch <code>master</code>, for **dol 0.3.79** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -16845,9 +16854,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/89e41ffd1242f68d48a438b12b5591c356cd5d7b"><code>89e41ffd1242f68d48a438b12b5591c356cd5d7b</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/cb4692b917f7a934a8ec11c518da2f0485e8123a"><code>cb4692b917f7a934a8ec11c518da2f0485e8123a</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.78</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.79</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -16856,9 +16865,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38388474400">38388474400</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38391270714">38391270714</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>475a003cb15a47ed438e54f8c141733718a899cf</code> (in the history of the built commit) |
+| Event commit | <code>b2733ef2822f08eb79f47e430d40b0b2d6b89ae4</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -16883,13 +16892,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.78/">0.3.78</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.79/">0.3.79</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 89e41ffd1242f68d48a438b12b5591c356cd5d7b
+git checkout cb4692b917f7a934a8ec11c518da2f0485e8123a
 pip install "epythet==0.2.15"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
