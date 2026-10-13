@@ -226,3 +226,10 @@ def test_filter_then_strip_suffix_is_unchanged():
         filt_iter(filt=lambda k: k.endswith(".txt")), KeyCodecs.suffixed(".txt")
     )(dict(base))
     assert sorted(s) == ["bar", "foo"]
+
+
+def test_head_skips_out_of_scope_ids():
+    from dol import KeyCodecs
+
+    s = KeyCodecs.prefixed("p/")({"stray": 0, "p/a": 1})
+    assert s.head() == ("a", 1)

@@ -149,9 +149,8 @@ def out_of_scope_prefix_error(_id, prefix):
     """The ``OutOfScopeKeyError`` for an ``_id`` that doesn't start with ``prefix``."""
     return OutOfScopeKeyError(
         f"{_id!r} does not start with the prefix {prefix!r}, so it is outside this "
-        "store's scope. To view only the in-scope keys, filter before relativizing, "
-        "e.g. Pipe(filt_iter.prefixes(prefix), KeyCodecs.prefixed(prefix)) "
-        "(see i2mint/dol#82)."
+        "store's scope, so iterating the store skips it and it can't be read or "
+        "written through an outer key (see i2mint/dol#82)."
     )
 
 
@@ -159,9 +158,8 @@ def out_of_scope_suffix_error(_id, suffix):
     """The ``OutOfScopeKeyError`` for an ``_id`` that doesn't end with ``suffix``."""
     return OutOfScopeKeyError(
         f"{_id!r} does not end with the suffix {suffix!r}, so it is outside this "
-        "store's scope. To view only the in-scope keys, filter before decoding, "
-        "e.g. filt_iter(filt=lambda k: k.endswith(suffix)) "
-        "(see i2mint/dol#114)."
+        "store's scope, so iterating the store skips it and it can't be read or "
+        "written through an outer key (see i2mint/dol#114)."
     )
 
 

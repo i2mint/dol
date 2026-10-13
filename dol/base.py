@@ -857,7 +857,11 @@ class Store(KvPersister):
                 warn(msg)
 
             for _id in self.store:
-                return self._key_of_id(_id), self._obj_of_data(self.store[_id])
+                try:
+                    k = self._key_of_id(_id)
+                except OutOfScopeKeyError:
+                    continue
+                return k, self._obj_of_data(self.store[_id])
         # NOTE: Old version didn't work when key mapping was asymmetrical
         # for k, v in self.items():
         #     return k, v
