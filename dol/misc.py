@@ -4,13 +4,6 @@
 (``.json``, ``.csv``, ``.pkl``, ...); ``MiscReaderMixin``/``MiscStoreMixin`` add the same
 key-conditioned (de)serialization to any store.
 
-.. warning::
-
-    The default read codecs unpickle ``.pkl``/``.pickle`` keys with ``pickle.loads``,
-    which is arbitrary code execution. Never point these tools at untrusted content or
-    request-derived keys; for such sources use an ``incoming_val_trans_for_key`` without
-    the pickle extensions (i2mint/dol#113).
-
     >>> from dol.misc import MiscStoreMixin
     >>> class M(MiscStoreMixin, dict):
     ...     pass
@@ -18,6 +11,15 @@ key-conditioned (de)serialization to any store.
     >>> m['a.json'] = {'x': 1}
     >>> dict.__getitem__(m, 'a.json'), m['a.json']
     (b'{"x": 1}', {'x': 1})
+
+.. warning::
+
+    The default read codecs unpickle ``.pkl``/``.pickle`` keys with ``pickle.loads``,
+    which is arbitrary code execution. Never point these tools at untrusted content or
+    request-derived keys, and remember that ``get_obj`` also accepts URLs
+    (i2mint/dol#113). For such sources pass an ``incoming_val_trans_for_key`` without
+    the pickle extensions: those keys then come back as raw bytes (the default
+    transform is the identity), never unpickled.
 """
 
 # TODO: Completely redo this, using preset and postget and making it into a plugin
@@ -116,9 +118,10 @@ class MiscReaderMixin:
 
     Security:
         ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
-        never use this over untrusted content or with request-derived keys. Give it an
-        ``incoming_val_trans_for_key`` without the pickle extensions to refuse them
-        (i2mint/dol#113).
+        never use this over untrusted content or with request-derived keys. For
+        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``
+        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the
+        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
 
 
     >>> # make a reader that will wrap a dict
@@ -251,9 +254,10 @@ def get_obj(
 
     Security:
         ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
-        never use this over untrusted content or with request-derived keys. Give it an
-        ``incoming_val_trans_for_key`` without the pickle extensions to refuse them
-        (i2mint/dol#113).
+        never use this over untrusted content or with request-derived keys. For
+        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``
+        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the
+        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
     """
     if k.startswith("http://") or k.startswith("https://"):
         v = url_to_bytes(k)
@@ -282,9 +286,10 @@ class MiscGetter:
 
     Security:
         ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
-        never use this over untrusted content or with request-derived keys. Give it an
-        ``incoming_val_trans_for_key`` without the pickle extensions to refuse them
-        (i2mint/dol#113).
+        never use this over untrusted content or with request-derived keys. For
+        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``
+        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the
+        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
 
     >>> from dol.misc import get_obj, misc_objs_get
     >>> import os
@@ -352,9 +357,10 @@ class MiscStoreMixin(MiscReaderMixin):
 
     Security:
         ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
-        never use this over untrusted content or with request-derived keys. Give it an
-        ``incoming_val_trans_for_key`` without the pickle extensions to refuse them
-        (i2mint/dol#113).
+        never use this over untrusted content or with request-derived keys. For
+        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``
+        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the
+        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
 
     See also:
         preset and postget args from wrap_kvs decorator from dol.trans.
@@ -457,6 +463,13 @@ class MiscGetterAndSetter(MiscGetter):
     """
     An object to read and write (and nothing else) to a store (default local) with automatic (de)serialization
     according to a property of the key (default: file extension).
+
+    Security:
+        ``.pkl``/``.pickle`` keys are unpickled by default (arbitrary code execution):
+        never use this over untrusted content or with request-derived keys. For
+        ``get_obj`` and the getters this includes URLs: ``get_obj('https://.../x.pkl')``
+        downloads and unpickles. Give it an ``incoming_val_trans_for_key`` without the
+        pickle extensions and such keys come back as raw bytes instead (i2mint/dol#113).
 
     >>> from dol.misc import set_obj, misc_objs  # the function and the object
     >>> import json
