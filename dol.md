@@ -1,4 +1,4 @@
-> built 2026-10-13 02:30 UTC from 13a8f13 (master) · dol 0.3.71. Details: build_info.json
+> built 2026-10-13 02:44 UTC from cafb308 (master) · dol 0.3.72. Details: build_info.json
 
 # index.html.md
 
@@ -3401,24 +3401,26 @@ that skips (or reports) the keys whose value cannot be fetched.
 
 | [`items_with_caught_exceptions`](_autosummary/dol.errors.html.md#dol.errors.items_with_caught_exceptions)(d[, callback, ...])   | Do what Mapping.items() does, but catching exceptions when getting the values for a key.   |
 |-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| [`out_of_scope_prefix_error`](_autosummary/dol.errors.html.md#dol.errors.out_of_scope_prefix_error)(_id, prefix)             | The `OutOfScopeKeyError` for an `_id` that doesn't start with `prefix`.                    |
 
 ### Exceptions
 
-| [`AlreadyExists`](_autosummary/dol.errors.html.md#dol.errors.AlreadyExists)             | To use if an object already exists (and shouldn't; for example, to protect overwrites)           |
-|----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| [`DeletionsNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.DeletionsNotAllowed)       | Delete OperationNotAllowed                                                                       |
-| [`IterationNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.IterationNotAllowed)       | Iteration OperationNotAllowed                                                                    |
-| [`KeyValidationError`](_autosummary/dol.errors.html.md#dol.errors.KeyValidationError)        | Error to raise when a key is not valid                                                           |
-| [`MethodFuncNotValid`](_autosummary/dol.errors.html.md#dol.errors.MethodFuncNotValid)        | Use when method function is not valid                                                            |
-| [`MethodNameAlreadyExists`](_autosummary/dol.errors.html.md#dol.errors.MethodNameAlreadyExists)   | To use when a method name already exists (and shouldn't)                                         |
-| [`NoSuchKeyError`](_autosummary/dol.errors.html.md#dol.errors.NoSuchKeyError)            | When a requested key doesn't exist                                                               |
-| [`NotAllowed`](_autosummary/dol.errors.html.md#dol.errors.NotAllowed)                | To use to indicate that something is not allowed                                                 |
-| [`NotValid`](_autosummary/dol.errors.html.md#dol.errors.NotValid)                  | To use to indicate when an object doesn't fit expected properties                                |
-| [`OperationNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.OperationNotAllowed)       | When a given operation is not allowed (through being disabled, conditioned, or just implemented) |
-| [`OverWritesNotAllowedError`](_autosummary/dol.errors.html.md#dol.errors.OverWritesNotAllowedError) | Error to raise when a writes to existing keys are not allowed                                    |
-| [`ReadsNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.ReadsNotAllowed)           | Read OperationNotAllowed                                                                         |
-| [`SetattrNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.SetattrNotAllowed)         | An attribute was requested to be set, but some conditions didn't apply                           |
-| [`WritesNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.WritesNotAllowed)          | Write OperationNotAllowed                                                                        |
+| [`AlreadyExists`](_autosummary/dol.errors.html.md#dol.errors.AlreadyExists)             | To use if an object already exists (and shouldn't; for example, to protect overwrites)                                                                                                                                                   |
+|----------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`DeletionsNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.DeletionsNotAllowed)       | Delete OperationNotAllowed                                                                                                                                                                                                               |
+| [`IterationNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.IterationNotAllowed)       | Iteration OperationNotAllowed                                                                                                                                                                                                            |
+| [`KeyValidationError`](_autosummary/dol.errors.html.md#dol.errors.KeyValidationError)        | Error to raise when a key is not valid                                                                                                                                                                                                   |
+| [`MethodFuncNotValid`](_autosummary/dol.errors.html.md#dol.errors.MethodFuncNotValid)        | Use when method function is not valid                                                                                                                                                                                                    |
+| [`MethodNameAlreadyExists`](_autosummary/dol.errors.html.md#dol.errors.MethodNameAlreadyExists)   | To use when a method name already exists (and shouldn't)                                                                                                                                                                                 |
+| [`NoSuchKeyError`](_autosummary/dol.errors.html.md#dol.errors.NoSuchKeyError)            | When a requested key doesn't exist                                                                                                                                                                                                       |
+| [`NotAllowed`](_autosummary/dol.errors.html.md#dol.errors.NotAllowed)                | To use to indicate that something is not allowed                                                                                                                                                                                         |
+| [`NotValid`](_autosummary/dol.errors.html.md#dol.errors.NotValid)                  | To use to indicate when an object doesn't fit expected properties                                                                                                                                                                        |
+| [`OperationNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.OperationNotAllowed)       | When a given operation is not allowed (through being disabled, conditioned, or just implemented)                                                                                                                                         |
+| [`OutOfScopeKeyError`](_autosummary/dol.errors.html.md#dol.errors.OutOfScopeKeyError)        | An inner key (id) lies outside a key-mapping layer's scope (e.g. it does not start with the layer's prefix), so it has no outer key: mapping it anyway would silently produce a key that addresses a *different* object (i2mint/dol#82). |
+| [`OverWritesNotAllowedError`](_autosummary/dol.errors.html.md#dol.errors.OverWritesNotAllowedError) | Error to raise when a writes to existing keys are not allowed                                                                                                                                                                            |
+| [`ReadsNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.ReadsNotAllowed)           | Read OperationNotAllowed                                                                                                                                                                                                                 |
+| [`SetattrNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.SetattrNotAllowed)         | An attribute was requested to be set, but some conditions didn't apply                                                                                                                                                                   |
+| [`WritesNotAllowed`](_autosummary/dol.errors.html.md#dol.errors.WritesNotAllowed)          | Write OperationNotAllowed                                                                                                                                                                                                                |
 
 ### *exception* dol.errors.AlreadyExists
 
@@ -3479,6 +3481,14 @@ To use to indicate when an object doesn’t fit expected properties
 Bases: [`NotAllowed`](_autosummary/dol.errors.html.md#dol.errors.NotAllowed), [`NotImplementedError`](https://docs.python.org/3/builtins/exceptions.html#NotImplementedError)
 
 When a given operation is not allowed (through being disabled, conditioned, or just implemented)
+
+### *exception* dol.errors.OutOfScopeKeyError
+
+Bases: [`KeyError`](https://docs.python.org/3/builtins/exceptions.html#KeyError), [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
+
+An inner key (id) lies outside a key-mapping layer’s scope (e.g. it does not
+start with the layer’s prefix), so it has no outer key: mapping it anyway would
+silently produce a key that addresses a *different* object (i2mint/dol#82).
 
 ### *exception* dol.errors.OverWritesNotAllowedError
 
@@ -3573,6 +3583,10 @@ Or, in many cases, you can just use `items_with_caught_exceptions`.
 7
 [(2, 2), (4, 4), (6, 6), (8, 8)]
 ```
+
+### dol.errors.out_of_scope_prefix_error(\_id, prefix)
+
+The `OutOfScopeKeyError` for an `_id` that doesn’t start with `prefix`.
 
 
 # _autosummary/dol.explicit.html.md
@@ -16720,7 +16734,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-13 02:30 UTC** from commit <a href="https://github.com/i2mint/dol/commit/13a8f13be8761cd377cbe71c7ea2c4dd400f0efa"><code>13a8f13</code></a> on branch <code>master</code>, for **dol 0.3.71** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 02:44 UTC** from commit <a href="https://github.com/i2mint/dol/commit/cafb308b79594ee00e7af2ea8b4f48b4c72948bf"><code>cafb308</code></a> on branch <code>master</code>, for **dol 0.3.72** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -16729,9 +16743,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/13a8f13be8761cd377cbe71c7ea2c4dd400f0efa"><code>13a8f13be8761cd377cbe71c7ea2c4dd400f0efa</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/cafb308b79594ee00e7af2ea8b4f48b4c72948bf"><code>cafb308b79594ee00e7af2ea8b4f48b4c72948bf</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.71</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.72</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -16740,9 +16754,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38337085626">38337085626</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38338171161">38338171161</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>ea3d271e6fa17d181ba610ae7e4ae7f2c50a2ff1</code> (in the history of the built commit) |
+| Event commit | <code>4cbcf8d8130e0e2f2d8a89fa3b34c26974c8fbf2</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -16767,13 +16781,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.71/">0.3.71</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.72/">0.3.72</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 13a8f13be8761cd377cbe71c7ea2c4dd400f0efa
+git checkout cafb308b79594ee00e7af2ea8b4f48b4c72948bf
 pip install "epythet==0.2.12"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

@@ -16,24 +16,26 @@ that skips (or reports) the keys whose value cannot be fetched.
 
 | [`items_with_caught_exceptions`](#dol.errors.items_with_caught_exceptions)(d[, callback, ...])   | Do what Mapping.items() does, but catching exceptions when getting the values for a key.   |
 |-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| [`out_of_scope_prefix_error`](#dol.errors.out_of_scope_prefix_error)(_id, prefix)             | The `OutOfScopeKeyError` for an `_id` that doesn't start with `prefix`.                    |
 
 ### Exceptions
 
-| [`AlreadyExists`](#dol.errors.AlreadyExists)             | To use if an object already exists (and shouldn't; for example, to protect overwrites)           |
-|----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| [`DeletionsNotAllowed`](#dol.errors.DeletionsNotAllowed)       | Delete OperationNotAllowed                                                                       |
-| [`IterationNotAllowed`](#dol.errors.IterationNotAllowed)       | Iteration OperationNotAllowed                                                                    |
-| [`KeyValidationError`](#dol.errors.KeyValidationError)        | Error to raise when a key is not valid                                                           |
-| [`MethodFuncNotValid`](#dol.errors.MethodFuncNotValid)        | Use when method function is not valid                                                            |
-| [`MethodNameAlreadyExists`](#dol.errors.MethodNameAlreadyExists)   | To use when a method name already exists (and shouldn't)                                         |
-| [`NoSuchKeyError`](#dol.errors.NoSuchKeyError)            | When a requested key doesn't exist                                                               |
-| [`NotAllowed`](#dol.errors.NotAllowed)                | To use to indicate that something is not allowed                                                 |
-| [`NotValid`](#dol.errors.NotValid)                  | To use to indicate when an object doesn't fit expected properties                                |
-| [`OperationNotAllowed`](#dol.errors.OperationNotAllowed)       | When a given operation is not allowed (through being disabled, conditioned, or just implemented) |
-| [`OverWritesNotAllowedError`](#dol.errors.OverWritesNotAllowedError) | Error to raise when a writes to existing keys are not allowed                                    |
-| [`ReadsNotAllowed`](#dol.errors.ReadsNotAllowed)           | Read OperationNotAllowed                                                                         |
-| [`SetattrNotAllowed`](#dol.errors.SetattrNotAllowed)         | An attribute was requested to be set, but some conditions didn't apply                           |
-| [`WritesNotAllowed`](#dol.errors.WritesNotAllowed)          | Write OperationNotAllowed                                                                        |
+| [`AlreadyExists`](#dol.errors.AlreadyExists)             | To use if an object already exists (and shouldn't; for example, to protect overwrites)                                                                                                                                                   |
+|----------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`DeletionsNotAllowed`](#dol.errors.DeletionsNotAllowed)       | Delete OperationNotAllowed                                                                                                                                                                                                               |
+| [`IterationNotAllowed`](#dol.errors.IterationNotAllowed)       | Iteration OperationNotAllowed                                                                                                                                                                                                            |
+| [`KeyValidationError`](#dol.errors.KeyValidationError)        | Error to raise when a key is not valid                                                                                                                                                                                                   |
+| [`MethodFuncNotValid`](#dol.errors.MethodFuncNotValid)        | Use when method function is not valid                                                                                                                                                                                                    |
+| [`MethodNameAlreadyExists`](#dol.errors.MethodNameAlreadyExists)   | To use when a method name already exists (and shouldn't)                                                                                                                                                                                 |
+| [`NoSuchKeyError`](#dol.errors.NoSuchKeyError)            | When a requested key doesn't exist                                                                                                                                                                                                       |
+| [`NotAllowed`](#dol.errors.NotAllowed)                | To use to indicate that something is not allowed                                                                                                                                                                                         |
+| [`NotValid`](#dol.errors.NotValid)                  | To use to indicate when an object doesn't fit expected properties                                                                                                                                                                        |
+| [`OperationNotAllowed`](#dol.errors.OperationNotAllowed)       | When a given operation is not allowed (through being disabled, conditioned, or just implemented)                                                                                                                                         |
+| [`OutOfScopeKeyError`](#dol.errors.OutOfScopeKeyError)        | An inner key (id) lies outside a key-mapping layer's scope (e.g. it does not start with the layer's prefix), so it has no outer key: mapping it anyway would silently produce a key that addresses a *different* object (i2mint/dol#82). |
+| [`OverWritesNotAllowedError`](#dol.errors.OverWritesNotAllowedError) | Error to raise when a writes to existing keys are not allowed                                                                                                                                                                            |
+| [`ReadsNotAllowed`](#dol.errors.ReadsNotAllowed)           | Read OperationNotAllowed                                                                                                                                                                                                                 |
+| [`SetattrNotAllowed`](#dol.errors.SetattrNotAllowed)         | An attribute was requested to be set, but some conditions didn't apply                                                                                                                                                                   |
+| [`WritesNotAllowed`](#dol.errors.WritesNotAllowed)          | Write OperationNotAllowed                                                                                                                                                                                                                |
 
 ### *exception* dol.errors.AlreadyExists
 
@@ -94,6 +96,14 @@ To use to indicate when an object doesn’t fit expected properties
 Bases: [`NotAllowed`](#dol.errors.NotAllowed), [`NotImplementedError`](https://docs.python.org/3/builtins/exceptions.html#NotImplementedError)
 
 When a given operation is not allowed (through being disabled, conditioned, or just implemented)
+
+### *exception* dol.errors.OutOfScopeKeyError
+
+Bases: [`KeyError`](https://docs.python.org/3/builtins/exceptions.html#KeyError), [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
+
+An inner key (id) lies outside a key-mapping layer’s scope (e.g. it does not
+start with the layer’s prefix), so it has no outer key: mapping it anyway would
+silently produce a key that addresses a *different* object (i2mint/dol#82).
 
 ### *exception* dol.errors.OverWritesNotAllowedError
 
@@ -188,3 +198,7 @@ Or, in many cases, you can just use `items_with_caught_exceptions`.
 7
 [(2, 2), (4, 4), (6, 6), (8, 8)]
 ```
+
+### dol.errors.out_of_scope_prefix_error(\_id, prefix)
+
+The `OutOfScopeKeyError` for an `_id` that doesn’t start with `prefix`.

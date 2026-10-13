@@ -286,6 +286,9 @@ that skips (or reports) the keys whose value cannot be fetched.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.errors.items_with_caught_exceptions" title="dol.errors.items_with_caught_exceptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">items_with_caught_exceptions</span></code></a>(d[, callback, ...])</p></td>
 <td><p>Do what Mapping.items() does, but catching exceptions when getting the values for a key.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.errors.out_of_scope_prefix_error" title="dol.errors.out_of_scope_prefix_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">out_of_scope_prefix_error</span></code></a>(_id, prefix)</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">OutOfScopeKeyError</span></code> for an <code class="docutils literal notranslate"><span class="pre">_id</span></code> that doesn't start with <code class="docutils literal notranslate"><span class="pre">prefix</span></code>.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -323,16 +326,19 @@ that skips (or reports) the keys whose value cannot be fetched.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.errors.OperationNotAllowed" title="dol.errors.OperationNotAllowed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OperationNotAllowed</span></code></a></p></td>
 <td><p>When a given operation is not allowed (through being disabled, conditioned, or just implemented)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.errors.OverWritesNotAllowedError" title="dol.errors.OverWritesNotAllowedError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OverWritesNotAllowedError</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.errors.OutOfScopeKeyError" title="dol.errors.OutOfScopeKeyError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OutOfScopeKeyError</span></code></a></p></td>
+<td><p>An inner key (id) lies outside a key-mapping layer's scope (e.g. it does not start with the layer's prefix), so it has no outer key: mapping it anyway would silently produce a key that addresses a <em>different</em> object (i2mint/dol#82).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.errors.OverWritesNotAllowedError" title="dol.errors.OverWritesNotAllowedError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OverWritesNotAllowedError</span></code></a></p></td>
 <td><p>Error to raise when a writes to existing keys are not allowed</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.errors.ReadsNotAllowed" title="dol.errors.ReadsNotAllowed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReadsNotAllowed</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.errors.ReadsNotAllowed" title="dol.errors.ReadsNotAllowed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReadsNotAllowed</span></code></a></p></td>
 <td><p>Read OperationNotAllowed</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.errors.SetattrNotAllowed" title="dol.errors.SetattrNotAllowed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SetattrNotAllowed</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.errors.SetattrNotAllowed" title="dol.errors.SetattrNotAllowed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SetattrNotAllowed</span></code></a></p></td>
 <td><p>An attribute was requested to be set, but some conditions didn't apply</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.errors.WritesNotAllowed" title="dol.errors.WritesNotAllowed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WritesNotAllowed</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.errors.WritesNotAllowed" title="dol.errors.WritesNotAllowed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WritesNotAllowed</span></code></a></p></td>
 <td><p>Write OperationNotAllowed</p></td>
 </tr>
 </tbody>
@@ -406,6 +412,15 @@ that skips (or reports) the keys whose value cannot be fetched.</p>
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.errors.</span></span><span class="sig-name descname"><span class="pre">OperationNotAllowed</span></span><a class="reference internal" href="../_modules/dol/errors.html#OperationNotAllowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.errors.OperationNotAllowed" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dol.errors.NotAllowed" title="dol.errors.NotAllowed"><code class="xref py py-class docutils literal notranslate"><span class="pre">NotAllowed</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#NotImplementedError" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">NotImplementedError</span></code></a></p>
 <p>When a given operation is not allowed (through being disabled, conditioned, or just implemented)</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="dol.errors.OutOfScopeKeyError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.errors.</span></span><span class="sig-name descname"><span class="pre">OutOfScopeKeyError</span></span><a class="reference internal" href="../_modules/dol/errors.html#OutOfScopeKeyError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.errors.OutOfScopeKeyError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyError</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<p>An inner key (id) lies outside a key-mapping layer’s scope (e.g. it does not
+start with the layer’s prefix), so it has no outer key: mapping it anyway would
+silently produce a key that addresses a <em>different</em> object (i2mint/dol#82).</p>
 </dd></dl>
 
 <dl class="py exception">
@@ -507,6 +522,12 @@ keys whose value raised.</p></li>
 </div>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.errors.out_of_scope_prefix_error">
+<span class="sig-prename descclassname"><span class="pre">dol.errors.</span></span><span class="sig-name descname"><span class="pre">out_of_scope_prefix_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/errors.html#out_of_scope_prefix_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.errors.out_of_scope_prefix_error" title="Link to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">OutOfScopeKeyError</span></code> for an <code class="docutils literal notranslate"><span class="pre">_id</span></code> that doesn’t start with <code class="docutils literal notranslate"><span class="pre">prefix</span></code>.</p>
+</dd></dl>
+
 </section>
 
         </article>
@@ -571,11 +592,13 @@ keys whose value raised.</p></li>
 <li><a class="reference internal" href="#dol.errors.NotAllowed"><code class="docutils literal notranslate"><span class="pre">NotAllowed</span></code></a></li>
 <li><a class="reference internal" href="#dol.errors.NotValid"><code class="docutils literal notranslate"><span class="pre">NotValid</span></code></a></li>
 <li><a class="reference internal" href="#dol.errors.OperationNotAllowed"><code class="docutils literal notranslate"><span class="pre">OperationNotAllowed</span></code></a></li>
+<li><a class="reference internal" href="#dol.errors.OutOfScopeKeyError"><code class="docutils literal notranslate"><span class="pre">OutOfScopeKeyError</span></code></a></li>
 <li><a class="reference internal" href="#dol.errors.OverWritesNotAllowedError"><code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedError</span></code></a></li>
 <li><a class="reference internal" href="#dol.errors.ReadsNotAllowed"><code class="docutils literal notranslate"><span class="pre">ReadsNotAllowed</span></code></a></li>
 <li><a class="reference internal" href="#dol.errors.SetattrNotAllowed"><code class="docutils literal notranslate"><span class="pre">SetattrNotAllowed</span></code></a></li>
 <li><a class="reference internal" href="#dol.errors.WritesNotAllowed"><code class="docutils literal notranslate"><span class="pre">WritesNotAllowed</span></code></a></li>
 <li><a class="reference internal" href="#dol.errors.items_with_caught_exceptions"><code class="docutils literal notranslate"><span class="pre">items_with_caught_exceptions()</span></code></a></li>
+<li><a class="reference internal" href="#dol.errors.out_of_scope_prefix_error"><code class="docutils literal notranslate"><span class="pre">out_of_scope_prefix_error()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -587,7 +610,7 @@ keys whose value raised.</p></li>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=1f768dcd"></script>
+</div><script src="../_static/documentation_options.js?v=3fc71726"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
