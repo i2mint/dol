@@ -313,6 +313,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Callable</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">OutOfScopeKeyError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.util</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">wraps</span><span class="p">,</span>
     <span class="n">_disabled_clear_method</span><span class="p">,</span>
@@ -1107,8 +1108,22 @@
 
     <span class="c1"># Explore ####################################################################</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KeyIter</span><span class="p">:</span>
-        <span class="k">yield from</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_of_id</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
-        <span class="c1"># return map(self._key_of_id, self.store.__iter__())</span>
+<span class="w">        </span><span class="sd">"""Iterate over the outer keys of the inner store's ids.</span>
+
+<span class="sd">        An id that lies outside the key layer's scope (``OutOfScopeKeyError``: e.g. it</span>
+<span class="sd">        lacks the prefix/suffix the layer strips) has no outer key, so it is skipped:</span>
+<span class="sd">        the store is a *view* of the in-scope ids. Reading or writing such an id through</span>
+<span class="sd">        an outer key is still impossible, and calling ``_key_of_id`` directly still</span>
+<span class="sd">        raises (i2mint/dol#82, #114). Note that ``len`` counts inner ids, so it may</span>
+<span class="sd">        exceed the number of keys iterated.</span>
+<span class="sd">        """</span>
+        <span class="n">key_of_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_of_id</span>
+        <span class="k">for</span> <span class="n">_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">k</span> <span class="o">=</span> <span class="n">key_of_id</span><span class="p">(</span><span class="n">_id</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">OutOfScopeKeyError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">yield</span> <span class="n">k</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
@@ -1144,7 +1159,11 @@
                 <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_of_id</span><span class="p">(</span><span class="n">_id</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">_id</span><span class="p">])</span></div>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_of_id</span><span class="p">(</span><span class="n">_id</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">OutOfScopeKeyError</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">return</span> <span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_of_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">_id</span><span class="p">])</span></div>
 
         <span class="c1"># NOTE: Old version didn't work when key mapping was asymmetrical</span>
         <span class="c1"># for k, v in self.items():</span>
@@ -1665,7 +1684,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=7ea422f0"></script>
+</div><script src="../../_static/documentation_options.js?v=d7e45696"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
