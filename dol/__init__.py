@@ -203,6 +203,7 @@ from dol.paths import (
 from dol.dig import (
     trace_getitem,  # trace getitem calls, stepping through the layers
     inner_most_key,  # resolve a key through every layer of a wrapped store
+    key_in_scope,  # whether a key passes every filt_iter scope of a wrapped store
     unravel_key,  # ... same, but yielding the key at each layer
 )
 

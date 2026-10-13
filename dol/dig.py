@@ -121,6 +121,75 @@ def inner_most(store, arg, method, default=no_default):
     return x
 
 
+def _layer_filters(layer):
+    """The ``filt_iter`` predicates of one layer (all classes of its MRO that recorded some).
+
+    Only a class's *own* record counts: a ``Store`` wrapper also delegates the attributes of
+    the store it wraps (a ``DelegatedAttribute``), which would attribute an inner layer's
+    predicates to the outer one, in the wrong key coordinates.
+    """
+    return [
+        f
+        for cls in type(layer).__mro__
+        if isinstance(own := cls.__dict__.get("_filt_iter_filts"), tuple)
+        for f in own
+    ]
+
+
+def key_in_scope(store, k) -> bool:
+    """Whether the key ``k`` of ``store`` is inside every ``filt_iter`` scope of its layers.
+
+    A side-effect-free probe: nothing is read or written. ``k`` is followed through the layers
+    outermost first; each layer's ``filt_iter`` predicates are applied to the key *as it
+    enters that layer*, which is what ``store[k] = v`` would do, then ``_id_of_key`` maps it
+    for the layer below. A leaf that has an ``is_valid_key`` method (e.g. ``Files``) is asked
+    about the innermost key last.
+
+    >>> from dol import filt_iter, KeyCodecs
+    >>> s = KeyCodecs.prefixed('data/')(filt_iter(dict, filt=lambda k: k.endswith('.txt')))()
+    >>> key_in_scope(s, 'a.txt'), key_in_scope(s, 'a.bin')
+    (True, False)
+
+    Here the ``filt_iter`` sits *below* the prefix, so it sees ``'data/a.txt'``, not
+    ``'a.txt'``:
+
+    >>> s = KeyCodecs.prefixed('data/')(filt_iter(dict, filt=lambda k: k.startswith('data/a')))()
+    >>> key_in_scope(s, 'a.txt'), key_in_scope(s, 'b.txt')
+    (True, False)
+
+    The predicate is the layer's own, so a predicate that raises on a key raises here too
+    (as ``s[k]`` would), and so does a layer whose ``_id_of_key`` raises for the key (e.g. a
+    key mapping that does not know it): the answer is a ``bool`` only where a write would be
+    accepted or refused, not failed. "Side-effect-free" holds as far as the layers'
+    ``_id_of_key`` and the leaf's ``is_valid_key`` are.
+
+    Limits (the probe reads what the layers *declare*): a layer that maps keys but has no
+    ``_id_of_key`` cannot be followed (``TypeError``); a layer that looks keys up by its own
+    means while keeping the do-nothing ``_id_of_key`` (``add_path_access``, ``flatten``, whose
+    keys are tuples walked through the inner store) gets a silently wrong answer; so does a
+    subclass that changes the key inside ``__setitem__`` before calling ``super()``.
+    """
+    layer, seen = store, set()
+    while True:
+        for filt in _layer_filters(layer):
+            if not filt(k):
+                return False
+        inner = getattr(layer, "store", None)
+        if inner is None or id(layer) in seen:
+            break
+        seen.add(id(layer))
+        id_of_key = getattr(layer, "_id_of_key", None)
+        if not callable(id_of_key):
+            raise TypeError(
+                f"{type(layer).__name__} wraps a store but defines no _id_of_key, so a key "
+                "cannot be followed through it"
+            )
+        k = id_of_key(k)
+        layer = inner
+    is_valid_key = getattr(layer, "is_valid_key", None)
+    return bool(is_valid_key(k)) if callable(is_valid_key) else True
+
+
 # TODO: Better change the signature to reflect context (k (key) or v (val) instead of arg)
 unravel_key = partial(store_trans_path, method="_id_of_key")
 print_key_trans_path = partial(print_trans_path, method="_id_of_key")

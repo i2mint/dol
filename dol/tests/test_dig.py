@@ -1,5 +1,7 @@
 """Tests for dol.dig module (layer introspection utilities)"""
 
+import os
+
 import pytest
 from dol.dig import (
     get_first_attr_found,
@@ -342,3 +344,54 @@ def test_make_missing_dirs_mixin_does_not_mkdir_under_the_cwd(tmpdir):
         assert not os.path.exists(os.path.join(cwd, "sub")), "mkdir'd outside the store"
     finally:
         os.chdir(previous)
+
+
+# ---- key_in_scope (i2mint/dol#129) -----------------------------------------------------
+
+
+def test_key_in_scope_follows_the_layers_in_order():
+    from dol import KeyCodecs, filt_iter, key_in_scope
+
+    txt = lambda k: k.endswith(".txt")
+    # filter above the prefix codec: sees the outer key
+    above = filt_iter(KeyCodecs.prefixed("data/")(dict)(), filt=lambda k: k.startswith("a"))
+    assert key_in_scope(above, "a.txt") and not key_in_scope(above, "b.txt")
+    # filter below the codec: sees the mapped key
+    below = KeyCodecs.prefixed("data/")(filt_iter(dict, filt=lambda k: k.startswith("data/a")))()
+    assert key_in_scope(below, "a.txt") and not key_in_scope(below, "b.txt")
+    # stacked filters compose, in either form
+    both = filt_iter(filt_iter(dict, filt=txt), filt=lambda k: k.startswith("a"))()
+    assert key_in_scope(both, "a.txt")
+    assert not key_in_scope(both, "a.bin") and not key_in_scope(both, "b.txt")
+    # an iterable filter works as it does in filt_iter
+    assert key_in_scope(filt_iter(dict, filt=["x"])(), "x")
+    assert not key_in_scope(filt_iter(dict, filt=["x"])(), "y")
+
+
+def test_key_in_scope_matches_what_a_write_accepts(tmp_path):
+    from dol import Files, KeyCodecs, filt_iter, key_in_scope
+
+    root = str(tmp_path) + os.sep
+    s = KeyCodecs.suffixed(".txt")(filt_iter(Files, filt=lambda k: "/a/" in k))(root)
+    for k in ("a/x", "b/x", "a/y/z"):
+        try:
+            s[k] = b"1"
+            wrote = True
+        except KeyError:
+            wrote = False
+        assert key_in_scope(s, k) is wrote
+
+
+def test_key_in_scope_asks_the_leaf_and_refuses_opaque_layers(tmp_path):
+    from dol import Files, key_in_scope
+
+    s = Files(str(tmp_path))
+    assert key_in_scope(s, "a") is True
+    assert key_in_scope(s, "../a") is False  # the leaf's is_valid_key: leaves rootdir (#107)
+
+    class Opaque:
+        store = {}
+
+    with pytest.raises(TypeError, match="_id_of_key"):
+        key_in_scope(Opaque(), "k")
+    assert key_in_scope({}, "k") is True  # no layer, no scope
