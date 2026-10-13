@@ -465,8 +465,6 @@ def delegate_to(
     def delegation_decorator(wrapper_cls: type):
         @wraps(wrapper_cls, updated=())
         class Wrap(wrapper_cls):
-            # _type_of_wrapped = wrapped
-            # _delegation_attr = delegation_attr
             _class_trans = class_trans
 
             @wraps(wrapper_cls.__init__)
@@ -503,6 +501,16 @@ def delegate_to(
                 wrapped=wrapped_attr,
             )
             setattr(Wrap, attr, delegated_attribute)
+
+        # Introspection attributes of the generated class (read them from the class,
+        # not from an instance: a wrapping ``Store`` instance would forward the inner
+        # layer's). Set AFTER the delegation loop, so that when ``wrapped`` is itself a
+        # class wrapper its own copies (which ``dir`` lists) are not delegated over
+        # these. A wrapped class's own attributes of these names are no longer
+        # forwarded to the outer instance.
+        Wrap._wrapped_class = wrapped
+        Wrap._wrapper_class = wrapper_cls
+        Wrap._delegation_attr = delegation_attr
 
         if class_trans:
             Wrap = class_trans(Wrap)
