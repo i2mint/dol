@@ -141,16 +141,24 @@ def _prefix_stores():
 
 
 @pytest.mark.parametrize("name, store", list(_prefix_stores()))
-def test_prefix_relativization_raises_on_out_of_scope_keys(name, store):
-    from dol.errors import OutOfScopeKeyError
-
-    with pytest.raises(OutOfScopeKeyError, match="does not start with the prefix"):
-        list(store)
+def test_prefix_relativization_skips_out_of_scope_ids_in_iteration(name, store):
+    # iteration is a view of the in-scope ids: no corrupted keys, no raise
+    assert sorted(store) == ["b", "c"]
+    assert sorted(store.items()) == [("b", 1), ("c", 2)]
     # in-scope keys behave exactly as before
     assert store["b"] == 1
     store["new"] = 5
     assert store["new"] == 5
     assert "z" not in store and "/x" not in store
+    assert "new" in sorted(store)
+
+
+@pytest.mark.parametrize("name, store", list(_prefix_stores()))
+def test_prefix_relativization_key_mapper_raises_on_out_of_scope_ids(name, store):
+    from dol.errors import OutOfScopeKeyError
+
+    with pytest.raises(OutOfScopeKeyError, match="does not start with the prefix"):
+        store._key_of_id("z")
 
 
 def test_filter_then_relativize_is_unchanged():
@@ -189,14 +197,15 @@ def test_prefix_reassigned_after_use_relativizes_with_new_prefix():
     "prefix, in_scope_id",
     [("", "foo.txt"), ("a/", "a/foo.txt")],
 )
-def test_suffix_decoding_raises_on_out_of_scope_keys(prefix, in_scope_id):
+def test_suffix_decoding_skips_out_of_scope_ids_in_iteration(prefix, in_scope_id):
     from dol import KeyCodecs
     from dol.errors import OutOfScopeKeyError
 
     s = KeyCodecs.affixed(prefix, ".txt")({in_scope_id: 1, prefix + "foo.json": 2})
+    assert list(s) == ["foo"]  # no corrupted 'foo.' key
+    assert s["foo"] == 1
     with pytest.raises(OutOfScopeKeyError, match="does not end with the suffix"):
-        list(s)
-    assert s["foo"] == 1  # in-scope access is unchanged
+        s._key_of_id(prefix + "foo.json")
 
 
 def test_affix_overlapping_prefix_and_suffix_is_out_of_scope():
@@ -204,8 +213,9 @@ def test_affix_overlapping_prefix_and_suffix_is_out_of_scope():
     from dol.errors import OutOfScopeKeyError
 
     s = KeyCodecs.affixed("ab", "bc")({"abc": 1})  # 'b' would count for both ends
+    assert list(s) == []
     with pytest.raises(OutOfScopeKeyError):
-        list(s)
+        s._key_of_id("abc")
 
 
 def test_filter_then_strip_suffix_is_unchanged():
@@ -216,3 +226,10 @@ def test_filter_then_strip_suffix_is_unchanged():
         filt_iter(filt=lambda k: k.endswith(".txt")), KeyCodecs.suffixed(".txt")
     )(dict(base))
     assert sorted(s) == ["bar", "foo"]
+
+
+def test_head_skips_out_of_scope_ids():
+    from dol import KeyCodecs
+
+    s = KeyCodecs.prefixed("p/")({"stray": 0, "p/a": 1})
+    assert s.head() == ("a", 1)
