@@ -922,6 +922,13 @@ def mk_dirs_if_missing_preset(
         #  already, for nothing, and are not cleaning up (if clean up need to make
         #  sure to not delete dirs that already existed!)
     finally:
+        # NOTE (#112): this ``return`` swallows ANY error from the retry write above, but
+        #  removing it is NOT safe on its own: for a subclass of a class decorated with
+        #  ``mk_dirs_if_missing``, ``super(type(self), self).__setitem__`` re-enters this
+        #  preset until ``RecursionError``, which this ``return`` is what absorbs (without
+        #  it the retries multiply exponentially and writes hang, e.g. graze's
+        #  ``LocalGrazed``). The fix is a redesign: the preset should only make the
+        #  directory and leave the single real write to the wrapper.
         return v
 
 
