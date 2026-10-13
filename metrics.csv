@@ -1,26 +1,53 @@
 metric,value
 schema_version,1.0
-timestamp,2026-10-13T07:00:28.695583Z
-commit_sha,deab506e2036df07da52bbfbb9e7c0b88bea05c0
-commit_message,Merge a2e7e04a3db8c93d1d7ffb8f47b37c38501e34a7 into 315cd4b59cbd2795d7342fef348bf02d88dc0e49
+timestamp,2026-10-13T07:37:07.980675Z
+commit_sha,17677ccdc857f431e0805d4c8fe25e8ad867290b
+commit_message,"mk_dirs_if_missing: the preset only makes the dir; write errors propagate (#112) (#121)
+
+* fix: mk_dirs_if_missing preset only makes the dir; the wrapper does the one write (#112)
+
+The preset wrote via super(type(self), self).__setitem__ and swallowed every
+error with 'finally: return v'. For a subclass of a decorated class that
+recursed until RecursionError (absorbed by the finally), and every successful
+set wrote twice. Now the preset resolves the innermost key and, only for an
+absolute path whose directory is missing and that the innermost layer's
+validate_key accepts (#107), makes the directory; the wrapper performs the
+single write and its errors propagate.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+* fix: make dirs for relative rootdirs too; gate on a file-system innermost layer (#112)
+
+Adversarial review: requiring an absolute inner key stopped mk_dirs_if_missing
+from making directories for a relative rootdir (Files('data'), Files('') with
+relative keys, graze LocalGrazed('relg')), which master did. The gate is now
+""the innermost layer is a FileSysCollection"" (a dict or other non-path store
+still never gets a directory); a relative path is made relative to the CWD,
+where the write puts it.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+---------
+
+Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>"
 python_version,3.10
-metrics.umpyre_stats.num_functions,5842
-metrics.umpyre_stats.num_classes,1521
-metrics.umpyre_stats.total_lines,234125
-metrics.umpyre_stats.empty_lines,28706
-metrics.umpyre_stats.comment_lines,12849
-metrics.umpyre_stats.docs_lines,26642
-metrics.umpyre_stats.function_lines,95585
-metrics.umpyre_stats.empty_lines_ratio,0.12260971703150027
-metrics.umpyre_stats.comment_lines_ratio,0.05488093966898024
-metrics.umpyre_stats.function_lines_ratio,0.40826481580352375
-metrics.umpyre_stats.mean_lines_per_function,16.36169120164327
-metrics.umpyre_stats.files_analyzed,541
+metrics.umpyre_stats.num_functions,5531
+metrics.umpyre_stats.num_classes,1461
+metrics.umpyre_stats.total_lines,227543
+metrics.umpyre_stats.empty_lines,27624
+metrics.umpyre_stats.comment_lines,12353
+metrics.umpyre_stats.docs_lines,25700
+metrics.umpyre_stats.function_lines,90963
+metrics.umpyre_stats.empty_lines_ratio,0.12140122965769107
+metrics.umpyre_stats.comment_lines_ratio,0.054288639949372205
+metrics.umpyre_stats.function_lines_ratio,0.399761803263559
+metrics.umpyre_stats.mean_lines_per_function,16.446031459048996
+metrics.umpyre_stats.files_analyzed,530
 metrics.umpyre_stats.pypi_version,0.3.75
 metrics.workflow_status.last_run_status,success
-metrics.workflow_status.last_success_timestamp,2026-10-13T04:30:01Z
+metrics.workflow_status.last_success_timestamp,2026-10-13T07:00:34Z
 metrics.workflow_status.recent_failure_count,0
-metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/38346690879
+metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/38359886233
 metrics.workflow_status.total_runs_analyzed,10
 metrics.wily.cyclomatic_avg,0.0
 metrics.wily.maintainability_index,0.0
@@ -36,4 +63,4 @@ metrics.coverage.branch_coverage,0.0
 metrics.coverage.statements_covered,0
 metrics.coverage.statements_total,0
 metrics.coverage.error,No coverage file found
-collection_duration_seconds,5.5577826499938965
+collection_duration_seconds,3.6618282794952393
