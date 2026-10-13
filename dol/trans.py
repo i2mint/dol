@@ -1606,6 +1606,9 @@ def _filt_iter(store_cls: type, filt, name, __module__):
         def filt(k):
             return k in keys_that_should_be_filtered_in
 
+    # Recorded so ``dol.key_in_scope`` can probe a key against this layer's scope.
+    store_cls._filt_iter_filts = (filt,)
+
     def __iter__(self):
         yield from filter(filt, super(store_cls, self).__iter__())
 
