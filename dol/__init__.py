@@ -148,6 +148,7 @@ from dol.trans import (
     add_path_access,  # add path_get and path_set methods to store
     autoviv,  # opt-in write-through autovivification (add_path_access + create_missing)
     flatten,  # flatten a nested store
+    flatten_store,  # unambiguous name for ``flatten`` (vs ``flatten_dict``)
     kv_wrap,  # different interface to wrap_kvs
     disable_delitem,  # disable ability to delete
     disable_setitem,  # disable ability to write to a store

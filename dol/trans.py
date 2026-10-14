@@ -46,6 +46,7 @@ from dol.errors import (
 )
 from dol.base import Store, KvReader, AttrNames, kv_walk
 from dol._paths_core import (
+    path_get_core,
     PathContext,
     PathCreationError,
     PathWritebackError,
@@ -2968,7 +2969,7 @@ def add_path_get(store=None, *, name=None, path_type: type = tuple):
 
     def __getitem__(self, k):
         if isinstance(k, self._path_type):
-            return reduce(lambda store, key: store[key], k, self)
+            return path_get_core(self, k, caught_errors=())
         else:  # do things normally if the key is not a _path_type
             return super(store_cls, self).__getitem__(k)
 
@@ -3191,7 +3192,7 @@ def add_path_access(
                 )
             else:  # backward-compatible legacy walk (unchanged behavior)
                 *path_head, last_key = k
-                penultimate_level = reduce(lambda s, key: s[key], path_head, self)
+                penultimate_level = path_get_core(self, path_head, caught_errors=())
                 penultimate_level[last_key] = v
         else:  # do things normally if the key is not a _path_type
             return super(store_cls, self).__setitem__(k, v)
@@ -3204,7 +3205,7 @@ def add_path_access(
                 path_del_writeback(self, list(k), writeback_lock=writeback_lock)
             else:  # backward-compatible legacy walk (unchanged behavior)
                 *path_head, last_key = k
-                penultimate_level = reduce(lambda s, key: s[key], path_head, self)
+                penultimate_level = path_get_core(self, path_head, caught_errors=())
                 del penultimate_level[last_key]
         else:  # do things normally if the key is not a _path_type
             return super(store_cls, self).__delitem__(k)
@@ -3249,6 +3250,11 @@ def autoviv(store=None, **kwargs):
 def flatten(store=None, *, levels=None, cache_keys=False):
     """
     Give a nested store a flat view whose keys are the ``(a, b, c)`` key paths.
+
+    Not to be confused with ``dol.flatten_dict``, which flattens a plain nested
+    ``Mapping`` into a new ``dict`` (eagerly, with joined-string keys). This one wraps
+    a *store of stores* in a lazy, levels-aware view. ``flatten_store`` is the
+    unambiguous name for this function (``flatten`` stays as its alias).
 
     Say you have a store that has three levels (or more), that is, that you can always
     ask for the value ``store[a][b][c]`` if ``a`` is a valid key of ``store``,
@@ -3334,6 +3340,10 @@ def flatten(store=None, *, levels=None, cache_keys=False):
     #
     # class_trans = partial(_flatten, **arguments)
     # return Store.wrap(store, class_trans=class_trans)
+
+
+# The unambiguous name (vs ``dol.paths.flatten_dict``); ``flatten`` is kept.
+flatten_store = flatten
 
 
 def _flatten(store, *, levels, cache_keys):

@@ -315,6 +315,10 @@ def chain_get(d: Mapping, keys, default=None):
     Returns the ``d[key]`` value for the first ``key`` in ``keys`` that is in ``d``, and default if none are found
 
     Note:
+        This is a "first of several candidate keys" lookup, *not* a nested path walk
+        (for that, see ``dol.path_get``).
+
+    Note:
         Think of ``collections.ChainMap`` where you can look for a single key in a sequence of maps until we find it.
         Here we look for a sequence of keys in a single map, stopping as soon as we find a key that the map has.
 

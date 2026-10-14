@@ -352,3 +352,31 @@ def test_may_raise_out_of_scope_is_a_real_bool():
             return "truthy"
 
     assert may_raise_out_of_scope(AnyAttr()) is False
+
+
+def test_one_path_get_engine():
+    """``path_get``, ``add_path_get`` and the legacy ``_path_get`` share one engine (#69)."""
+    import dol
+    from dol import paths, trans, _paths_core
+
+    assert paths._path_get is _paths_core.path_get_core
+    assert paths.raise_on_error is _paths_core.raise_on_error
+
+    d = {"a": {"b": {"c": 42}}}
+    assert paths.path_get(d, "a.b.c") == 42
+    assert paths._path_get(d, ["a", "b", "c"]) == 42
+
+    S = trans.add_path_get(dict, name="PathGetEngineTestStore")
+    s = S(d)
+    assert s["a", "b", "c"] == 42
+    # errors of the legacy walk propagate unchanged (any exception, not just KeyError)
+    import pytest
+
+    with pytest.raises(KeyError):
+        s["a", "x", "c"]
+    with pytest.raises(TypeError):
+        s["a", "b", "c", "d"]  # 42[...] -> TypeError, not swallowed or rewrapped
+
+    # two flattens, two names
+    assert dol.flatten_store is dol.flatten
+    assert dol.flatten_dict({"a": {"b": 1}}) == {"a.b": 1}
