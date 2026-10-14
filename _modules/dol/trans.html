@@ -308,6 +308,7 @@
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Store</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">,</span> <span class="n">AttrNames</span><span class="p">,</span> <span class="n">kv_walk</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol._paths_core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">path_get_core</span><span class="p">,</span>
     <span class="n">PathContext</span><span class="p">,</span>
     <span class="n">PathCreationError</span><span class="p">,</span>
     <span class="n">PathWritebackError</span><span class="p">,</span>
@@ -3352,7 +3353,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_type</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">store</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">path_get_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">caught_errors</span><span class="o">=</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># do things normally if the key is not a _path_type</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
@@ -3578,7 +3579,7 @@
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># backward-compatible legacy walk (unchanged behavior)</span>
                 <span class="o">*</span><span class="n">path_head</span><span class="p">,</span> <span class="n">last_key</span> <span class="o">=</span> <span class="n">k</span>
-                <span class="n">penultimate_level</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">path_head</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+                <span class="n">penultimate_level</span> <span class="o">=</span> <span class="n">path_get_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_head</span><span class="p">,</span> <span class="n">caught_errors</span><span class="o">=</span><span class="p">())</span>
                 <span class="n">penultimate_level</span><span class="p">[</span><span class="n">last_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># do things normally if the key is not a _path_type</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
@@ -3591,7 +3592,7 @@
                 <span class="n">path_del_writeback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">writeback_lock</span><span class="o">=</span><span class="n">writeback_lock</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># backward-compatible legacy walk (unchanged behavior)</span>
                 <span class="o">*</span><span class="n">path_head</span><span class="p">,</span> <span class="n">last_key</span> <span class="o">=</span> <span class="n">k</span>
-                <span class="n">penultimate_level</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">path_head</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+                <span class="n">penultimate_level</span> <span class="o">=</span> <span class="n">path_get_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_head</span><span class="p">,</span> <span class="n">caught_errors</span><span class="o">=</span><span class="p">())</span>
                 <span class="k">del</span> <span class="n">penultimate_level</span><span class="p">[</span><span class="n">last_key</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># do things normally if the key is not a _path_type</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__delitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
@@ -3642,6 +3643,11 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Give a nested store a flat view whose keys are the ``(a, b, c)`` key paths.</span>
+
+<span class="sd">    Not to be confused with ``dol.flatten_dict``, which flattens a plain nested</span>
+<span class="sd">    ``Mapping`` into a new ``dict`` (eagerly, with joined-string keys). This one wraps</span>
+<span class="sd">    a *store of stores* in a lazy, levels-aware view. ``flatten_store`` is the</span>
+<span class="sd">    unambiguous name for this function (``flatten`` stays as its alias).</span>
 
 <span class="sd">    Say you have a store that has three levels (or more), that is, that you can always</span>
 <span class="sd">    ask for the value ``store[a][b][c]`` if ``a`` is a valid key of ``store``,</span>
@@ -3728,6 +3734,10 @@
     <span class="c1">#</span>
     <span class="c1"># class_trans = partial(_flatten, **arguments)</span>
     <span class="c1"># return Store.wrap(store, class_trans=class_trans)</span>
+
+
+<span class="c1"># The unambiguous name (vs ``dol.paths.flatten_dict``); ``flatten`` is kept.</span>
+<span class="n">flatten_store</span> <span class="o">=</span> <span class="n">flatten</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_flatten</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">cache_keys</span><span class="p">):</span>
@@ -4407,7 +4417,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=d7ddb4e4"></script>
+</div><script src="../../_static/documentation_options.js?v=7e9dc082"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

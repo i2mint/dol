@@ -39,7 +39,6 @@ Module for path (and path-like) object manipulation
 | [`path_get`](#dol.paths.path_get)(obj, path[, on_error, sep, ...])            | Get elements of a mapping through a path to be called recursively.                                                                        |
 | [`paths_getter`](#dol.paths.paths_getter)(paths[, obj, egress, on_error, ...])    | Returns (path, values) pairs of the given paths in the given object.                                                                      |
 | [`prefixless_view`](#dol.paths.prefixless_view)([store, prefix, \_\_module_\_, ...]) | Wrap `store` so that keys are seen without `prefix` (added back on access).                                                               |
-| [`raise_on_error`](#dol.paths.raise_on_error)(d)                                    | `on_error` policy for `path_get`: re-raise the caught error.                                                                              |
 | [`rel_path_wrap`](#dol.paths.rel_path_wrap)(o, \_prefix)                           |                                                                                                                                           |
 | [`return_empty_tuple_on_error`](#dol.paths.return_empty_tuple_on_error)(d)                       | `on_error` policy for `path_get`: return `()`.                                                                                            |
 | [`return_none_on_error`](#dol.paths.return_none_on_error)(d)                              | `on_error` policy for `path_get`: return `None`.                                                                                          |
@@ -737,6 +736,8 @@ a new path.
 Flatten a nested dictionary into a flat one, using key-paths as keys.
 
 See also `leaf_paths` for a related function that returns paths to leaf values.
+(Not to be confused with `dol.flatten_store` – a.k.a. `dol.flatten` – which
+gives a lazy flat *view* of a store of stores.)
 
 * **Parameters:**
   * **d** – The dictionary to flatten
@@ -1103,8 +1104,10 @@ which is `'.'` by default.
 ```
 
 #### NOTE
-The underlying function is `_path_get`, but `path_get` has defaults and
-flexible input processing for more convenience.
+The underlying engine is `dol._paths_core.path_get_core` (shared with
+`add_path_get`), but `path_get` has defaults and flexible input processing
+for more convenience. For “first of several keys that exists” (not a path),
+see `dol.util.chain_get`.
 
 #### NOTE
 `path_get` contains some ready-made `OnErrorType` functions in its
@@ -1164,10 +1167,6 @@ whose keys are the keys you want, and whose values are the paths to get:
 ### dol.paths.prefixless_view(store=None, , prefix=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
 Wrap `store` so that keys are seen without `prefix` (added back on access).
-
-### dol.paths.raise_on_error(d)
-
-`on_error` policy for `path_get`: re-raise the caught error.
 
 ### dol.paths.rel_path_wrap(o, \_prefix)
 

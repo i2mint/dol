@@ -1,4 +1,4 @@
-> built 2026-10-13 14:50 UTC from 56274b9 (master) · dol 0.3.82. Details: build_info.json
+> built 2026-10-14 00:04 UTC from a5901ce (master) · dol 0.3.83. Details: build_info.json
 
 # index.html.md
 
@@ -5829,7 +5829,6 @@ Module for path (and path-like) object manipulation
 | [`path_get`](_autosummary/dol.paths.html.md#dol.paths.path_get)(obj, path[, on_error, sep, ...])            | Get elements of a mapping through a path to be called recursively.                                                                        |
 | [`paths_getter`](_autosummary/dol.paths.html.md#dol.paths.paths_getter)(paths[, obj, egress, on_error, ...])    | Returns (path, values) pairs of the given paths in the given object.                                                                      |
 | [`prefixless_view`](_autosummary/dol.paths.html.md#dol.paths.prefixless_view)([store, prefix, \_\_module_\_, ...]) | Wrap `store` so that keys are seen without `prefix` (added back on access).                                                               |
-| [`raise_on_error`](_autosummary/dol.paths.html.md#dol.paths.raise_on_error)(d)                                    | `on_error` policy for `path_get`: re-raise the caught error.                                                                              |
 | [`rel_path_wrap`](_autosummary/dol.paths.html.md#dol.paths.rel_path_wrap)(o, \_prefix)                           |                                                                                                                                           |
 | [`return_empty_tuple_on_error`](_autosummary/dol.paths.html.md#dol.paths.return_empty_tuple_on_error)(d)                       | `on_error` policy for `path_get`: return `()`.                                                                                            |
 | [`return_none_on_error`](_autosummary/dol.paths.html.md#dol.paths.return_none_on_error)(d)                              | `on_error` policy for `path_get`: return `None`.                                                                                          |
@@ -6527,6 +6526,8 @@ a new path.
 Flatten a nested dictionary into a flat one, using key-paths as keys.
 
 See also `leaf_paths` for a related function that returns paths to leaf values.
+(Not to be confused with `dol.flatten_store` – a.k.a. `dol.flatten` – which
+gives a lazy flat *view* of a store of stores.)
 
 * **Parameters:**
   * **d** – The dictionary to flatten
@@ -6893,8 +6894,10 @@ which is `'.'` by default.
 ```
 
 #### NOTE
-The underlying function is `_path_get`, but `path_get` has defaults and
-flexible input processing for more convenience.
+The underlying engine is `dol._paths_core.path_get_core` (shared with
+`add_path_get`), but `path_get` has defaults and flexible input processing
+for more convenience. For “first of several keys that exists” (not a path),
+see `dol.util.chain_get`.
 
 #### NOTE
 `path_get` contains some ready-made `OnErrorType` functions in its
@@ -6954,10 +6957,6 @@ whose keys are the keys you want, and whose values are the paths to get:
 ### dol.paths.prefixless_view(store=None, , prefix=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
 Wrap `store` so that keys are seen without `prefix` (added back on access).
-
-### dol.paths.raise_on_error(d)
-
-`on_error` policy for `path_get`: re-raise the caught error.
 
 ### dol.paths.rel_path_wrap(o, \_prefix)
 
@@ -12484,6 +12483,7 @@ Main entry points:
 | [`filter_regex`](_autosummary/dol.trans.html.md#dol.trans.filter_regex)(regex, \*[, return_search_func])       | Make a filter that returns True if a string matches the given regex                                                                                      |
 | [`filter_suffixes`](_autosummary/dol.trans.html.md#dol.trans.filter_suffixes)(suffixes)                           | Make a filter that returns True if a string ends with one of the given suffixes                                                                          |
 | [`flatten`](_autosummary/dol.trans.html.md#dol.trans.flatten)([store, levels, cache_keys, ...])           | Give a nested store a flat view whose keys are the `(a, b, c)` key paths.                                                                                |
+| [`flatten_store`](_autosummary/dol.trans.html.md#dol.trans.flatten_store)([store, levels, cache_keys, ...])     | Give a nested store a flat view whose keys are the `(a, b, c)` key paths.                                                                                |
 | [`get_class_name`](_autosummary/dol.trans.html.md#dol.trans.get_class_name)(cls[, dflt_name])                    | The `__qualname__` of `cls` (or of its class), else `dflt_name`; raises `ValueError` if there is neither.                                                |
 | [`ignore_if_error`](_autosummary/dol.trans.html.md#dol.trans.ignore_if_error)([store, errors])                    | Wrap `store` so that `__getitem__` errors in `errors` return `None` instead of raising.                                                                  |
 | [`insert_aliases`](_autosummary/dol.trans.html.md#dol.trans.insert_aliases)([store, write, read, delete, ...])   | Insert method aliases of CRUD operations of a store (class or instance).                                                                                 |
@@ -14025,6 +14025,106 @@ False
 
 Give a nested store a flat view whose keys are the `(a, b, c)` key paths.
 
+Not to be confused with `dol.flatten_dict`, which flattens a plain nested
+`Mapping` into a new `dict` (eagerly, with joined-string keys). This one wraps
+a *store of stores* in a lazy, levels-aware view. `flatten_store` is the
+unambiguous name for this function (`flatten` stays as its alias).
+
+Say you have a store that has three levels (or more), that is, that you can always
+ask for the value `store[a][b][c]` if `a` is a valid key of `store`,
+`b` is a valid key of `store[a]` and `c` is a valid key of `store[a][b]`.
+
+What `flattened_store = flatten(store, levels=3)` will give you is the ability
+to access the `store[a][b][c]` as `store[a, b, c]`, while still being able
+to access these stores “normally”.
+
+If that’s all you need, you can just use the `add_get_path` wrapper for this.
+
+Why would you use `flatten`? Because `add_get_path(store)` would still only
+give you the `KvReader` point of view of the root `store`.
+If you `list(store)`, you’d only get the first level keys,
+or if you ask if `(a, b, c)` is in the store, it will tell you it’s not
+(though you can access data with such a key.
+
+Instead, a flattened store will consider that the keys are those `(a, b, c)`
+key paths.
+
+Further, when flattening a store, you can ask for the view to cache the keys,
+specifying `cache_keys=True` or give it an explicit place to cache or
+factory to make a cache (see `cached_keys` wrapper for more details).
+Though caching keys is not the default it’s highly recommended to do so in most
+cases. The only reason it is not the default is because if you have millions of
+keys, but little memory, that’s not what you might want.
+
+#### NOTE
+Flattening just provides a wrapper giving you a “flattened view”. It doesn’t
+change the store itself, or it’s contents.
+
+* **Parameters:**
+  * **store** – The store instance or class to be wrapped
+  * **levels** – The number of nested levels to flatten
+  * **cache_keys** – Whether to cache the keys, or a cache factory or instance.
+
+```pycon
+>>> from dol import flatten
+>>> d = {
+...     'a': {'b': {'c': 42}},
+...     'aa': {'bb': {'cc': 'dragon_con'}}
+... }
+```
+
+You can get a flattened view of an instance:
+
+```pycon
+>>> m = flatten(d, levels=3, cache_keys=True)
+>>> assert (
+...         list(m.items())
+...         == [
+...             (('a', 'b', 'c'), 42),
+...             (('aa', 'bb', 'cc'), 'dragon_con')
+...         ]
+... )
+```
+
+You can make a flattener and apply it to an instance (or a class):
+
+```pycon
+>>> my_flattener = flatten(levels=2)
+>>> m = my_flattener(d)
+>>> assert (
+...         list(m.items())
+...         == [
+...             (('a', 'b'), {'c': 42}),
+...             (('aa', 'bb'), {'cc': 'dragon_con'})
+...         ]
+... )
+```
+
+Finally, you can wrap a class itself.
+
+```pycon
+>>> @flatten(levels=1)
+... class MyFlatDict(dict):
+...     pass
+>>> m = MyFlatDict(d)
+>>> assert (
+...         list(m.items())
+...         == [
+...             (('a',), {'b': {'c': 42}}),
+...             (('aa',), {'bb': {'cc': 'dragon_con'}})
+...         ]
+... )
+```
+
+### dol.trans.flatten_store(store=None, , levels=None, cache_keys=False, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+Give a nested store a flat view whose keys are the `(a, b, c)` key paths.
+
+Not to be confused with `dol.flatten_dict`, which flattens a plain nested
+`Mapping` into a new `dict` (eagerly, with joined-string keys). This one wraps
+a *store of stores* in a lazy, levels-aware view. `flatten_store` is the
+unambiguous name for this function (`flatten` stays as its alias).
+
 Say you have a store that has three levels (or more), that is, that you can always
 ask for the value `store[a][b][c]` if `a` is a valid key of `store`,
 `b` is a valid key of `store[a]` and `c` is a valid key of `store[a][b]`.
@@ -15318,6 +15418,10 @@ Originally meant to be used as a decorator of a function, to inject
 ### dol.util.chain_get(d, keys, default=None)
 
 Returns the `d[key]` value for the first `key` in `keys` that is in `d`, and default if none are found
+
+#### NOTE
+This is a “first of several candidate keys” lookup, *not* a nested path walk
+(for that, see `dol.path_get`).
 
 #### NOTE
 Think of `collections.ChainMap` where you can look for a single key in a sequence of maps until we find it.
@@ -16898,20 +17002,18 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-13 14:50 UTC** from commit <a href="https://github.com/i2mint/dol/commit/56274b9b214bf78091e4111e95ed59a88bce9319"><code>56274b9</code></a> on branch <code>master</code>, for **dol 0.3.82** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-14 00:04 UTC** from commit <a href="https://github.com/i2mint/dol/commit/a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d"><code>a5901ce</code></a> on branch <code>master</code>, for **dol 0.3.83** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.3.82) is ahead of the latest release on PyPI (0.3.81): these docs describe unreleased code.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/56274b9b214bf78091e4111e95ed59a88bce9319"><code>56274b9b214bf78091e4111e95ed59a88bce9319</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d"><code>a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.82</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.83</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -16920,15 +17022,15 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38416477306">38416477306</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38487803166">38487803166</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>8ffc473b8a2f7bf352c8856597b6ca9b796741db</code> (in the history of the built commit) |
+| Event commit | <code>30ee5ff1a9e856ee5c3afba084c63a1f7cad5108</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.16  |
+| epythet  | 0.2.17  |
 | Sphinx   | 9.1.0   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
@@ -16947,14 +17049,14 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.81/">0.3.81</a>, older than the documented version (0.3.82).
+Latest release: <a href="https://pypi.org/project/dol/0.3.83/">0.3.83</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 56274b9b214bf78091e4111e95ed59a88bce9319
-pip install "epythet==0.2.16"
+git checkout a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d
+pip install "epythet==0.2.17"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

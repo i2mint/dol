@@ -2,20 +2,18 @@
 
 # About this build
 
-This documentation was built on **2026-10-13 14:50 UTC** from commit <a href="https://github.com/i2mint/dol/commit/56274b9b214bf78091e4111e95ed59a88bce9319"><code>56274b9</code></a> on branch <code>master</code>, for **dol 0.3.82** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-14 00:04 UTC** from commit <a href="https://github.com/i2mint/dol/commit/a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d"><code>a5901ce</code></a> on branch <code>master</code>, for **dol 0.3.83** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.3.82) is ahead of the latest release on PyPI (0.3.81): these docs describe unreleased code.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/56274b9b214bf78091e4111e95ed59a88bce9319"><code>56274b9b214bf78091e4111e95ed59a88bce9319</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d"><code>a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.82</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.83</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -24,15 +22,15 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38416477306">38416477306</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38487803166">38487803166</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>8ffc473b8a2f7bf352c8856597b6ca9b796741db</code> (in the history of the built commit) |
+| Event commit | <code>30ee5ff1a9e856ee5c3afba084c63a1f7cad5108</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.16  |
+| epythet  | 0.2.17  |
 | Sphinx   | 9.1.0   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
@@ -51,14 +49,14 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.81/">0.3.81</a>, older than the documented version (0.3.82).
+Latest release: <a href="https://pypi.org/project/dol/0.3.83/">0.3.83</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 56274b9b214bf78091e4111e95ed59a88bce9319
-pip install "epythet==0.2.16"
+git checkout a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d
+pip install "epythet==0.2.17"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 
