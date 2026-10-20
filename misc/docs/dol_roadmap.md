@@ -100,9 +100,12 @@ Sequencing is **ledger first** — both other legs consume it.
   splitting), [#15](https://github.com/i2mint/dol/issues/15) (AttrContainer tab
   completion), [#2](https://github.com/i2mint/dol/issues/2) (kv_walk docs),
   [#1](https://github.com/i2mint/dol/issues/1) (documentation ideas).
-- **Untriaged** (filed after the 2026-07-02 triage): [#80](https://github.com/i2mint/dol/issues/80)
-  (record/metadata DataProvider layer — see
-  [dol_content_metadata_bifurcation.md](dol_content_metadata_bifurcation.md)),
+- **In progress** [#80](https://github.com/i2mint/dol/issues/80) (record/metadata
+  DataProvider layer — see
+  [dol_content_metadata_bifurcation.md](dol_content_metadata_bifurcation.md)): the
+  contract, query fallback and `MappingProvider` are in `dol.records`; the
+  bifurcated composition and `wrap_provider` come next.
+- **Untriaged** (filed after the 2026-07-02 triage):
   [#82](https://github.com/i2mint/dol/issues/82) (prefix-relativization boundary bug).
 - Repo cleanup notes: the remote branch refs for merged PRs #88/#89 and the
   2026-07-11 `stash/*` branches (full-tree WIP snapshots predating the whole
