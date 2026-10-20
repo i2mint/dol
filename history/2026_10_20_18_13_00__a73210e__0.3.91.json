@@ -1,0 +1,47 @@
+{
+  "collection_duration_seconds": 3.3515963554382324,
+  "commit_message": "Split trans.py: codec types to kv_codecs, add-ons to store_addons (#70) (#147)\n\n- The codec types (Codec, ValueCodec, KeyCodec, KeyValueCodec, affix_key_codec)\n  move to the dependency-free leaf dol/_codecs_core.py; dol.kv_codecs is their\n  public home. A leaf, not kv_codecs itself, because kv_codecs loads zipfiledol\n  and filesys at import time, and dol.trans must import the codec types eagerly\n  (dependents star-import dol.trans) without changing dol's import order.\n- Path access, flatten, method aliases and insert_hash_method move to the new\n  dol/store_addons.py.\n- dol.trans re-exports every moved name, so every import path keeps working.\n  A new test snapshots each touched module's namespace as it was on master and\n  asserts every name is still importable, and that re-exports are the moved\n  objects themselves.\n\nNo behaviour change.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+  "commit_sha": "a73210e4844b3dd8c3c309b7c1569146c5145389",
+  "metrics": {
+    "coverage": {
+      "branch_coverage": 0.0,
+      "error": "No coverage file found",
+      "line_coverage": 0.0,
+      "statements_covered": 0,
+      "statements_total": 0
+    },
+    "umpyre_stats": {
+      "comment_lines": 12921,
+      "comment_lines_ratio": 0.054258455181449415,
+      "docs_lines": 27105,
+      "empty_lines": 29276,
+      "empty_lines_ratio": 0.12293712049315943,
+      "files_analyzed": 559,
+      "function_lines": 98475,
+      "function_lines_ratio": 0.41352073167659087,
+      "mean_lines_per_function": 16.396103896103895,
+      "num_classes": 1535,
+      "num_functions": 6006,
+      "pypi_version": "0.3.91",
+      "total_lines": 238138
+    },
+    "wily": {
+      "cyclomatic_avg": 0.0,
+      "error": "wily build failed: \u001b[31mFailed to setup archiver: 'Dirty repository, make sure you commit/stash files first'\u001b[0m\n",
+      "files_analyzed": 0,
+      "maintainability_index": 0.0,
+      "total_loc": 0
+    },
+    "workflow_status": {
+      "last_run_status": "success",
+      "last_success_timestamp": "2026-10-20T17:16:21Z",
+      "recent_failure_count": 0,
+      "run_url": "https://github.com/i2mint/dol/actions/runs/39464397029",
+      "total_runs_analyzed": 10
+    }
+  },
+  "python_version": "3.10",
+  "schema_version": "1.0",
+  "timestamp": "2026-10-20T18:12:59.231574Z",
+  "workflow_status": {}
+}
