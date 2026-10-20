@@ -61,7 +61,9 @@ time** (docstring-only and inline-function imports excluded).
 | `trans.py` | 3131 | **The core.** `wrap_kvs`, `store_decorator`, `filt_iter`, `cached_keys`, `kv_wrap`, missing-key handlers; re-exports the codec types and the add-ons that moved out (#70) | `wrap_kvs`, `filt_iter`, `cached_keys`, `kv_wrap`, `store_decorator`, `mk_read_only` | base, errors, signatures, util, _codecs_core |
 | `store_addons.py` | 794 | Add-ons split out of `trans.py` (#70): path access, `flatten`, method aliases, `insert_hash_method` | `add_path_get/access`, `autoviv`, `flatten`, `insert_aliases`, `insert_load_dump_aliases`, `insert_hash_method` | base, _paths_core, trans |
 | `_codecs_core.py` | 157 | The codec types, split out of `trans.py` (#70); a dependency-free leaf so `trans` can re-export them | `Codec`*, `ValueCodec`, `KeyCodec`, `KeyValueCodec`, `affix_key_codec` | errors, util (`trans` lazily) |
-| `caching.py` | 2675 | Caching layers: `cache_this`, `cache_vals`, `store_cached`, `WriteBackChainMap`, key-strategy protocol | `cache_this`, `cache_vals`, `store_cached`, `WriteBackChainMap`, `flush_on_exit`, `ensure_clear_to_kv_store` | base, trans, util |
+| `caching.py` | 1372 | Method/property caching: `cache_this`, `CachedProperty`, `CachedMethod`; re-exports `cache_keys` and `store_caching` (#70) | `cache_this` | base, trans, util, cache_keys, store_caching |
+| `cache_keys.py` | 439 | Key-strategy protocol for `cache_this`, split out of `caching.py` (#70) | `KeyStrategy`, `ExplicitKey`, `InstanceProp`, `FromMethodArgs`, ... | (none) |
+| `store_caching.py` | 957 | Store caching layers, split out of `caching.py` (#70) | `cache_vals`, `store_cached`, `WriteBackChainMap`, `flush_on_exit`, `ensure_clear_to_kv_store` | trans, util |
 | `paths.py` | 2270 | Path/nested access: `KeyTemplate`, `KeyPath`, `path_get/set/filter`, relative-path stores | `KeyTemplate`, `KeyPath`, `path_get`, `path_set`, `path_filter`, `mk_relative_path_store`, `flatten_dict`, `leaf_paths`, `add_prefix_filtering` | base, dig, explicit, naming, trans, util |
 | `naming.py` | 1243 | **Older** parametrized-key system: `StrTupleDict` (str↔tuple↔dict). Overlaps `KeyTemplate` (§7) | `StrTupleDict`, `mk_store_from_path_format_store_cls` | base, errors, signatures, trans, util |
 | `sources.py` | 1172 | KV views over disparate sources; composite stores | `FlatReader`, `FanoutReader`, `FanoutPersister`, `CascadedStores`, `MultiSource`, `SequenceKvReader`, `FuncReader`, `ObjReader`, `Attrs` | base, caching, signatures, trans, util |
@@ -449,9 +451,11 @@ different semantics; a naming-collision trap for agents.
 
 ---
 
-## 8. Caching subsystem (`caching.py`)
+## 8. Caching subsystem (`caching.py`, `cache_keys.py`, `store_caching.py`)
 
-The subsystem is far larger than the existing docs suggest (2675 lines). Key pieces:
+The subsystem is far larger than the existing docs suggest (2675 lines before #70 split it
+into `caching.py` (descriptors, `cache_this`), `cache_keys.py` (key strategies) and
+`store_caching.py` (store caching layers); `caching.py` re-exports the other two). Key pieces:
 
 **`cache_this` (`:1055`)** — unified property/method cache. Signature:
 `cache_this(func=None, *, cache=None, key=None, pre_cache=False, as_property=None,
@@ -522,7 +526,7 @@ single `cache_this` with an explicit `key`/`cache` over stacking.
 - **New store decorator**: write `func(store=None, *, **kw)` and wrap with
   `@store_decorator` for free 4-way behavior.
 - **New key-cache strategy**: implement the `KeyStrategy` protocol and
-  `@register_key_strategy` (`caching.py:126,158`).
+  `@register_key_strategy` (`cache_keys.py`).
 - **"Hooks for optimized ops" (Discussion #24) — NOT yet implemented.** The intended
   design: dol tooling (`filt_iter`, `update`, sort/paginate) would check for a
   backend-provided fast method (e.g. `_filter_`, a fast-`sync` protocol) before falling
@@ -554,6 +558,8 @@ single `cache_this` with an explicit `key`/`cache` over stacking.
    load-bearing everywhere and a hard dependency to test around; consider carving the
    rarely-used arithmetic out. `caching.py` bundles the key-strategy protocol, two
    descriptor classes, and ~10 store-cache helpers — extractable. *Medium.*
+   *`caching.py` done (#70): key strategies to `cache_keys.py`, store caching to
+   `store_caching.py`.*
 5. **Dead / incomplete code** (confirmed present):
    - `KeyValueCodecs.key_based` / `.extension_based` — empty stubs (`kv_codecs.py:580,589`).
    - `FirstArgIsMapping` — defined, never used (`trans.py:2113`).

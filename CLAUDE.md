@@ -15,7 +15,9 @@ For a quick orientation, see [llms.txt](llms.txt).
 | `dol/trans.py` | `wrap_kvs` (core), `store_decorator`, `filt_iter`, `cached_keys`, `kv_wrap` |
 | `dol/store_addons.py` | `add_path_access`, `flatten`, `insert_aliases`, `insert_hash_method` (re-exported by `trans`) |
 | `dol/kv_codecs.py` | `Codec`, `ValueCodec`, `KeyCodec`; `ValueCodecs`, `KeyCodecs` — ready-made codec namespaces |
-| `dol/caching.py` | `cache_this`, `cache_vals`, `store_cached`, `WriteBackChainMap` |
+| `dol/caching.py` | `cache_this`, `CachedProperty`, `CachedMethod`; re-exports the two below |
+| `dol/cache_keys.py` | key strategies for `cache_this` (`ExplicitKey`, `InstanceProp`, ...) |
+| `dol/store_caching.py` | `cache_vals`, `store_cached`, `mk_write_cached_store`, `WriteBackChainMap` |
 | `dol/paths.py` | `KeyTemplate`, `mk_relative_path_store`, `KeyPath`, `path_get/set/filter` |
 | `dol/filesys.py` | `Files`, `TextFiles`, `JsonFiles`, `PickleFiles` — filesystem stores |
 | `dol/sources.py` | `FlatReader`, `FanoutReader/Persister`, `CascadedStores` |
