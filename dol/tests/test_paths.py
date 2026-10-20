@@ -380,3 +380,21 @@ def test_one_path_get_engine():
     # two flattens, two names
     assert dol.flatten_store is dol.flatten
     assert dol.flatten_dict({"a": {"b": 1}}) == {"a.b": 1}
+
+
+def test_flatten_dict_and_leaf_paths_share_one_notion_of_nested():
+    """Both descend into any Mapping by default (leaf_paths used to stop at non-dicts)."""
+    from collections import OrderedDict
+    from types import MappingProxyType
+
+    from dol.paths import flatten_dict, leaf_paths
+
+    nested = {"a": MappingProxyType({"b": 1, "c": OrderedDict(d=2)}), "e": 3}
+    assert flatten_dict(nested) == {"a.b": 1, "a.c.d": 2, "e": 3}
+    assert leaf_paths(nested) == {"a": {"b": "a.b", "c": {"d": "a.c.d"}}, "e": "e"}
+    # an empty nested mapping stays visible in leaf_paths, as before
+    assert leaf_paths({"a": {}}) == {"a": {}}
+    assert flatten_dict({"a": {}}) == {}
+    # and visit_nested is explicit on both
+    only_dicts = lambda x: type(x) is dict  # noqa: E731
+    assert leaf_paths({"a": OrderedDict(b=1)}, visit_nested=only_dicts) == {"a": "a"}

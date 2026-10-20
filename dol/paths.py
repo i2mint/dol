@@ -84,26 +84,55 @@ def ensure_path_extender_func(path_extender: PathExtenderSpec) -> PathExtenderFu
     return path_extender
 
 
+def _is_mapping(obj) -> bool:
+    """The default ``visit_nested``: descend into any ``Mapping``, not only ``dict``."""
+    return isinstance(obj, Mapping)
+
+
+def _walk_nested(
+    d,
+    path_extender: PathExtenderFunc,
+    parent_path: Path | None,
+    visit_nested: Callable[[Any], bool],
+    *,
+    leaf: Callable[[Any, Path, Any], Any],
+    nested: Callable[[Any, Iterator], Iterable],
+) -> Iterator:
+    """The one recursion behind ``flattened_dict_items`` and ``leaf_paths``.
+
+    Walks ``d``; for each ``(key, value)`` it computes the value's path, and either
+    yields ``leaf(key, path, value)``, or, when ``visit_nested(value)``, yields
+    everything in ``nested(key, <the same walk over value>)``.
+    """
+    for k, v in d.items():
+        path = path_extender(parent_path, k)
+        if visit_nested(v):
+            sub = _walk_nested(
+                v, path_extender, path, visit_nested, leaf=leaf, nested=nested
+            )
+            yield from nested(k, sub)
+        else:
+            yield leaf(k, path, v)
+
+
 def flattened_dict_items(
     d,
     sep: PathExtenderSpec = ".",
     *,
     parent_path: Path | None = None,
-    visit_nested: Callable = lambda obj: isinstance(obj, Mapping),
+    visit_nested: Callable = _is_mapping,
 ) -> KeyValueGenerator:
     """
     Yield flattened key-value pairs from a nested dictionary.
     """
-    path_extender = ensure_path_extender_func(sep)
-
-    stable_kwargs = dict(sep=sep, visit_nested=visit_nested)
-
-    for k, v in d.items():
-        new_path = path_extender(parent_path, k)
-        if visit_nested(v):
-            yield from flattened_dict_items(v, parent_path=new_path, **stable_kwargs)
-        else:
-            yield new_path, v
+    return _walk_nested(
+        d,
+        ensure_path_extender_func(sep),
+        parent_path,
+        visit_nested,
+        leaf=lambda k, path, v: (path, v),
+        nested=lambda k, sub: sub,
+    )
 
 
 def flatten_dict(
@@ -111,7 +140,7 @@ def flatten_dict(
     sep: PathExtenderSpec = ".",
     *,
     parent_path: Path | None = None,
-    visit_nested: Callable = lambda obj: isinstance(obj, Mapping),
+    visit_nested: Callable = _is_mapping,
     egress: Callable[[KeyValueGenerator], Mapping] = dict,
 ):
     r"""
@@ -148,6 +177,7 @@ def leaf_paths(
     sep: PathExtenderSpec = ".",
     *,
     parent_path: Path | None = None,
+    visit_nested: Callable = _is_mapping,
     egress: Callable[[KeyValueGenerator], Mapping] = dict,
 ) -> dict[KT, KT | Path]:
     """
@@ -169,6 +199,8 @@ def leaf_paths(
             a key and returns a new path.
 
         parent_path: The path to the parent of the current dict
+        visit_nested: A function that returns True if a value should be visited
+            (default: any ``Mapping``, as for ``flatten_dict``)
         egress: A function that takes a generator of key-value pairs and returns a mapping
 
     .. rubric:: Example
@@ -182,28 +214,16 @@ def leaf_paths(
     >>> leaf_paths({'a': {'b': 2}, 'c': 3}, sep=lambda p, k: f"{p}-{k}" if p else k)
     {'a': {'b': 'a-b'}, 'c': 'c'}
     """
-    path_extender = ensure_path_extender_func(sep)
-
-    return egress(_leaf_paths_recursive(d, path_extender, parent_path=parent_path))
-
-
-def _leaf_paths_recursive(
-    d: NestedMapping,
-    path_extender: PathExtenderFunc,
-    parent_path: Path | None = None,
-    *,
-    visit_nested: Callable[[Any], bool] = lambda x: isinstance(x, dict),
-) -> KeyValueGenerator:
-    """
-    A recursive generator that yields (key, value) pairs.
-    A helper for leaf_paths.
-    """
-    for k, v in d.items():
-        current_path = path_extender(parent_path, k)
-        if visit_nested(v):
-            yield k, dict(_leaf_paths_recursive(v, path_extender, current_path))
-        else:
-            yield k, current_path
+    return egress(
+        _walk_nested(
+            d,
+            ensure_path_extender_func(sep),
+            parent_path,
+            visit_nested,
+            leaf=lambda k, path, v: (k, path),
+            nested=lambda k, sub: [(k, dict(sub))],
+        )
+    )
 
 
 path_sep = os.path.sep
