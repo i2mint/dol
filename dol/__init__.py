@@ -238,16 +238,6 @@ from .content import (
     SupportsUrlFor,  # Protocol: backend that can hand out a URL for a key
 )
 
-from .records import (
-    DataProvider,  # Protocol: CRUD + query over records (zodal's DataProvider, sync)
-    MappingProvider,  # reference DataProvider over any MutableMapping of id -> record
-    ListParams,  # sort / filter / search / pagination for get_list
-    ListResult,  # one page of records + the total matching
-    Capabilities,  # what a provider supports and pushes down
-    filter_to_function,  # zodal FilterExpression -> record predicate
-    apply_query,  # client-side filter/search/sort/page fallback
-)
-
 
 def __getattr__(name):
     """Handle deprecated imports at module level."""

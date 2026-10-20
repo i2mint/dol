@@ -93,7 +93,7 @@ class Pagination:
             raise ValueError(f"page and page_size must be >= 1, got {self}")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class ListParams:
     """What :meth:`DataProvider.get_list` returns: filtered, searched, sorted, paged."""
 
@@ -117,7 +117,7 @@ class ListParams:
             if p
             else None
         )
-        return cls(sort, d.get("filter"), d.get("search"), pagination)
+        return cls(sort=sort, filter=d.get("filter"), search=d.get("search"), pagination=pagination)
 
 
 @dataclass(frozen=True)
@@ -128,7 +128,7 @@ class ListResult:
     total: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Capabilities:
     """What a provider supports (zodal ``ProviderCapabilities``).
 
@@ -192,10 +192,19 @@ def _ordered(test: Callable[[Any, Any], bool]):
     return op
 
 
+def _same(a, b) -> bool:
+    """JS ``===`` for JSON values: ``True`` is not ``1``."""
+    return a == b and isinstance(a, bool) == isinstance(b, bool)
+
+
+def _member(x, values) -> bool:
+    return isinstance(values, (list, tuple, set, frozenset)) and any(_same(x, v) for v in values)
+
+
 #: zodal's filter operators: ``operator -> (field_value, value) -> bool``.
 FILTER_OPERATORS: dict[str, Callable[[Any, Any], bool]] = {
-    "eq": lambda f, v: f == v,
-    "ne": lambda f, v: f != v,
+    "eq": _same,
+    "ne": lambda f, v: not _same(f, v),
     "gt": _ordered(lambda f, v: f > v),
     "gte": _ordered(lambda f, v: f >= v),
     "lt": _ordered(lambda f, v: f < v),
@@ -203,12 +212,12 @@ FILTER_OPERATORS: dict[str, Callable[[Any, Any], bool]] = {
     "contains": _str_op(lambda f, v: v in f),
     "startsWith": _str_op(lambda f, v: f.startswith(v)),
     "endsWith": _str_op(lambda f, v: f.endswith(v)),
-    "in": lambda f, v: isinstance(v, (list, tuple, set)) and f in v,
-    "notIn": lambda f, v: not (isinstance(v, (list, tuple, set)) and f in v),
-    "arrayContains": lambda f, v: isinstance(f, (list, tuple)) and v in f,
+    "in": lambda f, v: _member(f, v),
+    "notIn": lambda f, v: not _member(f, v),
+    "arrayContains": lambda f, v: isinstance(f, (list, tuple)) and _member(v, f),
     "arrayContainsAny": lambda f, v: isinstance(f, (list, tuple))
-    and isinstance(v, (list, tuple, set))
-    and any(x in f for x in v),
+    and isinstance(v, (list, tuple, set, frozenset))
+    and any(_member(x, f) for x in v),
     "isNull": lambda f, v: f is None,
     "isNotNull": lambda f, v: f is not None,
 }
@@ -264,11 +273,14 @@ def matches_search(
 
 
 def _sort_key(value):
-    # None first, then numbers, strings, bools, others (zodal's compareValues order).
+    # None first, then numbers (NaN after them), strings, bools, others (zodal's
+    # compareValues order; strings compare by code point, not localeCompare).
     if value is None:
         return (0, 0)
     if isinstance(value, bool):
         return (3, value)
+    if isinstance(value, float) and value != value:  # NaN
+        return (1.5, 0)
     if isinstance(value, (int, float)):
         return (1, value)
     if isinstance(value, str):
@@ -292,7 +304,8 @@ def apply_query(
     skip = set(skip)
     out = list(records)
     if params.filter and "filter" not in skip:
-        out = [r for r in out if filter_to_function(params.filter)(r)]
+        keep = filter_to_function(params.filter)
+        out = [r for r in out if keep(r)]
     if params.search and "search" not in skip:
         out = [r for r in out if matches_search(r, params.search, search_fields)]
     if params.sort and "sort" not in skip:
@@ -313,10 +326,11 @@ class MappingProvider:
 
     Queries run client-side (:func:`apply_query`) over the mapping's values, so it
     suits small collections; a backend that can push queries down implements
-    :class:`DataProvider` itself. Records come back as copies: mutating one does not
-    change the store.
+    :class:`DataProvider` itself. Records come back as copies carrying their id (the
+    key) in ``id_field``, so a store keyed by id alone works too. Ids are used as
+    given (generated ones are strings).
 
-    :param store: ``id -> record dict`` (a ``dict``, or a dol store of dicts).
+    :param store: ``id -> record mapping`` (a ``dict``, or a dol store of dicts).
     :param id_field: the record field holding its id (kept equal to the key).
     :param new_id: makes an id for a record created without one.
     :param search_fields: fields ``search`` looks in (default: every str field).
@@ -324,10 +338,10 @@ class MappingProvider:
 
     def __init__(
         self,
-        store: MutableMapping[str, Mapping[str, Any]],
+        store: MutableMapping[Any, Mapping[str, Any]],
         *,
         id_field: str = "id",
-        new_id: Callable[[MutableMapping], str] | None = None,
+        new_id: Callable[[MutableMapping], Any] | None = None,
         search_fields: Sequence[str] | None = None,
     ):
         self.store = store
@@ -339,51 +353,67 @@ class MappingProvider:
     def _next_free_int_id(store: Mapping) -> str:
         return next(str(i) for i in itertools.count(len(store) + 1) if str(i) not in store)
 
-    def _record(self, id: str) -> Record:
+    def _as_record(self, id: Any, value: Any) -> Record:
+        if not isinstance(value, Mapping):
+            raise TypeError(
+                f"the store's value for {id!r} is a {type(value).__name__}, not a "
+                "record mapping; wrap the store with a codec that yields dicts"
+            )
+        return {**copy.deepcopy(dict(value)), self.id_field: id}
+
+    def _record(self, id: Any) -> Record:
         try:
-            return dict(self.store[id])
+            value = self.store[id]
         except KeyError:
             raise RecordNotFound(id) from None
+        return self._as_record(id, value)
 
     def get_list(self, params: ListParams | Mapping | None = None) -> ListResult:
         if not isinstance(params, ListParams):
             params = ListParams.from_dict(params)
-        res = apply_query(self.store.values(), params, search_fields=self.search_fields)
-        return ListResult([copy.deepcopy(dict(r)) for r in res.data], res.total)
+        records = [self._as_record(k, v) for k, v in self.store.items()]
+        return apply_query(records, params, search_fields=self.search_fields)
 
-    def get_one(self, id: str) -> Record:
-        return copy.deepcopy(self._record(id))
+    def get_one(self, id: Any) -> Record:
+        return self._record(id)
 
     def create(self, data: Mapping[str, Any]) -> Record:
         given = data.get(self.id_field)
-        id = str(given) if given is not None else self.new_id(self.store)
+        id = given if given is not None else self.new_id(self.store)
         if id in self.store:
             raise RecordExists(id)
         record = {**copy.deepcopy(dict(data)), self.id_field: id}
         self.store[id] = record
         return copy.deepcopy(record)
 
-    def update(self, id: str, data: Mapping[str, Any]) -> Record:
+    def update(self, id: Any, data: Mapping[str, Any]) -> Record:
         record = {**self._record(id), **copy.deepcopy(dict(data))}
-        new_id = str(record.get(self.id_field, id))
+        new_id = record.get(self.id_field)
+        if new_id is None:  # an explicit None keeps the id
+            new_id = id
+        record[self.id_field] = new_id
         if new_id != id:  # renaming: the key follows the id field
             if new_id in self.store:
                 raise RecordExists(new_id)
+            self.store[new_id] = record  # write first: a failed write loses nothing
             del self.store[id]
-        record[self.id_field] = new_id
-        self.store[new_id] = record
+        else:
+            self.store[id] = record
         return copy.deepcopy(record)
 
-    def update_many(self, ids: Iterable[str], data: Mapping[str, Any]) -> list[Record]:
+    def update_many(self, ids: Iterable[Any], data: Mapping[str, Any]) -> list[Record]:
+        """Apply ``data`` to every existing record of ``ids`` (missing ones are skipped)."""
+        if data.get(self.id_field) is not None:
+            raise ValueError(f"update_many cannot set {self.id_field!r}: ids are unique")
         return [self.update(id, data) for id in ids if id in self.store]
 
-    def delete(self, id: str) -> None:
+    def delete(self, id: Any) -> None:
         try:
             del self.store[id]
         except KeyError:
             raise RecordNotFound(id) from None
 
-    def delete_many(self, ids: Iterable[str]) -> None:
+    def delete_many(self, ids: Iterable[Any]) -> None:
         for id in ids:
             self.store.pop(id, None)
 
@@ -392,8 +422,8 @@ class MappingProvider:
         id = data.get(self.id_field)
         if id is None:
             raise ValueError(f"upsert needs the record's {self.id_field!r}")
-        record = {**copy.deepcopy(dict(data)), self.id_field: str(id)}
-        self.store[str(id)] = record
+        record = {**copy.deepcopy(dict(data)), self.id_field: id}
+        self.store[id] = record
         return copy.deepcopy(record)
 
     def capabilities(self) -> Capabilities:

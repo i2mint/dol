@@ -115,3 +115,30 @@ def test_records_come_back_as_copies_and_the_id_follows_renames():
     people.create({"id": "c"})
     with pytest.raises(RecordExists):
         people.update("b", {"id": "c"})
+
+
+def test_review_edge_cases():
+    """Review of #144: renames, bulk ids, non-dict values, id-less values, JS-like eq."""
+    store = {"a": {"id": "a", "n": 1}, "b": {"id": "b", "n": 2}}
+    people = MappingProvider(store)
+    assert people.update("a", {"id": None, "n": 3}) == {"id": "a", "n": 3}
+    with pytest.raises(ValueError, match="update_many"):
+        people.update_many(["a", "b"], {"id": "z"})
+    assert sorted(store) == ["a", "b"]
+    with pytest.raises(TypeError, match="not a record mapping"):
+        MappingProvider({"x": "text"}).get_list()
+    keyed = MappingProvider({"k1": {"name": "Ada"}})  # values without their id
+    assert keyed.get_one("k1") == {"name": "Ada", "id": "k1"}
+    assert keyed.get_list().data == [{"name": "Ada", "id": "k1"}]
+    ints = MappingProvider({})
+    assert ints.create({"id": 5})["id"] == 5 and ints.get_one(5)["id"] == 5
+    keep = filter_to_function({"field": "flag", "operator": "eq", "value": 1})
+    assert keep({"flag": 1}) and not keep({"flag": True})
+    has = filter_to_function({"field": "tags", "operator": "arrayContainsAny", "value": {"x"}})
+    assert has({"tags": ["x"]}) and not has({"tags": [["x"]]})
+    member = filter_to_function({"field": "v", "operator": "in", "value": {1, 2}})
+    assert member({"v": 2}) and not member({"v": [1]})
+    nan = float("nan")
+    rows = [{"v": nan}, {"v": 0.5}, {"v": None}, {"v": 1.0}]
+    ordered = [r["v"] for r in apply_query(rows, ListParams(sort=[Sort("v")])).data]
+    assert ordered[:3] == [None, 0.5, 1.0] and ordered[3] != ordered[3]
