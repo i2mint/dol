@@ -40,11 +40,11 @@ from dol.util import add_as_attribute_of, max_common_prefix
 from dol.trans import (
     store_decorator,
     kv_wrap,
-    add_path_access,
     filt_iter,
     wrap_kvs,
     add_missing_key_handling,
 )
+from dol.store_addons import add_path_access
 from dol.dig import recursive_get_attr
 from dol.errors import out_of_scope_prefix_error, raises_out_of_scope
 from dol._paths_core import (

@@ -12,8 +12,9 @@ For a quick orientation, see [llms.txt](llms.txt).
 | File | What's in it |
 |------|-------------|
 | `dol/base.py` | `Collection`, `KvReader`, `KvPersister`, `Store` — the class hierarchy |
-| `dol/trans.py` | `wrap_kvs` (core), `store_decorator`, `filt_iter`, `cached_keys`, `Codec`, `kv_wrap` |
-| `dol/kv_codecs.py` | `ValueCodecs`, `KeyCodecs` — ready-made codec namespaces |
+| `dol/trans.py` | `wrap_kvs` (core), `store_decorator`, `filt_iter`, `cached_keys`, `kv_wrap` |
+| `dol/store_addons.py` | `add_path_access`, `flatten`, `insert_aliases`, `insert_hash_method` (re-exported by `trans`) |
+| `dol/kv_codecs.py` | `Codec`, `ValueCodec`, `KeyCodec`; `ValueCodecs`, `KeyCodecs` — ready-made codec namespaces |
 | `dol/caching.py` | `cache_this`, `cache_vals`, `store_cached`, `WriteBackChainMap` |
 | `dol/paths.py` | `KeyTemplate`, `mk_relative_path_store`, `KeyPath`, `path_get/set/filter` |
 | `dol/filesys.py` | `Files`, `TextFiles`, `JsonFiles`, `PickleFiles` — filesystem stores |

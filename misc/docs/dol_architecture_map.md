@@ -58,7 +58,9 @@ time** (docstring-only and inline-function imports excluded).
 |---|---:|---|---|---|
 | `__init__.py` | 208 | Public API surface; deprecation shim via module `__getattr__` | (re-exports — see §3) | everything |
 | `base.py` | 1140 | Class hierarchy + hook protocol; `kv_walk`; delegation machinery | `Collection`, `KvReader`, `KvPersister`, `Store`, `MappingViewMixin`, `kv_walk`, `Stream` | errors, signatures, util |
-| `trans.py` | 3492 | **The core.** `wrap_kvs`, `store_decorator`, `filt_iter`, `cached_keys`, `Codec`/`ValueCodec`/`KeyCodec`, `kv_wrap`, path-access adders | `wrap_kvs`, `filt_iter`, `cached_keys`, `kv_wrap`, `store_decorator`, `flatten`, `add_path_get/access`, `mk_read_only`, `Codec`* | base, errors, signatures, util |
+| `trans.py` | 3131 | **The core.** `wrap_kvs`, `store_decorator`, `filt_iter`, `cached_keys`, `kv_wrap`, missing-key handlers; re-exports the codec types and the add-ons that moved out (#70) | `wrap_kvs`, `filt_iter`, `cached_keys`, `kv_wrap`, `store_decorator`, `mk_read_only` | base, errors, signatures, util, _codecs_core |
+| `store_addons.py` | 794 | Add-ons split out of `trans.py` (#70): path access, `flatten`, method aliases, `insert_hash_method` | `add_path_get/access`, `autoviv`, `flatten`, `insert_aliases`, `insert_load_dump_aliases`, `insert_hash_method` | base, _paths_core, trans |
+| `_codecs_core.py` | 157 | The codec types, split out of `trans.py` (#70); a dependency-free leaf so `trans` can re-export them | `Codec`*, `ValueCodec`, `KeyCodec`, `KeyValueCodec`, `affix_key_codec` | errors, util (`trans` lazily) |
 | `caching.py` | 2675 | Caching layers: `cache_this`, `cache_vals`, `store_cached`, `WriteBackChainMap`, key-strategy protocol | `cache_this`, `cache_vals`, `store_cached`, `WriteBackChainMap`, `flush_on_exit`, `ensure_clear_to_kv_store` | base, trans, util |
 | `paths.py` | 2270 | Path/nested access: `KeyTemplate`, `KeyPath`, `path_get/set/filter`, relative-path stores | `KeyTemplate`, `KeyPath`, `path_get`, `path_set`, `path_filter`, `mk_relative_path_store`, `flatten_dict`, `leaf_paths`, `add_prefix_filtering` | base, dig, explicit, naming, trans, util |
 | `naming.py` | 1243 | **Older** parametrized-key system: `StrTupleDict` (str↔tuple↔dict). Overlaps `KeyTemplate` (§7) | `StrTupleDict`, `mk_store_from_path_format_store_cls` | base, errors, signatures, trans, util |
@@ -78,8 +80,9 @@ time** (docstring-only and inline-function imports excluded).
 | `trash.py` | 237 | Cross-platform trash/recycle delete | `get_platform_trash_func`, `make_safe_delete_func` | (none) |
 | `recipes.py` | 5 | Thin alias module | `search_paths` (= `paths.path_filter`) | paths |
 
-`*` `Codec`/`ValueCodec`/`KeyCodec`/`KeyValueCodec` live in `trans.py` but are **not**
-top-level `dol` exports; import from `dol.trans` (see §3, §6).
+`*` `Codec`/`ValueCodec`/`KeyCodec`/`KeyValueCodec` are defined in `_codecs_core.py` and are
+**not** top-level `dol` exports; import them from `dol.kv_codecs` (`dol.trans` still
+re-exports them; see §3, §6).
 
 ### Internal dependency graph
 
@@ -360,10 +363,10 @@ attributes (`_kv_wrap_*` at `:2198–2348`). Same underlying `_wrap_outcoming`/`
 
 ## 6. Codec system
 
-Defined at the **end of `trans.py`** (`:3365–3451`); ready-made namespaces in
-`kv_codecs.py`.
+Defined in **`_codecs_core.py`** (moved out of `trans.py` by #70; imported from
+`dol.kv_codecs`, re-exported by `dol.trans`); ready-made namespaces in `kv_codecs.py`.
 
-**Dataclasses** (`trans.py:3374`):
+**Dataclasses** (`_codecs_core.py`):
 ```python
 @dataclass
 class Codec(Generic[DecodedType, EncodedType]):
@@ -393,7 +396,7 @@ populated by `@_add_default_codecs`, `:254`):
   `tuple_of_dict`. Each is built by `value_wrap` (`= codec_wrap(ValueCodec, …)`, `:222`)
   which uses `Sig` to give the factory a signature merged from encoder+decoder params.
 - `KeyCodecs` (`:427`): `affixed`, `suffixed`, `prefixed`, `common_prefixed`,
-  `mapped_keys`. Affix codecs go through `affix_key_codec` (`trans.py:3439`).
+  `mapped_keys`. Affix codecs go through `affix_key_codec` (`_codecs_core.py`).
 - `KeyValueCodecs` (`:575`, **unexported**): `key_based`, `extension_based` — **both are
   empty stubs** (`extension_based`'s `ext_mapping` is unused; `:596–597`). Dead/incomplete.
 
@@ -440,7 +443,7 @@ or move its still-used bits — `mk_pattern_from_template_and_format_dict`, used
   `kv_walk`; only `path_filter`/`search_paths` are built on `kv_walk` — another instance
   of the same-idea-implemented-N-times debt.
 
-Also note `trans.flatten` (`trans.py:2867`) flattens a *store of stores* (levels-aware),
+Also note `store_addons.flatten` (re-exported as `trans.flatten`) flattens a *store of stores* (levels-aware),
 while `paths.flatten_dict` flattens a plain nested `Mapping` — two "flatten"s with
 different semantics; a naming-collision trap for agents.
 
@@ -541,6 +544,8 @@ single `cache_this` with an explicit `key`/`cache` over stacking.
    into `trans_core` (wrap machinery), `codecs` (move `Codec`/`ValueCodec`/… out — they're
    logically `kv_codecs`'), and `store_addons` (path-get/access, aliases, hash). *High
    impact on maintainability + testability.*
+   *Done (#70): the codec types moved to `_codecs_core.py` (public home `dol.kv_codecs`)
+   and the add-ons to `store_addons.py`; `trans.py` re-exports both.*
 3. **`naming.py` ↔ `paths.py` duplication (§7).** Deprecate `StrTupleDict` in favor of
    `KeyTemplate`; consolidate the three path-get impls (`path_get`, `_path_get`,
    `chain_get`). `naming.py` has the lowest coverage in the package (31%). *Medium impact,
@@ -587,8 +592,8 @@ single `cache_this` with an explicit `key`/`cache` over stacking.
 5. **`store_decorator` requires all-but-first args keyword-only** and first arg defaulting
    to `None`. Violating this asserts at decoration/first-call time (`trans.py:340`, `:92`).
    Follow the same rule for new decorators (matches CLAUDE.md's keyword-only convention).
-6. **`Codec`/`ValueCodec`/`KeyCodec` are in `trans.py`, not exported at top level.** Import
-   from `dol.trans`. Ready-made ones: `dol.ValueCodecs` / `dol.KeyCodecs`.
+6. **`Codec`/`ValueCodec`/`KeyCodec` are in `_codecs_core.py`, not exported at top level.**
+   Import from `dol.kv_codecs` (`dol.trans` re-exports them). Ready-made ones: `dol.ValueCodecs` / `dol.KeyCodecs`.
 7. **Keep core dependency-free.** `dol` core imports nothing outside stdlib. New optional
    deps go behind lazy imports with a helpful error (see how `kv_codecs` lazily imports
    `pickle`/`gzip`/`plistlib` inside the class body, `:315,356`).
