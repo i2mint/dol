@@ -797,6 +797,14 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
         """Raise if ``v`` can't be written, *before* the file is opened (and so
         truncated). The bytes persister has nothing to check; see
         ``FileStringPersister``."""
+        if "b" not in self._write_open_kwargs.get("mode", "wb"):
+            return
+        try:
+            memoryview(v)
+        except TypeError:
+            raise TypeError(
+                f"a bytes-like object is required, not {type(v).__name__!r}"
+            ) from None
 
     @validate_key_and_raise_key_error_on_exception
     def __setitem__(self, k, v):
