@@ -239,3 +239,25 @@ def test_bifurcated_update_of_a_missing_record_writes_no_blob():
         "c1"
     ]
     assert clips.content_store == {"c1.audio": b"Z"}
+
+
+def test_wrap_provider_encodes_writes_and_decodes_reads():
+    from dol.records import wrap_provider
+
+    stored = MappingProvider({})
+    app = wrap_provider(
+        stored,
+        encode=lambda r: {k: (v.upper() if k == "name" else v) for k, v in r.items()},
+        decode=lambda r: {**r, "name": r.get("name", "").lower()},
+    )
+    assert app.create({"id": "a", "name": "Ada"})["name"] == "ada"
+    assert stored.get_one("a")["name"] == "ADA"
+    assert app.update("a", {"name": "Bo"})["name"] == "bo"
+    assert [r["name"] for r in app.update_many(["a"], {"name": "Cy"})] == ["cy"]
+    assert (
+        app.get_list({"search": "CY"}).data[0]["name"] == "cy"
+    )  # queries see stored data
+    assert app.upsert({"id": "b", "name": "Di"})["name"] == "di"
+    app.delete_many(["a", "b"])
+    assert app.get_list().total == 0
+    assert app.capabilities() == stored.capabilities()

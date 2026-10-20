@@ -19,6 +19,8 @@ collection facade with CRUD and query, the Python mirror of zodal's ``DataProvid
   ``id -> record`` (a ``dict``, or any dol store of dicts, e.g. JSON files).
 - :class:`BifurcatedProvider` — records in a provider, their large fields in a
   ``dol.content`` store, with :class:`~dol.content.ContentRef` s in their place.
+- :func:`wrap_provider` — a provider seen through a record codec (``encode`` /
+  ``decode``), the records analog of :func:`dol.wrap_kvs`.
 
 Stdlib only, like the rest of dol's core.
 
@@ -56,6 +58,8 @@ __all__ = [
     "DataProvider",
     "MappingProvider",
     "BifurcatedProvider",
+    "WrappedProvider",
+    "wrap_provider",
     "FILTER_OPERATORS",
     "filter_to_function",
     "matches_search",
@@ -626,3 +630,88 @@ class BifurcatedProvider:
         return replace(
             caps, bifurcated=True, content_fields=self.content_fields, can_upsert=False
         )
+
+
+# ------------------------------------------------------------------ codec layer
+
+
+def _identity(x):
+    return x
+
+
+class WrappedProvider:
+    """A provider seen through a record codec (zodal's ``wrapProvider``).
+
+    ``decode`` turns a stored record into the app's shape on the way out
+    (``get_list``, ``get_one`` and every write's result); ``encode`` turns the app's
+    (possibly partial) record into the stored shape on the way in. Queries
+    (``ListParams``) are passed through unchanged, so they name stored fields.
+    The analog of :func:`dol.wrap_kvs` for records.
+
+    >>> stored = MappingProvider({})
+    >>> app = wrap_provider(
+    ...     stored,
+    ...     encode=lambda r: {("tags_csv" if k == "tags" else k): (",".join(v) if k == "tags" else v)
+    ...                       for k, v in r.items()},
+    ...     decode=lambda r: {("tags" if k == "tags_csv" else k): (v.split(",") if k == "tags_csv" else v)
+    ...                       for k, v in r.items()},
+    ... )
+    >>> app.create({"id": "a", "tags": ["x", "y"]})["tags"]
+    ['x', 'y']
+    >>> stored.get_one("a")["tags_csv"]
+    'x,y'
+    """
+
+    def __init__(
+        self,
+        provider: DataProvider,
+        *,
+        encode: Callable[[Mapping[str, Any]], Mapping[str, Any]] = _identity,
+        decode: Callable[[Mapping[str, Any]], Mapping[str, Any]] = _identity,
+    ):
+        self.provider, self.encode, self.decode = provider, encode, decode
+
+    def get_list(self, params: ListParams | Mapping | None = None) -> ListResult:
+        res = self.provider.get_list(params)
+        return ListResult([dict(self.decode(r)) for r in res.data], res.total)
+
+    def get_one(self, id: Any) -> Record:
+        return dict(self.decode(self.provider.get_one(id)))
+
+    def create(self, data: Mapping[str, Any]) -> Record:
+        return dict(self.decode(self.provider.create(self.encode(data))))
+
+    def update(self, id: Any, data: Mapping[str, Any]) -> Record:
+        return dict(self.decode(self.provider.update(id, self.encode(data))))
+
+    def update_many(self, ids: Iterable[Any], data: Mapping[str, Any]) -> list[Record]:
+        return [
+            dict(self.decode(r))
+            for r in self.provider.update_many(ids, self.encode(data))
+        ]
+
+    def delete(self, id: Any) -> None:
+        self.provider.delete(id)
+
+    def delete_many(self, ids: Iterable[Any]) -> None:
+        self.provider.delete_many(ids)
+
+    def upsert(self, data: Mapping[str, Any]) -> Record:
+        upsert = getattr(self.provider, "upsert", None)
+        if upsert is None:
+            raise NotImplementedError(f"{type(self.provider).__name__} has no upsert")
+        return dict(self.decode(upsert(self.encode(data))))
+
+    def capabilities(self) -> Capabilities:
+        caps = getattr(self.provider, "capabilities", None)
+        return caps() if callable(caps) else Capabilities()
+
+
+def wrap_provider(
+    provider: DataProvider,
+    *,
+    encode: Callable[[Mapping[str, Any]], Mapping[str, Any]] = _identity,
+    decode: Callable[[Mapping[str, Any]], Mapping[str, Any]] = _identity,
+) -> WrappedProvider:
+    """``provider`` seen through a record codec; see :class:`WrappedProvider`."""
+    return WrappedProvider(provider, encode=encode, decode=decode)
