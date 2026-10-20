@@ -117,7 +117,12 @@ class ListParams:
             if p
             else None
         )
-        return cls(sort=sort, filter=d.get("filter"), search=d.get("search"), pagination=pagination)
+        return cls(
+            sort=sort,
+            filter=d.get("filter"),
+            search=d.get("search"),
+            pagination=pagination,
+        )
 
 
 @dataclass(frozen=True)
@@ -162,7 +167,9 @@ class DataProvider(Protocol):
     def get_one(self, id: str) -> Record: ...
     def create(self, data: Mapping[str, Any]) -> Record: ...
     def update(self, id: str, data: Mapping[str, Any]) -> Record: ...
-    def update_many(self, ids: Iterable[str], data: Mapping[str, Any]) -> list[Record]: ...
+    def update_many(
+        self, ids: Iterable[str], data: Mapping[str, Any]
+    ) -> list[Record]: ...
     def delete(self, id: str) -> None: ...
     def delete_many(self, ids: Iterable[str]) -> None: ...
 
@@ -198,7 +205,9 @@ def _same(a, b) -> bool:
 
 
 def _member(x, values) -> bool:
-    return isinstance(values, (list, tuple, set, frozenset)) and any(_same(x, v) for v in values)
+    return isinstance(values, (list, tuple, set, frozenset)) and any(
+        _same(x, v) for v in values
+    )
 
 
 #: zodal's filter operators: ``operator -> (field_value, value) -> bool``.
@@ -215,9 +224,11 @@ FILTER_OPERATORS: dict[str, Callable[[Any, Any], bool]] = {
     "in": lambda f, v: _member(f, v),
     "notIn": lambda f, v: not _member(f, v),
     "arrayContains": lambda f, v: isinstance(f, (list, tuple)) and _member(v, f),
-    "arrayContainsAny": lambda f, v: isinstance(f, (list, tuple))
-    and isinstance(v, (list, tuple, set, frozenset))
-    and any(_member(x, f) for x in v),
+    "arrayContainsAny": lambda f, v: (
+        isinstance(f, (list, tuple))
+        and isinstance(v, (list, tuple, set, frozenset))
+        and any(_member(x, f) for x in v)
+    ),
     "isNull": lambda f, v: f is None,
     "isNotNull": lambda f, v: f is not None,
 }
@@ -251,7 +262,9 @@ def filter_to_function(
     try:
         name, op_name, value = filter["field"], filter["operator"], filter.get("value")
     except KeyError as e:
-        raise ValueError(f"a filter condition needs field and operator: {filter!r}") from e
+        raise ValueError(
+            f"a filter condition needs field and operator: {filter!r}"
+        ) from e
     try:
         op = operators[op_name]
     except KeyError:
@@ -268,8 +281,14 @@ def matches_search(
     if not search:
         return True
     needle = search.lower()
-    keys = fields if fields is not None else [k for k, v in record.items() if isinstance(v, str)]
-    return any(isinstance(record.get(k), str) and needle in record[k].lower() for k in keys)
+    keys = (
+        fields
+        if fields is not None
+        else [k for k, v in record.items() if isinstance(v, str)]
+    )
+    return any(
+        isinstance(record.get(k), str) and needle in record[k].lower() for k in keys
+    )
 
 
 def _sort_key(value):
@@ -351,7 +370,9 @@ class MappingProvider:
 
     @staticmethod
     def _next_free_int_id(store: Mapping) -> str:
-        return next(str(i) for i in itertools.count(len(store) + 1) if str(i) not in store)
+        return next(
+            str(i) for i in itertools.count(len(store) + 1) if str(i) not in store
+        )
 
     def _as_record(self, id: Any, value: Any) -> Record:
         if not isinstance(value, Mapping):
@@ -404,7 +425,9 @@ class MappingProvider:
     def update_many(self, ids: Iterable[Any], data: Mapping[str, Any]) -> list[Record]:
         """Apply ``data`` to every existing record of ``ids`` (missing ones are skipped)."""
         if data.get(self.id_field) is not None:
-            raise ValueError(f"update_many cannot set {self.id_field!r}: ids are unique")
+            raise ValueError(
+                f"update_many cannot set {self.id_field!r}: ids are unique"
+            )
         return [self.update(id, data) for id in ids if id in self.store]
 
     def delete(self, id: Any) -> None:
