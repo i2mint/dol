@@ -1,0 +1,47 @@
+{
+  "collection_duration_seconds": 5.881580829620361,
+  "commit_message": "records 80 bifurcated (#146)\n\n* dol.records: BifurcatedProvider, records beside their blobs\n\nContent fields go to a dol.content store (put_content) and the record\nkeeps their ContentRef wire dicts; get_one(resolve_content=True) and\nget_content fetch the bytes. The metadata record is the commit point:\ncontent is written before the record refers to it (a new record is\ncreated first for its id, and deleted again if a content write fails),\nand removed after the record is gone.\n\nPart of #80\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* dol.records: wrap_provider, the records analog of wrap_kvs\n\nWrappedProvider sees a provider through a record codec: encode on the\nway in (create, update, update_many, upsert), decode on the way out\n(get_list, get_one and every write's result); queries pass through and\nname stored fields, as in zodal's wrapProvider.\n\nCloses #80\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+  "commit_sha": "d78e08ee3b96fa0b714b4dd336c59d3eef4ab770",
+  "metrics": {
+    "coverage": {
+      "branch_coverage": 0.0,
+      "error": "No coverage file found",
+      "line_coverage": 0.0,
+      "statements_covered": 0,
+      "statements_total": 0
+    },
+    "umpyre_stats": {
+      "comment_lines": 12416,
+      "comment_lines_ratio": 0.05364905154906451,
+      "docs_lines": 26162,
+      "empty_lines": 28175,
+      "empty_lines_ratio": 0.12174307566002679,
+      "files_analyzed": 546,
+      "function_lines": 93846,
+      "function_lines_ratio": 0.40550490429071423,
+      "mean_lines_per_function": 16.478665496049167,
+      "num_classes": 1475,
+      "num_functions": 5695,
+      "pypi_version": "0.3.90",
+      "total_lines": 231430
+    },
+    "wily": {
+      "cyclomatic_avg": 0.0,
+      "error": "wily report failed: Usage: wily report [OPTIONS] FILE [METRICS]...\nTry 'wily report --help' for help.\n\nError: Invalid value for '-f' / '--format': 'json' is not one of 'CONSOLE', 'HTML'.\n",
+      "files_analyzed": 0,
+      "maintainability_index": 0.0,
+      "total_loc": 0
+    },
+    "workflow_status": {
+      "last_run_status": "success",
+      "last_success_timestamp": "2026-10-20T16:07:09Z",
+      "recent_failure_count": 0,
+      "run_url": "https://github.com/i2mint/dol/actions/runs/39454527221",
+      "total_runs_analyzed": 10
+    }
+  },
+  "python_version": "3.10",
+  "schema_version": "1.0",
+  "timestamp": "2026-10-20T16:33:07.948121Z",
+  "workflow_status": {}
+}

@@ -1,5 +1,5 @@
 {
-  "collection_duration_seconds": 3.470827579498291,
+  "collection_duration_seconds": 5.881580829620361,
   "commit_message": "records 80 bifurcated (#146)\n\n* dol.records: BifurcatedProvider, records beside their blobs\n\nContent fields go to a dol.content store (put_content) and the record\nkeeps their ContentRef wire dicts; get_one(resolve_content=True) and\nget_content fetch the bytes. The metadata record is the commit point:\ncontent is written before the record refers to it (a new record is\ncreated first for its id, and deleted again if a content write fails),\nand removed after the record is gone.\n\nPart of #80\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* dol.records: wrap_provider, the records analog of wrap_kvs\n\nWrappedProvider sees a provider through a record codec: encode on the\nway in (create, update, update_many, upsert), decode on the way out\n(get_list, get_one and every write's result); queries pass through and\nname stored fields, as in zodal's wrapProvider.\n\nCloses #80\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
   "commit_sha": "d78e08ee3b96fa0b714b4dd336c59d3eef4ab770",
   "metrics": {
@@ -11,19 +11,19 @@
       "statements_total": 0
     },
     "umpyre_stats": {
-      "comment_lines": 12912,
-      "comment_lines_ratio": 0.05424936557820614,
-      "docs_lines": 27104,
-      "empty_lines": 29257,
-      "empty_lines_ratio": 0.12292237366183217,
-      "files_analyzed": 557,
-      "function_lines": 98468,
-      "function_lines_ratio": 0.4137102330974909,
-      "mean_lines_per_function": 16.394938394938396,
-      "num_classes": 1535,
-      "num_functions": 6006,
+      "comment_lines": 12416,
+      "comment_lines_ratio": 0.05364905154906451,
+      "docs_lines": 26162,
+      "empty_lines": 28175,
+      "empty_lines_ratio": 0.12174307566002679,
+      "files_analyzed": 546,
+      "function_lines": 93846,
+      "function_lines_ratio": 0.40550490429071423,
+      "mean_lines_per_function": 16.478665496049167,
+      "num_classes": 1475,
+      "num_functions": 5695,
       "pypi_version": "0.3.90",
-      "total_lines": 238012
+      "total_lines": 231430
     },
     "wily": {
       "cyclomatic_avg": 0.0,
@@ -42,6 +42,6 @@
   },
   "python_version": "3.10",
   "schema_version": "1.0",
-  "timestamp": "2026-10-20T16:32:55.911940Z",
+  "timestamp": "2026-10-20T16:33:07.948121Z",
   "workflow_status": {}
 }
