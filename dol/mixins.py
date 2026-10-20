@@ -278,9 +278,11 @@ class IterBasedSizedContainerMixin(IterBasedSizedMixin, IterBasedContainerMixin)
     pass
 
 
-class HashableMixin:
-    def __hash__(self):
-        return id(self)
+from dol.util import HashableMixin as _HashableById  # the one __hash__ (#70)
+
+
+class HashableMixin(_HashableById):
+    """Hashable by identity, and equal only to itself (unlike ``util.HashableMixin``)."""
 
     def __eq__(self, other):
         return hash(self) == hash(other)

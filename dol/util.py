@@ -172,6 +172,16 @@ def safe_compile(path, normalize_path=True):
 # TODO: Make identity_func "identifiable". If we use the following one, we can use == to detect it's use,
 # TODO: ... but there may be a way to annotate, register, or type any identity function so it can be detected.
 def identity_func(x: T) -> T:
+    """Identity function that returns its input unchanged.
+
+    The one definition in dol: ``identity`` in ``caching``, ``paths`` and ``tools``,
+    and ``identity_func`` in ``sources``, are this function.
+
+    >>> identity_func(42)
+    42
+    >>> identity_func([1, 2, 3])
+    [1, 2, 3]
+    """
     return x
 
 
@@ -1628,6 +1638,12 @@ def delegate_as(delegate_cls, to="delegate", include=frozenset(), exclude=frozen
 
 
 class HashableMixin:
+    """Mixin making instances hashable by identity (``id(self)``).
+
+    The one definition in dol (``caching.HashableMixin`` is this class;
+    ``mixins.HashableMixin`` extends it with identity equality).
+    """
+
     def __hash__(self):
         return id(self)
 
