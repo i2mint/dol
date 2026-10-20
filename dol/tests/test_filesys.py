@@ -520,3 +520,31 @@ def test_zipfilesreader_default_lists_zip_files(tmp_path):
         zf.writestr("m", b"h")
     (tmp_path / "other.txt").write_text("x")
     assert list(ZipFilesReader(str(tmp_path))) == [str(tmp_path / "in.zip")]
+
+
+def test_write_open_kwargs_opener_and_encode_before_open(tmp_path):
+    """i2mint/dol#118: public write hook, and an unencodable value keeps the file."""
+    import os
+    import stat
+
+    from dol import Files, TextFiles
+
+    def owner_only(path, flags):
+        return os.open(path, flags, 0o600)
+
+    s = TextFiles(str(tmp_path), write_open_kwargs=dict(opener=owner_only))
+    s["a"] = "hello"
+    assert s["a"] == "hello"
+    if os.name == "posix":
+        assert stat.S_IMODE(os.stat(tmp_path / "a").st_mode) == 0o600
+
+    # encode-before-open: the existing file survives a failed write
+    for bad in ("lone \ud800 surrogate", b"bytes", 3):
+        with pytest.raises(KeyError):  # the store wraps write errors as KeyError
+            s["a"] = bad
+        assert s["a"] == "hello"
+
+    # the hook merges over the defaults, and bytes stores accept it too
+    b = Files(str(tmp_path), write_open_kwargs=dict(opener=owner_only))
+    b["b"] = b"x"
+    assert b["b"] == b"x"
