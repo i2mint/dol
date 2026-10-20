@@ -36,6 +36,7 @@ Get the first item of a kv store, or a list of the first n items
 | [`appendable`](dol.appendable.html.md#dol.appendable)([store_cls, return_keys, ...])   | Makes a new class with append (and consequential extend) methods                                                |
 |-------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
 | [`base`](dol.base.html.md#module-dol.base)                                       | Base classes for making stores.                                                                                 |
+| [`cache_keys`](dol.cache_keys.html.md#module-dol.cache_keys)                           | Key strategies: how `cache_this` turns an instance and a call into a cache key.                                 |
 | [`caching`](dol.caching.html.md#module-dol.caching)                                 | Tools to add caching layers to stores and methods.                                                              |
 | [`content`](dol.content.html.md#module-dol.content)                                 | Content references and content-addressed storage — the flat "blob" layer.                                       |
 | [`dig`](dol.dig.html.md#module-dol.dig)                                         | Layers introspection: walk the layers of a wrapped store and trace a key through them.                          |
@@ -52,6 +53,7 @@ Get the first item of a kv store, or a list of the first n items
 | [`signatures`](dol.signatures.html.md#module-dol.signatures)                           | Signature calculus: Tools to make it easier to work with function's signatures.                                 |
 | [`sources`](dol.sources.html.md#module-dol.sources)                                 | Key-value views of disparate sources.                                                                           |
 | [`store_addons`](dol.store_addons.html.md#module-dol.store_addons)                       | Store add-ons: path access, flattening, method aliases and hashing.                                             |
+| [`store_caching`](dol.store_caching.html.md#module-dol.store_caching)                     | Caching layers for stores: read caches, write caches and memoizers.                                             |
 | [`tools`](dol.tools.html.md#module-dol.tools)                                     | Various tools to add functionality to stores.                                                                   |
 | [`trans`](dol.trans.html.md#module-dol.trans)                                     | Tools to wrap stores with key/value transforms, filters, caches and other layers.                               |
 | [`trash`](dol.trash.html.md#module-dol.trash)                                     | Cross-platform file trash/recycle bin functionality for dol.                                                    |

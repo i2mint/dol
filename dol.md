@@ -1,4 +1,4 @@
-> built 2026-10-20 18:13 UTC from 7e834f3 (master) · dol 0.3.92. Details: build_info.json
+> built 2026-10-20 18:38 UTC from 63b1200 (master) · dol 0.3.93. Details: build_info.json
 
 # index.html.md
 
@@ -1347,6 +1347,210 @@ are transform-equivalent, so either answer is correct).
   [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
 
 
+# _autosummary/dol.cache_keys.html.md
+
+# dol.cache_keys
+
+Key strategies: how `cache_this` turns an instance and a call into a cache key.
+
+A key strategy (the `KeyStrategy` protocol) resolves a key from the method name when
+the class is defined (`resolve_at_definition`) or, if it needs the instance, when the
+cached attribute is accessed (`resolve_at_runtime`). The ready-made ones:
+
+- `ExplicitKey`: a fixed key
+- `ApplyToMethodName`: a function of the method name (e.g. add an extension)
+- `InstanceProp`: the value of an attribute of the instance
+- `ApplyToInstance`: a function of the instance
+- `FromMethodArgs`: a function of the method’s arguments
+- `CompositeKey`: several strategies combined
+
+`cache_this` accepts a strategy, or anything `_resolve_key_for_cached_prop` /
+`_resolve_key_for_cached_method` can turn into one (a string, a callable, …).
+The strategies are also attributes of `cache_this` (`cache_this.ExplicitKey`).
+
+These used to live in `dol.caching`, which still re-exports them (i2mint/dol#70).
+
+```pycon
+>>> from dol.cache_keys import ExplicitKey, ApplyToMethodName
+>>> ExplicitKey('data.json').resolve_at_definition('load')
+'data.json'
+>>> ApplyToMethodName(lambda name: name + '.pkl').resolve_at_definition('load')
+'load.pkl'
+```
+
+### Functions
+
+| [`register_key_strategy`](_autosummary/dol.cache_keys.html.md#dol.cache_keys.register_key_strategy)(cls)   | Register a class as a KeyStrategy.   |
+|-------------------------------------------------------------------------------|--------------------------------------|
+
+### Classes
+
+| [`ApplyToInstance`](_autosummary/dol.cache_keys.html.md#dol.cache_keys.ApplyToInstance)(func)                   | Apply a function to the instance to generate the key.        |
+|------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| [`ApplyToMethodName`](_autosummary/dol.cache_keys.html.md#dol.cache_keys.ApplyToMethodName)(func)                 | Apply a function to the method name to generate the key.     |
+| [`CompositeKey`](_autosummary/dol.cache_keys.html.md#dol.cache_keys.CompositeKey)(\*strategies[, separator]) | Combine multiple key strategies into a single composite key. |
+| [`ExplicitKey`](_autosummary/dol.cache_keys.html.md#dol.cache_keys.ExplicitKey)(key)                        | Use an explicitly provided key value.                        |
+| [`FromMethodArgs`](_autosummary/dol.cache_keys.html.md#dol.cache_keys.FromMethodArgs)(func)                    | Apply a function to method arguments to generate the key.    |
+| [`InstanceProp`](_autosummary/dol.cache_keys.html.md#dol.cache_keys.InstanceProp)(prop_name)                 | Get a key from an instance property.                         |
+| [`KeyStrategy`](_autosummary/dol.cache_keys.html.md#dol.cache_keys.KeyStrategy)(\*args, \*\*kwargs)         | Protocol defining how a key strategy should behave.          |
+
+### *class* dol.cache_keys.ApplyToInstance(func)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Apply a function to the instance to generate the key.
+
+#### resolve_at_definition(method_name)
+
+Cannot resolve at definition time, need the instance.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+#### resolve_at_runtime(instance, method_name)
+
+Apply the function to the instance at runtime.
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
+### *class* dol.cache_keys.ApplyToMethodName(func)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Apply a function to the method name to generate the key.
+
+```pycon
+>>> strategy = ApplyToMethodName(lambda name: f"{name}.cache")
+>>> strategy.resolve_at_definition("my_method")
+'my_method.cache'
+```
+
+#### resolve_at_definition(method_name)
+
+Apply the function to the method name at definition time.
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
+### *class* dol.cache_keys.CompositeKey(\*strategies, separator='_')
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Combine multiple key strategies into a single composite key.
+
+Useful for creating keys that depend on both instance properties and method arguments.
+
+#### resolve_at_definition(method_name)
+
+Try to resolve all strategies at definition time.
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+#### resolve_at_runtime(instance, method_name, \*args, \*\*kwargs)
+
+Resolve all strategies at runtime and combine them.
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
+### *class* dol.cache_keys.ExplicitKey(key)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Use an explicitly provided key value.
+
+```pycon
+>>> strategy = ExplicitKey("my_key")
+>>> strategy.resolve_at_definition("method_name")
+'my_key'
+```
+
+#### resolve_at_definition(method_name)
+
+Return the explicit key value at definition time.
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
+### *class* dol.cache_keys.FromMethodArgs(func)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Apply a function to method arguments to generate the key.
+
+The function receives `(self, *args, **kwargs)` and should return a cache key.
+
+#### resolve_at_definition(method_name)
+
+Cannot resolve at definition time, need the arguments.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+#### resolve_at_runtime(instance, method_name, \*args, \*\*kwargs)
+
+Apply the function to the instance and method arguments at runtime.
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
+### *class* dol.cache_keys.InstanceProp(prop_name)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Get a key from an instance property.
+
+#### resolve_at_definition(method_name)
+
+Cannot resolve at definition time, need the instance.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+#### resolve_at_runtime(instance, method_name)
+
+Get the property value from the instance at runtime.
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
+### *class* dol.cache_keys.KeyStrategy(\*args, \*\*kwargs)
+
+Bases: [`Protocol`](https://docs.python.org/3/library/typing.html#typing.Protocol)
+
+Protocol defining how a key strategy should behave.
+
+#### resolve_at_definition(method_name)
+
+Attempt to resolve the key at class definition time.
+
+* **Parameters:**
+  **method_name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The name of the method being decorated.
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
+* **Returns:**
+  The resolved key or None if it can’t be resolved at definition time.
+
+#### resolve_at_runtime(instance, method_name)
+
+Resolve the key at runtime.
+By default, this will call resolve_at_definition on method_name.
+
+* **Parameters:**
+  * **instance** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – The instance the property is being accessed on.
+  * **method_name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The name of the method being decorated.
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+* **Returns:**
+  The resolved key.
+
+### dol.cache_keys.register_key_strategy(cls)
+
+Register a class as a KeyStrategy.
+
+
 # _autosummary/dol.caching.html.md
 
 # dol.caching
@@ -1378,6 +1582,9 @@ Key Tools:
   method arguments, and composite keys.
 - Store decorators: Tools like `cache_vals`, `mk_sourced_store`, and
   `store_cached` for adding caching layers to data stores.
+
+The key strategies are defined in `dol.cache_keys` and the store caching layers in
+`dol.store_caching`; this module re-exports them (i2mint/dol#70).
 
 ### Examples
 
@@ -1412,79 +1619,18 @@ Custom cache storage and key functions:
 
 ### Functions
 
-| [`add_extension`](_autosummary/dol.caching.html.md#dol.caching.add_extension)([ext, name])                          | Add an extension to a name.                                                                                                                                                                             |
-|------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`cache_func_outputs`](_autosummary/dol.caching.html.md#dol.caching.cache_func_outputs)([cache])                         | Decorator factory that caches a function's outputs in `cache`, keyed by `(func, args, kwargs)`.                                                                                                         |
-| [`cache_property_method`](_autosummary/dol.caching.html.md#dol.caching.cache_property_method)([cls, method_name, ...])      | Converts a method of a class into a CachedProperty.                                                                                                                                                     |
-| [`cache_this`](_autosummary/dol.caching.html.md#dol.caching.cache_this)([func, cache, key, pre_cache, ...])      | Unified caching decorator for properties and methods with persistent storage support.                                                                                                                   |
-| [`cache_vals`](_autosummary/dol.caching.html.md#dol.caching.cache_vals)([store, cache, \_\_module_\_, ...])      |                                                                                                                                                                                                         |
-| [`cached_method`](_autosummary/dol.caching.html.md#dol.caching.cached_method)([func, maxsize, typed])               | A decorator to cache the result of a method, ignoring the first argument (usually `self`).                                                                                                              |
-| [`ensure_clear_to_kv_store`](_autosummary/dol.caching.html.md#dol.caching.ensure_clear_to_kv_store)(store)                     | Ensures the store has a working clear method.                                                                                                                                                           |
-| [`flush_on_exit`](_autosummary/dol.caching.html.md#dol.caching.flush_on_exit)(cls)                                  | Class decorator: a subclass whose `__exit__` calls `flush_cache()` (adding a trivial `__enter__` if the class has none), so a write-cached store can be used as a context manager that flushes on exit. |
-| [`get_cache`](_autosummary/dol.caching.html.md#dol.caching.get_cache)(cache)                                    | Convenience function to get a cache (whether it's already an instance, or needs to be validated).                                                                                                       |
-| [`is_a_cache`](_autosummary/dol.caching.html.md#dol.caching.is_a_cache)(obj)                                     | Check if an object implements the cache interface.                                                                                                                                                      |
-| [`lru_cache_method`](_autosummary/dol.caching.html.md#dol.caching.lru_cache_method)([func, maxsize, typed])            | A decorator to cache the result of a method, ignoring the first argument (usually `self`).                                                                                                              |
-| [`mk_cached_store`](_autosummary/dol.caching.html.md#dol.caching.mk_cached_store)([store, cache, \_\_module_\_, ...]) |                                                                                                                                                                                                         |
-| [`mk_memoizer`](_autosummary/dol.caching.html.md#dol.caching.mk_memoizer)(cache)                                  | Make a memoizer that caches the output of a getter function in a cache.                                                                                                                                 |
-| [`mk_sourced_store`](_autosummary/dol.caching.html.md#dol.caching.mk_sourced_store)([store, source, ...])              |                                                                                                                                                                                                         |
-| [`mk_write_cached_store`](_autosummary/dol.caching.html.md#dol.caching.mk_write_cached_store)([store, w_cache, ...])        | Wrap a write cache around a store.                                                                                                                                                                      |
-| [`register_key_strategy`](_autosummary/dol.caching.html.md#dol.caching.register_key_strategy)(cls)                          | Register a class as a KeyStrategy.                                                                                                                                                                      |
-| [`store_cached`](_autosummary/dol.caching.html.md#dol.caching.store_cached)(store, key_func)                       | Function output memorizer but using a specific (usually persisting) store as it's memory and a key_func to compute the key under which to store the output.                                             |
-| [`store_cached_with_single_key`](_autosummary/dol.caching.html.md#dol.caching.store_cached_with_single_key)(store, key)            | Function output memorizer but using a specific store and key as its memory.                                                                                                                             |
+| [`add_extension`](_autosummary/dol.caching.html.md#dol.caching.add_extension)([ext, name])                     | Add an extension to a name.                                                                |
+|-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| [`cache_property_method`](_autosummary/dol.caching.html.md#dol.caching.cache_property_method)([cls, method_name, ...]) | Converts a method of a class into a CachedProperty.                                        |
+| [`cache_this`](_autosummary/dol.caching.html.md#dol.caching.cache_this)([func, cache, key, pre_cache, ...]) | Unified caching decorator for properties and methods with persistent storage support.      |
+| [`cached_method`](_autosummary/dol.caching.html.md#dol.caching.cached_method)([func, maxsize, typed])          | A decorator to cache the result of a method, ignoring the first argument (usually `self`). |
+| [`lru_cache_method`](_autosummary/dol.caching.html.md#dol.caching.lru_cache_method)([func, maxsize, typed])       | A decorator to cache the result of a method, ignoring the first argument (usually `self`). |
 
 ### Classes
 
-| [`ApplyToInstance`](_autosummary/dol.caching.html.md#dol.caching.ApplyToInstance)(func)                         | Apply a function to the instance to generate the key.                       |
-|------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| [`ApplyToMethodName`](_autosummary/dol.caching.html.md#dol.caching.ApplyToMethodName)(func)                       | Apply a function to the method name to generate the key.                    |
-| [`CachedMethod`](_autosummary/dol.caching.html.md#dol.caching.CachedMethod)(func[, cache, key, ignore, ...]) | Descriptor that caches the result of method calls based on their arguments. |
-| [`CachedProperty`](_autosummary/dol.caching.html.md#dol.caching.CachedProperty)(func[, cache, key, ...])       | Descriptor that caches the result of the first call to a method.            |
-| [`CompositeKey`](_autosummary/dol.caching.html.md#dol.caching.CompositeKey)(\*strategies[, separator])       | Combine multiple key strategies into a single composite key.                |
-| [`ExplicitKey`](_autosummary/dol.caching.html.md#dol.caching.ExplicitKey)(key)                              | Use an explicitly provided key value.                                       |
-| [`FromMethodArgs`](_autosummary/dol.caching.html.md#dol.caching.FromMethodArgs)(func)                          | Apply a function to method arguments to generate the key.                   |
-| [`HashableDict`](_autosummary/dol.caching.html.md#dol.caching.HashableDict)                                  | Just a dict, but hashable                                                   |
-| [`InstanceProp`](_autosummary/dol.caching.html.md#dol.caching.InstanceProp)(prop_name)                       | Get a key from an instance property.                                        |
-| [`KeyStrategy`](_autosummary/dol.caching.html.md#dol.caching.KeyStrategy)(\*args, \*\*kwargs)               | Protocol defining how a key strategy should behave.                         |
-| [`WriteBackChainMap`](_autosummary/dol.caching.html.md#dol.caching.WriteBackChainMap)(\*maps)                     | A collections.ChainMap that also 'writes back' when a key is found.         |
-
-### *class* dol.caching.ApplyToInstance(func)
-
-Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
-
-Apply a function to the instance to generate the key.
-
-#### resolve_at_definition(method_name)
-
-Cannot resolve at definition time, need the instance.
-
-* **Return type:**
-  [`None`](https://docs.python.org/3/builtins/constants.html#None)
-
-#### resolve_at_runtime(instance, method_name)
-
-Apply the function to the instance at runtime.
-
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
-
-### *class* dol.caching.ApplyToMethodName(func)
-
-Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
-
-Apply a function to the method name to generate the key.
-
-```pycon
->>> strategy = ApplyToMethodName(lambda name: f"{name}.cache")
->>> strategy.resolve_at_definition("my_method")
-'my_method.cache'
-```
-
-#### resolve_at_definition(method_name)
-
-Apply the function to the method name at definition time.
-
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+| [`CachedMethod`](_autosummary/dol.caching.html.md#dol.caching.CachedMethod)(func[, cache, key, ignore, ...])   | Descriptor that caches the result of method calls based on their arguments.   |
+|--------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| [`CachedProperty`](_autosummary/dol.caching.html.md#dol.caching.CachedProperty)(func[, cache, key, ...])         | Descriptor that caches the result of the first call to a method.              |
 
 ### *class* dol.caching.CachedMethod(func, cache=None, key=None, \*, ignore=None, allow_none_keys=False, lock_factory=<class '_thread.RLock'>, pre_cache=False, serialize=None, deserialize=None)
 
@@ -1503,190 +1649,6 @@ Descriptor that caches the result of the first call to a method.
 
 It generalizes the builtin functools.cached_property class, enabling the user to
 specify a cache object and a key to store the cache value.
-
-### *class* dol.caching.CompositeKey(\*strategies, separator='_')
-
-Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
-
-Combine multiple key strategies into a single composite key.
-
-Useful for creating keys that depend on both instance properties and method arguments.
-
-#### resolve_at_definition(method_name)
-
-Try to resolve all strategies at definition time.
-
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
-
-#### resolve_at_runtime(instance, method_name, \*args, \*\*kwargs)
-
-Resolve all strategies at runtime and combine them.
-
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
-
-### *class* dol.caching.ExplicitKey(key)
-
-Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
-
-Use an explicitly provided key value.
-
-```pycon
->>> strategy = ExplicitKey("my_key")
->>> strategy.resolve_at_definition("method_name")
-'my_key'
-```
-
-#### resolve_at_definition(method_name)
-
-Return the explicit key value at definition time.
-
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
-
-### *class* dol.caching.FromMethodArgs(func)
-
-Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
-
-Apply a function to method arguments to generate the key.
-
-The function receives `(self, *args, **kwargs)` and should return a cache key.
-
-#### resolve_at_definition(method_name)
-
-Cannot resolve at definition time, need the arguments.
-
-* **Return type:**
-  [`None`](https://docs.python.org/3/builtins/constants.html#None)
-
-#### resolve_at_runtime(instance, method_name, \*args, \*\*kwargs)
-
-Apply the function to the instance and method arguments at runtime.
-
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
-
-### *class* dol.caching.HashableDict
-
-Bases: [`HashableMixin`](_autosummary/dol.util.html.md#dol.util.HashableMixin), [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
-
-Just a dict, but hashable
-
-### *class* dol.caching.InstanceProp(prop_name)
-
-Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
-
-Get a key from an instance property.
-
-#### resolve_at_definition(method_name)
-
-Cannot resolve at definition time, need the instance.
-
-* **Return type:**
-  [`None`](https://docs.python.org/3/builtins/constants.html#None)
-
-#### resolve_at_runtime(instance, method_name)
-
-Get the property value from the instance at runtime.
-
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
-
-### *class* dol.caching.KeyStrategy(\*args, \*\*kwargs)
-
-Bases: [`Protocol`](https://docs.python.org/3/library/typing.html#typing.Protocol)
-
-Protocol defining how a key strategy should behave.
-
-#### resolve_at_definition(method_name)
-
-Attempt to resolve the key at class definition time.
-
-* **Parameters:**
-  **method_name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The name of the method being decorated.
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
-* **Returns:**
-  The resolved key or None if it can’t be resolved at definition time.
-
-#### resolve_at_runtime(instance, method_name)
-
-Resolve the key at runtime.
-By default, this will call resolve_at_definition on method_name.
-
-* **Parameters:**
-  * **instance** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – The instance the property is being accessed on.
-  * **method_name** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The name of the method being decorated.
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
-* **Returns:**
-  The resolved key.
-
-### *class* dol.caching.WriteBackChainMap(\*maps)
-
-Bases: [`ChainMap`](https://docs.python.org/3/library/collections.html#collections.ChainMap)
-
-A collections.ChainMap that also ‘writes back’ when a key is found.
-
-```pycon
->>> from dol.caching import WriteBackChainMap
->>>
->>> d = WriteBackChainMap({'a': 1, 'b': 2}, {'b': 22, 'c': 33}, {'d': 444})
-```
-
-In a `ChainMap`, when you ask for the value for a key, each mapping in the
-sequence is checked for, and the first mapping found that contains it will be
-the one determining the value.
-
-So here if you look for `b`, though the first mapping will give you the value,
-though the second mapping also contains a `b` with a different value:
-
-```pycon
->>> d['b']
-2
-```
-
-if you ask for `c`, it’s the second mapping that will give you the value:
-
-```pycon
->>> d['c']
-33
-```
-
-But unlike with the builtin `ChainMap`, something else is going to happen here:
-
-```pycon
->>> d
-WriteBackChainMap({'a': 1, 'b': 2, 'c': 33}, {'b': 22, 'c': 33}, {'d': 444})
-```
-
-See that now the first mapping also has the `('c', 33)` key-value pair:
-
-That is what we call “write back”.
-
-When a key is found in a mapping, all previous mappings (which by definition of
-`ChainMap` did not have a value for that key) will be revisited and that key-value
-pair will be written in it.
-
-As in with `ChainMap`, all writes will be carried out in the first mapping,
-and only the first mapping:
-
-```pycon
->>> d['e'] = 5
->>> d
-WriteBackChainMap({'a': 1, 'b': 2, 'c': 33, 'e': 5}, {'b': 22, 'c': 33}, {'d': 444})
-```
-
-Example use cases:
-
-- You’re working with a local and a remote source of data. You’d like to list the
-  keys available in both, and use the local item if it’s available, and if it’s not,
-  you want it to be sourced from remote, but written in local for quicker access
-  next time.
-- You have several sources to look for configuration values: a sequence of
-  configuration files/folders to look through (like a unix search path for command
-  resolution) and environment variables.
 
 ### dol.caching.add_extension(ext=None, name=None)
 
@@ -1721,38 +1683,6 @@ Also, bare in mind that if ext starts with the system’s extension separator,
 ```pycon
 >>> add_extension('.txt', 'file') == add_extension('txt', 'file') == 'file.txt'
 True
-```
-
-### dol.caching.cache_func_outputs(cache=<class 'dol.caching.HashableDict'>)
-
-Decorator factory that caches a function’s outputs in `cache`, keyed by
-`(func, args, kwargs)`.
-
-* **Parameters:**
-  **cache** – A cache instance (with `__contains__`/`__getitem__`/
-  `__setitem__`), or a zero-arg factory/class (e.g. the default,
-  `HashableDict`) used to make one.
-
-#### NOTE
-like `args`, every `kwargs` value must be hashable (they’re part of
-the cache key). Passing an unhashable value (e.g. a `list`) raises
-`TypeError` rather than silently skipping the cache.
-
-```pycon
->>> @cache_func_outputs()
-... def f(x, y=2):
-...     print(f"computing f({x}, {y})")
-...     return x + y
->>> f(1)
-computing f(1, 2)
-3
->>> f(1)  # cached: no "computing" print
-3
->>> f(1, y=3)  # different kwargs: not a cache hit
-computing f(1, 3)
-4
->>> f(1, y=3)  # this one is now cached too
-4
 ```
 
 ### dol.caching.cache_property_method(cls=None, method_name=None, \*, cache_decorator=<function cache_this>)
@@ -2183,74 +2113,6 @@ b'\x80\x04K*.'
 >>> # == b'\x80\x04K*.'
 ```
 
-### dol.caching.cache_vals(store=None, \*, cache=<class 'dict'>, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
-
-* **Parameters:**
-  * **store** – The class of the store you want to cache
-  * **cache** – The store you want to use to cache. Anything with a \_\_setitem_\_(k, v) and a \_\_getitem_\_(k).
-    By default, it will use a dict
-* **Returns:**
-  A subclass of the input store, but with caching (to the cache store)
-
-```pycon
->>> from dol.caching import cache_vals
->>> import time
->>> class SlowDict(dict):
-...     sleep_s = 0.2
-...     def __getitem__(self, k):
-...         time.sleep(self.sleep_s)
-...         return super().__getitem__(k)
-...
-...
->>> d = SlowDict({'a': 1, 'b': 2, 'c': 3})
->>>
->>> d['a']  # Wow! Takes a long time to get 'a'
-1
->>> cache = dict()
->>> CachedSlowDict = cache_vals(store=SlowDict, cache=cache)
->>>
->>> s = CachedSlowDict({'a': 1, 'b': 2, 'c': 3})
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c']
-cache: []
->>> # This will take a LONG time because it's the first time we ask for 'a'
->>> v = s['a']
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c']
-cache: ['a']
->>> # This will take very little time because we have 'a' in the cache
->>> v = s['a']
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c']
-cache: ['a']
->>> # But we don't have 'b'
->>> v = s['b']
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c']
-cache: ['a', 'b']
->>> # But now we have 'b'
->>> v = s['b']
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c']
-cache: ['a', 'b']
->>> s['d'] = 4  # and we can do things normally (like put stuff in the store)
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c', 'd']
-cache: ['a', 'b']
->>> s['d']  # if we ask for it again though, it will take time (the first time)
-4
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c', 'd']
-cache: ['a', 'b', 'd']
->>> # Of course, we could write 'd' in the cache as well, to get it quicker,
->>> # but that's another story: The story of write caches!
->>>
->>> # And by the way, your "cache wrapped" store hold a pointer to the cache it's using,
->>> # so you can take a peep there if needed:
->>> s._cache
-{'a': 1, 'b': 2, 'd': 4}
-```
-
 ### dol.caching.cached_method(func=None, , maxsize=128, typed=False)
 
 A decorator to cache the result of a method, ignoring the first argument (usually `self`).
@@ -2286,62 +2148,6 @@ Computing 1 + 2
 >>> obj.add(1.0, 2.0)  # Different types, recomputation occurs
 Computing 1.0 + 2.0
 3.0
-```
-
-### dol.caching.ensure_clear_to_kv_store(store)
-
-Ensures the store has a working clear method.
-
-If the store doesn’t have a clear method or has the disabled version,
-adds a proper implementation that safely removes all items.
-
-* **Parameters:**
-  **store** – A Store class or instance
-* **Returns:**
-  The same store with guaranteed clear functionality
-
-```pycon
->>> class NoClearing(dict):
-...     clear = None
->>> d = NoClearing({'a': 1, 'b': 2})
->>> d = ensure_clear_to_kv_store(d)
->>> len(d)
-2
->>> d.clear()
->>> len(d)
-0
-```
-
-### dol.caching.flush_on_exit(cls)
-
-Class decorator: a subclass whose `__exit__` calls `flush_cache()` (adding a
-trivial `__enter__` if the class has none), so a write-cached store can be used as
-a context manager that flushes on exit. Used by `mk_write_cached_store`.
-
-### dol.caching.get_cache(cache)
-
-Convenience function to get a cache (whether it’s already an instance, or needs to be validated).
-
-```pycon
->>> get_cache({'a': 1})  # Return existing cache instance
-{'a': 1}
->>> get_cache(dict)()  # Return result of calling cache factory
-{}
-```
-
-### dol.caching.is_a_cache(obj)
-
-Check if an object implements the cache interface.
-
-A cache object must have \_\_contains_\_, \_\_getitem_\_, and \_\_setitem_\_ methods.
-
-```pycon
->>> is_a_cache({})  # dict is a valid cache
-True
->>> is_a_cache([])  # list has these methods but for indexed access
-True
->>> is_a_cache("string")  # string is not (immutable)
-False
 ```
 
 ### dol.caching.lru_cache_method(func=None, , maxsize=128, typed=False)
@@ -2396,361 +2202,6 @@ Computing 1 + 2
 >>> obj.add(1.0, 2.0)  # Different types, recomputation occurs
 Computing 1.0 + 2.0
 3.0
-```
-
-### dol.caching.mk_cached_store(store=None, \*, cache=<class 'dict'>, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
-
-* **Parameters:**
-  * **store** – The class of the store you want to cache
-  * **cache** – The store you want to use to cache. Anything with a \_\_setitem_\_(k, v) and a \_\_getitem_\_(k).
-    By default, it will use a dict
-* **Returns:**
-  A subclass of the input store, but with caching (to the cache store)
-
-```pycon
->>> from dol.caching import cache_vals
->>> import time
->>> class SlowDict(dict):
-...     sleep_s = 0.2
-...     def __getitem__(self, k):
-...         time.sleep(self.sleep_s)
-...         return super().__getitem__(k)
-...
-...
->>> d = SlowDict({'a': 1, 'b': 2, 'c': 3})
->>>
->>> d['a']  # Wow! Takes a long time to get 'a'
-1
->>> cache = dict()
->>> CachedSlowDict = cache_vals(store=SlowDict, cache=cache)
->>>
->>> s = CachedSlowDict({'a': 1, 'b': 2, 'c': 3})
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c']
-cache: []
->>> # This will take a LONG time because it's the first time we ask for 'a'
->>> v = s['a']
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c']
-cache: ['a']
->>> # This will take very little time because we have 'a' in the cache
->>> v = s['a']
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c']
-cache: ['a']
->>> # But we don't have 'b'
->>> v = s['b']
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c']
-cache: ['a', 'b']
->>> # But now we have 'b'
->>> v = s['b']
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c']
-cache: ['a', 'b']
->>> s['d'] = 4  # and we can do things normally (like put stuff in the store)
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c', 'd']
-cache: ['a', 'b']
->>> s['d']  # if we ask for it again though, it will take time (the first time)
-4
->>> print(f"store: {list(s)}\ncache: {list(cache)}")
-store: ['a', 'b', 'c', 'd']
-cache: ['a', 'b', 'd']
->>> # Of course, we could write 'd' in the cache as well, to get it quicker,
->>> # but that's another story: The story of write caches!
->>>
->>> # And by the way, your "cache wrapped" store hold a pointer to the cache it's using,
->>> # so you can take a peep there if needed:
->>> s._cache
-{'a': 1, 'b': 2, 'd': 4}
-```
-
-### dol.caching.mk_memoizer(cache)
-
-Make a memoizer that caches the output of a getter function in a cache.
-
-#### NOTE
-This is a specialized memoizer for getter functions/methods, i.e.
-functions/methods that have the signature (instance, key) and return a value.
-
-* **Parameters:**
-  **cache** – The cache to use. Must have \_\_getitem_\_ and \_\_setitem_\_ methods.
-* **Returns:**
-  A memoizer that caches the output of the function in the cache.
-
-```pycon
->>> cache = dict()
->>> @mk_memoizer(cache)
-... def getter(self, k):
-...     print(f"getting value for {k}...")
-...     return k * 10
-...
->>> getter(None, 2)
-getting value for 2...
-20
->>> getter(None, 2)
-20
-```
-
-### dol.caching.mk_sourced_store(store=None, , source=None, return_source_data=True, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
-
-* **Parameters:**
-  * **store** – The class of the store you want to cache
-  * **cache** – The store you want to use to cache. Anything with a \_\_setitem_\_(k, v) and a \_\_getitem_\_(k).
-    By default, it will use a dict
-  * **return_source_data**
-  * **store** – The class of the store you’re talking to. This store acts as the cache
-  * **source** – The store that is used to populate the store (cache) when a key is missing there.
-  * **return_source_data** – If True, will return `source[k]` as is. This should be used only if `store[k]` would return the same.
-    If False, will first write to cache (`store[k] = source[k]`) then return `store[k]`.
-    The latter introduces a performance hit (we write and then read again from the cache),
-    but ensures consistency (and is useful if the writing or the reading to/from store
-    transforms the data in some way.
-* **Returns:**
-  A subclass of the input store, but with caching (to the cache store)
-* **Returns:**
-  A decorated store
-
-Here are two stores pretending to be local and remote data stores respectively.
-
-```pycon
->>> from dol.caching import mk_sourced_store
->>>
->>> class Local(dict):
-...     def __getitem__(self, k):
-...         print(f"looking for {k} in Local")
-...         return super().__getitem__(k)
->>>
->>> class Remote(dict):
-...     def __getitem__(self, k):
-...         print(f"looking for {k} in Remote")
-...         return super().__getitem__(k)
-```
-
-Let’s make a remote store with two elements in it, and a local store class that asks the remote store for stuff
-if it can’t find it locally.
-
-```pycon
->>> remote = Remote({'foo': 'bar', 'hello': 'world'})
->>> SourcedLocal = mk_sourced_store(Local, source=remote)
->>> s = SourcedLocal({'some': 'local stuff'})
->>> list(s)  # the local store has one key
-['some']
-```
-
-But if we ask for a key that is in the remote store, it provides it:
-
-```pycon
->>> assert s['foo'] == 'bar'
-looking for foo in Local
-looking for foo in Remote
-```
-
-```pycon
->>> list(s)
-['some', 'foo']
-```
-
-See that next time we ask for the ‘foo’ key, the local store provides it:
-
-```pycon
->>> assert s['foo'] == 'bar'
-looking for foo in Local
-```
-
-```pycon
->>> assert s['hello'] == 'world'
-looking for hello in Local
-looking for hello in Remote
->>> list(s)
-['some', 'foo', 'hello']
-```
-
-We can still add stuff (locally)…
-
-```pycon
->>> s['something'] = 'else'
->>> list(s)
-['some', 'foo', 'hello', 'something']
-```
-
-### dol.caching.mk_write_cached_store(store=None, \*, w_cache=<class 'dict'>, flush_cache_condition=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
-
-Wrap a write cache around a store.
-
-* **Parameters:**
-  * **w_cache** – The store to (write) cache to
-  * **flush_cache_condition** – The condition to apply to the cache
-    to decide whether it’s contents should be flushed or not
-
-A `w_cache` must have a clear method (that clears the cache’s contents).
-If you know what you’re doing and want to add one to your input kv store,
-you can do so by calling `ensure_clear_to_kv_store(store)`
-– this will add a `clear` method inplace AND return the resulting store as well.
-
-We didn’t add this automatically because the first thing `mk_write_cached_store` will do is call clear,
-to remove all the contents of the store.
-You don’t want to do this unwittingly and delete a bunch of precious data!!
-
-```pycon
->>> from dol.caching import mk_write_cached_store, ensure_clear_to_kv_store
->>> from dol.base import Store
->>>
->>> def print_state(store):
-...     print(f"store: {store} ----- store._w_cache: {store._w_cache}")
-...
->>> class MyStore(dict): ...
->>> MyCachedStore = mk_write_cached_store(MyStore, w_cache={})  # wrap MyStore with a (dict) write cache
->>> s = MyCachedStore()  # make a MyCachedStore instance
->>> print_state(s)  # print the contents (both store and cache), see that it's empty
-store: {} ----- store._w_cache: {}
->>> s['hello'] = 'world'  # write 'world' in 'hello'
->>> print_state(s)  # see that it hasn't been written
-store: {} ----- store._w_cache: {'hello': 'world'}
->>> s['ding'] = 'dong'
->>> print_state(s)
-store: {} ----- store._w_cache: {'hello': 'world', 'ding': 'dong'}
->>> s.flush_cache()  # manually flush the cache
->>> print_state(s)  # note that store._w_cache is empty, but store has the data now
-store: {'hello': 'world', 'ding': 'dong'} ----- store._w_cache: {}
->>>
->>> # But you usually want to use the store as a context manager
->>> MyCachedStore = mk_write_cached_store(
-...     MyStore, w_cache={},
-...     flush_cache_condition=None)
->>>
->>> the_persistent_dict = dict()
->>>
->>> s = MyCachedStore(the_persistent_dict)
->>> with s:
-...     print("===> Before writing data:")
-...     print_state(s)
-...     s['hello'] = 'world'
-...     print("===> Before exiting the with block:")
-...     print_state(s)
-...
-===> Before writing data:
-store: {} ----- store._w_cache: {}
-===> Before exiting the with block:
-store: {} ----- store._w_cache: {'hello': 'world'}
->>>
->>> print("===> After exiting the with block:"); print_state(s)  # Note that the cache store flushed!
-===> After exiting the with block:
-store: {'hello': 'world'} ----- store._w_cache: {}
->>>
->>> # Example of auto-flushing when there's at least two elements
->>> class MyStore(dict): ...
-...
->>> MyCachedStore = mk_write_cached_store(
-...     MyStore, w_cache={},
-...     flush_cache_condition=lambda w_cache: len(w_cache) >= 3)
->>>
->>> s = MyCachedStore()
->>> with s:
-...     for i in range(7):
-...         s[i] = i * 10
-...         print_state(s)
-...
-store: {} ----- store._w_cache: {0: 0}
-store: {} ----- store._w_cache: {0: 0, 1: 10}
-store: {0: 0, 1: 10, 2: 20} ----- store._w_cache: {}
-store: {0: 0, 1: 10, 2: 20} ----- store._w_cache: {3: 30}
-store: {0: 0, 1: 10, 2: 20} ----- store._w_cache: {3: 30, 4: 40}
-store: {0: 0, 1: 10, 2: 20, 3: 30, 4: 40, 5: 50} ----- store._w_cache: {}
-store: {0: 0, 1: 10, 2: 20, 3: 30, 4: 40, 5: 50} ----- store._w_cache: {6: 60}
->>> # There was still something left in the cache before exiting the with block. But now...
->>> print_state(s)
-store: {0: 0, 1: 10, 2: 20, 3: 30, 4: 40, 5: 50, 6: 60} ----- store._w_cache: {}
-```
-
-### dol.caching.register_key_strategy(cls)
-
-Register a class as a KeyStrategy.
-
-### dol.caching.store_cached(store, key_func)
-
-Function output memorizer but using a specific (usually persisting) store as it’s
-memory and a key_func to compute the key under which to store the output.
-
-The key can be
-
-- a single value under which the output should be stored, regardless of the input.
-- a key function that is called on the inputs to create a hash under which the function’s output should be stored.
-
-* **Parameters:**
-  * **store** – The key-value store to use for caching. Must support \_\_getitem_\_ and \_\_setitem_\_.
-  * **key_func** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – The key function that is called on the input of the function to create the key value.
-
-#### SEE ALSO
-store_cached_with_single_key (for a version where the cache store key doesn’t depend on function’s args)
-
-```pycon
->>> # Note: Our doc test will use dict as the store, but to make the functionality useful beyond existing
->>> # RAM-memorizer, you should use actual "persisting" stores that store in local files, or DBs, etc.
->>> store = dict()
->>> @store_cached(store, lambda *args: args)
-... def my_data(x, y):
-...     print("Pretend this is a long computation")
-...     return x + y
->>> t = my_data(1, 2)  # note the print below (because the function is called
-Pretend this is a long computation
->>> tt = my_data(1, 2)  # note there's no print (because the function is NOT called)
->>> assert t == tt
->>> tt
-3
->>> my_data(3, 4)  # but different inputs will trigger the actual function again
-Pretend this is a long computation
-7
->>> my_data._cache
-{(1, 2): 3, (3, 4): 7}
-```
-
-### dol.caching.store_cached_with_single_key(store, key)
-
-Function output memorizer but using a specific store and key as its memory.
-
-Use in situations where you have a argument-less function or bound method that computes some data whose dependencies
-are static enough that there’s enough advantage to make the data refresh explicit (by deleting the cache entry)
-instead of making it implicit (recomputing/refetching the data every time).
-
-The key should be a single value under which the output should be stored, regardless of the input.
-
-#### NOTE
-The wrapped function comes with a empty_cache attribute, which when called, empties the cache (i.e. removes
-the key from the store)
-
-#### NOTE
-The wrapped function has a hidden `_cache` attribute pointing to the store in case you need to peep into it.
-
-* **Parameters:**
-  * **store** – The cache. The key-value store to use for caching. Must support \_\_getitem_\_ and \_\_setitem_\_.
-  * **key** – The store key under which to store the output of the function.
-
-#### SEE ALSO
-store_cached (for a version whose keys are computed from the wrapped function’s input.
-
-```pycon
->>> # Note: Our doc test will use dict as the store, but to make the functionality useful beyond existing
->>> # RAM-memorizer, you should use actual "persisting" stores that store in local files, or DBs, etc.
->>> store = dict()
->>> @store_cached_with_single_key(store, 'whatevs')
-... def my_data():
-...     print("Pretend this is a long computation")
-...     return [1, 2, 3]
->>> t = my_data()  # note the print below (because the function is called
-Pretend this is a long computation
->>> tt = my_data()  # note there's no print (because the function is NOT called)
->>> assert t == tt
->>> tt
-[1, 2, 3]
->>> my_data._cache  # peep in the cache
-{'whatevs': [1, 2, 3]}
->>> # let's empty the cache
->>> my_data.empty_cache_entry()
->>> assert 'whatevs' not in my_data._cache  # see that the cache entry is gone.
->>> t = my_data()  # so when you call the function again, it prints again!d
-Pretend this is a long computation
 ```
 
 
@@ -4513,6 +3964,7 @@ Get the first item of a kv store, or a list of the first n items
 | [`appendable`](_autosummary/dol.appendable.html.md#dol.appendable)([store_cls, return_keys, ...])   | Makes a new class with append (and consequential extend) methods                                                |
 |-------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
 | [`base`](_autosummary/dol.base.html.md#module-dol.base)                                       | Base classes for making stores.                                                                                 |
+| [`cache_keys`](_autosummary/dol.cache_keys.html.md#module-dol.cache_keys)                           | Key strategies: how `cache_this` turns an instance and a call into a cache key.                                 |
 | [`caching`](_autosummary/dol.caching.html.md#module-dol.caching)                                 | Tools to add caching layers to stores and methods.                                                              |
 | [`content`](_autosummary/dol.content.html.md#module-dol.content)                                 | Content references and content-addressed storage — the flat "blob" layer.                                       |
 | [`dig`](_autosummary/dol.dig.html.md#module-dol.dig)                                         | Layers introspection: walk the layers of a wrapped store and trace a key through them.                          |
@@ -4529,6 +3981,7 @@ Get the first item of a kv store, or a list of the first n items
 | [`signatures`](_autosummary/dol.signatures.html.md#module-dol.signatures)                           | Signature calculus: Tools to make it easier to work with function's signatures.                                 |
 | [`sources`](_autosummary/dol.sources.html.md#module-dol.sources)                                 | Key-value views of disparate sources.                                                                           |
 | [`store_addons`](_autosummary/dol.store_addons.html.md#module-dol.store_addons)                       | Store add-ons: path access, flattening, method aliases and hashing.                                             |
+| [`store_caching`](_autosummary/dol.store_caching.html.md#module-dol.store_caching)                     | Caching layers for stores: read caches, write caches and memoizers.                                             |
 | [`tools`](_autosummary/dol.tools.html.md#module-dol.tools)                                     | Various tools to add functionality to stores.                                                                   |
 | [`trans`](_autosummary/dol.trans.html.md#module-dol.trans)                                     | Tools to wrap stores with key/value transforms, filters, caches and other layers.                               |
 | [`trash`](_autosummary/dol.trash.html.md#module-dol.trash)                                     | Cross-platform file trash/recycle bin functionality for dol.                                                    |
@@ -12147,7 +11600,7 @@ A read-only Mapping that composes multiple sources, tried in order.
 On key lookup, sources are tried left-to-right until one has the key.
 On iteration, keys are yielded from all sources (deduplicated, order-preserved).
 
-This is useful as the `source` argument to [`dol.caching.mk_sourced_store()`](_autosummary/dol.caching.html.md#dol.caching.mk_sourced_store)
+This is useful as the `source` argument to `dol.caching.mk_sourced_store()`
 when you need fallback across multiple read-only backends.
 
 ```pycon
@@ -13046,6 +12499,632 @@ Yield the key paths of `m`, down to `levels` levels.
 Makes a `walk_filt` function for `kv_walk` based on some level logic.
 If `levels` is an integer, will consider it as the max path length,
 if not it will just assert that `levels` is callable, and return it
+
+
+# _autosummary/dol.store_caching.html.md
+
+# dol.store_caching
+
+Caching layers for stores: read caches, write caches and memoizers.
+
+- `cache_vals`: cache the values read from a store (in a dict or any other store)
+- `mk_sourced_store`: a store that fetches missing keys from a source store
+- `store_cached` / `store_cached_with_single_key`: cache a function’s outputs in a store
+- `mk_write_cached_store` / `WriteBackChainMap`: buffer writes and flush them later
+- `ensure_clear_to_kv_store` / `flush_on_exit`: helpers for those write caches
+- `cache_func_outputs`, `mk_memoizer`, `is_a_cache`, `get_cache`: smaller tools
+
+These used to live in `dol.caching`, which still re-exports them (i2mint/dol#70).
+
+```pycon
+>>> from dol.store_caching import cache_vals
+>>> source = {'a': 1}
+>>> s = cache_vals(source)
+>>> s['a']
+1
+>>> s._cache
+{'a': 1}
+```
+
+### Functions
+
+| [`cache_func_outputs`](_autosummary/dol.store_caching.html.md#dol.store_caching.cache_func_outputs)([cache])                         | Decorator factory that caches a function's outputs in `cache`, keyed by `(func, args, kwargs)`.                                                                                                         |
+|------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`cache_vals`](_autosummary/dol.store_caching.html.md#dol.store_caching.cache_vals)([store, cache, \_\_module_\_, ...])      |                                                                                                                                                                                                         |
+| [`ensure_clear_to_kv_store`](_autosummary/dol.store_caching.html.md#dol.store_caching.ensure_clear_to_kv_store)(store)                     | Ensures the store has a working clear method.                                                                                                                                                           |
+| [`flush_on_exit`](_autosummary/dol.store_caching.html.md#dol.store_caching.flush_on_exit)(cls)                                  | Class decorator: a subclass whose `__exit__` calls `flush_cache()` (adding a trivial `__enter__` if the class has none), so a write-cached store can be used as a context manager that flushes on exit. |
+| [`get_cache`](_autosummary/dol.store_caching.html.md#dol.store_caching.get_cache)(cache)                                    | Convenience function to get a cache (whether it's already an instance, or needs to be validated).                                                                                                       |
+| [`is_a_cache`](_autosummary/dol.store_caching.html.md#dol.store_caching.is_a_cache)(obj)                                     | Check if an object implements the cache interface.                                                                                                                                                      |
+| [`mk_cached_store`](_autosummary/dol.store_caching.html.md#dol.store_caching.mk_cached_store)([store, cache, \_\_module_\_, ...]) |                                                                                                                                                                                                         |
+| [`mk_memoizer`](_autosummary/dol.store_caching.html.md#dol.store_caching.mk_memoizer)(cache)                                  | Make a memoizer that caches the output of a getter function in a cache.                                                                                                                                 |
+| [`mk_sourced_store`](_autosummary/dol.store_caching.html.md#dol.store_caching.mk_sourced_store)([store, source, ...])              |                                                                                                                                                                                                         |
+| [`mk_write_cached_store`](_autosummary/dol.store_caching.html.md#dol.store_caching.mk_write_cached_store)([store, w_cache, ...])        | Wrap a write cache around a store.                                                                                                                                                                      |
+| [`store_cached`](_autosummary/dol.store_caching.html.md#dol.store_caching.store_cached)(store, key_func)                       | Function output memorizer but using a specific (usually persisting) store as it's memory and a key_func to compute the key under which to store the output.                                             |
+| [`store_cached_with_single_key`](_autosummary/dol.store_caching.html.md#dol.store_caching.store_cached_with_single_key)(store, key)            | Function output memorizer but using a specific store and key as its memory.                                                                                                                             |
+
+### Classes
+
+| [`HashableDict`](_autosummary/dol.store_caching.html.md#dol.store_caching.HashableDict)              | Just a dict, but hashable                                           |
+|----------------------------------------------------------------------------|---------------------------------------------------------------------|
+| [`WriteBackChainMap`](_autosummary/dol.store_caching.html.md#dol.store_caching.WriteBackChainMap)(\*maps) | A collections.ChainMap that also 'writes back' when a key is found. |
+
+### *class* dol.store_caching.HashableDict
+
+Bases: [`HashableMixin`](_autosummary/dol.util.html.md#dol.util.HashableMixin), [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+Just a dict, but hashable
+
+### *class* dol.store_caching.WriteBackChainMap(\*maps)
+
+Bases: [`ChainMap`](https://docs.python.org/3/library/collections.html#collections.ChainMap)
+
+A collections.ChainMap that also ‘writes back’ when a key is found.
+
+```pycon
+>>> from dol.caching import WriteBackChainMap
+>>>
+>>> d = WriteBackChainMap({'a': 1, 'b': 2}, {'b': 22, 'c': 33}, {'d': 444})
+```
+
+In a `ChainMap`, when you ask for the value for a key, each mapping in the
+sequence is checked for, and the first mapping found that contains it will be
+the one determining the value.
+
+So here if you look for `b`, though the first mapping will give you the value,
+though the second mapping also contains a `b` with a different value:
+
+```pycon
+>>> d['b']
+2
+```
+
+if you ask for `c`, it’s the second mapping that will give you the value:
+
+```pycon
+>>> d['c']
+33
+```
+
+But unlike with the builtin `ChainMap`, something else is going to happen here:
+
+```pycon
+>>> d
+WriteBackChainMap({'a': 1, 'b': 2, 'c': 33}, {'b': 22, 'c': 33}, {'d': 444})
+```
+
+See that now the first mapping also has the `('c', 33)` key-value pair:
+
+That is what we call “write back”.
+
+When a key is found in a mapping, all previous mappings (which by definition of
+`ChainMap` did not have a value for that key) will be revisited and that key-value
+pair will be written in it.
+
+As in with `ChainMap`, all writes will be carried out in the first mapping,
+and only the first mapping:
+
+```pycon
+>>> d['e'] = 5
+>>> d
+WriteBackChainMap({'a': 1, 'b': 2, 'c': 33, 'e': 5}, {'b': 22, 'c': 33}, {'d': 444})
+```
+
+Example use cases:
+
+- You’re working with a local and a remote source of data. You’d like to list the
+  keys available in both, and use the local item if it’s available, and if it’s not,
+  you want it to be sourced from remote, but written in local for quicker access
+  next time.
+- You have several sources to look for configuration values: a sequence of
+  configuration files/folders to look through (like a unix search path for command
+  resolution) and environment variables.
+
+### dol.store_caching.cache_func_outputs(cache=<class 'dol.store_caching.HashableDict'>)
+
+Decorator factory that caches a function’s outputs in `cache`, keyed by
+`(func, args, kwargs)`.
+
+* **Parameters:**
+  **cache** – A cache instance (with `__contains__`/`__getitem__`/
+  `__setitem__`), or a zero-arg factory/class (e.g. the default,
+  `HashableDict`) used to make one.
+
+#### NOTE
+like `args`, every `kwargs` value must be hashable (they’re part of
+the cache key). Passing an unhashable value (e.g. a `list`) raises
+`TypeError` rather than silently skipping the cache.
+
+```pycon
+>>> @cache_func_outputs()
+... def f(x, y=2):
+...     print(f"computing f({x}, {y})")
+...     return x + y
+>>> f(1)
+computing f(1, 2)
+3
+>>> f(1)  # cached: no "computing" print
+3
+>>> f(1, y=3)  # different kwargs: not a cache hit
+computing f(1, 3)
+4
+>>> f(1, y=3)  # this one is now cached too
+4
+```
+
+### dol.store_caching.cache_vals(store=None, \*, cache=<class 'dict'>, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+* **Parameters:**
+  * **store** – The class of the store you want to cache
+  * **cache** – The store you want to use to cache. Anything with a \_\_setitem_\_(k, v) and a \_\_getitem_\_(k).
+    By default, it will use a dict
+* **Returns:**
+  A subclass of the input store, but with caching (to the cache store)
+
+```pycon
+>>> from dol.caching import cache_vals
+>>> import time
+>>> class SlowDict(dict):
+...     sleep_s = 0.2
+...     def __getitem__(self, k):
+...         time.sleep(self.sleep_s)
+...         return super().__getitem__(k)
+...
+...
+>>> d = SlowDict({'a': 1, 'b': 2, 'c': 3})
+>>>
+>>> d['a']  # Wow! Takes a long time to get 'a'
+1
+>>> cache = dict()
+>>> CachedSlowDict = cache_vals(store=SlowDict, cache=cache)
+>>>
+>>> s = CachedSlowDict({'a': 1, 'b': 2, 'c': 3})
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c']
+cache: []
+>>> # This will take a LONG time because it's the first time we ask for 'a'
+>>> v = s['a']
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c']
+cache: ['a']
+>>> # This will take very little time because we have 'a' in the cache
+>>> v = s['a']
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c']
+cache: ['a']
+>>> # But we don't have 'b'
+>>> v = s['b']
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c']
+cache: ['a', 'b']
+>>> # But now we have 'b'
+>>> v = s['b']
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c']
+cache: ['a', 'b']
+>>> s['d'] = 4  # and we can do things normally (like put stuff in the store)
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c', 'd']
+cache: ['a', 'b']
+>>> s['d']  # if we ask for it again though, it will take time (the first time)
+4
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c', 'd']
+cache: ['a', 'b', 'd']
+>>> # Of course, we could write 'd' in the cache as well, to get it quicker,
+>>> # but that's another story: The story of write caches!
+>>>
+>>> # And by the way, your "cache wrapped" store hold a pointer to the cache it's using,
+>>> # so you can take a peep there if needed:
+>>> s._cache
+{'a': 1, 'b': 2, 'd': 4}
+```
+
+### dol.store_caching.ensure_clear_to_kv_store(store)
+
+Ensures the store has a working clear method.
+
+If the store doesn’t have a clear method or has the disabled version,
+adds a proper implementation that safely removes all items.
+
+* **Parameters:**
+  **store** – A Store class or instance
+* **Returns:**
+  The same store with guaranteed clear functionality
+
+```pycon
+>>> class NoClearing(dict):
+...     clear = None
+>>> d = NoClearing({'a': 1, 'b': 2})
+>>> d = ensure_clear_to_kv_store(d)
+>>> len(d)
+2
+>>> d.clear()
+>>> len(d)
+0
+```
+
+### dol.store_caching.flush_on_exit(cls)
+
+Class decorator: a subclass whose `__exit__` calls `flush_cache()` (adding a
+trivial `__enter__` if the class has none), so a write-cached store can be used as
+a context manager that flushes on exit. Used by `mk_write_cached_store`.
+
+### dol.store_caching.get_cache(cache)
+
+Convenience function to get a cache (whether it’s already an instance, or needs to be validated).
+
+```pycon
+>>> get_cache({'a': 1})  # Return existing cache instance
+{'a': 1}
+>>> get_cache(dict)()  # Return result of calling cache factory
+{}
+```
+
+### dol.store_caching.is_a_cache(obj)
+
+Check if an object implements the cache interface.
+
+A cache object must have \_\_contains_\_, \_\_getitem_\_, and \_\_setitem_\_ methods.
+
+```pycon
+>>> is_a_cache({})  # dict is a valid cache
+True
+>>> is_a_cache([])  # list has these methods but for indexed access
+True
+>>> is_a_cache("string")  # string is not (immutable)
+False
+```
+
+### dol.store_caching.mk_cached_store(store=None, \*, cache=<class 'dict'>, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+* **Parameters:**
+  * **store** – The class of the store you want to cache
+  * **cache** – The store you want to use to cache. Anything with a \_\_setitem_\_(k, v) and a \_\_getitem_\_(k).
+    By default, it will use a dict
+* **Returns:**
+  A subclass of the input store, but with caching (to the cache store)
+
+```pycon
+>>> from dol.caching import cache_vals
+>>> import time
+>>> class SlowDict(dict):
+...     sleep_s = 0.2
+...     def __getitem__(self, k):
+...         time.sleep(self.sleep_s)
+...         return super().__getitem__(k)
+...
+...
+>>> d = SlowDict({'a': 1, 'b': 2, 'c': 3})
+>>>
+>>> d['a']  # Wow! Takes a long time to get 'a'
+1
+>>> cache = dict()
+>>> CachedSlowDict = cache_vals(store=SlowDict, cache=cache)
+>>>
+>>> s = CachedSlowDict({'a': 1, 'b': 2, 'c': 3})
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c']
+cache: []
+>>> # This will take a LONG time because it's the first time we ask for 'a'
+>>> v = s['a']
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c']
+cache: ['a']
+>>> # This will take very little time because we have 'a' in the cache
+>>> v = s['a']
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c']
+cache: ['a']
+>>> # But we don't have 'b'
+>>> v = s['b']
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c']
+cache: ['a', 'b']
+>>> # But now we have 'b'
+>>> v = s['b']
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c']
+cache: ['a', 'b']
+>>> s['d'] = 4  # and we can do things normally (like put stuff in the store)
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c', 'd']
+cache: ['a', 'b']
+>>> s['d']  # if we ask for it again though, it will take time (the first time)
+4
+>>> print(f"store: {list(s)}\ncache: {list(cache)}")
+store: ['a', 'b', 'c', 'd']
+cache: ['a', 'b', 'd']
+>>> # Of course, we could write 'd' in the cache as well, to get it quicker,
+>>> # but that's another story: The story of write caches!
+>>>
+>>> # And by the way, your "cache wrapped" store hold a pointer to the cache it's using,
+>>> # so you can take a peep there if needed:
+>>> s._cache
+{'a': 1, 'b': 2, 'd': 4}
+```
+
+### dol.store_caching.mk_memoizer(cache)
+
+Make a memoizer that caches the output of a getter function in a cache.
+
+#### NOTE
+This is a specialized memoizer for getter functions/methods, i.e.
+functions/methods that have the signature (instance, key) and return a value.
+
+* **Parameters:**
+  **cache** – The cache to use. Must have \_\_getitem_\_ and \_\_setitem_\_ methods.
+* **Returns:**
+  A memoizer that caches the output of the function in the cache.
+
+```pycon
+>>> cache = dict()
+>>> @mk_memoizer(cache)
+... def getter(self, k):
+...     print(f"getting value for {k}...")
+...     return k * 10
+...
+>>> getter(None, 2)
+getting value for 2...
+20
+>>> getter(None, 2)
+20
+```
+
+### dol.store_caching.mk_sourced_store(store=None, , source=None, return_source_data=True, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+* **Parameters:**
+  * **store** – The class of the store you want to cache
+  * **cache** – The store you want to use to cache. Anything with a \_\_setitem_\_(k, v) and a \_\_getitem_\_(k).
+    By default, it will use a dict
+  * **return_source_data**
+  * **store** – The class of the store you’re talking to. This store acts as the cache
+  * **source** – The store that is used to populate the store (cache) when a key is missing there.
+  * **return_source_data** – If True, will return `source[k]` as is. This should be used only if `store[k]` would return the same.
+    If False, will first write to cache (`store[k] = source[k]`) then return `store[k]`.
+    The latter introduces a performance hit (we write and then read again from the cache),
+    but ensures consistency (and is useful if the writing or the reading to/from store
+    transforms the data in some way.
+* **Returns:**
+  A subclass of the input store, but with caching (to the cache store)
+* **Returns:**
+  A decorated store
+
+Here are two stores pretending to be local and remote data stores respectively.
+
+```pycon
+>>> from dol.caching import mk_sourced_store
+>>>
+>>> class Local(dict):
+...     def __getitem__(self, k):
+...         print(f"looking for {k} in Local")
+...         return super().__getitem__(k)
+>>>
+>>> class Remote(dict):
+...     def __getitem__(self, k):
+...         print(f"looking for {k} in Remote")
+...         return super().__getitem__(k)
+```
+
+Let’s make a remote store with two elements in it, and a local store class that asks the remote store for stuff
+if it can’t find it locally.
+
+```pycon
+>>> remote = Remote({'foo': 'bar', 'hello': 'world'})
+>>> SourcedLocal = mk_sourced_store(Local, source=remote)
+>>> s = SourcedLocal({'some': 'local stuff'})
+>>> list(s)  # the local store has one key
+['some']
+```
+
+But if we ask for a key that is in the remote store, it provides it:
+
+```pycon
+>>> assert s['foo'] == 'bar'
+looking for foo in Local
+looking for foo in Remote
+```
+
+```pycon
+>>> list(s)
+['some', 'foo']
+```
+
+See that next time we ask for the ‘foo’ key, the local store provides it:
+
+```pycon
+>>> assert s['foo'] == 'bar'
+looking for foo in Local
+```
+
+```pycon
+>>> assert s['hello'] == 'world'
+looking for hello in Local
+looking for hello in Remote
+>>> list(s)
+['some', 'foo', 'hello']
+```
+
+We can still add stuff (locally)…
+
+```pycon
+>>> s['something'] = 'else'
+>>> list(s)
+['some', 'foo', 'hello', 'something']
+```
+
+### dol.store_caching.mk_write_cached_store(store=None, \*, w_cache=<class 'dict'>, flush_cache_condition=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+Wrap a write cache around a store.
+
+* **Parameters:**
+  * **w_cache** – The store to (write) cache to
+  * **flush_cache_condition** – The condition to apply to the cache
+    to decide whether it’s contents should be flushed or not
+
+A `w_cache` must have a clear method (that clears the cache’s contents).
+If you know what you’re doing and want to add one to your input kv store,
+you can do so by calling `ensure_clear_to_kv_store(store)`
+– this will add a `clear` method inplace AND return the resulting store as well.
+
+We didn’t add this automatically because the first thing `mk_write_cached_store` will do is call clear,
+to remove all the contents of the store.
+You don’t want to do this unwittingly and delete a bunch of precious data!!
+
+```pycon
+>>> from dol.caching import mk_write_cached_store, ensure_clear_to_kv_store
+>>> from dol.base import Store
+>>>
+>>> def print_state(store):
+...     print(f"store: {store} ----- store._w_cache: {store._w_cache}")
+...
+>>> class MyStore(dict): ...
+>>> MyCachedStore = mk_write_cached_store(MyStore, w_cache={})  # wrap MyStore with a (dict) write cache
+>>> s = MyCachedStore()  # make a MyCachedStore instance
+>>> print_state(s)  # print the contents (both store and cache), see that it's empty
+store: {} ----- store._w_cache: {}
+>>> s['hello'] = 'world'  # write 'world' in 'hello'
+>>> print_state(s)  # see that it hasn't been written
+store: {} ----- store._w_cache: {'hello': 'world'}
+>>> s['ding'] = 'dong'
+>>> print_state(s)
+store: {} ----- store._w_cache: {'hello': 'world', 'ding': 'dong'}
+>>> s.flush_cache()  # manually flush the cache
+>>> print_state(s)  # note that store._w_cache is empty, but store has the data now
+store: {'hello': 'world', 'ding': 'dong'} ----- store._w_cache: {}
+>>>
+>>> # But you usually want to use the store as a context manager
+>>> MyCachedStore = mk_write_cached_store(
+...     MyStore, w_cache={},
+...     flush_cache_condition=None)
+>>>
+>>> the_persistent_dict = dict()
+>>>
+>>> s = MyCachedStore(the_persistent_dict)
+>>> with s:
+...     print("===> Before writing data:")
+...     print_state(s)
+...     s['hello'] = 'world'
+...     print("===> Before exiting the with block:")
+...     print_state(s)
+...
+===> Before writing data:
+store: {} ----- store._w_cache: {}
+===> Before exiting the with block:
+store: {} ----- store._w_cache: {'hello': 'world'}
+>>>
+>>> print("===> After exiting the with block:"); print_state(s)  # Note that the cache store flushed!
+===> After exiting the with block:
+store: {'hello': 'world'} ----- store._w_cache: {}
+>>>
+>>> # Example of auto-flushing when there's at least two elements
+>>> class MyStore(dict): ...
+...
+>>> MyCachedStore = mk_write_cached_store(
+...     MyStore, w_cache={},
+...     flush_cache_condition=lambda w_cache: len(w_cache) >= 3)
+>>>
+>>> s = MyCachedStore()
+>>> with s:
+...     for i in range(7):
+...         s[i] = i * 10
+...         print_state(s)
+...
+store: {} ----- store._w_cache: {0: 0}
+store: {} ----- store._w_cache: {0: 0, 1: 10}
+store: {0: 0, 1: 10, 2: 20} ----- store._w_cache: {}
+store: {0: 0, 1: 10, 2: 20} ----- store._w_cache: {3: 30}
+store: {0: 0, 1: 10, 2: 20} ----- store._w_cache: {3: 30, 4: 40}
+store: {0: 0, 1: 10, 2: 20, 3: 30, 4: 40, 5: 50} ----- store._w_cache: {}
+store: {0: 0, 1: 10, 2: 20, 3: 30, 4: 40, 5: 50} ----- store._w_cache: {6: 60}
+>>> # There was still something left in the cache before exiting the with block. But now...
+>>> print_state(s)
+store: {0: 0, 1: 10, 2: 20, 3: 30, 4: 40, 5: 50, 6: 60} ----- store._w_cache: {}
+```
+
+### dol.store_caching.store_cached(store, key_func)
+
+Function output memorizer but using a specific (usually persisting) store as it’s
+memory and a key_func to compute the key under which to store the output.
+
+The key can be
+
+- a single value under which the output should be stored, regardless of the input.
+- a key function that is called on the inputs to create a hash under which the function’s output should be stored.
+
+* **Parameters:**
+  * **store** – The key-value store to use for caching. Must support \_\_getitem_\_ and \_\_setitem_\_.
+  * **key_func** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – The key function that is called on the input of the function to create the key value.
+
+#### SEE ALSO
+store_cached_with_single_key (for a version where the cache store key doesn’t depend on function’s args)
+
+```pycon
+>>> # Note: Our doc test will use dict as the store, but to make the functionality useful beyond existing
+>>> # RAM-memorizer, you should use actual "persisting" stores that store in local files, or DBs, etc.
+>>> store = dict()
+>>> @store_cached(store, lambda *args: args)
+... def my_data(x, y):
+...     print("Pretend this is a long computation")
+...     return x + y
+>>> t = my_data(1, 2)  # note the print below (because the function is called
+Pretend this is a long computation
+>>> tt = my_data(1, 2)  # note there's no print (because the function is NOT called)
+>>> assert t == tt
+>>> tt
+3
+>>> my_data(3, 4)  # but different inputs will trigger the actual function again
+Pretend this is a long computation
+7
+>>> my_data._cache
+{(1, 2): 3, (3, 4): 7}
+```
+
+### dol.store_caching.store_cached_with_single_key(store, key)
+
+Function output memorizer but using a specific store and key as its memory.
+
+Use in situations where you have a argument-less function or bound method that computes some data whose dependencies
+are static enough that there’s enough advantage to make the data refresh explicit (by deleting the cache entry)
+instead of making it implicit (recomputing/refetching the data every time).
+
+The key should be a single value under which the output should be stored, regardless of the input.
+
+#### NOTE
+The wrapped function comes with a empty_cache attribute, which when called, empties the cache (i.e. removes
+the key from the store)
+
+#### NOTE
+The wrapped function has a hidden `_cache` attribute pointing to the store in case you need to peep into it.
+
+* **Parameters:**
+  * **store** – The cache. The key-value store to use for caching. Must support \_\_getitem_\_ and \_\_setitem_\_.
+  * **key** – The store key under which to store the output of the function.
+
+#### SEE ALSO
+store_cached (for a version whose keys are computed from the wrapped function’s input.
+
+```pycon
+>>> # Note: Our doc test will use dict as the store, but to make the functionality useful beyond existing
+>>> # RAM-memorizer, you should use actual "persisting" stores that store in local files, or DBs, etc.
+>>> store = dict()
+>>> @store_cached_with_single_key(store, 'whatevs')
+... def my_data():
+...     print("Pretend this is a long computation")
+...     return [1, 2, 3]
+>>> t = my_data()  # note the print below (because the function is called
+Pretend this is a long computation
+>>> tt = my_data()  # note there's no print (because the function is NOT called)
+>>> assert t == tt
+>>> tt
+[1, 2, 3]
+>>> my_data._cache  # peep in the cache
+{'whatevs': [1, 2, 3]}
+>>> # let's empty the cache
+>>> my_data.empty_cache_entry()
+>>> assert 'whatevs' not in my_data._cache  # see that the cache entry is gone.
+>>> t = my_data()  # so when you call the function again, it prints again!d
+Pretend this is a long computation
+```
 
 
 # _autosummary/dol.tools.html.md
@@ -17332,7 +17411,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-20 18:13 UTC** from commit <a href="https://github.com/i2mint/dol/commit/7e834f39ba975d191e0db5d46c46505e4ea3d339"><code>7e834f3</code></a> on branch <code>master</code>, for **dol 0.3.92** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 18:38 UTC** from commit <a href="https://github.com/i2mint/dol/commit/63b120088c21b944bcc224a69fe2779dd462de06"><code>63b1200</code></a> on branch <code>master</code>, for **dol 0.3.93** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -17341,9 +17420,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/7e834f39ba975d191e0db5d46c46505e4ea3d339"><code>7e834f39ba975d191e0db5d46c46505e4ea3d339</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/63b120088c21b944bcc224a69fe2779dd462de06"><code>63b120088c21b944bcc224a69fe2779dd462de06</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.92</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.93</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17352,9 +17431,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39472610979">39472610979</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39476213099">39476213099</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>a73210e4844b3dd8c3c309b7c1569146c5145389</code> (in the history of the built commit) |
+| Event commit | <code>52e31de8b3059941b45c3f23d84543029f6256ef</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -17379,13 +17458,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.92/">0.3.92</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.93/">0.3.93</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 7e834f39ba975d191e0db5d46c46505e4ea3d339
+git checkout 63b120088c21b944bcc224a69fe2779dd462de06
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

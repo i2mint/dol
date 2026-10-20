@@ -713,7 +713,7 @@ A read-only Mapping that composes multiple sources, tried in order.
 On key lookup, sources are tried left-to-right until one has the key.
 On iteration, keys are yielded from all sources (deduplicated, order-preserved).
 
-This is useful as the `source` argument to [`dol.caching.mk_sourced_store()`](dol.caching.html.md#dol.caching.mk_sourced_store)
+This is useful as the `source` argument to `dol.caching.mk_sourced_store()`
 when you need fallback across multiple read-only backends.
 
 ```pycon
