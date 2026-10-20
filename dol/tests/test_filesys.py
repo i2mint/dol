@@ -509,3 +509,14 @@ def test_rootdir_with_dotdot_after_a_symlink_lists_and_reads(tmp_path):
         assert list(s) == ["a.txt"]
         assert s["a.txt"] == b"A"
         assert s[os.path.join("sub", "..", "a.txt")] == b"A"
+
+
+def test_zipfilesreader_default_lists_zip_files(tmp_path):
+    """Regression for #126: the default subpath must match real .zip files."""
+    import zipfile
+    from dol.zipfiledol import ZipFilesReader
+
+    with zipfile.ZipFile(tmp_path / "in.zip", "w") as zf:
+        zf.writestr("m", b"h")
+    (tmp_path / "other.txt").write_text("x")
+    assert list(ZipFilesReader(str(tmp_path))) == [str(tmp_path / "in.zip")]
