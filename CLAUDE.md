@@ -21,7 +21,7 @@ For a quick orientation, see [llms.txt](llms.txt).
 | `dol/paths.py` | `KeyTemplate`, `mk_relative_path_store`, `KeyPath`, `path_get/set/filter` |
 | `dol/filesys.py` | `Files`, `TextFiles`, `JsonFiles`, `PickleFiles` — filesystem stores |
 | `dol/sources.py` | `FlatReader`, `FanoutReader/Persister`, `CascadedStores` |
-| `dol/signatures.py` | `Sig` — signature arithmetic |
+| `dol/signatures.py` | `Sig` — signature arithmetic; re-exports `sig_builtins`, `sig_compare`, `sig_recipes` |
 | `dol/util.py` | `Pipe`, `lazyprop`, `partialclass`, `groupby` |
 | `dol/__init__.py` | Public API — all exports live here |
 

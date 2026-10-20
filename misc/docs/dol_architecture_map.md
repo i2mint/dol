@@ -69,7 +69,10 @@ time** (docstring-only and inline-function imports excluded).
 | `sources.py` | 1172 | KV views over disparate sources; composite stores | `FlatReader`, `FanoutReader`, `FanoutPersister`, `CascadedStores`, `MultiSource`, `SequenceKvReader`, `FuncReader`, `ObjReader`, `Attrs` | base, caching, signatures, trans, util |
 | `filesys.py` | 867 | Filesystem stores | `Files`, `FilesReader`, `TextFiles`, `PickleFiles`, `JsonFiles`, `Jsons`, `DirReader`, `mk_dirs_if_missing`, `subfolder_stores` | base, dig, kv_codecs, naming, paths, trans, trash |
 | `kv_codecs.py` | 596 | Ready-made codec namespaces | `ValueCodecs`, `KeyCodecs` (`KeyValueCodecs` exists but **unexported**) | paths, signatures, trans, util, zipfiledol |
-| `signatures.py` | 5403 | `Sig` signature-calculus engine (used everywhere) | `Sig`, `KO`/`PK`/… kind aliases, `Param`, `call_forgivingly` | (none) |
+| `signatures.py` | 3419 | `Sig` signature-calculus engine (used everywhere); re-exports the three below (#70) | `Sig`, `KO`/`PK`/… kind aliases, `Param` | sig_builtins |
+| `sig_builtins.py` | 366 | Hand-made signatures for builtins `inspect` can't read; `_robust_signature_of_callable` (dependency-free leaf) | `sigs_for_builtins`, `sigs_for_sigless_builtin_name` | (none) |
+| `sig_compare.py` | 723 | Signature comparison and call compatibility | `compare_signatures`, `param_comparator`, `is_call_compatible_with`, `SigPair` | signatures |
+| `sig_recipes.py` | 1059 | Recipes on `Sig`: call forgivingly, change parameter kinds, set signatures | `call_forgivingly`, `ch_func_to_all_pk`, `replace_kwargs_using`, `sig_to_dataclass` | signatures |
 | `util.py` | 2356 | Grab-bag utilities | `Pipe`, `lazyprop`, `partialclass`, `groupby`, `regroupby`, `instance_checker`, `LiteralVal`, `chain_get`, `written_bytes` | (none — self-contained) |
 | `zipfiledol.py` | 994 | Zip/tar archive stores + compression codecs | `ZipFiles`, `ZipReader`, `FilesOfZip`, `FlatZipFilesReader`, `zip_compress`, `tar_compress` | base, errors, explicit, filesys, paths, sources, trans, util |
 | `appendable.py` | 673 | Append semantics for stores | `appendable`, `mk_item2kv_for`, `Extender` | trans, util |
@@ -558,6 +561,8 @@ single `cache_this` with an explicit `key`/`cache` over stacking.
    load-bearing everywhere and a hard dependency to test around; consider carving the
    rarely-used arithmetic out. `caching.py` bundles the key-strategy protocol, two
    descriptor classes, and ~10 store-cache helpers — extractable. *Medium.*
+   *`signatures.py` done (#70): builtin signatures to `sig_builtins.py`, comparison to
+   `sig_compare.py`, recipes to `sig_recipes.py`; `Sig` itself (~2250 lines) stays.*
    *`caching.py` done (#70): key strategies to `cache_keys.py`, store caching to
    `store_caching.py`.*
 5. **Dead / incomplete code** (confirmed present):
