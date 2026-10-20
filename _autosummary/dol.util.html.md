@@ -34,7 +34,7 @@ Main entry points:
 | [`get_app_folder`](#dol.util.get_app_folder)([folder_kind])                      | Get the full path of a directory suitable for storing application-specific configs, (or data, or cache, or state or runtime)                                                                                                                                                                                                                                                                                                 |
 | [`groupby`](#dol.util.groupby)(items, key[, val, group_factory])          | Groups items according to group keys updated from those items through the given `key` function (mapping an item to its group key).                                                                                                                                                                                                                                                                                           |
 | [`has_enabled_clear_method`](#dol.util.has_enabled_clear_method)(store)                    | Returns True iff obj has a clear method that is enabled (i.e. not disabled).                                                                                                                                                                                                                                                                                                                                                 |
-| `identity_func`(x)                                                                                  |                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [`identity_func`](#dol.util.identity_func)(x)                                   | Identity function that returns its input unchanged.                                                                                                                                                                                                                                                                                                                                                                          |
 | [`igroupby`](#dol.util.igroupby)(items, key[, val, group_factory, ...])    | The generator version of dol groupby.                                                                                                                                                                                                                                                                                                                                                                                        |
 | [`inject_method`](#dol.util.inject_method)(obj, method_function[, ...])         | method_function could be:                                                                                                                                                                                                                                                                                                                                                                                                    |
 | [`instance_checker`](#dol.util.instance_checker)(\*types)                          | Makes a filter function that checks the type of an object.                                                                                                                                                                                                                                                                                                                                                                   |
@@ -57,7 +57,7 @@ Main entry points:
 | [`safe_compile`](#dol.util.safe_compile)(path[, normalize_path])               | Compile a *literal file path* into a regex pattern that matches that path, normalizing separators and escaping regex-special characters on Windows.                                                                                                                                                                                                                                                                          |
 | `signature_string_or_default`(func[, default])                                                      |                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `single_nest_in_dict`(key, value)                                                                   |                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `static_identity_method`(x)                                                                         |                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [`static_identity_method`](#dol.util.static_identity_method)(x)                          | Identity function that returns its input unchanged.                                                                                                                                                                                                                                                                                                                                                                          |
 | [`str_to_var_str`](#dol.util.str_to_var_str)(s)                                  | Make a valid python variable string from the input string.                                                                                                                                                                                                                                                                                                                                                                   |
 | [`truncate_string_with_marker`](#dol.util.truncate_string_with_marker)(s, \*[, ...])          | Return a string with a limited length.                                                                                                                                                                                                                                                                                                                                                                                       |
 | `write_to_file`(obj, key)                                                                           |                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -71,7 +71,7 @@ Main entry points:
 | [`AttributeMutableMapping`](#dol.util.AttributeMutableMapping)           | A mutable mapping that provides both attribute and dictionary-style access. |
 | `DelegatedAttribute`(delegate_name, attr_name)                                     |                                                                             |
 | [`FolderSpec`](#dol.util.FolderSpec)(env_var, default_path) |                                                                             |
-| `HashableMixin`()                                                                  |                                                                             |
+| [`HashableMixin`](#dol.util.HashableMixin)()                   | Mixin making instances hashable by identity (`id(self)`).                   |
 | `ImmutableMixin`()                                                                 |                                                                             |
 | [`LiteralVal`](#dol.util.LiteralVal)(val)                   | An object to indicate that the value should be considered literally.        |
 | `ModuleNotFoundErrorNiceMessage`([msg])                                            |                                                                             |
@@ -158,6 +158,15 @@ Alias for field number 1
 #### env_var
 
 Alias for field number 0
+
+### *class* dol.util.HashableMixin
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Mixin making instances hashable by identity (`id(self)`).
+
+The one definition in dol (`caching.HashableMixin` is this class;
+`mixins.HashableMixin` extends it with identity equality).
 
 ### *class* dol.util.LiteralVal(val)
 
@@ -591,6 +600,23 @@ regroupby, itertools.groupby, and dol.source.SequenceKvReader
 
 Returns True iff obj has a clear method that is enabled (i.e. not disabled)
 
+### dol.util.identity_func(x)
+
+Identity function that returns its input unchanged.
+
+The one definition in dol: `identity` in `caching`, `paths` and `tools`,
+and `identity_func` in `sources`, are this function.
+
+```pycon
+>>> identity_func(42)
+42
+>>> identity_func([1, 2, 3])
+[1, 2, 3]
+```
+
+* **Return type:**
+  `T`
+
 ### dol.util.igroupby(items, key, val=None, group_factory=<class 'list'>, group_release_cond=<function <lambda>>, release_remainding=True, append_to_group_items=<method 'append' of 'list' objects>, grouper_mapping=<class 'collections.defaultdict'>)
 
 The generator version of dol groupby.
@@ -672,7 +698,7 @@ and release_remainding=True\`\` we have `dict(igroupby(...)) == groupby(...)`
 
 ### *class* dol.util.imdict
 
-Bases: `ImmutableMixin`, [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), `HashableMixin`
+Bases: `ImmutableMixin`, [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`HashableMixin`](#dol.util.HashableMixin)
 
 A frozen hashable dict
 
@@ -1230,6 +1256,23 @@ True
 >>> isinstance(safe_compile(r"C:\folder\file.txt"), re.Pattern)
 True
 ```
+
+### dol.util.static_identity_method(x)
+
+Identity function that returns its input unchanged.
+
+The one definition in dol: `identity` in `caching`, `paths` and `tools`,
+and `identity_func` in `sources`, are this function.
+
+```pycon
+>>> identity_func(42)
+42
+>>> identity_func([1, 2, 3])
+[1, 2, 3]
+```
+
+* **Return type:**
+  `T`
 
 ### *class* dol.util.staticproperty(function)
 

@@ -30,7 +30,6 @@ Module for path (and path-like) object manipulation
 | [`get_attr_or_item`](#dol.paths.get_attr_or_item)(obj, k)                             | If `k` is a string, tries to get `k` as an attribute of `obj` first, and if that fails, gets it as `obj[k]`                               |
 | [`getitem`](#dol.paths.getitem)(obj, k)                                      | Return `obj[k]`.                                                                                                                          |
 | [`handle_prefixes`](#dol.paths.handle_prefixes)([store, prefix, ...])                | A store decorator that handles prefixes.                                                                                                  |
-| [`identity`](#dol.paths.identity)(x)                                          | Return `x`.                                                                                                                               |
 | [`keys_and_indices_path`](#dol.paths.keys_and_indices_path)(str_path, \*[, sep, ...])      | Transforms a string path separated by a specified separator into a tuple of keys and indices.                                             |
 | [`leaf_paths`](#dol.paths.leaf_paths)(d[, sep, parent_path, ...])               | Get a dictionary of leaf paths of a nested dictionary.                                                                                    |
 | [`mk_relative_path_store`](#dol.paths.mk_relative_path_store)([store_cls, name, ...])       |                                                                                                                                           |
@@ -854,10 +853,6 @@ If aggregates several prefix-related functionalities. It will (by default)
 >>> dict(dd.store)  # but see where the underlying store actually wrote 'bar':
 {'/ROOT/of/every/thing': 42, '/ROOT/of/this/too': 0, '/ROOT/of/foo': 'bar'}
 ```
-
-### dol.paths.identity(x)
-
-Return `x`.
 
 ### dol.paths.keys_and_indices_path(str_path, , sep='.', index_pattern='\\\\[(\\\\d+)\\\\]')
 

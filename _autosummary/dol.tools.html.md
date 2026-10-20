@@ -29,7 +29,6 @@ Main entry points:
 | [`confirm_overwrite`](#dol.tools.confirm_overwrite)(mapping, k, v[, ...])         | A preset function you can use in wrap_kvs to ask the user to confirm if they're writing a value in a key that already has a different value under it. |
 | [`convert_to_numerical_if_possible`](#dol.tools.convert_to_numerical_if_possible)(s)             | To be used with `ask_user_for_value_when_missing` `value_preprocessor` arg                                                                            |
 | `decode_as_latin1`(b)                                                                            |                                                                                                                                                       |
-| `identity`(x)                                                                                    |                                                                                                                                                       |
 | `markdown_section`(k, v)                                                                         |                                                                                                                                                       |
 | `return_input`(x)                                                                                |                                                                                                                                                       |
 | `save_string_to_filepath`(filepath, string)                                                      |                                                                                                                                                       |
@@ -260,7 +259,7 @@ format, you can use `dol.trans.wrap_kvs` for that.
 ['bob', 'world']
 ```
 
-### dol.tools.store_aggregate(content_store, \*, kv_to_item=<function markdown_section>, aggregator=<built-in method join of str object>, egress=<function identity>, key_filter=None, value_filter=None, kv_filter=None, local_store_factory=<class 'dol.filesys.Files'>)
+### dol.tools.store_aggregate(content_store, \*, kv_to_item=<function markdown_section>, aggregator=<built-in method join of str object>, egress=<function identity_func>, key_filter=None, value_filter=None, kv_filter=None, local_store_factory=<class 'dol.filesys.Files'>)
 
 Create an aggregate object of a store’s (a Mapping of strings) content
 

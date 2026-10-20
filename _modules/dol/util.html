@@ -440,8 +440,21 @@
 
 <span class="c1"># TODO: Make identity_func "identifiable". If we use the following one, we can use == to detect it's use,</span>
 <span class="c1"># TODO: ... but there may be a way to annotate, register, or type any identity function so it can be detected.</span>
+<div class="viewcode-block" id="identity_func">
+<a class="viewcode-back" href="../../_autosummary/dol.util.html#dol.util.identity_func">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">identity_func</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">x</span>
+<span class="w">    </span><span class="sd">"""Identity function that returns its input unchanged.</span>
+
+<span class="sd">    The one definition in dol: ``identity`` in ``caching``, ``paths`` and ``tools``,</span>
+<span class="sd">    and ``identity_func`` in ``sources``, are this function.</span>
+
+<span class="sd">    &gt;&gt;&gt; identity_func(42)</span>
+<span class="sd">    42</span>
+<span class="sd">    &gt;&gt;&gt; identity_func([1, 2, 3])</span>
+<span class="sd">    [1, 2, 3]</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
 
 
 <span class="n">static_identity_method</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">identity_func</span><span class="p">)</span>
@@ -1983,9 +1996,18 @@
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Didn't manage to make this work fully"</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="HashableMixin">
+<a class="viewcode-back" href="../../_autosummary/dol.util.html#dol.util.HashableMixin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HashableMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Mixin making instances hashable by identity (``id(self)``).</span>
+
+<span class="sd">    The one definition in dol (``caching.HashableMixin`` is this class;</span>
+<span class="sd">    ``mixins.HashableMixin`` extends it with identity equality).</span>
+<span class="sd">    """</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ImmutableMixin</span><span class="p">:</span>
@@ -2798,7 +2820,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1478ea9e"></script>
+</div><script src="../../_static/documentation_options.js?v=bd389ef8"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

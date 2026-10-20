@@ -25,7 +25,7 @@ Main entry points:
 | [`FilteredKeysMixin`](#dol.mixins.FilteredKeysMixin)()            | Filters \_\_iter_\_ and \_\_contains_\_ with (the boolean filter function attribute) \_key_filt.   |
 |---------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
 | `GetBasedContainerMixin`()                                                      |                                                                                                    |
-| `HashableMixin`()                                                               |                                                                                                    |
+| [`HashableMixin`](#dol.mixins.HashableMixin)()                | Hashable by identity, and equal only to itself (unlike `util.HashableMixin`).                      |
 | [`IdentityKeysWrapMixin`](#dol.mixins.IdentityKeysWrapMixin)()        | Transparent KeysWrapABC.                                                                           |
 | [`IdentityKvWrapMixin`](#dol.mixins.IdentityKvWrapMixin)()          | Transparent Keys and Vals Wrap                                                                     |
 | [`IdentityValsWrapMixin`](#dol.mixins.IdentityValsWrapMixin)()        | Transparent ValsWrapABC.                                                                           |
@@ -42,6 +42,12 @@ Main entry points:
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Filters \_\_iter_\_ and \_\_contains_\_ with (the boolean filter function attribute) \_key_filt.
+
+### *class* dol.mixins.HashableMixin
+
+Bases: [`HashableMixin`](dol.util.html.md#dol.util.HashableMixin)
+
+Hashable by identity, and equal only to itself (unlike `util.HashableMixin`).
 
 ### *class* dol.mixins.IdentityKeysWrapMixin
 

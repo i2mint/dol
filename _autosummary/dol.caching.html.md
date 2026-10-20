@@ -71,7 +71,6 @@ Custom cache storage and key functions:
 | [`ensure_clear_to_kv_store`](#dol.caching.ensure_clear_to_kv_store)(store)                     | Ensures the store has a working clear method.                                                                                                                                                           |
 | [`flush_on_exit`](#dol.caching.flush_on_exit)(cls)                                  | Class decorator: a subclass whose `__exit__` calls `flush_cache()` (adding a trivial `__enter__` if the class has none), so a write-cached store can be used as a context manager that flushes on exit. |
 | [`get_cache`](#dol.caching.get_cache)(cache)                                    | Convenience function to get a cache (whether it's already an instance, or needs to be validated).                                                                                                       |
-| [`identity`](#dol.caching.identity)(x)                                         | Identity function that returns its input unchanged.                                                                                                                                                     |
 | [`is_a_cache`](#dol.caching.is_a_cache)(obj)                                     | Check if an object implements the cache interface.                                                                                                                                                      |
 | [`lru_cache_method`](#dol.caching.lru_cache_method)([func, maxsize, typed])            | A decorator to cache the result of a method, ignoring the first argument (usually `self`).                                                                                                              |
 | [`mk_cached_store`](#dol.caching.mk_cached_store)([store, cache, \_\_module_\_, ...]) |                                                                                                                                                                                                         |
@@ -93,7 +92,6 @@ Custom cache storage and key functions:
 | [`ExplicitKey`](#dol.caching.ExplicitKey)(key)                              | Use an explicitly provided key value.                                       |
 | [`FromMethodArgs`](#dol.caching.FromMethodArgs)(func)                          | Apply a function to method arguments to generate the key.                   |
 | [`HashableDict`](#dol.caching.HashableDict)                                  | Just a dict, but hashable                                                   |
-| [`HashableMixin`](#dol.caching.HashableMixin)()                               | Mixin making instances hashable by identity (`id(self)`).                   |
 | [`InstanceProp`](#dol.caching.InstanceProp)(prop_name)                       | Get a key from an instance property.                                        |
 | [`KeyStrategy`](#dol.caching.KeyStrategy)(\*args, \*\*kwargs)               | Protocol defining how a key strategy should behave.                         |
 | [`WriteBackChainMap`](#dol.caching.WriteBackChainMap)(\*maps)                     | A collections.ChainMap that also 'writes back' when a key is found.         |
@@ -220,15 +218,9 @@ Apply the function to the instance and method arguments at runtime.
 
 ### *class* dol.caching.HashableDict
 
-Bases: [`HashableMixin`](#dol.caching.HashableMixin), [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+Bases: [`HashableMixin`](dol.util.html.md#dol.util.HashableMixin), [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 Just a dict, but hashable
-
-### *class* dol.caching.HashableMixin
-
-Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
-
-Mixin making instances hashable by identity (`id(self)`).
 
 ### *class* dol.caching.InstanceProp(prop_name)
 
@@ -985,22 +977,6 @@ Convenience function to get a cache (whether it’s already an instance, or need
 >>> get_cache(dict)()  # Return result of calling cache factory
 {}
 ```
-
-### dol.caching.identity(x)
-
-Identity function that returns its input unchanged.
-
-```pycon
->>> identity(42)
-42
->>> identity("hello")
-'hello'
->>> identity([1, 2, 3])
-[1, 2, 3]
-```
-
-* **Return type:**
-  `T`
 
 ### dol.caching.is_a_cache(obj)
 

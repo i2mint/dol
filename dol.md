@@ -1,4 +1,4 @@
-> built 2026-10-20 13:31 UTC from 74c36cc (master) · dol 0.3.88. Details: build_info.json
+> built 2026-10-20 15:29 UTC from 5710fce (master) · dol 0.3.89. Details: build_info.json
 
 # index.html.md
 
@@ -1422,7 +1422,6 @@ Custom cache storage and key functions:
 | [`ensure_clear_to_kv_store`](_autosummary/dol.caching.html.md#dol.caching.ensure_clear_to_kv_store)(store)                     | Ensures the store has a working clear method.                                                                                                                                                           |
 | [`flush_on_exit`](_autosummary/dol.caching.html.md#dol.caching.flush_on_exit)(cls)                                  | Class decorator: a subclass whose `__exit__` calls `flush_cache()` (adding a trivial `__enter__` if the class has none), so a write-cached store can be used as a context manager that flushes on exit. |
 | [`get_cache`](_autosummary/dol.caching.html.md#dol.caching.get_cache)(cache)                                    | Convenience function to get a cache (whether it's already an instance, or needs to be validated).                                                                                                       |
-| [`identity`](_autosummary/dol.caching.html.md#dol.caching.identity)(x)                                         | Identity function that returns its input unchanged.                                                                                                                                                     |
 | [`is_a_cache`](_autosummary/dol.caching.html.md#dol.caching.is_a_cache)(obj)                                     | Check if an object implements the cache interface.                                                                                                                                                      |
 | [`lru_cache_method`](_autosummary/dol.caching.html.md#dol.caching.lru_cache_method)([func, maxsize, typed])            | A decorator to cache the result of a method, ignoring the first argument (usually `self`).                                                                                                              |
 | [`mk_cached_store`](_autosummary/dol.caching.html.md#dol.caching.mk_cached_store)([store, cache, \_\_module_\_, ...]) |                                                                                                                                                                                                         |
@@ -1444,7 +1443,6 @@ Custom cache storage and key functions:
 | [`ExplicitKey`](_autosummary/dol.caching.html.md#dol.caching.ExplicitKey)(key)                              | Use an explicitly provided key value.                                       |
 | [`FromMethodArgs`](_autosummary/dol.caching.html.md#dol.caching.FromMethodArgs)(func)                          | Apply a function to method arguments to generate the key.                   |
 | [`HashableDict`](_autosummary/dol.caching.html.md#dol.caching.HashableDict)                                  | Just a dict, but hashable                                                   |
-| [`HashableMixin`](_autosummary/dol.caching.html.md#dol.caching.HashableMixin)()                               | Mixin making instances hashable by identity (`id(self)`).                   |
 | [`InstanceProp`](_autosummary/dol.caching.html.md#dol.caching.InstanceProp)(prop_name)                       | Get a key from an instance property.                                        |
 | [`KeyStrategy`](_autosummary/dol.caching.html.md#dol.caching.KeyStrategy)(\*args, \*\*kwargs)               | Protocol defining how a key strategy should behave.                         |
 | [`WriteBackChainMap`](_autosummary/dol.caching.html.md#dol.caching.WriteBackChainMap)(\*maps)                     | A collections.ChainMap that also 'writes back' when a key is found.         |
@@ -1571,15 +1569,9 @@ Apply the function to the instance and method arguments at runtime.
 
 ### *class* dol.caching.HashableDict
 
-Bases: [`HashableMixin`](_autosummary/dol.caching.html.md#dol.caching.HashableMixin), [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+Bases: [`HashableMixin`](_autosummary/dol.util.html.md#dol.util.HashableMixin), [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 Just a dict, but hashable
-
-### *class* dol.caching.HashableMixin
-
-Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
-
-Mixin making instances hashable by identity (`id(self)`).
 
 ### *class* dol.caching.InstanceProp(prop_name)
 
@@ -2336,22 +2328,6 @@ Convenience function to get a cache (whether it’s already an instance, or need
 >>> get_cache(dict)()  # Return result of calling cache factory
 {}
 ```
-
-### dol.caching.identity(x)
-
-Identity function that returns its input unchanged.
-
-```pycon
->>> identity(42)
-42
->>> identity("hello")
-'hello'
->>> identity([1, 2, 3])
-[1, 2, 3]
-```
-
-* **Return type:**
-  `T`
 
 ### dol.caching.is_a_cache(obj)
 
@@ -5225,7 +5201,7 @@ Main entry points:
 | [`FilteredKeysMixin`](_autosummary/dol.mixins.html.md#dol.mixins.FilteredKeysMixin)()            | Filters \_\_iter_\_ and \_\_contains_\_ with (the boolean filter function attribute) \_key_filt.   |
 |---------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
 | `GetBasedContainerMixin`()                                                      |                                                                                                    |
-| `HashableMixin`()                                                               |                                                                                                    |
+| [`HashableMixin`](_autosummary/dol.mixins.html.md#dol.mixins.HashableMixin)()                | Hashable by identity, and equal only to itself (unlike `util.HashableMixin`).                      |
 | [`IdentityKeysWrapMixin`](_autosummary/dol.mixins.html.md#dol.mixins.IdentityKeysWrapMixin)()        | Transparent KeysWrapABC.                                                                           |
 | [`IdentityKvWrapMixin`](_autosummary/dol.mixins.html.md#dol.mixins.IdentityKvWrapMixin)()          | Transparent Keys and Vals Wrap                                                                     |
 | [`IdentityValsWrapMixin`](_autosummary/dol.mixins.html.md#dol.mixins.IdentityValsWrapMixin)()        | Transparent ValsWrapABC.                                                                           |
@@ -5242,6 +5218,12 @@ Main entry points:
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Filters \_\_iter_\_ and \_\_contains_\_ with (the boolean filter function attribute) \_key_filt.
+
+### *class* dol.mixins.HashableMixin
+
+Bases: [`HashableMixin`](_autosummary/dol.util.html.md#dol.util.HashableMixin)
+
+Hashable by identity, and equal only to itself (unlike `util.HashableMixin`).
 
 ### *class* dol.mixins.IdentityKeysWrapMixin
 
@@ -5820,7 +5802,6 @@ Module for path (and path-like) object manipulation
 | [`get_attr_or_item`](_autosummary/dol.paths.html.md#dol.paths.get_attr_or_item)(obj, k)                             | If `k` is a string, tries to get `k` as an attribute of `obj` first, and if that fails, gets it as `obj[k]`                               |
 | [`getitem`](_autosummary/dol.paths.html.md#dol.paths.getitem)(obj, k)                                      | Return `obj[k]`.                                                                                                                          |
 | [`handle_prefixes`](_autosummary/dol.paths.html.md#dol.paths.handle_prefixes)([store, prefix, ...])                | A store decorator that handles prefixes.                                                                                                  |
-| [`identity`](_autosummary/dol.paths.html.md#dol.paths.identity)(x)                                          | Return `x`.                                                                                                                               |
 | [`keys_and_indices_path`](_autosummary/dol.paths.html.md#dol.paths.keys_and_indices_path)(str_path, \*[, sep, ...])      | Transforms a string path separated by a specified separator into a tuple of keys and indices.                                             |
 | [`leaf_paths`](_autosummary/dol.paths.html.md#dol.paths.leaf_paths)(d[, sep, parent_path, ...])               | Get a dictionary of leaf paths of a nested dictionary.                                                                                    |
 | [`mk_relative_path_store`](_autosummary/dol.paths.html.md#dol.paths.mk_relative_path_store)([store_cls, name, ...])       |                                                                                                                                           |
@@ -6644,10 +6625,6 @@ If aggregates several prefix-related functionalities. It will (by default)
 >>> dict(dd.store)  # but see where the underlying store actually wrote 'bar':
 {'/ROOT/of/every/thing': 42, '/ROOT/of/this/too': 0, '/ROOT/of/foo': 'bar'}
 ```
-
-### dol.paths.identity(x)
-
-Return `x`.
 
 ### dol.paths.keys_and_indices_path(str_path, , sep='.', index_pattern='\\\\[(\\\\d+)\\\\]')
 
@@ -11192,7 +11169,6 @@ Main entry points:
 | `ddir`(o)                       |    |
 |---------------------------------|----|
 | `exclusive_subdict`(d, exclude) |    |
-| `identity_func`(x)              |    |
 | `inclusive_subdict`(d, include) |    |
 | `not_underscore_prefixed`(x)    |    |
 | `unique_element`(iterator)      |    |
@@ -12102,7 +12078,6 @@ Main entry points:
 | [`confirm_overwrite`](_autosummary/dol.tools.html.md#dol.tools.confirm_overwrite)(mapping, k, v[, ...])         | A preset function you can use in wrap_kvs to ask the user to confirm if they're writing a value in a key that already has a different value under it. |
 | [`convert_to_numerical_if_possible`](_autosummary/dol.tools.html.md#dol.tools.convert_to_numerical_if_possible)(s)             | To be used with `ask_user_for_value_when_missing` `value_preprocessor` arg                                                                            |
 | `decode_as_latin1`(b)                                                                            |                                                                                                                                                       |
-| `identity`(x)                                                                                    |                                                                                                                                                       |
 | `markdown_section`(k, v)                                                                         |                                                                                                                                                       |
 | `return_input`(x)                                                                                |                                                                                                                                                       |
 | `save_string_to_filepath`(filepath, string)                                                      |                                                                                                                                                       |
@@ -12333,7 +12308,7 @@ format, you can use `dol.trans.wrap_kvs` for that.
 ['bob', 'world']
 ```
 
-### dol.tools.store_aggregate(content_store, \*, kv_to_item=<function markdown_section>, aggregator=<built-in method join of str object>, egress=<function identity>, key_filter=None, value_filter=None, kv_filter=None, local_store_factory=<class 'dol.filesys.Files'>)
+### dol.tools.store_aggregate(content_store, \*, kv_to_item=<function markdown_section>, aggregator=<built-in method join of str object>, egress=<function identity_func>, key_filter=None, value_filter=None, kv_filter=None, local_store_factory=<class 'dol.filesys.Files'>)
 
 Create an aggregate object of a store’s (a Mapping of strings) content
 
@@ -15185,7 +15160,7 @@ Main entry points:
 | [`get_app_folder`](_autosummary/dol.util.html.md#dol.util.get_app_folder)([folder_kind])                      | Get the full path of a directory suitable for storing application-specific configs, (or data, or cache, or state or runtime)                                                                                                                                                                                                                                                                                                 |
 | [`groupby`](_autosummary/dol.util.html.md#dol.util.groupby)(items, key[, val, group_factory])          | Groups items according to group keys updated from those items through the given `key` function (mapping an item to its group key).                                                                                                                                                                                                                                                                                           |
 | [`has_enabled_clear_method`](_autosummary/dol.util.html.md#dol.util.has_enabled_clear_method)(store)                    | Returns True iff obj has a clear method that is enabled (i.e. not disabled).                                                                                                                                                                                                                                                                                                                                                 |
-| `identity_func`(x)                                                                                  |                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [`identity_func`](_autosummary/dol.util.html.md#dol.util.identity_func)(x)                                   | Identity function that returns its input unchanged.                                                                                                                                                                                                                                                                                                                                                                          |
 | [`igroupby`](_autosummary/dol.util.html.md#dol.util.igroupby)(items, key[, val, group_factory, ...])    | The generator version of dol groupby.                                                                                                                                                                                                                                                                                                                                                                                        |
 | [`inject_method`](_autosummary/dol.util.html.md#dol.util.inject_method)(obj, method_function[, ...])         | method_function could be:                                                                                                                                                                                                                                                                                                                                                                                                    |
 | [`instance_checker`](_autosummary/dol.util.html.md#dol.util.instance_checker)(\*types)                          | Makes a filter function that checks the type of an object.                                                                                                                                                                                                                                                                                                                                                                   |
@@ -15208,7 +15183,7 @@ Main entry points:
 | [`safe_compile`](_autosummary/dol.util.html.md#dol.util.safe_compile)(path[, normalize_path])               | Compile a *literal file path* into a regex pattern that matches that path, normalizing separators and escaping regex-special characters on Windows.                                                                                                                                                                                                                                                                          |
 | `signature_string_or_default`(func[, default])                                                      |                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `single_nest_in_dict`(key, value)                                                                   |                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `static_identity_method`(x)                                                                         |                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [`static_identity_method`](_autosummary/dol.util.html.md#dol.util.static_identity_method)(x)                          | Identity function that returns its input unchanged.                                                                                                                                                                                                                                                                                                                                                                          |
 | [`str_to_var_str`](_autosummary/dol.util.html.md#dol.util.str_to_var_str)(s)                                  | Make a valid python variable string from the input string.                                                                                                                                                                                                                                                                                                                                                                   |
 | [`truncate_string_with_marker`](_autosummary/dol.util.html.md#dol.util.truncate_string_with_marker)(s, \*[, ...])          | Return a string with a limited length.                                                                                                                                                                                                                                                                                                                                                                                       |
 | `write_to_file`(obj, key)                                                                           |                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -15222,7 +15197,7 @@ Main entry points:
 | [`AttributeMutableMapping`](_autosummary/dol.util.html.md#dol.util.AttributeMutableMapping)           | A mutable mapping that provides both attribute and dictionary-style access. |
 | `DelegatedAttribute`(delegate_name, attr_name)                                     |                                                                             |
 | [`FolderSpec`](_autosummary/dol.util.html.md#dol.util.FolderSpec)(env_var, default_path) |                                                                             |
-| `HashableMixin`()                                                                  |                                                                             |
+| [`HashableMixin`](_autosummary/dol.util.html.md#dol.util.HashableMixin)()                   | Mixin making instances hashable by identity (`id(self)`).                   |
 | `ImmutableMixin`()                                                                 |                                                                             |
 | [`LiteralVal`](_autosummary/dol.util.html.md#dol.util.LiteralVal)(val)                   | An object to indicate that the value should be considered literally.        |
 | `ModuleNotFoundErrorNiceMessage`([msg])                                            |                                                                             |
@@ -15309,6 +15284,15 @@ Alias for field number 1
 #### env_var
 
 Alias for field number 0
+
+### *class* dol.util.HashableMixin
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Mixin making instances hashable by identity (`id(self)`).
+
+The one definition in dol (`caching.HashableMixin` is this class;
+`mixins.HashableMixin` extends it with identity equality).
 
 ### *class* dol.util.LiteralVal(val)
 
@@ -15742,6 +15726,23 @@ regroupby, itertools.groupby, and dol.source.SequenceKvReader
 
 Returns True iff obj has a clear method that is enabled (i.e. not disabled)
 
+### dol.util.identity_func(x)
+
+Identity function that returns its input unchanged.
+
+The one definition in dol: `identity` in `caching`, `paths` and `tools`,
+and `identity_func` in `sources`, are this function.
+
+```pycon
+>>> identity_func(42)
+42
+>>> identity_func([1, 2, 3])
+[1, 2, 3]
+```
+
+* **Return type:**
+  `T`
+
 ### dol.util.igroupby(items, key, val=None, group_factory=<class 'list'>, group_release_cond=<function <lambda>>, release_remainding=True, append_to_group_items=<method 'append' of 'list' objects>, grouper_mapping=<class 'collections.defaultdict'>)
 
 The generator version of dol groupby.
@@ -15823,7 +15824,7 @@ and release_remainding=True\`\` we have `dict(igroupby(...)) == groupby(...)`
 
 ### *class* dol.util.imdict
 
-Bases: `ImmutableMixin`, [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), `HashableMixin`
+Bases: `ImmutableMixin`, [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`HashableMixin`](_autosummary/dol.util.html.md#dol.util.HashableMixin)
 
 A frozen hashable dict
 
@@ -16381,6 +16382,23 @@ True
 >>> isinstance(safe_compile(r"C:\folder\file.txt"), re.Pattern)
 True
 ```
+
+### dol.util.static_identity_method(x)
+
+Identity function that returns its input unchanged.
+
+The one definition in dol: `identity` in `caching`, `paths` and `tools`,
+and `identity_func` in `sources`, are this function.
+
+```pycon
+>>> identity_func(42)
+42
+>>> identity_func([1, 2, 3])
+[1, 2, 3]
+```
+
+* **Return type:**
+  `T`
 
 ### *class* dol.util.staticproperty(function)
 
@@ -17032,18 +17050,20 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-20 13:31 UTC** from commit <a href="https://github.com/i2mint/dol/commit/74c36cc348f87f061a0a9bbbfd6bf945de29f313"><code>74c36cc</code></a> on branch <code>master</code>, for **dol 0.3.88** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 15:29 UTC** from commit <a href="https://github.com/i2mint/dol/commit/5710fcee614ddee170e5213da5345cbf55baf119"><code>5710fce</code></a> on branch <code>master</code>, for **dol 0.3.89** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.3.89) is ahead of the latest release on PyPI (0.3.88): these docs describe unreleased code.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/74c36cc348f87f061a0a9bbbfd6bf945de29f313"><code>74c36cc348f87f061a0a9bbbfd6bf945de29f313</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/5710fcee614ddee170e5213da5345cbf55baf119"><code>5710fcee614ddee170e5213da5345cbf55baf119</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.88</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.89</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17052,15 +17072,15 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39430877143">39430877143</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39448476336">39448476336</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>220d778ddb0e6934e403585b8062e845d3eda55a</code> (in the history of the built commit) |
+| Event commit | <code>b9fda84d4272ea5f2b47f76d56cc4f3f948f2805</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.20  |
+| epythet  | 0.2.21  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
@@ -17079,14 +17099,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.88/">0.3.88</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.88/">0.3.88</a>, older than the documented version (0.3.89).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 74c36cc348f87f061a0a9bbbfd6bf945de29f313
-pip install "epythet==0.2.20"
+git checkout 5710fcee614ddee170e5213da5345cbf55baf119
+pip install "epythet==0.2.21"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

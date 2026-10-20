@@ -26,7 +26,6 @@ Main entry points:
 | `ddir`(o)                       |    |
 |---------------------------------|----|
 | `exclusive_subdict`(d, exclude) |    |
-| `identity_func`(x)              |    |
 | `inclusive_subdict`(d, include) |    |
 | `not_underscore_prefixed`(x)    |    |
 | `unique_element`(iterator)      |    |
