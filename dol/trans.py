@@ -833,7 +833,6 @@ def _wrap_store(
     return wrapper.wrap(store, class_trans=class_trans)
 
 
-
 ########################################################################################################################
 # Caching keys
 
@@ -2801,7 +2800,6 @@ def conditional_data_trans(store=None, *, condition, data_trans):
     return Pipe(data_trans, wrap_kvs(store, obj_of_data=_data_trans))
 
 
-
 from typing import TypeVar, Any
 from collections.abc import Callable
 
@@ -3061,7 +3059,6 @@ def return_default_if_error(store=None, *, default=None, errors=(KeyError,)):
     return add_missing_key_handling(
         store, missing_key_callback=_default, errors_that_trigger_missing=errors
     )
-
 
 
 @store_decorator
