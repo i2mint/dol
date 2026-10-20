@@ -783,7 +783,37 @@ MOVED = {
             "cache_func_outputs",
         ),
     },
+    "dol.signatures": {
+        "dol.sig_builtins": (
+            "DFLT_SIGNATURE",
+            "sigs_for_builtins",
+            "sigs_for_sigless_builtin_name",
+            "resolve_function",
+        ),
+        "dol.sig_compare": (
+            "compare_signatures",
+            "param_comparator",
+            "is_call_compatible_with",
+            "SigPair",
+        ),
+        "dol.sig_recipes": (
+            "call_forgivingly",
+            "call_somewhat_forgivingly",
+            "all_pk_signature",
+            "ch_func_to_all_pk",
+            "replace_kwargs_using",
+            "sig_to_dataclass",
+        ),
+    },
 }
+
+
+def test_sig_still_has_replace_kwargs_using():
+    """``dol.sig_recipes`` attaches ``replace_kwargs_using`` to ``Sig`` when it loads."""
+    from dol.signatures import Sig
+    from dol.sig_recipes import replace_kwargs_using
+
+    assert Sig.replace_kwargs_using is replace_kwargs_using
 
 
 @pytest.mark.parametrize(
